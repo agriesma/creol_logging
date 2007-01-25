@@ -6,23 +6,25 @@
 %token SKIP
 %token <int>  ID
 %token <int>  INT
+%token <bool> BOOL
+%token <float> FLOAT
 %token PLUS TIMES
 %left PLUS
 %left TIMES
-%start <int> main
+%start <'a list> main
 %%
 
 main:
-	  d = declarations EOF { }
-	| EOF { }
+	  d = declarations EOF { d }
+	| EOF { [] }
 
 declarations:
-	  declaration { }
-	| declaration declarations { }
+	  d = declaration { [d] }
+	| d = declaration l = declarations { d::l }
 
 declaration:
-	  classdecl	{ }
-	| interfacedecl	{ }
+	  d = classdecl	{ d }
+	| d = interfacedecl	{ d }
 
 classdecl:
 	CLASS n = ID c = contracts_opt i = inherits_opt j = implements_opt
