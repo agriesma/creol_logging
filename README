@@ -1,0 +1,11 @@
+Credo-Comp
+
+A compiler and type checker for Creol
+
+==============================================================================
+This small project serves as a prototyping environment for the compiler
+and the type checker for Creol.  The idea is to see whether we can
+implement something here and then port it to the Java environment for
+"production use"
+
+Personally, I think that OCaml is a much nicer language.
