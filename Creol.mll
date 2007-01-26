@@ -2,7 +2,7 @@
 
 *)
 {
-open Creolparser
+open CreolParser
 }
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+) 
 rule token = parse

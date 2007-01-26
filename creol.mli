@@ -10,7 +10,7 @@ type expression =
     | Binary of binaryop * expression * expression
 and unaryop =
     Not
-    | Minus
+    | UMinus
 and binaryop =
     Plus
     | Minus
@@ -61,3 +61,4 @@ type declaration =
     Class of classdecl
     | Interface of interfacedecl
 
+val pretty_print: out_channel -> declaration list -> unit

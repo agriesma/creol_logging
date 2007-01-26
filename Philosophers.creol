@@ -1,0 +1,63 @@
+class Philosopher(neighbor: Phil) implements Phil 
+begin 
+	var hungry: Bool
+	var chopstick: Bool
+ 
+	op init ==
+		chopstick := true;
+		hungry := false; 
+		if neighbor=null then
+			neighbor:=this 
+		else
+			neighbor.seat(;neighbor)
+		fi
+ 
+	op run ==
+		!think();
+		!eat();
+		!digest() 
+
+	op think ==
+		await not hungry;
+		-- <thinking>;
+		await wait;
+		!think()
+
+	op eat ==
+		var l :Label;
+		await hungry;
+		l!neighbor.borrowStick();
+		await (chopstick and l?);
+		-- <eating>;
+		hungry := false; 
+		!neighbor.returnStick();
+		await wait;
+		!eat()
+
+	op digest ==
+		await not hungry;
+		hungry := true;
+		await wait;
+		!digest()
+
+with Phil 
+ 
+	op borrowStick ==
+		await chopstick;
+		chopstick := false 
+ 
+	op returnStick ==
+		chopstick := true 
+ 
+	op seat(out n:Phil) ==
+		n := neighbor;
+		neighbor := caller
+
+end 
+
+var phil : Phil := null;
+phil := new Philosopher(null);
+phil := new Philosopher(phil);
+phil := new Philosopher(phil);
+phil := new Philosopher(phil);
+phil := new Philosopher(phil)

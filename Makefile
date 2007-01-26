@@ -1,7 +1,7 @@
-src = creol.mli creol.ml creol.mll creol.mly
-parser = creollex.ml creolparser.ml creolparser.mli
+src	= creol.mli creol.ml Creol.mll Creol.mly Driver.ml
+parser	= CreolLex.ml CreolParser.ml CreolParser.mli
 
-creolcomp: creollex.cmo creolparser.cmo creol.cmo
+creolcomp: CreolLex.cmo CreolParser.cmo creol.cmo Driver.cmo
 	ocamlc $^ -o $@
 
 %.cmi: %.mli
@@ -10,14 +10,16 @@ creolcomp: creollex.cmo creolparser.cmo creol.cmo
 %.cmo: %.ml
 	ocamlc -c $< -o $@
 
-creollex.ml: creol.mll
+CreolLex.ml: Creol.mll
 	ocamllex -o $@ $<
 
-creolparser.ml creolparser.mli: creol.mly creol.cmi
-	menhir --dump --explain --base creolparser --infer creol.mly
+CreolParser.ml CreolParser.mli: Creol.mly creol.cmi
+	menhir --dump --explain --base CreolParser --infer $<
 
 clean:
-	rm -f creolcomp creollex.ml creolparser.ml creolparser.mli .depend
+	rm -f creolcomp
+	rm -f CreolLex.ml CreolParser.ml CreolParser.mli
+	rm -f *.cmo *.cmi
 
 .PHONY: depend
 depend: .depend

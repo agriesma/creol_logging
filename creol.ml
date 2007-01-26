@@ -9,7 +9,7 @@ type expression =
     | Binary of binaryop * expression * expression
 and unaryop =
     Not
-    | Minus
+    | UMinus
 and binaryop =
     Plus
     | Minus
@@ -69,7 +69,7 @@ let rec pretty_print_expression out_channel =
     | Bool b -> output_string out_channel (string_of_bool b)
     | Id i -> output_string out_channel i
     | Unary (o, e) ->
-	output_string out_channel (match o with Not ->  "(not " | Minus -> "(- ");
+	output_string out_channel (match o with Not ->  "(not " | UMinus -> "(- ");
 	pretty_print_expression out_channel e;
 	output_string out_channel ")"
     | Binary(o, l, r) ->
@@ -109,31 +109,37 @@ let rec pretty_print_statement out_channel =
 	pretty_print_guard out_channel g;
     | Sequence (l, r) -> 
 	output_string out_channel "(";
-	pretty_print_expression out_channel l;
+	pretty_print_statement out_channel l;
 	output_string out_channel "; ";
 	pretty_print_statement out_channel r;
 	output_string out_channel ")";
     | Merge (l, r) -> 
 	output_string out_channel "(";
-	pretty_print_expression out_channel l;
+	pretty_print_statement out_channel l;
 	output_string out_channel " ||| ";
 	pretty_print_statement out_channel r;
 	output_string out_channel ")";
     | Choice (l, r) -> 
 	output_string out_channel "(";
-	pretty_print_expression out_channel l;
+	pretty_print_statement out_channel l;
 	output_string out_channel " [] ";
 	pretty_print_statement out_channel r;
 	output_string out_channel ")"
 
-let pretty_print_class out_channel tree =
+let pretty_print_class out_channel c =
   output_string out_channel "class ";
-  output_string out_channel tree.cls_name;
+  output_string out_channel c.cls_name;
+  output_string out_channel "begin ";  
+  output_string out_channel " end"
+
+let pretty_print_iface out_channel i =
+  output_string out_channel "interface ";
+  output_string out_channel i.iface_name;
   output_string out_channel "begin ";  
   output_string out_channel " end"
 
 let rec pretty_print out_channel =
   function
       [] -> flush out_channel
-    | Class c::l -> pretty_print_class out_channel cls; pretty_print l
-    | Interface i::l -> pretty_print_iface out_channel i; pretty_print l
+    | Class c::l -> pretty_print_class out_channel c; pretty_print out_channel l
+    | Interface i::l -> pretty_print_iface out_channel i; pretty_print out_channel l
