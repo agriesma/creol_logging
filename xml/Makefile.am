@@ -51,18 +51,20 @@ AM_CPPFLAGS		= $(XML_CPPFLAGS) $(XSLT_CPPFLAGS) -I`ocamlc -where` \
 AM_CFLAGS		= -Wall -Wno-unused -Werror
 
 XML_DESTDIR		= `pwd`
-OCAMLC_FLAGS		= -I . -I ${srcdir} -linkpkg -package . -dllpath ${XML_DESTDIR} -g -w y
-OCAMLOPT_FLAGS		= -I . -I ${srcdir} -linkpkg -package . -w a
+OCAMLC_FLAGS		= -I . -I ${srcdir} -g -w y
+OCAMLOPT_FLAGS		= -I . -I ${srcdir} -w a
+
+all-local: xml.cma xml.cmxa
 
 .PRECIOUS: *.cmo *.cmi *.cmx *.cma *.cmxa xml-stamp
 .ml.cmo:
-	$(OCAMLC) $(OCAMLC_FLAGS) -c $< -o $@
+	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
 
 .mli.cmi:
-	$(OCAMLC) $(OCAMLC_FLAGS) -c $< -o $@
+	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
 
 .ml.cmx:
-	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -c $< -o $@
+	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ -c $<
 
 dllxml.so: xml-stamp
 
@@ -85,25 +87,6 @@ META: $(srcdir)/META.in $(top_srcdir)/configure.ac
 
 depend: $(oclvp_SOURCES) $(libxml_stubs_a_SOURCES) ${srcdir}/Makefile.am
 	$(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
-
-# Build the documentation.
-.PHONY: doc ocamldoc ocamlweb
-doc: ocamldoc ocamlweb
-
-ocamldoc: oclvp.dump
-
-ocamlweb: oclvp.pdf
-
-oclvp.dump: $(oclvp_SOURCES) $(filter %.ml, $(libxml_stubs_a_SOURCES)) \
-	$(filter %.mli, $(libxml_stubs_a_SOURCES))
-	test -d html || mkdir html
-	$(OCAMLDOC) -html -d html -dump $@ -all-params $^
-
-.tex.pdf:
-	pdflatex $< && pdflatex $<
-
-oclvp.tex: $(oclvp_SOURCES)
-	$(OCAMLWEB) -o $@ $^
 
 distclean-local:
 	test ! -d html || rm -rf html

@@ -44,7 +44,10 @@ AC_PATH_PROG([CHCON], chcon)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLC], [ocamlc], [ocamlc], [false])
+AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
 AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [false])
+AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
+AC_CHECK_PROG([MENHIR], [menhir], [menhir], [false])
 
 dnl figure out the site-lib directory. The following is bogus...
 OCAML_LIBDIR='${libdir}/ocaml'

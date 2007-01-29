@@ -1,0 +1,8 @@
+dnl
+dnl
+AT_INIT([creolcomp])
+AT_TESTED(creolcomp)
+
+AT_SETUP([test])
+AT_CHECK([${abs_top_builddir}/creolcomp ${abs_srcdir}/Philosophers.creol], ignore, ignore, ignore)
+AT_CLEANUP

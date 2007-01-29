@@ -213,7 +213,11 @@ xml_reader_get_parser_line_number(value reader)
 	CAMLparam1(reader);
 	int ret;
 
+#if LIBXML_VERSION > 20616
 	ret = xmlTextReaderGetParserLineNumber(XmlReader_val(reader));
+#else
+	ret = 0;
+#endif
 	CAMLreturn(Int_val(ret));
 }
 

@@ -35,35 +35,39 @@ OCAMLDOC		= $(OCAMLFIND) ocamldoc
 
 MOSTLYCLEANFILES	= *~ *.aux *.log
 CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
-DISTCLEANFILES		= 
-MAINTAINERCLEANFILES	= depend Makefile.in Version.ml
+DISTCLEANFILES		= Version.ml
+MAINTAINERCLEANFILES	= .depend Makefile.in configure \
+			  depcomp missing aclocal.m4 install-sh \
+			  CreolLex.ml CreolParser.ml CreolParser.mli
 
-EXTRA_DIST		= depend
+EXTRA_DIST		= .depend Creol.mll Creol.mly
 
-BUILT_SOURCES		= Version.ml
+BUILT_SOURCES		= Version.ml CreolLex.ml CreolParser.ml CreolParser.mli
 
 bin_PROGRAMS		= creolcomp creolcomp.opt
 
-creolcomp_SOURCES	= CreolLex.ml Creol.ml Creol.mli Creol.mll Creol.mly  \
-			  CreolParser.ml CreolParser.mli Driver.ml
+creolcomp_SOURCES	= Creol.mli Creol.ml \
+			  CreolLex.ml \
+			  CreolParser.mli CreolParser.ml \
+			  Driver.ml
 
 creolcomp_opt_SOURCES	= $(creolcomp_SOURCES)
 
 creolcomp: $(patsubst %.ml, %.cmo, $(patsubst %.mli, %.cmi, $(creolcomp_SOURCES)))
-	$(OCAMLC) $(OCAMLC_FLAGS) $(filter %.cmo, $^) -o $@
+	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ $(filter %.cmo, $^)
 
 creolcomp.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolcomp_SOURCES)))
-	$(OCAMLOPT) $(OCAMLOPT_FLAGS) $(filter %.cmx, $^) -o $@
+	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ $(filter %.cmx, $^)
 
-.PRECIOUS: *.cmo *.cmi *.cmx *.cma *.cmxa xml-stamp
+.PRECIOUS: *.cmo *.cmi *.cmx
 .ml.cmo:
-	$(OCAMLC) $(OCAMLC_FLAGS) -c $< -o $@
+	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
 
 .mli.cmi:
-	$(OCAMLC) $(OCAMLC_FLAGS) -c $< -o $@
+	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
 
 .ml.cmx:
-	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -c $< -o $@
+	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ -c $<
 
 Version.ml: ${top_srcdir}/configure.ac ${srcdir}/Makefile.am
 	rm -f Version.ml
@@ -73,23 +77,16 @@ Version.ml: ${top_srcdir}/configure.ac ${srcdir}/Makefile.am
 	echo "let oclvp_datadir = \"${pkgdatadir}\";;" >> Version.ml
 	echo Wrote $@.
 
-depend: $(oclvp_SOURCES) $(libxml_stubs_a_SOURCES) ${srcdir}/Makefile.am
-	$(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
+# We must make sure that Creol.cmi is build before CreolParser.ml, but we
+# do not want that CreolParser.ml depends on Creol.cmi, because then the
+# end user needs to have menhir installed in order to rebuild the parser
+# sources.  We build Creol.cmi by hand here.
+CreolParser.ml CreolParser.mli: Creol.mly
+	$(OCAMLC) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
+	$(MENHIR) --base CreolParser --infer $<
 
-# Build the documentation.
-.PHONY: doc ocamldoc ocamlweb
-doc: ocamldoc ocamlweb
-
-ocamldoc: creolcomp.dump
-
-ocamlweb: creolcomp.pdf
-
-creolcomp.dump: $(creolcomp_SOURCES)
-	test -d html || mkdir html
-	$(OCAMLDOC) -html -d html -dump $@ -all-params $^
-
-.tex.pdf:
-	pdflatex $< && pdflatex $<
+CreolLex.ml: Creol.mll
+	$(OCAMLLEX) -o $@ $<
 
 creolcomp.tex: $(creolcomp_SOURCES)
 	$(OCAMLWEB) -o $@ $^
@@ -97,4 +94,8 @@ creolcomp.tex: $(creolcomp_SOURCES)
 distclean-local:
 	test ! -d html || rm -rf html
 
--include ${srcdir}/depend
+.depend: ${srcdir}/Makefile.am $(creolcomp_SOURCES)
+	$(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
+
+-include ${srcdir}/.depend
+CreolLex.cmo: CreolParser.cmi
