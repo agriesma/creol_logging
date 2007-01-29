@@ -1,9 +1,9 @@
 (*
  * Driver.ml -- The main routine.
  *
- * This file is part of oclvp
+ * This file is part of creolcomp
  *
- * Written and Copyright (c) 2005 by Marcel Kyas
+ * Written and Copyright (c) 2007 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

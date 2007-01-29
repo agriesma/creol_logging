@@ -6,15 +6,14 @@
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END
 %token INTERFACE WITH OP VAR IN OUT
-%token EQEQ COMMA SEMI COLON ASSIGN LPAREN RPAREN QUESTION
-%token CHOICE MERGE IF THEN ELSE FI
-%token SKIP AWAIT
-%token AND
-%token <string>  ID
+%token EQEQ COMMA SEMI COLON ASSIGN RBRACK LBRACK LPAREN RPAREN LBRACE RBRACE
+%token QUESTION BANG BOX DIAMOND MERGE BAR
+%token IF THEN ELSE FI SKIP AWAIT
+%token AND OR NOT PLUS TIMES DIV EQ NE
+%token <string> CID ID
 %token <int>  INT
 %token <bool> BOOL
 %token <float> FLOAT
-%token PLUS TIMES
 %left PLUS
 %left TIMES
 %start <'a list> main
@@ -36,8 +35,11 @@ declaration:
     | d = interfacedecl	{ Interface d }
 
 classdecl:
-      CLASS n = ID p = cls_parameters_opt c = contracts_opt i = inherits_opt
-    j = implements_opt BEGIN a = attributes m = methods_opt END {
+      CLASS n = CID p = cls_parameters_opt
+	c = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, CID)))
+	i = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
+	j = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, CID)))
+	BEGIN a = attributes m = methods_opt END {
       { cls_name = n; cls_parameters = p; cls_inherits = i;
 	cls_contracts = c; cls_implements = j; cls_attributes = a;
 	cls_methods = m } }
@@ -50,17 +52,9 @@ contracts_opt:
       (* empty *) { [] }
     | CONTRACTS l = creol_list(ID, COMMA) { l }
 
-inherits_opt:
-    (* empty *)  { [] }
-    | INHERITS l = creol_list(inherits, COMMA) { l }
-
 inherits:
-      i = ID { (i, []) }
-    | i = ID LPAREN e = creol_list(expression, COMMA) RPAREN { (i, e) }
-
-implements_opt:
-      (* empty *) { [] }
-    | IMPLEMENTS l = creol_list(ID, COMMA) { l }
+      i = CID { (i, []) }
+    | i = CID LPAREN e = creol_list(expression, COMMA) RPAREN { (i, e) }
 
 attributes:
       VAR l = creol_list(vardecl, COMMA) { l }
@@ -71,7 +65,7 @@ vardecl:
     { { var_name = v.var_name; var_type = v.var_type; var_init = Some i } }
 
 vardecl_no_init:
-      i = ID COLON t = ID { { var_name = i; var_type = t; var_init = None } }
+      i = ID COLON t = CID { { var_name = i; var_type = t; var_init = None } }
 
 method_decl:
       WITH m = ID OP i = ID p = parameters_opt {
@@ -111,7 +105,7 @@ methods:
     | m = method_def l = methods { m::l }
 
 interfacedecl:
-      INTERFACE n = ID i = iface_inherits_opt BEGIN m = method_decls_opt END {
+      INTERFACE n = CID i = iface_inherits_opt BEGIN m = method_decls_opt END {
 	{ iface_name = n; iface_inherits = i; iface_methods = m } }
 
 iface_inherits_opt:
@@ -132,7 +126,7 @@ statement:
 
 choice_statement:
       s = merge_statement { s }
-    | l = merge_statement CHOICE r = choice_statement { Choice(l, r) }
+    | l = merge_statement BOX r = choice_statement { Choice(l, r) }
 
 merge_statement:
       s = compound_statement { s }

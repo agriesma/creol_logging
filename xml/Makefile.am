@@ -1,0 +1,127 @@
+## Makefile.am - Use automake to create Makefile.in
+#
+# This file is part of creolcomp
+#
+# Written and Copyright (c) 2007 by Marcel Kyas
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+# Findlib related
+OCAMLPATH		= .
+export OCAMLPATH
+
+# OCaml compilers.
+OCAMLC			= $(OCAMLFIND) ocamlc
+OCAMLCP			= $(OCAMLFIND) ocamlcp
+OCAMLOPT		= $(OCAMLFIND) ocamlopt
+OCAMLDEP		= $(OCAMLFIND) ocamldep
+OCAMLDOC		= $(OCAMLFIND) ocamldoc
+
+MOSTLYCLEANFILES	= *~ *.aux *.log
+CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex \
+			  dllxml.so xml.a libxml.a xml-stamp
+DISTCLEANFILES		= META
+MAINTAINERCLEANFILES	= depend Makefile.in Version.ml
+
+EXTRA_DIST		= depend META.in
+
+BUILT_SOURCES		= META
+
+noinst_LIBRARIES	= libxml_stubs.a
+
+libxml_stubs_a_SOURCES	= xml_helpers.c xml_helpers.h xmld_stubs.c \
+			  xmlr_stubs.c xmlw_stubs.c xslt_stubs.c \
+			  Xml.ml XmlTextReader.ml XmlTextWriter.ml \
+			  Xslt.ml
+AM_CPPFLAGS		= $(XML_CPPFLAGS) $(XSLT_CPPFLAGS) -I`ocamlc -where` \
+			  -DCAML_NAME_SPACE
+AM_CFLAGS		= -Wall -Wno-unused -Werror
+
+XML_DESTDIR		= `pwd`
+OCAMLC_FLAGS		= -I . -I ${srcdir} -linkpkg -package . -dllpath ${XML_DESTDIR} -g -w y
+OCAMLOPT_FLAGS		= -I . -I ${srcdir} -linkpkg -package . -w a
+
+.PRECIOUS: *.cmo *.cmi *.cmx *.cma *.cmxa xml-stamp
+.ml.cmo:
+	$(OCAMLC) $(OCAMLC_FLAGS) -c $< -o $@
+
+.mli.cmi:
+	$(OCAMLC) $(OCAMLC_FLAGS) -c $< -o $@
+
+.ml.cmx:
+	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -c $< -o $@
+
+dllxml.so: xml-stamp
+
+libxml.a: xml-stamp
+
+xml.a: xml-stamp
+
+xml.cma: xml-stamp
+
+xml.cmxa: xml-stamp
+
+xml-stamp: $(filter %.cmo, $(patsubst %.ml, %.cmo, $(libxml_stubs_a_SOURCES)))\
+	$(filter %.cmx, $(patsubst %.ml, %.cmx, $(libxml_stubs_a_SOURCES))) \
+	$(filter %.o, $(patsubst %.c, %.o, $(libxml_stubs_a_SOURCES)))
+	$(OCAMLMKLIB) -o xml $^ $(XML_LIBS) $(XSLT_LIBS)
+	echo $@ > $@
+
+META: $(srcdir)/META.in $(top_srcdir)/configure.ac
+	rm -f META && sed -e s/@VERSION\@/$(VERSION)/g < $< > $@
+
+depend: $(oclvp_SOURCES) $(libxml_stubs_a_SOURCES) ${srcdir}/Makefile.am
+	$(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
+
+# Build the documentation.
+.PHONY: doc ocamldoc ocamlweb
+doc: ocamldoc ocamlweb
+
+ocamldoc: oclvp.dump
+
+ocamlweb: oclvp.pdf
+
+oclvp.dump: $(oclvp_SOURCES) $(filter %.ml, $(libxml_stubs_a_SOURCES)) \
+	$(filter %.mli, $(libxml_stubs_a_SOURCES))
+	test -d html || mkdir html
+	$(OCAMLDOC) -html -d html -dump $@ -all-params $^
+
+.tex.pdf:
+	pdflatex $< && pdflatex $<
+
+oclvp.tex: $(oclvp_SOURCES)
+	$(OCAMLWEB) -o $@ $^
+
+distclean-local:
+	test ! -d html || rm -rf html
+
+install-exec-local: META xml.cma xml.cmxa libxml.a dllxml.so xml.a \
+	$(filter %.ml, $(libxml_stubs_a_SOURCES)) \
+	$(filter %.mli, $(libxml_stubs_a_SOURCES))
+	mkdir -p $(DESTDIR)$(OCAML_SITELIB)
+	$(OCAMLFIND) install -destdir $(DESTDIR)$(OCAML_SITELIB) -ldconf $(DESTDIR)$(OCAML_LIBDIR)/ld.conf xml $^
+
+uninstall-local:
+	$(OCAMLFIND) remove -destdir $(DESTDIR)$(OCAML_SITELIB) \
+			    -ldconf $(DESTDIR)$(OCAML_LIBDIR)/ld.conf \
+		xml
+
+oclvp: xml.cma
+oclvp.opt: xml.cmxa
+
+XmlTextReader.cmi XmlTextWriter.cmi: META
+
+-include ${srcdir}/depend

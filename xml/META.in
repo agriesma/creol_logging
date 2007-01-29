@@ -1,0 +1,5 @@
+description = "libxml2 XmlReader and XmlWriter bindings."
+requires = ""
+version = "@VERSION@"
+archive(byte) = "xml.cma"
+archive(native) = "xml.cmxa"

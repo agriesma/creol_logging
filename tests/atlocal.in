@@ -1,0 +1,10 @@
+# Path to our dtd's for testing.
+#
+
+XMLLINT=@XMLLINT@
+XMLCATALOG=@XMLCATALOG@
+XSLTPROC=@XSLTPROC@
+export XMLLINT XMLCATALOG XSLTPROC
+
+OCLVP_DATA=@abs_top_srcdir@/share
+export OCLVP_DATA
