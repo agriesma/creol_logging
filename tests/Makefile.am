@@ -27,7 +27,7 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
-TESTFILES		= Philosophers.creol
+TESTFILES		= Philosophers.creol Sieve.creol
 
 TESTPARTS		= 
 

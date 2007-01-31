@@ -4,5 +4,6 @@ AT_INIT([creolcomp])
 AT_TESTED(creolcomp)
 
 AT_SETUP([test])
+AT_CHECK([creolcomp ${abs_srcdir}/Sieve.creol], ignore, ignore, ignore)
 AT_CHECK([creolcomp ${abs_srcdir}/Philosophers.creol], ignore, ignore, ignore)
 AT_CLEANUP
