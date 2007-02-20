@@ -18,12 +18,24 @@
 ;; MA 02111-1307 USA
 
 
-(defvar creol-mode-hook nil)
-(defvar creol-mode-map nil
+(defvar creol-mode-map
+  (let ((map (make-sparse-keymap)))
+    nil
+    map)
   "Keymap for Creol major mode")
 
+(defvar creol-mode-hook nil)
+
 (defvar creol-font-lock-keywords
-  '(("op \\(\\sw+\\)" (1 font-lock-function-name-face)))
+  '(("\\<\\(and\\|begin\\|class\\|contracts\\|new\\|else\\|end\\|fi\\|if\\|implements\\|inherits\\|interface\\|in\\|not\\|op\\|or\\|out\\|skip\\|then\\|var\\|with\\)\\>" . font-lock-keyword-face)
+    ("\\<\\(true\\|false\\|null\\)\\>" . font-lock-constant-face)
+    ("\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" . font-lock-builtin-face)
+    ("op \\(\\sw+\\)" (1 font-lock-function-name-face))
+    ("\\.\\(\\sw+\\)" (1 font-lock-function-name-face))
+    ("\\(\\b[[:lower:]][[:alnum:]]+\\)" . font-lock-variable-name-face)
+    ("\\(\\b[[:upper:]][[:alnum:]]+\\)" . font-lock-type-face)
+    ("\\<\\(# \w+\\)\\>" 1 font-lock-warning-face t)
+    )
   "Creol keywords")
 
 (define-derived-mode creol-mode fundamental-mode "Creol"
