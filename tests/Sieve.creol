@@ -1,4 +1,3 @@
-
 interface Sieve
 begin
 with Any

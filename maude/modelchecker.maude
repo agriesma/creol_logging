@@ -1,0 +1,1046 @@
+***
+***  A formal semantics of Creol suited for model checking.
+***
+***  One claim is, that this semantics should be observationally
+***  equivalent to the original 2004 language.  We have reduced a
+***  log of non-determinism.
+***
+
+***
+***  Auxiluary theory for very simple bags.
+***
+
+
+
+
+
+fth MEMBER is
+  sort Elt .
+  op nothing : -> Elt [ctor] .
+endfth
+
+
+
+
+
+fmod BAG{ X :: MEMBER } is
+
+  protecting NAT .
+  sorts NeBag{X} Bag{X} .
+  subsorts X$Elt < NeBag{X} < Bag{X} .
+
+  op empty : -> Bag{X} [ctor] .
+  op _:_ : Bag{X} Bag{X} -> Bag{X}
+    [ctor assoc comm id: empty prec 120 format (d r os d)] .
+  op _:_ : NeBag{X} Bag{X} -> NeBag{X} [ctor ditto] .
+
+  vars E E' : X$Elt .
+  var N : NeBag{X} .
+  vars A B B' : Bag{X} .
+  var C : Nat .
+
+  op insert__ : X$Elt Bag{X} -> Bag{X} .
+  eq insert E B = E : B .
+
+  op delete : X$Elt Bag{X} -> Bag{X} .
+  eq delete(E, (E : B)) = B .
+  eq delete(E, B) = B [owise] .
+
+  op _in_ : X$Elt Bag{X} -> Bool .
+  eq E in (E : B) = true .
+  eq E in B = false [owise] .
+
+  op _count_ : X$Elt Bag{X} -> Nat .
+  eq E count B = $count E B 0 .
+
+  op $count___ : X$Elt Bag{X} Nat -> Nat .
+  eq $count E empty C = C .
+  eq $count E (E : B) C = $count E B (C + 1) .
+  eq $count E (E' : B) C = $count E B C [owise] .
+
+  op |_| : Bag{X} -> Nat .
+  op |_| : NeBag{X} -> NzNat .
+  eq | B | = $card B 0 .
+
+  op $card__ : Bag{X} Nat -> Nat .
+  eq $card empty C = C .
+  eq $card (N : B) C  = $card B  (C + 1) [owise] .
+
+  op _union_ : Bag{X} Bag{X} -> Bag{X} .
+  op _union_ : NeBag{X} Bag{X} -> NeBag{X} .
+  op _union_ : Bag{X} NeBag{X} -> NeBag{X} .
+  eq B union B'  = B : B' .
+
+endfm
+
+
+
+
+
+***(
+
+  Definition of the data types needed in the Creol interpreter.
+
+  I have started to update it to the re-implementation of 2007,
+  but we should not rush a complete merge.
+
+  I have also split the data module into many sub-modules, which
+  allow us to replace particular data types with abstract versions.
+
+)***
+
+***(
+
+  Definition of the boolean data type and its operations.
+
+  Booleans are so simple that we can only abstract them by one element,
+  which won't make much sense to me right now.
+
+)***
+
+*** Sorts and constructors required by the system.
+fmod CREOL-DATA is
+
+  *** pr META-LEVEL .
+  pr QID .
+
+  sorts Oid Aid Data Expr .
+  subsorts Oid < Data < Expr .
+  subsorts Qid < Aid < Expr .
+
+  op null : -> Data [ctor format (u o)] .
+  op ob(_) : Qid -> Oid [ctor format (u o r o d)] .
+
+endfm
+
+view Aid from TRIV to CREOL-DATA is
+  sort Elt to Aid .
+endv
+
+view Data from TRIV to CREOL-DATA is
+  sort Elt to Data .
+endv
+
+view Expr from TRIV to CREOL-DATA is
+  sort Elt to Expr .
+endv
+
+fmod CREOL-BOOL is
+
+  extending CREOL-DATA .
+  protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst) .
+  protecting LIST{Expr} * (sort List{Expr} to List) .
+
+  *** God gives equality...
+  op _==_ : Expr Expr -> Expr [format (d d d d)] .
+  op _=/=_ : Expr Expr -> Expr [format (d d d d)] .
+
+  *** ...and as an extension boolean...
+  op bool(_) : Bool -> Data [ctor format (u o d d d)] .
+  op not_ : Expr -> Expr .
+  op _or_ : Expr Expr -> Expr [format (d u o d)].
+  op _and_ : Expr Expr -> Expr [format (d u o d)].
+
+  *** ...with their standard semantics.
+  vars E E' : Expr .
+  vars B B' : Bool .
+
+  eq bool(B) == bool(B') = bool(B == B') .
+  eq not bool(B) = bool(not B) .
+  eq bool(B) and bool(B') = bool(B and B') .
+  eq bool(B) or bool(B') = bool(B or B') .
+
+  *** Conversion
+  op _asBool : Data -> Bool [format (d u o)] .
+  eq bool(B) asBool = B .
+
+  *** Declaring our evaluation function
+  op eval : Expr Subst -> Data .
+
+  *** Evaluating elementary data and variable names.
+  var S : Subst .
+  var A : Aid .
+  var D : Data .
+  var X : Expr .
+  var L : List .
+  eq eval(A, S) = S[A] .
+  eq eval(D, S) = D [owise] .
+
+  *** evaluate boolean expressions
+  eq eval(not E, S) = bool(not (eval(E, S) asBool)) .
+  eq eval(E and E', S) = bool(eval(E, S)asBool and eval(E', S)asBool) .
+  eq eval(E or E', S) = bool(eval(E, S)asBool or  eval(E', S)asBool) .
+  eq eval( E ==  E', S) = bool((eval(E, S) ==  eval(E', S))) .
+  eq eval( E =/= E', S) = bool((eval(E, S) =/= eval(E', S))) .
+
+  *** Evaluating lists of expression.
+  op eval : List Subst -> List .
+  ceq eval(X L, S)  = eval(X, S) eval(L, S) if L =/= nil .
+  eq eval(nil, S)  = nil .
+
+endfm
+
+***(
+
+  Creol integers
+
+)***
+
+fmod CREOL-INT is
+
+  extending CREOL-BOOL .
+  protecting INT .
+
+  op int(_) : Int       -> Data [ctor format (u o d d d)] . 
+  op neg_ : Expr -> Expr [format (u o d)] .
+  op _plus_ : Expr Expr -> Expr [format (d u o d)] .
+  op _minus_ : Expr Expr -> Expr [format (d u o d)] .
+  op _times_ : Expr Expr -> Expr [format (d u o d)] .
+  op _div_ : Expr Expr -> Expr [format (d u o d)] .
+  op _<_ : Expr Expr -> Expr [format (d u o d)] .
+  op _<=_ : Expr Expr -> Expr [format (d u o d)] .
+  op _>_ : Expr Expr -> Expr [format (d u o d)] .
+  op _>=_ : Expr Expr -> Expr [format (d u o d)] .
+
+  *** Conversion.
+  var I : Int .
+  op _asInt : Expr -> Int [format (d u o)] .
+  eq int(I) asInt = I .
+
+  *** Evaluation
+  vars E E' : Expr .
+  var S : Subst .
+  eq eval((neg E), S)  = int(- (eval(E, S) asInt)) .
+  eq eval((E plus E'), S) = int(eval(E, S)asInt  +  eval(E', S)asInt) .
+  eq eval((E minus E'), S) = int(eval(E, S)asInt  -  eval(E', S)asInt) .
+  eq eval((E times E'), S) = int(eval(E, S)asInt  *  eval(E', S)asInt) .
+  eq eval((E div E'), S) = int(eval(E, S)asInt quo eval(E', S)asInt) .
+
+  eq eval((E >  E'), S) = bool(eval(E, S)asInt >  eval(E', S)asInt) .
+  eq eval((E >= E'), S) = bool(eval(E, S)asInt >= eval(E', S)asInt) .
+  eq eval((E <  E'), S) = bool(eval(E, S)asInt <  eval(E', S)asInt) .
+  eq eval((E <= E'), S) = bool(eval(E, S)asInt <= eval(E', S)asInt) .
+
+endfm
+
+fmod CREOL-PAIR is
+
+  extending CREOL-BOOL .
+
+  op pair(_,_) : Expr Expr -> Data [ctor format (u o d d d d d)] .
+  op _.fst : Expr -> Expr [ctor format (d u o) ] .
+  op _.scd : Expr -> Expr [ctor format (d u o) ] .
+
+  vars E E' : Expr .
+  var S : Subst .
+
+  eq eval(pair(E,E'), S)= pair(eval(E, S), eval(E', S)) .
+  eq eval(pair(E,E') .fst, S) = eval(E, S) .
+  eq eval(pair(E,E') .scd, S) = eval(E', S) .
+
+endfm
+
+fmod CREOL-LIST is
+  extending CREOL-INT .
+
+  op list(_) : List -> Data [ctor format(u o d d d)] .
+  op _.head : Expr -> Expr [format(d u o)] .
+  op _.tail : Expr -> Expr [format(d u o)] .
+  op _.last : Expr -> Expr [format(d u o)] .
+  op _.front : Expr -> Expr [format(d u o)] .
+  op _.length : Expr -> Expr [format(d u o)] .
+  op _.isEmpty : Expr -> Expr [format(d u o)] .
+
+  *** Conversion
+  op _asList : Expr -> List .
+  var L : List .
+  eq list(L) asList = L .
+
+  *** Semantics of lists
+  var S : Subst .
+  var X : Expr .
+
+  eq eval(list(L), S)  = list(eval(L, S)) .
+  eq eval(X .head, S) = head(eval(X, S) asList) .
+  eq eval(X .tail, S) = tail(eval(X, S) asList) .
+  eq eval(X .last, S) = last(eval(X, S) asList) .
+  eq eval(X .front, S) = front(eval(X, S) asList) .
+
+  eq eval(X .length, S) = int(size(eval(X, S) asList)) .
+  eq eval(X .isEmpty, S) = bool((eval(X, S) asList) == nil) .
+
+endfm
+
+
+fmod DATA is 
+  extending CREOL-INT .
+endfm
+
+
+
+
+
+fmod COMMUNICATION is
+
+  sorts Msg Label .
+
+  pr DATA .
+  subsort Label < Data .
+
+  ***
+  *** Invocation message:
+  *** invoc(caller, callee, method name, ins)
+  ***
+  op invoc(_,_,_,_) : Oid Oid Qid List -> Msg
+	[ctor format (g o d d s d s d s d no)] .
+
+  ***
+  *** Completion message:
+  *** reply(caller, callee, method name, ins, outs)
+  ***
+  op reply(_,_,_,_,_) : Oid Oid Qid List List -> Msg
+	 [ctor format (g o d d s d s d s d s d no)] .
+
+  op new_(_) : Qid List -> Msg [ctor] .
+
+  op nomsg : -> Msg [ctor format (g o)] .
+
+  ***
+  *** Label:
+  *** label(caller, callee, method, params)
+  ***
+  op label(_,_,_,_) : Oid Oid Qid List -> Label
+	[ctor format (u o d d s d s d s d o)] .
+
+  op nolabel : -> Label [ctor format (u o)] .
+
+endfm
+
+
+
+
+
+view Msg from MEMBER to COMMUNICATION is
+  sort Elt to Msg .
+  op nothing to nomsg .
+endv
+
+
+
+
+
+view Label from MEMBER to COMMUNICATION is
+  sort Elt to Label .
+  op nothing to nolabel .
+endv
+
+
+
+
+
+*** CREOL guards ***
+fmod GUARDS is
+
+  protecting DATA .
+
+  sorts Guard Wait Return ExtGuard . 
+  subsorts  Return Wait < Guard  < ExtGuard . 
+
+  op wait : -> Wait [ctor] .             *** suspension
+  op _? : Qid -> Return [ctor] .         *** reply guard
+  op nothing : -> Guard [ctor] . 
+
+endfm
+
+
+
+
+
+*** CREOL program code ***
+fmod PROG is
+
+  protecting GUARDS .
+  protecting COMMUNICATION .
+
+  sorts Statement StatementList NeStatementList .
+
+  subsort Statement < NeStatementList < StatementList .   *** possibly with Reply < ...
+
+  var C : Expr .
+  vars S S' : StatementList .
+
+  op empty :                       ->   StatementList [ctor] .
+  op _;_   : StatementList     StatementList ->   StatementList [ctor id: empty assoc] .
+  op _;_   : NeStatementList   StatementList -> NeStatementList [ctor ditto] .
+  op _;_   : StatementList   NeStatementList -> NeStatementList [ctor ditto] .
+  op _;_   : NeStatementList NeStatementList -> NeStatementList [ctor ditto] .
+
+  op _[]_ : StatementList StatementList -> NeStatementList [ctor assoc comm prec 55] .
+  op _|||_ : StatementList StatementList -> NeStatementList [assoc comm prec 53] .
+  eq (S ||| S') = ((S ; S') [] (S' ; S)) .
+
+  op await_ : Expr  -> Statement [ctor format (! os d)] .
+  op await_ : Guard  -> Statement [ctor format (! os d)] .
+  op await_ : ExtGuard  -> Statement [ctor format (! os d)] .
+
+  *** CREOL program syntax
+  op _:=_ : Qid Expr -> Statement [ctor] .             *** assignment if
+
+  *** simultaneous assignment, where first argument list contains
+  *** variables, the second values.
+  op assign : List List -> Statement [ctor format (! os)] .
+
+  *** if then else statement.
+  op if_th_el_fi : Expr StatementList StatementList -> Statement [ctor] .
+
+  op if_th_fi : Expr StatementList -> Statement .
+  eq if C th S fi = if C th S el empty fi .
+
+  *** object creation
+  op _:= new_(_) : Qid Qid List -> Statement [ctor] .
+
+  *** method return
+  op return : List -> Statement [ctor format (! o)] .
+
+  *** loc. sync. call (with reply)
+  op _(_;_) : Qid List List -> Statement .
+
+  *** local synchronous call where the caller never terminates.
+  op tailcall _(_) : Qid List -> Statement [ctor format (! o d d d d)] .
+  op tailcall _(_;_) : Qid List List -> Statement
+    [ctor format (! o d d d d d d)] .
+
+  *** sync. termination
+  op continue : Label -> Statement [ctor format (! o)] .
+
+  *** rem. async. with label.
+  op _!_._(_) : Qid Qid Qid List -> Statement [ctor] .
+
+  *** async. reply statement
+  op _?(_) : Qid List -> Statement [ctor] .
+
+  *** kill a label if not needed.
+  op kill _ : Qid -> Statement [ctor format (! o d)] .
+
+endfm
+
+
+
+
+
+view Statement from TRIV to PROG is
+  sort Elt to Statement .
+endv
+
+
+
+
+
+fmod PROCESS is
+
+  pr PROG .
+
+  sort Process .
+
+  *** A process is either idle or it is its method name, followed by
+  *** its local variables, followed by its code.
+
+  op idle : -> Process [ctor format (! o)] .
+  op <_|_:_> : Qid Subst StatementList -> Process
+	[ctor format (m d o d d +ni m o--)] .
+
+
+  *** This equation is used to collect a terminated process.  Any
+  *** process with an empty statement list is idle.
+
+  var Z : Qid .
+  var L : Subst .
+
+  eq < Z | L : empty > = idle .
+
+
+  *** Tail call optimizations.  Does only cover the most common cases.
+  *** These equations only serve for documentation.  Some may be wrong,
+  *** e.g., tailcall-self-ret1, but I do not see how the local call rules
+  *** are supposed to interact with this.
+
+  vars Z' l : Qid .
+  var S : StatementList .
+  vars a r : List .
+
+  eq < Z | L : S ; (l ! 'this . Z' (a)) ; kill l ; return(nil) > =
+    < Z | L : S ; tailcall Z'(a) > [nonexec label tailcall-self] .
+  eq < Z | L : S ; (l ! 'this . Z' (a)) ; (l ? (r)) ; return(r) > =
+    < Z | L : S ; tailcall Z'(a ; r) > [nonexec label tailcall-self-ret1] .
+  eq < Z | L : S ; (l ! 'this . Z' (a)) ; await l ? ; (l ? (r)) ; return(r) > =
+    < Z | L : S ; tailcall Z'(a ; r) > [nonexec label tailcall-self-ret2] .
+  eq < Z | L : S ; (Z'(a ; r)) ; return(r) > =
+    < Z | L : S ; tailcall Z'(a ; r) > [nonexec label tailcall-local-sync] .
+
+endfm
+
+
+
+
+
+view Process from MEMBER to PROCESS is
+  sort Elt to Process .
+  op nothing to idle .
+endv
+
+
+
+
+
+fmod PROCESS-QUEUE is
+  pr BAG{Process} * (sort Bag{Process} to MStatement) .
+endfm
+
+
+
+
+
+fmod CLASS is
+
+  protecting PROCESS-QUEUE .
+
+  sorts Class Mtd MMtd Cid . 
+
+  subsort Qid < Cid .
+  subsort Mtd < MMtd .
+
+  op <_| In:_, Latt:_, Code:_> :
+    Qid List Subst StatementList -> Mtd
+    [ctor format (g! d o g o d sg o o sg o sg! o)] .
+
+  op none : -> MMtd [ctor] .
+  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: none format (d d oni d)] .
+
+  op <_: Class | Params:_, Att:_, Init:_, Mtds:_> : 
+   Cid List Subst Process MMtd -> Class [ctor
+    format (nb! d o d ++ nib o o nib o o nib o o nib++ nio b! --o--n)] .
+
+endfm
+
+view Class from TRIV to CLASS is
+  sort Elt to Class .
+endv
+
+
+
+
+
+fmod OBJECT is
+
+  protecting CLASS .
+  protecting BAG{Label} .
+
+  sort Object .
+  subsort Qid < Oid .
+
+  op <_:_ | Att:_, Pr:_, PrQ:_, Comp:_> : 
+  Oid Cid Subst Process MStatement Bag{Label} -> Object
+    [ctor format (nr! o d b! o++ nir o d nir m o nir o d nir o r! --no)] .
+
+endfm
+
+view Object from TRIV to OBJECT is
+  sort Elt to Object .
+endv
+
+
+
+
+
+fmod CONFIG is
+  protecting OBJECT .
+  protecting COMMUNICATION .
+
+  sorts Configuration Global .
+  subsorts Object Msg Class < Configuration .
+
+  op nothing : -> Configuration [ctor format (! o)] .
+  op __ : Configuration Configuration -> Configuration
+    [ctor assoc comm id: nothing] .
+
+  op {_} : Configuration -> Global [ctor format (d d d d)] .
+
+  var EO : Object .
+  var EM : Msg .
+  var EC : Class .
+  var S : Configuration .
+  var O : Oid .
+  vars C C' : Cid .
+  vars A L : Subst .
+  var B : Process .
+  var W : MStatement .
+  var Co : Bag{Label} .
+
+  op _instancesof_ : Global Cid -> Nat .
+  eq { nothing } instancesof C = 0 .
+  eq { S } instancesof C = S instancesof C [owise] .
+
+  op _instancesof_ : Configuration Cid -> Nat .
+  eq ( < O : C | Att: A, Pr: B, PrQ: W, Comp: Co  > S ) instancesof C = 1 + ( S instancesof C ) .
+  eq ( EC S ) instancesof C = S instancesof C .
+  eq nothing instancesof C = 0 .
+  eq ( EM S ) instancesof C = S instancesof C .
+  eq ( EO S ) instancesof C = S instancesof C .
+
+endfm
+
+
+
+
+
+********************* AUXILIARY FUNCTIONS ******************************
+
+fmod FUNKSJONER is
+
+  pr COMMUNICATION .
+  pr OBJECT .
+
+  vars Q Q' R : Qid .
+  vars O O' O'' : Oid . 
+  vars L L' : Subst . 
+  vars D D' : Data .
+  var  Mt : MMtd .
+  var  A : Mtd .
+  var  G : Guard . 
+  var  SP : Statement . 
+  vars P P' P'' : StatementList . 
+  vars neP neP' : NeStatementList .
+  var  MP : MStatement .
+  vars I J K : List .
+  vars X X' : Expr .
+  vars B B' : Bool .
+  vars N N' : Nat .
+  vars C C' : Int .
+
+
+endfm
+
+
+
+
+
+***(
+
+  The Creol interpreter.
+
+  This version of the interpreter has been optimized for model checking.
+  We try to stay as close to the 2007 version of the interpreter as
+  possible, but there are also some important changes.
+
+  Many rules of the interpreter have been replaced by equations, in order
+  to reduce the number of states in the model checker.  These rules are
+  mostly executing local statements.
+
+)***
+
+mod INTERPRETER is
+  pr CONFIG .
+  pr FUNKSJONER .
+  pr CONVERSION .
+  pr BAG{Label} .
+
+  vars conf conf' : Configuration .
+  var S : Statement .
+  vars P P' P'' R R' : StatementList .
+  vars L L' A A' : Subst .
+  vars E E' : Expr .
+  vars C C' : Cid . 
+  vars O O' : Oid . 
+  vars B B' : Process .
+  vars Q X Y Z Z' : Qid . 
+  var  D : Data . 
+  vars W W' : MStatement . 
+  vars I J K IL CP : List .
+  var  Mt : MMtd .
+  var  F    : Nat .
+  vars G G' : Guard .
+  vars N N' : Nat .
+  vars Co Co' : Bag{Label} .
+  vars Lab : Label .
+
+  ***(
+
+    Enabledness and readyness of statements.
+
+    I think this concept does not make sense outside of the interpreter.
+
+  )***
+
+  op enabled : Statement Subst Configuration -> Bool .
+  eq enabled((P [] P'); P'', L, conf) =
+	enabled(P, L, conf) or enabled(P', L, conf) .
+  eq enabled((P ||| P'); P'', L, conf) =
+	enabled(P, L, conf) or enabled(P', L, conf) .
+  eq enabled(await wait ; P, L, conf) = false .
+  eq enabled(P, L, conf) = true [owise].
+
+  op ready : StatementList Subst Configuration -> Bool .
+  eq ready((P [] P'); P'', L, conf) = ready(P, L, conf) or ready(P', L, conf) .
+  eq ready((P ||| P'); P'', L, conf) =
+	ready(P, L, conf) or ready(P', L, conf) .
+  eq ready((Q ? (I)) ; P, (L, (Q |-> label(O, O', Q, J))),
+    reply(O, O', Q, J, K) conf) = true .
+  eq ready(P, L, conf) = enabled(P, L, conf) [otherwise] .
+
+  ***(
+
+    Expand a multiple assignment into a single assignment.
+
+    The $assign operator assumes that the first list is a list of
+    variable and attribute names.  The second sequence is assumed
+    to be a list of values.  Both lists have to have the same
+    length.
+
+    The assign-multiple rule evaluates all arguments and uses
+    $assign to rewrite it into a sequence of single assignments.
+
+  )***
+  op $assign : List List -> StatementList .
+  eq $assign(E I, E' J) = (E := E') ; $assign(I, J) .
+  eq $assign(nil, nil) = empty [owise] .
+
+  eq 
+    { < O : C | Att: A, Pr: < Z | L : assign(I, J) ; P > , PrQ: W,
+	Comp: Co > conf }
+  =
+    { < O : C | Att: A, Pr: < Z | L : $assign(I, eval(J, (A, L))) ; P >,
+	PrQ: W, Comp: Co >
+      conf }
+  [label assign-multiple] .
+
+
+  eq
+    { < O : C | Att: A, Pr: < Z | L, (X |-> D) : (X := E) ; P > , PrQ: W, Comp: Co >
+      conf }
+    =
+    { < O : C | Att: A, Pr: < Z | L, (X |-> eval(E, (A, L, (X |-> D)))) : P >,
+	PrQ: W, Comp: Co >
+      conf }
+    [label assign-local] .
+
+
+  eq
+    { < O : C | Att: A, (X |-> D) , Pr: < Z | L : (X := E) ; P > , PrQ: W,
+	Comp: Co >
+      conf }
+    =
+    { < O : C | Att: A, (X |-> eval(E, (A, (X |-> D), L))), Pr: < Z | L : P >,
+	PrQ: W, Comp: Co >
+      conf }
+    [label assign-attribute] .
+
+  *** if_then_else ***
+  ceq [if-th] :
+    { < O : C | Att: A, Pr: < Z | L : if E th P el P' fi ; R > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: < Z | L : P ; R > , PrQ: W,
+	Comp: Co > conf }
+    if eval(E, (A , L)) asBool .
+
+  eq [if-el] :
+    { < O : C | Att: A, Pr: < Z | L : if E th P el P' fi ; R > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: < Z | L : P' ; R > , PrQ: W,
+        Comp: Co > conf }
+    [owise] .
+
+  ***(
+
+    Object creation
+
+  )***
+
+  op newId : Cid Configuration -> Oid .
+  eq newId(C , conf) = ob(qid(string(C) + string(conf instancesof C, 10))) .
+
+  eq [new-start] :
+    { (new C'(I))
+      < C' : Class | Params: CP, Att: A', Init: < Z' | L' : P' > , Mtds: Mt > conf }
+    =
+    { < newId(C', conf) : C' | Att: ('this |-> null), A', 
+        Pr: < Z' | L' : assign(CP, I) ; ('this := newId(C', conf)) ; P' > , PrQ: empty,
+      Comp: empty >
+      < C' : Class | Params: CP, Att: A', Init: < Z' | L' : P' > , Mtds: Mt > conf } .
+
+  ceq
+    { < O : C | Att: A, Pr: < Z | L : (X := new C'(I)) ; P > , PrQ: W,
+        Comp: Co >
+      < C' : Class | Params: CP, Att: A', Init: < Z' | L' : P' > , Mtds: Mt >
+      conf }
+    =
+    { < newId(C', conf') : C' | Att: ('this |-> null), A', 
+        Pr: < Z' | L' : $assign(CP, eval(I, (A, L))) ;
+                        ('this := newId(C', conf')) ; P' > , PrQ: empty,
+       Comp: empty >
+      < O : C | Att: A, Pr: < Z | L : P > , PrQ: W,
+        Comp: Co >
+      < C' : Class | Params: CP, Att: A', Init: < Z' | L' : P' > , Mtds: Mt >
+      conf }
+    if conf' :=
+      < O : C | Att: A, Pr: < Z | L : (X := new C'(I)) ; P > , PrQ: W,
+        Comp: Co >
+      < C' : Class | Params: CP, Att: A', Init: < Z' | L' : P' > , Mtds: Mt >
+      conf
+    [label new] .
+
+
+
+
+
+  ***
+  *** Non-deterministic choice
+  ***
+
+  crl [nondet] :
+    { < O : C | Att: A, Pr: < Z | L : (P [] P') ; R > , PrQ: W,
+        Comp: Co > conf }
+    =>
+    { < O : C | Att: A, Pr: < Z | L : P ; R > , PrQ: W, Comp: Co > conf }
+    if ready(P, (L , A), conf) .
+
+  ceq [nondet-none] :
+    { < O : C | Att: A, Pr: < Z | L : (P [] P') ; R > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: idle, PrQ: W : < Z | L : (P [] P') ; R > ,
+        Comp: Co > conf }
+  if not ready(P, (L, A), conf) and not ready(P', (L, A), conf) .
+
+
+
+
+
+  ***
+  *** Guards
+  ***
+
+  eq
+    { < O : C | Att: A, Pr: < Z | L : await nothing ; P > , PrQ: W,
+        Comp: Co > conf }
+
+    =
+    { < O : C | Att: A, Pr: < Z | L : P > , PrQ: W,
+        Comp: Co > conf }
+    [label await-nothing] .
+
+
+  ceq
+    { < O : C | Att: A, Pr: < Z | L : await E ; P > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: < Z | L : P > , PrQ: W,
+        Comp: Co > conf }
+    if eval(E, (A , L)) asBool
+    [label boolguard-true] .
+
+  eq
+    { < O : C | Att: A, Pr: < Z | L : await E ; P > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: idle, PrQ: W : < Z | L : await E ; P > ,
+        Comp: Co > conf }
+    [owise label boolguard-false] .
+
+  eq
+    { < O : C | Att: A, Pr: < Z | L : await wait ; P > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: idle, PrQ: W : < Z | L : await nothing ; P > ,
+        Comp: Co > conf }
+    [label waitguard] .
+
+  eq
+    { < O : C | Att: A, Pr: < Z | L, X |-> label(O, O', Q, I), L' : await (X ?) ; P > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: < Z | L, X |-> label(O, O', Q, I), L' : P > , PrQ: W,
+        Comp: Co > conf }
+    [label replyguard-label] .
+
+  eq
+    { reply(O, O', Q, I, K)
+      < O : C | Att: A, Pr: < Z | L, X |-> label(O, O', Q, I) : await (X ?) ; P > , PrQ: W, Comp: Co >
+      conf }
+    =
+    { reply(O, O', Q, I, K)
+      < O : C | Att: A, Pr: < Z | L, X |-> label(O, O', Q, I) : P > ,
+        PrQ: W, Comp: Co >
+      conf }
+    [label replyguard-inQ ] .
+
+  eq
+    { < O : C | Att: A, Pr: < Z | L : await (X ?) ; P > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: idle, PrQ: W : < Z | L : await (X ?) ; P > ,
+        Comp: Co > conf }
+    [owise label replyguard-not-inQ] .
+
+
+
+
+
+  ***
+  *** Evaluate guards in suspended processes
+  ***
+  rl [replyguard-susp] :
+    { reply(O, O', Q, I, K)
+      < O : C | Att: A, Pr: idle, PrQ: < Z | L, X |-> label(O, O', Q, I), L' : await (X ?) ; P > : W,
+        Comp: Co > conf }
+    =>
+    { reply(O, O', Q, I, K)
+      < O : C | Att: A, Pr: < Z | L, X |-> label(O, O', Q, I), L' : P > , PrQ: W,
+        Comp: Co > conf } .
+
+  crl
+    { < O : C | Att: A, Pr: idle, PrQ: < Z | L : await E ; P > : W, 
+        Comp: Co > conf }
+    =>
+    { < O : C | Att: A, Pr: < Z | L : P > , PrQ: W, Comp: Co > conf }
+    if eval(E, (A , L)) asBool
+    [label boolguard-susp] .
+
+  rl [noguard-susp] :
+    { < O : C | Att: A, Pr: idle, PrQ: < Z | L : await nothing ; P > : W , 
+        Comp: Co > conf }
+    =>
+    { < O : C | Att: A, Pr: < Z | L : P > , PrQ: W, Comp: Co > conf } .
+
+  crl
+    { < O : C | Att: A, Pr: idle, PrQ: < Z | L : (P [] P') ; R > : W,
+        Comp: Co > conf }
+    =>
+    { < O : C | Att: A, Pr: < Z | L : P ; R > , PrQ: W, Comp: Co > conf }
+    if ready(P, (L , A), conf)
+    [label nondet-susp] . 
+
+
+
+
+  ***
+  *** LOCAL METHOD CALLS
+  ***
+
+  eq [local-sync] :
+    { < O : C | Att: A, Pr: < Z | L : ( X ( I ; J )) ; P > , PrQ: W,
+        Comp: Co >
+      < C : Class | Params: CP, Att: A', Init: B',
+        Mtds: < X | In: IL, Latt: L', Code: P' > * Mt > conf }
+    =
+    { < O : C | Att: A, 
+        Pr: < X | L' : assign(IL, (label(O,O,X,I)) O I) ; P' ;
+            continue(label(O,O,X,I)) > ,
+        PrQ: < Z | L : (label(O,O,X,I) ? (J)) ; P > : W,
+        Comp: Co >
+      < C : Class | Params: CP, Att: A', Init: B',
+        Mtds: < X | In: IL, Latt: L', Code: P' > * Mt > conf }
+    [label local-sync] .
+
+  eq
+    { reply(O, O, X, I, K)
+      < O : C | Att: A, Pr: < Z | L : continue(label(O,O,X,I)) >,
+        PrQ: < Z' | L' : ( label(O,O,X,I) ? (J) ) ; P > : W,
+        Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: < Z' | L' : assign(J, K) ; P >, PrQ: W,
+        Comp: Co > conf }
+    [label continue] .
+
+  eq
+    { < O : C | Att: A, Pr: < Z | L : (tailcall X ( I ) ) ; P > , PrQ: W,
+        Comp: Co > 
+      < C : Class | Params: CP, Att: A', Init: B', Mtds: < X | In: IL, Latt: L', Code: P' > * Mt > conf }
+    =
+    { < O : C | Att: A, 
+        Pr: < X | L' : assign(IL, null O I) ; P' > ,
+        PrQ: W, Comp: Co >
+      < C : Class | Params: CP, Att: A', Init: B', Mtds: < X | In: IL, Latt: L', Code: P' > * Mt > conf }
+    [label tailcall] .
+
+
+  ***
+  *** REMOTE METHOD CALLS
+  ***
+
+  eq [remote-async] :
+    { < O : C | Att: A, Pr:  < Z | L : (Q ! X . Y ( I )) ; P > , PrQ: W,
+        Comp: Co > conf }
+    =
+    { invoc(O, (A,L)[X], Y, eval(I, (A, L)))
+      < O : C | Att: A, 
+        Pr: < Z | L : (Q := label(O, (A, L)[X], Y, eval(I, (A, L)))); P > , PrQ: W,
+        Comp: Co > conf }
+    [label remote-async] .
+
+  *** receive invocation message ***
+
+  rl
+    { invoc(O', O, Z, I)
+      < O : C | Att: A, Pr: idle, PrQ: W, Comp: Co >
+      < C : Class | Params: CP, Att: A', Init: B', Mtds: < Z | In: IL, Latt: L', Code: P' > * Mt > conf }
+    =>
+    { < O : C | Att: A, Pr: < Z | L' : assign(IL, label(O', O, Z, I) O' I); P' > , PrQ: W,
+      Comp: Co >
+      < C : Class | Params: CP, Att: A', Init: B', Mtds: < Z | In: IL, Latt: L', Code: P' > * Mt > conf }
+    [label receive-call] .
+
+
+
+
+
+  ***
+  *** emit reply message
+  ***
+
+  eq [emit-reply] :
+    { < O : C | Att: A, Pr: < Z | (L, ('label |-> label(O', O, Q, K)), L') : (return ( J )) ; P > , PrQ: W, Comp: Co > conf }
+    =
+    { reply(O', O, Q, K, eval(J, (A, (L,('label |-> label(O', O, Q, K)),L'))))
+      < O : C | Att: A, Pr: < Z | (L, ('label |-> label(O', O, Q, K)), L') : P > , PrQ: W,
+      Comp: Co > conf } [label emit-reply] .
+
+
+
+
+  ***
+  ***   Receive reply
+  ***
+
+  eq
+    { reply(O, O', Y, J, K)
+      < O : C | Att: A, Pr: < Z | L, Q |-> label(O, O', Y, J), L' : (Q ? ( I )) ; P > , PrQ: W,
+      Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: < Z | L, Q |-> null, L' : assign(I, K) ; P > ,
+	PrQ: W, Comp: Co > conf } [label block-reply] .
+
+
+
+
+
+  ***
+  *** Explicitely killing a label value
+  ***
+
+  eq
+    { < O : C | Att: A, Pr: < Z | (L,(Q |-> Lab), L') : (kill ( Q )) ; P > ,
+        PrQ: W, Comp: Co > conf }
+    =
+    { < O : C | Att: A, Pr: < Z | (L,(Q |-> null), L') : P > , PrQ: W,
+        Comp: (Lab : Co)  > conf } [label kill] .
+
+  eq
+    { reply(O, O', Q, J, K) 
+      < O : C | Att: A, Pr: B, PrQ: W, Comp: (label(O, O', Q, J) : Co)  >
+      conf }
+    =
+    { < O : C | Att: A, Pr: B, PrQ: W, Comp: Co  > conf } [label kill-reply] .
+
+endm

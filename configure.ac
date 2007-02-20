@@ -60,4 +60,4 @@ AC_PATH_PROG([OCAMLDOC], ocamldoc)
 AC_PATH_PROG([OCAMLWEB], ocamlweb)
 
 AC_CONFIG_TESTDIR(tests, source)
-AC_OUTPUT([Makefile tests/atlocal tests/Makefile xml/Makefile])
+AC_OUTPUT([Makefile maude/Makefile tests/atlocal tests/Makefile xml/Makefile])

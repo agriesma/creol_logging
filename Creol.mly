@@ -4,7 +4,7 @@
 
 
 %token EOF
-%token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END
+%token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END NEW
 %token INTERFACE WITH OP VAR IN OUT
 %token EQEQ COMMA SEMI COLON ASSIGN RBRACK LBRACK LPAREN RPAREN LBRACE RBRACE
 %token QUESTION BANG BOX DIAMOND MERGE BAR
@@ -46,18 +46,15 @@ classdecl:
 
 cls_parameters_opt:
       (* empty *) { [] }
-    | LPAREN l = creol_list(vardecl_no_init, COMMA) RPAREN { l }
-
-contracts_opt:
-      (* empty *) { [] }
-    | CONTRACTS l = creol_list(ID, COMMA) { l }
+    | LPAREN l = separated_nonempty_list(COMMA, vardecl_no_init) RPAREN { l }
 
 inherits:
       i = CID { (i, []) }
-    | i = CID LPAREN e = creol_list(expression, COMMA) RPAREN { (i, e) }
+    | i = CID LPAREN e = separated_nonempty_list(COMMA, expression) RPAREN { (i, e) }
 
 attributes:
-      VAR l = creol_list(vardecl, COMMA) { l }
+      VAR l = separated_nonempty_list(COMMA, vardecl) { l }
+    | l1 = attributes VAR l2 = separated_nonempty_list(COMMA, vardecl) { l1 @ l2 }
 
 vardecl:
       v = vardecl_no_init { v }
@@ -65,7 +62,7 @@ vardecl:
     { { var_name = v.var_name; var_type = v.var_type; var_init = Some i } }
 
 vardecl_no_init:
-      i = ID COLON t = CID { { var_name = i; var_type = t; var_init = None } }
+      i = ID COLON t = creol_type { { var_name = i; var_type = t; var_init = None } }
 
 method_decl:
       WITH m = ID OP i = ID p = parameters_opt {
@@ -85,10 +82,10 @@ parameters_opt:
     | LPAREN ins = inputs SEMI outs = outputs RPAREN { (ins, outs) }
 
 inputs:
-      IN l = creol_list(vardecl_no_init, COMMA) { l }
+      IN l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
 
 outputs:
-      OUT l = creol_list(vardecl_no_init, COMMA) { l }
+      OUT l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
 
 method_def:
       d = method_decl EQEQ s = statement {
@@ -110,7 +107,7 @@ interfacedecl:
 
 iface_inherits_opt:
       (* empty *) { [] }
-    | INHERITS l = creol_list(ID, COMMA) { l }
+    | INHERITS l = separated_nonempty_list(COMMA, ID) { l }
 
 method_decls_opt:
       (* empty *) { [] }
@@ -138,6 +135,8 @@ compound_statement:
 
 basic_statement:
       SKIP { Skip }
+    | t = ID ASSIGN e = expression { Assign(t, e) }
+    | t = ID ASSIGN NEW CID l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN)) { New(t, l) }
     | IF e = expression THEN t = statement ELSE f = statement FI {
 	If(e, t, f) }
     | IF e = expression THEN t = statement FI { If(e, t, Skip) }
@@ -157,11 +156,7 @@ expression:
     | l = expression PLUS r = expression { Binary (Plus, l, r) }
     | l = expression TIMES r = expression { Binary(Times, l, r) }
 
-
-
-
-
-(* These productions are used for any kinds of lists and options *)
-creol_list(I, S):
-    i = I { [i] }
-  | i = I S l = creol_list(I, S) { i::l }
+(* Poor mans types and type parameters *)
+creol_type:
+      t = CID { t }
+    | t = CID LBRACK separated_nonempty_list(COMMA, creol_type) RBRACK { t } 

@@ -46,8 +46,10 @@ type guard =
 
 type statement =
     Skip
+    | Assign of string * expression
     | Await of guard
     | If of expression * statement * statement
+    | New of string * expression list
     | Sequence of statement * statement
     | Merge of statement * statement
     | Choice of statement * statement

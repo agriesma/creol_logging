@@ -24,7 +24,7 @@ OCAMLPATH		= .
 export OCAMLPATH
 
 # Subdirs
-SUBDIRS			= xml . tests
+SUBDIRS			= xml . maude tests
 
 # OCaml compilers.
 OCAMLC			= $(OCAMLFIND) ocamlc
@@ -83,7 +83,7 @@ Version.ml: ${top_srcdir}/configure.ac ${srcdir}/Makefile.am
 # sources.  We build Creol.cmi by hand here.
 CreolParser.ml CreolParser.mli: Creol.mly
 	$(OCAMLC) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
-	$(MENHIR) --base CreolParser --infer $<
+	$(MENHIR) --base CreolParser --infer --trace $<
 
 CreolLex.ml: Creol.mll
 	$(OCAMLLEX) -o $@ $<

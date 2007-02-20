@@ -1,0 +1,15 @@
+-- CVM cvm "viisi.ifi.uio.no"
+-- startobject (cvm1, Alarmclock, null)  
+
+class Alarmclock
+ begin
+ 	var now: Int
+
+ op run == now := 0
+
+ with Any
+  op wakeme(in n: Int) == var alarmsetting: Int ;
+ 		alarmsetting := now + n;
+ 		await now >= alarmsetting
+ 	op tick == now := now + 1
+ end

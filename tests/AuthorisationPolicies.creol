@@ -1,0 +1,87 @@
+class SAuth implements Auth
+  begin
+    var gr: Agent
+    op run == gr := null
+    op delay == await (gr = null)
+  with Any
+    op grant(in x:Agent) == delay(); gr := x
+    op revoke(in x:Agent) == if gr = x then gr := null fi
+    op auth(in x:Agent) == await (gr = x)
+  end 
+
+class MAuth(gr: Agent) implements Auth
+begin 
+  var gr: Agent
+  op run == gr := null
+  op delay == await (gr = null)
+with Any
+  op grant(in x:Agent) == delay(); gr := x
+  op revoke(in x:Agent) == if gr = x then gr := null fi
+  op auth(in x:Agent) == await (gr = x)
+end 
+
+class HAuth implements High 
+            inherits SAuth, DB
+begin with Agent
+  op openH(out ok:Bool) == 
+  	await clear(caller;ok);
+  	if ok then grant<<Sauth(caller) fi
+  op access(in key:int; out y:Data) == 
+  	auth<<SAuth(caller);
+  	await access@DB(key, true; y)
+  op closeH == revoke(caller)
+end
+
+class LAuth implements Low 
+            inherits MAuth, DB
+begin with Agent
+  op openL == -- <denne er gal!!!!!!!!! skal ikke kalle clear(..)!!> 
+  	await clear(caller;ok);
+  	if ok then grant<<MAuth(caller) fi
+  op access(in key:int; out y:Data) == 
+  	auth<<MAuth(caller);
+  	await access@DB(key, false; y)
+  op closeL == revoke(caller)
+end
+
+-- interface HighLow inherits High, Low
+-- begin
+-- end
+
+class HLAuth implements HighLow
+             inherits LAuth, HAuth
+begin with Agent
+  op access(in key:int; out y:Data) == if caller=gr@SAuth then access2@HAuth(key, caller;y) else access2@LAuth(key, caller;y) fi
+end
+
+class TestAgent(db:HLAuth) implements Agent
+begin
+	op run ==
+		var result:String;
+		var ok:bool;
+		db.openH(;ok);
+		if ok
+		then 
+			db.access(123; result);
+			-- print "Result 1: " + result;
+			db.closeH()
+		fi;
+		db.openL();
+		db.access(123; result);
+		-- print "Result 2: " + result;
+		db.access(456; result);
+		-- print "Result 3: " + result;
+		db.closeL()
+end
+
+class DB 
+begin 
+	op access(in key:int, b:boolean; out y:Data) ==
+		if (key = 123) 
+		then if b
+			 then y := "123 is customer Ole Hansen. Phone no: 90807060." 
+			 else y := "123 is customer Ole Hansen."
+			 fi
+		else y := "Unknown customer."
+		fi
+end

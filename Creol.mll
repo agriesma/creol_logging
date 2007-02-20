@@ -6,7 +6,7 @@ open CreolParser
 }
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)
 let CID = [ 'A'-'Z' ][ '_' '0'-'9' 'a'-'z' 'A'-'Z' ]*
-let ID =  [ '_' 'a'-'z' ][ '_' '0'-'9' 'a'-'z' 'A'-'Z' ]*
+let ID =  [ 'a'-'z' ][ '_' '0'-'9' 'a'-'z' 'A'-'Z' ]*
 rule token = parse
 	  [' ' '\t'] { token lexbuf }
 	| '\n' { token lexbuf }
@@ -44,6 +44,7 @@ rule token = parse
 	| "inherits" { INHERITS }
 	| "interface" { INTERFACE }
 	| "in" { IN }
+	| "new" { NEW }
 	| "not" { NOT }
 	| "op" { OP }
 	| "or" { OR }
