@@ -15,22 +15,30 @@ rule token = parse
 	| '?' { QUESTION }
 	| '!' { BANG }
 	| "==" { EQEQ }
+	| "<=" { LE }
+	| ">=" { GE }
+	| "<" { LT }
+	| ">" { GT }
 	| "/=" { NE }
-	| '/' { TIMES }
-	| '*' { DIV }
+	| '*' { TIMES }
+	| '/' { DIV }
+	| '+' { PLUS }
+	| '-' { MINUS }
 	| '=' { EQ }
 	| ',' { COMMA }
 	| ';' { SEMI }
+(*	| ".." { DOTDOT } *)
+	| '.' { DOT }
 	| "[]" { BOX }
 	| '[' { LBRACK }
 	| ']' { RBRACK }
 	| '(' { LPAREN }
 	| ')' { RPAREN }
-	| '{' { LBRACE }
-	| '}' { RBRACE }
-	| "<>" { DIAMOND }
+(*	| '{' { LBRACE }
+	| '}' { RBRACE } *)
+(*	| "<>" { DIAMOND } *)
 	| "|||" { MERGE }
-	| '|' { BAR }
+(*	| '|' { BAR } *)
 	| "and" { AND }
 	| "begin" { BEGIN }
 	| "class" { CLASS }
@@ -39,6 +47,7 @@ rule token = parse
 	| "end" { END }
 	| "false" { BOOL(false) }
 	| "fi" { FI }
+	| "iff" { IFF }
 	| "if" { IF }
 	| "implements" { IMPLEMENTS }
 	| "inherits" { INHERITS }
@@ -54,6 +63,7 @@ rule token = parse
 	| "true" { BOOL(true) }
 	| "var" { VAR }
 	| "with" { WITH }
+	| "xor" { XOR }
 	| FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
 	| ['0'-'9']+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
 	| CID { CID(Lexing.lexeme lexbuf) }

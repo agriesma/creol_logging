@@ -38,6 +38,16 @@ and binaryop =
     | Minus
     | Times
     | Div
+    | Eq
+    | Ne
+    | Le
+    | Lt
+    | Ge
+    | Gt
+    | And
+    | Or
+    | Xor
+    | Iff
 
 type guard =
     Label of string
@@ -49,7 +59,7 @@ type statement =
     | Assign of string * expression
     | Await of guard
     | If of expression * statement * statement
-    | New of string * expression list
+    | New of string * string * expression list
     | Sequence of statement * statement
     | Merge of statement * statement
     | Choice of statement * statement
@@ -105,7 +115,17 @@ let rec pretty_print_expression out_channel =
 	      Plus -> " + "
 	    | Minus -> " - "
 	    | Times -> " * "
-	    | Div -> " / ");
+	    | Div -> " / "
+	    | Le -> " <= "
+	    | Lt -> " < "
+	    | Ge -> " >= "
+	    | Gt -> " > "
+	    | Ne -> " /= "
+	    | Eq -> " = "
+	    | And -> " and "
+	    | Iff -> " iff "
+	    | Or -> " or "
+	    | Xor -> " xor ");
 	pretty_print_expression out_channel r;
 	output_string out_channel ")"
 
@@ -150,18 +170,48 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel " [] ";
 	pretty_print_statement out_channel r;
 	output_string out_channel ")"
+    | New (i, c, a) ->
+        output_string out_channel (i ^ " := new " ^ c)
+    | Assign (i, e) ->
+	output_string out_channel i;
+	output_string out_channel " := ";
+	pretty_print_expression out_channel e
+
+let rec pretty_print_vardecls out_channel =
+    function
+	[] -> ()
+      | a::r -> output_string out_channel ("var " ^ a.var_name ^ ": " ^ a.var_type ) ;
+	( match a.var_init with Some e -> output_string out_channel " := " ; pretty_print_expression out_channel e | _ -> () ) ; output_string out_channel "\n" ; pretty_print_vardecls out_channel r
+
+let rec pretty_print_methods out_channel =
+    function
+	[] -> ()
+      | m::r -> output_string out_channel ("with " ^ m.meth_coiface ^ "op " ^ m.meth_name ^ "(") ; (match m.meth_inpars with [] -> () | l -> output_string out_channel "in " ) ; (match m.meth_outpars with [] -> () | l -> output_string out_channel "out " ); output_string out_channel ")" ; (match m.meth_body with None -> () | Some s -> output_string out_channel " == " ; pretty_print_statement out_channel s); output_string out_channel "\n"; pretty_print_methods out_channel r
 
 let pretty_print_class out_channel c =
-  output_string out_channel "class ";
-  output_string out_channel c.cls_name;
-  output_string out_channel "begin ";  
-  output_string out_channel " end"
+  output_string out_channel ("class " ^ c.cls_name ^ " ") ;
+  ( match c.cls_parameters with
+	[] -> ()
+      | l -> output_string out_channel "("; output_string out_channel ")" ) ;
+  ( match c.cls_inherits with
+	[] -> ()
+      | l -> output_string out_channel "inherits " ) ;
+  ( match c.cls_contracts with
+	[] -> ()
+      | l -> output_string out_channel "contracts " );
+  ( match c.cls_implements with
+	[] -> ()
+      | l -> output_string out_channel "implements " ) ;
+  output_string out_channel "\nbegin\n";
+  pretty_print_vardecls out_channel c.cls_attributes ;
+  pretty_print_methods out_channel c.cls_methods ;
+  output_string out_channel "end\n\n"
 
 let pretty_print_iface out_channel i =
   output_string out_channel "interface ";
   output_string out_channel i.iface_name;
-  output_string out_channel "begin ";  
-  output_string out_channel " end"
+  output_string out_channel "\nbegin\n";  
+  output_string out_channel "end\n\n"
 
 let rec pretty_print out_channel =
   function
@@ -192,7 +242,17 @@ let rec maude_of_creol_expression out =
 	    Plus -> " + "
 	  | Minus -> " - "
 	  | Times -> " * "
-	  | Div -> " / "); 
+	  | Div -> " / "
+          | And -> " and "
+          | Iff -> " = "
+          | Or -> " or "
+          | Xor -> " =/= "
+          | Gt -> " < "
+          | Ge -> " >= "
+          | Le -> " <= "
+          | Lt -> " < "
+          | Ne -> " =/= "
+          | Eq -> " == ");
 	maude_of_creol_expression out r; output_string out ")"
 
 let rec maude_of_creol_guard out =
@@ -227,6 +287,11 @@ let rec maude_of_creol_statement out =
 	output_string out "( "; maude_of_creol_statement out l; 
 	output_string out " [] "; maude_of_creol_statement out r; 
 	output_string out " )"
+    | New (i, c, a) ->
+	output_string out ("'" ^ i ^ " := new " ^ c)
+    | Assign (i, e) ->
+	output_string out ("'" ^ i ^ " := ") ;
+	maude_of_creol_expression out e
 
 let maude_of_creol_attribute out a =
   output_string out ("(" ^ a.var_name ^ ": ");

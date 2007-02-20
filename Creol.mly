@@ -6,16 +6,24 @@
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END NEW
 %token INTERFACE WITH OP VAR IN OUT
-%token EQEQ COMMA SEMI COLON ASSIGN RBRACK LBRACK LPAREN RPAREN LBRACE RBRACE
-%token QUESTION BANG BOX DIAMOND MERGE BAR
+%token EQEQ COMMA SEMI COLON ASSIGN RBRACK LBRACK LPAREN RPAREN
+(* %token LBRACE RBRACE *)
+%token QUESTION BANG BOX MERGE DOT
+(* %token DIAMOND *)
+(* %token BAR *)
+(* %token DOTDOT *)
 %token IF THEN ELSE FI SKIP AWAIT
-%token AND OR NOT PLUS TIMES DIV EQ NE
+%token AND OR XOR IFF NOT PLUS MINUS TIMES DIV EQ NE LT LE GT GE
 %token <string> CID ID
 %token <int>  INT
 %token <bool> BOOL
 %token <float> FLOAT
-%left PLUS
-%left TIMES
+%nonassoc EQ NE
+%left AND OR XOR IFF
+%left LE LT GT GE
+%left PLUS MINUS
+%left TIMES DIV
+%right NOT
 %start <'a list> main
 %{
 open Creol
@@ -65,7 +73,7 @@ vardecl_no_init:
       i = ID COLON t = creol_type { { var_name = i; var_type = t; var_init = None } }
 
 method_decl:
-      WITH m = ID OP i = ID p = parameters_opt {
+      WITH m = CID OP i = ID p = parameters_opt {
 	match p with (ins, outs) ->
 	  { meth_name = i; meth_coiface = m; meth_inpars = ins;
 	    meth_outpars = outs; meth_body = None} }
@@ -88,7 +96,7 @@ outputs:
       OUT l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
 
 method_def:
-      d = method_decl EQEQ s = statement {
+      d = method_decl EQEQ a = loption(terminated(attributes, SEMI)) s = statement {
 	{ meth_name = d.meth_name; meth_coiface = d.meth_coiface;
 	  meth_inpars = d.meth_inpars; meth_outpars = d.meth_outpars;
 	  meth_body = Some s} }
@@ -136,11 +144,13 @@ compound_statement:
 basic_statement:
       SKIP { Skip }
     | t = ID ASSIGN e = expression { Assign(t, e) }
-    | t = ID ASSIGN NEW CID l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN)) { New(t, l) }
+    | t = ID ASSIGN NEW c = CID l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN)) { New(t, c, l) }
     | IF e = expression THEN t = statement ELSE f = statement FI {
 	If(e, t, f) }
     | IF e = expression THEN t = statement FI { If(e, t, Skip) }
     | AWAIT g = guard { Await g }
+    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN)) { Skip }
+    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID LPAREN i = separated_list(COMMA, expression) SEMI o = separated_nonempty_list(COMMA, ID) RPAREN { Skip }
     | LPAREN s = statement RPAREN { s }
 
 guard:
@@ -149,12 +159,30 @@ guard:
     | e = expression { Condition e }
 
 expression:
-      i = INT { Int i }
+      l = expression o = binop r = expression { Binary(o, l, r) }
+    | NOT  e = expression { Unary(Not, e) }
+    | MINUS e = expression %prec NOT { Unary(UMinus, e) }
+    | i = INT { Int i }
     | f = FLOAT { Float f }
     | b = BOOL { Bool b }
     | i = ID { Id i }
-    | l = expression PLUS r = expression { Binary (Plus, l, r) }
-    | l = expression TIMES r = expression { Binary(Times, l, r) }
+    | LPAREN e = expression RPAREN { e }
+
+%inline binop:
+      AND { And }
+    | OR { Or }
+    | XOR { Ne }
+    | IFF { Eq }
+    | EQ { Eq }
+    | NE { Ne }
+    | LE { Le }
+    | GE { Ge }
+    | LT { Lt }
+    | GT { Gt }
+    | PLUS { Plus }
+    | MINUS { Minus }
+    | TIMES { Times }
+    | DIV { Div }
 
 (* Poor mans types and type parameters *)
 creol_type:

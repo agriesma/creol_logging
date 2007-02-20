@@ -16,6 +16,16 @@ and binaryop =
     | Minus
     | Times
     | Div
+    | Eq
+    | Ne
+    | Le
+    | Lt
+    | Ge
+    | Gt
+    | And
+    | Or
+    | Xor
+    | Iff
 
 type guard =
     Label of string
@@ -27,7 +37,7 @@ type statement =
     | Assign of string * expression
     | Await of guard
     | If of expression * statement * statement
-    | New of string * expression list
+    | New of string * string * expression list
     | Sequence of statement * statement
     | Merge of statement * statement
     | Choice of statement * statement

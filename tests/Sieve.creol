@@ -16,7 +16,7 @@ class Sieve(p: Integer) implements Sieve
 begin
   var next: Sieve
   op send(in n: Integer; out res: Bool) ==
-    var d, r: Integer; d := n / p; r := n - d * p;
+    var d: Integer := n / p, r: Integer := n - d * p;
     if r = 0
     then res := false
     else if next /= nil
