@@ -27,6 +27,8 @@
 %start <'a list> main
 %{
 open Creol
+
+let default = ()
 %}
 %%
 
@@ -131,41 +133,48 @@ statement:
 
 choice_statement:
       s = merge_statement { s }
-    | l = merge_statement BOX r = choice_statement { Choice(l, r) }
+    | l = merge_statement BOX r = choice_statement { Choice(default, l, r) }
 
 merge_statement:
       s = compound_statement { s }
-    | l = compound_statement MERGE r = merge_statement { Merge(l, r) }
+    | l = compound_statement MERGE r = merge_statement
+         { Merge(default, l, r) }
 
 compound_statement:
       s = basic_statement { s }
-    | l = basic_statement SEMI r = compound_statement { Sequence(l, r) }
+    | l = basic_statement SEMI r = compound_statement
+         { Sequence(default, l, r) }
 
 basic_statement:
-      SKIP { Skip }
-    | t = ID ASSIGN e = expression { Assign(t, e) }
-    | t = ID ASSIGN NEW c = CID l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN)) { New(t, c, l) }
-    | IF e = expression THEN t = statement ELSE f = statement FI {
-	If(e, t, f) }
-    | IF e = expression THEN t = statement FI { If(e, t, Skip) }
-    | AWAIT g = guard { Await g }
-    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN)) { Skip }
-    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID LPAREN i = separated_list(COMMA, expression) SEMI o = separated_nonempty_list(COMMA, ID) RPAREN { Skip }
+      SKIP { Skip default }
+    | t = ID ASSIGN e = expression { Assign(default, t, e) }
+    | t = ID ASSIGN NEW c = CID l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN))
+        { New(default, t, c, l) }
+    | IF e = expression THEN t = statement ELSE f = statement FI
+        { If(default, e, t, f) }
+    | IF e = expression THEN t = statement FI
+        { If(default, e, t, Skip default) }
+    | AWAIT g = guard { Await (default, g) }
+    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID i = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
+        { Call (default, l, c, m, i, None) }
+    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID LPAREN i = separated_list(COMMA, expression) SEMI o = separated_list(COMMA, ID) RPAREN
+        { Call (default, l, c, m, i, Some o) }
     | LPAREN s = statement RPAREN { s }
 
 guard:
-      l = ID QUESTION { Label l }
-    | l = ID QUESTION AND g = guard { Conjunction (Label l, g) }
-    | e = expression { Condition e }
+      l = ID QUESTION { Label (default, l) }
+    | l = ID QUESTION AND g = guard
+        { Conjunction (default, Label(default, l), g) }
+    | e = expression { Condition (default, e) }
 
 expression:
-      l = expression o = binop r = expression { Binary(o, l, r) }
-    | NOT  e = expression { Unary(Not, e) }
-    | MINUS e = expression %prec NOT { Unary(UMinus, e) }
-    | i = INT { Int i }
-    | f = FLOAT { Float f }
-    | b = BOOL { Bool b }
-    | i = ID { Id i }
+      l = expression o = binop r = expression { Binary(default, o, l, r) }
+    | NOT  e = expression { Unary(default, Not, e) }
+    | MINUS e = expression %prec NOT { Unary(default, UMinus, e) }
+    | i = INT { Int (default, i) }
+    | f = FLOAT { Float (default, f) }
+    | b = BOOL { Bool (default, b) }
+    | i = ID { Id (default, i) }
     | LPAREN e = expression RPAREN { e }
 
 %inline binop:

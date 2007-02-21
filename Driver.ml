@@ -41,8 +41,7 @@ let ignore x = ()
 let from_file name =
   let lexbuf = Lexing.from_channel (open_in name) in
     let tree = CreolParser.main CreolLex.token lexbuf in
-	print_endline "Here!";
-	Creol.pretty_print stdout tree
+	Creol.maude_of_creol stdout (Creol.simplify tree)
 
 let options = [
   ("-v", Unit (function () -> ()),

@@ -15,12 +15,13 @@ end
 class Sieve(p: Integer) implements Sieve
 begin
   var next: Sieve
+  op init == skip
   op send(in n: Integer; out res: Bool) ==
     var d: Integer := n / p, r: Integer := n - d * p;
     if r = 0
     then res := false
     else if next /= nil
-         then next.send(n, res)
+         then next.send(n; res)
          else next := new Sieve(n); res := true
          fi
     fi
