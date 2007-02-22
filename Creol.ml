@@ -442,7 +442,8 @@ let rec maude_of_creol_expression out =
           | Or -> "'or"
           | Lt -> "'less"
           | Le -> "'lessEq"
-          | Eq -> "'equal") ^ "[[");
+          | Eq -> "'equal"
+	  | (Xor|Gt|Ge|Ne) -> assert false) ^ "[[");
 	maude_of_creol_expression_list out (l::[r]);
 	output_string out "]] )"
 and maude_of_creol_expression_list out_channel =

@@ -1,11 +1,14 @@
-Credo-Comp
+creolcomp
 
-A compiler and type checker for Creol
+Compiles creol programs to the Maude machine.
+
+[ If you do not understand what this means, then this compiler is not
+  (yet) for you. ]
+
+Usage:  creolcomp bla.creol > bla.maude
+
+the Result is sent to stdout.
 
 ==============================================================================
 This small project serves as a prototyping environment for the compiler
-and the type checker for Creol.  The idea is to see whether we can
-implement something here and then port it to the Java environment for
-"production use"
-
-Personally, I think that OCaml is a much nicer language.
+and the type checker for Creol.

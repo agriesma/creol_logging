@@ -30,14 +30,11 @@ dnl Check for the tools needed to build the text-reader and text-writer
 dnl libraries
 AC_PROG_CC
 AC_PROG_RANLIB
-AM_PATH_XML2(2.6.0)
 
 dnl Check for the tools needed to run the tests.
 AC_PATH_PROG([M4], m4)
 AC_PATH_PROG([AUTOM4TE], autom4te)
 AC_PATH_PROG([DIFF], diff)
-AC_PATH_PROG([XMLLINT], xmllint)
-AC_PATH_PROG([XMLCATALOG], xmlcatalog)
 
 dnl See whether we have chcon in order to fix tests with selinux.
 AC_PATH_PROG([CHCON], chcon)
@@ -60,4 +57,4 @@ AC_PATH_PROG([OCAMLDOC], ocamldoc)
 AC_PATH_PROG([OCAMLWEB], ocamlweb)
 
 AC_CONFIG_TESTDIR(tests, source)
-AC_OUTPUT([Makefile maude/Makefile tests/atlocal tests/Makefile xml/Makefile])
+AC_OUTPUT([Makefile maude/Makefile tests/atlocal tests/Makefile])

@@ -24,4 +24,4 @@ CLEANFILES		=
 DISTCLEANFILES		= 
 MAINTAINERCLEANFILES	= Makefile.in
 
-EXTRA_DIST		= interpreter.maude modelchecker.maude README
+EXTRA_DIST		= interpreter.maude README
