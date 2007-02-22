@@ -26,9 +26,11 @@ type 'a expression =
     | Int of 'a * int
     | Float of 'a * float
     | Bool of 'a * bool
+    | String of 'a * string
     | Id of 'a * string
     | Unary of 'a * unaryop * 'a expression
     | Binary of 'a * binaryop * 'a expression * 'a expression
+    | FuncCall of 'a * string * 'a expression list
 and unaryop =
     Not
     | UMinus

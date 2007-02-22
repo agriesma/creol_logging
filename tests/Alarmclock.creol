@@ -1,6 +1,3 @@
--- CVM cvm "viisi.ifi.uio.no"
--- startobject (cvm1, Alarmclock, null)  
-
 class Alarmclock
  begin
  	var now: Int

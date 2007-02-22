@@ -14,7 +14,7 @@
 (* %token DOTDOT *)
 %token IF THEN ELSE FI SKIP AWAIT
 %token AND OR XOR IFF NOT PLUS MINUS TIMES DIV EQ NE LT LE GT GE
-%token <string> CID ID
+%token <string> CID ID BUILTIN STRING
 %token <int>  INT
 %token <bool> BOOL
 %token <float> FLOAT
@@ -25,6 +25,9 @@
 %left PLUS MINUS
 %left TIMES DIV
 %right NOT
+%left SEMI
+%left MERGE
+%left BOX
 %start <'a list> main
 %{
 open Creol
@@ -100,7 +103,7 @@ outputs:
 
 method_def:
       d = method_decl; EQEQ; a = loption(terminated(attributes, SEMI));
-	s = statement
+	s = statement ioption(SEMI)
     { { meth_name = d.meth_name; meth_coiface = d.meth_coiface;
 	  meth_inpars = d.meth_inpars; meth_outpars = d.meth_outpars;
 	  meth_vars = a; meth_body = Some s} }
@@ -131,23 +134,6 @@ method_decls:
 
 (* Statements *)
 statement:
-      s = choice_statement { s }
-
-choice_statement:
-      s = merge_statement { s }
-    | l = merge_statement BOX r = choice_statement { Choice(default, l, r) }
-
-merge_statement:
-      s = compound_statement { s }
-    | l = compound_statement MERGE r = merge_statement
-         { Merge(default, l, r) }
-
-compound_statement:
-      s = basic_statement { s }
-    | l = basic_statement SEMI r = compound_statement
-         { Sequence(default, l, r) }
-
-basic_statement:
       SKIP { Skip default }
     | t = ID ASSIGN e = expression { Assign(default, t, e) }
     | t = ID ASSIGN NEW c = CID l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN))
@@ -174,6 +160,9 @@ basic_statement:
 		None -> ASyncCall (default, l, caller , m, [], None)
 	      | Some (i, o) -> ASyncCall (default, l, caller, m, i, o) }
     | LBRACE s = statement RBRACE { s }
+    | l = statement SEMI r = statement { Sequence(default, l, r) }
+    | l = statement MERGE r = statement { Merge(default, l, r) }
+    | l = statement BOX r = statement { Choice(default, l, r) }
 
 guard:
       l = ID QUESTION { Label (default, l) }
@@ -186,10 +175,13 @@ expression:
       l = expression o = binop r = expression { Binary(default, o, l, r) }
     | NOT  e = expression { Unary(default, Not, e) }
     | MINUS e = expression %prec NOT { Unary(default, UMinus, e) }
+    | i = BUILTIN LPAREN l = separated_nonempty_list(COMMA, expression) RPAREN
+	{ FuncCall(default, i, l) }
     | i = INT { Int (default, i) }
     | f = FLOAT { Float (default, f) }
     | b = BOOL { Bool (default, b) }
     | id = ID { Id (default, id) }
+    | s = STRING { String (default, s) }
     | NIL { Nil default }
     | LPAREN e = expression RPAREN { e }
 

@@ -44,9 +44,9 @@ begin with Agent
   op closeL == revoke(caller)
 end
 
--- interface HighLow inherits High, Low
--- begin
--- end
+interface HighLow inherits High, Low
+begin
+end
 
 class HLAuth implements HighLow
              inherits LAuth, HAuth

@@ -28,9 +28,11 @@ type 'a expression =
     | Int of 'a * int
     | Float of 'a * float
     | Bool of 'a * bool
+    | String of 'a * string
     | Id of 'a * string
     | Unary of 'a * unaryop * 'a expression
     | Binary of 'a * binaryop * 'a expression * 'a expression
+    | FuncCall of 'a * string * 'a expression list
 and unaryop =
     Not
     | UMinus
@@ -424,6 +426,7 @@ let rec maude_of_creol_expression out =
     | Float (_, f) -> ()
     | Bool (_, false) -> output_string out "bool(false)"
     | Bool (_, true) -> output_string out "bool(true)"
+    | String (_, s) -> output_string out ("\"" ^ s ^ "\"")
     | Id (_, i) -> output_string out ("'" ^ i)
     | Unary (_, o, e) ->
 	output_string out ( "( " ^ (match o with
