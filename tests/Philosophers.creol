@@ -1,63 +1,62 @@
-class Philosopher(neighbor: Phil) implements Phil 
+interface Phil
+begin
+  op borrowStick
+  op returnStick
+end
+
+interface Butler
+begin
+  with Phil op getNeighbor(out neighbor: Phil)
+end
+
+class Philosopher(butler: Butler) implements Phil 
 begin 
-	var hungry: Bool
-	var chopstick: Bool
+  var hungry: Bool
+  var chopstick: Bool
+  var neighbor: Phil
  
-	op init ==
-		chopstick := true;
-		hungry := false; 
-		if neighbor=null then
-			neighbor:=this 
-		else
-			neighbor.seat(;neighbor)
-		fi
+  op init == chopstick := true; hungry := false; butler.getNeighbor(; neighbor)
  
-	op run ==
-		!think();
-		!eat();
-		!digest() 
+  op run == !think() ||| !eat() ||| !digest() 
 
-	op think ==
-		await not hungry;
-		-- <thinking>;
-		await wait;
-		!think()
+  op digest == await wait ; hungry := true; await wait; !digest()
 
-	op eat ==
-		var l :Label;
-		await hungry;
-		l!neighbor.borrowStick();
-		await (chopstick and l?);
-		-- <eating>;
-		hungry := false; 
-		!neighbor.returnStick();
-		await wait;
-		!eat()
+  op eat == await hungry; l!neighbor.borrowStick(); await l?; await chopstick;
+    hungry := false; !neighbor.returnStick(); await wait; !eat()
 
-	op digest ==
-		await not hungry;
-		hungry := true;
-		await wait;
-		!digest()
+  op think == await not hungry; await wait; !think()
 
-with Phil 
+  with Phil 
+    op borrowStick == await chopstick; chopstick := false 
+    op returnStick == chopstick := true 
  
-	op borrowStick ==
-		await chopstick;
-		chopstick := false 
- 
-	op returnStick ==
-		chopstick := true 
- 
-	op seat(out n:Phil) ==
-		n := neighbor;
-		neighbor := caller
+end
 
-end 
+class Butler implements Butler
+begin
+  var p1: Phil
+  var p2: Phil
+  var p3: Phil
+  var p4: Phil
+  var p5: Phil
 
-var phil : Phil := null;
-phil := new Philosopher(null);
-phil := new Philosopher(phil);
-phil := new Philosopher(phil);
-phil := new Philosopher(phil);
-phil := new Philosopher(phil)
+  op init ==
+    skip
+
+  op run ==
+    p1 := new Philosopher(this);
+    p2 := new Philosopher(this);
+    p3 := new Philosopher(this);
+    p4 := new Philosopher(this);
+    p5 := new Philosopher(this)
+
+  with Phil
+    op getNeighbor(out neighbor: Phil) ==
+      if caller = p1 then neighbor := p2 else
+      if caller = p2 then neighbor := p3 else
+      if caller = p3 then neighbor := p4 else
+      if caller = p4 then neighbor := p5 else
+      neighbor := p1 fi fi fi fi
+
+end
+

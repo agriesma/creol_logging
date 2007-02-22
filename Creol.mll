@@ -5,8 +5,8 @@
 open CreolParser
 }
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)
-let CID = [ 'A'-'Z' ][ '_' '0'-'9' 'a'-'z' 'A'-'Z' ]*
-let ID =  [ 'a'-'z' ][ '_' '0'-'9' 'a'-'z' 'A'-'Z' ]*
+let CID = [ 'A'-'Z' ][ 'a'-'z' 'A'-'Z' ]*
+let ID =  [ 'a'-'z' ][ 'a'-'z' 'A'-'Z' '0'-'9' ]*
 rule token = parse
 	  [' ' '\t'] { token lexbuf }
 	| '\n' { token lexbuf }
@@ -34,12 +34,13 @@ rule token = parse
 	| ']' { RBRACK }
 	| '(' { LPAREN }
 	| ')' { RPAREN }
-(*	| '{' { LBRACE }
-	| '}' { RBRACE } *)
+	| '{' { LBRACE }
+	| '}' { RBRACE }
 (*	| "<>" { DIAMOND } *)
 	| "|||" { MERGE }
 (*	| '|' { BAR } *)
 	| "and" { AND }
+	| "await" { AWAIT }
 	| "begin" { BEGIN }
 	| "class" { CLASS }
 	| "contracts" { CONTRACTS }
@@ -54,6 +55,7 @@ rule token = parse
 	| "interface" { INTERFACE }
 	| "in" { IN }
 	| "new" { NEW }
+	| "nil" { NIL }
 	| "not" { NOT }
 	| "op" { OP }
 	| "or" { OR }
@@ -62,6 +64,7 @@ rule token = parse
 	| "then" { THEN }
 	| "true" { BOOL(true) }
 	| "var" { VAR }
+	| "wait" { WAIT }
 	| "with" { WITH }
 	| "xor" { XOR }
 	| FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }

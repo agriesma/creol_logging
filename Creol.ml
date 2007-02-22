@@ -24,7 +24,8 @@
 (** The abstract syntax of the (unspecified) Creol expression language or
     functional sub-language *)
 type 'a expression =
-    Int of 'a * int
+    Nil of 'a
+    | Int of 'a * int
     | Float of 'a * float
     | Bool of 'a * bool
     | Id of 'a * string
@@ -50,7 +51,8 @@ and binaryop =
     | Iff
 
 type 'a guard =
-    Label of 'a * string
+    Wait of 'a
+    | Label of 'a * string
     | Condition of 'a * 'a expression
     | Conjunction of 'a * 'a guard * 'a guard
 
@@ -63,8 +65,10 @@ type 'a statement =
     | Sequence of 'a * 'a statement * 'a statement
     | Merge of 'a * 'a statement * 'a statement
     | Choice of 'a * 'a statement * 'a statement
-    | Call of 'a * string option * 'a expression * string *
+    | ASyncCall of 'a * string option * 'a expression * string *
 	'a expression list * string list option
+    | SyncCall of 'a * 'a expression * string *
+	'a expression list * string list
 
 (** The abstract syntax of Creol *)
 type 'a vardecl =
@@ -75,6 +79,7 @@ type 'a creolmethod =
       meth_coiface: string;
       meth_inpars: 'a vardecl list;
       meth_outpars: 'a vardecl list;
+      meth_vars: 'a vardecl list;
       meth_body: 'a statement option }
 
 type 'a inherits = string * ('a expression list)
@@ -96,6 +101,19 @@ type  'a interfacedecl =
 type 'a declaration =
     Class of 'a classdecl
     | Interface of 'a interfacedecl
+
+let statement_note =
+  function
+    Skip a -> a
+    | Assign(a, _, _) -> a
+    | Await(a, _) -> a
+    | If(a, _, _, _) -> a
+    | New(a, _, _, _) -> a
+    | Sequence(a, _, _) -> a
+    | Merge(a, _, _) -> a
+    | Choice(a, _, _) -> a
+    | ASyncCall(a, _, _, _, _, _) -> a
+    | SyncCall(a, _, _, _, _) -> a
 
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
@@ -130,19 +148,35 @@ and simplify_statement =
 				 simplify_statement s2)
     | Choice (a, s1, s2) -> Choice (a, simplify_statement s1,
 				   simplify_statement s2)
-    | Call (a, l, e, n, p, r) -> Call (a, l, simplify_expression e, n,
-				      simplify_expression_list p, r)
+    | ASyncCall (a, l, e, n, p, r) ->
+	ASyncCall (a, l, simplify_expression e, n,
+		  simplify_expression_list p, r)
+    | SyncCall (a, e, n, p, r) ->
+	SyncCall (a, simplify_expression e, n, simplify_expression_list p, r)
     | s -> s
 and simplify_parameter_list l =
   l
+and simplify_method_variables note =
+  function
+      [] -> Skip note
+    | [{ var_name = n; var_type = _; var_init = Some i }] ->
+	Assign(note, n, simplify_expression i)
+    | { var_name = n; var_type = _; var_init = Some i }::l ->
+	Sequence(note, Assign(note, n, simplify_expression i),
+		(simplify_method_variables note l))
+    | _::l -> simplify_method_variables note l
 and simplify_method m =
   { meth_name = m.meth_name;
     meth_coiface = m.meth_coiface;
     meth_inpars = m.meth_inpars;
     meth_outpars = m.meth_outpars;
+    meth_vars = m.meth_vars;
     meth_body = match m.meth_body with
 	None -> None
-      | Some s -> Some (simplify_statement s) }
+      | Some s ->
+	  let note = statement_note s in
+	    Some (Sequence(note, simplify_method_variables note m.meth_vars,
+			 (simplify_statement s))) }
 and simplify_method_list =
   function
       [] -> []
@@ -174,7 +208,8 @@ and simplify =
 
 let rec pretty_print_expression out_channel =
   function
-      Int (_, i) -> output_string out_channel (string_of_int i)
+      Nil _ -> output_string out_channel "nil"
+    | Int (_, i) -> output_string out_channel (string_of_int i)
     | Float (_, f) -> output_string out_channel (string_of_float f)
     | Bool (_, b) -> output_string out_channel (string_of_bool b)
     | Id (_, i) -> output_string out_channel i
@@ -222,7 +257,8 @@ let rec pretty_print_string_list out_channel =
 
 let rec pretty_print_guard out_channel =
   function
-      Label(_, l) -> output_string out_channel l; output_string out_channel "?"
+      Wait _ -> output_string out_channel "wait"
+    | Label(_, l) -> output_string out_channel (l ^ "?")
     | Condition (_, c) -> pretty_print_expression out_channel c
     | Conjunction (_, l, r) ->
 	pretty_print_guard out_channel l;
@@ -272,10 +308,19 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel i;
 	output_string out_channel " := ";
 	pretty_print_expression out_channel e
-    | Call (_, l, c, m, a, r) ->
+    | SyncCall (_, c, m, a, r) ->
+	pretty_print_expression out_channel c ;
+	output_string out_channel ("." ^ m);
+	output_string out_channel "(" ;
+	pretty_print_expression_list out_channel a;
+	output_string out_channel "; " ;
+	pretty_print_string_list out_channel r;
+	output_string out_channel ")"
+    | ASyncCall (_, l, c, m, a, r) ->
 	(match l with
 	    None -> ()
-	  | Some l -> output_string out_channel (l ^ "!") ) ;
+	  | Some l -> output_string out_channel l ) ;
+	output_string out_channel "!";
 	pretty_print_expression out_channel c ;
 	output_string out_channel ("." ^ m);
 	( match (a, r) with
@@ -321,6 +366,7 @@ let rec pretty_print_methods out_channel =
 	    | l -> output_string out_channel "; out ";
 		pretty_print_vardecls out_channel "" ", " "" l );
 	  output_string out_channel ")" ;
+	  pretty_print_vardecls out_channel "var " ";" ";" m.meth_vars;
 	  (match m.meth_body with
 	      None -> ()
 	    | Some s -> output_string out_channel " == " ;
@@ -373,22 +419,23 @@ let rec pretty_print out_channel =
 
 let rec maude_of_creol_expression out =
   function
-      Int (_, i) -> output_string out ("int(" ^ (string_of_int i) ^ ")")
+      Nil _ -> output_string out "null"
+    | Int (_, i) -> output_string out ("int(" ^ (string_of_int i) ^ ")")
     | Float (_, f) -> ()
     | Bool (_, false) -> output_string out "bool(false)"
     | Bool (_, true) -> output_string out "bool(true)"
     | Id (_, i) -> output_string out ("'" ^ i)
     | Unary (_, o, e) ->
-	output_string out ((match o with
+	output_string out ( "( " ^ (match o with
 	    Not ->  "'not"
-	  | UMinus -> "'neg") ^ "[[");
+	  | UMinus -> "'neg") ^ " [[ ");
 	maude_of_creol_expression out e;
-	output_string out "]]"
+	output_string out "]] )"
     | Binary (_, o, l, r) ->
-	output_string out ((match o with
+	output_string out ("( " ^ (match o with
 	    Plus -> "'plus"
 	  | Minus -> "'minus"
-	  | Times -> "'mult"
+	  | Times -> "'times"
 	  | Div -> "'div"
           | And -> "'and"
           | Iff -> "'equal"
@@ -397,14 +444,20 @@ let rec maude_of_creol_expression out =
           | Le -> "'lessEq"
           | Eq -> "'equal") ^ "[[");
 	maude_of_creol_expression_list out (l::[r]);
-	output_string out "]]"
+	output_string out "]] )"
 and maude_of_creol_expression_list out_channel =
   function
-      [] -> ()
-    | e::[] -> maude_of_creol_expression out_channel e
+      [] -> output_string out_channel "emp"
+    | [e] -> maude_of_creol_expression out_channel e
     | e::l -> maude_of_creol_expression out_channel e;
 	output_string out_channel " # ";
 	maude_of_creol_expression_list out_channel l
+and maude_of_creol_identifier_list out_channel =
+  function
+      [] -> output_string out_channel "emp"
+    | [i] -> output_string out_channel ("'" ^ i)
+    | i::l -> output_string out_channel ("'" ^ i ^ " # ");
+	maude_of_creol_identifier_list out_channel l
 
 let rec maude_of_creol_string_list out_channel =
   function
@@ -415,10 +468,13 @@ let rec maude_of_creol_string_list out_channel =
 
 let rec maude_of_creol_guard out =
   function
-      Label (_, l) -> ()
+      Label (_, l) -> output_string out ("( '" ^ l ^ " ? )")
+    | Wait _ -> output_string out "wait"
     | Condition (_, c) -> maude_of_creol_expression out c
-    | Conjunction (_, l, r) -> maude_of_creol_guard out l;
-	output_string out " 'and "; maude_of_creol_guard out r
+    | Conjunction (_, l, r) ->
+	output_string out "( "; maude_of_creol_guard out l;
+	output_string out " 'and "; maude_of_creol_guard out r ;
+	output_string out ") "
 
 let rec maude_of_creol_statement out =
   function
@@ -452,22 +508,28 @@ let rec maude_of_creol_statement out =
     | Assign (_, i, e) ->
 	output_string out ("'" ^ i ^ " ::= ") ;
 	maude_of_creol_expression out e
-    | Call (_, l, c, m, a, r) ->
+    | ASyncCall (_, l, c, m, a, r) ->
 	(match l with
 	    None -> ()
-	  | Some l -> output_string out (l ^ "!") ) ;
+	  | Some l -> output_string out ("'" ^ l) ) ;
+	output_string out " ! ";
+	maude_of_creol_expression out c ;
+	output_string out (" . '" ^ m ^ " ( ") ;
+	maude_of_creol_expression_list out a;
+	( match r with
+	    None -> ()
+	  | Some rl ->
+	      output_string out " ; " ;
+	      maude_of_creol_identifier_list out rl ) ;
+	output_string out ")"
+    | SyncCall (_, c, m, a, r) ->
 	maude_of_creol_expression out c ;
 	output_string out (" . '" ^ m);
-	( match (a, r) with
-	    ([], None) -> ()
-	  | (_, None) -> output_string out "(" ;
-	      maude_of_creol_expression_list out a;
-	      output_string out ")"
-	  | (_, Some rl) -> output_string out "(" ;
-	      maude_of_creol_expression_list out a;
-	      output_string out " ; " ;
-	      maude_of_creol_string_list out rl;
-	      output_string out ")" )
+	output_string out "(" ;
+	maude_of_creol_expression_list out a;
+	output_string out " ; " ;
+	maude_of_creol_identifier_list out r;
+	output_string out ")"
 
 
 let maude_of_creol_attribute out a =
@@ -523,8 +585,9 @@ let maude_of_creol_method out m =
   output_string out ("\n  < '" ^ m.meth_name ^ " : Mtdname | Param: ");
   maude_of_creol_parameter_list out m.meth_inpars;
   output_string out ", Latt: " ;
-  maude_of_creol_class_attribute_list out (m.meth_inpars @ m.meth_outpars);
-  output_string out ", Code: " ;  
+  maude_of_creol_class_attribute_list out
+    (m.meth_inpars @ m.meth_outpars @ m.meth_vars);
+  output_string out ", Code: " ;
   ( match m.meth_body with
       None -> output_string out "skip"
     | Some s -> maude_of_creol_statement out s ;

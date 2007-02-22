@@ -2,7 +2,8 @@
 (** The abstract syntax of the (unspecified) Creol expression language or
     functional sub-language *)
 type 'a expression =
-    Int of 'a * int
+    Nil of 'a
+    | Int of 'a * int
     | Float of 'a * float
     | Bool of 'a * bool
     | Id of 'a * string
@@ -28,7 +29,8 @@ and binaryop =
     | Iff
 
 type 'a guard =
-    Label of 'a * string
+    Wait of 'a
+    | Label of 'a * string
     | Condition of 'a * 'a expression
     | Conjunction of 'a * 'a guard * 'a guard
 
@@ -41,8 +43,10 @@ type 'a statement =
     | Sequence of 'a * 'a statement * 'a statement
     | Merge of 'a * 'a statement * 'a statement
     | Choice of 'a * 'a statement * 'a statement
-    | Call of 'a * string option * 'a expression * string *
+    | ASyncCall of 'a * string option * 'a expression * string *
 	'a expression list * string list option
+    | SyncCall of 'a * 'a expression * string *
+	'a expression list * string list
 
 (** The abstract syntax of Creol *)
 type 'a vardecl =
@@ -53,6 +57,7 @@ type 'a creolmethod =
       meth_coiface: string;
       meth_inpars: 'a vardecl list;
       meth_outpars: 'a vardecl list;
+      meth_vars: 'a vardecl list;
       meth_body: 'a statement option }
 
 type 'a inherits = string * ('a expression list)
@@ -74,6 +79,8 @@ type  'a interfacedecl =
 type 'a declaration =
     Class of 'a classdecl
     | Interface of 'a interfacedecl
+
+val statement_note: 'a statement -> 'a
 
 val pretty_print: out_channel -> 'a declaration list -> unit
 

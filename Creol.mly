@@ -5,9 +5,9 @@
 
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END NEW
-%token INTERFACE WITH OP VAR IN OUT
+%token INTERFACE WITH OP VAR IN OUT WAIT
 %token EQEQ COMMA SEMI COLON ASSIGN RBRACK LBRACK LPAREN RPAREN
-(* %token LBRACE RBRACE *)
+%token LBRACE RBRACE
 %token QUESTION BANG BOX MERGE DOT
 (* %token DIAMOND *)
 (* %token BAR *)
@@ -18,6 +18,7 @@
 %token <int>  INT
 %token <bool> BOOL
 %token <float> FLOAT
+%token NIL
 %nonassoc EQ NE
 %left AND OR XOR IFF
 %left LE LT GT GE
@@ -78,12 +79,12 @@ method_decl:
       WITH m = CID OP i = ID p = parameters_opt {
 	match p with (ins, outs) ->
 	  { meth_name = i; meth_coiface = m; meth_inpars = ins;
-	    meth_outpars = outs; meth_body = None} }
+	    meth_outpars = outs; meth_vars = []; meth_body = None} }
     | OP i = ID p = parameters_opt {
 	match p with
 	    (ins, outs) ->
 	      { meth_name = i; meth_coiface = ""; meth_inpars = ins;
-		meth_outpars = outs; meth_body = None} }
+		meth_outpars = outs; meth_vars = []; meth_body = None} }
 
 parameters_opt:
       (* empty *) { ([], []) }
@@ -98,10 +99,11 @@ outputs:
       OUT l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
 
 method_def:
-      d = method_decl EQEQ a = loption(terminated(attributes, SEMI)) s = statement {
-	{ meth_name = d.meth_name; meth_coiface = d.meth_coiface;
+      d = method_decl; EQEQ; a = loption(terminated(attributes, SEMI));
+	s = statement
+    { { meth_name = d.meth_name; meth_coiface = d.meth_coiface;
 	  meth_inpars = d.meth_inpars; meth_outpars = d.meth_outpars;
-	  meth_body = Some s} }
+	  meth_vars = a; meth_body = Some s} }
 
 methods_opt:
       (* empty *) { [] }
@@ -155,14 +157,27 @@ basic_statement:
     | IF e = expression THEN t = statement FI
         { If(default, e, t, Skip default) }
     | AWAIT g = guard { Await (default, g) }
-    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID i = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
-        { Call (default, l, c, m, i, None) }
-    | l = ioption(terminated(ID, BANG)) c = expression DOT m = ID LPAREN i = separated_list(COMMA, expression) SEMI o = separated_list(COMMA, ID) RPAREN
-        { Call (default, l, c, m, i, Some o) }
-    | LPAREN s = statement RPAREN { s }
+    | c = ioption(terminated(expression, DOT)); m = ID;
+	p = ioption(delimited(LPAREN, pair(separated_list(COMMA, expression), loption(preceded (SEMI, separated_list(COMMA, ID)))), RPAREN))
+	{ let caller = match c with
+	    None -> Id (default, "this")
+	  | Some e -> e in
+	    match p with
+		None -> SyncCall (default, caller , m, [], [])
+	      | Some (i, o) -> SyncCall (default, caller, m, i, o) }
+    | l = ioption(ID) BANG c = ioption(terminated(expression, DOT)) m = ID;
+	p = ioption(delimited(LPAREN, pair(separated_list(COMMA, expression), ioption(preceded (SEMI, separated_list(COMMA, ID)))), RPAREN))
+	{ let caller = match c with
+	    None -> Id (default, "this")
+	  | Some e -> e in
+	    match p with
+		None -> ASyncCall (default, l, caller , m, [], None)
+	      | Some (i, o) -> ASyncCall (default, l, caller, m, i, o) }
+    | LBRACE s = statement RBRACE { s }
 
 guard:
       l = ID QUESTION { Label (default, l) }
+    | WAIT { Wait default }
     | l = ID QUESTION AND g = guard
         { Conjunction (default, Label(default, l), g) }
     | e = expression { Condition (default, e) }
@@ -174,7 +189,8 @@ expression:
     | i = INT { Int (default, i) }
     | f = FLOAT { Float (default, f) }
     | b = BOOL { Bool (default, b) }
-    | i = ID { Id (default, i) }
+    | id = ID { Id (default, id) }
+    | NIL { Nil default }
     | LPAREN e = expression RPAREN { e }
 
 %inline binop:
