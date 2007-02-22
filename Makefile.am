@@ -24,7 +24,7 @@ OCAMLPATH		= .
 export OCAMLPATH
 
 # Subdirs
-SUBDIRS			= . maude tests
+SUBDIRS			= . info maude tests
 
 # OCaml compilers.
 OCAMLC			= $(OCAMLFIND) ocamlc
