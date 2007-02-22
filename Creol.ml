@@ -627,6 +627,9 @@ let rec maude_of_creol_decl_list out =
     | Interface i::l -> maude_of_creol_interface out i;
 	maude_of_creol_decl_list out l
 
+(** Convert an abstract syntax tree l of a creol program to a
+    representation for the Maude CMC and write the result to the output
+    channel out. *)
 let maude_of_creol out l =
   output_string out "load interpreter\nmod PROGRAM is\npr INTERPRETER .\nop init : -> Configuration [ctor] .\neq init =\n" ;
   maude_of_creol_decl_list out l ;
