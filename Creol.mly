@@ -14,7 +14,7 @@
 (* %token DOTDOT *)
 %token IF THEN ELSE FI SKIP AWAIT
 %token AND OR XOR IFF NOT PLUS MINUS TIMES DIV EQ NE LT LE GT GE
-%token <string> CID ID BUILTIN STRING
+%token <string> CID ID STRING
 %token <int>  INT
 %token <bool> BOOL
 %token <float> FLOAT
@@ -175,8 +175,8 @@ expression:
       l = expression o = binop r = expression { Binary(default, o, l, r) }
     | NOT  e = expression { Unary(default, Not, e) }
     | MINUS e = expression %prec NOT { Unary(default, UMinus, e) }
-    | i = BUILTIN LPAREN l = separated_nonempty_list(COMMA, expression) RPAREN
-	{ FuncCall(default, i, l) }
+    | f = ID LBRACK l = separated_nonempty_list(COMMA, expression) RBRACK
+	{ FuncCall(default, f, l) }
     | i = INT { Int (default, i) }
     | f = FLOAT { Float (default, f) }
     | b = BOOL { Bool (default, b) }

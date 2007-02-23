@@ -71,12 +71,11 @@ rule token = parse
 	| "wait" { WAIT }
 	| "with" { WITH }
 	| "xor" { XOR }
-	| "length" { BUILTIN(Lexing.lexeme lexbuf) }
 	| FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
 	| ['0'-'9']+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
 	| CID { CID(Lexing.lexeme lexbuf) }
 	| ID { ID(Lexing.lexeme lexbuf) }
-	| STRING { let s = Lexing.lexeme lexbuf in STRING(String.sub s 1 (String.length s - 1)) }
+	| STRING { let s = Lexing.lexeme lexbuf in STRING(String.sub s 1 ((String.length s) - 2)) }
 	| eof { EOF }
 and c_style_comment = parse
 	  "*/"	{ token lexbuf }

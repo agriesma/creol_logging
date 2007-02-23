@@ -426,7 +426,7 @@ let rec maude_of_creol_expression out =
     | Float (_, f) -> ()
     | Bool (_, false) -> output_string out "bool(false)"
     | Bool (_, true) -> output_string out "bool(true)"
-    | String (_, s) -> output_string out ("\"" ^ s ^ "\"")
+    | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
     | Id (_, i) -> output_string out ("'" ^ i)
     | Unary (_, o, e) ->
 	output_string out ( "( " ^ (match o with
@@ -451,7 +451,7 @@ let rec maude_of_creol_expression out =
 	output_string out "]] )"
     | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
 	maude_of_creol_expression_list out a;
-	output_string out " ]]"
+	output_string out " ]] )"
 and maude_of_creol_expression_list out_channel =
   function
       [] -> output_string out_channel "emp"
@@ -497,17 +497,23 @@ let rec maude_of_creol_statement out =
 	output_string out ") el ("; maude_of_creol_statement out f;
 	output_string out ") fi"
     | Sequence (_, l, r) ->
-	output_string out "( ("; maude_of_creol_statement out l; 
-	output_string out ") ; ("; maude_of_creol_statement out r; 
-	output_string out ") )"
+	output_string out "( ( ";
+	maude_of_creol_statement out l; 
+	output_string out " ) ; ( ";
+	maude_of_creol_statement out r; 
+	output_string out " ) )"
     | Merge (_, l, r) ->
-	output_string out "( "; maude_of_creol_statement out l; 
-	output_string out " ||| "; maude_of_creol_statement out r; 
-	output_string out " )"
+	output_string out "( ( ";
+	maude_of_creol_statement out l; 
+	output_string out " ) ||| ( ";
+	maude_of_creol_statement out r; 
+	output_string out " ) )"
     | Choice (_, l, r) ->
-	output_string out "( "; maude_of_creol_statement out l; 
-	output_string out " [] "; maude_of_creol_statement out r; 
-	output_string out " )"
+	output_string out "( ( ";
+	maude_of_creol_statement out l; 
+	output_string out " ) [] ( ";
+	maude_of_creol_statement out r; 
+	output_string out " ) )"
     | New (_, i, c, a) ->
 	output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "(") ;
 	maude_of_creol_expression_list out a ;
@@ -528,15 +534,15 @@ let rec maude_of_creol_statement out =
 	  | Some rl ->
 	      output_string out " ; " ;
 	      maude_of_creol_identifier_list out rl ) ;
-	output_string out ")"
+	output_string out " )"
     | SyncCall (_, c, m, a, r) ->
 	maude_of_creol_expression out c ;
 	output_string out (" . '" ^ m);
-	output_string out "(" ;
+	output_string out "( " ;
 	maude_of_creol_expression_list out a;
 	output_string out " ; " ;
 	maude_of_creol_identifier_list out r;
-	output_string out ")"
+	output_string out " )"
 
 
 let maude_of_creol_attribute out a =
