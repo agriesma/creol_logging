@@ -1,0 +1,58 @@
+Summary:	Environment for the Creol Language
+Name:		creolcomp
+Version:	@VERSION@
+Release:	0
+URL:		http://creol.berlios.de/
+Source0:	%{name}-%{version}.tar.gz
+License:	GPL
+Group:		Development/Other
+BuildRoot:	%{_tmppath}/%{name}-root
+
+BuildRequires: autoconf >= 2.59
+BuildRequires: automake >= 1.9
+BuildRequires: ocaml >= 3.09
+
+%define ocamllib %(ocamlc -where)
+%define sitelib %{ocamllib}/site-lib
+
+%description
+
+
+%prep
+rm -rf %{buildroot}
+%setup -q
+
+%build
+%configure
+make
+
+%check
+make check
+
+%install
+rm -rf %{buildroot}
+%makeinstall
+
+# If we succeeded in building a native version, we only package this version,
+# otherwise we distribute the byte code version.
+test ! -x %{buildroot}%{_bindir}/creolcomp.opt || \
+    mv %{buildroot}%{_bindir}/creolcomp.opt %{buildroot}%{_bindir}/creolcomp
+
+%clean
+rm -rf %{buildroot}
+
+%post
+/usr/sbin/install-info %{_infodir}/%{name}.info %{_infodir}/dir
+
+%preun
+/usr/sbin/install-info --delete %{_infodir}/%{name}.info %{_infodir}/dir
+
+%files
+%defattr(-,root,root)
+%doc AUTHORS ChangeLog COPYING INSTALL NEWS README
+%{_bindir}/creolcomp
+%{_infodir}/*.info*
+%exclude %{_infodir}/dir
+
+%changelog
+

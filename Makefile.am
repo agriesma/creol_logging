@@ -33,7 +33,8 @@ MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 			  depcomp missing aclocal.m4 install-sh \
 			  CreolLex.ml CreolParser.ml CreolParser.mli
 
-EXTRA_DIST		= .depend Creol.mll Creol.mly
+EXTRA_DIST		= .depend Creol.mll Creol.mly creolcomp.spec \
+			  creolcomp.spec.in
 
 BUILT_SOURCES		= Version.ml CreolLex.ml CreolParser.ml CreolParser.mli
 
@@ -69,6 +70,9 @@ Version.ml: ${top_srcdir}/configure.ac ${srcdir}/Makefile.am
 	@echo "let creolcomp_package = \"${PACKAGE}\";;" >> Version.ml
 	@echo "let creolcomp_datadir = \"${pkgdatadir}\";;" >> Version.ml
 	echo Wrote $@.
+
+creolcomp.spec: ${srcdir}/creolcomp.spec.in ${srcdir}/configure.ac
+	sed s,@VERSION\@,@VERSION@,g $< > $@
 
 # We must make sure that Creol.cmi is build before CreolParser.ml, but we
 # do not want that CreolParser.ml depends on Creol.cmi, because then the
