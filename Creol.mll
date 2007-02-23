@@ -4,12 +4,15 @@
 {
 open CreolParser
 }
+let COMMENT = '/' '/' [ ^ '\n' ]*
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)
 let CID = [ 'A'-'Z' ][ 'a'-'z' 'A'-'Z' ]*
 let ID =  [ 'a'-'z' ][ 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let STRING = '"' [^ '\n' '"' ]* '"'
 rule token = parse
 	  [' ' '\t'] { token lexbuf }
+	| COMMENT { token lexbuf }
+	| "/*" { c_style_comment lexbuf }
 	| '\n' { token lexbuf }
 	| ":=" { ASSIGN }
 	| ':' { COLON }
@@ -75,3 +78,8 @@ rule token = parse
 	| ID { ID(Lexing.lexeme lexbuf) }
 	| STRING { let s = Lexing.lexeme lexbuf in STRING(String.sub s 1 (String.length s - 1)) }
 	| eof { EOF }
+and c_style_comment = parse
+	  "*/"	{ token lexbuf }
+	| '\n' { c_style_comment lexbuf }
+	| '*' { c_style_comment lexbuf }
+	| [ ^ '\n' '*'] * { c_style_comment lexbuf }

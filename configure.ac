@@ -41,20 +41,11 @@ AC_PATH_PROG([CHCON], chcon)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLC], [ocamlc], [ocamlc], [false])
-AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
-AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [false])
+AC_CHECK_PROG([OCAMLOPT], [ocamlopt], [ocamlopt], [echo])
+AC_CHECK_PROG([OCAMLDEP], [ocamldep], [ocamldep], [false])
+AC_CHECK_PROG([OCAMLDOC], [ocamldoc], [ocamldoc], [echo])
 AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
 AC_CHECK_PROG([MENHIR], [menhir], [menhir], [false])
-
-dnl figure out the site-lib directory. The following is bogus...
-OCAML_LIBDIR='${libdir}/ocaml'
-OCAML_SITELIB='${OCAML_LIBDIR}/site-lib'
-AC_SUBST([OCAML_LIBDIR], [$OCAML_LIBDIR])
-AC_SUBST([OCAML_SITELIB], [$OCAML_SITELIB])
-
-dnl Check for the tools needed to build the documentation.
-AC_PATH_PROG([OCAMLDOC], ocamldoc)
-AC_PATH_PROG([OCAMLWEB], ocamlweb)
 
 AC_CONFIG_TESTDIR(tests, source)
 AC_OUTPUT([Makefile info/Makefile maude/Makefile tests/atlocal tests/Makefile])

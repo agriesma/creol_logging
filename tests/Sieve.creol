@@ -1,3 +1,5 @@
+// The sieve example.
+
 interface Sieve
 begin
 with Any
