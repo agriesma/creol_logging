@@ -45,7 +45,7 @@ AC_CHECK_PROG([OCAMLOPT], [ocamlopt], [ocamlopt], [echo])
 AC_CHECK_PROG([OCAMLDEP], [ocamldep], [ocamldep], [false])
 AC_CHECK_PROG([OCAMLDOC], [ocamldoc], [ocamldoc], [echo])
 AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
-AC_CHECK_PROG([MENHIR], [menhir], [menhir], [false])
+AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
 
 AC_CONFIG_SUBDIRS([xml])
 

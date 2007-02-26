@@ -20,7 +20,7 @@
 # 02111-1307, USA.
 
 # Findlib related
-OCAMLPATH		= .
+OCAMLPATH		= $(top_builddir)
 export OCAMLPATH
 
 # Subdirs
@@ -47,21 +47,24 @@ creolcomp_SOURCES	= Creol.mli Creol.ml \
 
 creolcomp_opt_SOURCES	= $(creolcomp_SOURCES)
 
+OCAMLC_FLAGS		= -package xml
+OCAMLOPT_FLAGS		= -package xml
+
 creolcomp: $(patsubst %.ml, %.cmo, $(patsubst %.mli, %.cmi, $(creolcomp_SOURCES)))
-	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ $(filter %.cmo, $^)
+	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -o $@ $(filter %.cmo, $^)
 
 creolcomp.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolcomp_SOURCES)))
-	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ $(filter %.cmx, $^)
+	$(OCAMLFIND) $(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ $(filter %.cmx, $^)
 
 .PRECIOUS: *.cmo *.cmi *.cmx
 .ml.cmo:
-	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
+	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
 
 .mli.cmi:
-	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
+	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
 
 .ml.cmx:
-	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ -c $<
+	$(OCAMLFIND) $(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ -c $<
 
 Version.ml: ${top_srcdir}/configure.ac ${srcdir}/Makefile.am
 	rm -f Version.ml
@@ -79,20 +82,17 @@ creolcomp.spec: ${srcdir}/creolcomp.spec.in ${srcdir}/configure.ac
 # end user needs to have menhir installed in order to rebuild the parser
 # sources.  We build Creol.cmi by hand here.
 CreolParser.ml CreolParser.mli: Creol.mly
-	$(OCAMLC) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
+	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
 	$(MENHIR) --base CreolParser --infer --explain $<
 
 CreolLex.ml: Creol.mll
 	$(OCAMLLEX) -o $@ $<
 
-creolcomp.tex: $(creolcomp_SOURCES)
-	$(OCAMLWEB) -o $@ $^
-
 distclean-local:
 	test ! -d html || rm -rf html
 
 .depend: ${srcdir}/Makefile.am $(creolcomp_SOURCES)
-	$(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
+	$(OCAMLFIND) $(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
 
 -include ${srcdir}/.depend
 CreolLex.cmo: CreolParser.cmi
