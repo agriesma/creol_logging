@@ -1,6 +1,6 @@
 dnl configure.ac -- use autoconf to create configure from this file.
 dnl
-dnl This file is part of creolcomp
+dnl This file is part of xml (OCaml bindings to libxml2)
 dnl
 dnl Written and Copyright (c) 2007 by Marcel Kyas
 dnl
@@ -19,9 +19,9 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_INIT(creolcomp, 0.0.0, kyas@ifi.uio.no)
+AC_INIT([xml], 0.0.0, mkyas@users.berlios.de)
 AC_PREREQ([2.59])
-AC_CONFIG_SRCDIR([Driver.ml])
+AC_CONFIG_SRCDIR([XmlTextWriter.ml])
 AM_INIT_AUTOMAKE([1.9])
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
@@ -30,24 +30,30 @@ dnl Check for the tools needed to build the text-reader and text-writer
 dnl libraries
 AC_PROG_CC
 AC_PROG_RANLIB
+AM_PATH_XML2(2.6.0)
+AM_PATH_XSLT(1.1.0)
 
 dnl Check for the tools needed to run the tests.
 AC_PATH_PROG([M4], m4)
 AC_PATH_PROG([AUTOM4TE], autom4te)
 AC_PATH_PROG([DIFF], diff)
-
-dnl See whether we have chcon in order to fix tests with selinux.
-AC_PATH_PROG([CHCON], chcon)
+AC_PATH_PROG([XMLLINT], xmllint)
+AC_PATH_PROG([XMLCATALOG], xmlcatalog)
+AC_PATH_PROG([XSLTPROC], xsltproc)
 
 dnl Check for the tools needed to compile ocaml code.
-AC_CHECK_PROG([OCAMLC], [ocamlc], [ocamlc], [false])
-AC_CHECK_PROG([OCAMLOPT], [ocamlopt], [ocamlopt], [echo])
-AC_CHECK_PROG([OCAMLDEP], [ocamldep], [ocamldep], [false])
-AC_CHECK_PROG([OCAMLDOC], [ocamldoc], [ocamldoc], [echo])
-AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
-AC_CHECK_PROG([MENHIR], [menhir], [menhir], [false])
+AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
+AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [false])
+AC_CHECK_PROG([OCAMLWEB], [ocamlweb], [ocamlweb], [echo])
 
-AC_CONFIG_SUBDIRS([xml])
+dnl figure out the site-lib directory. The following is bogus...
+OCAML_LIBDIR='${libdir}/ocaml'
+OCAML_SITELIB='${OCAML_LIBDIR}/site-lib'
+AC_SUBST([OCAML_LIBDIR], [$OCAML_LIBDIR])
+AC_SUBST([OCAML_SITELIB], [$OCAML_SITELIB])
 
-AC_CONFIG_TESTDIR(tests, source)
-AC_OUTPUT([Makefile info/Makefile maude/Makefile tests/atlocal tests/Makefile])
+dnl Check for the tools needed to build the documentation.
+AC_PATH_PROG([OCAMLDOC], ocamldoc)
+
+dnl AC_CONFIG_TESTDIR(tests, source)
+AC_OUTPUT([Makefile])

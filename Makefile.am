@@ -24,7 +24,7 @@ OCAMLPATH		= .
 export OCAMLPATH
 
 # Subdirs
-SUBDIRS			= . info maude tests
+SUBDIRS			= xml . info maude tests
 
 MOSTLYCLEANFILES	= *~ *.aux *.log
 CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
