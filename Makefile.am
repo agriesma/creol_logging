@@ -82,7 +82,7 @@ creolcomp.spec: ${srcdir}/creolcomp.spec.in ${srcdir}/configure.ac
 # end user needs to have menhir installed in order to rebuild the parser
 # sources.  We build Creol.cmi by hand here.
 CreolParser.ml CreolParser.mli: Creol.mly
-	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
+	$(OCAMLC) -o Creol.cmi -c ${srcdir}/Creol.mli
 	$(MENHIR) --base CreolParser --infer --explain $<
 
 CreolLex.ml: Creol.mll
