@@ -23,6 +23,7 @@
 
 type 'a expression =
     Nil of 'a
+    | Null of 'a
     | Int of 'a * int
     | Float of 'a * float
     | Bool of 'a * bool

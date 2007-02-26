@@ -25,6 +25,7 @@
     functional sub-language *)
 type 'a expression =
     Nil of 'a
+    | Null of 'a
     | Int of 'a * int
     | Float of 'a * float
     | Bool of 'a * bool
@@ -211,9 +212,11 @@ and simplify =
 let rec pretty_print_expression out_channel =
   function
       Nil _ -> output_string out_channel "nil"
+    | Null _ -> output_string out_channel "null"
     | Int (_, i) -> output_string out_channel (string_of_int i)
     | Float (_, f) -> output_string out_channel (string_of_float f)
     | Bool (_, b) -> output_string out_channel (string_of_bool b)
+    | String (_, s) -> output_string out_channel ("\"" ^ s ^ "\"")
     | Id (_, i) -> output_string out_channel i
     | Unary (_, o, e) ->
 	output_string out_channel
@@ -241,8 +244,10 @@ let rec pretty_print_expression out_channel =
 	    | Xor -> " xor ");
 	pretty_print_expression out_channel r;
 	output_string out_channel ")"
-
-let rec pretty_print_expression_list out_channel =
+    | FuncCall (_, i, a) -> output_string out_channel (i ^ "[");
+	pretty_print_expression_list out_channel a;
+	output_string out_channel "]";
+and pretty_print_expression_list out_channel =
   function
       [] -> ()
     | e::[] -> pretty_print_expression out_channel e
@@ -421,7 +426,8 @@ let rec pretty_print out_channel =
 
 let rec maude_of_creol_expression out =
   function
-      Nil _ -> output_string out "null"
+      Nil _ -> output_string out "list(emp)"
+    | Null _ -> output_string out "null"
     | Int (_, i) -> output_string out ("int(" ^ (string_of_int i) ^ ")")
     | Float (_, f) -> ()
     | Bool (_, false) -> output_string out "bool(false)"

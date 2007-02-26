@@ -1,0 +1,32 @@
+/* SingleCellBuffer.creol
+
+   by Einar Broch Johnson */
+
+interface Buff
+begin
+op put(in x : Data)
+op get(out x : Data)
+end
+
+class Buffer implements Buff
+begin
+var cell : Data
+var ctr : Int
+var next : Buff
+
+op init == ctr := 0
+op run == skip
+
+op put(in x : Data) == if ctr = 0 
+    then cell := x 
+    else if next = null then next := new Buffer(emp) else skip fi; 
+    next.put(x; emp)
+ fi; ctr := ctr + 1
+
+op get(out x : Data) == await (ctr > 0) ; 
+    if cell /= null then x := cell else next.get(emp; x) fi; 
+    ctr := ctr - 1; cell := null 
+
+end
+
+ 

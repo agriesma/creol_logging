@@ -22,7 +22,7 @@ begin
     var d: Integer := n / p, r: Integer := n - d * p;
     if r = 0
     then res := false
-    else if next /= nil
+    else if next /= null
          then next.send(n; res)
          else next := new Sieve(n); res := true
          fi

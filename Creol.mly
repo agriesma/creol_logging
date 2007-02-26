@@ -18,7 +18,7 @@
 %token <int>  INT
 %token <bool> BOOL
 %token <float> FLOAT
-%token NIL
+%token NIL NULL
 %nonassoc EQ NE
 %left AND OR XOR IFF
 %left LE LT GT GE
@@ -183,6 +183,7 @@ expression:
     | id = ID { Id (default, id) }
     | s = STRING { String (default, s) }
     | NIL { Nil default }
+    | NULL { Null default }
     | LPAREN e = expression RPAREN { e }
 
 %inline binop:

@@ -6,5 +6,6 @@ AT_TESTED(creolcomp)
 AT_SETUP([test])
 AT_CHECK([creolcomp ${abs_srcdir}/Sieve.creol], [0], ignore, [])
 AT_CHECK([creolcomp ${abs_srcdir}/Philosophers.creol], [0], ignore, [])
+AT_CHECK([creolcomp ${abs_srcdir}/SingleCellBuffer.creol], [0], ignore, [])
 AT_CHECK([creolcomp ${abs_srcdir}/Alarmclock.creol], [0], ignore, [])
 AT_CLEANUP

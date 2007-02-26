@@ -28,7 +28,7 @@
 
 (defvar creol-font-lock-keywords
   '(("\\<\\(and\\|begin\\|class\\|contracts\\|new\\|else\\|end\\|fi\\|if\\|implements\\|inherits\\|interface\\|in\\|not\\|op\\|or\\|out\\|skip\\|then\\|var\\|wait\\|with\\)\\>" . font-lock-keyword-face)
-    ("\\<\\(true\\|false\\|null\\)\\>" . font-lock-constant-face)
+    ("\\<\\(true\\|false\\|null\\|nil\\)\\>" . font-lock-constant-face)
     ("\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" . font-lock-builtin-face)
     ("op \\(\\sw+\\)" (1 font-lock-function-name-face))
     ("\\.\\(\\sw+\\)" (1 font-lock-function-name-face))

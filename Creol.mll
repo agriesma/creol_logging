@@ -60,6 +60,7 @@ rule token = parse
 	| "in" { IN }
 	| "new" { NEW }
 	| "nil" { NIL }
+	| "null" { NULL }
 	| "not" { NOT }
 	| "op" { OP }
 	| "or" { OR }
