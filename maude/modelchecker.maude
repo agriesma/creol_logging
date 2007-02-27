@@ -754,7 +754,7 @@ eq [if-el] :
 
 rl [while] :
   < O : C | Att: S, Pr: (L, while E do SL1 od ; SL2), PrQ: W, Lcnt: N >
-  =
+  =>
   < O : C | Att: S, 
       Pr: (L, (if E th (SL1 ; while E do SL1 od) el skip fi); SL2),
       PrQ: W, Lcnt: N > .
