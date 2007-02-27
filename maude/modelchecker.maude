@@ -706,21 +706,23 @@ var MsgBody : Body .
 
 
 *** multiple assignment
-eq < O : C | Att: S, Pr: (L,((A, AL) ::= (E, EL)); SL), PrQ: W, Lcnt: N >
-= < O : C | Att: S, Pr: (L,((A ::= eval(E,(S # L))) ; 
-                           (AL ::= evalList(EL,(S # L))); SL)), 
+eq
+  < O : C | Att: S, Pr: (L,((A, AL) ::= (E, EL)); SL), PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (L,((A ::= eval(E,(S # L))) ; 
+                            (AL ::= evalList(EL,(S # L))); SL)), 
     PrQ: W, Lcnt: N > .
 
 *** assignment
 
-rl [assign] :
-< O : C | Att: S, Pr: (L,((A ::= E); SL)), PrQ: W, Lcnt: N >
-=>
-if dom(A,L) then
-< O : C | Att: S, Pr: (insert(A,eval(E,(S # L)), L), SL), PrQ: W, Lcnt: N > 
-else
-< O : C | Att: insert(A,eval(E,(S # L)), S), Pr: (L, SL), PrQ: W, Lcnt: N > 
-fi .
+eq [assign] :
+  < O : C | Att: S, Pr: (L,((A ::= E); SL)), PrQ: W, Lcnt: N >
+  =
+  if dom(A,L) then
+    < O : C | Att: S, Pr: (insert(A,eval(E,(S # L)), L), SL), PrQ: W, Lcnt: N > 
+  else
+    < O : C | Att: insert(A,eval(E,(S # L)), S), Pr: (L, SL), PrQ: W, Lcnt: N > 
+  fi .
 
 
   ***( method termination: replaced by : eq (nil, L) = idle .
@@ -729,41 +731,44 @@ fi .
   =>
   < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N > .
   )
-rl [skip] :
+
+eq [skip] :
   < O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >
-  =>
+  =
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N > .
 
 
-*** if_then_else ***
-rl [if-el] :
-< O : C | Att: S, Pr: (L, if E th SL' el SL'' fi ; SL), PrQ: W, Lcnt: N >
-=>
-if eval(E, (S # L)) asBool then
-< O : C | Att: S, Pr: (L, SL' ; SL), PrQ: W, Lcnt: N >
-else
-< O : C | Att: S, Pr: (L, SL'' ; SL), PrQ: W, Lcnt: N >
-fi .
+eq [if-el] :
+  < O : C | Att: S, Pr: (L, if E th SL' el SL'' fi ; SL), PrQ: W, Lcnt: N >
+  =
+  if eval(E, (S # L)) asBool then
+    < O : C | Att: S, Pr: (L, SL' ; SL), PrQ: W, Lcnt: N >
+  else
+    < O : C | Att: S, Pr: (L, SL'' ; SL), PrQ: W, Lcnt: N >
+  fi .
 
-*** while ***
+
+***(
+  We want to be able to observe what happens here in an infinite loop.
+  therefore, each expansion of a while body is done by a rule. )
+
 rl [while] :
-< O : C | Att: S, Pr: (L, while E do SL1 od ; SL2), PrQ: W, Lcnt: N >
-=>
-< O : C | Att: S, 
-          Pr: (L, (if E th (SL1 ; while E do SL1 od) el skip fi); SL2),
-          PrQ: W, Lcnt: N > .
+  < O : C | Att: S, Pr: (L, while E do SL1 od ; SL2), PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, 
+      Pr: (L, (if E th (SL1 ; while E do SL1 od) el skip fi); SL2),
+      PrQ: W, Lcnt: N > .
 
 
-*** OBJECT CREATION
-rl [new-object] :
-< O : C | Att: S,Pr: (L, (A ::= new C' (EL)); SL),PrQ: W, Lcnt: N > 
-< C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: F >
-=> 
-< O : C | Att: S, Pr: (L, (A ::= newId(C', F)); SL), PrQ: W, Lcnt: N >
-< C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: (F + 1) >
-< newId(C',F) : C' | Att: S, Pr: idle, PrQ: noProc, Lcnt: 1 >
-< newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
-findAttr(newId(C',F), I, S', 
+eq [new-object] :
+  < O : C | Att: S,Pr: (L, (A ::= new C' (EL)); SL),PrQ: W, Lcnt: N > 
+  < C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: F >
+  =
+  < O : C | Att: S, Pr: (L, (A ::= newId(C', F)); SL), PrQ: W, Lcnt: N >
+  < C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: (F + 1) >
+  < newId(C',F) : C' | Att: S, Pr: idle, PrQ: noProc, Lcnt: 1 >
+  < newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
+  findAttr(newId(C',F), I, S', 
     (AL ::= evalList(EL, (S # L))), ('init (emp ; emp)) ; ('run (emp ; emp))) .
 
 *** ATTRIBUTE inheritance with multiple inheritance
@@ -797,14 +802,6 @@ crl [nondet] :
 < O : Qu | Dealloc: LS, Ev: MM >
 if ready(SL1, (S # L), MM) .  
 
-*** crl [nondet-p2] :
-*** < O : C | Att: S, Pr: ((SL1 [] SL2); SL,L), PrQ: W, Lcnt: N >
-*** < O : Qu | Dealloc: LS, Ev: MM >
-*** =>
-*** < O : C | Att: S, Pr: ((SL2 ; SL),L), PrQ: W, Lcnt: N >
-*** < O : Qu | Dealloc: LS, Ev: MM >
-*** if ready(SL2, (S # L), MM) .  
-
 *** Merge ***
 *** Merge is comm, so [merge] considers both SL1 and SL2.
 crl [merge] :
@@ -815,10 +812,10 @@ crl [merge] :
 < O : Qu | Dealloc: LS, Ev: MM >
 if ready(SL1,(S # L), MM) . 
 
-rl [merge-aux] :
+eq [merge-aux] :
 < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER SL2); SL), PrQ: W, Lcnt: N >   
 < O : Qu | Dealloc: LS, Ev: MM >
-=>
+=
 < O : Qu | Dealloc: LS, Ev: MM >
 if enabled(ST,(S # L), MM) then
 < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER SL2)); SL)), PrQ: W, Lcnt: N >   
@@ -826,10 +823,10 @@ else
 < O : C | Att: S, Pr: (L, ((ST ; SL') ||| SL2); SL), PrQ: W, Lcnt: N >   
 fi .
 
-rl [continue2] :
+eq [continue2] :
 < O : C | Att: S, Pr: (L, (cont(Lab) MERGER SL'); SL''), 
           PrQ: (L', ((Lab ?(A)); SL)) ++ W, Lcnt: F >
-=>
+=
 < O : C | Att: S, Pr: (L',((((Lab ?(A)) ; SL) MERGER SL'); SL'')), 
           PrQ: W, Lcnt: F > .
 
@@ -851,20 +848,20 @@ if (L'['label] == Lab) .
 
 *** Suspension ***
 
-crl [suspend] :  *** all kinds of code P 
+ceq [suspend] :  *** all kinds of code P 
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
 < O : Qu | Dealloc: LS, Ev: MM >
-=>
+=
 < O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > *** clear(SL)
 < O : Qu | Dealloc: LS, Ev: MM >
 if not enabled(SL, (S # L), MM) . 
 
 *** Guards ***
 
-crl [guard] :
+ceq [guard] :
 < O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
 < O : Qu | Dealloc: LS, Ev: MM >
-=>
+=
 < O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
 < O : Qu | Dealloc: LS, Ev: MM > 
 if enabledGuard(G, (S # L), MM) .
@@ -874,7 +871,7 @@ if enabledGuard(G, (S # L), MM) .
 crl [PrQ-ready] :
 < O : C | Att: S, Pr: idle, PrQ: (L,SL) ++ W, Lcnt: N > 
 < O : Qu | Dealloc: LS, Ev: MM >
-=> 
+=>
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
 < O : Qu | Dealloc: LS, Ev: MM >
 if ready(SL, (S # L), MM) .
@@ -883,16 +880,17 @@ if ready(SL, (S # L), MM) .
 *** Evaluation of wait in PrQ *** (avoiding clear)
 
 *** rl [wait] :
-eq < O : C | Att: S, Pr: idle, PrQ: (L, await wait ; SL) ++ W, Lcnt: N >  
- = < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N > .
+eq [wait] :
+< O : C | Att: S, Pr: idle, PrQ: (L, await wait ; SL) ++ W, Lcnt: N >  
+ =
+< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N > .
 
-*** rl [wait-nondet] :
-eq < O : C | Att: S, Pr: idle, PrQ: (L, ((await wait ; SL)[] SL'); SL'')++ W,  
+eq [wait-nondet] :
+< O : C | Att: S, Pr: idle, PrQ: (L, ((await wait ; SL)[] SL'); SL'')++ W,  
    Lcnt: N >  
  = < O : C | Att: S, Pr: idle, PrQ: (L, (SL [] SL'); SL'') ++ W, Lcnt: N > .
 
-*** rl [wait-merge] :
-eq < O : C | Att: S, Pr: idle, PrQ: (L,((await wait ; SL)||| SL'); SL'')++ W,  
+eq [wait-merge] : < O : C | Att: S, Pr: idle, PrQ: (L,((await wait ; SL)||| SL'); SL'')++ W,  
    Lcnt: N >  
  = < O : C | Att: S, Pr: idle, PrQ: (L, (SL ||| SL'); SL'') ++ W, Lcnt: N > .
 
@@ -932,33 +930,37 @@ eq bindMtd(O,O', Lab, M,EL,(C < EL' >) ## I')
 
 rl [receive-call-req] :
 < O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, EL) >
-=> < O : Qu | Dealloc: LS, Ev: MM >  bindMtd(O, O', Lab, Q, EL, C < emp >) .
-
-rl [receive-call-bound] : 
-boundMtd(O, P) < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
-=> < O : C | Att: S, Pr: idle, PrQ: W ++ P, Lcnt: N > .
-
-rl [continue] :
-< O : C | Att: S, Pr: (L,cont(Lab)), PrQ: (L',((Lab ?(EL)); SL)) ++ W, Lcnt: F >
 =>
-*** < O : C | Att: S, Pr: (L',SL), PrQ: W, Lcnt: F > .
+< O : Qu | Dealloc: LS, Ev: MM >  bindMtd(O, O', Lab, Q, EL, C < emp >) .
+
+eq [receive-call-bound] : 
+boundMtd(O, P) < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
+=
+< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
+.
+
+eq [continue] :
+< O : C | Att: S, Pr: (L,cont(Lab)), PrQ: (L',((Lab ?(EL)); SL)) ++ W, Lcnt: F >
+=
 < O : C | Att: S, Pr: (L',((Lab ?(EL)); SL)), PrQ: W, Lcnt: F > .
 
-rl [local-async-qualified-req] :
+eq [local-async-qualified-req] :
 < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
-=> 
+= 
 < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N + 1 >
 invoc(O, label(N), Q @ C', evalList(EL, (S # L))) from O to O .
 
 *** REMOTE METHOD CALLS ***
-eq < O : C | Att: S, Pr: (L, (Q ! M(EL)); SL), PrQ: W, Lcnt: N >
-=  < O : C | Att: S, Pr: (L, (Q ::= int(N)); (! M (EL));  SL), 
-             PrQ: W,  Lcnt: N > .
+eq [remote-call] :
+  < O : C | Att: S, Pr: (L, (Q ! M(EL)); SL), PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (L, (Q ::= int(N)); (! M (EL));  SL),
+    PrQ: W,  Lcnt: N > .
 
 
-rl [remote-async-reply] : 
+eq [remote-async-reply] : 
 < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
-=>
+=
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N + 1 >
 invoc(O, label(N), M , evalList(EL, (S # L))) from O to eval(E, (S # L)) .
 
@@ -968,9 +970,9 @@ eq < O : C | Att: S, Pr: (L, (M(EL ; EL')); SL), PrQ: W, Lcnt: N >
 < O : C | Att: S, Pr: (L, (! M(EL)); (label(N) ?(EL')); SL), PrQ: W,  Lcnt: N >  .
 
 *** emit reply message ***
-rl [return] :
+eq [return] :
 < O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >
-=>
+=
 < O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N > 
 comp(eval('label, L), evalList(EL, (S # L))) from O to eval('caller, L) .
 
@@ -979,7 +981,7 @@ eq < O : C |  Att: S, Pr: (L, (A ?(EL)); SL), PrQ: W, Lcnt: N >
 = < O : C |  Att: S, Pr: (L, (eval(A,L) ?(EL)); SL), PrQ: W, Lcnt: N > .
 
 *** blocking reply sentence ***
-eq ***rl [block-sync-reply] :
+eq [block-sync-reply] :
 < O : C |  Att: S, Pr: (L, (Lab ? (EL)); SL), PrQ: W, Lcnt: F > 
 < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, EL') >
 = 
@@ -990,16 +992,16 @@ eq ***rl [block-sync-reply] :
 eq (emp ::= emp) = skip .
 
 *** Transport rule: include new message in queue
-rl [invoc-msg] :
+eq [invoc-msg] :
 < O : Qu | Dealloc: LS, Ev: MM > (MsgBody from O' to O)
-=>
+=
 < O : Qu | Dealloc: LS, Ev: MM + MsgBody > .
 
 *** generalize to lists of labels AL:
-rl [free] :
+eq [free] :
 < O : C | Att: S, Pr: (L, free(A) ; SL), PrQ: W, Lcnt: N >
 < O : Qu | Dealloc: LS, Ev: MM >
-=>
+=
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > 
 < O : Qu | Dealloc: (eval(A, (S # L)) ^ LS), Ev: MM > .
 
