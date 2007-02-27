@@ -42,7 +42,7 @@ fmod DATA is
   op float(_): Float     -> Data [ctor format(o o ! o o)] . 
   op str(_)  : String    -> Data [ctor format(o o ! o o)] .
   op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
-  op lab     : Nat       -> Label [ctor] . *** label values
+  op label   : Nat       -> Label [ctor] . *** label values
 
   *** Reconversion for evaluation
   op _asInt             : Data -> Int .
@@ -457,7 +457,7 @@ fmod CLASS is
       Ocnt: 0 > .
 
   *** Class/method functions ***
-  op get : Qid MMtd Oid Nat ExprList -> Process .  *** fetches pair (code, vars)
+  op get : Qid MMtd Oid Label ExprList -> Process .  *** fetches pair (code, vars)
   op _in_ : Qid MMtd -> Bool .  *** checks if Q is a declared 
                                 *** method in the method multiset
 
@@ -466,11 +466,12 @@ fmod CLASS is
        if (Q == Q') then true else (Q in MM) fi .
 
   *** bind call to process
-  eq get(Q, noMtd, O, N, EL) = noProc . 
-  eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, N, EL) = 
+  var Lab : Label .
+  eq get(Q, noMtd, O, Lab, EL) = noProc . 
+  eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, Lab, EL) = 
     if Q == Q' 
-    then (insert('caller, O, insert('label, int(N), S)), (AL ::= EL) ; SL)
-    else get(Q, MM, O, N, EL) fi .
+    then (insert('caller, O, insert('label, Lab, S)), (AL ::= EL) ; SL)
+    else get(Q, MM, O, Lab, EL) fi .
 
   *** insert('caller, O, insert('label, int(N), S))
   *** 'caller |-> O, 'label |-> int(N))
@@ -527,7 +528,7 @@ fmod COMMUNICATION is
   op warning(_) : String -> Msg [ctor format (nnr! r! r! or onn)] .   *** warning 
 
   *** Method binding messages
-  op bindMtd : Oid Oid Nat Qid ExprList InhList -> Msg [ctor] . 
+  op bindMtd : Oid Oid Label Qid ExprList InhList -> Msg [ctor] . 
   ***Bind method request
   *** Given: caller callee method params (list of classes to look in)
   op boundMtd(_,_) : Oid Process -> Msg 
@@ -538,7 +539,7 @@ fmod COMMUNICATION is
 
   *** message queue
   op noDealloc :         -> Labels  [ctor].
-  op _;_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
+  op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
   op noQu : -> Queue [ctor] .
   op <_: Qu | Dealloc:_, Ev:_ > : Oid Labels MMsg -> Queue 
@@ -583,7 +584,7 @@ pr CONFIG .
 protecting CONVERSION .
 
 *** Signatures
-op inqueue  : Nat MMsg -> Bool . *** checks if  Msg is in the queue
+op inqueue  : Label MMsg -> Bool . *** checks if  Msg is in the queue
 
 op enabledGuard : Guard   Subst MMsg -> Bool .
 op enabled      : StmList Subst MMsg -> Bool . *** eval guard 
@@ -591,6 +592,7 @@ op ready        : StmList Subst MMsg -> Bool . *** eval guard
 
 *** Variables
 vars N N' : Nat .
+vars L L' : Label .
 var E E' : Expr .
 var EL : ExprList .
 var A : Aid .
@@ -619,17 +621,17 @@ eq newId(Q, N)  = ob(qid(string(Q) + string(N,10))) .
 
 
 
-eq inqueue(N, noMsg) = false .
+eq inqueue(L, noMsg) = false .
 *** eq inqueue(N, comp(N', E)) = if N == N' then true else false fi .
-eq inqueue(N, comp(N', EL) + MM) = 
-     if N == N' then true else inqueue(N, MM) fi .
+eq inqueue(L, comp(L', EL) + MM) = 
+     if L == L' then true else inqueue(L, MM) fi .
 
 
 eq enabledGuard(noGuard, S, MM)   = true .
 eq enabledGuard(wait, S, MM)      = false .       *** Note: no wait in PrQ!
 eq enabledGuard(E, S, MM)         = evalB(E, S) .
-eq enabledGuard((A ?), S, MM)     = inqueue(evalI(A, S), MM) .
-eq enabledGuard((N ?), S, MM)     = inqueue(N, MM) .
+eq enabledGuard((A ?), S, MM)     = inqueue(eval(A, S), MM) .
+eq enabledGuard((L ?), S, MM)     = inqueue(L, MM) .
 ***(eq enabledGuard((G1 & G2), S, MM) = enabledGuard(G1, S, MM) and enabledGuard(G2, S, MM) . *** may skip termination problems! due to Id: noguard
 )
 *** red enabledGuard((int(5) > int(7)), noSub, noMsg) .
@@ -650,8 +652,8 @@ eq enabled(ST,    S, MM) = true [owise].
 
 eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
 eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-eq ready(A ?(E),     S, MM) = inqueue(evalI(A, S), MM) . 
-eq ready(N ?(E),     S, MM) = inqueue(N, MM) . 
+eq ready(A ?(E),     S, MM) = inqueue(eval(A, S), MM) . 
+eq ready(L ?(E),     S, MM) = inqueue(L, MM) . 
 eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
 eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise]. 
 
@@ -694,7 +696,8 @@ vars S S' L L' : Subst .
 vars N F : Nat .
 vars I I' : InhList .
 var MS : MMtd .
-var NS : NatS .
+var LS : Labels .
+vars Lab Lab' : Label .
 var MM : MMsg .
 var G : Guard .
 var M : Mid .
@@ -788,35 +791,35 @@ eq foundAttr(O, S', SL, SL')
 *** Choice is comm, so [nondet] considers both SL1 and SL2.
 crl [nondet] :
 < O : C | Att: S, Pr: (L, (SL1 [] SL2); SL), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 =>
 < O : C | Att: S, Pr: (L, (SL1 ; SL)), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 if ready(SL1, (S # L), MM) .  
 
 *** crl [nondet-p2] :
 *** < O : C | Att: S, Pr: ((SL1 [] SL2); SL,L), PrQ: W, Lcnt: N >
-*** < O : Qu | Dealloc: NS, Ev: MM >
+*** < O : Qu | Dealloc: LS, Ev: MM >
 *** =>
 *** < O : C | Att: S, Pr: ((SL2 ; SL),L), PrQ: W, Lcnt: N >
-*** < O : Qu | Dealloc: NS, Ev: MM >
+*** < O : Qu | Dealloc: LS, Ev: MM >
 *** if ready(SL2, (S # L), MM) .  
 
 *** Merge ***
 *** Merge is comm, so [merge] considers both SL1 and SL2.
 crl [merge] :
 < O : C | Att: S, Pr: (L, (SL1 ||| SL2); SL), PrQ: W, Lcnt: N >  
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 =>
 < O : C | Att: S, Pr: (L, (SL1 MERGER SL2); SL), PrQ: W, Lcnt: N >  
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 if ready(SL1,(S # L), MM) . 
 
 rl [merge-aux] :
 < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER SL2); SL), PrQ: W, Lcnt: N >   
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 =>
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 if enabled(ST,(S # L), MM) then
 < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER SL2)); SL)), PrQ: W, Lcnt: N >   
 else
@@ -824,56 +827,56 @@ else
 fi .
 
 rl [continue2] :
-< O : C | Att: S, Pr: (L, (cont(N) MERGER SL'); SL''), 
-          PrQ: (L', ((N ?(A)); SL)) ++ W, Lcnt: F >
+< O : C | Att: S, Pr: (L, (cont(Lab) MERGER SL'); SL''), 
+          PrQ: (L', ((Lab ?(A)); SL)) ++ W, Lcnt: F >
 =>
-< O : C | Att: S, Pr: (L',((((N ?(A)) ; SL) MERGER SL'); SL'')), 
+< O : C | Att: S, Pr: (L',((((Lab ?(A)) ; SL) MERGER SL'); SL'')), 
           PrQ: W, Lcnt: F > .
 
 *** local call 
 ceq boundMtd(O, (L', SL')) 
-< O : C | Att: S,Pr: (L, ((N ?(EL)); SL)),PrQ: W,Lcnt: F >
+< O : C | Att: S,Pr: (L, ((Lab ?(EL)); SL)),PrQ: W,Lcnt: F >
 = 
-< O : C | Att: S,Pr: (L', SL' ; cont(N)),PrQ: (L,((await N ?) ; (N ?(EL)); SL)) ++ W,
+< O : C | Att: S,Pr: (L', SL' ; cont(Lab)),PrQ: (L,((await Lab ?) ; (Lab ?(EL)); SL)) ++ W,
           Lcnt: F > 
-if (L'['label] == int(N)) .
+if (L'['label] == Lab) .
 
 *** local call within merge
 ceq boundMtd(O, (L', SL')) 
-< O : C | Att: S,Pr: (L,(((N ?(EL)); SL) MERGER SL'')),PrQ: W,Lcnt: F >
+< O : C | Att: S,Pr: (L,(((Lab ?(EL)); SL) MERGER SL'')),PrQ: W,Lcnt: F >
 = 
 < O : C | Att: S,Pr: (L', SL'),
-          PrQ: (L, (((await N ?) ; (N ?(EL)); SL) MERGER SL'')) ++ W,Lcnt: F > 
-if (L'['label] == int(N)) .
+          PrQ: (L, (((await Lab ?) ; (Lab ?(EL)); SL) MERGER SL'')) ++ W,Lcnt: F > 
+if (L'['label] == Lab) .
 
 *** Suspension ***
 
 crl [suspend] :  *** all kinds of code P 
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 =>
 < O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > *** clear(SL)
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 if not enabled(SL, (S # L), MM) . 
 
 *** Guards ***
 
 crl [guard] :
 < O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 =>
 < O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM > 
+< O : Qu | Dealloc: LS, Ev: MM > 
 if enabledGuard(G, (S # L), MM) .
 
 *** Evaluate guards in suspended processes ***
 
 crl [PrQ-ready] :
 < O : C | Att: S, Pr: idle, PrQ: (L,SL) ++ W, Lcnt: N > 
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 => 
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 if ready(SL, (S # L), MM) .
 
 
@@ -896,11 +899,11 @@ eq < O : C | Att: S, Pr: idle, PrQ: (L,((await wait ; SL)||| SL'); SL'')++ W,
 *** Optimization to avoid muiltiple lookups in the message queue for
 *** the same guard
 eq 
-< O : C | Att: S, Pr: P, PrQ: (L, await (N ? & G); SL) ++ W, Lcnt: F > 
-< O : Qu | Dealloc: NS, Ev: MM + comp(N, EL) >  
+< O : C | Att: S, Pr: P, PrQ: (L, await (Lab ? & G); SL) ++ W, Lcnt: F > 
+< O : Qu | Dealloc: LS, Ev: MM + comp(Lab, EL) >  
 =
 < O : C | Att: S,  Pr: P, PrQ: (L, await G ; SL) ++ W, Lcnt: F >    
-< O : Qu | Dealloc: NS, Ev: MM + comp(N, EL) > .
+< O : Qu | Dealloc: LS, Ev: MM + comp(Lab, EL) > .
 
 
 *** METHOD CALLS ***
@@ -910,42 +913,42 @@ eq   ! Q(EL) =   ! 'this . Q(EL) . *** could alternatively use X@ this class
 *** receive invocation message ***
 rl [receive-call-req] :
 < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM + invoc(O', F, Q, EL) >
+< O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q, EL) >
 =>
 < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM > bindMtd(O, O', F, Q, EL, C < emp >) .
+< O : Qu | Dealloc: LS, Ev: MM > bindMtd(O, O', Lab, Q, EL, C < emp >) .
 
 *** Method binding with multiple inheritance
-ceq bindMtd(O, O',N,Q, EL,noInh) = 
-boundMtd(O,(('caller |-> O', 'label |-> int(N)), return(emp)))
+ceq bindMtd(O, O',Lab,Q, EL,noInh) = 
+boundMtd(O,(('caller |-> O', 'label |-> Lab), return(emp)))
 if Q == 'run .
 
 
-eq bindMtd(O,O',N, M,EL,(C < EL' >) ## I') 
+eq bindMtd(O,O', Lab, M,EL,(C < EL' >) ## I') 
 < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
-   =  if (M in MS) then boundMtd(O,get(M,MS,O', N, EL)) 
-                   else bindMtd(O,O',N,M,EL, I ## I') fi 
+   =  if (M in MS) then boundMtd(O,get(M,MS,O',  Lab, EL)) 
+                   else bindMtd(O,O', Lab,M,EL, I ## I') fi 
 < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F > .
 
 rl [receive-call-req] :
-< O : Qu | Dealloc: NS, Ev: MM + invoc(O', N, Q @ C, EL) >
-=> < O : Qu | Dealloc: NS, Ev: MM >  bindMtd(O, O', N, Q, EL, C < emp >) .
+< O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, EL) >
+=> < O : Qu | Dealloc: LS, Ev: MM >  bindMtd(O, O', Lab, Q, EL, C < emp >) .
 
 rl [receive-call-bound] : 
 boundMtd(O, P) < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
 => < O : C | Att: S, Pr: idle, PrQ: W ++ P, Lcnt: N > .
 
 rl [continue] :
-< O : C | Att: S, Pr: (L,cont(N)), PrQ: (L',((N ?(EL)); SL)) ++ W, Lcnt: F >
+< O : C | Att: S, Pr: (L,cont(Lab)), PrQ: (L',((Lab ?(EL)); SL)) ++ W, Lcnt: F >
 =>
 *** < O : C | Att: S, Pr: (L',SL), PrQ: W, Lcnt: F > .
-< O : C | Att: S, Pr: (L',((N ?(EL)); SL)), PrQ: W, Lcnt: F > .
+< O : C | Att: S, Pr: (L',((Lab ?(EL)); SL)), PrQ: W, Lcnt: F > .
 
 rl [local-async-qualified-req] :
 < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
 => 
 < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N + 1 >
-invoc(O, N, Q @ C', evalList(EL, (S # L))) from O to O .
+invoc(O, label(N), Q @ C', evalList(EL, (S # L))) from O to O .
 
 *** REMOTE METHOD CALLS ***
 eq < O : C | Att: S, Pr: (L, (Q ! M(EL)); SL), PrQ: W, Lcnt: N >
@@ -957,52 +960,52 @@ rl [remote-async-reply] :
 < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
 =>
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N + 1 >
-invoc(O, N, M , evalList(EL, (S # L))) from O to eval(E, (S # L)) .
+invoc(O, label(N), M , evalList(EL, (S # L))) from O to eval(E, (S # L)) .
 
 *** Reduce sync. call  to async. call with reply 
 eq < O : C | Att: S, Pr: (L, (M(EL ; EL')); SL), PrQ: W, Lcnt: N >
   =
-< O : C | Att: S, Pr: (L, (! M(EL)); (N ?(EL')); SL), PrQ: W,  Lcnt: N >  .
+< O : C | Att: S, Pr: (L, (! M(EL)); (label(N) ?(EL')); SL), PrQ: W,  Lcnt: N >  .
 
 *** emit reply message ***
 rl [return] :
 < O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >
 =>
 < O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N > 
-comp(eval('label, L)asNat, evalList(EL, (S # L))) from O to eval('caller, L) .
+comp(eval('label, L), evalList(EL, (S # L))) from O to eval('caller, L) .
 
 *** Optimization: reduce label to value only once
 eq < O : C |  Att: S, Pr: (L, (A ?(EL)); SL), PrQ: W, Lcnt: N > 
-= < O : C |  Att: S, Pr: (L, (eval(A,L)asNat ?(EL)); SL), PrQ: W, Lcnt: N > .
+= < O : C |  Att: S, Pr: (L, (eval(A,L) ?(EL)); SL), PrQ: W, Lcnt: N > .
 
 *** blocking reply sentence ***
 eq ***rl [block-sync-reply] :
-< O : C |  Att: S, Pr: (L, (N ? (EL)); SL), PrQ: W, Lcnt: F > 
-< O : Qu | Dealloc: NS, Ev: MM + comp(N, EL') >
+< O : C |  Att: S, Pr: (L, (Lab ? (EL)); SL), PrQ: W, Lcnt: F > 
+< O : Qu | Dealloc: LS, Ev: MM + comp(Lab, EL') >
 = 
 < O : C |  Att: S, Pr: (L, (EL ::= EL'); SL), PrQ: W, Lcnt: F > 
-< O : Qu | Dealloc: NS, Ev: MM > .
+< O : Qu | Dealloc: LS, Ev: MM > .
 
 *** We may here get (emp ::= emp), which should be reduced to skip .
 eq (emp ::= emp) = skip .
 
 *** Transport rule: include new message in queue
 rl [invoc-msg] :
-< O : Qu | Dealloc: NS, Ev: MM > (MsgBody from O' to O)
+< O : Qu | Dealloc: LS, Ev: MM > (MsgBody from O' to O)
 =>
-< O : Qu | Dealloc: NS, Ev: MM + MsgBody > .
+< O : Qu | Dealloc: LS, Ev: MM + MsgBody > .
 
 *** generalize to lists of labels AL:
 rl [free] :
 < O : C | Att: S, Pr: (L, free(A) ; SL), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: NS, Ev: MM >
+< O : Qu | Dealloc: LS, Ev: MM >
 =>
 < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > 
-< O : Qu | Dealloc: (eval(A, (S # L)) asNat ; NS), Ev: MM > .
+< O : Qu | Dealloc: (eval(A, (S # L)) ^ LS), Ev: MM > .
 
 *** Deallocate
-eq < O : Qu | Dealloc: (N ; NS), Ev: comp(N, EL) + MM >
-= < O : Qu | Dealloc: NS, Ev: MM > .
+eq < O : Qu | Dealloc: (Lab ^ LS), Ev: comp(Lab, EL) + MM >
+= < O : Qu | Dealloc: LS, Ev: MM > .
 endm
 
 eof
