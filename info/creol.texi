@@ -1,4 +1,4 @@
-@section Creol
+@chapter Creol
 
 CREOL: An exciting mix of the best ingredients from many cultures!
 
@@ -12,7 +12,7 @@ tool for reasoning about dynamic and reflective modifications in
 object-oriented open distributed systems, ensuring reliability and
 correctness of the overall system.
  
-@subsection Short project overview
+@section Short project overview
 
 Open distributed systems consist of geographically spread system
 components subject to run-time modifications. These systems are
@@ -61,3 +61,6 @@ interpreter with a dynamic class construct is presented in [5]. A
 binding strategy for method calls which is adapted to dynamic class
 extensions is presented in [4]. A type system for runtime class
 updates is presented in [3].
+
+
+@section 
