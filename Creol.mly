@@ -19,6 +19,7 @@
 %token <bool> BOOL
 %token <float> FLOAT
 %token NIL NULL
+
 %nonassoc EQ NE
 %left AND OR XOR IFF
 %left LE LT GT GE
@@ -28,11 +29,21 @@
 %left SEMI
 %left MERGE
 %left BOX
+
 %start <'a list> main
+
 %{
 open Creol
 
 let default = ()
+
+exception Error
+
+(** Print a short error message and abort *)
+let signal_error s m =
+  output_string stderr ((string_of_int s.Lexing.pos_lnum) ^ ": " ^ m ^ "\n");
+  flush stderr;
+  raise Error
 %}
 %%
 
@@ -49,33 +60,34 @@ declaration:
     | d = interfacedecl	{ Interface d }
 
 classdecl:
-      CLASS n = CID p = cls_parameters_opt
-	c = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, CID)))
+      CLASS n = CID;
+        p = loption(delimited(LPAREN, separated_nonempty_list(COMMA, vardecl_no_init), RPAREN))
 	i = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
+	c = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, CID)))
 	j = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, CID)))
-	BEGIN a = attributes m = methods_opt END {
+	BEGIN a = loption(attributes) m = list(method_def) END {
       { cls_name = n; cls_parameters = p; cls_inherits = i;
 	cls_contracts = c; cls_implements = j; cls_attributes = a;
 	cls_methods = m } }
+    | CLASS error
+    | CLASS CID error
+	{ signal_error $startpos "syntax error in class declaration" }
 
-cls_parameters_opt:
-      (* empty *) { [] }
-    | LPAREN l = separated_nonempty_list(COMMA, vardecl_no_init) RPAREN { l }
-
-inherits:
-      i = CID { (i, []) }
-    | i = CID LPAREN e = separated_nonempty_list(COMMA, expression) RPAREN { (i, e) }
+%inline inherits:
+    i = CID e = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN)) { (i, e) }
 
 attributes:
       VAR l = separated_nonempty_list(COMMA, vardecl) { l }
-    | l1 = attributes VAR l2 = separated_nonempty_list(COMMA, vardecl) { l1 @ l2 }
+    | l1 = attributes ioption(SEMI) VAR l2 = separated_nonempty_list(COMMA, vardecl) { l1 @ l2 }
+    | VAR error
+	{ signal_error $startpos "syntax error in attribute declaration" }
 
 vardecl:
       v = vardecl_no_init { v }
     | v = vardecl_no_init ASSIGN i = expression
     { { var_name = v.var_name; var_type = v.var_type; var_init = Some i } }
 
-vardecl_no_init:
+%inline vardecl_no_init:
       i = ID COLON t = creol_type { { var_name = i; var_type = t; var_init = None } }
 
 method_decl:
@@ -88,6 +100,13 @@ method_decl:
 	    (ins, outs) ->
 	      { meth_name = i; meth_coiface = ""; meth_inpars = ins;
 		meth_outpars = outs; meth_vars = []; meth_body = None} }
+    | WITH error
+    | WITH CID error
+    | WITH CID OP error
+    | WITH CID OP ID error
+    | OP error
+    | OP ID error
+	{ signal_error $startpos "syntax error in method declaration" }
 
 parameters_opt:
       (* empty *) { ([], []) }
@@ -97,9 +116,13 @@ parameters_opt:
 
 inputs:
       IN l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
+    | IN error
+	{ signal_error $startpos "syntax error in method declaration" }
 
 outputs:
       OUT l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
+    | OUT error
+	{ signal_error $startpos "syntax error in method declaration" }
 
 method_def:
       d = method_decl; EQEQ; a = loption(terminated(attributes, SEMI));
@@ -108,21 +131,13 @@ method_def:
 	  meth_inpars = d.meth_inpars; meth_outpars = d.meth_outpars;
 	  meth_vars = a; meth_body = Some s} }
 
-methods_opt:
-      (* empty *) { [] }
-    | m = methods { m }
-
-methods:
-      m = method_def { [m] }
-    | m = method_def l = methods { m::l }
-
 interfacedecl:
       INTERFACE n = CID i = iface_inherits_opt BEGIN m = method_decls_opt END {
 	{ iface_name = n; iface_inherits = i; iface_methods = m } }
 
 iface_inherits_opt:
       (* empty *) { [] }
-    | INHERITS l = separated_nonempty_list(COMMA, ID) { l }
+    | INHERITS l = separated_nonempty_list(COMMA, CID) { l }
 
 method_decls_opt:
       (* empty *) { [] }
@@ -165,6 +180,7 @@ statement:
     | l = statement SEMI r = statement { Sequence(default, l, r) }
     | l = statement MERGE r = statement { Merge(default, l, r) }
     | l = statement BOX r = statement { Choice(default, l, r) }
+    | error { signal_error $startpos "syntax error in statement" }
 
 guard:
       l = ID QUESTION { Label (default, l) }
@@ -207,4 +223,5 @@ expression:
 (* Poor mans types and type parameters *)
 creol_type:
       t = CID { t }
-    | t = CID LBRACK separated_nonempty_list(COMMA, creol_type) RBRACK { t } 
+    | t = CID LT separated_nonempty_list(COMMA, creol_type) GT { t } 
+    | CID LT error { signal_error $startpos "Error in type" }

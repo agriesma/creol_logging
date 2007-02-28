@@ -83,7 +83,7 @@ creolcomp.spec: ${srcdir}/creolcomp.spec.in ${srcdir}/configure.ac
 # sources.  We build Creol.cmi by hand here.
 CreolParser.ml CreolParser.mli: Creol.mly
 	$(OCAMLC) -o Creol.cmi -c ${srcdir}/Creol.mli
-	$(MENHIR) --base CreolParser --infer --explain $<
+	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
 
 CreolLex.ml: Creol.mll
 	$(OCAMLLEX) -o $@ $<

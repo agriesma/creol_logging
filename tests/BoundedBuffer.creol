@@ -1,61 +1,57 @@
-	interface BufferA
-	begin with Producer
-	  op append(in d:Data)
-	end
+interface BufferA
+begin with Producer
+  op append(in d: Data)
+end
 
-	interface BufferR
-	begin with Consumer
-	  op remove(out d:Data)
-	end
+interface BufferR
+begin with Consumer
+  op remove(out d: Data)
+end
 
-	interface Buffer inherits BufferA, BufferB
-	begin 
-	end
+interface Buffer inherits BufferA, BufferB
+begin 
+end
 
-	
-	class BoundedBuffer implements Buffer
-	begin 
-	  var buffer: List := empty
-	  var max: int := 10
-	  var n: int := 0
+class BoundedBuffer implements Buffer
+begin 
+  var buffer: List := empty
+  var max: Int := 10
+  var n: Int := 0
 
-	  with Producer
-	  op append(in d:Data) ==
-		await n < max;
-		buffer := buffer :: d
-      with Consumer
-	  op remove(out d:Data) ==
-		await n > 0;
-		d := first(buffer);
-		buffer := rest(buffer)
-	end
+  with Producer
+    op append(in d:Data) == await n < max; buffer := plus[buffer, d]
+  with Consumer
+    op remove(out d:Data) ==
+      await n > 0; d := first[buffer]; buffer := rest[buffer]
+end
 
 
-	interface Consumer
-	begin
-	end
+interface Consumer
+begin
+end
 
-	interface Producer
-	begin 
-	end
+interface Producer
+begin 
+end
 
-	class Prod(b:BufferA) implements Producer
-	begin
-	  op run == this!loop(0)
-	  op loop(in i:int) == b.append(i); this!loop(i+1)
-	end
+class Prod(b: BufferA)
+  implements Producer
+begin
+  op run == this!loop(0)
+  op loop(in i: Int) == b.append(i;); !this.loop(i+1)
+end
 
 
-	class Cons(b:BufferR) implements Consumer
-	begin 
-	  op run == this!loop()
-	  op loop == var y:Data; b.remove(;y); print(y); this!loop()
-	end
+class Cons(b:BufferR) implements Consumer
+begin 
+  op run == !this.loop()
+  op loop == var y:Data; b.remove(;y); /* print(y;); */ !this.loop()
+end
 
-	class Starter
-	begin 
-	  op run == var b:Buffer; var p:Producer; var c:Consumer; 
-	            b := new BoundedBuffer; 
-	            p := new Producer(b);
-	            c := new Consumer(b)
-	end
+class Starter
+begin 
+  op run == var b: Buffer; var p: Producer; var c: Consumer; 
+            b := new BoundedBuffer(); 
+            p := new Producer(b);
+            c := new Consumer(b)
+end

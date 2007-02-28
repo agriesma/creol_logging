@@ -28,17 +28,17 @@ end
 
 class SantaClausC implements SantaClaus
 begin
-  var ct_reindeers:nat := 0
-  var wait_reindeers:List := nil
-  var harnessed_reindeers:List := nil
-  var ct_elves:nat := 0
-  var wait_elves:List := nil
-  var inoffice_elves:List := nil
+  var ctRreindeers: Nat := 0
+  var waitRreindeers:List := nil
+  var harnessedReindeers:List := nil
+  var ctElves: Nat := 0
+  var waitElves:List := nil
+  var inofficeElves:List := nil
 
   op run == !loop()
 
-  op loop == (await ct_reindeers = 5; deliverToys() []
-              await ct_elves >= 3 and not ct_reindeers = 9; talkToElves()); 
+  op loop == {await ctReindeers = 5; deliverToys(;) []
+              await ctElves >= 3 and not ctReindeers = 9; talkToElves(;)}; 
              !loop()
 
   op deliverToys ==
@@ -47,65 +47,65 @@ begin
   	var t3: Label;
   	var t4: Label;
   	var t5:Label;
-	ct_reindeers := 0;
-	t1!first(wait_reindeers).harness(); 
-	harnessed_reindeers := harnessed_reindeers :: first(wait_reindeers); 
-		wait_reindeers := rest(wait_reindeers);
-	-- ....;
-		t5!first(wait_reindeers).harness(); 
-		harnessed_reindeers := harnessed_reindeers :: first(wait_reindeers); 
-	wait_reindeers := rest(wait_reindeers);
+	ctReindeers := 0;
+	t1!first[waitReindeers].harness(); 
+	harnessedReindeers := plus[harnessedReindeers, first[waitReindeers]]; 
+		waitReindeers := rest[waitReindeers];
+	// ....;
+		t5!first[waitReindeers].harness(); 
+		harnessedReindeers := plus[harnessedReindeers, first[waitReindeers]]; 
+	waitReindeers := rest[waitReindeers];
 	await t1? and t2? and t3? and t4? and t5?;
-	-- <Deliver Toys>;
-	!first(harnessed_reindeers).unharness();
-	harnessed_reindeers := rest(harnessed_reindeers);
-	-- ....;
-	!first(harnessed_reindeers).unharness();
-	harnessed_reindeers := rest(harnessed_reindeers)
+	// <Deliver Toys>;
+	!first[harnessedReindeers].unharness();
+	harnessedReindeers := rest[harnessedReindeers];
+	// ....;
+	!first[harnessedReindeers].unharness();
+	harnessedReindeers := rest[harnessedReindeers]
 
 
 	op talkToelves ==
 		var t1:Label;
 		var t2:Label;
 		var t3:Label;
-		ct_elves := ct_elves - 3; 
-		t1!first(wait_elves).showIn();
-		inoffice_elves := inoffice_elves :: first(wait_elves);
-		wait_elves := rest(wait_elves);
-		t2!first(wait_elves).showIn();
-		inoffice_elves := inoffice_elves :: first(wait_elves);
-		wait_elves := rest(wait_elves);
-		t3!first(wait_elves).showIn();
-		inoffice_elves := inoffice_elves :: first(wait_elves);
-		wait_elves := rest(wait_elves);
+		ctElves := ctElves - 3; 
+		t1!first[waitElves].showIn();
+		inofficeElves := plus[inofficeElves, first[waitElves]];
+		waitElves := rest[waitElves];
+		t2!first[waitElves].showIn();
+		inofficeElves := plus[inofficeElves, first[waitElves]];
+		waitElves := rest[waitElves];
+		t3!first[waitElves].showIn();
+		inofficeElves := plus[inofficeElves, first[waitElves]];
+		waitElves := rest[waitElves];
 		await t1? and t2? and t3?;
-		-- <Talk to elves>;
-		t1!first(inoffcie_elves).showOut();
-		inoffice_elves := rest(inoffice_elves);
-		t2!first(inoffcie_elves).showOut();
-		inoffice_elves := rest(inoffice_elves);
-		t3!first(inoffcie_elves).showOut();
-		inoffice_elves := rest(inoffice_elves);
+		// <Talk to elves>;
+		t1!first[inoffcieElves].showOut();
+		inofficeElves := rest[inofficeElves];
+		t2!first[inoffcieElves].showOut();
+		inofficeElves := rest[inofficeElves];
+		t3!first[inoffcieElves].showOut();
+		inofficeElves := rest[inofficeElves];
 		await t1? and t2? and t3?
 
 with Reindeer
 	op backFromHoliday ==
-		ct_reindeers := ct_reindeers + 1; 
-		wait_reindeers := wait_reindeers :: caller
+		ctReindeers := ctReindeers + 1; 
+		waitReindeers := plus[waitReindeers, caller]
 
 with Elf
 	op haveProblem ==
-		ct_elves := ct_elves + 1; 
-		wait_elves := wait_elves :: caller
+		ctElves := ctElves + 1; 
+		waitElves := plus[waitElves, caller]
 end
 
 
-class ReindeerC(sc:toReinDeer) implements Reindeer
+class ReindeerC(sc: ReinDeer) implements Reindeer
 begin
 	op run == !holiday()
-	op holiday == -- <go on holiday>;
+	op holiday == // <go on holiday>;
 		!sc.backFromHoliday()
-	op deliverToys == skip -- <deliver Toys>
+	op deliverToys == skip // <deliver Toys>
 
   with SantaClausR
 	op harness == !deliverToys()
@@ -117,21 +117,22 @@ end
 class ElfC(sc:SantaClaus) implements Elf
 begin 
 	op run == !work()
-	op work == -- <do work>;
+	op work == // <do work>;
 		!sc.haveProblem()
-	op talkToSanta == skip -- <talk to Santa>
+	op talkToSanta == skip // <talk to Santa>
 
   with SantaClausE
 	op showIn == !talkToSanta()
 	op showOut == !work()
 end
 
-class LeaderElfC(sc:SantaClaus, elves:List)
-     implements Elf inherits ElfC
+class LeaderElfC(sc:SantaClaus, elves: List)
+	inherits ElfC
+	implements Elf
 begin
   op run == run@ElfC()
   op work ==
-	-- (<Lead elves> ||| <Make toys>);
+	// (<Lead elves> ||| <Make toys>);
 	!sc.haveProblem()
 end
 
@@ -156,10 +157,10 @@ begin
 	e := new Elf(sc)
 end
 
---	#COMMENTS:
---
---	Local synchronous calls: m(...;...) is same as t!m(...;..); t?() ---
---	an abbrevation. 
---
---	!m(..)  or with no arguments  !m  starts the method call m but does
---	not wait for any answer...
+//	#COMMENTS:
+//
+//	Local synchronous calls: m(...;...) is same as t!m(...;..); t?() //-
+//	an abbrevation. 
+//
+//	!m(..)  or with no arguments  !m  starts the method call m but does
+//	not wait for any answer...

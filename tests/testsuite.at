@@ -8,4 +8,7 @@ AT_CHECK([creolcomp ${abs_srcdir}/Sieve.creol], [0], ignore, [])
 AT_CHECK([creolcomp ${abs_srcdir}/Philosophers.creol], [0], ignore, [])
 AT_CHECK([creolcomp ${abs_srcdir}/SingleCellBuffer.creol], [0], ignore, [])
 AT_CHECK([creolcomp ${abs_srcdir}/Alarmclock.creol], [0], ignore, [])
+AT_CHECK([creolcomp ${abs_srcdir}/BoundedBuffer.creol], [0], ignore, [])
+AT_CHECK([creolcomp ${abs_srcdir}/Fibonacci.creol], [0], ignore, [])
+AT_CHECK([creolcomp ${abs_srcdir}/SantaClaus.creol], [0], ignore, [])
 AT_CLEANUP

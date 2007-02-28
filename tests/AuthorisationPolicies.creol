@@ -1,28 +1,32 @@
-class SAuth implements Auth
-  begin
-    var gr: Agent
-    op run == gr := null
-    op delay == await (gr = null)
-  with Any
-    op grant(in x:Agent) == delay(); gr := x
-    op revoke(in x:Agent) == if gr = x then gr := null fi
-    op auth(in x:Agent) == await (gr = x)
-  end 
+class SAuth
+  implements Auth
+begin
+  var gr: Agent
+  op run == gr := null
+  op delay == await (gr = null)
+with Any
+  op grant(in x:Agent) == delay(;); gr := x
+  op revoke(in x:Agent) == if gr = x then gr := null fi
+  op auth(in x:Agent) == await (gr = x)
+end 
 
-class MAuth(gr: Agent) implements Auth
+class MAuth(gr: Agent)
+  implements Auth
 begin 
   var gr: Agent
   op run == gr := null
   op delay == await (gr = null)
 with Any
-  op grant(in x:Agent) == delay(); gr := x
+  op grant(in x:Agent) == delay(;); gr := x
   op revoke(in x:Agent) == if gr = x then gr := null fi
   op auth(in x:Agent) == await (gr = x)
 end 
 
-class HAuth implements High 
-            inherits SAuth, DB
-begin with Agent
+class Bla
+  inherits SAuth, DB
+  implements High 
+begin
+with Agent
   op openH(out ok:Bool) == 
   	await clear(caller;ok);
   	if ok then grant<<Sauth(caller) fi

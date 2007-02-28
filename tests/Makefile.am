@@ -28,7 +28,8 @@ AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
 TESTFILES		= Alarmclock.creol Philosophers.creol Sieve.creol \
-			  SingleCellBuffer.creol
+			  SingleCellBuffer.creol AuthorisationPolicies.creol \
+			  Fibonacci.creol SantaClaus.creol BoundedBuffer.creol
 
 TESTPARTS		= 
 
