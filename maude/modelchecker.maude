@@ -22,7 +22,8 @@ fmod DATA is
   sorts   AidList ExprList DataList .
   subsort Aid < AidList .
   subsort Expr < ExprList .
-  subsort Data < DataList  < ExprList .
+  subsort Data < DataList .
+  subsort DataList < ExprList .
 
   op emp : -> DataList [ctor] .
   op _#_ : ExprList ExprList -> ExprList [ctor assoc id: emp prec 25] .
@@ -243,11 +244,11 @@ fmod EVAL is
   protecting SUBST . 
 
   *** Evaluation of expressions
-  op eval	    : Expr Subst     -> Data .     *** evaluate expression
+  op eval     : Expr Subst     -> Data .     *** evaluate expression
   op evalB    : Expr Subst     -> Bool .
   op evalI    : Expr Subst     -> Int .
   op evalS    : Expr Subst     -> String .
-  op evalList : ExprList Subst -> ExprList . *** maps list to values
+  op evalList : ExprList Subst -> DataList . *** maps list to values
 
   *** Variables
   var E E' : Expr .     var EL : ExprList .     var D : Data .
@@ -318,6 +319,12 @@ fmod STATEMENTS is
   *** CREOL program syntax
   op skip : -> Stm [ctor] .
   op _::=_  : AidList ExprList -> Stm [ctor] .       *** simple assignment
+
+  *** Internal assignment, where the arguments have been evaluated.
+  *** This is needed in order to keep confluence in the more synchronous
+  *** rewrite system.
+  op assign : AidList DataList -> Stm [ctor] .
+
   op _::= new_(_) : Aid Cid ExprList -> Stm [ctor] . *** object creation
   op _(_;_) : Mid ExprList ExprList -> Stm [ctor] .  *** sync. call
   op !_(_)  : Mid ExprList -> Stm [ctor] .           *** async. call (without label)
@@ -374,8 +381,6 @@ fmod STM-LIST is
   eq (nil ||| SL)  = SL . 
   eq (nil MERGER SL)      = SL .
   eq (SL MERGER nil)      = SL .
-  *** eq (noAid ::= EL); SL   = SL .
-  eq (noAid ::= EL)  = skip .
 
   eq await (wait & PG) = await wait ; await PG .
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
@@ -640,22 +645,22 @@ eq enabledGuard((L ?), S, MM)     = inqueue(L, MM) .
 *** red upTerm((int(4) add int(5)) > (int(7) add int(19))) .
 *** red downTerm(upTerm((int(4) add int(5)) > (int(7) add int(19))), (int(0)).Expr) .
 
-var  ST ST' : Stm . 
-vars SL SL' : StmList . 
-var NeSL : NeStmList .
+  vars  ST ST' : Stm . 
+  vars SL SL' SL'' : StmList . 
+  var NeSL : NeStmList .
 
-eq enabled(SL [] SL',  S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
-eq enabled(SL ||| SL', S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
-eq enabled(await G1,   S, MM) = enabledGuard(G1,S,MM) .
-eq enabled((ST ; ST' ; SL),S, MM) = enabled(ST, S, MM) . 
-eq enabled(ST,    S, MM) = true [owise]. 
+  eq enabled((SL [] SL'); SL'',  S, MM) =
+    enabled(SL, S, MM) or enabled(SL', S, MM) .
+  eq enabled((SL ||| SL'); SL'', S, MM) =
+    enabled(SL, S, MM) or enabled(SL', S, MM) .
+  eq enabled((await G1); SL'',   S, MM) = enabledGuard(G1, S, MM) .
+  eq enabled(ST ; SL'',    S, MM) = true [owise]. 
 
-eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-eq ready(A ?(E),     S, MM) = inqueue(eval(A, S), MM) . 
-eq ready(L ?(E),     S, MM) = inqueue(L, MM) . 
-eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
-eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise]. 
+  eq ready((SL [] SL'); SL'',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
+  eq ready((SL ||| SL'); SL'', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
+  eq ready((A ?(E)); SL'',     S, MM) = inqueue(eval(A, S), MM) . 
+  eq ready((L ?(E)); SL'',     S, MM) = inqueue(L, MM) . 
+  eq ready(ST ; SL'',          S, MM) = enabled(ST, S, MM) [owise]. 
 
 ***( transform wait guards when active code is suspended. remove all waits.
 op clear : Guard  -> Guard . 
@@ -681,14 +686,16 @@ endfm
 mod INTERPRETER is
 pr AUX-FUNCTIONS .
 
-var O O' : Oid .
+vars O O' : Oid .
 vars C C' : Cid .
 var A : Aid .
 var AL : AidList .
-var E E' : Expr .
-var EL EL' : ExprList .
+vars E E' : Expr .
+vars EL EL' : ExprList .
+var D : Data .
+var DL : DataList .
 var ST : Stm .
-var SL SL' SL'' : StmList .
+vars SL SL' SL'' : StmList .
 vars SL1 SL2 : NeStmList .
 var P : Process .
 var W : MProc .
@@ -704,33 +711,26 @@ var M : Mid .
 var Q : Qid .
 var MsgBody : Body .
 
-
 *** multiple assignment
-eq
-  < O : C | Att: S, Pr: (L,((A, AL) ::= (E, EL)); SL), PrQ: W, Lcnt: N >
+eq [assign-multiple] :
+  < O : C | Att: S, Pr: (L,(AL ::= EL); SL), PrQ: W, Lcnt: N >
   =
-  < O : C | Att: S, Pr: (L,((A ::= eval(E,(S # L))) ; 
-                            (AL ::= evalList(EL,(S # L))); SL)), 
+  < O : C | Att: S, Pr: (L, (assign(AL, evalList(EL, (S # L))); SL)), 
     PrQ: W, Lcnt: N > .
 
-*** assignment
-
 eq [assign] :
-  < O : C | Att: S, Pr: (L,((A ::= E); SL)), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, assign((A ,, AL), (D # DL)); SL), PrQ: W, Lcnt: N >
   =
   if dom(A,L) then
-    < O : C | Att: S, Pr: (insert(A,eval(E,(S # L)), L), SL), PrQ: W, Lcnt: N > 
+    < O : C | Att: S, Pr: (insert(A, D, L), assign(AL, DL); SL), PrQ: W, Lcnt: N > 
   else
-    < O : C | Att: insert(A,eval(E,(S # L)), S), Pr: (L, SL), PrQ: W, Lcnt: N > 
+    < O : C | Att: insert(A, D, S), Pr: (L, assign(AL, DL); SL), PrQ: W, Lcnt: N > 
   fi .
 
-
-  ***( method termination: replaced by : eq (nil, L) = idle .
-  rl [idle] :
-  < O : C | Att: S, Pr: (L, nil), PrQ: W, Lcnt: N >
-  =>
-  < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N > .
-  )
+eq [assign-skip] :
+  < O : C | Att: S, Pr: (L, assign(noAid, emp); SL), PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N > .
 
 eq [skip] :
   < O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >
