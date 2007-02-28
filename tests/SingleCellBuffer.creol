@@ -19,8 +19,8 @@ op run == skip
 
 op put(in x : Data) == if ctr = 0 
     then cell := x 
-    else if next = null then next := new Buffer else skip fi; 
-    next.put(x)
+    else if next = null then next := new Buffer() else skip fi; 
+    next.put(x;)
  fi; ctr := ctr + 1
 
 op get(out x : Data) == await (ctr > 0) ; 

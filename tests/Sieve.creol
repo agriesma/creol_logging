@@ -11,7 +11,7 @@ begin
   var n: Integer
   var next: Sieve
   op init == next := new Sieve(2); n := 3
-  op run == var r: Bool; next.send(n; r); n := n + 1; run
+  op run == var r: Bool; next.send(n; r); n := n + 1; run(;)
 end
 
 class Sieve(p: Integer) implements Sieve

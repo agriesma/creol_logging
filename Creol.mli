@@ -59,7 +59,7 @@ type 'a guard =
 
 type 'a statement =
     Skip of 'a
-    | Assign of 'a * string * 'a expression
+    | Assign of 'a * string list * 'a expression list
     | Await of 'a * 'a guard
     | If of 'a * 'a expression * 'a statement * 'a statement
     | New of 'a * string * string * 'a expression list
@@ -68,6 +68,7 @@ type 'a statement =
     | Choice of 'a * 'a statement * 'a statement
     | ASyncCall of 'a * string option * 'a expression * string *
 	'a expression list * string list option
+    | Reply of 'a * string * string list
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
 

@@ -8,5 +8,5 @@ class Alarmclock
   op wakeme(in n: Int) == var alarmsetting: Int ;
  		alarmsetting := now + n;
  		await now >= alarmsetting
- 	op tick == now := now + 1
+  op tick == now := now + 1
  end

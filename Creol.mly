@@ -135,8 +135,12 @@ method_decls:
 (* Statements *)
 statement:
       SKIP { Skip default }
-    | t = ID ASSIGN e = expression { Assign(default, t, e) }
-    | t = ID ASSIGN NEW c = CID l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN))
+    | t = delimited(LBRACK, separated_nonempty_list(COMMA, ID), RBRACK) ASSIGN
+	e = delimited(LBRACK, separated_nonempty_list(COMMA, expression), RBRACK)
+	{ Assign(default, t, e) }
+    | t = ID ASSIGN e = expression { Assign(default, [t], [e]) }
+    | t = ID ASSIGN NEW c = CID;
+	l = delimited(LPAREN, separated_list(COMMA, expression), RPAREN)
         { New(default, t, c, l) }
     | IF e = expression THEN t = statement ELSE f = statement FI
         { If(default, e, t, f) }
@@ -144,21 +148,19 @@ statement:
         { If(default, e, t, Skip default) }
     | AWAIT g = guard { Await (default, g) }
     | c = ioption(terminated(expression, DOT)); m = ID;
-	p = ioption(delimited(LPAREN, pair(separated_list(COMMA, expression), loption(preceded (SEMI, separated_list(COMMA, ID)))), RPAREN))
+	p = delimited(LPAREN, pair(separated_list(COMMA, expression), preceded(SEMI, separated_list(COMMA, ID))), RPAREN)
 	{ let caller = match c with
 	    None -> Id (default, "this")
 	  | Some e -> e in
-	    match p with
-		None -> SyncCall (default, caller , m, [], [])
-	      | Some (i, o) -> SyncCall (default, caller, m, i, o) }
+	      SyncCall (default, caller, m, fst p, snd p) }
     | l = ioption(ID) BANG c = ioption(terminated(expression, DOT)) m = ID;
-	p = ioption(delimited(LPAREN, pair(separated_list(COMMA, expression), ioption(preceded (SEMI, separated_list(COMMA, ID)))), RPAREN))
+	p = delimited(LPAREN, pair(separated_list(COMMA, expression), ioption(preceded (SEMI, separated_list(COMMA, ID)))), RPAREN)
 	{ let caller = match c with
 	    None -> Id (default, "this")
 	  | Some e -> e in
-	    match p with
-		None -> ASyncCall (default, l, caller , m, [], None)
-	      | Some (i, o) -> ASyncCall (default, l, caller, m, i, o) }
+	      ASyncCall (default, l, caller, m, fst p, snd p) }
+    | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
+	{ Reply (default, l, o) }
     | LBRACE s = statement RBRACE { s }
     | l = statement SEMI r = statement { Sequence(default, l, r) }
     | l = statement MERGE r = statement { Merge(default, l, r) }

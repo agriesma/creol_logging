@@ -26,11 +26,6 @@ AM_INIT_AUTOMAKE([1.9])
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
-dnl Check for the tools needed to build the text-reader and text-writer
-dnl libraries
-AC_PROG_CC
-AC_PROG_RANLIB
-
 dnl Check for the tools needed to run the tests.
 AC_PATH_PROG([M4], m4)
 AC_PATH_PROG([AUTOM4TE], autom4te)

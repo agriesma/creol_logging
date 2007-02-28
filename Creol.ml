@@ -61,7 +61,7 @@ type 'a guard =
 
 type 'a statement =
     Skip of 'a
-    | Assign of 'a * string * 'a expression
+    | Assign of 'a * string list * 'a expression list
     | Await of 'a * 'a guard
     | If of 'a * 'a expression * 'a statement * 'a statement
     | New of 'a * string * string * 'a expression list
@@ -70,6 +70,7 @@ type 'a statement =
     | Choice of 'a * 'a statement * 'a statement
     | ASyncCall of 'a * string option * 'a expression * string *
 	'a expression list * string list option
+    | Reply of 'a * string * string list
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
 
@@ -116,6 +117,7 @@ let statement_note =
     | Merge(a, _, _) -> a
     | Choice(a, _, _) -> a
     | ASyncCall(a, _, _, _, _, _) -> a
+    | Reply(a, _, _) -> a
     | SyncCall(a, _, _, _, _) -> a
 
 
@@ -140,7 +142,7 @@ and simplify_guard =
     | l -> l
 and simplify_statement =
   function
-      Assign (a, s, e) -> Assign (a, s, simplify_expression e)
+      Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_guard g)
     | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
 			   simplify_statement f)
@@ -163,9 +165,9 @@ and simplify_method_variables note =
   function
       [] -> Skip note
     | [{ var_name = n; var_type = _; var_init = Some i }] ->
-	Assign(note, n, simplify_expression i)
+	Assign(note, [n], [simplify_expression i])
     | { var_name = n; var_type = _; var_init = Some i }::l ->
-	Sequence(note, Assign(note, n, simplify_expression i),
+	Sequence(note, Assign(note, [n], [simplify_expression i]),
 		(simplify_method_variables note l))
     | _::l -> simplify_method_variables note l
 and simplify_method m =
@@ -312,17 +314,9 @@ let rec pretty_print_statement out_channel =
 	      pretty_print_expression_list out_channel a ;
 	      output_string out_channel ")" )
     | Assign (_, i, e) ->
-	output_string out_channel i;
+	pretty_print_string_list out_channel i;
 	output_string out_channel " := ";
-	pretty_print_expression out_channel e
-    | SyncCall (_, c, m, a, r) ->
-	pretty_print_expression out_channel c ;
-	output_string out_channel ("." ^ m);
-	output_string out_channel "(" ;
-	pretty_print_expression_list out_channel a;
-	output_string out_channel "; " ;
-	pretty_print_string_list out_channel r;
-	output_string out_channel ")"
+	pretty_print_expression_list out_channel e
     | ASyncCall (_, l, c, m, a, r) ->
 	(match l with
 	    None -> ()
@@ -340,6 +334,18 @@ let rec pretty_print_statement out_channel =
 	      output_string out_channel "; " ;
 	      pretty_print_string_list out_channel rl;
 	      output_string out_channel ")" )
+    | Reply (_, l, o) ->
+	output_string out_channel (l ^ "?(");
+	pretty_print_string_list out_channel o;
+	output_string out_channel ")";
+    | SyncCall (_, c, m, a, r) ->
+	pretty_print_expression out_channel c ;
+	output_string out_channel ("." ^ m);
+	output_string out_channel "(" ;
+	pretty_print_expression_list out_channel a;
+	output_string out_channel "; " ;
+	pretty_print_string_list out_channel r;
+	output_string out_channel ")"
 
 let pretty_print_vardecl out_channel v =
   output_string out_channel (v.var_name ^ ": " ^ v.var_type );
@@ -472,12 +478,12 @@ and maude_of_creol_identifier_list out_channel =
     | i::l -> output_string out_channel ("'" ^ i ^ " # ");
 	maude_of_creol_identifier_list out_channel l
 
-let rec maude_of_creol_string_list out_channel =
+let rec maude_of_creol_string_list out_channel sep =
   function
       [] -> ()
     | s::[] -> output_string out_channel ("'" ^ s)
-    | s::l -> output_string out_channel ("'" ^ s ^ ", ");
-	maude_of_creol_string_list out_channel l
+    | s::l -> output_string out_channel ("'" ^ s ^ sep);
+	maude_of_creol_string_list out_channel sep l
 
 let rec maude_of_creol_guard out =
   function
@@ -525,8 +531,9 @@ let rec maude_of_creol_statement out =
 	maude_of_creol_expression_list out a ;
 	output_string out ")"
     | Assign (_, i, e) ->
-	output_string out ("'" ^ i ^ " ::= ") ;
-	maude_of_creol_expression out e
+	maude_of_creol_string_list out " ,, " i;
+	output_string out " ::= " ;
+	maude_of_creol_expression_list out e
     | ASyncCall (_, l, c, m, a, r) ->
 	(match l with
 	    None -> ()
@@ -541,6 +548,10 @@ let rec maude_of_creol_statement out =
 	      output_string out " ; " ;
 	      maude_of_creol_identifier_list out rl ) ;
 	output_string out " )"
+    | Reply (_, l, o) ->
+	output_string out ("( '" ^ l ^ " ? ( ") ;
+	maude_of_creol_identifier_list out o;
+	output_string out " ) ) "
     | SyncCall (_, c, m, a, r) ->
 	maude_of_creol_expression out c ;
 	output_string out (" . '" ^ m);

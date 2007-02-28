@@ -63,4 +63,92 @@ extensions is presented in [4]. A type system for runtime class
 updates is presented in [3].
 
 
-@section 
+@section Syntax of Creol
+
+In this section we describe the syntax of Creol and sketch the
+informal semantics of Creol programs.
+
+@subsection Literals and Expressions
+
+Creol assumes a functional sub-language, which we describe in this
+section.
+
+@subsubsection Boolean Expressions
+
+TBD
+
+@subsubsection Integers, Reals, and Arithmetic Expressions
+
+TBD
+
+@subsubsection Strings
+
+TBD
+
+
+@subsubsection Object Expressions and Literals
+
+Object expressions and literals are expressions whose value is a
+reference to an object.  The only literal is @code{null}, representing
+the null-pointer.
+
+@subsubsection Function Application
+
+Generally, applying a function is written as
+@code{@var{f}[@var{e},@var{d},...,@var{c}]}, where @var{f} is the name
+of a function and @var{e},@var{d},@dots{} refers to expressions
+representing the actual arguments.
+
+@subsection Basic Statements
+
+In this section we describe the statements of Creol programs.
+
+@subsubsection Assignments
+
+A single assignment may be written as @code{@var{x} := @var{e}}, where
+@var{x} is the name of an attribute or a local variable and @var{e}
+is an expression.
+
+A multiple assingment is written as
+@code{[@var{x},@var{y},...,@var{z}] := [@var{e},@var{f},...,@var{g}]},
+where the left hand side is a tuple of variable names and the right
+hand side is a tuple of expressions.  Both tuples should have the same
+length.
+
+
+@subsubsection Object Creation
+
+The creation of an object is written as @code{@var{v}:= new
+@var{C}(@var{e},...)}.  @var{v} is the variable which will hold the
+reference to the new object.  @var{C} is the name of the class of the
+new object.  @var{e}, @dots{} are the arguments to the constructor.
+Note that @var{C} has to implement an interface which is a subtype of
+the interface type of @var{v}.
+
+@subsubsection Synchronous Method Calls
+
+A @emph{local} synchronous method call is written as
+@code{@var{m}(@var{ins};@var{outs})}, where @var{m} is the name of a
+method, @var{ins} is a possibly empty list of expressions describing
+the actual arguments to the call and @var{outs} is a possibly empty
+list of variable or attribute names used to store the result values.
+
+A @emph{remote} synchronous method call is written as
+@code{@var{e}.@var{m}(@var{ins};@var{outs})}, where @var{e} is an
+object expression describing the receiver, @var{m} is the name of a
+method, @var{ins} is a possibly empty list of expressions describing
+the actual arguments to the call and @var{outs} is a possibly empty
+list of variable or attribute names used to store the result values.
+
+
+@subsubsection Asynchronous Method Calls
+
+A @emph{asynchronous} method call is written as
+@code{@var{l}!@var{e}.@var{m}(@var{ins})}, where @var{l} is the name
+of a label, @var{m} is the name of a method, @var{ins} is a possibly
+empty list of expressions describing the actual arguments to the call.
+
+Results are received by the statement @code{?(@var{outs})}, where
+@var{l} is a label name used for invoking the method, and @var{outs}
+is a list of variable names used to store the result.
+

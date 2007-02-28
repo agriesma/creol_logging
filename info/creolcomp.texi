@@ -56,6 +56,8 @@ Software Foundation raise funds for GNU development.''
 * Index::               A concept index.
 @end menu
 
+@include creol.texi
+
 @node Licenses
 @appendix Licenses
 
