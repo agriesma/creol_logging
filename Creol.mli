@@ -30,6 +30,15 @@
 
  *)
 
+type creol_type = 
+    (** A type as defined in Creol. *)
+      Basic of string
+	(** A basic type. *)
+    | Application of string * creol_type list
+	(** A type application. *)
+    | Variable of string
+	(** A type variable. *)
+
 type 'a expression =
     (** Definition of the abstract syntax of Creol-expressions.
 
@@ -85,43 +94,74 @@ type 'a guard =
     | Conjunction of 'a * 'a guard * 'a guard
 
 type 'a statement =
+    (** Abstract syntax of statements in Creol.  The type parameter ['a]
+	refers to the type of possible annotations. *)
     Skip of 'a
+	(** A skip statement *)
     | Assign of 'a * string list * 'a expression list
+	(** A multiple assignment statement.  Requires that the two lists
+	    are of the same length. *)
     | Await of 'a * 'a guard
-    | If of 'a * 'a expression * 'a statement * 'a statement
+	(** An await statement. *)
     | New of 'a * string * string * 'a expression list
-    | Sequence of 'a * 'a statement * 'a statement
-    | Merge of 'a * 'a statement * 'a statement
-    | Choice of 'a * 'a statement * 'a statement
-    | ASyncCall of 'a * string option * 'a expression * string *
+	(** Create a new object. *)
+    | AsyncCall of 'a * string option * 'a expression * string *
 	'a expression list * string list option
+	(** Call a method asynchronously. *)
     | Reply of 'a * string * string list
+	(** Receive the reply to an asynchronous call. *)
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
-    | LocalCall of 'a * string * string option * string option *
+	(** Call a (remote) method synchronously. *)
+    | LocalSyncCall of 'a * string * string option * string option *
 	'a expression list * string list
+	(** Call a local method synchronously. *)
+    | If of 'a * 'a expression * 'a statement * 'a statement
+	(** Conditional execution. *)
+    | While of 'a * 'a expression * 'a expression * 'a statement
+	(** While loops. *)
+    | Sequence of 'a * 'a statement * 'a statement
+	(** Sequential composition *)
+    | Merge of 'a * 'a statement * 'a statement
+	(** Merge of statements *)
+    | Choice of 'a * 'a statement * 'a statement
+	(** Choice between statements *)
 
-(** The abstract syntax of Creol *)
-type 'a vardecl =
-    { var_name: string; var_type: string; var_init: 'a expression option }
+type 'a creol_vardecl =
+    (** Abstract syntax representing a variable declaration. *)
+    { var_name: string;
+	(** Name of the variable. *)
+      var_type: creol_type;
+	(** Type of the variable. *)
+      var_init: 'a expression option
+	(** Expression used for initialisation. *)
+    }
 
 type 'a creolmethod =
+    (** Abstract syntax of a method declaration and definition. *)
     { meth_name: string;
-      meth_coiface: string;
-      meth_inpars: 'a vardecl list;
-      meth_outpars: 'a vardecl list;
-      meth_vars: 'a vardecl list;
-      meth_body: 'a statement option }
+	(** The name of the method. *)
+      meth_coiface: creol_type;
+	(** The co-interface of the method. *)
+      meth_inpars: 'a creol_vardecl list;
+	(** A list of input parameters. *)
+      meth_outpars: 'a creol_vardecl list;
+	(** A list of output parameters. *)
+      meth_vars: 'a creol_vardecl list;
+	(** A list of local variables. *)
+      meth_body: 'a statement option
+	(** The method body. *)
+    }
 
 type 'a inherits = string * ('a expression list)
 
 type 'a classdecl =
     { cls_name: string;
-      cls_parameters: 'a vardecl list;
+      cls_parameters: 'a creol_vardecl list;
       cls_inherits: 'a inherits list;
       cls_contracts: string list;
       cls_implements: string list;
-      cls_attributes: 'a vardecl list;
+      cls_attributes: 'a creol_vardecl list;
       cls_methods: 'a creolmethod list }
 
 type  'a interfacedecl =

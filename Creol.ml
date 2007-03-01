@@ -21,6 +21,11 @@
  * 02111-1307, USA.
  *)
 
+type creol_type = 
+      Basic of string
+    | Application of string * creol_type list
+    | Variable of string
+
 type 'a expression =
       Null of 'a
     | Nil of 'a
@@ -61,41 +66,42 @@ type 'a statement =
     Skip of 'a
     | Assign of 'a * string list * 'a expression list
     | Await of 'a * 'a guard
-    | If of 'a * 'a expression * 'a statement * 'a statement
     | New of 'a * string * string * 'a expression list
-    | Sequence of 'a * 'a statement * 'a statement
-    | Merge of 'a * 'a statement * 'a statement
-    | Choice of 'a * 'a statement * 'a statement
-    | ASyncCall of 'a * string option * 'a expression * string *
+    | AsyncCall of 'a * string option * 'a expression * string *
 	'a expression list * string list option
     | Reply of 'a * string * string list
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
-    | LocalCall of 'a * string * string option * string option *
+    | LocalSyncCall of 'a * string * string option * string option *
         'a expression list * string list
+    | If of 'a * 'a expression * 'a statement * 'a statement
+    | While of 'a * 'a expression * 'a expression * 'a statement
+    | Sequence of 'a * 'a statement * 'a statement
+    | Merge of 'a * 'a statement * 'a statement
+    | Choice of 'a * 'a statement * 'a statement
 
 
 (** The abstract syntax of Creol *)
-type 'a vardecl =
-    { var_name: string; var_type: string; var_init: 'a expression option }
+type 'a creol_vardecl =
+    { var_name: string; var_type: creol_type; var_init: 'a expression option }
 
 type 'a creolmethod =
     { meth_name: string;
-      meth_coiface: string;
-      meth_inpars: 'a vardecl list;
-      meth_outpars: 'a vardecl list;
-      meth_vars: 'a vardecl list;
+      meth_coiface: creol_type;
+      meth_inpars: 'a creol_vardecl list;
+      meth_outpars: 'a creol_vardecl list;
+      meth_vars: 'a creol_vardecl list;
       meth_body: 'a statement option }
 
 type 'a inherits = string * ('a expression list)
 
 type 'a classdecl =
     { cls_name: string;
-      cls_parameters: 'a vardecl list;
+      cls_parameters: 'a creol_vardecl list;
       cls_inherits: 'a inherits list;
       cls_contracts: string list;
       cls_implements: string list;
-      cls_attributes: 'a vardecl list;
+      cls_attributes: 'a creol_vardecl list;
       cls_methods: 'a creolmethod list }
 
 type  'a interfacedecl =
@@ -117,10 +123,10 @@ let statement_note =
     | Sequence(a, _, _) -> a
     | Merge(a, _, _) -> a
     | Choice(a, _, _) -> a
-    | ASyncCall(a, _, _, _, _, _) -> a
+    | AsyncCall(a, _, _, _, _, _) -> a
     | Reply(a, _, _) -> a
     | SyncCall(a, _, _, _, _) -> a
-    | LocalCall(a, _, _, _, _, _) -> a
+    | LocalSyncCall(a, _, _, _, _, _) -> a
 
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
@@ -155,13 +161,13 @@ and simplify_statement =
 				 simplify_statement s2)
     | Choice (a, s1, s2) -> Choice (a, simplify_statement s1,
 				   simplify_statement s2)
-    | ASyncCall (a, l, e, n, p, r) ->
-	ASyncCall (a, l, simplify_expression e, n,
+    | AsyncCall (a, l, e, n, p, r) ->
+	AsyncCall (a, l, simplify_expression e, n,
 		  simplify_expression_list p, r)
     | SyncCall (a, e, n, p, r) ->
 	SyncCall (a, simplify_expression e, n, simplify_expression_list p, r)
-    | LocalCall (a, m, l, u, i, o) ->
-	LocalCall (a, m, l, u, simplify_expression_list i, o)
+    | LocalSyncCall (a, m, l, u, i, o) ->
+	LocalSyncCall (a, m, l, u, simplify_expression_list i, o)
     | s -> s
 and simplify_parameter_list l =
   l
@@ -214,6 +220,17 @@ and simplify =
     | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
 
 (* These are the support functions for the abstract syntax tree. *)
+
+let rec string_of_creol_type =
+  function
+      Basic s -> s
+    | Application (s, p) ->
+	s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
+    | Variable s -> s
+and string_of_creol_type_list =
+  function
+      [t] -> string_of_creol_type t
+    | t::l -> (string_of_creol_type t) ^ ", " ^ (string_of_creol_type_list l)
 
 let rec pretty_print_expression out_channel =
   function
@@ -321,7 +338,7 @@ let rec pretty_print_statement out_channel =
 	pretty_print_string_list out_channel i;
 	output_string out_channel " := ";
 	pretty_print_expression_list out_channel e
-    | ASyncCall (_, l, c, m, a, r) ->
+    | AsyncCall (_, l, c, m, a, r) ->
 	(match l with
 	    None -> ()
 	  | Some l -> output_string out_channel l ) ;
@@ -350,7 +367,7 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel "; " ;
 	pretty_print_string_list out_channel r;
 	output_string out_channel ")"
-    | LocalCall (_, m, l, u, i, o) ->
+    | LocalSyncCall (_, m, l, u, i, o) ->
 	output_string out_channel m;
 	(match l with None -> () | Some n -> output_string out_channel ("@" ^ n));
 	(match u with None -> () | Some n -> output_string out_channel ("<<" ^ n));
@@ -361,7 +378,7 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel ")"
 
 let pretty_print_vardecl out_channel v =
-  output_string out_channel (v.var_name ^ ": " ^ v.var_type );
+  output_string out_channel (v.var_name ^ ": " ^ (string_of_creol_type v.var_type ));
   ( match v.var_init with
       Some e -> output_string out_channel " := " ;
 	pretty_print_expression out_channel e
@@ -382,7 +399,7 @@ let rec pretty_print_methods out_channel =
     function
 	[] -> ()
       | m::r -> output_string out_channel
-	  ("with " ^ m.meth_coiface ^ "op " ^ m.meth_name ^ "(") ;
+	  ("with " ^ (string_of_creol_type m.meth_coiface) ^ "op " ^ m.meth_name ^ "(") ;
 	  (match m.meth_inpars with
 	      [] -> ()
 	    | l -> output_string out_channel "in ";
@@ -547,7 +564,7 @@ let rec maude_of_creol_statement out =
 	maude_of_creol_string_list out " ,, " i;
 	output_string out " ::= " ;
 	maude_of_creol_expression_list out e
-    | ASyncCall (_, l, c, m, a, r) ->
+    | AsyncCall (_, l, c, m, a, r) ->
 	(match l with
 	    None -> ()
 	  | Some l -> output_string out ("'" ^ l) ) ;
@@ -573,7 +590,7 @@ let rec maude_of_creol_statement out =
 	output_string out " ; " ;
 	maude_of_creol_identifier_list out r;
 	output_string out " )"
-    | LocalCall (_, m, l, u, i, o) ->
+    | LocalSyncCall (_, m, l, u, i, o) ->
 	output_string out ( "'" ^ m );
 	(match l with None -> () | Some n -> output_string out (" @ '" ^ n));
 	(match u with None -> () | Some n -> output_string out (" << '" ^ n));

@@ -67,6 +67,7 @@ rule token = parse
     | "and" { AND }
     | "await" { AWAIT }
     | "begin" { BEGIN }
+    | "caller" { ID("caller") (* XXX: Should be special *) }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
     | "else" { ELSE }
@@ -78,6 +79,7 @@ rule token = parse
     | "implements" { IMPLEMENTS }
     | "inherits" { INHERITS }
     | "interface" { INTERFACE }
+    | "inv" { reserved lexbuf }
     | "in" { IN }
     | "new" { NEW }
     | "nil" { NIL }
@@ -86,8 +88,11 @@ rule token = parse
     | "op" { OP }
     | "or" { OR }
     | "out" { OUT }
+    | "pre" { reserved lexbuf }
+    | "post" { reserved lexbuf }
     | "skip" { SKIP }
     | "then" { THEN }
+    | "this" { ID("this") (* XXX: Should be special, too. *) }
     | "true" { BOOL(true) }
     | "var" { VAR }
     | "wait" { WAIT }

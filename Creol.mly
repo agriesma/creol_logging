@@ -84,9 +84,10 @@ attributes:
 	{ signal_error $startpos "syntax error in attribute declaration" }
 
 vardecl:
-      v = vardecl_no_init { v }
+      v = vardecl_no_init
+	{ v }
     | v = vardecl_no_init ASSIGN i = expression
-    { { var_name = v.var_name; var_type = v.var_type; var_init = Some i } }
+	{ { v with var_init = Some i } }
 
 %inline vardecl_no_init:
       i = ID COLON t = creol_type { { var_name = i; var_type = t; var_init = None } }
@@ -94,12 +95,12 @@ vardecl:
 method_decl:
       WITH m = CID OP i = ID p = parameters_opt {
 	match p with (ins, outs) ->
-	  { meth_name = i; meth_coiface = m; meth_inpars = ins;
+	  { meth_name = i; meth_coiface = Basic m; meth_inpars = ins;
 	    meth_outpars = outs; meth_vars = []; meth_body = None} }
     | OP i = ID p = parameters_opt {
 	match p with
 	    (ins, outs) ->
-	      { meth_name = i; meth_coiface = ""; meth_inpars = ins;
+	      { meth_name = i; meth_coiface = Basic ""; meth_inpars = ins;
 		meth_outpars = outs; meth_vars = []; meth_body = None} }
     | WITH error
     | WITH CID error
@@ -168,7 +169,7 @@ statement:
 	{ let caller = match c with
 	    None -> Id (default, "this")
 	  | Some e -> e in
-	      ASyncCall (default, l, caller, m, fst p, snd p) }
+	      AsyncCall (default, l, caller, m, fst p, snd p) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
 	{ Reply (default, l, o) }
     | c = expression DOT; m = ID;
@@ -178,7 +179,7 @@ statement:
     | m = ID l = ioption(preceded(AT, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN
-	{ LocalCall(default, m, l, None, i, o) }
+	{ LocalSyncCall(default, m, l, None, i, o) }
     | LBRACE s = statement RBRACE { s }
     | l = statement SEMI r = statement { Sequence(default, l, r) }
     | l = statement MERGE r = statement { Merge(default, l, r) }
@@ -225,8 +226,10 @@ expression:
 
 (* Poor mans types and type parameters *)
 creol_type:
-      t = CID { t }
-    | t = CID LT separated_nonempty_list(COMMA, creol_type) GT { t } 
+      t = CID
+	{ Basic t }
+    | t = CID LT p = separated_nonempty_list(COMMA, creol_type) GT
+	{ Application(t, p) } 
     | CID LT error { signal_error $startpos "Error in type" }
 
 %%
