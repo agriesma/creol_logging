@@ -21,21 +21,48 @@
  * 02111-1307, USA.
  *)
 
+(** Definition of the abstract syntax of Creol and a collection
+    of functions for its manipulation.
+
+    @author Marcel Kyas
+    @version 0.0.0
+    @since   0.0.0
+
+ *)
+
 type 'a expression =
-    Nil of 'a
-    | Null of 'a
-    | Int of 'a * int
-    | Float of 'a * float
+    (** Definition of the abstract syntax of Creol-expressions.
+
+        The parameter 'a refers to a possible annotation of the
+        element. *)
+    Null of 'a
+	(** Literal of the null pointer. *)
+    | Nil of 'a
+	(** Literal for an empty list. *)
     | Bool of 'a * bool
+	(** A boolean literal. *)
+    | Int of 'a * int
+	(** An integer literal. *)
+    | Float of 'a * float
+	(** A floating point literal. *)
     | String of 'a * string
+	(** A string literal. *)
     | Id of 'a * string
+	(** An identifier, usually an attribute or a local variable name *)
     | Unary of 'a * unaryop * 'a expression
+	(** A unary expression *)
     | Binary of 'a * binaryop * 'a expression * 'a expression
+	(** A binary expression *)
     | FuncCall of 'a * string * 'a expression list
+	(** A call of a primitive function *)
 and unaryop =
+	(** Definition of the different unary operator symbols *)
     Not
+	(** The negation of boolean values *)
     | UMinus
+	(** Invert a floating point number or an integer. *)
 and binaryop =
+	(** Definition of the different binary operator symbols *)
     Plus
     | Minus
     | Times

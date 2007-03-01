@@ -21,14 +21,12 @@
  * 02111-1307, USA.
  *)
 
-(** The abstract syntax of the (unspecified) Creol expression language or
-    functional sub-language *)
 type 'a expression =
-    Nil of 'a
-    | Null of 'a
+      Null of 'a
+    | Nil of 'a
+    | Bool of 'a * bool
     | Int of 'a * int
     | Float of 'a * float
-    | Bool of 'a * bool
     | String of 'a * string
     | Id of 'a * string
     | Unary of 'a * unaryop * 'a expression

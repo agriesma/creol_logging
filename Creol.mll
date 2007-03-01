@@ -5,7 +5,7 @@
 open CreolParser
 open Lexing
 
-exception Reserved of int * string
+exception Reserved of string * int * string
 
 let update_loc lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -13,9 +13,9 @@ let update_loc lexbuf =
       { pos with pos_lnum = pos.pos_lnum + 1; pos_bol = pos.pos_cnum }
 
 let reserved lexbuf =
-  let lnum = lexbuf.lex_curr_p.pos_lnum in
+  let pos = lexbuf.lex_curr_p in
     let tok = Lexing.lexeme lexbuf in
-      raise (Reserved (lnum, tok))
+      raise (Reserved (pos.pos_fname, pos.pos_lnum, tok))
 }
 let COMMENT = '/' '/' [ ^ '\n' ]*
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)

@@ -21,6 +21,10 @@
  * 02111-1307, USA.
  *)
 
+(** Main program.
+
+ *)
+
 open Arg
 
 
@@ -28,6 +32,7 @@ open Arg
 
 
 (** Show the name and the version of the program and exit. *)
+
 let show_version () =
   print_string "creolcomp 0.0.0\n" ;
   print_string "Copyright (c) 2007 Marcel Kyas\n";
@@ -39,9 +44,7 @@ let show_version () =
 let ignore x = ()
 
 let from_file name =
-  let lexbuf = Lexing.from_channel (open_in name) in
-    let tree = CreolParser.main CreolLex.token lexbuf in
-	Creol.maude_of_creol stdout (Creol.simplify tree)
+  Creol.maude_of_creol stdout (Creol.simplify (CreolIO.from_file name))
 
 let options = [
   ("-v", Unit (function () -> ()),

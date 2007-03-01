@@ -2,7 +2,6 @@
 
     This file is an input file to the menhir parser generator. *)
 
-
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE
 %token WITH OP VAR IN OUT
@@ -33,6 +32,8 @@
 %start <'a list> main
 
 %{
+(** A parser for Creol. *)
+
 open Creol
 
 let default = ()
@@ -227,3 +228,5 @@ creol_type:
       t = CID { t }
     | t = CID LT separated_nonempty_list(COMMA, creol_type) GT { t } 
     | CID LT error { signal_error $startpos "Error in type" }
+
+%%

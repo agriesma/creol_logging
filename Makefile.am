@@ -28,7 +28,7 @@ SUBDIRS			= xml . info maude tests
 
 MOSTLYCLEANFILES	= *~ *.aux *.log
 CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
-DISTCLEANFILES		= Version.ml
+DISTCLEANFILES		= Version.ml html-stamp
 MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 			  depcomp missing aclocal.m4 install-sh \
 			  CreolLex.ml CreolParser.ml CreolParser.mli \
@@ -41,9 +41,10 @@ BUILT_SOURCES		= Version.ml CreolLex.ml CreolParser.ml CreolParser.mli
 
 bin_PROGRAMS		= creolcomp creolcomp.opt
 
-creolcomp_SOURCES	= Creol.mli Creol.ml \
-			  CreolLex.ml \
+creolcomp_SOURCES	= CreolLex.ml CreolLex.mli \
 			  CreolParser.mli CreolParser.ml \
+			  Creol.mli Creol.ml \
+			  CreolIO.mli CreolIO.ml \
 			  Driver.ml Version.ml
 
 creolcomp_opt_SOURCES	= $(creolcomp_SOURCES)
@@ -94,6 +95,13 @@ distclean-local:
 
 .depend: ${srcdir}/Makefile.am $(creolcomp_SOURCES)
 	$(OCAMLFIND) $(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
+
+html-local: html-stamp
+
+html-stamp: $(creolcomp_SOURCES)
+	test -d html || mkdir html
+	$(OCAMLFIND) $(OCAMLDOC) -html -d html $^
+	
 
 -include ${srcdir}/.depend
 CreolLex.cmo: CreolParser.cmi
