@@ -31,7 +31,8 @@ CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
 DISTCLEANFILES		= Version.ml
 MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 			  depcomp missing aclocal.m4 install-sh \
-			  CreolLex.ml CreolParser.ml CreolParser.mli
+			  CreolLex.ml CreolParser.ml CreolParser.mli \
+			  creolcomp.spec
 
 EXTRA_DIST		= .depend Creol.mll Creol.mly creolcomp.spec \
 			  creolcomp.spec.in

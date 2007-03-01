@@ -34,9 +34,11 @@ MOSTLYCLEANFILES	= *~ *.aux *.log
 CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex \
 			  dllxml.so xml.a libxml.a xml-stamp
 DISTCLEANFILES		= META
-MAINTAINERCLEANFILES	= depend Makefile.in Version.ml
+MAINTAINERCLEANFILES	= .depend Makefile.in configure Version.ml \
+			  depcomp missing install-sh aclocal.m4 \
+			  xml.spec
 
-EXTRA_DIST		= depend META.in
+EXTRA_DIST		= .depend META.in
 
 BUILT_SOURCES		= META
 
@@ -85,7 +87,7 @@ xml-stamp: $(filter %.cmo, $(patsubst %.ml, %.cmo, $(libxml_stubs_a_SOURCES)))\
 META: $(srcdir)/META.in $(top_srcdir)/configure.ac
 	rm -f META && sed -e s/@VERSION\@/$(VERSION)/g < $< > $@
 
-depend: $(oclvp_SOURCES) $(libxml_stubs_a_SOURCES) ${srcdir}/Makefile.am
+.depend: $(oclvp_SOURCES) $(libxml_stubs_a_SOURCES) ${srcdir}/Makefile.am
 	$(OCAMLDEP) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
 
 distclean-local:
@@ -107,4 +109,4 @@ oclvp.opt: xml.cmxa
 
 XmlTextReader.cmi XmlTextWriter.cmi: META
 
--include ${srcdir}/depend
+-include ${srcdir}/.depend
