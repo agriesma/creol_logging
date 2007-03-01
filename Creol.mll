@@ -33,7 +33,8 @@ rule token = parse
     | ':' { COLON }
     | '?' { QUESTION }
     | '!' { BANG }
-    | '@' { reserved lexbuf }
+    | "@@" { reserved lexbuf }
+    | '@' { AT }
     | '#' { reserved lexbuf }
     | "==" { EQEQ }
     | "<=" { LE }

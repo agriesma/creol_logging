@@ -71,6 +71,8 @@ type 'a statement =
     | Reply of 'a * string * string list
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
+    | LocalCall of 'a * string * string option * string option *
+	'a expression list * string list
 
 (** The abstract syntax of Creol *)
 type 'a vardecl =

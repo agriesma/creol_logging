@@ -38,7 +38,7 @@ begin
   op run == !loop()
 
   op loop == {await ctReindeers = 5; deliverToys(;) []
-              await ctElves >= 3 and not ctReindeers = 9; talkToElves(;)}; 
+              await  3 <= ctElves and not ctReindeers = 9; talkToElves(;)}; 
              !loop()
 
   op deliverToys ==
@@ -130,7 +130,7 @@ class LeaderElfC(sc:SantaClaus, elves: List)
 	inherits ElfC
 	implements Elf
 begin
-  op run == run@ElfC()
+  op run == run@ElfC(;)
   op work ==
 	// (<Lead elves> ||| <Make toys>);
 	!sc.haveProblem()
@@ -142,7 +142,7 @@ begin
 	var sc:SantaC;
 	var r:Reindeer;
 	var e:Elf;
-	sc := new SantaClausClass;
+	sc := new SantaClausClass();
 	r := new Reindeer(sc);
 	r := new Reindeer(sc);
 	r := new Reindeer(sc);

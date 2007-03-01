@@ -4,15 +4,15 @@
 
 
 %token EOF
-%token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END NEW
-%token INTERFACE WITH OP VAR IN OUT WAIT
-%token EQEQ COMMA SEMI COLON ASSIGN RBRACK LBRACK LPAREN RPAREN
-%token LBRACE RBRACE
-%token QUESTION BANG BOX MERGE DOT
+%token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE
+%token WITH OP VAR IN OUT
+%token EQEQ COMMA SEMI COLON ASSIGN
+%token RBRACK LBRACK LPAREN RPAREN LBRACE RBRACE
+%token QUESTION BANG BOX MERGE DOT AT
 (* %token DIAMOND *)
 (* %token BAR *)
 (* %token DOTDOT *)
-%token IF THEN ELSE FI SKIP AWAIT
+%token IF THEN ELSE FI SKIP AWAIT WAIT NEW
 %token AND OR XOR IFF NOT PLUS MINUS TIMES DIV EQ NE LT LE GT GE
 %token <string> CID ID STRING
 %token <int>  INT
@@ -162,12 +162,6 @@ statement:
     | IF e = expression THEN t = statement FI
         { If(default, e, t, Skip default) }
     | AWAIT g = guard { Await (default, g) }
-    | c = ioption(terminated(expression, DOT)); m = ID;
-	p = delimited(LPAREN, pair(separated_list(COMMA, expression), preceded(SEMI, separated_list(COMMA, ID))), RPAREN)
-	{ let caller = match c with
-	    None -> Id (default, "this")
-	  | Some e -> e in
-	      SyncCall (default, caller, m, fst p, snd p) }
     | l = ioption(ID) BANG c = ioption(terminated(expression, DOT)) m = ID;
 	p = delimited(LPAREN, pair(separated_list(COMMA, expression), ioption(preceded (SEMI, separated_list(COMMA, ID)))), RPAREN)
 	{ let caller = match c with
@@ -176,6 +170,14 @@ statement:
 	      ASyncCall (default, l, caller, m, fst p, snd p) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
 	{ Reply (default, l, o) }
+    | c = expression DOT; m = ID;
+	LPAREN i = separated_list(COMMA, expression) SEMI
+	       o = separated_list(COMMA, ID) RPAREN
+	{ SyncCall (default, c, m, i, o) }
+    | m = ID l = ioption(preceded(AT, CID))
+	LPAREN i = separated_list(COMMA, expression) SEMI
+	       o = separated_list(COMMA, ID) RPAREN
+	{ LocalCall(default, m, l, None, i, o) }
     | LBRACE s = statement RBRACE { s }
     | l = statement SEMI r = statement { Sequence(default, l, r) }
     | l = statement MERGE r = statement { Merge(default, l, r) }

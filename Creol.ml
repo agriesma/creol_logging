@@ -73,6 +73,9 @@ type 'a statement =
     | Reply of 'a * string * string list
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
+    | LocalCall of 'a * string * string option * string option *
+        'a expression list * string list
+
 
 (** The abstract syntax of Creol *)
 type 'a vardecl =
@@ -119,6 +122,7 @@ let statement_note =
     | ASyncCall(a, _, _, _, _, _) -> a
     | Reply(a, _, _) -> a
     | SyncCall(a, _, _, _, _) -> a
+    | LocalCall(a, _, _, _, _, _) -> a
 
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
@@ -158,6 +162,8 @@ and simplify_statement =
 		  simplify_expression_list p, r)
     | SyncCall (a, e, n, p, r) ->
 	SyncCall (a, simplify_expression e, n, simplify_expression_list p, r)
+    | LocalCall (a, m, l, u, i, o) ->
+	LocalCall (a, m, l, u, simplify_expression_list i, o)
     | s -> s
 and simplify_parameter_list l =
   l
@@ -345,6 +351,15 @@ let rec pretty_print_statement out_channel =
 	pretty_print_expression_list out_channel a;
 	output_string out_channel "; " ;
 	pretty_print_string_list out_channel r;
+	output_string out_channel ")"
+    | LocalCall (_, m, l, u, i, o) ->
+	output_string out_channel m;
+	(match l with None -> () | Some n -> output_string out_channel ("@" ^ n));
+	(match u with None -> () | Some n -> output_string out_channel ("<<" ^ n));
+	output_string out_channel "(" ;
+	pretty_print_expression_list out_channel i;
+	output_string out_channel "; " ;
+	pretty_print_string_list out_channel o;
 	output_string out_channel ")"
 
 let pretty_print_vardecl out_channel v =
@@ -559,6 +574,15 @@ let rec maude_of_creol_statement out =
 	maude_of_creol_expression_list out a;
 	output_string out " ; " ;
 	maude_of_creol_identifier_list out r;
+	output_string out " )"
+    | LocalCall (_, m, l, u, i, o) ->
+	output_string out ( "'" ^ m );
+	(match l with None -> () | Some n -> output_string out (" @ '" ^ n));
+	(match u with None -> () | Some n -> output_string out (" << '" ^ n));
+	output_string out "( " ;
+	maude_of_creol_expression_list out i;
+	output_string out " ; " ;
+	maude_of_creol_identifier_list out o;
 	output_string out " )"
 
 
