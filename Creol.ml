@@ -70,6 +70,7 @@ type 'a statement =
     | AsyncCall of 'a * string option * 'a expression * string *
 	'a expression list * string list option
     | Reply of 'a * string * string list
+    | Free of 'a * string
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
     | LocalSyncCall of 'a * string * string option * string option *
@@ -118,15 +119,17 @@ let statement_note =
     Skip a -> a
     | Assign(a, _, _) -> a
     | Await(a, _) -> a
-    | If(a, _, _, _) -> a
     | New(a, _, _, _) -> a
+    | AsyncCall(a, _, _, _, _, _) -> a
+    | Reply(a, _, _) -> a
+    | Free(a, _) -> a
+    | SyncCall(a, _, _, _, _) -> a
+    | LocalSyncCall(a, _, _, _, _, _) -> a
+    | If(a, _, _, _) -> a
+    | While(a, _, _, _) -> a
     | Sequence(a, _, _) -> a
     | Merge(a, _, _) -> a
     | Choice(a, _, _) -> a
-    | AsyncCall(a, _, _, _, _, _) -> a
-    | Reply(a, _, _) -> a
-    | SyncCall(a, _, _, _, _) -> a
-    | LocalSyncCall(a, _, _, _, _, _) -> a
 
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
@@ -152,15 +155,7 @@ and simplify_statement =
   function
       Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_guard g)
-    | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
-			   simplify_statement f)
     | New (a, s, c, p) -> New (a, s, c, simplify_expression_list p)
-    | Sequence (a, s1, s2) -> Sequence (a, simplify_statement s1,
-				       simplify_statement s2)
-    | Merge (a, s1, s2) -> Merge (a, simplify_statement s1,
-				 simplify_statement s2)
-    | Choice (a, s1, s2) -> Choice (a, simplify_statement s1,
-				   simplify_statement s2)
     | AsyncCall (a, l, e, n, p, r) ->
 	AsyncCall (a, l, simplify_expression e, n,
 		  simplify_expression_list p, r)
@@ -168,6 +163,17 @@ and simplify_statement =
 	SyncCall (a, simplify_expression e, n, simplify_expression_list p, r)
     | LocalSyncCall (a, m, l, u, i, o) ->
 	LocalSyncCall (a, m, l, u, simplify_expression_list i, o)
+    | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
+			   simplify_statement f)
+    | While (a, c, i, b) ->
+	While (a, simplify_expression c, simplify_expression i,
+	       simplify_statement b)
+    | Sequence (a, s1, s2) -> Sequence (a, simplify_statement s1,
+				       simplify_statement s2)
+    | Merge (a, s1, s2) -> Merge (a, simplify_statement s1,
+				 simplify_statement s2)
+    | Choice (a, s1, s2) -> Choice (a, simplify_statement s1,
+				   simplify_statement s2)
     | s -> s
 and simplify_parameter_list l =
   l
@@ -231,6 +237,7 @@ and string_of_creol_type_list =
   function
       [t] -> string_of_creol_type t
     | t::l -> (string_of_creol_type t) ^ ", " ^ (string_of_creol_type_list l)
+    | [] -> assert false (* Silence a compiler warning. *)
 
 let rec pretty_print_expression out_channel =
   function
@@ -306,6 +313,14 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel " else ";
 	pretty_print_statement out_channel f;
 	output_string out_channel " fi";
+    | While (_, c, i, b) ->
+	output_string out_channel "while ";
+	pretty_print_expression out_channel c;
+	output_string out_channel " do inv (";
+	pretty_print_expression out_channel i;
+	output_string out_channel ") ";
+	pretty_print_statement out_channel b;
+	output_string out_channel " od";
     | Await (_, g) -> 
 	output_string out_channel "await ";
 	pretty_print_guard out_channel g;
@@ -359,6 +374,7 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel (l ^ "?(");
 	pretty_print_string_list out_channel o;
 	output_string out_channel ")";
+    | Free(_, l) -> output_string out_channel ("/* free(" ^ l ^ ")")
     | SyncCall (_, c, m, a, r) ->
 	pretty_print_expression out_channel c ;
 	output_string out_channel ("." ^ m);
@@ -529,33 +545,6 @@ let rec maude_of_creol_statement out =
   function
       Skip _ -> output_string out "skip"
     | Await (_, g) -> output_string out "await "; maude_of_creol_guard out g
-    | If (_, c, t, Skip _) ->
-	output_string out "if ("; maude_of_creol_expression out c;
-	output_string out ") th ("; maude_of_creol_statement out t;
-	output_string out ") fi"
-    | If (_, c, t, f) ->
-	output_string out "if ("; maude_of_creol_expression out c;
-	output_string out ") th ("; maude_of_creol_statement out t;
-	output_string out ") el ("; maude_of_creol_statement out f;
-	output_string out ") fi"
-    | Sequence (_, l, r) ->
-	output_string out "( ( ";
-	maude_of_creol_statement out l; 
-	output_string out " ) ; ( ";
-	maude_of_creol_statement out r; 
-	output_string out " ) )"
-    | Merge (_, l, r) ->
-	output_string out "( ( ";
-	maude_of_creol_statement out l; 
-	output_string out " ) ||| ( ";
-	maude_of_creol_statement out r; 
-	output_string out " ) )"
-    | Choice (_, l, r) ->
-	output_string out "( ( ";
-	maude_of_creol_statement out l; 
-	output_string out " ) [] ( ";
-	maude_of_creol_statement out r; 
-	output_string out " ) )"
     | New (_, i, c, a) ->
 	output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "(") ;
 	maude_of_creol_expression_list out a ;
@@ -582,6 +571,7 @@ let rec maude_of_creol_statement out =
 	output_string out ("( '" ^ l ^ " ? ( ") ;
 	maude_of_creol_identifier_list out o;
 	output_string out " ) ) "
+    | Free (_, l) -> output_string out ("free( '" ^ l ^ " )")
     | SyncCall (_, c, m, a, r) ->
 	maude_of_creol_expression out c ;
 	output_string out (" . '" ^ m);
@@ -599,6 +589,35 @@ let rec maude_of_creol_statement out =
 	output_string out " ; " ;
 	maude_of_creol_identifier_list out o;
 	output_string out " )"
+    | If (_, c, t, f) ->
+	output_string out "if ("; maude_of_creol_expression out c;
+	output_string out ") th ("; maude_of_creol_statement out t;
+	output_string out ") el ("; maude_of_creol_statement out f;
+	output_string out ") fi"
+    | While (_, c, _, b) ->
+	output_string out "while (" ;
+	maude_of_creol_expression out c;
+	output_string out ") do ";
+	maude_of_creol_statement out b;
+	output_string out " od "
+    | Sequence (_, l, r) ->
+	output_string out "( ( ";
+	maude_of_creol_statement out l; 
+	output_string out " ) ; ( ";
+	maude_of_creol_statement out r; 
+	output_string out " ) )"
+    | Merge (_, l, r) ->
+	output_string out "( ( ";
+	maude_of_creol_statement out l; 
+	output_string out " ) ||| ( ";
+	maude_of_creol_statement out r; 
+	output_string out " ) )"
+    | Choice (_, l, r) ->
+	output_string out "( ( ";
+	maude_of_creol_statement out l; 
+	output_string out " ) [] ( ";
+	maude_of_creol_statement out r; 
+	output_string out " ) )"
 
 
 let maude_of_creol_attribute out a =

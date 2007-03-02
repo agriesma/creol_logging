@@ -110,6 +110,9 @@ type 'a statement =
 	(** Call a method asynchronously. *)
     | Reply of 'a * string * string list
 	(** Receive the reply to an asynchronous call. *)
+    | Free of 'a * string
+	(** Release a label.  It is not usable after executing this statement
+	    anymore. *)
     | SyncCall of 'a * 'a expression * string *
 	'a expression list * string list
 	(** Call a (remote) method synchronously. *)
