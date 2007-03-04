@@ -228,7 +228,7 @@ expression:
 creol_type:
       t = CID
 	{ Basic t }
-    | t = CID LT p = separated_nonempty_list(COMMA, creol_type) GT
+    | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Application(t, p) } 
     | CID LT error { signal_error $startpos "Error in type" }
 

@@ -20,6 +20,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_INIT(creolcomp, 0.0.0, kyas@ifi.uio.no)
+AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([Driver.ml])
 AM_INIT_AUTOMAKE([1.9])
