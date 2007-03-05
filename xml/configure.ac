@@ -19,10 +19,10 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_INIT([xml], 0.0.0, mkyas@users.berlios.de)
+AC_INIT([xml], 0.0a, kyas@ifi.uio.no)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([XmlTextWriter.ml])
-AM_INIT_AUTOMAKE([1.9])
+AM_INIT_AUTOMAKE([1.9 dist-bzip2 dist-zip readme-alpha check-news])
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
