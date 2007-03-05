@@ -25,16 +25,26 @@
 
 
     @author Marcel Kyas
-    @version 0.0.0
-    @since   0.0.0
+    @version 0.0
+    @since   0.0
 
   *)
 
-
-(** Read the contents of a file and return an abstract syntax tree. *)
 let from_file name =
+  (** Read the contents of a file and return an abstract syntax tree.
+
+      @since 0.0 *)
   let lexbuf = Lexing.from_channel (open_in name) in
     let pos = lexbuf.Lexing.lex_curr_p in
       lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } ;
       CreolParser.main CreolLex.token lexbuf
+
+let rec from_files =
+  (** Read the contents of a list of files and return an abstract syntax
+      tree.
+
+      @since 0.0 *)
+  function
+      [] -> []
+    | name::rest -> (from_file name)@(from_files rest)
 

@@ -25,11 +25,13 @@
 
 
     @author Marcel Kyas
-    @version 0.0.0
-    @since   0.0.0
+    @version 0.0
+    @since   0.0
 
   *)
 
 open Creol
 
 val from_file : string -> 'a declaration list
+
+val from_files : string list -> 'a declaration list

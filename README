@@ -9,6 +9,10 @@ Usage:  creolcomp bla.creol > bla.maude
 
 the Result is sent to stdout.
 
+Initial documentation is provided in info.  It may be build using the
+rule `make pdf'.  Since this is a very early release it may contain
+errors and inaccuracys.
+
 ==============================================================================
 This small project serves as a prototyping environment for the compiler
 and the type checker for Creol.

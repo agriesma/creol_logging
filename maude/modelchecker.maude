@@ -529,8 +529,8 @@ fmod COMMUNICATION is
         format (! o o o o o o)] .  
 
   op _from_to_ : Body Oid Oid -> Msg [ctor format (o ! o ! o on)] .
-  op error(_) : String -> Msg [ctor format (nnr r o! or onn)] .     *** error 
-  op warning(_) : String -> Msg [ctor format (nnr! r! r! or onn)] .   *** warning 
+  op error(_) : String -> [Msg] [ctor format (nnr r o! or onn)] .     *** error 
+  op warning(_) : String -> [Msg] [ctor format (nnr! r! r! or onn)] .   *** warning 
 
   *** Method binding messages
   op bindMtd : Oid Oid Label Qid ExprList InhList -> Msg [ctor] . 

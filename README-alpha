@@ -1,1 +1,74 @@
-Alpha releases of the creol compiler.
+This file is part of creolcomp.
+
+This document describes how to build pre-releases and SVN versions of the
+package.
+
+
+
+* Introduction
+
+This is a *pre-release* version of creolcomp and not ready for production use.
+Please send comments to <kyas at ifi.uio.no>.
+
+This software may change radically, contains bugs, may not be documented,
+or the documentation may be incomplete, misleading, or plain wrong,
+and will probably not do what you expect it to do.  Use at your own risk.
+
+If you find errors, you may report them.  Please make sure that you only
+have the latest version, and verify that your bug is still present in the
+latest version.  Only if these conditions are met, we will try our best to
+figure the error out and try to provide corrections.
+
+
+
+* Compilation instructions
+
+If you have taken the sources from SVN you will need the following
+packages to build creolcomp.  I don't make any extra effort to accommodate
+older versions of these packages, so please make sure that you have the
+latest stable version.
+
+- Automake <http://www.gnu.org/software/automake/>
+- Autoconf <http://www.gnu.org/software/autoconf/>
+- M4 <http://www.gnu.org/software/m4/>
+- Texinfo <http://www.gnu.org/software/texinfo>
+- libxml2
+- libxslt
+- ocaml
+- menhir
+
+Please understand that I will not help you in setting up your build
+environment.  Please make sure that you have the latest stable version
+of these packages installed and correctly configured, including the
+development packages.  If one of the steps described below fails, you
+are out of luck.
+
+Step 0: Obtaining the source code.
+
+You may have received a tar file creolcomp-x.ya, where x and y are
+numbers and a is any letter.  This tar file contains a snap shot of the
+creolcomp, which should be buildable as a normal package.  See INSTALL
+for installation instructions.
+
+You can also check out the source code from our internal subversion
+repository:
+
+svn co https://sub.ifi.uio.no/repos/projects/credo/trunk/creolcomp
+
+
+Step 1: Creating configure and Makefile.in
+
+Execute `autoreconf -i -s' to install certain missing files and to create
+the different Makefile.in and configure files.
+
+On some sytems you may get complaints that AM_PATH_XSLT is missing.
+Then make sure that you have updated your libxslt package to the latest
+version, or try to find a file libxslt.m4 and install it in /usr/share/aclocal
+or /usr/local/share/aclocal, depending on where autoconf will look for
+its local macro files.
+
+Step 2: Build the program
+
+Follow the instructions in INSTALL to configure and build the program.
+
+-

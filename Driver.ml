@@ -23,28 +23,27 @@
 
 (** Main program.
 
+    @author Marcel Kyas
+    @version 0.0
+    @since   0.0
  *)
 
 open Arg
 
-
-
-
+let files : string list ref = ref []
 
 (** Show the name and the version of the program and exit. *)
 
 let show_version () =
-  print_string "creolcomp 0.0.0\n" ;
+  print_string (Version.package ^ " " ^ Version.version ^ " (" ^
+		   Version.reldate ^ ")\n" );
   print_string "Copyright (c) 2007 Marcel Kyas\n";
   print_string "This is free software; see the source for copying conditions.\n";
   print_string "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n";
   print_string "PARTICULAR PURPOSE.\n";
   exit 0;;
 
-let ignore x = ()
-
-let from_file name =
-  Creol.maude_of_creol stdout (Creol.simplify (CreolIO.from_file name))
+let from_file name = files := (!files)@[name]
 
 let options = [
   ("-v", Unit (function () -> ()),
@@ -60,6 +59,7 @@ let usage = Sys.executable_name ^ " [options]" ;;
 
 let main () =
   parse options from_file usage ;
+  Creol.maude_of_creol stdout (Creol.simplify (CreolIO.from_files (!files)));
   exit 0;;
 
 main() ;;

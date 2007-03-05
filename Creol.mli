@@ -25,8 +25,8 @@
     of functions for its manipulation.
 
     @author Marcel Kyas
-    @version 0.0.0
-    @since   0.0.0
+    @version 0.0
+    @since   0.0
 
  *)
 
