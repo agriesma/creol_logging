@@ -27,6 +27,10 @@ AM_INIT_AUTOMAKE([1.9 dist-bzip2 dist-zip readme-alpha check-news])
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
+dnl Record the date of release
+RELEASE_DATE='2007-03-05'
+AC_SUBST([RELEASE_DATE])
+
 dnl Check for the tools needed to run the tests.
 AC_PATH_PROG([M4], m4)
 AC_PATH_PROG([AUTOM4TE], autom4te)
