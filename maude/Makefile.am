@@ -24,4 +24,5 @@ CLEANFILES		=
 DISTCLEANFILES		= 
 MAINTAINERCLEANFILES	= Makefile.in
 
-EXTRA_DIST		= interpreter.maude README
+EXTRA_DIST		= README
+dist_pkgdata_DATA	= interpreter.maude

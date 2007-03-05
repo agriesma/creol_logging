@@ -19,11 +19,11 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_INIT(creolcomp, 0.0.0, kyas@ifi.uio.no)
+AC_INIT(creolcomp, 0.0a, kyas@ifi.uio.no)
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([Driver.ml])
-AM_INIT_AUTOMAKE([1.9])
+AM_INIT_AUTOMAKE([1.9 dist-bzip2 dist-zip readme-alpha check-news])
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
@@ -44,6 +44,10 @@ AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
 AC_CHECK_PROG([MENHIR], [menhir], [menhir], [echo])
 
+dnl Configure for building the creol mode.
+AM_PATH_LISPDIR
+
+dnl Configure the XML Text reader and writer library.
 AC_CONFIG_SUBDIRS([xml])
 
 AC_CONFIG_TESTDIR(tests, source)

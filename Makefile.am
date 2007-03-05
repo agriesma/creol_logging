@@ -30,12 +30,14 @@ MOSTLYCLEANFILES	= *~ *.aux *.log
 CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
 DISTCLEANFILES		= Version.ml html-stamp
 MAINTAINERCLEANFILES	= .depend Makefile.in configure \
-			  depcomp missing aclocal.m4 install-sh \
+			  depcomp elisp-comp missing install-sh aclocal.m4 \
 			  CreolLex.ml CreolParser.ml CreolParser.mli \
 			  creolcomp.spec
 
 EXTRA_DIST		= .depend Creol.mll Creol.mly creolcomp.spec \
 			  creolcomp.spec.in
+
+dist_lisp_LISP		= creol-mode.el
 
 BUILT_SOURCES		= Version.ml CreolLex.ml CreolParser.ml CreolParser.mli
 
@@ -51,6 +53,8 @@ creolcomp_opt_SOURCES	= $(creolcomp_SOURCES)
 
 OCAMLC_FLAGS		= -package xml
 OCAMLOPT_FLAGS		= -package xml
+
+SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
 
 creolcomp: $(patsubst %.ml, %.cmo, $(patsubst %.mli, %.cmi, $(creolcomp_SOURCES)))
 	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -o $@ $(filter %.cmo, $^)
@@ -101,7 +105,6 @@ html-local: html-stamp
 html-stamp: $(creolcomp_SOURCES)
 	test -d html || mkdir html
 	$(OCAMLFIND) $(OCAMLDOC) -html -d html $^
-	
 
--include ${srcdir}/.depend
 CreolLex.cmo: CreolParser.cmi
+include ${srcdir}/.depend

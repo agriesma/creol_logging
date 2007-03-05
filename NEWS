@@ -1,0 +1,8 @@
+
+
+creolcomp 0.0a: alpha release.
+
+Documentation is very incomplete.  Parser works for some examples,
+some error messages are slightly meaningful, and it generates code
+for the Maude interpreter.
+
