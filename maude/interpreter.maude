@@ -25,7 +25,7 @@ op _#_ : ExprList ExprList -> ExprList [ctor assoc id: emp prec 25] .
 op _#_ : DataList  DataList  -> DataList [ctor ditto] .
 
 op noAid : -> AidList [ctor] .
-op _,,_ : AidList AidList -> AidList [ctor comm assoc id: noAid] .
+op _,,_ : AidList AidList -> AidList [ctor assoc id: noAid] .
 
 op _[[_]] : Qid ExprList -> Appl . *** function application
 
@@ -36,7 +36,7 @@ op int(_)  : Int       -> Data [ctor format(o o ! o o)] .
 op float(_): Float     -> Data [ctor format(o o ! o o)] . 
 op str(_)  : String    -> Data [ctor format(o o ! o o)] .
 op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
-op lab     : Nat       -> Data [ctor]. *** label values
+op lab     : Nat       -> Data [ctor] . *** label values
 *** Reconversion for evaluation
 op _asInt             : Data -> Int .
 op _asNat             : Data -> Nat .
@@ -71,27 +71,27 @@ ops _bw_  _ew_	          : Expr Expr -> Expr .
 *** translation from infix to prefix notation
 vars E E' : Expr .
 
-eq not E	 = 'not[[E]].
-eq neg E	 = 'neg[[E]].
-eq E add E'	 = 'plus [[E # E']].
-eq E min E'	 = 'minus [[E # E']].
-eq E mult E'	 = 'times [[E # E']].
-eq E div E'	 = 'div [[E # E']].
-eq E <  E'	 = 'less[[E # E']]. 
-eq E <= E'	 = 'lessEq[[E # E']].
-eq E >  E'	 = 'less[[E' # E]].
-eq E >= E'	 = 'lessEq[[E' # E]].
-eq (E ==  E')	 = 'equal[[E # E']].
-eq (E =/=  E')	 = 'not[['equal[[E # E']]]].
+eq not E	 = 'not[[E]] .
+eq neg E	 = 'neg[[E]] .
+eq E add E'	 = 'plus [[E # E']] .
+eq E min E'	 = 'minus [[E # E']] .
+eq E mult E'	 = 'times [[E # E']] .
+eq E div E'	 = 'div [[E # E']] .
+eq E <  E'	 = 'less[[E # E']] . 
+eq E <= E'	 = 'lessEq[[E # E']] .
+eq E >  E'	 = 'less[[E' # E]] .
+eq E >= E'	 = 'lessEq[[E' # E]] .
+eq (E ==  E')	 = 'equal[[E # E']] .
+eq (E =/=  E')	 = 'not[['equal[[E # E']]]] .
 
-eq E and E'	 = 'and[[E # E']].
-eq E or  E'	 = 'or[[E # E']].
-eq E .fst	 = 'fst[[E]].      *** pair-functions
-eq E .scd	 = 'scd[[E]].
+eq E and E'	 = 'and[[E # E']] .
+eq E or  E'	 = 'or[[E # E']] .
+eq E .fst	 = 'fst[[E]] .      *** pair-functions
+eq E .scd	 = 'scd[[E]] .
 eq E bw E'	 = 'begwith[[E # E']] .
 eq E ew E'	 = 'endwith[[E # E']] .
-eq E cat E'      = 'plus [[E # E']]. 
-eq E |-| E'      = 'plus [[E # E']]. 
+eq E cat E'      = 'plus [[E # E']] . 
+eq E |-| E'      = 'plus [[E # E']] . 
 eq E |- E'       = 'add[[E # E']] .      *** appendright
 eq E -| E'       = 'addFirst[[E # E']] . *** appendleft
 
@@ -202,23 +202,23 @@ eq 'begwith[[list(E # L)# E']]    = bool('head[[(list(E # L))]] == E') .
 eq 'endwith[[list(E)# E']]        = bool('last[[(list(E))]] == E') .
 eq 'endwith[[list(E # L)# E']]    = bool('last[[(list(L))]] == E') .
 
-eq 'plus  [[list(L)# list(L')]]   = list(L # L').
-eq 'plus  [[setl(L)# setl(L')]]   = setl(L # L').
-eq 'plus  [[str(S)# str(S')]]     = str(S + S').
-eq 'plus  [[int(I)# int(I')]]     = int(I + I').
-eq 'plus  [[float(F)# float(F')]] = float(F + F').
+eq 'plus  [[list(L)# list(L')]]   = list(L # L') .
+eq 'plus  [[setl(L)# setl(L')]]   = setl(L # L') .
+eq 'plus  [[str(S)# str(S')]]     = str(S + S') .
+eq 'plus  [[int(I)# int(I')]]     = int(I + I') .
+eq 'plus  [[float(F)# float(F')]] = float(F + F') .
 
-eq 'minus [[int(I)# int(I')]]     = int( _-_(I, I')).
-eq 'minus [[float(F)# float(F')]] = float(_-_(F, F')).
+eq 'minus [[int(I)# int(I')]]     = int( _-_(I, I')) .
+eq 'minus [[float(F)# float(F')]] = float(_-_(F, F')) .
 
-eq 'times [[int(I)# int(I')]]     = int(I * I').
-eq 'times [[float(F)# float(F')]] = float(F * F').
+eq 'times [[int(I)# int(I')]]     = int(I * I') .
+eq 'times [[float(F)# float(F')]] = float(F * F') .
 
-eq 'div   [[int(I)# int(I')]]     = int(I quo I').
-eq 'div   [[float(F)# float(F')]] = float(F / F').
+eq 'div   [[int(I)# int(I')]]     = int(I quo I') .
+eq 'div   [[float(F)# float(F')]] = float(F / F') .
 
-eq  'setl[[list(L)]] = setl(L).
-eq  'list[[setl(L)]] = list(L).
+eq  'setl[[list(L)]] = setl(L) .
+eq  'list[[setl(L)]] = list(L) .
 ***var Q : Qid .
 ***eq  Q[[setl(L)# setl(L')]] = 'setl[[Q[[list(L)# list(L')]]]].
 
@@ -280,7 +280,7 @@ op evalS    : Expr Subst     -> String .
 op evalList : ExprList Subst -> ExprList . *** maps list to values
 
 *** Variables
-var E E' : Expr .     var EL : ExprList .     var D : Data .
+vars E E' : Expr .    var EL : ExprList .     var D : Data .
 var A : Aid .         var S : Subst .         var Q : Qid .
 var I : Int .         var B : Bool .          var STR : String .
 
@@ -538,7 +538,7 @@ protecting OBJECT .
 sort NatS . *** list of nats
 subsort Nat < NatS .
 
-sort Body Msg MMsg Kid Queue .
+sorts Body Msg MMsg Kid Queue .
 subsort Body < MMsg .
 
 op noMsg : -> Body [ctor] .
@@ -566,7 +566,7 @@ op boundMtd(_,_) : Oid Process -> Msg
 
 
 *** message queue
-op noDealloc :         -> NatS  [ctor].
+op noDealloc :         -> NatS  [ctor] .
 *** op [_] : Nat       -> NatS  [ctor].
 op _;_ : NatS NatS -> NatS [ctor comm assoc id: noDealloc] .
 
@@ -600,8 +600,9 @@ op __ : Configuration Configuration -> Configuration [ctor assoc comm id: noConf
 op main : Cid ExprList -> Configuration .
 
 var C : Cid . var E : ExprList .
+
 eq main(C,E) = < ob('main) : 'class | Att: noSub, 
-                 Pr: (noSub, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
+                 Pr: (noSub, ('var ::= new C(E))) , PrQ: noProc, Lcnt: 0 > 
                < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
@@ -621,7 +622,7 @@ op ready        : StmList Subst MMsg -> Bool . *** eval guard
 
 *** Variables
 vars N N' : Nat .
-var E E' : Expr .
+vars E E' : Expr .
 var EL : ExprList .
 var A : Aid .
 vars G1 G2 : Guard .
@@ -668,7 +669,7 @@ eq enabledGuard((N ?), S, MM)     = inqueue(N, MM) .
 *** red upTerm((int(4) add int(5)) > (int(7) add int(19))) .
 *** red downTerm(upTerm((int(4) add int(5)) > (int(7) add int(19))), (int(0)).Expr) .
 
-var  ST ST' : Stm . 
+vars  ST ST' : Stm . 
 vars SL SL' : StmList . 
 var NeSL : NeStmList .
 
@@ -676,14 +677,14 @@ eq enabled(SL [] SL',  S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
 eq enabled(SL ||| SL', S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
 eq enabled(await G1,   S, MM) = enabledGuard(G1,S,MM) .
 eq enabled((ST ; ST' ; SL),S, MM) = enabled(ST, S, MM) . 
-eq enabled(ST,    S, MM) = true [owise]. 
+eq enabled(ST,    S, MM) = true [owise] . 
 
 eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
 eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
 eq ready(A ?(E),     S, MM) = inqueue(evalI(A, S), MM) . 
 eq ready(N ?(E),     S, MM) = inqueue(N, MM) . 
 eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
-eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise]. 
+eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise] .
 
 ***( transform wait guards when active code is suspended. remove all waits.
 op clear : Guard  -> Guard . 
@@ -709,15 +710,15 @@ endfm
 mod INTERPRETER is
 pr AUX-FUNCTIONS .
 
-var O O' : Oid .
+vars O O' : Oid .
 vars C C' : Cid .
 var A : Aid .
 var AL : AidList .
 var D : Data .
-var E E' : Expr .
-var EL EL' : ExprList .
+vars E E' : Expr .
+vars EL EL' : ExprList .
 var ST : Stm .
-var SL SL' SL'' : StmList .
+vars SL SL' SL'' : StmList .
 vars SL1 SL2 : NeStmList .
 var P : Process .
 var W : MProc .
@@ -753,11 +754,12 @@ fi .
 
 
   ***( method termination: replaced by : eq (nil, L) = idle .
-  rl [idle] :
+rl [idle] :
   < O : C | Att: S, Pr: (L, nil), PrQ: W, Lcnt: N >
   =>
   < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N > .
   )
+
 rl [skip] :
   < O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >
   =>

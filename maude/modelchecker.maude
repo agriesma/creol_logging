@@ -32,7 +32,7 @@ fmod DATA is
   op _#_ : DataList  DataList  -> DataList [ctor ditto] .
 
   op noAid : -> AidList [ctor] .
-  op _,,_ : AidList AidList -> AidList [ctor comm assoc id: noAid] .
+  op _,,_ : AidList AidList -> AidList [ctor assoc id: noAid] .
 
   op _[[_]] : Qid ExprList -> Appl . *** function application
 
