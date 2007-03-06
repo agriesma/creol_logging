@@ -104,9 +104,6 @@ uninstall-local:
 			    -ldconf $(DESTDIR)$(OCAML_LIBDIR)/ld.conf \
 		xml
 
-oclvp: xml.cma
-oclvp.opt: xml.cmxa
-
 XmlTextReader.cmi XmlTextWriter.cmi: META
 
 -include ${srcdir}/.depend
