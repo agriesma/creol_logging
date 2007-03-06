@@ -713,6 +713,7 @@ var O O' : Oid .
 vars C C' : Cid .
 var A : Aid .
 var AL : AidList .
+var D : Data .
 var E E' : Expr .
 var EL EL' : ExprList .
 var ST : Stm .
@@ -731,22 +732,23 @@ var M : Mid .
 var Q : Qid .
 var MsgBody : Body .
 
+op assign : Aid Data -> Stm .
 
 *** multiple assignment
-eq < O : C | Att: S, Pr: (L,((A, AL) ::= (E, EL)); SL), PrQ: W, Lcnt: N >
-= < O : C | Att: S, Pr: (L,((A ::= eval(E,(S # L))) ; 
+eq < O : C | Att: S, Pr: (L,((A ,, AL) ::= (E # EL)); SL), PrQ: W, Lcnt: N >
+= < O : C | Att: S, Pr: (L,((assign(A, eval(E,(S # L)))) ; 
                            (AL ::= evalList(EL,(S # L))); SL)), 
     PrQ: W, Lcnt: N > .
 
 *** assignment
 
 rl [assign] :
-< O : C | Att: S, Pr: (L,((A ::= E); SL)), PrQ: W, Lcnt: N >
+< O : C | Att: S, Pr: (L,(assign(A, D); SL)), PrQ: W, Lcnt: N >
 =>
 if dom(A,L) then
-< O : C | Att: S, Pr: (insert(A,eval(E,(S # L)), L), SL), PrQ: W, Lcnt: N > 
+< O : C | Att: S, Pr: (insert(A, D, L), SL), PrQ: W, Lcnt: N > 
 else
-< O : C | Att: insert(A,eval(E,(S # L)), S), Pr: (L, SL), PrQ: W, Lcnt: N > 
+< O : C | Att: insert(A, D, S), Pr: (L, SL), PrQ: W, Lcnt: N > 
 fi .
 
 
