@@ -746,10 +746,10 @@ eq < O : C | Att: S, Pr: (L,((A ,, AL) ::= (E # EL)); SL), PrQ: W, Lcnt: N >
 rl [assign] :
 < O : C | Att: S, Pr: (L,(assign(A, D); SL)), PrQ: W, Lcnt: N >
 =>
-if dom(A,L) then
-< O : C | Att: S, Pr: (insert(A, D, L), SL), PrQ: W, Lcnt: N > 
+if dom(A,S) then
+  < O : C | Att: insert(A, D, S), Pr: (L, SL), PrQ: W, Lcnt: N > 
 else
-< O : C | Att: insert(A, D, S), Pr: (L, SL), PrQ: W, Lcnt: N > 
+  < O : C | Att: S, Pr: (insert(A, D, L), SL), PrQ: W, Lcnt: N > 
 fi .
 
 
