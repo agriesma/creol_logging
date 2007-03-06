@@ -24,7 +24,7 @@ OCAMLPATH		= $(top_builddir)
 export OCAMLPATH
 
 # Subdirs
-SUBDIRS			= xml . info maude tests
+SUBDIRS			= xml . emacs info maude tests
 
 MOSTLYCLEANFILES	= *~ *.aux *.log
 CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
@@ -36,8 +36,6 @@ MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 
 EXTRA_DIST		= .depend Creol.mll Creol.mly creolcomp.spec \
 			  creolcomp.spec.in
-
-dist_lisp_LISP		= creol-mode.el maude-mode.el
 
 BUILT_SOURCES		= Version.ml CreolLex.ml CreolParser.ml CreolParser.mli
 

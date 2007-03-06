@@ -26,7 +26,7 @@
 
 
 ; This started with inspiration from Scott Andrew Borton's language mode
-: creation tutorial, 
+; creation tutorial, 
 ; http://two-wugs.net/emacs/mode-tutorial.html
 
 ; Todo:
