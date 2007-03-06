@@ -27,7 +27,8 @@
 (defvar creol-mode-hook nil)
 
 (defvar creol-font-lock-keywords
-  '(("\\<\\(and\\|begin\\|class\\|contracts\\|new\\|else\\|end\\|fi\\|if\\|implements\\|inherits\\|interface\\|in\\|not\\|op\\|or\\|out\\|skip\\|then\\|var\\|wait\\|with\\)\\>" . font-lock-keyword-face)
+  '(("\\(//\\[^\n\\]*\\)\n" . font-lock-comment-face)
+    ("\\<\\(and\\|begin\\|class\\|contracts\\|new\\|else\\|end\\|fi\\|if\\|implements\\|inherits\\|interface\\|in\\|not\\|op\\|or\\|out\\|skip\\|then\\|var\\|wait\\|with\\)\\>" . font-lock-keyword-face)
     ("\\<\\(true\\|false\\|null\\|nil\\)\\>" . font-lock-constant-face)
     ("\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" . font-lock-builtin-face)
     ("op \\(\\sw+\\)" (1 font-lock-function-name-face))
@@ -41,8 +42,8 @@
 (define-derived-mode creol-mode fundamental-mode "Creol"
   "Major mode for editing Creol files"
   :syntax-table creol-mode-syntax-table
-  (set (make-local-variable 'comment-start) "--")
-  (set (make-local-variable 'comment-start-skip) "--+\\s-*")
+  (set (make-local-variable 'comment-start) "//")
+  (set (make-local-variable 'comment-start-skip) "//+\\s-*")
   (use-local-map creol-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(creol-font-lock-keywords))
   ;; (set (make-local-variable 'indent-line-function) 'creol-indent-line)

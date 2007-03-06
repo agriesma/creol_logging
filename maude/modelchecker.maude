@@ -173,23 +173,23 @@ fmod DATATYPES is
   eq 'endwith[[list(E)# E']]        = bool('last[[(list(E))]] == E') .
   eq 'endwith[[list(E # L)# E']]    = bool('last[[(list(L))]] == E') .
 
-  eq 'plus  [[list(L)# list(L')]]   = list(L # L').
-  eq 'plus  [[setl(L)# setl(L')]]   = setl(L # L').
-  eq 'plus  [[str(S)# str(S')]]     = str(S + S').
-  eq 'plus  [[int(I)# int(I')]]     = int(I + I').
-  eq 'plus  [[float(F)# float(F')]] = float(F + F').
+  eq 'plus  [[list(L)# list(L')]]   = list(L # L') .
+  eq 'plus  [[setl(L)# setl(L')]]   = setl(L # L') .
+  eq 'plus  [[str(S)# str(S')]]     = str(S + S') .
+  eq 'plus  [[int(I)# int(I')]]     = int(I + I') .
+  eq 'plus  [[float(F)# float(F')]] = float(F + F') .
 
-  eq 'minus [[int(I)# int(I')]]     = int( _-_(I, I')).
-  eq 'minus [[float(F)# float(F')]] = float(_-_(F, F')).
+  eq 'minus [[int(I)# int(I')]]     = int( _-_(I, I')) .
+  eq 'minus [[float(F)# float(F')]] = float(_-_(F, F')) .
 
-  eq 'times [[int(I)# int(I')]]     = int(I * I').
-  eq 'times [[float(F)# float(F')]] = float(F * F').
+  eq 'times [[int(I)# int(I')]]     = int(I * I') .
+  eq 'times [[float(F)# float(F')]] = float(F * F') .
 
-  eq 'div   [[int(I)# int(I')]]     = int(I quo I').
-  eq 'div   [[float(F)# float(F')]] = float(F / F').
+  eq 'div   [[int(I)# int(I')]]     = int(I quo I') .
+  eq 'div   [[float(F)# float(F')]] = float(F / F') .
 
-  eq  'setl[[list(L)]] = setl(L).
-  eq  'list[[setl(L)]] = list(L).
+  eq  'setl[[list(L)]] = setl(L) .
+  eq  'list[[setl(L)]] = list(L) .
   ***var Q : Qid .
   ***eq  Q[[setl(L)# setl(L')]] = 'setl[[Q[[list(L)# list(L')]]]].
 
@@ -251,7 +251,7 @@ fmod EVAL is
   op evalList : ExprList Subst -> DataList . *** maps list to values
 
   *** Variables
-  var E E' : Expr .     var EL : ExprList .     var D : Data .
+  vars E E' : Expr .    var EL : ExprList .     var D : Data .
   var A : Aid .         var S : Subst .         var Q : Qid .
   var I : Int .         var B : Bool .          var STR : String .
 
@@ -515,7 +515,7 @@ fmod COMMUNICATION is
   sort Labels . *** list of labels
   subsort Label < Labels .
 
-  sort Body Msg MMsg Kid Queue .
+  sorts Body Msg MMsg Kid Queue .
   subsort Body < MMsg .
 
   op noMsg : -> Body [ctor] .
@@ -543,7 +543,7 @@ fmod COMMUNICATION is
 
 
   *** message queue
-  op noDealloc :         -> Labels  [ctor].
+  op noDealloc :         -> Labels  [ctor] .
   op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
   op noQu : -> Queue [ctor] .
@@ -598,7 +598,7 @@ op ready        : StmList Subst MMsg -> Bool . *** eval guard
 *** Variables
 vars N N' : Nat .
 vars L L' : Label .
-var E E' : Expr .
+vars E E' : Expr .
 var EL : ExprList .
 var A : Aid .
 vars G1 G2 : Guard .
@@ -690,10 +690,10 @@ vars O O' : Oid .
 vars C C' : Cid .
 var A : Aid .
 var AL : AidList .
-vars E E' : Expr .
-vars EL EL' : ExprList .
 var D : Data .
 var DL : DataList .
+vars E E' : Expr .
+vars EL EL' : ExprList .
 var ST : Stm .
 vars SL SL' SL'' : StmList .
 vars SL1 SL2 : NeStmList .
@@ -1011,59 +1011,3 @@ eq < O : Qu | Dealloc: (Lab ^ LS), Ev: comp(Lab, EL) + MM >
 endm
 
 eof
-
-red boundMtd(ob('Philosopher4),('caller |-> ob('Philosopher4), 'l |-> null, 'label |-> int(7)),
-await ('not[['hungry]]) ; ('history ::= ('plus[['history # str("t")]])) ; await wait ; ('l ! 'this . 'think(emp)) ; free('l) ; return(emp)) .
-
-
-fmod MYLIST{X :: TRIV} is
-***  protecting NAT .
-  sorts MyNeList{X} MyList{X} .
-  subsort X$Elt < MyNeList{X} < MyList{X} .
-
-  op emp : -> MyList{X} [ctor] .
-  op _#_ : MyList{X} MyList{X} -> MyList{X} [ctor assoc id: emp prec 25] .
-  op _#_ : MyNeList{X} MyList{X} -> MyNeList{X} [ctor ditto] .
-  op _#_ : MyList{X} MyNeList{X} -> MyNeList{X} [ctor ditto] .
-
-***  vars E E' : X$Elt .
-***  vars A L : MyList{X} .
-***  var C : Nat .
-
-***  op app : MyList{X} MyList{X} -> MyList{X} .
-***  op app : MyNeList{X} MyList{X} -> MyNeList{X} .
-***  op app : MyList{X} MyNeList{X} -> MyNeList{X} .
-***  eq app(A, L) = A # L .
-
-***  op lt : MyNeList{X} -> X$Elt .
-***  eq lt(E # L) = E .
-
-***  op rr : MyNeList{X} -> MyList{X} .
-***  eq rr(E # L) = L .
-
-***  op rt : MyNeList{X} -> X$Elt .
-***  eq rt(L # E) = E .
-
-***  op lr : MyNeList{X} -> MyList{X} .
-***  eq lr(L # E) = L .
-
-***  op element : X$Elt MyList{X} -> Bool .
-***  eq element(E, emp) = false .
-***  eq element(E, E' # L) = if E == E' then true else element(E, L) fi .
-
-***  op rev : MyList{X} -> MyList{X} .
-***  op rev : MyNeList{X} -> MyNeList{X} .
-***  eq rev(L) = $rev(L, emp) .
-
-***  op $rev : MyList{X} MyList{X} -> MyList{X} .
-***  eq $rev(emp, A) = A .
-***  eq $rev(E # L, A) = $rev(L, E # A).
-
-***  op lth : MyList{X} -> Nat .
-***  op lth : MyNeList{X} -> NzNat .
-***  eq lth(L) = $lth(L, 0) .
-
-***  op $lth : MyList{X} Nat -> Nat .
-***  eq $lth(emp, C) = C .
-***  eq $lth(E # L, C) = $lth(L, C + 1) .
-endfm
