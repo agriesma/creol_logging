@@ -68,7 +68,7 @@ type 'a statement =
     | Await of 'a * 'a guard
     | New of 'a * string * string * 'a expression list
     | AsyncCall of 'a * string option * 'a expression * string *
-	'a expression list * string list option
+	'a expression list
     | Reply of 'a * string * string list
     | Free of 'a * string
     | SyncCall of 'a * 'a expression * string *
@@ -120,7 +120,7 @@ let statement_note =
     | Assign(a, _, _) -> a
     | Await(a, _) -> a
     | New(a, _, _, _) -> a
-    | AsyncCall(a, _, _, _, _, _) -> a
+    | AsyncCall(a, _, _, _, _) -> a
     | Reply(a, _, _) -> a
     | Free(a, _) -> a
     | SyncCall(a, _, _, _, _) -> a
@@ -156,9 +156,9 @@ and simplify_statement =
       Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_guard g)
     | New (a, s, c, p) -> New (a, s, c, simplify_expression_list p)
-    | AsyncCall (a, l, e, n, p, r) ->
+    | AsyncCall (a, l, e, n, p) ->
 	AsyncCall (a, l, simplify_expression e, n,
-		  simplify_expression_list p, r)
+		  simplify_expression_list p)
     | SyncCall (a, e, n, p, r) ->
 	SyncCall (a, simplify_expression e, n, simplify_expression_list p, r)
     | LocalSyncCall (a, m, l, u, i, o) ->
@@ -280,17 +280,16 @@ let rec pretty_print_expression out_channel =
 and pretty_print_expression_list out_channel =
   function
       [] -> ()
-    | e::[] -> pretty_print_expression out_channel e
+    | [e] -> pretty_print_expression out_channel e
     | e::l -> pretty_print_expression out_channel e;
 	output_string out_channel ", ";
 	pretty_print_expression_list out_channel l
-
-let rec pretty_print_string_list out_channel =
+and pretty_print_identifier_list out_channel =
   function
       [] -> ()
-    | s::[] -> output_string out_channel s
-    | s::r -> output_string out_channel (s ^ ", ");
-	pretty_print_string_list out_channel r
+    | [s] -> output_string out_channel s
+    | s::l -> output_string out_channel (s ^ ", ");
+	pretty_print_identifier_list out_channel l
 
 let rec pretty_print_guard out_channel =
   function
@@ -350,29 +349,22 @@ let rec pretty_print_statement out_channel =
 	      pretty_print_expression_list out_channel a ;
 	      output_string out_channel ")" )
     | Assign (_, i, e) ->
-	pretty_print_string_list out_channel i;
+	pretty_print_identifier_list out_channel i;
 	output_string out_channel " := ";
 	pretty_print_expression_list out_channel e
-    | AsyncCall (_, l, c, m, a, r) ->
+    | AsyncCall (_, l, c, m, a) ->
 	(match l with
 	    None -> ()
 	  | Some l -> output_string out_channel l ) ;
 	output_string out_channel "!";
 	pretty_print_expression out_channel c ;
 	output_string out_channel ("." ^ m);
-	( match (a, r) with
-	    ([], None) -> ()
-	  | (_, None) -> output_string out_channel "(" ;
-	      pretty_print_expression_list out_channel a;
-	      output_string out_channel ")"
-	  | (_, Some rl) -> output_string out_channel "(" ;
-	      pretty_print_expression_list out_channel a;
-	      output_string out_channel "; " ;
-	      pretty_print_string_list out_channel rl;
-	      output_string out_channel ")" )
+	output_string out_channel "(" ;
+	pretty_print_expression_list out_channel a;
+	output_string out_channel ")"
     | Reply (_, l, o) ->
 	output_string out_channel (l ^ "?(");
-	pretty_print_string_list out_channel o;
+	pretty_print_identifier_list out_channel o;
 	output_string out_channel ")";
     | Free(_, l) -> output_string out_channel ("/* free(" ^ l ^ ")")
     | SyncCall (_, c, m, a, r) ->
@@ -381,7 +373,7 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel "(" ;
 	pretty_print_expression_list out_channel a;
 	output_string out_channel "; " ;
-	pretty_print_string_list out_channel r;
+	pretty_print_identifier_list out_channel r;
 	output_string out_channel ")"
     | LocalSyncCall (_, m, l, u, i, o) ->
 	output_string out_channel m;
@@ -390,7 +382,7 @@ let rec pretty_print_statement out_channel =
 	output_string out_channel "(" ;
 	pretty_print_expression_list out_channel i;
 	output_string out_channel "; " ;
-	pretty_print_string_list out_channel o;
+	pretty_print_identifier_list out_channel o;
 	output_string out_channel ")"
 
 let pretty_print_vardecl out_channel v =
@@ -511,6 +503,7 @@ let rec maude_of_creol_expression out =
 	maude_of_creol_expression_list out a;
 	output_string out " ]] )"
 and maude_of_creol_expression_list out_channel =
+  (** Compile a list of expressions into the Creol Maude Machine. *)
   function
       [] -> output_string out_channel "emp"
     | [e] -> maude_of_creol_expression out_channel e
@@ -518,18 +511,12 @@ and maude_of_creol_expression_list out_channel =
 	output_string out_channel " # ";
 	maude_of_creol_expression_list out_channel l
 and maude_of_creol_identifier_list out_channel =
+  (** Convert a list of identifiers into a list of Attribute identifiers. *)
   function
-      [] -> output_string out_channel "emp"
+      [] -> output_string out_channel "noAid"
     | [i] -> output_string out_channel ("'" ^ i)
-    | i::l -> output_string out_channel ("'" ^ i ^ " # ");
+    | i::l -> output_string out_channel ("'" ^ i ^ " ,, ");
 	maude_of_creol_identifier_list out_channel l
-
-let rec maude_of_creol_string_list out_channel sep =
-  function
-      [] -> ()
-    | s::[] -> output_string out_channel ("'" ^ s)
-    | s::l -> output_string out_channel ("'" ^ s ^ sep);
-	maude_of_creol_string_list out_channel sep l
 
 let rec maude_of_creol_guard out =
   function
@@ -550,10 +537,10 @@ let rec maude_of_creol_statement out =
 	maude_of_creol_expression_list out a ;
 	output_string out ")"
     | Assign (_, i, e) ->
-	maude_of_creol_string_list out " ,, " i;
+	maude_of_creol_identifier_list out i;
 	output_string out " ::= " ;
 	maude_of_creol_expression_list out e
-    | AsyncCall (_, l, c, m, a, r) ->
+    | AsyncCall (_, l, c, m, a) ->
 	(match l with
 	    None -> ()
 	  | Some l -> output_string out ("'" ^ l) ) ;
@@ -561,11 +548,6 @@ let rec maude_of_creol_statement out =
 	maude_of_creol_expression out c ;
 	output_string out (" . '" ^ m ^ " ( ") ;
 	maude_of_creol_expression_list out a;
-	( match r with
-	    None -> ()
-	  | Some rl ->
-	      output_string out " ; " ;
-	      maude_of_creol_identifier_list out rl ) ;
 	output_string out " )"
     | Reply (_, l, o) ->
 	output_string out ("( '" ^ l ^ " ? ( ") ;

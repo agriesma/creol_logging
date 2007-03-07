@@ -106,7 +106,7 @@ type 'a statement =
     | New of 'a * string * string * 'a expression list
 	(** Create a new object. *)
     | AsyncCall of 'a * string option * 'a expression * string *
-	'a expression list * string list option
+	'a expression list
 	(** Call a method asynchronously. *)
     | Reply of 'a * string * string list
 	(** Receive the reply to an asynchronous call. *)

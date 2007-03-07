@@ -199,11 +199,11 @@ statement:
         { If((default $startpos), e, t, Skip (default $startpos)) }
     | AWAIT g = guard { Await ((default $startpos), g) }
     | l = ioption(ID) BANG c = ioption(terminated(expression, DOT)) m = ID;
-	p = delimited(LPAREN, pair(separated_list(COMMA, expression), ioption(preceded (SEMI, separated_list(COMMA, ID)))), RPAREN)
+	LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ let caller = match c with
 	    None -> Id ((default $startpos), "this")
 	  | Some e -> e in
-	      AsyncCall ((default $startpos), l, caller, m, fst p, snd p) }
+	      AsyncCall ((default $startpos), l, caller, m, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
 	{ Reply ((default $startpos), l, o) }
     | c = expression DOT; m = ID;
