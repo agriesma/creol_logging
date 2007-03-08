@@ -77,7 +77,7 @@ let main () =
       ([] | ["-"]) -> CreolIO.from_channel stdin
     | f -> CreolIO.from_files f in
   let out = match !maude_output with "-" -> stdout | n -> open_out n in
-    Creol.maude_of_creol out tree;
+    Creol.maude_of_creol out (Creol.simplify tree);
     (match !xml_output with
 	Some s -> CreolIO.creol_to_xml s handler tree
       | None ->  () );
