@@ -32,6 +32,12 @@ open Arg
 
 let files : string list ref = ref []
 
+let from_file name = files := (!files)@[name]
+
+let xml_output : string option ref = ref None
+
+let xml_arg s = xml_output := Some s
+
 (** Show the name and the version of the program and exit. *)
 
 let show_version () =
@@ -41,25 +47,33 @@ let show_version () =
   print_string "This is free software; see the source for copying conditions.\n";
   print_string "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n";
   print_string "PARTICULAR PURPOSE.\n";
-  exit 0;;
-
-let from_file name = files := (!files)@[name]
+  exit 0
 
 let options = [
   ("-v", Unit (function () -> ()),
    "  Print some information while processing");
   ("-V", Unit show_version,
    "  Show the version and exit");
+  ("-m", String ignore,
+   "  Compile the files for the interpreter and write the result to [file]");
+  ("-M", String ignore,
+   "  Compile the files for the model checker and write the result to [file]");
+  ("-x", String xml_arg,
+   "  Export the input files to XML file [name]");
   ("--version", Unit show_version, "  Show the version and exit")]
 ;;
 
 let usage = Sys.executable_name ^ " [options]" ;;
 
-
+let handler writer note = ()
 
 let main () =
   parse options from_file usage ;
-  Creol.maude_of_creol stdout (Creol.simplify (CreolIO.from_files (!files)));
-  exit 0;;
+  let tree = Creol.simplify (CreolIO.from_files (!files)) in
+    Creol.maude_of_creol stdout tree;
+    (match !xml_output with
+	Some s -> CreolIO.creol_to_xml s handler tree
+      | None ->  () );
+    exit 0;;
 
 main() ;;

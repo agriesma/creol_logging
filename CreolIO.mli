@@ -35,3 +35,6 @@ open Creol
 val from_file : string -> 'a declaration list
 
 val from_files : string list -> 'a declaration list
+
+val creol_to_xml : string -> (XmlTextWriter.xmlwriter -> 'a -> unit) ->
+	'a declaration list -> unit

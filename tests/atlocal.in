@@ -8,3 +8,6 @@ export XMLLINT XMLCATALOG XSLTPROC
 
 PATH=$PATH:@abs_top_builddir@
 export PATH
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:@abs_top_builddir@/xml
+export LD_LIBRARY_PATH

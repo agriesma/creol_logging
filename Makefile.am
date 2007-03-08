@@ -50,16 +50,16 @@ creolcomp_SOURCES	= Version.ml \
 
 creolcomp_opt_SOURCES	= $(creolcomp_SOURCES)
 
-OCAMLC_FLAGS		= -package xml
-OCAMLOPT_FLAGS		= -package xml
+OCAMLC_FLAGS		+= -package xml
+OCAMLOPT_FLAGS		+= -package xml
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
 
 creolcomp: $(patsubst %.ml, %.cmo, $(patsubst %.mli, %.cmi, $(creolcomp_SOURCES)))
-	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -o $@ $(filter %.cmo, $^)
+	$(OCAMLFIND) $(OCAMLC) $(OCAMLC_FLAGS) -linkpkg -o $@ $(filter %.cmo, $^)
 
 creolcomp.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolcomp_SOURCES)))
-	$(OCAMLFIND) $(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ $(filter %.cmx, $^)
+	$(OCAMLFIND) $(OCAMLOPT) $(OCAMLOPT_FLAGS) -linkpkg -o $@ $(filter %.cmx, $^)
 
 .PRECIOUS: *.cmo *.cmi *.cmx
 .ml.cmo:
