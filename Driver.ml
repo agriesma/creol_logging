@@ -34,6 +34,10 @@ let files : string list ref = ref []
 
 let from_file name = files := (!files)@[name]
 
+let maude_output = ref "out.maude"
+
+let set_maude_output s = maude_output := s
+
 let xml_output : string option ref = ref None
 
 let xml_arg s = xml_output := Some s
@@ -54,10 +58,10 @@ let options = [
    "  Print some information while processing");
   ("-V", Unit show_version,
    "  Show the version and exit");
-  ("-m", String ignore,
-   "  Compile the files for the interpreter and write the result to [file]");
   ("-M", String ignore,
    "  Compile the files for the model checker and write the result to [file]");
+  ("-o", String set_maude_output,
+   "  Compile the files for the interpreter and write the result to [file]");
   ("-x", String xml_arg,
    "  Export the input files to XML file [name]");
   ("--version", Unit show_version, "  Show the version and exit")]
@@ -70,10 +74,11 @@ let handler writer note = ()
 let main () =
   parse options from_file usage ;
   let tree = Creol.simplify (CreolIO.from_files (!files)) in
-    Creol.maude_of_creol stdout tree;
-    (match !xml_output with
-	Some s -> CreolIO.creol_to_xml s handler tree
-      | None ->  () );
-    exit 0;;
+    let out = match !maude_output with "-" -> stdout | n -> open_out n in
+      Creol.maude_of_creol out tree;
+      (match !xml_output with
+	  Some s -> CreolIO.creol_to_xml s handler tree
+        | None ->  () );
+      exit 0;;
 
 main() ;;

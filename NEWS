@@ -1,6 +1,14 @@
 
+creolcomp 0.0b (YYYY-MM-DD): alpha release.
 
-creolcomp 0.0a: alpha release.
+Output can now be stored as XML, use the flag -x name to write the abstract
+syntax tree to the file name.
+
+By default the output will now be written to out.maude.  The file name can
+be overridden by supplying the option -o name.
+
+
+creolcomp 0.0a (2007-03-05): alpha release.
 
 Documentation is very incomplete.  Parser works for some examples,
 some error messages are slightly meaningful, and it generates code
