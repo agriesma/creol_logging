@@ -29,6 +29,9 @@ type xmlwriter
 external set_debug: bool -> unit = "xml_writer_set_debug"
 (** Whether to enable debugging output from the library.  Default is false. *)
 
+external set_indent: bool -> unit = "xml_writer_set_indent"
+(** Whether to indent output.  Default is false. *)
+
 external to_file: string -> int -> xmlwriter = "xml_writer_to_file"
 (** Create an XML writer which writes to a file.
 

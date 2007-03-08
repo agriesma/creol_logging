@@ -55,5 +55,8 @@ AC_SUBST([OCAML_SITELIB], [$OCAML_SITELIB])
 dnl Check for the tools needed to build the documentation.
 AC_PATH_PROG([OCAMLDOC], ocamldoc)
 
+AC_SUBST([OCAMLC_FLAGS])
+AC_SUBST([OCAMLOPT_FLAGS])
+
 dnl AC_CONFIG_TESTDIR(tests, source)
 AC_OUTPUT([Makefile])
