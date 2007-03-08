@@ -32,6 +32,8 @@
 
 open Creol
 
+val from_channel : in_channel -> 'a declaration list
+
 val from_file : string -> 'a declaration list
 
 val from_files : string list -> 'a declaration list

@@ -73,12 +73,14 @@ let handler writer note = ()
 
 let main () =
   parse options from_file usage ;
-  let tree = Creol.simplify (CreolIO.from_files (!files)) in
-    let out = match !maude_output with "-" -> stdout | n -> open_out n in
-      Creol.maude_of_creol out tree;
-      (match !xml_output with
-	  Some s -> CreolIO.creol_to_xml s handler tree
-        | None ->  () );
-      exit 0;;
+  let tree = match !files with
+      ([] | ["-"]) -> CreolIO.from_channel stdin
+    | f -> CreolIO.from_files f in
+  let out = match !maude_output with "-" -> stdout | n -> open_out n in
+    Creol.maude_of_creol out tree;
+    (match !xml_output with
+	Some s -> CreolIO.creol_to_xml s handler tree
+      | None ->  () );
+    exit 0;;
 
 main() ;;

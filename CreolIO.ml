@@ -52,6 +52,19 @@ let rec from_files =
 
 
 
+let from_channel channel =
+  (** Read the contents of a channel and return a abstract syntax tree.
+
+      @since 0.0 *)
+  let lexbuf = Lexing.from_channel channel in
+    let pos = lexbuf.Lexing.lex_curr_p in
+      lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = "*channel*" } ;
+      CreolParser.main CreolLex.token lexbuf
+
+
+
+
+
 let rec creol_to_xml name note_handler tree =
   let writer = XmlTextWriter.to_file name 0 in
     XmlTextWriter.set_indent writer true;
