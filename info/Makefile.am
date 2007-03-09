@@ -19,8 +19,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-info_TEXINFOS		= creolcomp.texi
-creolcomp_TEXINFOS	= introduction.texi invocation.texi creol.texi \
+info_TEXINFOS		= creoltools.texi
+creoltools_TEXINFOS	= introduction.texi invocation.texi creol.texi \
 			  fdl.texi gpl.texi
 
 MOSTLYCLEANFILES	= *~ *.cps

@@ -688,13 +688,16 @@ let maude_of_creol_class out c =
 
 let maude_of_creol_interface out i = ()
 
+let maude_of_creol_declaration out =
+  function
+      Class c -> maude_of_creol_class out c
+    | Interface i -> maude_of_creol_interface out i
+
 let rec maude_of_creol_decl_list out =
   function
-      [] -> ()
-    | Class c::l -> maude_of_creol_class out c;
-	maude_of_creol_decl_list out l
-    | Interface i::l -> maude_of_creol_interface out i;
-	maude_of_creol_decl_list out l
+      [] -> output_string out "noConf\n"
+    | [d] -> maude_of_creol_declaration out d
+    | d::l -> maude_of_creol_declaration out d; maude_of_creol_decl_list out l
 
 (** Convert an abstract syntax tree l of a creol program to a
     representation for the Maude CMC and write the result to the output

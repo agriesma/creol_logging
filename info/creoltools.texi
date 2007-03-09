@@ -1,7 +1,7 @@
 \input texinfo	@c -*-texinfo-*-
 @c %**start of header
 @documentlanguage en
-@setfilename creolcomp.info
+@setfilename creoltools.info
 @settitle Creol Compiler
 @c %**end of header
 @afourpaper
@@ -30,7 +30,7 @@ Software Foundation raise funds for GNU development.''
 
 @dircategory UML
 @direntry
-* creolcomp:: A Creol Compiler.
+* creoltools:: A Creol Compiler.
 @end direntry
 
 @titlepage

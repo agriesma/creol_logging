@@ -1,4 +1,4 @@
-This file is part of creolcomp.
+This file is part of creoltools.
 
 This document describes how to build pre-releases and SVN versions of the
 package.
@@ -7,8 +7,8 @@ package.
 
 * Introduction
 
-This is a *pre-release* version of creolcomp and not ready for production use.
-Please send comments to <kyas at ifi.uio.no>.
+This is a *pre-release* version of creoltools and not ready for production
+use.  Please send comments to <kyas at ifi.uio.no>.
 
 This software may change radically, contains bugs, may not be documented,
 or the documentation may be incomplete, misleading, or plain wrong,
@@ -24,7 +24,7 @@ figure the error out and try to provide corrections.
 * Compilation instructions
 
 If you have taken the sources from SVN you will need the following
-packages to build creolcomp.  I don't make any extra effort to accommodate
+packages to build creoltools.  I don't make any extra effort to accommodate
 older versions of these packages, so please make sure that you have the
 latest stable version.
 
@@ -45,9 +45,9 @@ are out of luck.
 
 Step 0: Obtaining the source code.
 
-You may have received a tar file creolcomp-x.ya, where x and y are
+You may have received a tar file creoltools-x.ya, where x and y are
 numbers and a is any letter.  This tar file contains a snap shot of the
-creolcomp, which should be buildable as a normal package.  See INSTALL
+creoltools, which should be buildable as a normal package.  See INSTALL
 for installation instructions.
 
 You can also check out the source code from our internal subversion

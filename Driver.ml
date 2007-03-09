@@ -30,17 +30,46 @@
 
 open Arg
 
-let files : string list ref = ref []
+let inputs : string list ref = ref []
 
-let from_file name = files := (!files)@[name]
+let add_input name = inputs := (!inputs)@[name]
 
-let maude_output = ref "out.maude"
 
-let set_maude_output s = maude_output := s
+let maude_output = ref (Some "out.maude")
+
+let set_maude_output s =
+  maude_output := (match s with ("" | "-") -> None | _ ->  Some s)
 
 let xml_output : string option ref = ref None
 
 let xml_arg s = xml_output := Some s
+
+let handle_xml_note writer note = ()
+
+let apply_outputs tree =
+  (** Apply the output passes *)
+  (match !maude_output with
+      None -> ()
+    | Some n -> let out = match n with "-" -> stdout | _ -> open_out n in
+		  Creol.maude_of_creol out tree) ;
+  (match !xml_output with
+      None ->  ()
+    | Some s -> CreolIO.creol_to_xml s handle_xml_note tree)
+
+(* Pass management *)
+
+let check_types = ref false
+  (** Check the model for type consistency. *)
+
+let pass_simplify = ref true
+  (** Simplify the model *)
+
+let apply_passes tree =
+  (** Transform the tree in accordance to the passes enabled by the user. *)
+  let current = ref tree in
+    if !check_types then current := !current else () ;
+    if !pass_simplify then current := Creol.simplify !current else () ;
+    !current
 
 (** Show the name and the version of the program and exit. *)
 
@@ -54,33 +83,26 @@ let show_version () =
   exit 0
 
 let options = [
+  ("-", Unit (function () -> add_input "-"), "Read from standard input");
   ("-v", Unit (function () -> ()),
    "  Print some information while processing");
-  ("-V", Unit show_version,
-   "  Show the version and exit");
   ("-M", String ignore,
    "  Compile the files for the model checker and write the result to [file]");
   ("-o", String set_maude_output,
    "  Compile the files for the interpreter and write the result to [file]");
   ("-x", String xml_arg,
    "  Export the input files to XML file [name]");
-  ("--version", Unit show_version, "  Show the version and exit")]
-;;
-
-let usage = Sys.executable_name ^ " [options]" ;;
-
-let handler writer note = ()
+  ("-V", Unit show_version, "  Show the version and exit");
+  ("--version", Unit show_version, "  Show the version and exit")
+]
 
 let main () =
-  parse options from_file usage ;
-  let tree = match !files with
-      ([] | ["-"]) -> CreolIO.from_channel stdin
-    | f -> CreolIO.from_files f in
-  let out = match !maude_output with "-" -> stdout | n -> open_out n in
-    Creol.maude_of_creol out (Creol.simplify tree);
-    (match !xml_output with
-	Some s -> CreolIO.creol_to_xml s handler tree
-      | None ->  () );
-    exit 0;;
+  parse options add_input (Sys.executable_name ^ " [options]") ;
+  let tree =
+    match !inputs with
+	[] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
+      | ["-"] -> CreolIO.from_channel stdin
+      | _ ->  CreolIO.from_files !inputs in
+    apply_outputs (apply_passes tree) ; exit 0 ;;
 
 main() ;;
