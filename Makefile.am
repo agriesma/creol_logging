@@ -104,7 +104,7 @@ html-local: html-stamp
 
 html-stamp: $(creolc_SOURCES)
 	test -d html || mkdir html
-	$(OCAMLFIND) $(OCAMLDOC) -html -d html $^
+	$(OCAMLFIND) $(OCAMLDOC) -package xml -html -d html $^
 
 CreolLex.cmo: CreolParser.cmi
 include ${srcdir}/.depend
