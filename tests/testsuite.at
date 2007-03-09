@@ -4,6 +4,7 @@ AT_INIT([creolcomp])
 AT_TESTED(creolc)
 
 AT_SETUP([creolc])
+AT_CHECK([creolc ${abs_srcdir}/AsyncLCR.creol], [0], [], [])
 AT_CHECK([creolc ${abs_srcdir}/Sieve.creol], [0], [], [])
 AT_CHECK([creolc ${abs_srcdir}/Philosophers.creol], [0], [], [])
 AT_CHECK([creolc ${abs_srcdir}/SingleCellBuffer.creol], [0], [], [])
@@ -14,6 +15,7 @@ AT_CHECK([creolc ${abs_srcdir}/SantaClaus.creol], [0], [], [])
 AT_CLEANUP
 
 AT_SETUP([creolc.opt])
+AT_CHECK([creolc.opt ${abs_srcdir}/AsyncLCR.creol], [0], [], [])
 AT_CHECK([creolc.opt ${abs_srcdir}/Sieve.creol], [0], [], [])
 AT_CHECK([creolc.opt ${abs_srcdir}/Philosophers.creol], [0], [], [])
 AT_CHECK([creolc.opt ${abs_srcdir}/SingleCellBuffer.creol], [0], [], [])

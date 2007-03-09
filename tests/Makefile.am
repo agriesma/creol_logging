@@ -27,7 +27,8 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
-TESTFILES		= Alarmclock.creol Philosophers.creol Sieve.creol \
+TESTFILES		= Alarmclock.creol AsyncLCR.creol Philosophers.creol \
+			  Sieve.creol \
 			  SingleCellBuffer.creol AuthorisationPolicies.creol \
 			  Fibonacci.creol SantaClaus.creol BoundedBuffer.creol
 
