@@ -20,7 +20,8 @@
 # 02111-1307, USA.
 
 info_TEXINFOS		= creolcomp.texi
-creolcomp_TEXINFOS	= creol.texi fdl.texi gpl.texi
+creolcomp_TEXINFOS	= introduction.texi invocation.texi creol.texi \
+			  fdl.texi gpl.texi
 
 MOSTLYCLEANFILES	= *~ *.cps
 CLEANFILES		=

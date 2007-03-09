@@ -1,3 +1,4 @@
+@node Creol
 @chapter Creol
 
 CREOL: An exciting mix of the best ingredients from many cultures!

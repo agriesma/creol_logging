@@ -52,10 +52,15 @@ Software Foundation raise funds for GNU development.''
 @end ifnottex
 
 @menu
+* Introduction::        Introduction to Creol and its tools.
+* Invocation::          How to invoke the compiler.
+* Creol::               A description of the Creol language.
 * Licenses::            Your rights and freedoms.
-* Index::               A concept index.
+* Index::               Index of concepts.
 @end menu
 
+@include introduction.texi
+@include invocation.texi
 @include creol.texi
 
 @node Licenses
