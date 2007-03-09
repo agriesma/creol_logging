@@ -51,7 +51,7 @@ creolc_SOURCES		= Version.ml \
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 OCAMLC_FLAGS		+= -package xml
-OCAMLOPT_FLAGS		+= -package xml
+OCAMLOPT_FLAGS		+= -package xml -w a
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
 

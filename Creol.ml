@@ -141,28 +141,28 @@ let rec simplify_expression =
     | Binary (a, Ne, l, r) -> Unary(a, Not, Binary (a, Eq, l, r))
     | Binary (a, Xor, l, r) -> Unary(a, Not, Binary (a, Eq, l, r))
     | t -> t
-and simplify_expression_list =
-  function
-      [] -> []
-    | e::r -> (simplify_expression e)::(simplify_expression_list r)
 and simplify_guard =
   function
       Condition (a, e) -> Condition (a, simplify_expression e)
     | Conjunction (a, g1, g2) -> Conjunction (a, simplify_guard g1,
 					     simplify_guard g2)
-    | l -> l
+    | Wait a -> Wait a
+    | Label (a, l) -> Label (a, l)
 and simplify_statement =
   function
-      Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
+      Skip a -> Skip a
+    | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_guard g)
-    | New (a, s, c, p) -> New (a, s, c, simplify_expression_list p)
+    | New (a, s, c, p) -> New (a, s, c, List.map simplify_expression p)
     | AsyncCall (a, l, e, n, p) ->
 	AsyncCall (a, l, simplify_expression e, n,
-		  simplify_expression_list p)
+		  List.map simplify_expression p)
+    | Free (a, l) -> Free (a, l)
+    | Reply (a, l, v) -> Reply (a, l, v)
     | SyncCall (a, e, n, p, r) ->
-	SyncCall (a, simplify_expression e, n, simplify_expression_list p, r)
+	SyncCall (a, simplify_expression e, n, List.map simplify_expression p, r)
     | LocalSyncCall (a, m, l, u, i, o) ->
-	LocalSyncCall (a, m, l, u, simplify_expression_list i, o)
+	LocalSyncCall (a, m, l, u, List.map simplify_expression i, o)
     | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
 			   simplify_statement f)
     | While (a, c, i, b) ->
@@ -174,9 +174,6 @@ and simplify_statement =
 				 simplify_statement s2)
     | Choice (a, s1, s2) -> Choice (a, simplify_statement s1,
 				   simplify_statement s2)
-    | s -> s
-and simplify_parameter_list l =
-  l
 and simplify_method_variables note =
   function
       [] -> Skip note
@@ -198,25 +195,16 @@ and simplify_method m =
 	  let note = statement_note s in
 	    Some (Sequence(note, simplify_method_variables note m.meth_vars,
 			 (simplify_statement s))) }
-and simplify_method_list =
-  function
-      [] -> []
-    | m::l -> (simplify_method m)::(simplify_method_list l)
 and simplify_inherits =
   function
-      (n, e) -> (n, simplify_expression_list e)
+      (n, e) -> (n, List.map simplify_expression e)
 and simplify_inherits_list =
   function
       [] -> []
     | i::l -> (simplify_inherits i)::(simplify_inherits_list l)
 and simplify_class c =
-  { cls_name = c.cls_name;
-    cls_parameters = simplify_parameter_list c.cls_parameters;
-    cls_inherits = simplify_inherits_list c.cls_inherits;
-    cls_contracts = c.cls_contracts;
-    cls_implements = c.cls_implements;
-    cls_attributes = c.cls_attributes;
-    cls_methods = simplify_method_list c.cls_methods }
+  { c with cls_inherits = simplify_inherits_list c.cls_inherits;
+    cls_methods = List.map simplify_method c.cls_methods }
 and simplify_interface i =
   i
 and simplify =
@@ -495,8 +483,7 @@ let rec maude_of_creol_expression out =
           | Or -> "'or"
           | Lt -> "'less"
           | Le -> "'lessEq"
-          | Eq -> "'equal"
-	  | (Xor|Gt|Ge|Ne) -> assert false) ^ "[[");
+          | Eq -> "'equal") ^ "[[");
 	maude_of_creol_expression_list out (l::[r]);
 	output_string out "]] )"
     | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
