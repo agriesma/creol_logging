@@ -1,0 +1,36 @@
+class Process(i: Nat, p: Init)
+begin
+
+  var mode: Bool // true is active, false is relay
+  var status: Nat // 0 and null is unknown, 1 is chosen, 2 is reported
+  var uid1: Nat
+  var uid2: Nat
+  var uid3: Nat
+  var neighbor: Process
+
+  op get(in u: Nat) ==
+    if mode then
+      if uid2 = null then
+        uid2 := u;
+	!neighbor.get(uid2)
+      else
+	if uid3 = null then
+	  uid3 := u
+	else
+	  await false
+	fi
+      fi
+    else // The process is only acting as a relay
+      !neighbor.get(u)
+    fi
+
+  op becomeRelay ==
+    await mode and uid3 /= null and (uid2 <= uid1 or uid2 <= uid3);
+     mode := false
+
+  op advancePhase ==
+    await mode and uid3 /= null and (uid2 > uid1 and uid2 > uid3);
+    uid1, uid2, uid3 := uid2, null, null;
+    !neighbor.get(uid1)
+
+end
