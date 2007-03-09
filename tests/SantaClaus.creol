@@ -42,11 +42,6 @@ begin
              !loop()
 
   op deliverToys ==
-	var t1:Label;
-  	var t2: Label;
-  	var t3: Label;
-  	var t4: Label;
-  	var t5:Label;
 	ctReindeers := 0;
 	t1!first[waitReindeers].harness(); 
 	harnessedReindeers := plus[harnessedReindeers, first[waitReindeers]]; 
@@ -65,9 +60,6 @@ begin
 
 
 	op talkToelves ==
-		var t1:Label;
-		var t2:Label;
-		var t3:Label;
 		ctElves := ctElves - 3; 
 		t1!first[waitElves].showIn();
 		inofficeElves := plus[inofficeElves, first[waitElves]];

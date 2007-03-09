@@ -119,6 +119,7 @@ rule token = parse
     | "pre" { reserved lexbuf }
     | "post" { reserved lexbuf }
     | "skip" { SKIP }
+    | "system" { reserved lexbuf }
     | "then" { THEN }
     | "this" { ID("this") (* XXX: Should be special, too. *) }
     | "true" { BOOL(true) }
@@ -126,6 +127,8 @@ rule token = parse
     | "wait" { WAIT }
     | "with" { WITH }
     | "xor" { XOR }
+    | "Label" { reserved lexbuf }
+    | "System" { reserved lexbuf }
     | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
     | ['0'-'9']+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
     | CID { CID(Lexing.lexeme lexbuf) }
