@@ -155,7 +155,7 @@ and creol_statement_to_xml writer handler =
 	XmlTextWriter.start_element writer "expressions" ;
 	List.iter (function e -> 
 	             XmlTextWriter.start_element writer "expression" ;
-		     creol_expression_to_xml writer handler e ;
+		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
 	handler writer a;
@@ -168,7 +168,7 @@ and creol_statement_to_xml writer handler =
 	XmlTextWriter.start_element writer "arguments" ;
 	List.iter (function e -> 
 	             XmlTextWriter.start_element writer "expression" ;
-		     creol_expression_to_xml writer handler e ;
+		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
 	handler writer a ;
@@ -180,12 +180,12 @@ and creol_statement_to_xml writer handler =
 	  | Some n -> XmlTextWriter.write_attribute writer "label" n ) ;
 	XmlTextWriter.write_attribute writer "method" m ;
 	XmlTextWriter.start_element writer "callee" ;
-	creol_expression_to_xml writer handler c ;
+	creol_expression_to_xml writer c ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "arguments" ;
 	List.iter (function e -> 
 	             XmlTextWriter.start_element writer "expression" ;
-		     creol_expression_to_xml writer handler e ;
+		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
 	handler writer a ;
@@ -210,12 +210,12 @@ and creol_statement_to_xml writer handler =
 	XmlTextWriter.start_element writer "synccall" ;
 	XmlTextWriter.write_attribute writer "method" m ;
 	XmlTextWriter.start_element writer "callee" ;
-	creol_expression_to_xml writer handler c ;
+	creol_expression_to_xml writer c ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "arguments" ;
 	List.iter (function e -> 
 	             XmlTextWriter.start_element writer "expression" ;
-		     creol_expression_to_xml writer handler e ;
+		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "results" ;
@@ -238,7 +238,7 @@ and creol_statement_to_xml writer handler =
 	XmlTextWriter.start_element writer "arguments" ;
 	List.iter (function e -> 
 	             XmlTextWriter.start_element writer "expression" ;
-		     creol_expression_to_xml writer handler e ;
+		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "results" ;
@@ -252,7 +252,7 @@ and creol_statement_to_xml writer handler =
     | If (a, c, t, f) ->
 	XmlTextWriter.start_element writer "if" ;
 	XmlTextWriter.start_element writer "condition" ;
-	creol_expression_to_xml writer handler c ;
+	creol_expression_to_xml writer c ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "then" ;
 	creol_statement_to_xml writer handler t ;
@@ -265,10 +265,10 @@ and creol_statement_to_xml writer handler =
     | While (a, c, i, d) ->
 	XmlTextWriter.start_element writer "while" ;
 	XmlTextWriter.start_element writer "condition" ;
-	creol_expression_to_xml writer handler c ;
+	creol_expression_to_xml writer c ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "invariant" ;
-	creol_expression_to_xml writer handler i ;
+	creol_expression_to_xml writer i ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "do" ;
 	creol_statement_to_xml writer handler d ;
@@ -315,51 +315,43 @@ and creol_vardecl_to_xml writer handler v =
     XmlTextWriter.end_element writer
 and creol_argument_to_xml writer handler e =
     XmlTextWriter.start_element writer "argument" ; 
-    creol_expression_to_xml writer handler e;
+    creol_expression_to_xml writer e;
     XmlTextWriter.end_element writer
-and creol_expression_to_xml writer handler =
+and creol_expression_to_xml writer =
   function
       Null a -> 
 	XmlTextWriter.start_element writer "null" ; 
-	handler writer a;
         XmlTextWriter.end_element writer
     | Nil a -> 
 	XmlTextWriter.start_element writer "nil" ; 
-	handler writer a;
         XmlTextWriter.end_element writer
     | Bool (a, v) -> 
 	XmlTextWriter.start_element writer "bool" ; 
 	XmlTextWriter.write_attribute writer "value" (string_of_bool v) ;
-	handler writer a;
         XmlTextWriter.end_element writer
     | Int (a, v) -> 
 	XmlTextWriter.start_element writer "int" ; 
 	XmlTextWriter.write_attribute writer "value" (string_of_int v) ;
-	handler writer a;
         XmlTextWriter.end_element writer
     | Float (a, v) -> 
 	XmlTextWriter.start_element writer "float" ; 
 	XmlTextWriter.write_attribute writer "value" (string_of_float v) ;
-	handler writer a;
         XmlTextWriter.end_element writer
     | String (a, v) -> 
 	XmlTextWriter.start_element writer "string" ; 
 	XmlTextWriter.write_attribute writer "value" v ;
-	handler writer a;
         XmlTextWriter.end_element writer
     | Id (a, v) -> 
 	XmlTextWriter.start_element writer "identifier" ; 
 	XmlTextWriter.write_attribute writer "value" v ;
-	handler writer a;
         XmlTextWriter.end_element writer
     | Unary (a, o, f) -> 
 	XmlTextWriter.start_element writer "unary" ; 
 	XmlTextWriter.write_attribute writer "operator" 
 	    (match o with Not -> "not" | UMinus -> "minus" ) ;
 	XmlTextWriter.start_element writer "argument" ;
-	creol_expression_to_xml writer handler f ;
+	creol_expression_to_xml writer f ;
         XmlTextWriter.end_element writer ;
-	handler writer a;
         XmlTextWriter.end_element writer
     | Binary (a, o, f, s) -> 
 	XmlTextWriter.start_element writer "binary" ; 
@@ -380,12 +372,11 @@ and creol_expression_to_xml writer handler =
 	      | Xor -> "exclusive or"
 	      | Iff -> "if and only if") ;
 	XmlTextWriter.start_element writer "first" ;
-	creol_expression_to_xml writer handler f ;
+	creol_expression_to_xml writer f ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "second" ;
-	creol_expression_to_xml writer handler s ;
+	creol_expression_to_xml writer s ;
         XmlTextWriter.end_element writer ;
-	handler writer a;
         XmlTextWriter.end_element writer
     | FuncCall (a, f, es) -> 
 	XmlTextWriter.start_element writer "funccall" ; 
@@ -393,10 +384,9 @@ and creol_expression_to_xml writer handler =
 	XmlTextWriter.start_element writer "arguments" ;
 	List.iter (function e ->
 		     XmlTextWriter.start_element writer "argument" ;
-		     creol_expression_to_xml writer handler e ;
+		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
-	handler writer a;
         XmlTextWriter.end_element writer
 and creol_type_to_xml writer handler =
   function

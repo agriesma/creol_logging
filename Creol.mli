@@ -93,41 +93,41 @@ type 'a guard =
     | Condition of 'a * 'a expression
     | Conjunction of 'a * 'a guard * 'a guard
 
-type 'a statement =
+type ('a, 'b) statement =
     (** Abstract syntax of statements in Creol.  The type parameter ['a]
 	refers to the type of possible annotations. *)
     Skip of 'a
 	(** A skip statement *)
-    | Assign of 'a * string list * 'a expression list
+    | Assign of 'a * string list * 'b expression list
 	(** A multiple assignment statement.  Requires that the two lists
 	    are of the same length. *)
-    | Await of 'a * 'a guard
+    | Await of 'a * 'b guard
 	(** An await statement. *)
-    | New of 'a * string * string * 'a expression list
+    | New of 'a * string * string * 'b expression list
 	(** Create a new object. *)
-    | AsyncCall of 'a * string option * 'a expression * string *
-	'a expression list
+    | AsyncCall of 'a * string option * 'b expression * string *
+	'b expression list
 	(** Call a method asynchronously. *)
     | Reply of 'a * string * string list
 	(** Receive the reply to an asynchronous call. *)
     | Free of 'a * string
 	(** Release a label.  It is not usable after executing this statement
 	    anymore. *)
-    | SyncCall of 'a * 'a expression * string *
-	'a expression list * string list
+    | SyncCall of 'a * 'b expression * string *
+	'b expression list * string list
 	(** Call a (remote) method synchronously. *)
     | LocalSyncCall of 'a * string * string option * string option *
-	'a expression list * string list
+	'b expression list * string list
 	(** Call a local method synchronously. *)
-    | If of 'a * 'a expression * 'a statement * 'a statement
+    | If of 'a * 'b expression * ('a, 'b) statement * ('a, 'b) statement
 	(** Conditional execution. *)
-    | While of 'a * 'a expression * 'a expression * 'a statement
+    | While of 'a * 'b expression * 'b expression * ('a, 'b) statement
 	(** While loops. *)
-    | Sequence of 'a * 'a statement * 'a statement
+    | Sequence of 'a * ('a, 'b) statement * ('a, 'b) statement
 	(** Sequential composition *)
-    | Merge of 'a * 'a statement * 'a statement
+    | Merge of 'a * ('a, 'b) statement * ('a, 'b) statement
 	(** Merge of statements *)
-    | Choice of 'a * 'a statement * 'a statement
+    | Choice of 'a * ('a, 'b) statement * ('a, 'b) statement
 	(** Choice between statements *)
 
 type 'a creol_vardecl =
@@ -140,46 +140,46 @@ type 'a creol_vardecl =
 	(** Expression used for initialisation. *)
     }
 
-type 'a creolmethod =
+type ('a, 'b) creolmethod =
     (** Abstract syntax of a method declaration and definition. *)
     { meth_name: string;
 	(** The name of the method. *)
       meth_coiface: creol_type;
 	(** The co-interface of the method. *)
-      meth_inpars: 'a creol_vardecl list;
+      meth_inpars: 'b creol_vardecl list;
 	(** A list of input parameters. *)
-      meth_outpars: 'a creol_vardecl list;
+      meth_outpars: 'b creol_vardecl list;
 	(** A list of output parameters. *)
-      meth_vars: 'a creol_vardecl list;
+      meth_vars: 'b creol_vardecl list;
 	(** A list of local variables. *)
-      meth_body: 'a statement option
+      meth_body: ('a, 'b) statement option
 	(** The method body. *)
     }
 
 type 'a inherits = string * ('a expression list)
 
-type 'a classdecl =
+type ('a, 'b) classdecl =
     { cls_name: string;
-      cls_parameters: 'a creol_vardecl list;
-      cls_inherits: 'a inherits list;
+      cls_parameters: 'b creol_vardecl list;
+      cls_inherits: 'b inherits list;
       cls_contracts: string list;
       cls_implements: string list;
-      cls_attributes: 'a creol_vardecl list;
-      cls_methods: 'a creolmethod list }
+      cls_attributes: 'b creol_vardecl list;
+      cls_methods: ('a, 'b) creolmethod list }
 
-type  'a interfacedecl =
+type  ('a, 'b) interfacedecl =
     { iface_name: string;
       iface_inherits: string list;
-      iface_methods: 'a creolmethod list }
+      iface_methods: ('a, 'b) creolmethod list }
 
-type 'a declaration =
-    Class of 'a classdecl
-    | Interface of 'a interfacedecl
+type ('a, 'b) declaration =
+    Class of ('a, 'b) classdecl
+    | Interface of ('a, 'b) interfacedecl
 
-val statement_note: 'a statement -> 'a
+val statement_note: ('a, 'b) statement -> 'a
 
-val pretty_print: out_channel -> 'a declaration list -> unit
+val pretty_print: out_channel -> ('a, 'b) declaration list -> unit
 
-val simplify: 'a declaration list -> 'a declaration list
+val simplify: ('a, 'b) declaration list -> ('a, 'b) declaration list
 
-val maude_of_creol: out_channel -> 'a declaration list -> unit
+val maude_of_creol: out_channel -> ('a, 'b) declaration list -> unit

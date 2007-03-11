@@ -62,57 +62,57 @@ type 'a guard =
     | Condition of 'a * 'a expression
     | Conjunction of 'a * 'a guard * 'a guard
 
-type 'a statement =
+type ('a, 'b) statement =
     Skip of 'a
-    | Assign of 'a * string list * 'a expression list
-    | Await of 'a * 'a guard
-    | New of 'a * string * string * 'a expression list
-    | AsyncCall of 'a * string option * 'a expression * string *
-	'a expression list
+    | Assign of 'a * string list * 'b expression list
+    | Await of 'a * 'b guard
+    | New of 'a * string * string * 'b expression list
+    | AsyncCall of 'a * string option * 'b expression * string *
+	'b expression list
     | Reply of 'a * string * string list
     | Free of 'a * string
-    | SyncCall of 'a * 'a expression * string *
-	'a expression list * string list
+    | SyncCall of 'a * 'b expression * string *
+	'b expression list * string list
     | LocalSyncCall of 'a * string * string option * string option *
-        'a expression list * string list
-    | If of 'a * 'a expression * 'a statement * 'a statement
-    | While of 'a * 'a expression * 'a expression * 'a statement
-    | Sequence of 'a * 'a statement * 'a statement
-    | Merge of 'a * 'a statement * 'a statement
-    | Choice of 'a * 'a statement * 'a statement
+        'b expression list * string list
+    | If of 'a * 'b expression * ('a, 'b) statement * ('a, 'b) statement
+    | While of 'a * 'b expression * 'b expression * ('a, 'b) statement
+    | Sequence of 'a * ('a, 'b) statement * ('a, 'b) statement
+    | Merge of 'a * ('a, 'b) statement * ('a, 'b) statement
+    | Choice of 'a * ('a, 'b) statement * ('a, 'b) statement
 
 
 (** The abstract syntax of Creol *)
 type 'a creol_vardecl =
     { var_name: string; var_type: creol_type; var_init: 'a expression option }
 
-type 'a creolmethod =
+type ('a, 'b) creolmethod =
     { meth_name: string;
       meth_coiface: creol_type;
-      meth_inpars: 'a creol_vardecl list;
-      meth_outpars: 'a creol_vardecl list;
-      meth_vars: 'a creol_vardecl list;
-      meth_body: 'a statement option }
+      meth_inpars: 'b creol_vardecl list;
+      meth_outpars: 'b creol_vardecl list;
+      meth_vars: 'b creol_vardecl list;
+      meth_body: ('a, 'b) statement option }
 
 type 'a inherits = string * ('a expression list)
 
-type 'a classdecl =
+type ('a, 'b) classdecl =
     { cls_name: string;
-      cls_parameters: 'a creol_vardecl list;
-      cls_inherits: 'a inherits list;
+      cls_parameters: 'b creol_vardecl list;
+      cls_inherits: 'b inherits list;
       cls_contracts: string list;
       cls_implements: string list;
-      cls_attributes: 'a creol_vardecl list;
-      cls_methods: 'a creolmethod list }
+      cls_attributes: 'b creol_vardecl list;
+      cls_methods: ('a, 'b) creolmethod list }
 
-type  'a interfacedecl =
+type  ('a, 'b) interfacedecl =
     { iface_name: string;
       iface_inherits: string list;
-      iface_methods: 'a creolmethod list }
+      iface_methods: ('a, 'b) creolmethod list }
 
-type 'a declaration =
-    Class of 'a classdecl
-    | Interface of 'a interfacedecl
+type ('a, 'b) declaration =
+    Class of ('a, 'b) classdecl
+    | Interface of ('a, 'b) interfacedecl
 
 let statement_note =
   function
