@@ -21,6 +21,15 @@
  * 02111-1307, USA.
  *)
 
+type note = { note_fname: string; note_lineno: int }
+
+let note_to_xml writer note =
+  XmlTextWriter.start_element writer "note";
+  XmlTextWriter.write_attribute writer "file" note.note_fname;
+  XmlTextWriter.write_attribute writer "line" (string_of_int note.note_lineno);
+  XmlTextWriter.end_element writer
+  
+
 type creol_type = 
       Basic of string
     | Application of string * creol_type list
@@ -212,6 +221,76 @@ and simplify =
       [] -> []
     | Class c::l -> (Class (simplify_class c))::(simplify l)
     | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
+
+module StringSet = Set.Make(String)
+
+let rec find_definitions l =
+  (** Computes the definitions of a variable.
+
+   *)
+  List.map definitions_in_declaration l
+and definitions_in_declaration =
+  function
+    Class c -> Class (definitions_in_class c)
+  | Interface i -> Interface (definitions_in_interface i)
+and definitions_in_class c =
+  let attributes = List.fold_left
+	(function s ->
+	  function { var_name = n; var_type = _; var_init = _ } -> 
+            StringSet.add n s )
+	StringSet.empty
+	(c.cls_parameters @ c.cls_attributes) in
+  { c with cls_methods = List.map definitions_in_method c.cls_methods }
+and definitions_in_interface i =
+  i
+and definitions_in_method m =
+  match m.meth_body with
+      None -> m
+    | Some body -> { m with meth_body = Some (definitions_in_statement body) }
+and definitions_in_statement =
+  function
+    s -> s
+
+
+let rec life_variables tree =
+  (** Compute whether a variable is still in use at a position in the
+      program.
+
+      The algorithm assumes that the input [tree] has been annotated with
+      information about the definitions of variables.  See
+      [find_definitions].
+
+      It will perform a back-ward pass and annotate each node with the
+      use-information.
+
+      This algorithms has been adapted from the algorithm described in
+      Section 9.5 "Next-Use Information" of A.V. Aho, R. Sethi, and J.D.
+      Ullman, "Compilers: Principles, Techniques, and Tools",
+      Addison-Wesley, 1986.
+
+      Where this algorithm comes from is not clear to me, but it may already
+      be mentioned in Knuth, Donald E. (1962), "A History of Writing
+      Compilers," Computers and Automation,, December, 1962, reprinted in
+      Pollock, Barry W., ed. Compiler Techniques, Auerbach Publishers,
+      1972. *)
+  List.map life_variables_in_declaration tree
+and life_variables_in_declaration =
+  function
+    Class c -> Class (life_variables_in_class c)
+  | Interface i -> Interface (life_variables_in_interface i)
+and life_variables_in_class c =
+  { c with cls_methods = List.map life_variables_in_method c.cls_methods }
+and life_variables_in_interface i =
+  i
+and life_variables_in_method m =
+  match m.meth_body with
+      None -> m
+    | Some body -> { m with meth_body = Some (life_variables_in_statement body) }
+and life_variables_in_statement =
+  function
+    s -> s
+
+
 
 (* These are the support functions for the abstract syntax tree. *)
 

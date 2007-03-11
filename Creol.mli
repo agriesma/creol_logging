@@ -30,6 +30,10 @@
 
  *)
 
+type note = { note_fname: string; note_lineno: int }
+
+val note_to_xml: XmlTextWriter.xmlwriter -> note -> unit
+
 type creol_type = 
     (** A type as defined in Creol. *)
       Basic of string

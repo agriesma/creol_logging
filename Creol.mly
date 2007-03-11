@@ -64,18 +64,17 @@
    02111-1307, USA. *)
 
 open Creol
+open Lexing
 
 (** Provide a default annotation *)
-let default pos = ()
-(* let default pos = { note_fname = pos.pos_fname ; note_lineno = pos.pos_lnum } *)
+let default pos = { note_fname = pos.pos_fname ; note_lineno = pos.pos_lnum }
 
 exception Error
 
 (** Print a short error message and abort *)
 let signal_error s m =
-  output_string stderr (s.Lexing.pos_fname ^ ":" ^
-			   (string_of_int s.Lexing.pos_lnum) ^ ": " ^ m ^
-			   "\n");
+  output_string stderr (s.pos_fname ^ ":" ^ (string_of_int s.pos_lnum) ^ ": " ^
+			m ^ "\n");
   flush stderr;
   raise Error
 %}

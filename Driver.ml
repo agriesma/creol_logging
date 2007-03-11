@@ -44,8 +44,6 @@ let xml_output : string option ref = ref None
 
 let xml_arg s = xml_output := Some s
 
-let handle_xml_note writer note = ()
-
 let apply_outputs tree =
   (** Apply the output passes *)
   (match !maude_output with
@@ -54,7 +52,7 @@ let apply_outputs tree =
 		  Creol.maude_of_creol out tree) ;
   (match !xml_output with
       None ->  ()
-    | Some s -> CreolIO.creol_to_xml s handle_xml_note tree)
+    | Some s -> CreolIO.creol_to_xml s Creol.note_to_xml tree)
 
 (* Pass management *)
 
