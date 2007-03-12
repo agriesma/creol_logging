@@ -28,6 +28,7 @@
     @since   0.0
  *)
 
+open Creol
 open Arg
 
 let inputs : string list ref = ref []
@@ -49,35 +50,38 @@ let apply_outputs tree =
   (match !maude_output with
       None -> ()
     | Some n -> let out = match n with "-" -> stdout | _ -> open_out n in
-		  Creol.maude_of_creol out tree) ;
+		  maude_of_creol out tree) ;
   (match !xml_output with
       None ->  ()
-    | Some s -> CreolIO.creol_to_xml s Creol.Note.to_xml tree)
+    | Some s -> CreolIO.creol_to_xml s Note.to_xml tree)
 
 (* Pass management *)
 
-type passes =
-    { mutable pass_check_types: bool;
-      mutable pass_simplify: bool;
-      mutable pass_lifeness: bool }
+module Passes =
+  struct
+    type t =
+	{ mutable pass_check_types: bool;
+	  mutable pass_simplify: bool;
+	  mutable pass_lifeness: bool }
 
-let passes =
-  { pass_check_types = false;
-    pass_simplify = true;
-    pass_lifeness = true }
+    let passes =
+      { pass_check_types = false;
+	pass_simplify = true;
+	pass_lifeness = true }
 
-let apply_passes tree =
-  (** Transform the tree in accordance to the passes enabled by the user. *)
-  let current = ref tree in
-    if passes.pass_check_types then current := !current else () ;
-    if passes.pass_simplify then current := Creol.simplify !current else () ;
-    if passes.pass_lifeness then current := Creol.find_definitions !current
-    else ();
-    !current
-
-(** Show the name and the version of the program and exit. *)
+    let apply tree =
+      (** Transform the tree in accordance to the passes enabled by the
+	  user. *)
+      let current = ref tree in
+	if passes.pass_check_types then current := !current else () ;
+	if passes.pass_simplify then current := simplify !current else () ;
+	if passes.pass_lifeness then current := find_definitions !current
+	else ();
+	!current
+  end
 
 let show_version () =
+  (** Show the name and the version of the program and exit. *)
   print_string (Version.package ^ " " ^ Version.version ^ " (" ^
 		   Version.reldate ^ ")\n" );
   print_string "Copyright (c) 2007 Marcel Kyas\n";
@@ -86,27 +90,27 @@ let show_version () =
   print_string "PARTICULAR PURPOSE.\n";
   exit 0
 
-let options = [
-  ("-", Unit (function () -> add_input "-"), "Read from standard input");
-  ("-v", Unit (function () -> ()),
-   "  Print some information while processing");
-  ("-M", String ignore,
-   "  Compile the files for the model checker and write the result to [file]");
-  ("-o", String set_maude_output,
-   "  Compile the files for the interpreter and write the result to [file]");
-  ("-x", String xml_arg,
-   "  Export the input files to XML file [name]");
-  ("-V", Unit show_version, "  Show the version and exit");
-  ("--version", Unit show_version, "  Show the version and exit")
-]
-
 let main () =
-  parse options add_input (Sys.executable_name ^ " [options]") ;
-  let tree =
-    match !inputs with
-	[] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
-      | ["-"] -> CreolIO.from_channel stdin
-      | _ ->  CreolIO.from_files !inputs in
-    apply_outputs (apply_passes tree) ; exit 0 ;;
+  let options = [
+    ("-", Unit (function () -> add_input "-"), "Read from standard input");
+    ("-v", Unit (function () -> ()),
+    "  Print some information while processing");
+    ("-M", Arg.String ignore,
+    "  Compile the files for model checking and write the result to [file]");
+    ("-o", Arg.String set_maude_output,
+    "  Compile the files for the interpreter and write the result to [file]");
+    ("-x", Arg.String xml_arg,
+    "  Export the input files to XML file [name]");
+    ("-V", Unit show_version, "  Show the version and exit");
+    ("--version", Unit show_version, "  Show the version and exit")]
+  in
+    parse options add_input (Sys.executable_name ^ " [options]") ;
+    let tree =
+      match !inputs with
+	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
+	| ["-"] -> CreolIO.from_channel stdin
+	| _ ->  CreolIO.from_files !inputs in
+      apply_outputs (Passes.apply tree) ;
+      exit 0 ;;
 
-main() ;;
+main()

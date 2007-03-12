@@ -106,42 +106,48 @@ type 'a guard =
     | Condition of 'a * 'a expression
     | Conjunction of 'a * 'a guard * 'a guard
 
-type ('a, 'b) statement =
-    (** Abstract syntax of statements in Creol.  The type parameter ['a]
-	refers to the type of possible annotations. *)
-    Skip of 'a
+module Statement: sig
+  type ('a, 'b) t =
+      (** Abstract syntax of statements in Creol.  The type parameter ['a]
+	  refers to the type of possible annotations. *)
+      Skip of 'a
 	(** A skip statement *)
-    | Assign of 'a * string list * 'b expression list
-	(** A multiple assignment statement.  Requires that the two lists
-	    are of the same length. *)
-    | Await of 'a * 'b guard
-	(** An await statement. *)
-    | New of 'a * string * string * 'b expression list
-	(** Create a new object. *)
-    | AsyncCall of 'a * string option * 'b expression * string *
-	'b expression list
-	(** Call a method asynchronously. *)
-    | Reply of 'a * string * string list
-	(** Receive the reply to an asynchronous call. *)
-    | Free of 'a * string
-	(** Release a label.  It is not usable after executing this statement
-	    anymore. *)
-    | SyncCall of 'a * 'b expression * string *
-	'b expression list * string list
-	(** Call a (remote) method synchronously. *)
-    | LocalSyncCall of 'a * string * string option * string option *
-	'b expression list * string list
-	(** Call a local method synchronously. *)
-    | If of 'a * 'b expression * ('a, 'b) statement * ('a, 'b) statement
-	(** Conditional execution. *)
-    | While of 'a * 'b expression * 'b expression * ('a, 'b) statement
-	(** While loops. *)
-    | Sequence of 'a * ('a, 'b) statement * ('a, 'b) statement
-	(** Sequential composition *)
-    | Merge of 'a * ('a, 'b) statement * ('a, 'b) statement
-	(** Merge of statements *)
-    | Choice of 'a * ('a, 'b) statement * ('a, 'b) statement
-	(** Choice between statements *)
+      | Assign of 'a * string list * 'b expression list
+	  (** A multiple assignment statement.  Requires that the two lists
+	      are of the same length. *)
+      | Await of 'a * 'b guard
+	  (** An await statement. *)
+      | New of 'a * string * string * 'b expression list
+	  (** Create a new object. *)
+      | AsyncCall of 'a * string option * 'b expression * string *
+	  'b expression list
+	  (** Call a method asynchronously. *)
+      | Reply of 'a * string * string list
+	  (** Receive the reply to an asynchronous call. *)
+      | Free of 'a * string
+	  (** Release a label.  It is not usable after executing this statement
+	      anymore. *)
+      | SyncCall of 'a * 'b expression * string *
+	  'b expression list * string list
+	  (** Call a (remote) method synchronously. *)
+      | LocalSyncCall of 'a * string * string option * string option *
+	  'b expression list * string list
+	  (** Call a local method synchronously. *)
+      | If of 'a * 'b expression * ('a, 'b) t * ('a, 'b) t
+	  (** Conditional execution. *)
+      | While of 'a * 'b expression * 'b expression * ('a, 'b) t
+	  (** While loops. *)
+      | Sequence of 'a * ('a, 'b) t * ('a, 'b) t
+	  (** Sequential composition *)
+      | Merge of 'a * ('a, 'b) t * ('a, 'b) t
+	  (** Merge of statements *)
+      | Choice of 'a * ('a, 'b) t * ('a, 'b) t
+	  (** Choice between statements *)
+
+  val note: ('a, 'b) t -> 'a
+end
+
+
 
 type 'a creol_vardecl =
     (** Abstract syntax representing a variable declaration. *)
@@ -165,7 +171,7 @@ type ('a, 'b) creolmethod =
 	(** A list of output parameters. *)
       meth_vars: 'b creol_vardecl list;
 	(** A list of local variables. *)
-      meth_body: ('a, 'b) statement option
+      meth_body: ('a, 'b) Statement.t option
 	(** The method body. *)
     }
 
@@ -188,8 +194,6 @@ type  ('a, 'b) interfacedecl =
 type ('a, 'b) declaration =
     Class of ('a, 'b) classdecl
     | Interface of ('a, 'b) interfacedecl
-
-val statement_note: ('a, 'b) statement -> 'a
 
 val pretty_print: out_channel -> ('a, 'b) declaration list -> unit
 

@@ -35,19 +35,19 @@ module Note =
 
     let empty = Environment.empty
 
-    type t = { file: string; line: int; defs: type_info Environment.t }
+    type t = { file: string; line: int; env: type_info Environment.t }
 
     let make pos = {
       file = pos.Lexing.pos_fname ;
       line = pos.Lexing.pos_lnum;
-      defs = empty
+      env = empty
     }
 
-    let line { file = _ ; line = l; defs = _ } = l
+    let line { file = _ ; line = l; env = _ } = l
 
-    let file { file = f ; line = _; defs = _ } = f
+    let file { file = f ; line = _; env = _ } = f
 
-    let to_xml writer { file = f; line = l; defs = d } =
+    let to_xml writer { file = f; line = l; env = d } =
       XmlTextWriter.start_element writer "note";
       XmlTextWriter.write_attribute writer "file" f ;
       XmlTextWriter.write_attribute writer "line" (string_of_int l) ;
@@ -65,6 +65,32 @@ module Note =
 	    (string_of_bool note.life) ;
 	  XmlTextWriter.end_element writer) d;
       XmlTextWriter.end_element writer
+
+    module Vars = Set.Make(String)
+
+    let domain env =
+      Environment.fold (fun k _ set -> Vars.add k set) env Vars.empty
+
+    let join left right =
+      let dom = Vars.union (domain left) (domain right) in
+	Vars.fold
+	  (fun k r ->
+	    match (Environment.mem k left, Environment.mem k right) with
+		(true, true) ->
+		  let nl = Environment.find k left
+		  and nr = Environment.find k right
+		  in Environment.add
+		    k
+		    { attribute = nl.attribute && nr.attribute;
+		      label = nl.attribute && nr.attribute;
+		      defined = nl.defined || nr.defined;
+		      life = nl.life || nr.life }
+		    r
+	      | (true, false) -> Environment.add k (Environment.find k left) r
+	      | (false, true) -> Environment.add k (Environment.find k right) r
+	      | (false, false) -> assert false)
+	  dom Environment.empty
+	
   end
 
 type creol_type = 
@@ -108,25 +134,47 @@ type 'a guard =
     | Condition of 'a * 'a expression
     | Conjunction of 'a * 'a guard * 'a guard
 
-type ('a, 'b) statement =
-    Skip of 'a
-    | Assign of 'a * string list * 'b expression list
-    | Await of 'a * 'b guard
-    | New of 'a * string * string * 'b expression list
-    | AsyncCall of 'a * string option * 'b expression * string *
-	'b expression list
-    | Reply of 'a * string * string list
-    | Free of 'a * string
-    | SyncCall of 'a * 'b expression * string *
-	'b expression list * string list
-    | LocalSyncCall of 'a * string * string option * string option *
-        'b expression list * string list
-    | If of 'a * 'b expression * ('a, 'b) statement * ('a, 'b) statement
-    | While of 'a * 'b expression * 'b expression * ('a, 'b) statement
-    | Sequence of 'a * ('a, 'b) statement * ('a, 'b) statement
-    | Merge of 'a * ('a, 'b) statement * ('a, 'b) statement
-    | Choice of 'a * ('a, 'b) statement * ('a, 'b) statement
+module Statement =
+  struct
+    type ('a, 'b) t =
+	Skip of 'a
+	| Assign of 'a * string list * 'b expression list
+	| Await of 'a * 'b guard
+	| New of 'a * string * string * 'b expression list
+	| AsyncCall of 'a * string option * 'b expression * string *
+	    'b expression list
+	| Reply of 'a * string * string list
+	| Free of 'a * string
+	| SyncCall of 'a * 'b expression * string *
+	    'b expression list * string list
+	| LocalSyncCall of 'a * string * string option * string option *
+            'b expression list * string list
+	| If of 'a * 'b expression * ('a, 'b) t * ('a, 'b)t
+	| While of 'a * 'b expression * 'b expression * ('a, 'b)t
+	| Sequence of 'a * ('a, 'b) t * ('a, 'b)t
+	| Merge of 'a * ('a, 'b) t * ('a, 'b)t
+	| Choice of 'a * ('a, 'b) t * ('a, 'b)t
 
+    let note =
+      function
+	  Skip a -> a
+	| Assign(a, _, _) -> a
+	| Await(a, _) -> a
+	| New(a, _, _, _) -> a
+	| AsyncCall(a, _, _, _, _) -> a
+	| Reply(a, _, _) -> a
+	| Free(a, _) -> a
+	| SyncCall(a, _, _, _, _) -> a
+	| LocalSyncCall(a, _, _, _, _, _) -> a
+	| If(a, _, _, _) -> a
+	| While(a, _, _, _) -> a
+	| Sequence(a, _, _) -> a
+	| Merge(a, _, _) -> a
+	| Choice(a, _, _) -> a
+
+  end
+
+open Statement
 
 (** The abstract syntax of Creol *)
 type 'a creol_vardecl =
@@ -138,7 +186,7 @@ type ('a, 'b) creolmethod =
       meth_inpars: 'b creol_vardecl list;
       meth_outpars: 'b creol_vardecl list;
       meth_vars: 'b creol_vardecl list;
-      meth_body: ('a, 'b) statement option }
+      meth_body: ('a, 'b) Statement.t option }
 
 type 'a inherits = string * ('a expression list)
 
@@ -159,24 +207,6 @@ type  ('a, 'b) interfacedecl =
 type ('a, 'b) declaration =
     Class of ('a, 'b) classdecl
     | Interface of ('a, 'b) interfacedecl
-
-let statement_note =
-  function
-    Skip a -> a
-    | Assign(a, _, _) -> a
-    | Await(a, _) -> a
-    | New(a, _, _, _) -> a
-    | AsyncCall(a, _, _, _, _) -> a
-    | Reply(a, _, _) -> a
-    | Free(a, _) -> a
-    | SyncCall(a, _, _, _, _) -> a
-    | LocalSyncCall(a, _, _, _, _, _) -> a
-    | If(a, _, _, _) -> a
-    | While(a, _, _, _) -> a
-    | Sequence(a, _, _) -> a
-    | Merge(a, _, _) -> a
-    | Choice(a, _, _) -> a
-
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
     with there basic equivalents *)
@@ -238,7 +268,7 @@ and simplify_method m =
     meth_body = match m.meth_body with
 	None -> None
       | Some s ->
-	  let note = statement_note s in
+	  let note = Statement.note s in
 	    Some (Sequence(note, simplify_method_variables note m.meth_vars,
 			 (simplify_statement s))) }
 and simplify_inherits =
@@ -276,74 +306,91 @@ let collect_declarations attribute =
 let rec find_definitions l =
   (** Computes the definitions of a variable.
 
-   *)
+  *)
   List.map definitions_in_declaration l
 and definitions_in_declaration =
   function
-    Class c -> Class (definitions_in_class c)
-  | Interface i -> Interface (definitions_in_interface i)
+      Class c -> Class (definitions_in_class c)
+    | Interface i -> Interface (definitions_in_interface i)
 and definitions_in_class c =
   let attrs = collect_declarations true
-	(c.cls_parameters @ c.cls_attributes) in
-  { c with cls_methods = List.map (definitions_in_method attrs) c.cls_methods }
+    (c.cls_parameters @ c.cls_attributes) in
+    { c with cls_methods = List.map (definitions_in_method attrs) c.cls_methods }
 and definitions_in_interface i =
   i
 and definitions_in_method attrs m =
   match m.meth_body with
       None -> m
-    | Some body -> { m with meth_body =
-	  Some (definitions_in_statement attrs
-		   { Note.file = Note.file (statement_note body);
-		     Note.line = Note.line (statement_note body);
-		     Note.defs = attrs }
-		   body) }
-and definitions_in_statement attrs note =
+    | Some body ->
+	{ m with meth_body =
+	    let note =
+	      { Note.file = Note.file (Statement.note body);
+		Note.line = Note.line (Statement.note body);
+		Note.env = attrs }
+	    in
+	      Some (Sequence (note, Skip note,
+			     definitions_in_statement note body)) }
+and definitions_in_statement note =
   (** Compute the variables defined at a current statement.
 
       @param attrs is the set of names which are attributes.  They are always
-	defined in a program.
+      defined in a program.
 
       @param note is the updated note of the preceding statement.
 
       @return The statement with its note updated.  *)
   function
-      Skip n -> Skip n
-    | Assign (n, lhs, rhs) -> Assign (n, lhs, rhs) (* XXX *)
-    | Await (n, g) as s -> s
-    | New (n, var, cls, args) -> New (n, var, cls, args) (* XXX *)
-    | AsyncCall (n, None, callee, name, args) as s -> s
-    | AsyncCall (n, Some label, callee, name, args) ->
-	AsyncCall (n, Some label, callee, name, args) (* XXX *)
-    | Reply (n, l, p) -> Reply (n, l, p) (* XXX *)
+      Skip n ->
+	Skip { n with Note.env = note.Note.env }
+    | Assign (n, lhs, rhs) ->
+	Assign ({ n with Note.env = note.Note.env }, lhs, rhs) (* XXX *)
+    | Await (n, g) ->
+	Await ({ n with Note.env = note.Note.env }, g)
+    | New (n, var, cls, args) ->
+	New ({ n with Note.env = note.Note.env }, var, cls, args) (* XXX *)
+    | AsyncCall (n, None, c, m, a) ->
+	AsyncCall ({ n with Note.env = note.Note.env }, None, c, m, a)
+    | AsyncCall (n, Some l, c, m, a) ->
+	AsyncCall ({ n with Note.env = note.Note.env }, Some l, c, m, a) (* XXX *)
+    | Reply (n, l, p) ->
+	Reply ({ n with Note.env = note.Note.env }, l, p) (* XXX *)
     | Free (n, v) -> assert false
     | SyncCall (n, c, m, ins, outs) ->
-	SyncCall (n, c, m, ins, outs) (* XXX *)
+	SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
     | LocalSyncCall (n, m, u, l, a, r) ->
-	LocalSyncCall (n, m, u, l, a, r) (* XXX *)
+	LocalSyncCall ({ n with Note.env = note.Note.env }, m, u, l, a, r) (* XXX *)
     | If (n, c, l, r) ->
 	(* Beware, that the new note essentially contains the union
 	   of the definitions of both its branches, whereas the first
 	   statement of each branch contains the updated note of the
 	   preceding statement. *)
-	let nl = definitions_in_statement attrs note l
-	and nr = definitions_in_statement attrs note r in
-	    If (n, c, nl, nr)
-		
+	let nl = (definitions_in_statement note l)
+	and nr = (definitions_in_statement note r) in
+	  If ({n with Note.env = Note.join (Statement.note nl).Note.env
+	      (Statement.note nr).Note.env},
+	     c, nl, nr)
     | While (n, c, i, b) ->
-	  While (n, c, i, definitions_in_statement attrs n b)
+	While ({ n with Note.env = note.Note.env }, c, i,
+	      definitions_in_statement n b)
     | Sequence (n, f, s) ->
-	let nf = definitions_in_statement attrs n f in
-	let ns = definitions_in_statement attrs (statement_note nf) s in
-	Sequence (n, nf, ns)
-	(* For merge and choice we do not enforce sequencing of the
-	   computation of the parts, but we allow the compiler to
-	   choose some order *)
+	let nf = definitions_in_statement n f in
+	let ns = definitions_in_statement (Statement.note nf) s in
+	  Sequence ({ n with Note.env = (Statement.note ns).Note.env }, nf, ns)
+	    (* For merge and choice we do not enforce sequencing of the
+	       computation of the parts, but we allow the compiler to
+	       choose some order *)
     | Merge (n, l, r) -> 
-	Merge (n, definitions_in_statement attrs n l,
-	       definitions_in_statement attrs n r)
+	let nl = (definitions_in_statement note l)
+	and nr = (definitions_in_statement note r) in
+	  Merge ({n with Note.env = Note.join (Statement.note nl).Note.env
+	      (Statement.note nr).Note.env},
+		nl, nr)
     | Choice (n, l, r) -> 
-	Choice (n, definitions_in_statement attrs n l,
-		definitions_in_statement attrs n r)
+	let nl = (definitions_in_statement note l)
+	and nr = (definitions_in_statement note r) in
+	  Choice ({n with Note.env = Note.join (Statement.note nl).Note.env
+	      (Statement.note nr).Note.env},
+		 nl, nr)
 
 
 

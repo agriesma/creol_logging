@@ -31,6 +31,7 @@
   *)
 
 open Creol
+open Statement
 
 let from_file name =
   (** Read the contents of a file and return an abstract syntax tree.
