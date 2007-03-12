@@ -43,8 +43,8 @@ bin_PROGRAMS		= creolc creolc.opt
 
 creolc_SOURCES		= Version.ml \
 			  CreolLex.ml CreolLex.mli \
-			  CreolParser.mli CreolParser.ml \
 			  Creol.mli Creol.ml \
+			  CreolParser.mli CreolParser.ml \
 			  CreolIO.mli CreolIO.ml \
 			  Driver.ml
 

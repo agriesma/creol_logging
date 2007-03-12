@@ -21,7 +21,9 @@
  * 02111-1307, USA.
  *)
 
-type note = { note_fname: string; note_lineno: int }
+module StringSet = Set.Make(String)
+
+type note = { note_fname: string; note_lineno: int; note_defs: StringSet.t }
 
 let note_to_xml writer note =
   XmlTextWriter.start_element writer "note";
@@ -222,7 +224,13 @@ and simplify =
     | Class c::l -> (Class (simplify_class c))::(simplify l)
     | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
 
-module StringSet = Set.Make(String)
+
+let collect_declarations =
+    List.fold_left
+	(function s ->
+	  function { var_name = n; var_type = _; var_init = _ } -> 
+            StringSet.add n s )
+	StringSet.empty
 
 let rec find_definitions l =
   (** Computes the definitions of a variable.
@@ -234,22 +242,63 @@ and definitions_in_declaration =
     Class c -> Class (definitions_in_class c)
   | Interface i -> Interface (definitions_in_interface i)
 and definitions_in_class c =
-  let attributes = List.fold_left
-	(function s ->
-	  function { var_name = n; var_type = _; var_init = _ } -> 
-            StringSet.add n s )
-	StringSet.empty
+  let attrs = collect_declarations
 	(c.cls_parameters @ c.cls_attributes) in
-  { c with cls_methods = List.map definitions_in_method c.cls_methods }
+  { c with cls_methods = List.map (definitions_in_method attrs) c.cls_methods }
 and definitions_in_interface i =
   i
-and definitions_in_method m =
+and definitions_in_method attrs m =
   match m.meth_body with
       None -> m
-    | Some body -> { m with meth_body = Some (definitions_in_statement body) }
-and definitions_in_statement =
+    | Some body -> { m with meth_body = Some (definitions_in_statement attrs () body) }
+and definitions_in_statement attrs note =
+  (** Compute the variables defined at a current statement.
+
+      @param attrs is the set of names which are attributes.  They are always
+	defined in a program.
+
+      @param note is the updated note of the preceding statement.
+
+      @return The statement with its note updated.  *)
   function
-    s -> s
+      Skip n -> Skip n
+    | Assign (n, lhs, rhs) -> Assign (n, lhs, rhs) (* XXX *)
+    | Await (n, g) as s -> s
+    | New (n, var, cls, args) -> New (n, var, cls, args) (* XXX *)
+    | AsyncCall (n, None, callee, name, args) as s -> s
+    | AsyncCall (n, Some label, callee, name, args) ->
+	AsyncCall (n, Some label, callee, name, args) (* XXX *)
+    | Reply (n, l, p) -> Reply (n, l, p) (* XXX *)
+    | Free (n, v) -> assert false
+    | SyncCall (n, c, m, ins, outs) ->
+	SyncCall (n, c, m, ins, outs) (* XXX *)
+    | LocalSyncCall (n, m, u, l, a, r) ->
+	LocalSyncCall (n, m, u, l, a, r) (* XXX *)
+    | If (n, c, l, r) ->
+	(* Beware, that the new note essentially contains the union
+	   of the definitions of both its branches, whereas the first
+	   statement of each branch contains the updated note of the
+	   preceding statement. *)
+	let nl = definitions_in_statement attrs note l
+	and nr = definitions_in_statement attrs note r in
+	    If (n, c, nl, nr)
+		
+    | While (n, c, i, b) ->
+	  While (n, c, i, definitions_in_statement attrs n b)
+    | Sequence (n, f, s) ->
+	let nf = definitions_in_statement attrs n f in
+	let ns = definitions_in_statement attrs (statement_note nf) s in
+	Sequence (n, nf, ns)
+	(* For merge and choice we do not enforce sequencing of the
+	   computation of the parts, but we allow the compiler to
+	   choose some order *)
+    | Merge (n, l, r) -> 
+	Merge (n, definitions_in_statement attrs n l,
+	       definitions_in_statement attrs n r)
+    | Choice (n, l, r) -> 
+	Choice (n, definitions_in_statement attrs n l,
+		definitions_in_statement attrs n r)
+
 
 
 let rec life_variables tree =

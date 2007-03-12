@@ -30,7 +30,12 @@
 
  *)
 
-type note = { note_fname: string; note_lineno: int }
+module StringSet : sig
+    type t
+    val empty: t
+  end 
+
+type note = { note_fname: string; note_lineno: int; note_defs: StringSet.t }
 
 val note_to_xml: XmlTextWriter.xmlwriter -> note -> unit
 

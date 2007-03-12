@@ -67,7 +67,8 @@ open Creol
 open Lexing
 
 (** Provide a default annotation *)
-let default pos = { note_fname = pos.pos_fname ; note_lineno = pos.pos_lnum }
+let default pos = { note_fname = pos.pos_fname ; note_lineno = pos.pos_lnum;
+	note_defs = StringSet.empty }
 
 exception Error
 
