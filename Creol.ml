@@ -21,16 +21,51 @@
  * 02111-1307, USA.
  *)
 
-module StringSet = Set.Make(String)
+module Note =
+  struct
 
-type note = { note_fname: string; note_lineno: int; note_defs: StringSet.t }
+    type type_info = {
+      attribute: bool;
+      label: bool;
+      mutable defined: bool;
+      mutable life: bool;
+    }
 
-let note_to_xml writer note =
-  XmlTextWriter.start_element writer "note";
-  XmlTextWriter.write_attribute writer "file" note.note_fname;
-  XmlTextWriter.write_attribute writer "line" (string_of_int note.note_lineno);
-  XmlTextWriter.end_element writer
-  
+    module Environment = Map.Make(String)
+
+    let empty = Environment.empty
+
+    type t = { file: string; line: int; defs: type_info Environment.t }
+
+    let make pos = {
+      file = pos.Lexing.pos_fname ;
+      line = pos.Lexing.pos_lnum;
+      defs = empty
+    }
+
+    let line { file = _ ; line = l; defs = _ } = l
+
+    let file { file = f ; line = _; defs = _ } = f
+
+    let to_xml writer { file = f; line = l; defs = d } =
+      XmlTextWriter.start_element writer "note";
+      XmlTextWriter.write_attribute writer "file" f ;
+      XmlTextWriter.write_attribute writer "line" (string_of_int l) ;
+      Environment.iter (function elt ->
+	function note ->
+	  XmlTextWriter.start_element writer "defined" ;
+	  XmlTextWriter.write_attribute writer "name" elt ;
+	  XmlTextWriter.write_attribute writer "attribute"
+	    (string_of_bool note.attribute) ;
+	  XmlTextWriter.write_attribute writer "label"
+	    (string_of_bool note.label) ;
+	  XmlTextWriter.write_attribute writer "defined"
+	    (string_of_bool note.defined) ;
+	  XmlTextWriter.write_attribute writer "life"
+	    (string_of_bool note.life) ;
+	  XmlTextWriter.end_element writer) d;
+      XmlTextWriter.end_element writer
+  end
 
 type creol_type = 
       Basic of string
@@ -225,12 +260,18 @@ and simplify =
     | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
 
 
-let collect_declarations =
+let collect_declarations attribute =
     List.fold_left
-	(function s ->
-	  function { var_name = n; var_type = _; var_init = _ } -> 
-            StringSet.add n s )
-	StringSet.empty
+	(function map ->
+	  function { var_name = name; var_type = _; var_init = _ } -> 
+            Note.Environment.add name
+	      { Note.attribute = attribute;
+		Note.label = false;
+		(* The value of an attribute is always defined *)
+		Note.defined = attribute;
+		Note.life = false }
+	      map)
+	Note.Environment.empty
 
 let rec find_definitions l =
   (** Computes the definitions of a variable.
@@ -242,7 +283,7 @@ and definitions_in_declaration =
     Class c -> Class (definitions_in_class c)
   | Interface i -> Interface (definitions_in_interface i)
 and definitions_in_class c =
-  let attrs = collect_declarations
+  let attrs = collect_declarations true
 	(c.cls_parameters @ c.cls_attributes) in
   { c with cls_methods = List.map (definitions_in_method attrs) c.cls_methods }
 and definitions_in_interface i =
@@ -250,7 +291,12 @@ and definitions_in_interface i =
 and definitions_in_method attrs m =
   match m.meth_body with
       None -> m
-    | Some body -> { m with meth_body = Some (definitions_in_statement attrs () body) }
+    | Some body -> { m with meth_body =
+	  Some (definitions_in_statement attrs
+		   { Note.file = Note.file (statement_note body);
+		     Note.line = Note.line (statement_note body);
+		     Note.defs = attrs }
+		   body) }
 and definitions_in_statement attrs note =
   (** Compute the variables defined at a current statement.
 
@@ -611,7 +657,8 @@ let rec maude_of_creol_expression out =
           | Or -> "'or"
           | Lt -> "'less"
           | Le -> "'lessEq"
-          | Eq -> "'equal") ^ "[[");
+          | Eq -> "'equal"
+	  | (Xor|Gt|Ge|Ne) -> assert false ) ^ "[[");
 	maude_of_creol_expression_list out (l::[r]);
 	output_string out "]] )"
     | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );

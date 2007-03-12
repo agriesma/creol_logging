@@ -52,21 +52,27 @@ let apply_outputs tree =
 		  Creol.maude_of_creol out tree) ;
   (match !xml_output with
       None ->  ()
-    | Some s -> CreolIO.creol_to_xml s Creol.note_to_xml tree)
+    | Some s -> CreolIO.creol_to_xml s Creol.Note.to_xml tree)
 
 (* Pass management *)
 
-let check_types = ref false
-  (** Check the model for type consistency. *)
+type passes =
+    { mutable pass_check_types: bool;
+      mutable pass_simplify: bool;
+      mutable pass_lifeness: bool }
 
-let pass_simplify = ref true
-  (** Simplify the model *)
+let passes =
+  { pass_check_types = false;
+    pass_simplify = true;
+    pass_lifeness = true }
 
 let apply_passes tree =
   (** Transform the tree in accordance to the passes enabled by the user. *)
   let current = ref tree in
-    if !check_types then current := !current else () ;
-    if !pass_simplify then current := Creol.simplify !current else () ;
+    if passes.pass_check_types then current := !current else () ;
+    if passes.pass_simplify then current := Creol.simplify !current else () ;
+    if passes.pass_lifeness then current := Creol.find_definitions !current
+    else ();
     !current
 
 (** Show the name and the version of the program and exit. *)

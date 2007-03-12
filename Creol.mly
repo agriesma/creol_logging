@@ -66,10 +66,6 @@
 open Creol
 open Lexing
 
-(** Provide a default annotation *)
-let default pos = { note_fname = pos.pos_fname ; note_lineno = pos.pos_lnum;
-	note_defs = StringSet.empty }
-
 exception Error
 
 (** Print a short error message and abort *)
@@ -185,62 +181,62 @@ method_decls:
 
 (* Statements *)
 statement:
-      SKIP { Skip (default $startpos) }
+      SKIP { Skip (Note.make $startpos) }
     | t = delimited(LBRACK, separated_nonempty_list(COMMA, ID), RBRACK) ASSIGN
 	e = delimited(LBRACK, separated_nonempty_list(COMMA, expression), RBRACK)
-	{ Assign((default $startpos), t, e) }
-    | t = ID ASSIGN e = expression { Assign((default $startpos), [t], [e]) }
+	{ Assign((Note.make $startpos), t, e) }
+    | t = ID ASSIGN e = expression { Assign((Note.make $startpos), [t], [e]) }
     | t = ID ASSIGN NEW c = CID;
 	l = delimited(LPAREN, separated_list(COMMA, expression), RPAREN)
-        { New((default $startpos), t, c, l) }
+        { New((Note.make $startpos), t, c, l) }
     | IF e = expression THEN t = statement ELSE f = statement FI
-        { If((default $startpos), e, t, f) }
+        { If((Note.make $startpos), e, t, f) }
     | IF e = expression THEN t = statement FI
-        { If((default $startpos), e, t, Skip (default $startpos)) }
-    | AWAIT g = guard { Await ((default $startpos), g) }
+        { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
+    | AWAIT g = guard { Await ((Note.make $startpos), g) }
     | l = ioption(ID) BANG c = ioption(terminated(expression, DOT)) m = ID;
 	LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ let caller = match c with
-	    None -> Id ((default $startpos), "this")
+	    None -> Id ((Note.make $startpos), "this")
 	  | Some e -> e in
-	      AsyncCall ((default $startpos), l, caller, m, i) }
+	      AsyncCall ((Note.make $startpos), l, caller, m, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
-	{ Reply ((default $startpos), l, o) }
+	{ Reply ((Note.make $startpos), l, o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN
-	{ SyncCall ((default $startpos), c, m, i, o) }
+	{ SyncCall ((Note.make $startpos), c, m, i, o) }
     | m = ID l = ioption(preceded(AT, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN
-	{ LocalSyncCall((default $startpos), m, l, None, i, o) }
+	{ LocalSyncCall((Note.make $startpos), m, l, None, i, o) }
     | LBRACE s = statement RBRACE { s }
-    | l = statement SEMI r = statement { Sequence((default $startpos), l, r) }
-    | l = statement MERGE r = statement { Merge((default $startpos), l, r) }
-    | l = statement BOX r = statement { Choice((default $startpos), l, r) }
+    | l = statement SEMI r = statement { Sequence((Note.make $startpos), l, r) }
+    | l = statement MERGE r = statement { Merge((Note.make $startpos), l, r) }
+    | l = statement BOX r = statement { Choice((Note.make $startpos), l, r) }
     | error { signal_error $startpos "syntax error in statement" }
 
 guard:
-      l = ID QUESTION { Label ((default $startpos), l) }
-    | WAIT { Wait (default $startpos) }
+      l = ID QUESTION { Label ((Note.make $startpos), l) }
+    | WAIT { Wait (Note.make $startpos) }
     | l = ID QUESTION AND g = guard
-        { Conjunction ((default $startpos), Label((default $startpos), l), g) }
-    | e = expression { Condition ((default $startpos), e) }
+        { Conjunction ((Note.make $startpos), Label((Note.make $startpos), l), g) }
+    | e = expression { Condition ((Note.make $startpos), e) }
 
 expression:
       l = expression o = binop r = expression
-        { Binary((default $startpos), o, l, r) }
-    | NOT  e = expression { Unary((default $startpos), Not, e) }
-    | MINUS e = expression %prec NOT { Unary((default $startpos), UMinus, e) }
+        { Binary((Note.make $startpos), o, l, r) }
+    | NOT  e = expression { Unary((Note.make $startpos), Not, e) }
+    | MINUS e = expression %prec NOT { Unary((Note.make $startpos), UMinus, e) }
     | f = ID LBRACK l = separated_nonempty_list(COMMA, expression) RBRACK
-	{ FuncCall((default $startpos), f, l) }
-    | i = INT { Int ((default $startpos), i) }
-    | f = FLOAT { Float ((default $startpos), f) }
-    | b = BOOL { Bool ((default $startpos), b) }
-    | id = ID { Id ((default $startpos), id) }
-    | s = STRING { String ((default $startpos), s) }
-    | NIL { Nil (default $startpos) }
-    | NULL { Null (default $startpos) }
+	{ FuncCall((Note.make $startpos), f, l) }
+    | i = INT { Int ((Note.make $startpos), i) }
+    | f = FLOAT { Float ((Note.make $startpos), f) }
+    | b = BOOL { Bool ((Note.make $startpos), b) }
+    | id = ID { Id ((Note.make $startpos), id) }
+    | s = STRING { String ((Note.make $startpos), s) }
+    | NIL { Nil (Note.make $startpos) }
+    | NULL { Null (Note.make $startpos) }
     | LPAREN e = expression RPAREN { e }
 
 %inline binop:

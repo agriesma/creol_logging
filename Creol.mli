@@ -30,14 +30,18 @@
 
  *)
 
-module StringSet : sig
+module Note :
+  sig
     type t
-    val empty: t
-  end 
-
-type note = { note_fname: string; note_lineno: int; note_defs: StringSet.t }
-
-val note_to_xml: XmlTextWriter.xmlwriter -> note -> unit
+    val make : Lexing.position -> t
+      (** Create a new note *)
+    val line : t -> int
+      (** Get the line of a note *)
+    val file : t -> string
+      (** Get the file of a note *)
+    val to_xml : XmlTextWriter.xmlwriter -> t -> unit
+      (** Write a note to an XML file. *)
+  end
 
 type creol_type = 
     (** A type as defined in Creol. *)
@@ -190,5 +194,7 @@ val statement_note: ('a, 'b) statement -> 'a
 val pretty_print: out_channel -> ('a, 'b) declaration list -> unit
 
 val simplify: ('a, 'b) declaration list -> ('a, 'b) declaration list
+
+val find_definitions: (Note.t, 'a) declaration list -> (Note.t, 'a) declaration list
 
 val maude_of_creol: out_channel -> ('a, 'b) declaration list -> unit
