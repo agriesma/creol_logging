@@ -36,24 +36,31 @@ let inputs : string list ref = ref []
 let add_input name = inputs := (!inputs)@[name]
 
 
-let maude_output = ref (Some "out.maude")
+type outputs = {
+	mutable maude: string option;
+	mutable xml: string option;
+	mutable pretty_print: string option;
+}
 
-let set_maude_output s =
-  maude_output := (match s with ("" | "-") -> None | _ ->  Some s)
-
-let xml_output : string option ref = ref None
-
-let xml_arg s = xml_output := Some s
+let outputs = {
+	maude = Some "out.maude";
+	xml = None;
+	pretty_print = None;
+}
 
 let apply_outputs tree =
+  let do_out f =
+    function
+        None -> ()
+      | Some "-" -> f stdout
+      | Some s -> f (open_out s)
+  and do_xml tree =
+    function None -> () | Some s -> CreolIO.creol_to_xml s Note.to_xml tree
+  in
   (** Apply the output passes *)
-  (match !maude_output with
-      None -> ()
-    | Some n -> let out = match n with "-" -> stdout | _ -> open_out n in
-		  maude_of_creol out tree) ;
-  (match !xml_output with
-      None ->  ()
-    | Some s -> CreolIO.creol_to_xml s Note.to_xml tree)
+  do_out (function out -> maude_of_creol out tree) outputs.maude ;
+  do_out (function out -> pretty_print out tree) outputs.pretty_print;
+  do_xml tree outputs.xml
 
 (* Pass management *)
 
@@ -92,14 +99,18 @@ let show_version () =
 
 let main () =
   let options = [
-    ("-", Unit (function () -> add_input "-"), "Read from standard input");
-    ("-v", Unit (function () -> ()),
+    ("-", Arg.Unit (function () -> add_input "-"), "Read from standard input");
+    ("-v", Arg.Unit (function () -> ()),
     "  Print some information while processing");
     ("-M", Arg.String ignore,
     "  Compile the files for model checking and write the result to [file]");
-    ("-o", Arg.String set_maude_output,
+    ("-o", Arg.String (function s ->  outputs.maude <- Some s),
     "  Compile the files for the interpreter and write the result to [file]");
-    ("-x", Arg.String xml_arg,
+    ("-syntax-only", Arg.Unit (function () ->  outputs.maude <- None),
+    "  Do not write any outputs.");
+    ("-p", Arg.String (function s -> outputs.pretty_print <- Some s),
+    "  Pretty-print the parse tree after processing to [file]");
+    ("-x", Arg.String (function s -> outputs.xml <- Some s),
     "  Export the input files to XML file [name]");
     ("-V", Unit show_version, "  Show the version and exit");
     ("--version", Unit show_version, "  Show the version and exit")]
