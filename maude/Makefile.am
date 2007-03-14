@@ -25,4 +25,5 @@ DISTCLEANFILES		=
 MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README
-dist_pkgdata_DATA	= datatypes.maude interpreter.maude metaexec.maude
+dist_pkgdata_DATA	= datatypes.maude signature.maude \
+			  interpreter.maude metaexec.maude
