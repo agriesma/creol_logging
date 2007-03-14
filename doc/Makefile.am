@@ -19,11 +19,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-MOSTLYCLEANFILES	= 
-CLEANFILES		= 
-DISTCLEANFILES		= 
+MOSTLYCLEANFILES	= *~ *.aux *.log
+CLEANFILES		=
+DISTCLEANFILES		=
 MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README
-dist_pkgdata_DATA	= datatypes.maude signature.maude \
-			  interpreter.maude metaexec.maude

@@ -56,7 +56,8 @@ AC_CONFIG_SUBDIRS([xml])
 
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
+AC_SUBST([OCAMLFIND_FLAGS])
 
 AC_CONFIG_TESTDIR(tests, source)
-AC_OUTPUT([Makefile emacs/Makefile info/Makefile maude/Makefile
+AC_OUTPUT([Makefile doc/Makefile emacs/Makefile info/Makefile share/Makefile
 	   tests/atlocal tests/Makefile])
