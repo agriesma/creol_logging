@@ -636,7 +636,8 @@ and pretty_print_statement out lvl statement =
 	  do_indent out lvl;
 	  output_string out "fi"
       | While (_, c, i, b) ->
-	  output_string out "while "; pretty_print_expression out c;
+	  output_string out "while ";
+	  pretty_print_expression out c;
 	  do_indent out lvl;
 	  output_string out "inv ";
 	  pretty_print_expression out i;
@@ -754,13 +755,13 @@ let rec maude_of_creol_expression out =
     | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
     | Id (_, i) -> output_string out ("'" ^ i)
     | Unary (_, o, e) ->
-	output_string out ( "( " ^ (match o with
+	output_string out ((match o with
 	    Not ->  "'not"
 	  | UMinus -> "'neg") ^ " [[ ");
 	maude_of_creol_expression out e;
-	output_string out "]] )"
+	output_string out " ]]"
     | Binary (_, o, l, r) ->
-	output_string out ("( " ^ (match o with
+	output_string out ((match o with
 	    Plus -> "'plus"
 	  | Minus -> "'minus"
 	  | Times -> "'times"
@@ -771,12 +772,12 @@ let rec maude_of_creol_expression out =
           | Lt -> "'less"
           | Le -> "'lessEq"
           | Eq -> "'equal"
-	  | (Xor|Gt|Ge|Ne) -> assert false ) ^ "[[");
+	  | (Xor|Gt|Ge|Ne) -> assert false ) ^ "[[ ");
 	maude_of_creol_expression_list out (l::[r]);
-	output_string out "]] )"
-    | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
+	output_string out " ]]"
+    | FuncCall(_, f, a) -> output_string out ("'" ^ f ^ "[[ " );
 	maude_of_creol_expression_list out a;
-	output_string out " ]] )"
+	output_string out " ]]"
 and maude_of_creol_expression_list out_channel =
   (** Compile a list of expressions into the Creol Maude Machine. *)
   function
