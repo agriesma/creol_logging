@@ -29,12 +29,12 @@ SUBDIRS			= xml . doc emacs info share tests
 MOSTLYCLEANFILES	= *~ *.aux *.log
 CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
 DISTCLEANFILES		= Version.ml html-stamp
-MAINTAINERCLEANFILES	= .depend .xml2-stamp Makefile.in configure \
+MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 			  depcomp elisp-comp missing install-sh aclocal.m4 \
 			  CreolLex.ml CreolParser.ml CreolParser.mli \
 			  creoltools.spec
 
-EXTRA_DIST		= .depend .xml2-stamp \
+EXTRA_DIST		= .depend \
 			  Creol.mll Creol.mly \
 			  creoltools.spec creoltools.spec.in
 
@@ -89,18 +89,18 @@ creoltools.spec: ${srcdir}/creoltools.spec.in ${srcdir}/configure.ac
 # do not want that CreolParser.ml depends on Creol.cmi, because then the
 # end user needs to have menhir installed in order to rebuild the parser
 # sources.  We build Creol.cmi by hand here.
-CreolParser.ml CreolParser.mli: Creol.mly .xml2-stamp
-	$(OCAMLFIND) $(OCAMLC) $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
-	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
-
+#
 # The interface in Creol.mli depends on the xml sub-package.  Unfortunately,
 # Makefile depends on .depend, which depends on CreolParser.ml, which
 # depends on Creol.mli, and therefore, Creol.cmi cannot be built.
 # With this rule we make sure that the libxml2 subpackage is built before
 # we generate the version of Creol.cmi needed by menhir to type-check
 # CreolParser.ml.  Messy, uhm?
-.xml2-stamp:
-	( cd xml && make ) && echo "# xml2 generated for CreolParser.ml" > $@
+#
+CreolParser.ml CreolParser.mli: Creol.mly
+	( cd xml && make )
+	$(OCAMLFIND) $(OCAMLC) $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
+	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
 
 CreolLex.ml: Creol.mll
 	$(OCAMLLEX) -o $@ $<

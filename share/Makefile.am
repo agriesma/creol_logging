@@ -21,13 +21,13 @@
 
 MOSTLYCLEANFILES	= 
 CLEANFILES		= 
-DISTCLEANFILES		= prelude.creol modelcheck.creol
-MAINTAINERCLEANFILES	= Makefile.in
+DISTCLEANFILES		=
+MAINTAINERCLEANFILES	= prelude.creol modelcheck.creol Makefile.in
 
 EXTRA_DIST		= README prelude.m4
 dist_pkgdata_DATA	= datatypes.maude signature.maude \
-			  interpreter.maude metaexec.maude
-pkgdata_DATA		= prelude.creol modelcheck.creol
+			  interpreter.maude metaexec.maude \
+			  prelude.creol modelcheck.creol
 
 prelude.creol: $(srcdir)/prelude.m4
 	$(M4) -DCREOL $^ > $@

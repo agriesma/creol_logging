@@ -1,0 +1,19 @@
+/*
+ * An example displaying a common dead-lock situation
+ */
+class MutRec
+implements MutRec
+begin
+  op init == skip
+  op run == skip
+  op doit(in other: MutRec) == other.doit(this;)
+end
+
+class Test
+begin
+  var m1: MutRec
+  var m2: MutRec
+
+  op init ==  m1 := new MutRec(); m2 := new MutRec()
+  op run == !m1.doit(m2)
+end
