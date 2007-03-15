@@ -1,6 +1,9 @@
 dnl
 dnl
 
+dnl Execute a maude command.
+m4_define([MAUDECMD], [$MAUDE -no-banner -no-advise -batch test.maude dnl
+  | egrep -v '^rewrites: [[[[:digit:]]]]+' > $1.out])
 dnl Test our tool chain.  Requires maude,
 dnl
 dnl The test works as follows:
@@ -12,7 +15,7 @@ dnl results.
 m4_define([TEST_MAUDE], [dnl
 AT_SETUP([$1])
 AT_CHECK([creolc ${abs_srcdir}/$1.creol -o $1.maude])
-AT_CHECK([$DIFF ${abs_srcdir}/$1.maude $1.maude])
+AT_CHECK([diff ${abs_srcdir}/$1.maude $1.maude])
 AT_DATA([test.maude],
 [
 set show timing off .
@@ -21,8 +24,8 @@ load $1 .
 $2
 quit .
 ])
-AT_CHECK([$MAUDE -no-banner -no-advise < test.maude > $1.out])
-AT_CHECK([$DIFF $1.out ${abs_srcdir}/$1.expected])
+AT_CHECK(MAUDECMD($1))
+AT_CHECK([diff $1.out ${abs_srcdir}/$1.expected])
 AT_CLEANUP
 ])
 

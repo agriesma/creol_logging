@@ -1,0 +1,11 @@
+class StackCheck
+begin
+  var depth : Int
+  var max : Int
+  op init == depth := 0; max := 3
+  op run == test(;)
+  op test ==
+    var temp: Int; depth := depth + 1; temp := depth;
+    if depth <= max then test(;) fi;
+    await depth = temp; depth := depth - 1
+end

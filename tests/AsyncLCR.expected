@@ -1,6 +1,5 @@
-Maude> ==========================================
+==========================================
 reduce in PROGRAM : init .
-rewrites: 1
 result Configuration: < 'Init : Cl | Inh: noInh,Par: noAid,Att: 'p1 |-> null,
     'p2 |-> null, 'p3 |-> null,Mtds:
 < 'getNeighbor : Mtdname | Param: noAid,Latt: 'p |-> null,Code: skip ; skip ;
@@ -24,7 +23,6 @@ result Configuration: < 'Init : Cl | Inh: noInh,Par: noAid,Att: 'p1 |-> null,
 rewrite in PROGRAM : init
 
 main('Init, emp) .
-rewrites: 5751
 result Configuration: 
 < ob('Init0) : Qu | Dealloc: noDealloc,Ev: noMsg >
 
