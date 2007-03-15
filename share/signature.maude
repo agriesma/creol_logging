@@ -49,8 +49,9 @@ fmod SUBST is
   eq S1 # ((A |-> D), S2) = insert(A,D,S1) # S2 .
 
   eq dom(A, empty) = false .
-  eq dom(A, ((A' |-> D), S1)) = if A == A' then true else dom(A, S1) fi .
-  eq dom(A, S1 # S2) = dom(A, S1) or dom(A, S2) .
+  eq dom(A, ((A |-> D), S1)) = true .
+  eq dom(A, ((A' |-> D), S1)) = false [owise] .
+  eq dom(A, S1 # S2) = dom(A, S1) or-else dom(A, S2) .
 endfm
 
 fmod EVAL is
@@ -170,8 +171,6 @@ fmod STM-LIST is
 
   eq await (wait & PG) = await wait ; await PG .
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
-
-  eq if B th SL fi = if B th SL el nil fi .  *** compiler stuff
 
   sorts Process NeMProc MProc .
   subsort Process < NeMProc < MProc .    *** Multiset of Processes
