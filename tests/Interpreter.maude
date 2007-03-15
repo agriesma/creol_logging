@@ -27,13 +27,13 @@ set show timing off .
 set show advise off .
 load interpreter
 
-red in SUBST : insert('var1, str("test"), noSub) .
-red in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub)) .
-red in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub)) ['var1] .
-red in SUBST : upTerm(insert('var1, str("test"), noSub)) .
-red in SUBST : downTerm(upTerm(insert('var1, str("test"), noSub)),noSub) .
-red in SUBST : downTerm(upTerm(insert('var2, int(4), insert('var1, str("test"), noSub)) ['var1]), null) .
-red in SUBST : dom('var1, insert('var2, int(4), insert('var1, str("test"), noSub))) .
+red in SUBST : insert('var1, str("test"), empty) .
+red in SUBST : insert('var2, int(4), insert('var1, str("test"), empty)) .
+red in SUBST : insert('var2, int(4), insert('var1, str("test"), empty)) ['var1] .
+red in SUBST : upTerm(insert('var1, str("test"), empty)) .
+red in SUBST : downTerm(upTerm(insert('var1, str("test"), empty)),empty) .
+red in SUBST : downTerm(upTerm(insert('var2, int(4), insert('var1, str("test"), empty)) ['var1]), null) .
+red in SUBST : dom('var1, insert('var2, int(4), insert('var1, str("test"), empty))) .
 
 red in GUARDS : int(4) & int(5) .
 red in GUARDS : upTerm(int(4) & int(5)) .
@@ -66,23 +66,23 @@ red in STM-LIST : (('var ::= int(4)) [] ('var ::= new 'C (null))) ||| empty ||| 
 red in STM-LIST : downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| emp ||| skip), skip) .
 red in STM-LIST : downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| nil ||| skip), nil) .
 
-red in STM-LIST : (insert('var2, int(4), insert('var1, str("test"), noSub)) ,((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) .
-red in STM-LIST : upTerm(insert('var2, int(4), insert('var1, str("test"), noSub)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) .
-red in STM-LIST : downTerm(upTerm(insert('var2, int(4), insert('var1, str("test"), noSub)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)), idle  ) .
+red in STM-LIST : (insert('var2, int(4), insert('var1, str("test"), empty)) ,((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) .
+red in STM-LIST : upTerm(insert('var2, int(4), insert('var1, str("test"), empty)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) .
+red in STM-LIST : downTerm(upTerm(insert('var2, int(4), insert('var1, str("test"), empty)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)), idle  ) .
 
-red in STM-LIST : (insert('var2, int(4), insert('var1, str("test"), noSub)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) ++ idle .
+red in STM-LIST : (insert('var2, int(4), insert('var1, str("test"), empty)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) ++ idle .
 
-red in STM-LIST : (noSub, ('var ::= bool(true))) .
+red in STM-LIST : (empty, ('var ::= bool(true))) .
 
 red in CLASS : < 'getNeighbor : Mtdname | Param: noAid, Latt: ('label |-> null, 'caller |-> null, 'n |-> null), Code: skip > .
-red in CLASS : < 'Butler : Cl | Inh: noInh, Par: noAid, Att: noSub , Mtds: noMtd , Ocnt: 0 > .
+red in CLASS : < 'Butler : Cl | Inh: noInh, Par: noAid, Att: empty , Mtds: noMtd , Ocnt: 0 > .
 red in CLASS : ('butler . 'getNeighbor)(emp ; noAid) .
 red in CLASS : ('butler ! 'getNeighbor(emp)) .
 red in CLASS : ('run(emp ; emp)) # ('run(emp ; emp)) .
 red in CLASS : ('butler ! 'getNeighbor(emp)) ; ('run(emp ; noAid)) .
 
-red in OBJECT : < 'object1 : 'class | Att: noSub, Pr: idle, PrQ: noProc, Lcnt: 0 > .
-red in OBJECT : downTerm(upTerm(< 'object1 : 'class | Att: noSub, Pr: idle, PrQ: idle, Lcnt: 0 >), noObj) .
+red in OBJECT : < 'object1 : 'class | Att: empty, Pr: idle, PrQ: noProc, Lcnt: 0 > .
+red in OBJECT : downTerm(upTerm(< 'object1 : 'class | Att: empty, Pr: idle, PrQ: idle, Lcnt: 0 >), noObj) .
 
 red in COMMUNICATION : noMsg .
 red in COMMUNICATION : comp(label(5), emp) .

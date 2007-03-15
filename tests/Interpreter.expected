@@ -1,26 +1,26 @@
 ==========================================
-reduce in SUBST : insert('var1, str("test"), noSub) .
+reduce in SUBST : insert('var1, str("test"), empty) .
 result Entry{Aid,Data}: 'var1 |-> str("test")
 ==========================================
-reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub)) .
+reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), empty)) .
 result Subst: 'var1 |-> str("test"), 'var2 |-> int(4)
 ==========================================
-reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub))[
+reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), empty))[
     'var1] .
 result Data: str("test")
 ==========================================
-reduce in SUBST : upTerm(insert('var1, str("test"), noSub)) .
+reduce in SUBST : upTerm(insert('var1, str("test"), empty)) .
 result GroundTerm: '_|->_[''var1.Sort,'str`(_`)['"test".String]]
 ==========================================
-reduce in SUBST : downTerm(upTerm(insert('var1, str("test"), noSub)), noSub) .
+reduce in SUBST : downTerm(upTerm(insert('var1, str("test"), empty)), empty) .
 result Entry{Aid,Data}: 'var1 |-> str("test")
 ==========================================
 reduce in SUBST : downTerm(upTerm(insert('var2, int(4), insert('var1, str(
-    "test"), noSub))['var1]), null) .
+    "test"), empty))['var1]), null) .
 result Data: str("test")
 ==========================================
 reduce in SUBST : dom('var1, insert('var2, int(4), insert('var1, str("test"),
-    noSub))) .
+    empty))) .
 result Bool: true
 ==========================================
 reduce in GUARDS : int(4) & int(5) .
@@ -111,13 +111,13 @@ reduce in STM-LIST : downTerm(upTerm('var ::= int(4)[]'var ::= new 'C(null) |||
     skip ||| nil), (nil).NatList) .
 result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
 ==========================================
-reduce in STM-LIST : insert('var2, int(4), insert('var1, str("test"), noSub)),
+reduce in STM-LIST : insert('var2, int(4), insert('var1, str("test"), empty)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
 result Process: ('var1 |-> str("test"), 'var2 |-> int(4)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
 reduce in STM-LIST : upTerm(insert('var2, int(4), insert('var1, str("test"),
-    noSub)),
+    empty)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))) .
 result GroundTerm: '_`,_['_`,_['_|->_[''var1.Sort,'str`(_`)['"test".String]],
     '_|->_[''var2.Sort,'int`(_`)['s_^4['0.Zero]]]],'_|||_['skip.Stm,'_`[`]_[
@@ -125,18 +125,18 @@ result GroundTerm: '_`,_['_`,_['_|->_[''var1.Sort,'str`(_`)['"test".String]],
     ''C.Sort,'null.Data]]]]
 ==========================================
 reduce in STM-LIST : downTerm(upTerm(insert('var2, int(4), insert('var1, str(
-    "test"), noSub)),
+    "test"), empty)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))), idle) .
 result Process: ('var1 |-> str("test"), 'var2 |-> int(4)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
 reduce in STM-LIST : idle ++ insert('var2, int(4), insert('var1, str("test"),
-    noSub)),
+    empty)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
 result NeMProc: idle ++ ('var1 |-> str("test"), 'var2 |-> int(4)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
-reduce in STM-LIST : noSub,
+reduce in STM-LIST : empty,
 'var ::= bool(true) .
 result Process: (empty).Subst,
 'var ::= bool(true)
@@ -147,7 +147,7 @@ result Mtd: < 'getNeighbor : Mtdname | Param: noAid,Latt: 'caller |-> null,
     'label |-> null, 'n |-> null,Code: skip >
 ==========================================
 reduce in CLASS : 
-< 'Butler : Cl | Inh: noInh,Par: noAid,Att: noSub,Mtds:
+< 'Butler : Cl | Inh: noInh,Par: noAid,Att: empty,Mtds:
 noMtd,Ocnt: 0 >
  .
 result Class: 
@@ -170,14 +170,14 @@ reduce in CLASS : ('butler ! 'getNeighbor(emp)) ; 'run(emp ; noAid) .
 result StmList: ('butler ! 'getNeighbor(emp)) ; 'run(emp ; noAid)
 ==========================================
 reduce in OBJECT : 
-< 'object1 : 'class | Att: noSub,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< 'object1 : 'class | Att: empty,Pr: idle,PrQ: noProc,Lcnt: 0 >
  .
 result [Object]: 
 < 'object1 : 'class | Att: empty,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 ==========================================
 reduce in OBJECT : downTerm(upTerm(
-< 'object1 : 'class | Att: noSub,Pr: idle,PrQ: idle,Lcnt: 0 >
+< 'object1 : 'class | Att: empty,Pr: idle,PrQ: idle,Lcnt: 0 >
 ), noObj) .
 result [Object]: 
 < 'object1 : 'class | Att: empty,Pr: idle,PrQ: idle,Lcnt: 0 >
