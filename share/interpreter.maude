@@ -21,7 +21,7 @@
 
 load datatypes
 
-load signature-mc
+load signature
 
 *** THE MACHINE ***
 mod INTERPRETER is
