@@ -142,7 +142,7 @@ eq findAttr(O,((C < EL >) ## I),S, SL, SL')
 
 eq foundAttr(O, S', SL, SL') 
 < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
- = < O : C | Att: ('this |-> O, S'), Pr: (noSub, SL ; SL'), PrQ: W, Lcnt: N > .
+ = < O : C | Att: ('this |-> O, S'), Pr: (empty, SL ; SL'), PrQ: W, Lcnt: N > .
 
 *** Non-deterministic choice ***
 *** Choice is comm, so [nondet] considers both SL1 and SL2.
@@ -326,11 +326,11 @@ eq [return] :
 < O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >
 =
 < O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N > 
-comp(eval('label, L), evalList(EL, (S # L))) from O to eval('caller, L) .
+comp(L['label], evalList(EL, (S # L))) from O to L['caller] .
 
 *** Optimization: reduce label to value only once
 eq < O : C |  Att: S, Pr: (L, (A ?(EL)); SL), PrQ: W, Lcnt: N > 
-= < O : C |  Att: S, Pr: (L, (eval(A,L) ?(EL)); SL), PrQ: W, Lcnt: N > .
+= < O : C |  Att: S, Pr: (L, (L[A] ?(EL)); SL), PrQ: W, Lcnt: N > .
 
 *** blocking reply sentence ***
 eq [block-sync-reply] :

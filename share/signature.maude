@@ -23,22 +23,19 @@
 *** 02111-1307, USA.
 ***
 
-view Aid from TRIV to DATA is
+view Aid from TRIV to CREOL-DATA-SIG is
   sort Elt to Aid .
 endv
 
-view Data from TRIV to DATA is
+view Data from TRIV to CREOL-DATA-SIG is
   sort Elt to Data .
 endv
 
 
 *** Bound variables ***
 fmod SUBST is
-  protecting DATATYPES .
+  protecting CREOL-DATA-SIG .
   protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst) .
-
-  op noSub : -> Subst .
-  eq noSub = (empty).Subst .
 
   op dom : Aid Subst -> Bool .
 
@@ -57,13 +54,11 @@ fmod SUBST is
 endfm
 
 fmod EVAL is
+  protecting DATATYPES .
   protecting SUBST .
 
   op eval     : Data Subst     -> Data .
   op eval     : Expr Subst     -> Data .
-  op evalB    : Expr Subst     -> Bool .
-  op evalI    : Expr Subst     -> Int .
-  op evalS    : Expr Subst     -> String .
   op evalList : DataList Subst -> DataList .
   op evalList : ExprList Subst -> DataList .
 
@@ -79,10 +74,6 @@ fmod EVAL is
 
   eq eval(D, S) = D .
   eq eval(A, S) =  S [A] .
-
-  eq evalI(E,S) = eval(E,S) asInt .
-  eq evalB(E,S) = eval(E,S) asBool .
-  eq evalS(E,S) = eval(E,S) asStr .
 
   *** standard evaluation of expression
   eq eval(pair(E,E'),S) = pair(eval(E,S),eval(E',S)) .
@@ -194,7 +185,7 @@ fmod STM-LIST is
   op _,_ : Subst StmList -> Process [ctor format (o r nb o)] . 
   var L : Subst .
   eq (L, nil) = idle . *** if 'label is needed this is dangerous!
-  **** eq idle = (noSub, nil).  *** may use in right hand sides, but not left.
+  **** eq idle = (empty, nil).  *** may use in right hand sides, but not left.
 
 endfm
 
@@ -238,7 +229,7 @@ fmod CLASS is
 
   op emptyClass : -> Class .
   eq emptyClass =
-    < 'noClass : Cl | Inh: noInh , Par: noAid, Att: noSub , Mtds: noMtd ,
+    < 'noClass : Cl | Inh: noInh , Par: noAid, Att: empty, Mtds: noMtd ,
       Ocnt: 0 > .
 
   *** Class/method functions ***
@@ -332,8 +323,8 @@ fmod CONFIG is
   op main : Cid ExprList -> Configuration .
 
   var C : Cid . var E : ExprList .
-  eq main(C,E) = < ob('main) : 'class | Att: noSub, 
-                 Pr: (noSub, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
+  eq main(C,E) = < ob('main) : 'class | Att: empty, 
+                 Pr: (empty, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
                < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
@@ -372,8 +363,8 @@ fmod AUX-FUNCTIONS is
 
   eq enabledGuard(noGuard, S, MM)   = true .
   eq enabledGuard(wait, S, MM)      = false .       *** Note: no wait in PrQ!
-  eq enabledGuard(E, S, MM)         = evalB(E, S) .
-  eq enabledGuard((A ?), S, MM)     = inqueue(eval(A, S), MM) .
+  eq enabledGuard(E, S, MM)         = eval(E, S) asBool .
+  eq enabledGuard((A ?), S, MM)     = inqueue(S[A], MM) .
   eq enabledGuard((L ?), S, MM)     = inqueue(L, MM) .
 
   vars  ST ST' : Stm . 
@@ -388,7 +379,7 @@ fmod AUX-FUNCTIONS is
 
   eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
   eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-  eq ready(A ?(E),     S, MM) = inqueue(eval(A, S), MM) . 
+  eq ready(A ?(E),     S, MM) = inqueue(S[A], MM) . 
   eq ready(L ?(E),     S, MM) = inqueue(L, MM) . 
   eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
   eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise] .
