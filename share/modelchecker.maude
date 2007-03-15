@@ -1,147 +1,74 @@
-***(
-
-  Model checker variant of the interpreter.
-
-)***
+***
+*** Adaption of the interpreter form model checking
+***
+*** Copyright (c) 2007
+***
+*** The purpose of this file is to create the files `prelude.creol'
+*** and `modelcheck.creol'.  These files have to be processed with
+*** m4, with either one of `CREOL' or `MODELCHECK' defined.
+***
+*** This program is free software; you can redistribute it and/or
+*** modify it under the terms of the GNU General Public License as
+*** published by the Free Software Foundation; either version 2 of the
+*** License, or (at your option) any later version.
+***
+*** This program is distributed in the hope that it will be useful, but
+*** WITHOUT ANY WARRANTY; without even the implied warranty of
+*** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*** General Public License for more details.
+***
+*** You should have received a copy of the GNU General Public License
+*** along with this program; if not, write to the Free Software
+*** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+*** 02111-1307, USA.
+***
 
 load datatypes
 
 load signature-mc
 
-*** AUXILIARY FUNCTIONS ***
-fmod AUX-FUNCTIONS is
-pr CONFIG .
-protecting CONVERSION .
-
-*** Signatures
-op inqueue  : Label MMsg -> Bool . *** checks if  Msg is in the queue
-
-op enabledGuard : Guard   Subst MMsg -> Bool .
-op enabled      : StmList Subst MMsg -> Bool . *** eval guard 
-op ready        : StmList Subst MMsg -> Bool . *** eval guard 
-
-*** Variables
-vars N N' : Nat .
-vars L L' : Label .
-vars E E' : Expr .
-var EL : ExprList .
-var A : Aid .
-vars G1 G2 : Guard .
-var S : Subst .
-var MM : MMsg .
-var C : Cid .
-var  Q : Qid .
-
-*************************** Names of new objects ********************
-op newId : Cid Nat -> Oid .
-eq newId(Q, N)  = ob(qid(string(Q) + string(N,10))) .
-***** some code to make string/qid total 
-*** Don't think we need this ?
-*** op string : Nat    -> String  .
-*** op string : Cid    -> String [ditto] .
-*** op string : Oid    -> String [ditto] .
-*** op string : Rat NzNat -> String [ditto] .
-*** op qid    : Qid    -> Qid .
-*** op qid    : String -> Qid [ditto] .
-*** eq string(N)      = string(N,10) . 
-*** eq qid(Q)         = Q .
-*** eq qid(string(Q)) = Q .  
-*** eq qid(string(C)) = qid(C) .  
-*** eq qid(S:String)  = 'invalid [owise] . 
-
-
-
-eq inqueue(L, noMsg) = false .
-*** eq inqueue(N, comp(N', E)) = if N == N' then true else false fi .
-eq inqueue(L, comp(L', EL) + MM) = 
-     if L == L' then true else inqueue(L, MM) fi .
-
-
-eq enabledGuard(noGuard, S, MM)   = true .
-eq enabledGuard(wait, S, MM)      = false .       *** Note: no wait in PrQ!
-eq enabledGuard(E, S, MM)         = evalB(E, S) .
-eq enabledGuard((A ?), S, MM)     = inqueue(eval(A, S), MM) .
-eq enabledGuard((L ?), S, MM)     = inqueue(L, MM) .
-***(eq enabledGuard((G1 & G2), S, MM) = enabledGuard(G1, S, MM) and enabledGuard(G2, S, MM) . *** may skip termination problems! due to Id: noguard
-)
-*** red enabledGuard((int(5) > int(7)), noSub, noMsg) .
-*** red int(4) add int(5) .
-*** red (int(4) add int(5)) > (int(7) add int(19)) .
-*** red upTerm((int(4) add int(5)) > (int(7) add int(19))) .
-*** red downTerm(upTerm((int(4) add int(5)) > (int(7) add int(19))), (int(0)).Expr) .
-
-  vars  ST ST' : Stm . 
-  vars SL SL' SL'' : StmList . 
-  var NeSL : NeStmList .
-
-  eq enabled((SL [] SL'); SL'',  S, MM) =
-    enabled(SL, S, MM) or enabled(SL', S, MM) .
-  eq enabled((SL ||| SL'); SL'', S, MM) =
-    enabled(SL, S, MM) or enabled(SL', S, MM) .
-  eq enabled((await G1); SL'',   S, MM) = enabledGuard(G1, S, MM) .
-  eq enabled(ST ; SL'',    S, MM) = true [owise]. 
-
-  eq ready((SL [] SL'); SL'',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-  eq ready((SL ||| SL'); SL'', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-  eq ready((A ?(E)); SL'',     S, MM) = inqueue(eval(A, S), MM) . 
-  eq ready((L ?(E)); SL'',     S, MM) = inqueue(L, MM) . 
-  eq ready(ST ; SL'',          S, MM) = enabled(ST, S, MM) [owise]. 
-
-***( transform wait guards when active code is suspended. remove all waits.
-op clear : Guard  -> Guard . 
-eq clear(noGuard) = noGuard .
-eq clear(wait)    = noGuard . 
-eq clear(E)       = E .
-eq clear((Q ?))   = (Q ?) .
-eq clear((N ?))   = (N ?) .
-eq clear(G1 & G2) = clear(G1) & clear(G2) .  *** term. problems!
-
-op clear : StmList -> StmList . 
-*** eq clear(nil)     = nil . 
-eq clear(await G1)   = await(clear(G1)) .
-eq clear(SL [] SL')  = clear(SL) [] clear(SL') .
-eq clear(SL ||| SL') = clear(SL) ||| clear(SL') .
-eq clear(SL ; NeSL)  = clear(SL) ; NeSL .
-eq clear(SL)         = SL [owise] .
-)
-
-endfm
-
 *** THE MACHINE ***
 mod INTERPRETER is
-pr AUX-FUNCTIONS .
 
-vars O O' : Oid .
-vars C C' : Cid .
-var A : Aid .
-var AL : AidList .
-var D : Data .
-var DL : DataList .
-vars E E' : Expr .
-vars EL EL' : ExprList .
-var ST : Stm .
-vars SL SL' SL'' : StmList .
-vars SL1 SL2 : NeStmList .
-var P : Process .
-var W : MProc .
-vars S S' L L' : Subst .
-vars N F : Nat .
-vars I I' : InhList .
-var MS : MMtd .
-var LS : Labels .
-vars Lab Lab' : Label .
-var MM : MMsg .
-var G : Guard .
-var M : Mid .
-var Q : Qid .
-var MsgBody : Body .
+  protecting AUX-FUNCTIONS .
 
-*** multiple assignment
-eq [assign-multiple] :
-  < O : C | Att: S, Pr: (L,(AL ::= EL); SL), PrQ: W, Lcnt: N >
-  =
-  < O : C | Att: S, Pr: (L, (assign(AL, evalList(EL, (S # L))); SL)), 
-    PrQ: W, Lcnt: N > .
+  vars O O' : Oid .
+  vars C C' : Cid .
+  var A : Aid .
+  var AL : AidList .
+  var D : Data .
+  var DL : DataList .
+  vars E E' : Expr .
+  vars EL EL' : ExprList .
+  var ST : Stm .
+  vars SL SL' SL'' : StmList .
+  vars SL1 SL2 : NeStmList .
+  var P : Process .
+  var W : MProc .
+  vars S S' L L' : Subst .
+  vars N F : Nat .
+  vars I I' : InhList .
+  var MS : MMtd .
+  var LS : Labels .
+  vars Lab Lab' : Label .
+  var MM : MMsg .
+  var G : Guard .
+  var M : Mid .
+  var Q : Qid .
+  var MsgBody : Body .
+
+  *** Internal assignment, where the arguments have been evaluated.
+  *** This is needed in order to keep confluence in the more synchronous
+  *** rewrite system.
+  op assign : AidList DataList -> Stm [ctor] .
+
+  *** multiple assignment
+  eq
+    < O : C | Att: S, Pr: (L,(AL ::= EL); SL), PrQ: W, Lcnt: N >
+    =
+    < O : C | Att: S, Pr: (L, (assign(AL, evalList(EL, (S # L))); SL)), 
+      PrQ: W, Lcnt: N >
+  [label assign-multiple] .
 
 eq [assign] :
   < O : C | Att: S, Pr: (L, assign((A ,, AL), (D # DL)); SL), PrQ: W, Lcnt: N >

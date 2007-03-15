@@ -34,91 +34,82 @@ endv
 
 *** Bound variables ***
 fmod SUBST is
-*** protecting META-LEVEL .
-protecting DATATYPES .
-protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst) .
+  protecting DATATYPES .
+  protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst) .
 
-op noSub : -> Subst .
-eq noSub = (empty).Subst .
+  op noSub : -> Subst .
+  eq noSub = (empty).Subst .
 
-op dom : Aid Subst -> Bool .
+  op dom : Aid Subst -> Bool .
 
-*** Non-comm composition operator for substitutions
-op _#_ : Subst Subst -> Subst .
+  *** Non-comm composition operator for substitutions
+  op _#_ : Subst Subst -> Subst .
 
 
-vars A A' : Aid . var D : Data . vars S1 S2  : Subst .
+  vars A A' : Aid . var D : Data . vars S1 S2  : Subst .
 
-eq S1 # empty = S1 .
-eq S1 # ((A |-> D), S2) = insert(A,D,S1) # S2 .
+  eq S1 # empty = S1 .
+  eq S1 # ((A |-> D), S2) = insert(A,D,S1) # S2 .
 
-eq dom(A, empty) = false .
-eq dom(A, ((A' |-> D), S1)) = if A == A' then true else dom(A, S1) fi .
-eq dom(A, S1 # S2) = dom(A, S1) or dom(A, S2) .
-
-***  eq element(E, emp) = false .
-***  eq element(E, E' # L) = if E == E' then true else element(E, L) fi .
-
+  eq dom(A, empty) = false .
+  eq dom(A, ((A' |-> D), S1)) = if A == A' then true else dom(A, S1) fi .
+  eq dom(A, S1 # S2) = dom(A, S1) or dom(A, S2) .
 endfm
 
 fmod EVAL is
-protecting SUBST . 
+  protecting SUBST .
 
-*** Evaluation of expressions
-op eval	    : Expr Subst     -> Data .     *** evaluate expression
-op evalB    : Expr Subst     -> Bool .
-op evalI    : Expr Subst     -> Int .
-op evalN    : Expr Subst     -> Nat .
-op evalS    : Expr Subst     -> String .
-op evalList : DataList Subst -> ExprList . *** maps list to values
+  op eval     : Data Subst     -> Data .
+  op eval     : Expr Subst     -> Data .
+  op evalB    : Expr Subst     -> Bool .
+  op evalI    : Expr Subst     -> Int .
+  op evalS    : Expr Subst     -> String .
+  op evalList : ExprList Subst -> DataList .
 
-*** Variables
-vars E E' : Expr .    var EL : ExprList .     var D : Data .
-var A : Aid .         var S : Subst .         var Q : Qid .
-var I : Int .         var B : Bool .          var STR : String .
+  *** Variables
+  vars E E' : Expr .    var EL : ExprList .     var D : Data .
+  var A : Aid .         var S : Subst .         var Q : Qid .
+  var I : Int .         var B : Bool .
 
-eq eval(A, S) = S [A] .
-eq eval(D, S) = D .                                *** data
+  eq eval(D, S) = D .
+  eq eval(A, S) = S [A] .
 
-eq evalI(E,S) = eval(E,S) asInt .                  *** expressions
-eq evalN(E,S) = eval(E,S) asNat .                  *** expressions
-eq evalB(E,S) = eval(E,S) asBool .                 *** expressions
-eq evalS(E,S) = eval(E,S) asStr .                  *** expressions
+  eq evalI(E,S) = eval(E,S) asInt .
+  eq evalB(E,S) = eval(E,S) asBool .
+  eq evalS(E,S) = eval(E,S) asStr .
 
-*** standard evaluation of expression
-eq eval(pair(E,E'),S) = pair(eval(E,S),eval(E',S)) . 
-eq eval(list(EL), S)  = list(evalList(EL, S)) .       
-eq eval(setl(EL), S)  = setl(evalList(EL, S)) .   
-eq eval(Q [[EL]], S)  = Q [[ evalList(EL, S) ]] .   
+  *** standard evaluation of expression
+  eq eval(pair(E,E'),S) = pair(eval(E,S),eval(E',S)) .
+  eq eval(list(EL), S)  = list(evalList(EL, S)) .
+  eq eval(setl(EL), S)  = setl(evalList(EL, S)) .
+  eq eval(Q [[EL]], S)  = Q [[ evalList(EL, S) ]] .
 
-*** lists  
-eq evalList(emp, S)   = emp .
-eq evalList(E # EL, S)= eval(E, S) # evalList(EL, S) .
-            *** creol function Q defined directly by functions
-*** eq evalList(E, S)   = eval(E, S) . *** not needed
+  *** lists
+  eq evalList(emp, S)   = emp .
+  eq evalList(E # EL, S)= eval(E, S) # evalList(EL, S) .
 
 endfm
 
 
 fmod GUARDS is
-protecting EVAL .
+  protecting EVAL .
 
-sorts     NoGuard Guard Wait Return PureGuard . 
-subsorts  Return Expr < PureGuard .
-subsorts  NoGuard Wait PureGuard < Guard .
+  sorts     NoGuard Guard Wait Return PureGuard . 
+  subsorts  Return Expr < PureGuard .
+  subsorts  NoGuard Wait PureGuard < Guard .
 
-op noGuard : -> NoGuard [ctor] . 
-op wait :    -> Wait [ctor] .           *** suspension
-op _?  : Aid -> Return [ctor] .         *** reply guard
-op _?  : Nat -> Return [ctor] .         *** low level reply guard
-op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
-op _&_ : PureGuard PureGuard -> PureGuard [ditto] .
+  op noGuard : -> NoGuard [ctor] . 
+  op wait :    -> Wait [ctor] .           *** suspension
+  op _?  : Aid -> Return [ctor] .         *** reply guard
+  op _?  : Nat -> Return [ctor] .         *** low level reply guard
+  op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
+  op _&_ : PureGuard PureGuard -> PureGuard [ditto] .
 
-*** reduction of guards to normalform: [wait &]? [bool &]? return ***
-vars E  E' : Expr . var PG : PureGuard .
-eq   wait & wait = wait .
-eq   PG   & PG   = PG .
-eq   E    & E'   = 'and[[E # E']] .
+  *** reduction of guards to normalform: [wait &]? [bool &]? return ***
+  vars E  E' : Expr . var PG : PureGuard .
+  eq   wait & wait = wait .
+  eq   PG   & PG   = PG .
+  eq   E    & E'   = 'and[[E # E']] .
 
 endfm
 
@@ -347,3 +338,62 @@ eq main(C,E) = < ob('main) : 'class | Att: noSub,
                < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
+
+*** AUXILIARY FUNCTIONS ***
+fmod AUX-FUNCTIONS is
+
+  protecting CONFIG .
+  protecting CONVERSION .
+
+  *** Check if a message is in the queue.
+  op inqueue  : Nat MMsg -> Bool .
+
+  op enabledGuard : Guard   Subst MMsg -> Bool .
+  op enabled      : StmList Subst MMsg -> Bool . *** eval guard 
+  op ready        : StmList Subst MMsg -> Bool . *** eval guard 
+
+  vars N N' : Nat .
+  vars E E' : Expr .
+  var EL : ExprList .
+  var A : Aid .
+  var Q : Qid .
+  vars G1 G2 : Guard .
+  var S : Subst .
+  var MM : MMsg .
+  var C : Cid .
+
+  *** Create a new fresh name for an object.
+  op newId : Cid Nat -> Oid .
+  eq newId(Q, N)  = ob(qid(string(Q) + string(N,10))) .
+
+  eq inqueue(N, noMsg) = false .
+  *** eq inqueue(N, comp(N', E)) = if N == N' then true else false fi .
+  eq inqueue(N, comp(N', EL) + MM) = 
+     if N == N' then true else inqueue(N, MM) fi .
+
+  eq enabledGuard(noGuard, S, MM)   = true .
+  eq enabledGuard(wait, S, MM)      = false .       *** Note: no wait in PrQ!
+  eq enabledGuard(E, S, MM)         = evalB(E, S) .
+  eq enabledGuard((A ?), S, MM)     = inqueue(evalN(A, S), MM) .
+  eq enabledGuard((N ?), S, MM)     = inqueue(N, MM) .
+
+  vars  ST ST' : Stm . 
+  vars SL SL' : StmList . 
+  var NeSL : NeStmList .
+
+  eq enabled(SL [] SL',  S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
+  eq enabled(SL ||| SL', S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
+  eq enabled(await G1,   S, MM) = enabledGuard(G1,S,MM) .
+  eq enabled((ST ; ST' ; SL),S, MM) = enabled(ST, S, MM) . 
+  eq enabled(ST,    S, MM) = true [owise] . 
+
+  eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
+  eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
+  eq ready(A ?(E),     S, MM) = inqueue(evalN(A, S), MM) . 
+  eq ready(N ?(E),     S, MM) = inqueue(N, MM) . 
+  eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
+  eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise] .
+
+endfm
+
+eof
