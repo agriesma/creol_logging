@@ -41,7 +41,7 @@ fmod CREOL-DATA-SIG is
   subsort DataList < ExprList .
 
   op emp : -> DataList [ctor] .
-  op _#_ : ExprList ExprList -> ExprList [ctor assoc id: emp prec 25] .
+  op _#_ : ExprList ExprList -> ExprList [ctor assoc id: emp prec 27] .
   *** op _#_ : NeExprList ExprList -> NeExprList [ctor ditto] .
   *** op _#_ : ExprList NeExprList -> NeExprList [ctor ditto] .
   op _#_ : DataList  DataList  -> DataList [ctor ditto] .

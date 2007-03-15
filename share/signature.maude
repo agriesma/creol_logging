@@ -125,16 +125,16 @@ fmod STATEMENTS is
   sorts Mid Cid Stm .             *** Mid = method identifiers
   subsort Qid < Mid Cid .         *** Cid = class identifiers
 
-  op _._   : Expr Mid -> Mid [ctor] . *** remote call
-  op _@_   : Qid  Cid -> Mid [ctor] . *** method qualified by class name (local)
+  op _._   : Expr Mid -> Mid [ctor prec 33] .
+  op _@_   : Qid  Cid -> Mid [ctor prec 33] .
   *** op _@_   : Aid  Cid -> Aid [ctor] . *** attribute qualified by class name (local)
 
   *** CREOL program syntax
   op skip : -> Stm [ctor] .
-  op _::=_  : AidList ExprList -> Stm [ctor] .       *** simple assignment
+  op _::=_  : AidList ExprList -> Stm [ctor prec 39] .
 
-  op _::= new_(_) : Aid Cid ExprList -> Stm [ctor] . *** object creation
-  op _(_;_) : Mid ExprList AidList -> Stm [ctor] .  *** sync. call
+  op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 39 format (d b d o d d d d)] .
+  op _(_;_) : Mid ExprList AidList -> Stm [ctor prec 37] .
   op !_(_)  : Mid ExprList -> Stm [ctor] .           *** async. call (without label)
   op _!_(_) : Qid Mid ExprList -> Stm [ctor] .       *** async. call (with label)
   op _?(_)  : Qid AidList -> Stm [ctor] .           *** async. reply statement
@@ -157,10 +157,10 @@ fmod STM-LIST is
   op if_th_el_fi : Expr StmList StmList -> Stm [ctor] . 
   op if_th_fi    : Expr StmList -> Stm [ctor] . 
   op while_do_od : Expr StmList -> Stm [ctor] .
-  op _[]_  : StmList StmList -> Stm [ctor comm assoc] .          *** choice
-  op _|||_ : StmList StmList -> Stm [ctor comm assoc] .          *** merge
-  op _MERGER_  : StmList StmList -> Stm [assoc] .                *** aux merge
-  op _;_ :   StmList StmList -> StmList [ctor assoc id: nil] . *** seq. comp.
+  op _[]_  : StmList StmList -> Stm [ctor comm assoc prec 43] .
+  op _|||_ : StmList StmList -> Stm [ctor comm assoc prec 45] .
+  op _MERGER_  : StmList StmList -> Stm [assoc] .
+  op _;_ :   StmList StmList -> StmList [ctor assoc id: nil prec 41] .
 
   var SL : StmList .  *** note: SL matches also empty
   var NeSL : NeStmList .

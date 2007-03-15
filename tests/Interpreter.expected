@@ -22,4 +22,207 @@ result Data: str("test")
 reduce in SUBST : dom('var1, insert('var2, int(4), insert('var1, str("test"),
     noSub))) .
 result Bool: true
+==========================================
+reduce in GUARDS : int(4) & int(5) .
+result Appl: 'and[[int(4) # int(5)]]
+==========================================
+reduce in GUARDS : upTerm(int(4) & int(5)) .
+result GroundTerm: '_`[`[_`]`][''and.Sort,'_#_['int`(_`)['s_^4['0.Zero]],
+    'int`(_`)['s_^5['0.Zero]]]]
+==========================================
+reduce in GUARDS : upTerm(int(4) & wait & int(5)) .
+result GroundTerm: '_&_['wait.Wait,'_`[`[_`]`][''and.Sort,'_#_['int`(_`)['s_^4[
+    '0.Zero]],'int`(_`)['s_^5['0.Zero]]]]]
+==========================================
+reduce in GUARDS : downTerm(upTerm(int(4) & wait & int(5)), noGuard) .
+result Guard: wait & 'and[[int(4) # int(5)]]
+==========================================
+reduce in GUARDS : 'test ? .
+result Return: 'test ?
+==========================================
+reduce in GUARDS : 'add[[int(4) # int(5)]] & 'label ? & wait & wait & bool(
+    true) .
+result Guard: wait & 'label ? & 'add[[int(4) # int(5)]]
+==========================================
+reduce in GUARDS : upTerm('add[[int(4) # int(5)]] & 'label ? & wait & wait &
+    bool(true)) .
+result GroundTerm: '_&_['wait.Wait,'_?[''label.Sort],'_`[`[_`]`][''add.Sort,
+    '_#_['int`(_`)['s_^4['0.Zero]],'int`(_`)['s_^5['0.Zero]]]]]
+==========================================
+reduce in GUARDS : downTerm(upTerm('add[[int(4) # int(5)]] & 'label ? & wait &
+    wait & bool(true)), noGuard) .
+result Guard: wait & 'label ? & 'add[[int(4) # int(5)]]
+==========================================
+reduce in STATEMENTS : 'var ::= int(4) .
+result Stm: 'var ::= int(4)
+==========================================
+reduce in STATEMENTS : 'var ::= new 'C(int(5) # bool(true)) .
+result Stm: 'var ::= new 'C(int(5) # bool(true))
+==========================================
+reduce in STATEMENTS : upTerm('var ::= new 'C(null)) .
+result GroundTerm: '_::=`new_`(_`)[''var.Sort,''C.Sort,'null.Data]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('var ::= new 'C(int(5) # bool(true))),
+    skip) .
+result Stm: 'var ::= new 'C(int(5) # bool(true))
+==========================================
+reduce in STATEMENTS : await ('test ?) .
+result Stm: await ('test ?)
+==========================================
+reduce in STATEMENTS : await (wait & 'test ?) .
+result Stm: await (wait & 'test ?)
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(await (wait & 'test ?)), skip) .
+result Stm: await (wait & 'test ?)
+==========================================
+reduce in STATEMENTS : ! 'method(null) .
+result Stm: ! 'method(null)
+==========================================
+reduce in STATEMENTS : cont(label(5)) .
+result Stm: cont(label(5))
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(cont(label(5))), skip) .
+result Stm: cont(label(5))
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('getNeighbor(null ; noAid)), skip) .
+result Stm: 'getNeighbor(null ; noAid)
+==========================================
+reduce in STATEMENTS : 'label ! 'oid . 'mtd(emp) .
+result Stm: 'label ! 'oid . 'mtd(emp)
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('label ! 'oid . 'mtd(emp)), skip) .
+result Stm: 'label ! 'oid . 'mtd(emp)
+==========================================
+reduce in STM-LIST : 'var ::= int(4)[]'var ::= new 'C(null) .
+result Stm: 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : downTerm(upTerm('var ::= int(4)[]'var ::= new 'C(null)),
+    skip) .
+result Stm: 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : skip ||| 'var ::= int(4)[]'var ::= new 'C(null) .
+result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : downTerm(upTerm(skip ||| 'var ::= int(4)[]'var ::= new 'C(
+    null)), skip) .
+result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : downTerm(upTerm('var ::= int(4)[]'var ::= new 'C(null) |||
+    skip ||| nil), (nil).NatList) .
+result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : insert('var2, int(4), insert('var1, str("test"), noSub)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
+result Process: ('var1 |-> str("test"), 'var2 |-> int(4)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
+==========================================
+reduce in STM-LIST : upTerm(insert('var2, int(4), insert('var1, str("test"),
+    noSub)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))) .
+result GroundTerm: '_`,_['_`,_['_|->_[''var1.Sort,'str`(_`)['"test".String]],
+    '_|->_[''var2.Sort,'int`(_`)['s_^4['0.Zero]]]],'_|||_['skip.Stm,'_`[`]_[
+    '_::=_[''var.Sort,'int`(_`)['s_^4['0.Zero]]],'_::=`new_`(_`)[''var.Sort,
+    ''C.Sort,'null.Data]]]]
+==========================================
+reduce in STM-LIST : downTerm(upTerm(insert('var2, int(4), insert('var1, str(
+    "test"), noSub)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))), idle) .
+result Process: ('var1 |-> str("test"), 'var2 |-> int(4)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
+==========================================
+reduce in STM-LIST : idle ++ insert('var2, int(4), insert('var1, str("test"),
+    noSub)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
+result NeMProc: idle ++ ('var1 |-> str("test"), 'var2 |-> int(4)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
+==========================================
+reduce in STM-LIST : noSub,
+'var ::= bool(true) .
+result Process: (empty).Subst,
+'var ::= bool(true)
+==========================================
+reduce in CLASS : < 'getNeighbor : Mtdname | Param: noAid,Latt: 'label |->
+    null, 'caller |-> null, 'n |-> null,Code: skip > .
+result Mtd: < 'getNeighbor : Mtdname | Param: noAid,Latt: 'caller |-> null,
+    'label |-> null, 'n |-> null,Code: skip >
+==========================================
+reduce in CLASS : 
+< 'Butler : Cl | Inh: noInh,Par: noAid,Att: noSub,Mtds:
+noMtd,Ocnt: 0 >
+ .
+result Class: 
+< 'Butler : Cl | Inh: noInh,Par: noAid,Att: empty,Mtds:
+noMtd,Ocnt: 0 >
+
+==========================================
+reduce in CLASS : 'butler . 'getNeighbor(emp ; noAid) .
+result Stm: 'butler . 'getNeighbor(emp ; noAid)
+==========================================
+reduce in CLASS : 'butler ! 'getNeighbor(emp) .
+result Stm: 'butler ! 'getNeighbor(emp)
+==========================================
+reduce in CLASS : 'run (emp ; emp) # 'run (emp ; emp) .
+result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
+    ModuleExpression,Header,ExprList,InhList,Guard,AidList,Mid,Cid]: 'run (emp
+    ; emp) # 'run (emp ; emp)
+==========================================
+reduce in CLASS : ('butler ! 'getNeighbor(emp)) ; 'run(emp ; noAid) .
+result StmList: ('butler ! 'getNeighbor(emp)) ; 'run(emp ; noAid)
+==========================================
+reduce in OBJECT : 
+< 'object1 : 'class | Att: noSub,Pr: idle,PrQ: noProc,Lcnt: 0 >
+ .
+result [Object]: 
+< 'object1 : 'class | Att: empty,Pr: idle,PrQ: noProc,Lcnt: 0 >
+
+==========================================
+reduce in OBJECT : downTerm(upTerm(
+< 'object1 : 'class | Att: noSub,Pr: idle,PrQ: idle,Lcnt: 0 >
+), noObj) .
+result [Object]: 
+< 'object1 : 'class | Att: empty,Pr: idle,PrQ: idle,Lcnt: 0 >
+
+==========================================
+reduce in COMMUNICATION : noMsg .
+result Body: noMsg
+==========================================
+reduce in COMMUNICATION : comp(label(5),emp) .
+result Body: comp(label(5),emp)
+==========================================
+reduce in COMMUNICATION : invoc('object1,label(5),'method1,emp) .
+result [MMsg]: invoc('object1,label(5),'method1,emp)
+==========================================
+reduce in COMMUNICATION : upTerm(comp(label(5),emp)) .
+result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
+==========================================
+reduce in COMMUNICATION : downTerm(upTerm(comp(label(5),emp)), noMsg) .
+result Body: comp(label(5),emp)
+==========================================
+reduce in COMMUNICATION : upTerm(invoc('object1,label(5),'method1,emp)) .
+result GroundTerm: 'invoc`(_`,_`,_`,_`)[''object1.Sort,'label['s_^5['0.Zero]],
+    ''method1.Sort,'emp.DataList]
+==========================================
+reduce in COMMUNICATION : downTerm(upTerm(invoc('object1,label(5),'method1,
+    emp)), noMsg) .
+result [MMsg]: invoc('object1,label(5),'method1,emp)
+==========================================
+reduce in COMMUNICATION : 
+< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+ .
+result [Queue]: 
+< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+
+==========================================
+reduce in COMMUNICATION : upTerm(
+< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+) .
+result GroundTerm: '<_:`Qu`|`Dealloc:_`,Ev:_>[''Ob1.Sort,'noDealloc.Labels,
+    'noMsg.Body]
+==========================================
+reduce in COMMUNICATION : downTerm(upTerm(
+< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+), noQu) .
+result [Queue]: 
+< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+
 Bye.

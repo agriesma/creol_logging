@@ -804,7 +804,12 @@ let rec maude_of_creol_guard out =
 	output_string out " 'and "; maude_of_creol_guard out r ;
 	output_string out ") "
 
-let rec maude_of_creol_statement out =
+let maude_of_creol_statement out stmt =
+  let open_paren prec op_prec =
+    if prec < op_prec then output_string out "( " ;
+  and close_paren prec op_prec =
+    if prec < op_prec then output_string out " )" ;
+  in let rec print prec =
   function
       Skip _ -> output_string out "skip"
     | Await (_, g) -> output_string out "await "; maude_of_creol_guard out g
@@ -848,34 +853,38 @@ let rec maude_of_creol_statement out =
 	maude_of_creol_identifier_list out o;
 	output_string out " )"
     | If (_, c, t, f) ->
-	output_string out "if ("; maude_of_creol_expression out c;
-	output_string out ") th ("; maude_of_creol_statement out t;
-	output_string out ") el ("; maude_of_creol_statement out f;
-	output_string out ") fi"
+	output_string out "if "; maude_of_creol_expression out c;
+	output_string out " th "; print 25 t;
+	output_string out " el "; print 25 f;
+	output_string out " fi"
     | While (_, c, _, b) ->
-	output_string out "while (" ;
+	output_string out "while " ;
 	maude_of_creol_expression out c;
-	output_string out ") do ";
-	maude_of_creol_statement out b;
+	output_string out " do ";
+	print 25 b;
 	output_string out " od "
     | Sequence (_, l, r) ->
-	output_string out "( ( ";
-	maude_of_creol_statement out l; 
-	output_string out " ) ; ( ";
-	maude_of_creol_statement out r; 
-	output_string out " ) )"
+	let op_prec = 25 in
+	  open_paren prec op_prec ;
+	  print op_prec l; 
+	  output_string out " ; ";
+	  print op_prec r; 
+	  close_paren prec op_prec
     | Merge (_, l, r) ->
-	output_string out "( ( ";
-	maude_of_creol_statement out l; 
-	output_string out " ) ||| ( ";
-	maude_of_creol_statement out r; 
-	output_string out " ) )"
+	let op_prec = 29 in
+	  open_paren prec op_prec ;
+	  print op_prec l; 
+	  output_string out " ||| ";
+	  print op_prec r; 
+	  close_paren prec op_prec
     | Choice (_, l, r) ->
-	output_string out "( ( ";
-	maude_of_creol_statement out l; 
-	output_string out " ) [] ( ";
-	maude_of_creol_statement out r; 
-	output_string out " ) )"
+	let op_prec = 27 in
+	  open_paren prec op_prec ;
+	  print op_prec l; 
+	  output_string out " [] ";
+	  print op_prec r; 
+	  close_paren prec op_prec
+  in print 25 stmt
 
 
 let maude_of_creol_attribute out a =

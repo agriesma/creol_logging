@@ -6,15 +6,15 @@ result Configuration:
 < 'getNeighbor : Mtdname | Param: noAid,Latt: 'p |-> null,Code: skip ; skip ;
     if 'equal[['caller # 'p1]] th 'p ::= 'p3 el if 'equal[['caller # 'p2]] th
     'p ::= 'p1 el 'p ::= 'p2 fi fi ; return('p) > *
-< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; ('p1 ::= new
-    'Process('this # int(1))) ; ('p2 ::= new 'Process('this # int(2))) ; ('p3
-    ::= new 'Process('this # int(3))) ; return(emp) >,Ocnt: 0 >
+< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; 'p1 ::= new
+    'Process('this # int(1)) ; 'p2 ::= new 'Process('this # int(2)) ; 'p3 ::=
+    new 'Process('this # int(3)) ; return(emp) >,Ocnt: 0 >
  
 < 'Process : Cl | Inh: noInh,Par: 'i,,'u,Att: 'i |-> null, 'neighbor |-> null,
     'status |-> null, 'u |-> null,Mtds:
-< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; ('status ::=
-    int(0)) ; (('i . 'getNeighbor)(emp ; 'neighbor)) ; ! 'neighbor . 'receive(
-    'u) ; return(emp) > *
+< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; 'status ::=
+    int(0) ; 'i . 'getNeighbor(emp ; 'neighbor) ; ! 'neighbor . 'receive('u) ;
+    return(emp) > *
 < 'receive : Mtdname | Param: 'v,Latt: 'v |-> null,Code: skip ; skip ; if
     'less[['u # 'v]] th ! 'neighbor . 'receive('v) el if 'equal[['v # 'u]] th
     'status ::= int(1) el skip fi fi ; return(emp) > *
@@ -41,15 +41,15 @@ result Configuration:
 < 'getNeighbor : Mtdname | Param: noAid,Latt: 'p |-> null,Code: skip ; skip ;
     if 'equal[['caller # 'p1]] th 'p ::= 'p3 el if 'equal[['caller # 'p2]] th
     'p ::= 'p1 el 'p ::= 'p2 fi fi ; return('p) > *
-< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; ('p1 ::= new
-    'Process('this # int(1))) ; ('p2 ::= new 'Process('this # int(2))) ; ('p3
-    ::= new 'Process('this # int(3))) ; return(emp) >,Ocnt: 1 >
+< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; 'p1 ::= new
+    'Process('this # int(1)) ; 'p2 ::= new 'Process('this # int(2)) ; 'p3 ::=
+    new 'Process('this # int(3)) ; return(emp) >,Ocnt: 1 >
  
 < 'Process : Cl | Inh: noInh,Par: 'i,,'u,Att: 'i |-> null, 'neighbor |-> null,
     'status |-> null, 'u |-> null,Mtds:
-< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; ('status ::=
-    int(0)) ; (('i . 'getNeighbor)(emp ; 'neighbor)) ; ! 'neighbor . 'receive(
-    'u) ; return(emp) > *
+< 'init : Mtdname | Param: noAid,Latt: empty,Code: skip ; skip ; 'status ::=
+    int(0) ; 'i . 'getNeighbor(emp ; 'neighbor) ; ! 'neighbor . 'receive('u) ;
+    return(emp) > *
 < 'receive : Mtdname | Param: 'v,Latt: 'v |-> null,Code: skip ; skip ; if
     'less[['u # 'v]] th ! 'neighbor . 'receive('v) el if 'equal[['v # 'u]] th
     'status ::= int(1) el skip fi fi ; return(emp) > *
