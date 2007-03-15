@@ -54,6 +54,10 @@ AM_PATH_LISPDIR
 dnl Configure the XML Text reader and writer library.
 AC_CONFIG_SUBDIRS([xml])
 
+dnl Check for the programs needed by the test-suite.
+AC_CHECK_PROG([MAUDE], [maude], [maude], [:])
+AC_CHECK_PROG([DIFF], [diff], [diff], [:])
+
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
 AC_SUBST([OCAMLFIND_FLAGS])

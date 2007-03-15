@@ -1,8 +1,38 @@
 dnl
 dnl
-AT_INIT([creolcomp])
-AT_TESTED(creolc)
 
+dnl Test our tool chain.  Requires maude,
+dnl
+dnl The test works as follows:
+dnl Given an argument the test will first compile a maude version of the
+dnl system.  This will be compared to some expected results.
+dnl Then a set of tests, defined in [name]-tests.maude are run on this
+dnl model and the output of maude is again compared to some expected
+dnl results.
+m4_define([TEST_MAUDE], [dnl
+AT_SETUP([$1])
+AT_CHECK([creolc ${abs_srcdir}/$1.creol -o $1.maude])
+AT_CHECK([$DIFF ${abs_srcdir}/$1.maude $1.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+load $1 .
+$2
+quit .
+])
+AT_CHECK([$MAUDE -no-banner -no-advise < test.maude > $1.out])
+AT_CHECK([$DIFF $1.out ${abs_srcdir}/$1.expected])
+AT_CLEANUP
+])
+
+AT_INIT([creolc])
+AT_TESTED([creolc creolc.opt])
+
+TEST_MAUDE([AsyncLCR], [dnl
+red init .
+rew init main('Init, emp) .
+])
 AT_SETUP([creolc])
 AT_CHECK([creolc ${abs_srcdir}/AsyncLCR.creol], [0], [], [])
 AT_CHECK([creolc ${abs_srcdir}/Sieve.creol], [0], [], [])
