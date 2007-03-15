@@ -51,7 +51,7 @@ fmod SUBST is
   eq dom(A, empty) = false .
   eq dom(A, ((A |-> D), S1)) = true .
   eq dom(A, ((A' |-> D), S1)) = false [owise] .
-  eq dom(A, S1 # S2) = dom(A, S1) or-else dom(A, S2) .
+  eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
 endfm
 
 fmod EVAL is
