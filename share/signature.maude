@@ -1,3 +1,27 @@
+***
+*** Signature of Creol programs
+***
+*** Copyright (c) 2007
+***
+*** The purpose of this file is to create the files `prelude.creol'
+*** and `modelcheck.creol'.  These files have to be processed with
+*** m4, with either one of `CREOL' or `MODELCHECK' defined.
+***
+*** This program is free software; you can redistribute it and/or
+*** modify it under the terms of the GNU General Public License as
+*** published by the Free Software Foundation; either version 2 of the
+*** License, or (at your option) any later version.
+***
+*** This program is distributed in the hope that it will be useful, but
+*** WITHOUT ANY WARRANTY; without even the implied warranty of
+*** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*** General Public License for more details.
+***
+*** You should have received a copy of the GNU General Public License
+*** along with this program; if not, write to the Free Software
+*** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+*** 02111-1307, USA.
+***
 
 view Aid from TRIV to DATA is
    sort Elt to Aid .
@@ -35,13 +59,6 @@ eq dom(A, S1 # S2) = dom(A, S1) or dom(A, S2) .
 ***  eq element(E, emp) = false .
 ***  eq element(E, E' # L) = if E == E' then true else element(E, L) fi .
 
-*** red insert('var1, str("test"), noSub) .
-*** red insert('var2, int(4), insert('var1, str("test"), noSub)) .
-*** red insert('var2, int(4), insert('var1, str("test"), noSub)) ['var1] .
-*** red upTerm(insert('var1, str("test"), noSub)) .
-*** red downTerm(upTerm(insert('var1, str("test"), noSub)),noSub) .
-*** red downTerm(upTerm(insert('var2, int(4), insert('var1, str("test"), noSub)) ['var1]), null) .
-*** red dom('var1, insert('var2, int(4), insert('var1, str("test"), noSub))) .
 endfm
 
 fmod EVAL is
@@ -103,14 +120,6 @@ eq   wait & wait = wait .
 eq   PG   & PG   = PG .
 eq   E    & E'   = 'and[[E # E']] .
 
-*** red int(4) & int(5) .
-*** red upTerm(int(4) & int(5)) .
-*** red upTerm(int(4) & int(5) & wait) .
-*** red downTerm(upTerm(int(4) & int(5) & wait), noGuard) .
-*** red 'test ? .
-*** red int(4) add int(5) & 'label ? & wait & bool(true) & wait .
-*** red upTerm(int(4) add int(5) & 'label ? & wait & bool(true) & wait) .
-*** red downTerm(upTerm(int(4) add int(5) & 'label ? & wait & bool(true) & wait), noGuard) .
 endfm
 
 fmod STATEMENTS is
@@ -136,19 +145,7 @@ op cont : Nat -> Stm [ctor] .                      *** sync. scheduling
 op await_ : Guard    -> Stm [ctor] .               *** guard statements
 op return : ExprList -> Stm [ctor] .               *** method return
 op free : AidList -> Stm [ctor] .                  *** deallocation for labels
-*** red 'var ::= int(4) .
-*** red 'var ::= new 'C (int(5) # bool(true)) .
-*** red upTerm('var ::= new 'C (null)) .
-*** red downTerm(upTerm('var ::= new 'C (int(5) # bool(true))), skip) .
-*** red await 'test ? .
-*** red await (('test ?) & wait) .
-*** red downTerm(upTerm(await (('test ?) & wait)), skip) .
-*** red ! 'method (null) .
-*** red cont (5) .
-*** red downTerm(upTerm(cont (5)),skip) .
-*** red downTerm(upTerm('getNeighbor(null ; null)), skip) .
-*** red 'label ! ('oid . 'mtd) (noExpr) .
-*** red downTerm(upTerm('label ! ('oid . 'mtd) (noExpr)), skip) .
+
 endfm
 
 view Stm from TRIV to STATEMENTS is
@@ -190,14 +187,6 @@ eq await (wait & PG) = await wait ; await PG .
 
 eq if B th SL fi = if B th SL el nil fi .  *** compiler stuff
 
-*** red ('var ::= int(4)) [] ('var ::= new 'C (null)) .
-*** red downTerm(upTerm(('var ::= int(4)) [] ('var ::= new 'C (null))), skip) .
-*** red (('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip .
-*** red downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip),skip) .
-*** red (('var ::= int(4)) [] ('var ::= new 'C (null))) ||| empty ||| skip .
-*** red downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| emp ||| skip), skip) .
-*** red downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| nil ||| skip), nil) .
-
 sorts Process NeMProc MProc .
 subsort Process < NeMProc < MProc .    *** Multiset of Processes
 op noProc : -> MProc [ctor] .
@@ -210,15 +199,8 @@ op idle : -> Process [format (!b o)] .
 op _,_ : Subst StmList -> Process [ctor format (o r nb o)] . 
 var L : Subst .
 eq (L, nil) = idle . *** if 'label is needed this is dangerous!
-**** eq idle = (noSub, nil).  *** may use in right hand sides, but not left.
+eq idle = (noSub, nil) [nonexec] .  *** may use in right hand sides, but not left.
 
-*** red ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub)) .
-*** red upTerm(((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub))) .
-*** red downTerm(upTerm(((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub))), idle ) .
-
-*** red (((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub))) ++ idle .
-
-*** red (('var := bool(true)), noSub) .
 endfm
 
 *** CREOL classes ***
@@ -281,14 +263,6 @@ eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, N, EL) =
 *** insert('caller, O, insert('label, int(N), S))
 *** 'caller |-> O, 'label |-> int(N))
 
-*** red < 'getNeighbor : Mtdname | 
-***           Latt: ('label |-> null, 'caller |-> null, 'n |-> null), Code: skip > .
-
-*** red < 'Butler : Cl | Inh: noInh , Att: noSub , Mtds: noMtd , Ocnt: 0 > .
-*** red ('butler . 'getNeighbor)(noExpr ; noExpr) .
-*** red ('butler ! 'getNeighbor(noExpr)) .
-*** red ('run(noExpr ; noExpr)) # ('run(noExpr ; noExpr)) .
-*** red ('butler ! 'getNeighbor(noExpr)) # ('run(noExpr ; noExpr)) .
 endfm
 
 *** CREOL objects ***
@@ -302,9 +276,6 @@ op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> :
          [ctor format (r! r o o o  r o r  r o r r o r r o r! o)] .
 
 op noObj : -> Object [ctor] .
-
-*** red < 'object1 : 'class | Att: noSub, Pr: idle, PrQ: noProc, Lcnt: 0 > .
-*** red downTerm(upTerm(< 'object1 : 'class | Att: noSub, Pr: idle, PrQ: idle, Lcnt: 0 >), noObj) .
 
 endfm
 
@@ -353,16 +324,6 @@ op noQu : -> Queue [ctor] .
 op <_: Qu | Dealloc:_, Ev:_ > : Oid NatS MMsg -> Queue 
                           [format (nm! m o o o  m o o m o m! no)] . 
 
-*** red noMsg .
-*** red comp(5, noExpr) .
-*** red invoc('object1, 5, 'method1, noExpr) .
-*** red upTerm(comp(5, noExpr)) .
-*** red downTerm(upTerm(comp(5, noExpr)), noMsg) .
-*** red upTerm(invoc('object1, 5, 'method1, noExpr)) .
-*** red downTerm(upTerm(invoc('object1, 5, 'method1, noExpr)), noMsg) .
-*** red < 'Ob1 : Qu | Dealloc: noDealloc , Ev: noMsg > .
-*** red upTerm(< 'Ob1 : Qu | Dealloc: noDealloc , Ev: noMsg >) .
-*** red downTerm(upTerm(< 'Ob1 : Qu | Dealloc: noDealloc, Ev: noMsg >), noQu) .
 endfm
 
 *** STATE CONFIGURATION ***

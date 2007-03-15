@@ -19,7 +19,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-MOSTLYCLEANFILES	= 
+MOSTLYCLEANFILES	= *~
 CLEANFILES		= testsuite.log
 DISTCLEANFILES		= atconfig atlocal
 MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
@@ -27,7 +27,9 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
-TESTFILES		= Alarmclock.creol \
+TESTFILES		= Interpreter.maude Interpreter.expected \
+			  ModelChecker.maude ModelChecker.expected \
+			  Alarmclock.creol \
 			  AsyncLCR.creol AsyncLCR.maude AsyncLCR.expected \
 			  Philosophers.creol \
 			  Sieve.creol \

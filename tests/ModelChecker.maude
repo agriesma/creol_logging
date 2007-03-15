@@ -1,0 +1,8 @@
+***
+*** Test suite for the model checker.
+***
+set show timing off .
+set show advise off .
+load modelchecker .
+
+quit

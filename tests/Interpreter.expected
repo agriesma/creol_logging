@@ -1,0 +1,25 @@
+==========================================
+reduce in SUBST : insert('var1, str("test"), noSub) .
+result Entry{Aid,Data}: 'var1 |-> str("test")
+==========================================
+reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub)) .
+result Subst: 'var1 |-> str("test"), 'var2 |-> int(4)
+==========================================
+reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub))[
+    'var1] .
+result Data: str("test")
+==========================================
+reduce in SUBST : upTerm(insert('var1, str("test"), noSub)) .
+result GroundTerm: '_|->_[''var1.Sort,'str`(_`)['"test".String]]
+==========================================
+reduce in SUBST : downTerm(upTerm(insert('var1, str("test"), noSub)), noSub) .
+result Entry{Aid,Data}: 'var1 |-> str("test")
+==========================================
+reduce in SUBST : downTerm(upTerm(insert('var2, int(4), insert('var1, str(
+    "test"), noSub))['var1]), null) .
+result Data: str("test")
+==========================================
+reduce in SUBST : dom('var1, insert('var2, int(4), insert('var1, str("test"),
+    noSub))) .
+result Bool: true
+Bye.

@@ -1,0 +1,99 @@
+***
+*** Test suite for the Interpreter.
+***
+*** Copyright (c) 2007
+***
+*** The purpose of this file is to create the files `prelude.creol'
+*** and `modelcheck.creol'.  These files have to be processed with
+*** m4, with either one of `CREOL' or `MODELCHECK' defined.
+***
+*** This program is free software; you can redistribute it and/or
+*** modify it under the terms of the GNU General Public License as
+*** published by the Free Software Foundation; either version 2 of the
+*** License, or (at your option) any later version.
+***
+*** This program is distributed in the hope that it will be useful, but
+*** WITHOUT ANY WARRANTY; without even the implied warranty of
+*** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*** General Public License for more details.
+***
+*** You should have received a copy of the GNU General Public License
+*** along with this program; if not, write to the Free Software
+*** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+*** 02111-1307, USA.
+***
+
+set show timing off .
+set show advise off .
+load interpreter
+
+red in SUBST : insert('var1, str("test"), noSub) .
+red in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub)) .
+red in SUBST : insert('var2, int(4), insert('var1, str("test"), noSub)) ['var1] .
+red in SUBST : upTerm(insert('var1, str("test"), noSub)) .
+red in SUBST : downTerm(upTerm(insert('var1, str("test"), noSub)),noSub) .
+red in SUBST : downTerm(upTerm(insert('var2, int(4), insert('var1, str("test"), noSub)) ['var1]), null) .
+red in SUBST : dom('var1, insert('var2, int(4), insert('var1, str("test"), noSub))) .
+
+red in GUARDS : int(4) & int(5) .
+red in GUARDS : upTerm(int(4) & int(5)) .
+red in GUARDS : upTerm(int(4) & int(5) & wait) .
+red in GUARDS : downTerm(upTerm(int(4) & int(5) & wait), noGuard) .
+red in GUARDS : 'test ? .
+red in GUARDS : 'add[[int(4) # int(5)]] & 'label ? & wait & bool(true) & wait .
+red in GUARDS : upTerm('add[[int(4) # int(5)]] & 'label ? & wait & bool(true) & wait) .
+red in GUARDS : downTerm(upTerm('add[[int(4) # int(5)]] & 'label ? & wait & bool(true) & wait), noGuard) .
+
+red in STATEMENTS : 'var ::= int(4) .
+red in STATEMENTS : 'var ::= new 'C (int(5) # bool(true)) .
+red in STATEMENTS : upTerm('var ::= new 'C (null)) .
+red in STATEMENTS : downTerm(upTerm('var ::= new 'C (int(5) # bool(true))), skip) .
+red in STATEMENTS : await 'test ? .
+red in STATEMENTS : await (('test ?) & wait) .
+red in STATEMENTS : downTerm(upTerm(await (('test ?) & wait)), skip) .
+red in STATEMENTS : ! 'method (null) .
+red in STATEMENTS : cont (5) .
+red in STATEMENTS : downTerm(upTerm(cont (5)),skip) .
+red in STATEMENTS : downTerm(upTerm('getNeighbor(null ; null)), skip) .
+red in STATEMENTS : 'label ! ('oid . 'mtd) (emp) .
+red in STATEMENTS : downTerm(upTerm('label ! ('oid . 'mtd) (emp)), skip) .
+
+red in STM-LIST : ('var ::= int(4)) [] ('var ::= new 'C (null)) .
+red in STM-LIST : downTerm(upTerm(('var ::= int(4)) [] ('var ::= new 'C (null))), skip) .
+red in STM-LIST : (('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip .
+red in STM-LIST : downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip),skip) .
+red in STM-LIST : (('var ::= int(4)) [] ('var ::= new 'C (null))) ||| empty ||| skip .
+red in STM-LIST : downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| emp ||| skip), skip) .
+red in STM-LIST : downTerm(upTerm((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| nil ||| skip), nil) .
+
+red in STM-LIST : ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub)) .
+red in STM-LIST : upTerm(((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub))) .
+red in STM-LIST : downTerm(upTerm(((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub))), idle ) .
+
+red in STM-LIST : (((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip), insert('var2, int(4), insert('var1, str("test"), noSub))) ++ idle .
+
+red in STM-LIST : (('var := bool(true)), noSub) .
+
+red in CLASS : < 'getNeighbor : Mtdname | Latt: ('label |-> null, 'caller |-> null, 'n |-> null), Code: skip > .
+red in CLASS : < 'Butler : Cl | Inh: noInh , Att: noSub , Mtds: noMtd , Ocnt: 0 > .
+red in CLASS : ('butler . 'getNeighbor)(emp ; emp) .
+red in CLASS : ('butler ! 'getNeighbor(emp)) .
+red in CLASS : ('run(emp ; emp)) # ('run(emp ; emp)) .
+red in CLASS : ('butler ! 'getNeighbor(emp)) # ('run(emp ; emp)) .
+
+red in OBJECT : < 'object1 : 'class | Att: noSub, Pr: idle, PrQ: noProc, Lcnt: 0 > .
+red in OBJECT : downTerm(upTerm(< 'object1 : 'class | Att: noSub, Pr: idle, PrQ: idle, Lcnt: 0 >), noObj) .
+
+red in COMMUNICATION : noMsg .
+red in COMMUNICATION : comp(5, emp) .
+red in COMMUNICATION : invoc('object1, 5, 'method1, emp) .
+red in COMMUNICATION : upTerm(comp(5, emp)) .
+red in COMMUNICATION : downTerm(upTerm(comp(5, emp)), noMsg) .
+red in COMMUNICATION : upTerm(invoc('object1, 5, 'method1, emp)) .
+red in COMMUNICATION : downTerm(upTerm(invoc('object1, 5, 'method1, emp)), noMsg) .
+red in COMMUNICATION : < 'Ob1 : Qu | Dealloc: noDealloc , Ev: noMsg > .
+red in COMMUNICATION : upTerm(< 'Ob1 : Qu | Dealloc: noDealloc , Ev: noMsg >) .
+red in COMMUNICATION : downTerm(upTerm(< 'Ob1 : Qu | Dealloc: noDealloc, Ev: noMsg >), noQu) .
+
+
+quit
