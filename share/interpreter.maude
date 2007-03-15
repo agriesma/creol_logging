@@ -26,7 +26,7 @@ load signature
 *** THE MACHINE ***
 mod INTERPRETER is
 
-  protecting AUX-FUNCTIONS .
+  extending AUX-FUNCTIONS .
 
   vars O O' : Oid .
   vars C C' : Cid .
@@ -126,13 +126,10 @@ findAttr(newId(C',F), I, S',
 *** ATTRIBUTE inheritance with multiple inheritance
 *** CMC assumes that all attributes names are (globally) different
 
-op findAttr  : Oid InhList Subst StmList StmList -> Msg [ctor] . *** collect attributes
-op foundAttr : Oid Subst  StmList StmList        -> Msg [ctor] . *** resulting Subst
-*** look in InhList, collect attributes in Subst, give result to Oid
-*** SL SL' SL''
+op findAttr  : Oid InhList Subst StmList StmList -> Msg [ctor format (n d)] .
+op foundAttr : Oid Subst  StmList StmList        -> Msg [ctor format (n d)] .
 
-eq findAttr(O, noInh, S, SL, SL')  *** collection completed.
-       = foundAttr(O, S, SL, SL') .
+eq findAttr(O, noInh, S, SL, SL') = foundAttr(O, S, SL, SL') .
 
 eq findAttr(O,((C < EL >) ## I),S, SL, SL') 
 < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
