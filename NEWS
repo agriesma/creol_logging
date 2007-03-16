@@ -1,11 +1,14 @@
 
-creolcomp 0.0b (YYYY-MM-DD): alpha release.
+creoltools 0.0b (2007-03-16): alpha release.
 
+The package has been renamed to `creoltools' and the compiler to `creolc'.
+The pretty printer has been improved and it does not emit so many parenthesis.
+Corrections to the maude interpreter and the model checker were made.
 Output can now be stored as XML, use the flag -x name to write the abstract
-syntax tree to the file name.
+syntax tree to the file name.  By default the output will now be written to
+`out.maude'.  The file name can be overridden by supplying the option -o name.
+If printing to the screen is desired, use `-o -' or `-x -'.
 
-By default the output will now be written to out.maude.  The file name can
-be overridden by supplying the option -o name.
 
 
 creolcomp 0.0a (2007-03-05): alpha release.
