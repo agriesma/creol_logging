@@ -722,7 +722,8 @@ and pretty_print_expression out_channel exp =
 	| Binary(_, Or, l, r) -> generic 59 l " or " r
 	| Binary(_, Xor, l, r) -> generic 57 l " xor " r
 	(* | Binary(_, Implies, l, r) -> generic 61 l " implies " r *)
-	| FuncCall (_, i, a) -> output_string out_channel (i ^ "[");
+	| FuncCall (_, i, a) ->
+	    output_string out_channel (i ^ "[");
 	    pretty_print_expression_list out_channel a;
 	    output_string out_channel "]";
   in
@@ -756,12 +757,12 @@ let rec maude_of_creol_expression out =
     | Id (_, i) -> output_string out ("'" ^ i)
     | Unary (_, o, e) ->
 	output_string out ((match o with
-	    Not ->  "'not"
-	  | UMinus -> "'neg") ^ " [[ ");
+	    Not ->  "( 'not"
+	  | UMinus -> "( 'neg") ^ " [[ ");
 	maude_of_creol_expression out e;
-	output_string out " ]]"
+	output_string out " ]] )"
     | Binary (_, o, l, r) ->
-	output_string out ((match o with
+	output_string out ("( " ^ ((match o with
 	    Plus -> "'plus"
 	  | Minus -> "'minus"
 	  | Times -> "'times"
@@ -772,12 +773,13 @@ let rec maude_of_creol_expression out =
           | Lt -> "'less"
           | Le -> "'lessEq"
           | Eq -> "'equal"
-	  | (Xor|Gt|Ge|Ne) -> assert false ) ^ "[[ ");
+	  | (Xor|Gt|Ge|Ne) -> assert false ) ^ "[[ "));
 	maude_of_creol_expression_list out (l::[r]);
-	output_string out " ]]"
-    | FuncCall(_, f, a) -> output_string out ("'" ^ f ^ "[[ " );
+	output_string out " ]] )"
+    | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
 	maude_of_creol_expression_list out a;
-	output_string out " ]]"
+	output_string out " ]] )"
+	    (* Queer, but parens are required for parsing Appl in ExprList. *)
 and maude_of_creol_expression_list out_channel =
   (** Compile a list of expressions into the Creol Maude Machine. *)
   function
@@ -814,9 +816,9 @@ let maude_of_creol_statement out stmt =
       Skip _ -> output_string out "skip"
     | Await (_, g) -> output_string out "await "; maude_of_creol_guard out g
     | New (_, i, c, a) ->
-	output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "(") ;
+	output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "( ") ;
 	maude_of_creol_expression_list out a ;
-	output_string out ")"
+	output_string out " )"
     | Assign (_, i, e) ->
 	maude_of_creol_identifier_list out i;
 	output_string out " ::= " ;

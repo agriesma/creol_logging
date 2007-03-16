@@ -125,7 +125,8 @@ fmod STATEMENTS is
   op skip : -> Stm [ctor] .
   op _::=_  : AidList ExprList -> Stm [ctor prec 39] .
 
-  op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 39 format (d b d o d d d d)] .
+  op _::= new_(_) : Aid Cid ExprList -> Stm
+	[ctor prec 39 format (d b d o d d d d)] .
   op _(_;_) : Mid ExprList AidList -> Stm [ctor prec 37] .
   op !_(_)  : Mid ExprList -> Stm [ctor] .           *** async. call (without label)
   op _!_(_) : Qid Mid ExprList -> Stm [ctor] .       *** async. call (with label)
