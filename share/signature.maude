@@ -36,7 +36,7 @@ endv
 fmod SUBST is
   protecting EXT-BOOL .
   protecting CREOL-DATA-SIG .
-  protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst) .
+  protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst, op empty : -> Map{Aid, Data} to noSubst ) .
 
   op dom : Aid Subst -> Bool .
 
@@ -46,10 +46,10 @@ fmod SUBST is
 
   vars A A' : Aid . var D : Data . vars S1 S2  : Subst .
 
-  eq S1 # empty = S1 .
+  eq S1 # noSubst = S1 .
   eq S1 # ((A |-> D), S2) = insert(A,D,S1) # S2 .
 
-  eq dom(A, empty) = false .
+  eq dom(A, noSubst) = false .
   eq dom(A, ((A |-> D), S1)) = true .
   eq dom(A, ((A' |-> D), S1)) = false [owise] .
   eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
@@ -118,7 +118,7 @@ fmod STATEMENTS is
   sorts Mid Cid Stm .             *** Mid = method identifiers
   subsort Qid < Mid Cid .         *** Cid = class identifiers
 
-  op _._   : Expr Mid -> Mid [ctor prec 33] .
+  *** op _._   : Expr Mid -> Mid [ctor prec 33] .
   op _@_   : Qid  Cid -> Mid [ctor prec 33] .
   *** op _@_   : Aid  Cid -> Aid [ctor] . *** attribute qualified by class name (local)
 
@@ -129,10 +129,13 @@ fmod STATEMENTS is
   op _::= new_(_) : Aid Cid ExprList -> Stm
 	[ctor prec 39 format (d b d o d d d d)] .
   op _(_;_) : Mid ExprList AidList -> Stm [ctor prec 37] .
-  op !_(_)  : Mid ExprList -> Stm [ctor] .           *** async. call (without label)
-  op _!_(_) : Qid Mid ExprList -> Stm [ctor] .       *** async. call (with label)
-  op _?(_)  : Qid AidList -> Stm [ctor] .           *** async. reply statement
-  op _?(_)  : Label AidList -> Stm [ctor] .         *** sync reply
+  op _._(_;_) : Expr Mid ExprList AidList -> Stm [ctor prec 37] .
+  op !_(_)  : Mid ExprList -> Stm [ctor] .
+  op !_._(_)  : Expr Mid ExprList -> Stm [ctor] .
+  op _!_(_) : Aid Mid ExprList -> Stm [ctor] .
+  op _!_._(_) : Aid Expr Mid ExprList -> Stm [ctor] .
+  op _?(_)  : Aid AidList -> Stm [ctor] .
+  op _?(_)  : Label AidList -> Stm [ctor] .
   op cont : Label -> Stm [ctor] .                    *** sync. scheduling
   op await_ : Guard    -> Stm [ctor] .               *** guard statements
   op return : ExprList -> Stm [ctor] .               *** method return
@@ -186,7 +189,7 @@ fmod STM-LIST is
   op _,_ : Subst StmList -> Process [ctor format (o r nb o)] . 
   var L : Subst .
   eq (L, nil) = idle . *** if 'label is needed this is dangerous!
-  **** eq idle = (empty, nil).  *** may use in right hand sides, but not left.
+  eq idle = (noSubst, nil) [nonexec metadata "Will cause infinite loops."] .
 
 endfm
 
@@ -230,7 +233,7 @@ fmod CLASS is
 
   op emptyClass : -> Class .
   eq emptyClass =
-    < 'noClass : Cl | Inh: noInh , Par: noAid, Att: empty, Mtds: noMtd ,
+    < 'noClass : Cl | Inh: noInh , Par: noAid, Att: noSubst, Mtds: noMtd ,
       Ocnt: 0 > .
 
   *** Class/method functions ***
@@ -324,8 +327,8 @@ fmod CONFIG is
   op main : Cid ExprList -> Configuration .
 
   var C : Cid . var E : ExprList .
-  eq main(C,E) = < ob('main) : 'class | Att: empty, 
-                 Pr: (empty, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
+  eq main(C,E) = < ob('main) : 'class | Att: noSubst, 
+                 Pr: (noSubst, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
                < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg > .
 
 endfm

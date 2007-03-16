@@ -1,11 +1,7 @@
 ***
-*** Test suite for the Interpreter.
+*** Signature.maude -- Test cases for the common signature.
 ***
 *** Copyright (c) 2007
-***
-*** The purpose of this file is to create the files `prelude.creol'
-*** and `modelcheck.creol'.  These files have to be processed with
-*** m4, with either one of `CREOL' or `MODELCHECK' defined.
 ***
 *** This program is free software; you can redistribute it and/or
 *** modify it under the terms of the GNU General Public License as

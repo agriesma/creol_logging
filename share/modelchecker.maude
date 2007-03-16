@@ -142,7 +142,7 @@ eq findAttr(O,((C < EL >) ## I),S, SL, SL')
 
 eq foundAttr(O, S', SL, SL') 
 < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
- = < O : C | Att: ('this |-> O, S'), Pr: (empty, SL ; SL'), PrQ: W, Lcnt: N > .
+ = < O : C | Att: ('this |-> O, S'), Pr: (noSubst, SL ; SL'), PrQ: W, Lcnt: N > .
 
 *** Non-deterministic choice ***
 *** Choice is comm, so [nondet] considers both SL1 and SL2.

@@ -926,7 +926,7 @@ let rec maude_of_creol_parameter_list out =
 
 let rec maude_of_creol_class_attribute_list out =
   function
-      [] -> output_string out "empty" 
+      [] -> output_string out "noSubst" 
     | [v] -> output_string out ("'" ^ v.var_name ^ " |-> null")
     | v::r -> output_string out ("'" ^ v.var_name ^ " |-> null , ");
 	maude_of_creol_class_attribute_list out r
