@@ -34,6 +34,7 @@ endv
 
 *** Bound variables ***
 fmod SUBST is
+  protecting EXT-BOOL .
   protecting CREOL-DATA-SIG .
   protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst) .
 
