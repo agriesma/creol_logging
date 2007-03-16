@@ -1,0 +1,21 @@
+==========================================
+reduce in PROGRAM : init .
+result Configuration: 
+< 'Generator : Cl | Inh: noInh,Par: noAid,Att: 'n |-> null, 'next |-> null,
+    Mtds:
+< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'next ::=
+    new 'Sieve(int(2)) ; 'n ::= int(3) ; return(emp) > *
+< 'run : Mtdname | Param: noAid,Latt: 'r |-> null,Code: skip ; skip ; 'next .
+    'send('n : 'r) ; 'n ::= ('plus[['n # int(1)]]) ; ! 'this . 'run(emp) ;
+    return(emp) >,Ocnt: 0 >
+ 
+< 'Sieve : Cl | Inh: noInh,Par: 'p,Att: 'next |-> null, 'p |-> null,Mtds:
+< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; skip ;
+    return(emp) > *
+< 'send : Mtdname | Param: 'n,Latt: 'd |-> null, 'n |-> null, 'r |-> null, 'res
+    |-> null,Code: skip ; 'd ::= ('div[['n # 'p]]) ; 'r ::= ('minus[['n # (
+    'times[['d # 'p]])]]) ; if 'equal[['r # int(0)]] th 'res ::= bool(false) el
+    if 'not[['equal[['next # null]]]] th 'next . 'send('n : 'res) el 'next ::=
+    new 'Sieve('n) ; 'res ::= bool(true) fi fi ; return('res) >,Ocnt: 0 >
+
+Bye.

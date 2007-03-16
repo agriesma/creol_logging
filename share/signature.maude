@@ -115,31 +115,24 @@ endfm
 fmod STATEMENTS is
   pr GUARDS .
 
-  sorts Mid Cid Stm .             *** Mid = method identifiers
-  subsort Qid < Mid Cid .         *** Cid = class identifiers
+  sorts Mid Cid Stm .
+  subsort Qid < Mid Cid .
 
-  *** op _._   : Expr Mid -> Mid [ctor prec 33] .
+  op _._   : Expr Mid -> Mid [ctor prec 33] .
   op _@_   : Qid  Cid -> Mid [ctor prec 33] .
-  *** op _@_   : Aid  Cid -> Aid [ctor] . *** attribute qualified by class name (local)
 
-  *** CREOL program syntax
   op skip : -> Stm [ctor] .
   op _::=_  : AidList ExprList -> Stm [ctor prec 39] .
-
-  op _::= new_(_) : Aid Cid ExprList -> Stm
-	[ctor prec 39 format (d b d o d d d d)] .
-  op _(_;_) : Mid ExprList AidList -> Stm [ctor prec 37] .
-  op _._(_;_) : Expr Mid ExprList AidList -> Stm [ctor prec 37] .
+  op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 format (d b d o d d d d)] .
+  op _(_:_) : Mid ExprList AidList -> Stm [ctor prec 39] .
   op !_(_)  : Mid ExprList -> Stm [ctor] .
-  op !_._(_)  : Expr Mid ExprList -> Stm [ctor] .
-  op _!_(_) : Aid Mid ExprList -> Stm [ctor] .
-  op _!_._(_) : Aid Expr Mid ExprList -> Stm [ctor] .
-  op _?(_)  : Aid AidList -> Stm [ctor] .
-  op _?(_)  : Label AidList -> Stm [ctor] .
-  op cont : Label -> Stm [ctor] .                    *** sync. scheduling
-  op await_ : Guard    -> Stm [ctor] .               *** guard statements
-  op return : ExprList -> Stm [ctor] .               *** method return
-  op free : AidList -> Stm [ctor] .                  *** deallocation for labels
+  op _!_(_) : Aid Mid ExprList -> Stm [ctor prec 39] .
+  op _?(_)  : Aid AidList -> Stm [ctor prec 39] .
+  op _?(_)  : Label AidList -> Stm [ctor prec 39] .
+  op cont : Label -> Stm [ctor] .
+  op await_ : Guard    -> Stm [ctor] .
+  op return : ExprList -> Stm [ctor] .
+  op free : AidList -> Stm [ctor] .
 endfm
 
 view Stm from TRIV to STATEMENTS is
@@ -149,17 +142,18 @@ endv
 fmod STM-LIST is
   pr STATEMENTS .                
   protecting LIST{Stm} * (sort List{Stm} to StmList,
-                          sort NeList{Stm} to NeStmList) .
+                          sort NeList{Stm} to NeStmList,
+			  op nil : -> List{Stm} to noStm,
+			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_) .
 
   op if_th_el_fi : Expr StmList StmList -> Stm [ctor] . 
   op if_th_fi    : Expr StmList -> Stm [ctor] . 
   op while_do_od : Expr StmList -> Stm [ctor] .
-  op _[]_  : StmList StmList -> Stm [ctor comm assoc prec 43] .
-  op _|||_ : StmList StmList -> Stm [ctor comm assoc prec 45] .
+  op _[]_  : StmList StmList -> Stm [ctor comm assoc prec 45] .
+  op _|||_ : StmList StmList -> Stm [ctor comm assoc prec 47] .
   op _MERGER_  : StmList StmList -> Stm [assoc] .
-  op _;_ :   StmList StmList -> StmList [ctor assoc id: nil prec 41] .
 
-  var SL : StmList .  *** note: SL matches also empty
+  var SL : StmList .
   var NeSL : NeStmList .
   var EL : ExprList .
   var B : Expr .
@@ -169,27 +163,27 @@ fmod STM-LIST is
   *** Some simplifications:
   eq await noGuard ; NeSL = NeSL . *** could be SL
   ***  eq skip ; SL = SL . *** may affect ||| order 
-  eq (nil []  SL)  = SL . 
-  eq (nil ||| SL)  = SL . 
-  eq (nil MERGER SL)      = SL .
-  eq (SL MERGER nil)      = SL .
+  eq (noStm []  SL)  = SL . 
+  eq (noStm ||| SL)  = SL . 
+  eq (noStm MERGER SL)      = SL .
+  eq (SL MERGER noStm)      = SL .
 
   eq await (wait & PG) = await wait ; await PG .
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
 
-  sorts Process NeMProc MProc .
-  subsort Process < NeMProc < MProc .    *** Multiset of Processes
-  op noProc : -> MProc [ctor] .
-  op _++_ : NeMProc MProc -> NeMProc [ctor assoc comm id: noProc] .
-  op _++_ : MProc NeMProc -> NeMProc [ctor assoc comm id: noProc] .
-  op _++_ : MProc MProc   -> MProc   [ctor assoc comm id: noProc] .
-
-  *** A Process is a pair of Prog and bound variables ***
+  sort Process .
   op idle : -> Process [format (!b o)] .  
   op _,_ : Subst StmList -> Process [ctor format (o r nb o)] . 
   var L : Subst .
-  eq (L, nil) = idle . *** if 'label is needed this is dangerous!
-  eq idle = (noSubst, nil) [nonexec metadata "Will cause infinite loops."] .
+  eq (L, noStm) = idle . *** if 'label is needed this is dangerous!
+  eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
+
+
+  sorts NeMProc MProc .
+  subsort Process < NeMProc < MProc .    *** Multiset of Processes
+  op noProc : -> MProc [ctor] .
+  op _++_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 format (d r os d)] .
+  op _++_ : NeMProc MProc -> NeMProc [ctor ditto] .
 
 endfm
 

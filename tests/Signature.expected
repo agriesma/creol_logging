@@ -1,26 +1,26 @@
 ==========================================
-reduce in SUBST : insert('var1, str("test"), empty) .
-result Entry{Aid,Data}: 'var1 |-> str("test")
+reduce in SUBST : insert('var1, label(1), noSubst) .
+result Entry{Aid,Data}: 'var1 |-> label(1)
 ==========================================
-reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), empty)) .
-result Subst: 'var1 |-> str("test"), 'var2 |-> int(4)
+reduce in SUBST : insert('var2, label(4), insert('var1, label(1), noSubst)) .
+result Subst: 'var1 |-> label(1), 'var2 |-> label(4)
 ==========================================
-reduce in SUBST : insert('var2, int(4), insert('var1, str("test"), empty))[
+reduce in SUBST : insert('var2, label(4), insert('var1, label(1), noSubst))[
     'var1] .
-result Data: str("test")
+result Label: label(1)
 ==========================================
-reduce in SUBST : upTerm(insert('var1, str("test"), empty)) .
-result GroundTerm: '_|->_[''var1.Sort,'str`(_`)['"test".String]]
+reduce in SUBST : upTerm(insert('var1, label(1), noSubst)) .
+result GroundTerm: '_|->_[''var1.Sort,'label['s_['0.Zero]]]
 ==========================================
-reduce in SUBST : downTerm(upTerm(insert('var1, str("test"), empty)), empty) .
-result Entry{Aid,Data}: 'var1 |-> str("test")
+reduce in SUBST : downTerm(upTerm(insert('var1, label(1), noSubst)), noSubst) .
+result Entry{Aid,Data}: 'var1 |-> label(1)
 ==========================================
-reduce in SUBST : downTerm(upTerm(insert('var2, int(4), insert('var1, str(
-    "test"), empty))['var1]), null) .
-result Data: str("test")
+reduce in SUBST : downTerm(upTerm(insert('var2, label(4), insert('var1, label(
+    1), noSubst))['var1]), null) .
+result Label: label(1)
 ==========================================
-reduce in SUBST : dom('var1, insert('var2, int(4), insert('var1, str("test"),
-    empty))) .
+reduce in SUBST : dom('var1, insert('var2, label(4), insert('var1, label(1),
+    noSubst))) .
 result Bool: true
 ==========================================
 reduce in GUARDS : int(4) & int(5) .
@@ -84,14 +84,23 @@ result Stm: cont(label(5))
 reduce in STATEMENTS : downTerm(upTerm(cont(label(5))), skip) .
 result Stm: cont(label(5))
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm('getNeighbor(null ; noAid)), skip) .
-result Stm: 'getNeighbor(null ; noAid)
+reduce in STATEMENTS : downTerm(upTerm('getNeighbor(null : noAid)), skip) .
+result Stm: 'getNeighbor(null : noAid)
 ==========================================
 reduce in STATEMENTS : 'label ! 'oid . 'mtd(emp) .
 result Stm: 'label ! 'oid . 'mtd(emp)
 ==========================================
 reduce in STATEMENTS : downTerm(upTerm('label ! 'oid . 'mtd(emp)), skip) .
 result Stm: 'label ! 'oid . 'mtd(emp)
+==========================================
+reduce in STM-LIST : noStm .
+result StmList: noStm
+==========================================
+reduce in STM-LIST : skip .
+result Stm: skip
+==========================================
+reduce in STM-LIST : skip .
+result Stm: skip
 ==========================================
 reduce in STM-LIST : 'var ::= int(4)[]'var ::= new 'C(null) .
 result Stm: 'var ::= int(4)[]'var ::= new 'C(null)
@@ -108,16 +117,17 @@ reduce in STM-LIST : downTerm(upTerm(skip ||| 'var ::= int(4)[]'var ::= new 'C(
 result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
 ==========================================
 reduce in STM-LIST : downTerm(upTerm('var ::= int(4)[]'var ::= new 'C(null) |||
-    skip ||| nil), (nil).NatList) .
+    skip ||| noStm), noStm) .
 result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
 ==========================================
-reduce in STM-LIST : insert('var2, int(4), insert('var1, str("test"), empty)),
+reduce in STM-LIST : insert('var2, int(4), insert('var1, str("test"),
+    noSubst)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
 result Process: ('var1 |-> str("test"), 'var2 |-> int(4)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
 reduce in STM-LIST : upTerm(insert('var2, int(4), insert('var1, str("test"),
-    empty)),
+    noSubst)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))) .
 result GroundTerm: '_`,_['_`,_['_|->_[''var1.Sort,'str`(_`)['"test".String]],
     '_|->_[''var2.Sort,'int`(_`)['s_^4['0.Zero]]]],'_|||_['skip.Stm,'_`[`]_[
@@ -125,21 +135,30 @@ result GroundTerm: '_`,_['_`,_['_|->_[''var1.Sort,'str`(_`)['"test".String]],
     ''C.Sort,'null.Data]]]]
 ==========================================
 reduce in STM-LIST : downTerm(upTerm(insert('var2, int(4), insert('var1, str(
-    "test"), empty)),
+    "test"), noSubst)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))), idle) .
 result Process: ('var1 |-> str("test"), 'var2 |-> int(4)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
 reduce in STM-LIST : idle ++ insert('var2, int(4), insert('var1, str("test"),
-    empty)),
+    noSubst)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
 result NeMProc: idle ++ ('var1 |-> str("test"), 'var2 |-> int(4)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
-reduce in STM-LIST : empty,
+reduce in STM-LIST : noSubst,
 'var ::= bool(true) .
-result Process: (empty).Subst,
+result Process: noSubst,
 'var ::= bool(true)
+==========================================
+reduce in STM-LIST : noProc .
+result MProc: noProc
+==========================================
+reduce in STM-LIST : upTerm(noProc) .
+result Constant: 'noProc.MProc
+==========================================
+reduce in STM-LIST : downTerm(upTerm(noProc), noProc) .
+result MProc: noProc
 ==========================================
 reduce in CLASS : < 'getNeighbor : Mtdname | Param: noAid,Latt: 'label |->
     null, 'caller |-> null, 'n |-> null,Code: skip > .
@@ -147,16 +166,18 @@ result Mtd: < 'getNeighbor : Mtdname | Param: noAid,Latt: 'caller |-> null,
     'label |-> null, 'n |-> null,Code: skip >
 ==========================================
 reduce in CLASS : 
-< 'Butler : Cl | Inh: noInh,Par: noAid,Att: empty,Mtds:
+< 'Butler : Cl | Inh: noInh,Par: noAid,Att: noSubst,Mtds:
 noMtd,Ocnt: 0 >
  .
 result Class: 
-< 'Butler : Cl | Inh: noInh,Par: noAid,Att: empty,Mtds:
+< 'Butler : Cl | Inh: noInh,Par: noAid,Att: noSubst,Mtds:
 noMtd,Ocnt: 0 >
 
 ==========================================
-reduce in CLASS : 'butler . 'getNeighbor(emp ; noAid) .
-result Stm: 'butler . 'getNeighbor(emp ; noAid)
+reduce in CLASS : 'butler . 'getNeighbor (emp ; noAid) .
+result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
+    ModuleExpression,Header,ExprList,InhList,Guard,AidList,Mid,Cid]: 'butler .
+    'getNeighbor (emp ; noAid)
 ==========================================
 reduce in CLASS : 'butler ! 'getNeighbor(emp) .
 result Stm: 'butler ! 'getNeighbor(emp)
@@ -166,21 +187,27 @@ result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
     ModuleExpression,Header,ExprList,InhList,Guard,AidList,Mid,Cid]: 'run (emp
     ; emp) # 'run (emp ; emp)
 ==========================================
-reduce in CLASS : ('butler ! 'getNeighbor(emp)) ; 'run(emp ; noAid) .
-result StmList: ('butler ! 'getNeighbor(emp)) ; 'run(emp ; noAid)
+reduce in CLASS : 'butler ! 'getNeighbor(emp) ; 'run(emp : noAid) .
+result NeStmList: 'butler ! 'getNeighbor(emp) ; 'run(emp : noAid)
 ==========================================
 reduce in OBJECT : 
-< 'object1 : 'class | Att: empty,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< ob('object1) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
  .
-result [Object]: 
-< 'object1 : 'class | Att: empty,Pr: idle,PrQ: noProc,Lcnt: 0 >
+result Object: 
+< ob('object1) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 ==========================================
+reduce in OBJECT : upTerm(
+< ob('object1) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+) .
+result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Lcnt:_>['ob[''object1.Sort],
+    ''class.Sort,'noSubst.Subst,'idle.Process,'noProc.MProc,'0.Zero]
+==========================================
 reduce in OBJECT : downTerm(upTerm(
-< 'object1 : 'class | Att: empty,Pr: idle,PrQ: idle,Lcnt: 0 >
+< 'object1 : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 ), noObj) .
 result [Object]: 
-< 'object1 : 'class | Att: empty,Pr: idle,PrQ: idle,Lcnt: 0 >
+< 'object1 : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 ==========================================
 reduce in COMMUNICATION : noMsg .

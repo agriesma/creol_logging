@@ -1,0 +1,12 @@
+load interpreter
+mod PROGRAM is
+pr INTERPRETER .
+op init : -> Configuration [ctor] .
+eq init =
+< 'Alarmclock : Cl | Inh: noInh, Par: noAid, Att: 'now |-> null, Mtds: 
+  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; skip ; 'now ::= int(0) ; return ( emp ) > *
+  < 'wakeme : Mtdname | Param: 'n, Latt: 'n |-> null , 'alarmsetting |-> null, Code: skip ; skip ; 'alarmsetting ::= ( 'plus[[ 'now # 'n ]] ) ; ( await ( 'lessEq[[ 'alarmsetting # 'now ]] ) ) ; return ( emp ) > *
+  < 'tick : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; skip ; 'now ::= ( 'plus[[ 'now # int(1) ]] ) ; return ( emp ) >, Ocnt: 0 >
+
+.
+endm

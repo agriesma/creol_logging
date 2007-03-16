@@ -121,7 +121,7 @@ rl [new-object] :
 < newId(C',F) : C' | Att: S, Pr: idle, PrQ: noProc, Lcnt: 1 >
 < newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
 findAttr(newId(C',F), I, S', 
-    (AL ::= evalList(EL, (S # L))), ('init (emp ; noAid)) ; ('run (emp ; noAid))) .
+    (AL ::= evalList(EL, (S # L))), ('init (emp : noAid)) ; ('run (emp : noAid))) .
 
 *** ATTRIBUTE inheritance with multiple inheritance
 *** CMC assumes that all attributes names are (globally) different
@@ -134,7 +134,7 @@ eq findAttr(O, noInh, S, SL, SL') = foundAttr(O, S, SL, SL') .
 eq findAttr(O,((C < EL >) ## I),S, SL, SL') 
 < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
  = findAttr(O, I ## I',(L # S), (AL ::= EL) ; SL, 
-              ('init @ C(emp ; emp)) ; SL') 
+              ('init @ C(emp : emp)) ; SL') 
    < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
 
 eq foundAttr(O, S', SL, SL') 
@@ -191,7 +191,7 @@ rl [continue2] :
 ceq boundMtd(O, (L', SL')) 
 < O : C | Att: S,Pr: (L, ((Lab ?(AL)); SL)),PrQ: W,Lcnt: F >
 = 
-< O : C | Att: S,Pr: (L', SL' ; cont(Lab)),PrQ: (L,((await Lab ?) ; (Lab ?(AL)); SL)) ++ W,
+< O : C | Att: S,Pr: (L', SL' ; cont(Lab)),PrQ: (L,((Lab ?(AL)); SL)) ++ W,
           Lcnt: F > 
 if (L'['label] == Lab)
 [label local-call] .
@@ -292,10 +292,9 @@ boundMtd(O, P) < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
 => < O : C | Att: S, Pr: idle, PrQ: W ++ P, Lcnt: N > .
 
 rl [continue] :
-< O : C | Att: S, Pr: (L,cont(Lab)), PrQ: (L',((Lab ?(AL)); SL)) ++ W, Lcnt: F >
+< O : C | Att: S, Pr: (L, cont(Lab); SL), PrQ: (L',((Lab)?(AL); SL')) ++ W, Lcnt: F >
 =>
-*** < O : C | Att: S, Pr: (L',SL), PrQ: W, Lcnt: F > .
-< O : C | Att: S, Pr: (L',((Lab ?(AL)); SL)), PrQ: W, Lcnt: F > .
+< O : C | Att: S, Pr: (L',(Lab)?(AL); SL'), PrQ: W, Lcnt: F > .
 
 rl [local-async-qualified-req] :
 < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
@@ -316,7 +315,7 @@ rl [remote-async-reply] :
 invoc(O, label(N), M , evalList(EL, (S # L))) from O to eval(E, (S # L)) .
 
 *** Reduce sync. call  to async. call with reply 
-eq < O : C | Att: S, Pr: (L, (M(EL ; AL)); SL), PrQ: W, Lcnt: N >
+eq < O : C | Att: S, Pr: (L, (M(EL : AL)); SL), PrQ: W, Lcnt: N >
   =
   < O : C | Att: S, Pr: (L, (! M(EL)); (label(N) ?(AL)); SL), PrQ: W,  Lcnt: N >  .
 
@@ -329,7 +328,7 @@ comp(L['label], evalList(EL, (S # L))) from O to L['caller] .
 
 *** Optimization: reduce label to value only once
 eq < O : C |  Att: S, Pr: (L, (A ?(AL)); SL), PrQ: W, Lcnt: N > 
-= < O : C |  Att: S, Pr: (L, (L[A] ?(AL)); SL), PrQ: W, Lcnt: N > .
+= < O : C |  Att: S, Pr: (L, ((L[A]) ?(AL)); SL), PrQ: W, Lcnt: N > .
 
 eq
 < O : C |  Att: S, Pr: (L, (Lab ? (AL)); SL), PrQ: W, Lcnt: F > 

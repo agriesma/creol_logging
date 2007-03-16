@@ -13,7 +13,7 @@ result Configuration:
 < 'Process : Cl | Inh: noInh,Par: 'i,,'u,Att: 'i |-> null, 'neighbor |-> null,
     'status |-> null, 'u |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'status ::=
-    int(0) ; 'i . 'getNeighbor(emp ; 'neighbor) ; ! 'neighbor . 'receive('u) ;
+    int(0) ; 'i . 'getNeighbor(emp : 'neighbor) ; ! 'neighbor . 'receive('u) ;
     return(emp) > *
 < 'receive : Mtdname | Param: 'v,Latt: 'v |-> null,Code: skip ; skip ; if
     'less[['u # 'v]] th ! 'neighbor . 'receive('v) el if 'equal[['v # 'u]] th
@@ -26,11 +26,13 @@ rewrite in PROGRAM : init main('Init, emp) .
 result Configuration: 
 < ob('Init0) : Qu | Dealloc: noDealloc,Ev: noMsg >
  
-< ob('Process0) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Process0) : Qu | Dealloc: noDealloc,Ev: comp(label(3),emp) + comp(label(
+    5),emp) + comp(label(6),emp) >
  
-< ob('Process1) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Process1) : Qu | Dealloc: noDealloc,Ev: comp(label(3),emp) + comp(label(
+    5),emp) >
  
-< ob('Process2) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Process2) : Qu | Dealloc: noDealloc,Ev: comp(label(3),emp) >
  
 < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
  
@@ -46,7 +48,7 @@ result Configuration:
 < 'Process : Cl | Inh: noInh,Par: 'i,,'u,Att: 'i |-> null, 'neighbor |-> null,
     'status |-> null, 'u |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'status ::=
-    int(0) ; 'i . 'getNeighbor(emp ; 'neighbor) ; ! 'neighbor . 'receive('u) ;
+    int(0) ; 'i . 'getNeighbor(emp : 'neighbor) ; ! 'neighbor . 'receive('u) ;
     return(emp) > *
 < 'receive : Mtdname | Param: 'v,Latt: 'v |-> null,Code: skip ; skip ; if
     'less[['u # 'v]] th ! 'neighbor . 'receive('v) el if 'equal[['v # 'u]] th
@@ -57,26 +59,17 @@ result Configuration:
 < ob('Init0) : 'Init | Att: 'p1 |-> ob('Process0), 'p2 |-> ob('Process1), 'p3
     |-> ob('Process2), 'this |-> ob('Init0),Pr: idle,PrQ: noProc,Lcnt: 3 >
  
-< ob('Process0) : 'Process | Att: 'i |-> ob('Init0), 'neighbor |-> null,
-    'status |-> int(0), 'this |-> ob('Process0), 'u |-> int(1),Pr: ('caller |->
-    ob('Process0), 'label |-> label(1)),
-'i . 'getNeighbor(emp ; 'neighbor) ; ! 'neighbor . 'receive('u) ; return(emp) ;
-    cont(label(1)),PrQ: noSubst,
-await (label(1) ?) ; (label(1) ?(noAid)) ; 'run(emp ; noAid),Lcnt: 2 >
+< ob('Process0) : 'Process | Att: 'i |-> ob('Init0), 'neighbor |-> ob(
+    'Process2), 'status |-> int(0), 'this |-> ob('Process0), 'u |-> int(1),Pr:
+    idle,PrQ: noProc,Lcnt: 7 >
  
-< ob('Process1) : 'Process | Att: 'i |-> ob('Init0), 'neighbor |-> null,
-    'status |-> int(0), 'this |-> ob('Process1), 'u |-> int(2),Pr: ('caller |->
-    ob('Process1), 'label |-> label(1)),
-'i . 'getNeighbor(emp ; 'neighbor) ; ! 'neighbor . 'receive('u) ; return(emp) ;
-    cont(label(1)),PrQ: noSubst,
-await (label(1) ?) ; (label(1) ?(noAid)) ; 'run(emp ; noAid),Lcnt: 2 >
+< ob('Process1) : 'Process | Att: 'i |-> ob('Init0), 'neighbor |-> ob(
+    'Process0), 'status |-> int(0), 'this |-> ob('Process1), 'u |-> int(2),Pr:
+    idle,PrQ: noProc,Lcnt: 6 >
  
-< ob('Process2) : 'Process | Att: 'i |-> ob('Init0), 'neighbor |-> null,
-    'status |-> int(0), 'this |-> ob('Process2), 'u |-> int(3),Pr: ('caller |->
-    ob('Process2), 'label |-> label(1)),
-'i . 'getNeighbor(emp ; 'neighbor) ; ! 'neighbor . 'receive('u) ; return(emp) ;
-    cont(label(1)),PrQ: noSubst,
-await (label(1) ?) ; (label(1) ?(noAid)) ; 'run(emp ; noAid),Lcnt: 2 >
+< ob('Process2) : 'Process | Att: 'i |-> ob('Init0), 'neighbor |-> ob(
+    'Process1), 'status |-> int(1), 'this |-> ob('Process2), 'u |-> int(3),Pr:
+    idle,PrQ: noProc,Lcnt: 5 >
  
 < ob('main) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 

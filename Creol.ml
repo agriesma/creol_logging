@@ -814,7 +814,9 @@ let maude_of_creol_statement out stmt =
   in let rec print prec =
   function
       Skip _ -> output_string out "skip"
-    | Await (_, g) -> output_string out "await "; maude_of_creol_guard out g
+    | Await (_, g) -> output_string out "( await ";
+	maude_of_creol_guard out g;
+	output_string out " )"
     | New (_, i, c, a) ->
 	output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "( ") ;
 	maude_of_creol_expression_list out a ;
@@ -842,7 +844,7 @@ let maude_of_creol_statement out stmt =
 	output_string out (" . '" ^ m);
 	output_string out "( " ;
 	maude_of_creol_expression_list out a;
-	output_string out " ; " ;
+	output_string out " : " ;
 	maude_of_creol_identifier_list out r;
 	output_string out " )"
     | LocalSyncCall (_, m, l, u, i, o) ->
@@ -851,7 +853,7 @@ let maude_of_creol_statement out stmt =
 	(match u with None -> () | Some n -> output_string out (" << '" ^ n));
 	output_string out "( " ;
 	maude_of_creol_expression_list out i;
-	output_string out " ; " ;
+	output_string out " : " ;
 	maude_of_creol_identifier_list out o;
 	output_string out " )"
     | If (_, c, t, f) ->
@@ -905,9 +907,9 @@ let rec maude_of_creol_attribute_list out =
 
 let maude_of_creol_inherits out =
   function
-      (i, l) -> output_string out (i ^ "<");
+      (i, l) -> output_string out ("'" ^ i ^ " < ");
 	maude_of_creol_expression_list out l;
-	output_string out ">"
+	output_string out " > "
 
 let rec maude_of_creol_inherits_list out =
   function

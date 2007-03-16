@@ -4,7 +4,7 @@ pr INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
 < 'Process : Cl | Inh: noInh, Par: 'i ,, 'u, Att: 'i |-> null , 'u |-> null , 'status |-> null , 'neighbor |-> null, Mtds: 
-  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; skip ; 'status ::= int(0) ; 'i . 'getNeighbor( emp ; 'neighbor ) ;  ! 'neighbor . 'receive ( 'u ) ; return ( emp ) > *
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; skip ; 'status ::= int(0) ; 'i . 'getNeighbor( emp : 'neighbor ) ;  ! 'neighbor . 'receive ( 'u ) ; return ( emp ) > *
   < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; skip ; skip ; return ( emp ) > *
   < 'receive : Mtdname | Param: 'v, Latt: 'v |-> null, Code: skip ; skip ; if ( 'less[[ 'u # 'v ]] ) th  ! 'neighbor . 'receive ( 'v ) el if ( 'equal[[ 'v # 'u ]] ) th 'status ::= int(1) el skip fi fi ; return ( emp ) >, Ocnt: 0 >
 

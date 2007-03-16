@@ -25,6 +25,25 @@
 
 set show timing off .
 set show advise off .
-load interpreter
+load datatypes
+
+red in CREOL-DATA-SIG : emp .
+red in CREOL-DATA-SIG : emp # emp .
+red in CREOL-DATA-SIG : noAid .
+red in CREOL-DATA-SIG : noAid ,, noAid .
+red in CREOL-DATA-SIG : 'a .
+red in CREOL-DATA-SIG : 'a # 'a .
+red in CREOL-DATA-SIG : 'a ,, 'a .
+red in CREOL-DATA-SIG : 'a [[ 'a ]] .
+red in CREOL-DATA-SIG : null .
+red in CREOL-DATA-SIG : null # 'a .
+red in CREOL-DATA-SIG : null # ('a [[ 'a ]]) # null .
+red in CREOL-DATA-SIG : ('a [[ 'a ]]) # null .
+red in CREOL-DATA-SIG : null ,, 'a .
+red in CREOL-DATA-SIG : ob('a) .
+red in CREOL-DATA-SIG : label(1) .
+red in CREOL-DATA-SIG : 'equal [[ null # null ]] .
+red in CREOL-DATA-SIG : 'not [[ 'equal[[ null # null ]] ]] .
+red in CREOL-DATA-SIG : 'or [[ ('equal [[ null # null ]]) # ('equal [[ null # null ]]) ]] .
 
 quit

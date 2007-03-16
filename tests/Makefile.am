@@ -27,16 +27,19 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
-TESTFILES		= Datatypes.maude Datatypes.expected \
-			  Signature.maude Signature.expected \
-			  Interpreter.maude Interpreter.expected \
-			  ModelChecker.maude ModelChecker.expected \
-			  Alarmclock.creol \
-			  AsyncLCR.creol AsyncLCR.maude AsyncLCR.expected \
-			  Philosophers.creol \
-			  Sieve.creol \
-			  SingleCellBuffer.creol AuthorisationPolicies.creol \
-			  Fibonacci.creol SantaClaus.creol BoundedBuffer.creol
+TESTFILES	= Datatypes.maude Datatypes.expected \
+		  Signature.maude Signature.expected \
+		  Interpreter.maude Interpreter.expected \
+		  ModelChecker.maude ModelChecker.expected \
+		  Alarmclock.creol Alarmclock.maude Alarmclock.expected \
+		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.expected \
+		  Philosophers.creol Philosophers.maude Philosophers.expected \
+		  Sieve.creol Sieve.maude Sieve.expected \
+		  SingleCellBuffer.creol SingleCellBuffer.maude \
+		  SingleCellBuffer.expected \
+		  Fibonacci.creol Fibonacci.maude Fibonacci.expected \
+		  SantaClaus.creol SantaClaus.maude SantaClaus.expected \
+		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.expected
 
 TESTPARTS		= 
 

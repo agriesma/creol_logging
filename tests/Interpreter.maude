@@ -21,6 +21,6 @@
 
 set show timing off .
 set show advise off .
-load modelchecker .
+load interpreter .
 
 quit

@@ -3,10 +3,6 @@
 ***
 *** Copyright (c) 2007
 ***
-*** The purpose of this file is to create the files `prelude.creol'
-*** and `modelcheck.creol'.  These files have to be processed with
-*** m4, with either one of `CREOL' or `MODELCHECK' defined.
-***
 *** This program is free software; you can redistribute it and/or
 *** modify it under the terms of the GNU General Public License as
 *** published by the Free Software Foundation; either version 2 of the
@@ -49,34 +45,30 @@ fmod CREOL-DATA-SIG is
   op noAid : -> AidList [ctor] .
   op _,,_ : AidList AidList -> AidList [ctor assoc id: noAid] .
 
-  op _[[_]] : Qid ExprList -> Appl . *** function application
+  op _[[_]] : Qid ExprList -> Appl .
 
   op null    :           -> Data [ctor] . *** undef. value/none pointer
   op ob      : Qid       -> Oid  [ctor] .
 
   op label   : Nat       -> Label [ctor] . *** label values
 
+  var B : Bool .
+  op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
+  op _asBool            : Data -> Bool .
+  eq bool(B) asBool     = B .
 
   var  N        : Nat .
-  var  B        : Bool .
   vars D D'     : Data .
   vars E E'     : Expr .
-  vars L L' L'' : ExprList .
   
-  *** equal-func for all (!) data types
-  eq 'equal[[D # D']]	       = bool(D == D') .
-  
-  *** bool-functions
+  eq 'equal[[D # D']]	    = bool(D == D') .
   eq 'not[[bool(false)]]    = bool(true) .  
   eq 'not[[bool(true )]]    = bool(false) . 
   eq 'or[[bool(true)#   E]] = bool(true) .
-  eq 'or[[bool(false)#  E]] =  E .
+  eq 'or[[bool(false)#  E]] = E .
   eq 'and[[bool(false)# E]] = bool(false) .
-  eq 'and[[bool(true)#  E]] =  E .
+  eq 'and[[bool(true)#  E]] = E .
   
-  op _asBool            : Data -> Bool .
-  op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
-  eq bool(B) asBool     = B .
 endfm
 
 fmod CREOL-DATA-INT is

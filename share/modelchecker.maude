@@ -121,7 +121,7 @@ eq [new-object] :
   < newId(C',F) : C' | Att: S, Pr: idle, PrQ: noProc, Lcnt: 1 >
   < newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
   findAttr(newId(C',F), I, S', 
-    (AL ::= evalList(EL, (S # L))), ('init (emp ; emp)) ; ('run (emp ; emp))) .
+  (AL ::= evalList(EL, (S # L))), ('init (emp : noAid)) ; ('run (emp : noAid))) .
 
 *** ATTRIBUTE inheritance with multiple inheritance
 *** CMC assumes that all attributes names are (globally) different
@@ -137,7 +137,7 @@ eq findAttr(O, noInh, S, SL, SL')  *** collection completed.
 eq findAttr(O,((C < EL >) ## I),S, SL, SL') 
 < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
  = findAttr(O, I ## I',(L # S), (AL ::= EL) ; SL, 
-              ('init @ C(emp ; emp)) ; SL') 
+              ('init @ C(emp : noAid)) ; SL') 
    < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
 
 eq foundAttr(O, S', SL, SL') 
@@ -317,7 +317,7 @@ eq [remote-async-reply] :
 invoc(O, label(N), M , evalList(EL, (S # L))) from O to eval(E, (S # L)) .
 
 *** Reduce sync. call  to async. call with reply 
-eq < O : C | Att: S, Pr: (L, (M(EL ; EL')); SL), PrQ: W, Lcnt: N >
+eq < O : C | Att: S, Pr: (L, (M(EL : EL')); SL), PrQ: W, Lcnt: N >
   =
 < O : C | Att: S, Pr: (L, (! M(EL)); (label(N) ?(EL')); SL), PrQ: W,  Lcnt: N >  .
 
@@ -330,7 +330,7 @@ comp(L['label], evalList(EL, (S # L))) from O to L['caller] .
 
 *** Optimization: reduce label to value only once
 eq < O : C |  Att: S, Pr: (L, (A ?(EL)); SL), PrQ: W, Lcnt: N > 
-= < O : C |  Att: S, Pr: (L, (L[A] ?(EL)); SL), PrQ: W, Lcnt: N > .
+= < O : C |  Att: S, Pr: (L, ((L[A]) ?(EL)); SL), PrQ: W, Lcnt: N > .
 
 *** blocking reply sentence ***
 eq [block-sync-reply] :

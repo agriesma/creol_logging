@@ -1,1 +1,57 @@
+==========================================
+reduce in CREOL-DATA-SIG : emp .
+result DataList: emp
+==========================================
+reduce in CREOL-DATA-SIG : emp .
+result DataList: emp
+==========================================
+reduce in CREOL-DATA-SIG : noAid .
+result AidList: noAid
+==========================================
+reduce in CREOL-DATA-SIG : noAid .
+result AidList: noAid
+==========================================
+reduce in CREOL-DATA-SIG : 'a .
+result Sort: 'a
+==========================================
+reduce in CREOL-DATA-SIG : 'a # 'a .
+result ExprList: 'a # 'a
+==========================================
+reduce in CREOL-DATA-SIG : 'a,,'a .
+result AidList: 'a,,'a
+==========================================
+reduce in CREOL-DATA-SIG : 'a[['a]] .
+result Appl: 'a[['a]]
+==========================================
+reduce in CREOL-DATA-SIG : null .
+result Data: null
+==========================================
+reduce in CREOL-DATA-SIG : null # 'a .
+result ExprList: null # 'a
+==========================================
+reduce in CREOL-DATA-SIG : null # ('a[['a]]) # null .
+result ExprList: null # ('a[['a]]) # null
+==========================================
+reduce in CREOL-DATA-SIG : ('a[['a]]) # null .
+result ExprList: ('a[['a]]) # null
+==========================================
+reduce in CREOL-DATA-SIG : null,,'a .
+result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
+    ModuleExpression,Header,ExprList,AidList]: null,,'a
+==========================================
+reduce in CREOL-DATA-SIG : ob('a) .
+result Oid: ob('a)
+==========================================
+reduce in CREOL-DATA-SIG : label(1) .
+result Label: label(1)
+==========================================
+reduce in CREOL-DATA-SIG : 'equal[[null # null]] .
+result Data: bool(true)
+==========================================
+reduce in CREOL-DATA-SIG : 'not[['equal[[null # null]]]] .
+result Data: bool(false)
+==========================================
+reduce in CREOL-DATA-SIG : 'or[[('equal[[null # null]]) # ('equal[[null #
+    null]])]] .
+result Data: bool(true)
 Bye.
