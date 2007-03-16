@@ -27,7 +27,9 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
-TESTFILES		= Interpreter.maude Interpreter.expected \
+TESTFILES		= Datatypes.maude Datatypes.expected \
+			  Signature.maude Signature.expected \
+			  Interpreter.maude Interpreter.expected \
 			  ModelChecker.maude ModelChecker.expected \
 			  Alarmclock.creol \
 			  AsyncLCR.creol AsyncLCR.maude AsyncLCR.expected \

@@ -37,6 +37,14 @@ AT_CLEANUP
 AT_INIT([creolc])
 AT_TESTED([creolc creolc.opt])
 
+AT_SETUP([Datatypes])
+TEST_MAUDE([Datatypes], ${abs_srcdir}/Datatypes.maude)
+AT_CLEANUP
+
+AT_SETUP([Signature])
+TEST_MAUDE([Signature], ${abs_srcdir}/Signature.maude)
+AT_CLEANUP
+
 AT_SETUP([Interpreter])
 TEST_MAUDE([Interpreter], ${abs_srcdir}/Interpreter.maude)
 AT_CLEANUP
