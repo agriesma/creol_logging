@@ -50,7 +50,10 @@ fmod CREOL-DATA-SIG is
   op null    :           -> Data [ctor] . *** undef. value/none pointer
   op ob      : Qid       -> Oid  [ctor] .
 
-  op label   : Nat       -> Label [ctor] . *** label values
+  *** The interpreter should extend this module with his own definition
+  *** of label values.  For example, the model checker uses his own version
+  *** of labels.  This definition is the one used in the interpreter.
+  *** op label : Nat -> Label [ctor] .
 
   var B : Bool .
   op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
@@ -70,6 +73,18 @@ fmod CREOL-DATA-SIG is
   eq 'and[[bool(true)#  E]] = E .
   
 endfm
+
+view Aid from TRIV to CREOL-DATA-SIG is
+  sort Elt to Aid .
+endv
+
+view Data from TRIV to CREOL-DATA-SIG is
+  sort Elt to Data .
+endv
+
+view Expr from TRIV to CREOL-DATA-SIG is
+  sort Elt to Expr .
+endv
 
 fmod CREOL-DATA-INT is
   extending CREOL-DATA-SIG .

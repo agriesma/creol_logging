@@ -42,8 +42,8 @@ result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
 reduce in CREOL-DATA-SIG : ob('a) .
 result Oid: ob('a)
 ==========================================
-reduce in CREOL-DATA-SIG : label(1) .
-result Label: label(1)
+reduce in CREOL-DATA-SIG : bool(true) .
+result Data: bool(true)
 ==========================================
 reduce in CREOL-DATA-SIG : 'equal[[null # null]] .
 result Data: bool(true)

@@ -26,7 +26,11 @@ load signature
 *** THE MACHINE ***
 mod INTERPRETER is
 
-  extending AUX-FUNCTIONS .
+  extending CREOL-DATA-SIG .
+
+  op label : Nat -> Label [ctor] .
+
+  protecting AUX-FUNCTIONS .
 
   vars O O' : Oid .
   vars C C' : Cid .
@@ -86,6 +90,9 @@ crl
   if D :=  eval(E, (S # L))
   [label assign] .
 
+  *** We may here get (emp ::= emp), which should be reduced to skip .
+  eq (noAid ::= emp) = skip [label assign] .
+
 rl [skip] :
   < O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >
   =>
@@ -143,31 +150,25 @@ eq foundAttr(O, S', SL, SL')
 
 *** Non-deterministic choice ***
 *** Choice is comm, so [nondet] considers both SL1 and SL2.
-crl [nondet] :
-< O : C | Att: S, Pr: (L, (SL1 [] SL2); SL), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: LS, Ev: MM >
-=>
-< O : C | Att: S, Pr: (L, (SL1 ; SL)), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: LS, Ev: MM >
-if ready(SL1, (S # L), MM) .  
-
-*** crl [nondet-p2] :
-*** < O : C | Att: S, Pr: ((SL1 [] SL2); SL,L), PrQ: W, Lcnt: N >
-*** < O : Qu | Dealloc: LS, Ev: MM >
-*** =>
-*** < O : C | Att: S, Pr: ((SL2 ; SL),L), PrQ: W, Lcnt: N >
-*** < O : Qu | Dealloc: LS, Ev: MM >
-*** if ready(SL2, (S # L), MM) .  
+crl
+  < O : C | Att: S, Pr: (L, (SL1 [] SL2); SL), PrQ: W, Lcnt: N >
+  < O : Qu | Dealloc: LS, Ev: MM >
+  =>
+  < O : C | Att: S, Pr: (L, (SL1 ; SL)), PrQ: W, Lcnt: N >
+  < O : Qu | Dealloc: LS, Ev: MM >
+  if ready(SL1, (S # L), MM)
+  [label nondet] .  
 
 *** Merge ***
 *** Merge is comm, so [merge] considers both SL1 and SL2.
-crl [merge] :
-< O : C | Att: S, Pr: (L, (SL1 ||| SL2); SL), PrQ: W, Lcnt: N >  
-< O : Qu | Dealloc: LS, Ev: MM >
-=>
-< O : C | Att: S, Pr: (L, (SL1 MERGER SL2); SL), PrQ: W, Lcnt: N >  
-< O : Qu | Dealloc: LS, Ev: MM >
-if ready(SL1,(S # L), MM) . 
+crl
+  < O : C | Att: S, Pr: (L, (SL1 ||| SL2); SL), PrQ: W, Lcnt: N >  
+  < O : Qu | Dealloc: LS, Ev: MM >
+  =>
+  < O : C | Att: S, Pr: (L, (SL1 MERGER SL2); SL), PrQ: W, Lcnt: N >  
+  < O : Qu | Dealloc: LS, Ev: MM >
+  if ready(SL1,(S # L), MM)
+  [label merge] .
 
 rl [merge-aux] :
 < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER SL2); SL), PrQ: W, Lcnt: N >   
@@ -338,26 +339,26 @@ eq
 < O : Qu | Dealloc: LS, Ev: MM >
 . 
 
-*** We may here get (emp ::= emp), which should be reduced to skip .
-eq (noAid ::= emp) = skip .
-
 *** Transport rule: include new message in queue
 rl [invoc-msg] :
 < O : Qu | Dealloc: LS, Ev: MM > (MsgBody from O' to O)
 =>
 < O : Qu | Dealloc: LS, Ev: MM + MsgBody > .
 
-*** generalize to lists of labels AL:
+***
 rl [free] :
-< O : C | Att: S, Pr: (L, free(A) ; SL), PrQ: W, Lcnt: N >
-< O : Qu | Dealloc: LS, Ev: MM >
-=>
-< O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > 
-< O : Qu | Dealloc: (eval(A, (S # L)) ; LS), Ev: MM > .
+  < O : C | Att: S, Pr: (L, free(A) ; SL), PrQ: W, Lcnt: N >
+  < O : Qu | Dealloc: LS, Ev: MM >
+  =>
+  < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > 
+  < O : Qu | Dealloc: (eval(A, (S # L)) ; LS), Ev: MM > .
 
 *** Deallocate
-eq < O : Qu | Dealloc: (Lab ^ LS), Ev: comp(Lab , DL) + MM >
-= < O : Qu | Dealloc: LS, Ev: MM > .
+eq
+  < O : Qu | Dealloc: (Lab ^ LS), Ev: comp(Lab , DL) + MM >
+  =
+  < O : Qu | Dealloc: LS, Ev: MM >
+  [label deallocate] .
 endm
 
 eof

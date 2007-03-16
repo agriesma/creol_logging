@@ -30,6 +30,10 @@ load signature
 *** THE MACHINE ***
 mod INTERPRETER is
 
+  extending CREOL-DATA-SIG .
+
+  op label : Nat -> Label [ctor] .
+
   protecting AUX-FUNCTIONS .
 
   vars O O' : Oid .

@@ -23,13 +23,13 @@ set show timing off .
 set show advise off .
 load interpreter
 
-red in SUBST : insert('var1, label(1), noSubst) .
-red in SUBST : insert('var2, label(4), insert('var1, label(1), noSubst)) .
-red in SUBST : insert('var2, label(4), insert('var1, label(1), noSubst)) ['var1] .
-red in SUBST : upTerm(insert('var1, label(1), noSubst)) .
-red in SUBST : downTerm(upTerm(insert('var1, label(1), noSubst)),noSubst) .
-red in SUBST : downTerm(upTerm(insert('var2, label(4), insert('var1, label(1), noSubst)) ['var1]), null) .
-red in SUBST : dom('var1, insert('var2, label(4), insert('var1, label(1), noSubst))) .
+red in SUBST : insert('var1, bool(true), noSubst) .
+red in SUBST : insert('var2, bool(false), insert('var1, bool(true), noSubst)) .
+red in SUBST : insert('var2, bool(false), insert('var1, bool(true), noSubst)) ['var1] .
+red in SUBST : upTerm(insert('var1, bool(false), noSubst)) .
+red in SUBST : downTerm(upTerm(insert('var1, bool(false), noSubst)),noSubst) .
+red in SUBST : downTerm(upTerm(insert('var2, bool(true), insert('var1, bool(false), noSubst)) ['var1]), null) .
+red in SUBST : dom('var1, insert('var2, bool(true), insert('var1, bool(false), noSubst))) .
 
 red in GUARDS : int(4) & int(5) .
 red in GUARDS : upTerm(int(4) & int(5)) .
@@ -40,6 +40,12 @@ red in GUARDS : 'add[[int(4) # int(5)]] & 'label ? & wait & bool(true) & wait .
 red in GUARDS : upTerm('add[[int(4) # int(5)]] & 'label ? & wait & bool(true) & wait) .
 red in GUARDS : downTerm(upTerm('add[[int(4) # int(5)]] & 'label ? & wait & bool(true) & wait), noGuard) .
 
+red in STATEMENTS : 'a ::= 'a .
+red in STATEMENTS : skip .
+red in STATEMENTS : upTerm(skip) .
+red in STATEMENTS : downTerm(upTerm(skip), 'a ::= 'a) .
+red in STATEMENTS : upTerm('a ::= 'a) .
+red in STATEMENTS : downTerm(upTerm('a ::= 'a), skip) .
 red in STATEMENTS : 'var ::= int(4) .
 red in STATEMENTS : 'var ::= new 'C (int(5) # bool(true)) .
 red in STATEMENTS : upTerm('var ::= new 'C (null)) .
