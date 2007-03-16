@@ -212,16 +212,29 @@ type ('a, 'b) declaration =
     with there basic equivalents *)
 let rec simplify_expression =
   function
-      Binary (a, Ge, l, r) -> Binary (a, Le, r, l)
-    | Binary (a, Gt, l, r) -> Binary (a, Lt, r, l)
-    | Binary (a, Ne, l, r) -> Unary(a, Not, Binary (a, Eq, l, r))
-    | Binary (a, Xor, l, r) -> Unary(a, Not, Binary (a, Eq, l, r))
+      Unary(a, Not, e) -> FuncCall(a, "not", [e])
+    | Unary(a, UMinus, e) -> FuncCall(a, "neg", [e])
+    | Binary(a, Plus, l, r) -> FuncCall(a, "plus", [simplify_expression l; simplify_expression r])
+    | Binary(a, Minus, l, r) -> FuncCall(a, "minus", [simplify_expression l; simplify_expression r])
+    | Binary(a, Times, l, r) -> FuncCall(a, "times", [simplify_expression l; simplify_expression r])
+    | Binary(a, Div, l, r) -> FuncCall(a, "div", [simplify_expression l; simplify_expression r])
+    | Binary(a, Le, l, r) -> FuncCall(a, "lessEq", [simplify_expression l; simplify_expression r])
+    | Binary(a, Lt, l, r) -> FuncCall(a, "less", [simplify_expression l; simplify_expression r])
+    | Binary(a, Ge, l, r) -> FuncCall(a, "lessEq", [simplify_expression r; simplify_expression l])
+    | Binary(a, Gt, l, r) -> FuncCall(a, "less", [simplify_expression r; simplify_expression l])
+    | Binary(a, Eq, l, r) -> FuncCall(a, "equal", [simplify_expression l; simplify_expression r])
+    | Binary(a, Ne, l, r) -> FuncCall(a, "not", [FuncCall(a, "equal", [simplify_expression l; simplify_expression r])])
+    | Binary(a, And, l, r) -> FuncCall(a, "and", [simplify_expression l; simplify_expression r])
+    | Binary(a, Iff, l, r) -> FuncCall(a, "equal", [simplify_expression l; simplify_expression r])
+    | Binary(a, Or, l, r) -> FuncCall(a, "or", [simplify_expression l; simplify_expression r])
+    | Binary(a, Xor, l, r) -> FuncCall(a, "not", [FuncCall(a, "equal", [simplify_expression l; simplify_expression r])])
     | t -> t
 and simplify_guard =
   function
-      Condition (a, e) -> Condition (a, simplify_expression e)
-    | Conjunction (a, g1, g2) -> Conjunction (a, simplify_guard g1,
-					     simplify_guard g2)
+      Condition (a, e) ->
+	Condition (a, simplify_expression e)
+    | Conjunction (a, g1, g2) ->
+	Conjunction (a, simplify_guard g1, simplify_guard g2)
     | Wait a -> Wait a
     | Label (a, l) -> Label (a, l)
 and simplify_statement =
@@ -258,7 +271,8 @@ and simplify_method_variables note =
     | { var_name = n; var_type = _; var_init = Some i }::l ->
 	Sequence(note, Assign(note, [n], [simplify_expression i]),
 		(simplify_method_variables note l))
-    | _::l -> simplify_method_variables note l
+    | { var_name = _; var_type = _; var_init = None }::l ->
+	simplify_method_variables note l
 and simplify_method m =
   { meth_name = m.meth_name;
     meth_coiface = m.meth_coiface;
@@ -755,27 +769,8 @@ let rec maude_of_creol_expression out =
     | Bool (_, true) -> output_string out "bool(true)"
     | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
     | Id (_, i) -> output_string out ("'" ^ i)
-    | Unary (_, o, e) ->
-	output_string out ((match o with
-	    Not ->  "( 'not"
-	  | UMinus -> "( 'neg") ^ " [[ ");
-	maude_of_creol_expression out e;
-	output_string out " ]] )"
-    | Binary (_, o, l, r) ->
-	output_string out ("( " ^ ((match o with
-	    Plus -> "'plus"
-	  | Minus -> "'minus"
-	  | Times -> "'times"
-	  | Div -> "'div"
-          | And -> "'and"
-          | Iff -> "'equal"
-          | Or -> "'or"
-          | Lt -> "'less"
-          | Le -> "'lessEq"
-          | Eq -> "'equal"
-	  | (Xor|Gt|Ge|Ne) -> assert false ) ^ "[[ "));
-	maude_of_creol_expression_list out (l::[r]);
-	output_string out " ]] )"
+    | Unary (_, _, _) -> assert false
+    | Binary (_, _, _, _) -> assert false
     | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
 	maude_of_creol_expression_list out a;
 	output_string out " ]] )"
