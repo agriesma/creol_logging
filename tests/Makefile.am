@@ -30,6 +30,7 @@ TESTSUITE		= ${srcdir}/testsuite
 TESTFILES	= Datatypes.maude Datatypes.expected \
 		  Signature.maude Signature.expected \
 		  Interpreter.maude Interpreter.expected \
+		  MetaExec.maude MetaExec.expected \
 		  ModelChecker.maude ModelChecker.expected \
 		  Alarmclock.creol Alarmclock.maude Alarmclock.expected \
 		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.expected \
