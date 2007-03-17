@@ -108,6 +108,8 @@ let main () =
     "  Print some information while processing");
     ("-M", Arg.String ignore,
     "  Compile the files for model checking and write the result to [file]");
+    ("-main", Arg.String (function s -> outputs.maude_main <- Some s),
+    "  Compile the files for model checking and write the result to [file]");
     ("-red-init", Arg.Unit (function () ->  outputs.maude_red_init <- true),
     "  Generate an output that will reduce init as first step.");
     ("-o", Arg.String (function s ->  outputs.maude <- Some s),

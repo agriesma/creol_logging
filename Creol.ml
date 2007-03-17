@@ -992,7 +992,7 @@ let maude_of_creol red_init main out l =
   begin
     match main with
       None -> ()
-    | Some m -> output_string out ("main( '" ^ m ^ " , emp ) .")
+    | Some m -> output_string out ("main( '" ^ m ^ " , emp )\n")
   end ;
   output_string out ".\nendm\n" ;
   if red_init then output_string out "\nred init .\n" ;
