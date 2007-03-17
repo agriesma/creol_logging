@@ -31,8 +31,20 @@ $2
 quit .
 ])
 TEST_MAUDE([$1], test.maude)
+AT_DATA([metatest.maude],
+[
+set show timing off .
+set show advise off .
+in metaexec .
+load $1 .
+$3
+quit .
+])
+dnl TEST_MAUDE([meta-$1], metatest.maude) dnl Don't exec this, it takes ages.
 AT_CLEANUP
 ])
+
+
 
 AT_INIT([creolc])
 AT_TESTED([creolc creolc.opt creolshell])
@@ -55,33 +67,48 @@ AT_CLEANUP
 
 TEST_CREOLC([Alarmclock], [dnl
 red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main('Alarmclock, emp)), 0, 1) .
 ])
 
 TEST_CREOLC([AsyncLCR], [dnl
 red init .
 rew init main('Init, emp) .
+],[
+red simulate('PROGRAM, upTerm(init main('Init, emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Sieve], [dnl
 red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main('Generator, emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Philosophers], [dnl
 red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main('Butler, emp)), 0, 1) .
 ])
 
 TEST_CREOLC([SingleCellBuffer], [dnl
 red init .
+],[dnl
 ])
 
 TEST_CREOLC([BoundedBuffer], [dnl
 red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main('Starter, emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Fibonacci], [dnl
 red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main('Fibonacci, int(6))), 0, 1) .
 ])
 
 TEST_CREOLC([SantaClaus], [dnl
 red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main('Christmas, emp)), 0, 1) .
 ])
