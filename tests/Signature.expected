@@ -1,27 +1,47 @@
 ==========================================
-reduce in SUBST : insert('var1, label(1), noSubst) .
-result Entry{Aid,Data}: 'var1 |-> label(1)
+reduce in SUBST : insert('var1, bool(true), noSubst) .
+result Entry{Aid,Data}: 'var1 |-> bool(true)
 ==========================================
-reduce in SUBST : insert('var2, label(4), insert('var1, label(1), noSubst)) .
-result Subst: 'var1 |-> label(1), 'var2 |-> label(4)
+reduce in SUBST : insert('var2, bool(false), insert('var1, bool(true),
+    noSubst)) .
+result Subst: 'var1 |-> bool(true), 'var2 |-> bool(false)
 ==========================================
-reduce in SUBST : insert('var2, label(4), insert('var1, label(1), noSubst))[
-    'var1] .
-result Label: label(1)
+reduce in SUBST : insert('var2, bool(false), insert('var1, bool(true),
+    noSubst))['var1] .
+result Data: bool(true)
 ==========================================
-reduce in SUBST : upTerm(insert('var1, label(1), noSubst)) .
-result GroundTerm: '_|->_[''var1.Sort,'label['s_['0.Zero]]]
+reduce in SUBST : upTerm(insert('var1, bool(false), noSubst)) .
+result GroundTerm: '_|->_[''var1.Sort,'bool`(_`)['false.Bool]]
 ==========================================
-reduce in SUBST : downTerm(upTerm(insert('var1, label(1), noSubst)), noSubst) .
-result Entry{Aid,Data}: 'var1 |-> label(1)
+reduce in SUBST : downTerm(upTerm(insert('var1, bool(false), noSubst)),
+    noSubst) .
+result Entry{Aid,Data}: 'var1 |-> bool(false)
 ==========================================
-reduce in SUBST : downTerm(upTerm(insert('var2, label(4), insert('var1, label(
-    1), noSubst))['var1]), null) .
-result Label: label(1)
+reduce in SUBST : downTerm(upTerm(insert('var2, bool(true), insert('var1, bool(
+    false), noSubst))['var1]), null) .
+result Data: bool(false)
 ==========================================
-reduce in SUBST : dom('var1, insert('var2, label(4), insert('var1, label(1),
-    noSubst))) .
+reduce in SUBST : dom('var1, insert('var2, bool(true), insert('var1, bool(
+    false), noSubst))) .
 result Bool: true
+==========================================
+reduce in GUARDS : wait .
+result Wait: wait
+==========================================
+reduce in GUARDS : upTerm(wait) .
+result Constant: 'wait.Wait
+==========================================
+reduce in GUARDS : downTerm(upTerm(wait), noGuard) .
+result Wait: wait
+==========================================
+reduce in GUARDS : bool(true) .
+result Data: bool(true)
+==========================================
+reduce in GUARDS : upTerm(bool(true)) .
+result GroundTerm: 'bool`(_`)['true.Bool]
+==========================================
+reduce in GUARDS : downTerm(upTerm(bool(true)), noGuard) .
+result Data: bool(true)
 ==========================================
 reduce in GUARDS : int(4) & int(5) .
 result Appl: 'and[[int(4) # int(5)]]
@@ -29,6 +49,12 @@ result Appl: 'and[[int(4) # int(5)]]
 reduce in GUARDS : upTerm(int(4) & int(5)) .
 result GroundTerm: '_`[`[_`]`][''and.Sort,'_#_['int`(_`)['s_^4['0.Zero]],
     'int`(_`)['s_^5['0.Zero]]]]
+==========================================
+reduce in GUARDS : downTerm(upTerm(int(4) & int(5)), noGuard) .
+result Appl: 'and[[int(4) # int(5)]]
+==========================================
+reduce in GUARDS : int(4) & wait & int(5) .
+result Guard: wait & 'and[[int(4) # int(5)]]
 ==========================================
 reduce in GUARDS : upTerm(int(4) & wait & int(5)) .
 result GroundTerm: '_&_['wait.Wait,'_`[`[_`]`][''and.Sort,'_#_['int`(_`)['s_^4[
@@ -39,6 +65,21 @@ result Guard: wait & 'and[[int(4) # int(5)]]
 ==========================================
 reduce in GUARDS : 'test ? .
 result Return: 'test ?
+==========================================
+reduce in GUARDS : upTerm('test ?) .
+result GroundTerm: '_?[''test.Sort]
+==========================================
+reduce in GUARDS : downTerm(upTerm('test ?), noGuard) .
+result Return: 'test ?
+==========================================
+reduce in GUARDS : 'pest & 'test ? .
+result PureGuard: 'pest & 'test ?
+==========================================
+reduce in GUARDS : upTerm('pest & 'test ?) .
+result GroundTerm: '_&_[''pest.Sort,'_?[''test.Sort]]
+==========================================
+reduce in GUARDS : downTerm(upTerm('pest & 'test ?), noGuard) .
+result PureGuard: 'pest & 'test ?
 ==========================================
 reduce in GUARDS : 'add[[int(4) # int(5)]] & 'label ? & wait & wait & bool(
     true) .
@@ -53,14 +94,30 @@ reduce in GUARDS : downTerm(upTerm('add[[int(4) # int(5)]] & 'label ? & wait &
     wait & bool(true)), noGuard) .
 result Guard: wait & 'label ? & 'add[[int(4) # int(5)]]
 ==========================================
-reduce in STATEMENTS : 'var ::= int(4) .
-result Stm: 'var ::= int(4)
+reduce in STATEMENTS : 'a ::= 'a .
+result Stm: 'a ::= 'a
+==========================================
+reduce in STATEMENTS : upTerm('a ::= 'a) .
+result GroundTerm: '_::=_[''a.Sort,''a.Sort]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('a ::= 'a), skip) .
+result Stm: 'a ::= 'a
+==========================================
+reduce in STATEMENTS : skip .
+result Stm: skip
+==========================================
+reduce in STATEMENTS : upTerm(skip) .
+result Constant: 'skip.Stm
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(skip), 'a ::= 'a) .
+result Stm: skip
 ==========================================
 reduce in STATEMENTS : 'var ::= new 'C(int(5) # bool(true)) .
 result Stm: 'var ::= new 'C(int(5) # bool(true))
 ==========================================
-reduce in STATEMENTS : upTerm('var ::= new 'C(null)) .
-result GroundTerm: '_::=`new_`(_`)[''var.Sort,''C.Sort,'null.Data]
+reduce in STATEMENTS : upTerm('var ::= new 'C(int(5) # bool(true))) .
+result GroundTerm: '_::=`new_`(_`)[''var.Sort,''C.Sort,'_#_['int`(_`)['s_^5[
+    '0.Zero]],'bool`(_`)['true.Bool]]]
 ==========================================
 reduce in STATEMENTS : downTerm(upTerm('var ::= new 'C(int(5) # bool(true))),
     skip) .
@@ -69,8 +126,17 @@ result Stm: 'var ::= new 'C(int(5) # bool(true))
 reduce in STATEMENTS : await ('test ?) .
 result Stm: await ('test ?)
 ==========================================
+reduce in STATEMENTS : upTerm(await ('test ?)) .
+result GroundTerm: 'await_['_?[''test.Sort]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(await ('test ?)), skip) .
+result Stm: await ('test ?)
+==========================================
 reduce in STATEMENTS : await (wait & 'test ?) .
 result Stm: await (wait & 'test ?)
+==========================================
+reduce in STATEMENTS : upTerm(await (wait & 'test ?)) .
+result GroundTerm: 'await_['_&_['wait.Wait,'_?[''test.Sort]]]
 ==========================================
 reduce in STATEMENTS : downTerm(upTerm(await (wait & 'test ?)), skip) .
 result Stm: await (wait & 'test ?)
@@ -78,11 +144,17 @@ result Stm: await (wait & 'test ?)
 reduce in STATEMENTS : ! 'method(null) .
 result Stm: ! 'method(null)
 ==========================================
-reduce in STATEMENTS : cont(label(5)) .
-result Stm: cont(label(5))
+reduce in STATEMENTS : upTerm(! 'method(null)) .
+result GroundTerm: '!_`(_`)[''method.Sort,'null.Data]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(cont(label(5))), skip) .
-result Stm: cont(label(5))
+reduce in STATEMENTS : downTerm(upTerm(! 'method(null)), skip) .
+result Stm: ! 'method(null)
+==========================================
+reduce in STATEMENTS : 'getNeighbor(null : noAid) .
+result Stm: 'getNeighbor(null : noAid)
+==========================================
+reduce in STATEMENTS : upTerm('getNeighbor(null : noAid)) .
+result GroundTerm: '_`(_:_`)[''getNeighbor.Sort,'null.Data,'noAid.AidList]
 ==========================================
 reduce in STATEMENTS : downTerm(upTerm('getNeighbor(null : noAid)), skip) .
 result Stm: 'getNeighbor(null : noAid)
@@ -90,35 +162,83 @@ result Stm: 'getNeighbor(null : noAid)
 reduce in STATEMENTS : 'label ! 'oid . 'mtd(emp) .
 result Stm: 'label ! 'oid . 'mtd(emp)
 ==========================================
+reduce in STATEMENTS : upTerm('label ! 'oid . 'mtd(emp)) .
+result GroundTerm: '_!_`(_`)[''label.Sort,'_._[''oid.Sort,''mtd.Sort],
+    'emp.DataList]
+==========================================
 reduce in STATEMENTS : downTerm(upTerm('label ! 'oid . 'mtd(emp)), skip) .
 result Stm: 'label ! 'oid . 'mtd(emp)
 ==========================================
 reduce in STM-LIST : noStm .
 result StmList: noStm
 ==========================================
+reduce in STM-LIST : upTerm(noStm) .
+result Constant: 'noStm.StmList
+==========================================
+reduce in STM-LIST : downTerm(upTerm(noStm), skip) .
+result StmList: noStm
+==========================================
 reduce in STM-LIST : skip .
 result Stm: skip
 ==========================================
+reduce in STM-LIST : upTerm(skip) .
+result Constant: 'skip.Stm
+==========================================
+reduce in STM-LIST : downTerm(upTerm(skip), noStm) .
+result Stm: skip
+==========================================
 reduce in STM-LIST : skip .
+result Stm: skip
+==========================================
+reduce in STM-LIST : upTerm(skip) .
+result Constant: 'skip.Stm
+==========================================
+reduce in STM-LIST : downTerm(upTerm(skip), noStm) .
 result Stm: skip
 ==========================================
 reduce in STM-LIST : 'var ::= int(4)[]'var ::= new 'C(null) .
 result Stm: 'var ::= int(4)[]'var ::= new 'C(null)
 ==========================================
+reduce in STM-LIST : upTerm('var ::= int(4)[]'var ::= new 'C(null)) .
+result GroundTerm: '_`[`]_['_::=_[''var.Sort,'int`(_`)['s_^4['0.Zero]]],
+    '_::=`new_`(_`)[''var.Sort,''C.Sort,'null.Data]]
+==========================================
 reduce in STM-LIST : downTerm(upTerm('var ::= int(4)[]'var ::= new 'C(null)),
-    skip) .
+    noStm) .
 result Stm: 'var ::= int(4)[]'var ::= new 'C(null)
 ==========================================
 reduce in STM-LIST : skip ||| 'var ::= int(4)[]'var ::= new 'C(null) .
 result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
 ==========================================
+reduce in STM-LIST : upTerm(skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
+result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_::=_[''var.Sort,'int`(_`)['s_^4[
+    '0.Zero]]],'_::=`new_`(_`)[''var.Sort,''C.Sort,'null.Data]]]
+==========================================
 reduce in STM-LIST : downTerm(upTerm(skip ||| 'var ::= int(4)[]'var ::= new 'C(
-    null)), skip) .
+    null)), noStm) .
 result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : 'var ::= int(4)[]'var ::= new 'C(null) ||| skip ||| noStm
+    .
+result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : upTerm('var ::= int(4)[]'var ::= new 'C(null) ||| skip |||
+    noStm) .
+result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_::=_[''var.Sort,'int`(_`)['s_^4[
+    '0.Zero]]],'_::=`new_`(_`)[''var.Sort,''C.Sort,'null.Data]]]
 ==========================================
 reduce in STM-LIST : downTerm(upTerm('var ::= int(4)[]'var ::= new 'C(null) |||
     skip ||| noStm), noStm) .
 result Stm: skip ||| 'var ::= int(4)[]'var ::= new 'C(null)
+==========================================
+reduce in STM-LIST : idle .
+result Process: idle
+==========================================
+reduce in STM-LIST : upTerm(idle) .
+result Constant: 'idle.Process
+==========================================
+reduce in STM-LIST : downTerm(upTerm(idle), idle) .
+result Process: idle
 ==========================================
 reduce in STM-LIST : insert('var2, int(4), insert('var1, str("test"),
     noSubst)),
@@ -136,20 +256,9 @@ result GroundTerm: '_`,_['_`,_['_|->_[''var1.Sort,'str`(_`)['"test".String]],
 ==========================================
 reduce in STM-LIST : downTerm(upTerm(insert('var2, int(4), insert('var1, str(
     "test"), noSubst)),
-(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))), idle) .
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))), noProc) .
 result Process: ('var1 |-> str("test"), 'var2 |-> int(4)),
 (skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
-==========================================
-reduce in STM-LIST : idle ++ insert('var2, int(4), insert('var1, str("test"),
-    noSubst)),
-(skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
-result NeMProc: idle ++ ('var1 |-> str("test"), 'var2 |-> int(4)),
-(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
-==========================================
-reduce in STM-LIST : noSubst,
-'var ::= bool(true) .
-result Process: noSubst,
-'var ::= bool(true)
 ==========================================
 reduce in STM-LIST : noProc .
 result MProc: noProc
@@ -157,38 +266,37 @@ result MProc: noProc
 reduce in STM-LIST : upTerm(noProc) .
 result Constant: 'noProc.MProc
 ==========================================
-reduce in STM-LIST : downTerm(upTerm(noProc), noProc) .
+reduce in STM-LIST : downTerm(upTerm(noProc), idle) .
 result MProc: noProc
 ==========================================
-reduce in CLASS : < 'getNeighbor : Mtdname | Param: noAid,Latt: 'label |->
-    null, 'caller |-> null, 'n |-> null,Code: skip > .
-result Mtd: < 'getNeighbor : Mtdname | Param: noAid,Latt: 'caller |-> null,
-    'label |-> null, 'n |-> null,Code: skip >
+reduce in STM-LIST : idle .
+result Process: idle
 ==========================================
-reduce in CLASS : 
-< 'Butler : Cl | Inh: noInh,Par: noAid,Att: noSubst,Mtds:
-noMtd,Ocnt: 0 >
- .
-result Class: 
-< 'Butler : Cl | Inh: noInh,Par: noAid,Att: noSubst,Mtds:
-noMtd,Ocnt: 0 >
-
+reduce in STM-LIST : upTerm(idle) .
+result Constant: 'idle.Process
 ==========================================
-reduce in CLASS : 'butler . 'getNeighbor (emp ; noAid) .
-result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
-    ModuleExpression,Header,ExprList,InhList,Guard,AidList,Mid,Cid]: 'butler .
-    'getNeighbor (emp ; noAid)
+reduce in STM-LIST : downTerm(upTerm(idle), noProc) .
+result Process: idle
 ==========================================
-reduce in CLASS : 'butler ! 'getNeighbor(emp) .
-result Stm: 'butler ! 'getNeighbor(emp)
+reduce in STM-LIST : idle ++ insert('var2, int(4), insert('var1, str("test"),
+    noSubst)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null)) .
+result NeMProc: idle ++ ('var1 |-> str("test"), 'var2 |-> int(4)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
-reduce in CLASS : 'run (emp ; emp) # 'run (emp ; emp) .
-result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
-    ModuleExpression,Header,ExprList,InhList,Guard,AidList,Mid,Cid]: 'run (emp
-    ; emp) # 'run (emp ; emp)
+reduce in STM-LIST : upTerm(idle ++ insert('var2, int(4), insert('var1, str(
+    "test"), noSubst)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))) .
+result GroundTerm: '_++_['idle.Process,'_`,_['_`,_['_|->_[''var1.Sort,
+    'str`(_`)['"test".String]],'_|->_[''var2.Sort,'int`(_`)['s_^4['0.Zero]]]],
+    '_|||_['skip.Stm,'_`[`]_['_::=_[''var.Sort,'int`(_`)['s_^4['0.Zero]]],
+    '_::=`new_`(_`)[''var.Sort,''C.Sort,'null.Data]]]]]
 ==========================================
-reduce in CLASS : 'butler ! 'getNeighbor(emp) ; 'run(emp : noAid) .
-result NeStmList: 'butler ! 'getNeighbor(emp) ; 'run(emp : noAid)
+reduce in STM-LIST : downTerm(upTerm(idle ++ insert('var2, int(4), insert(
+    'var1, str("test"), noSubst)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))), noProc) .
+result NeMProc: idle ++ ('var1 |-> str("test"), 'var2 |-> int(4)),
+(skip ||| 'var ::= int(4)[]'var ::= new 'C(null))
 ==========================================
 reduce in OBJECT : 
 < ob('object1) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
@@ -204,34 +312,29 @@ result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Lcnt:_>['ob[''object1.Sort],
     ''class.Sort,'noSubst.Subst,'idle.Process,'noProc.MProc,'0.Zero]
 ==========================================
 reduce in OBJECT : downTerm(upTerm(
-< 'object1 : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< ob('object1) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 ), noObj) .
-result [Object]: 
-< 'object1 : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+result Object: 
+< ob('object1) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 ==========================================
 reduce in COMMUNICATION : noMsg .
 result Body: noMsg
 ==========================================
-reduce in COMMUNICATION : comp(label(5),emp) .
-result Body: comp(label(5),emp)
+reduce in COMMUNICATION : upTerm(noMsg) .
+result Constant: 'noMsg.Body
 ==========================================
-reduce in COMMUNICATION : invoc('object1,label(5),'method1,emp) .
-result [MMsg]: invoc('object1,label(5),'method1,emp)
+reduce in COMMUNICATION : downTerm(upTerm(noMsg), noMsg) .
+result Body: noMsg
 ==========================================
-reduce in COMMUNICATION : upTerm(comp(label(5),emp)) .
-result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
+reduce in COMMUNICATION : noQu .
+result Queue: noQu
 ==========================================
-reduce in COMMUNICATION : downTerm(upTerm(comp(label(5),emp)), noMsg) .
-result Body: comp(label(5),emp)
+reduce in COMMUNICATION : upTerm(noQu) .
+result Constant: 'noQu.Queue
 ==========================================
-reduce in COMMUNICATION : upTerm(invoc('object1,label(5),'method1,emp)) .
-result GroundTerm: 'invoc`(_`,_`,_`,_`)[''object1.Sort,'label['s_^5['0.Zero]],
-    ''method1.Sort,'emp.DataList]
-==========================================
-reduce in COMMUNICATION : downTerm(upTerm(invoc('object1,label(5),'method1,
-    emp)), noMsg) .
-result [MMsg]: invoc('object1,label(5),'method1,emp)
+reduce in COMMUNICATION : downTerm(upTerm(noQu), noQu) .
+result Queue: noQu
 ==========================================
 reduce in COMMUNICATION : 
 < 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
@@ -252,4 +355,33 @@ reduce in COMMUNICATION : downTerm(upTerm(
 result [Queue]: 
 < 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
 
+==========================================
+reduce in CREOL-LABEL-TEST : cont(label(5)) .
+result Stm: cont(label(5))
+==========================================
+reduce in CREOL-LABEL-TEST : upTerm(cont(label(5))) .
+result GroundTerm: 'cont['label['s_^5['0.Zero]]]
+==========================================
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(cont(label(5))), skip) .
+result Stm: cont(label(5))
+==========================================
+reduce in CREOL-LABEL-TEST : comp(label(5),emp) .
+result Body: comp(label(5),emp)
+==========================================
+reduce in CREOL-LABEL-TEST : upTerm(comp(label(5),emp)) .
+result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
+==========================================
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5),emp)), noMsg) .
+result Body: comp(label(5),emp)
+==========================================
+reduce in CREOL-LABEL-TEST : invoc('object1,label(5),'method1,emp) .
+result [MMsg]: invoc('object1,label(5),'method1,emp)
+==========================================
+reduce in CREOL-LABEL-TEST : upTerm(invoc('object1,label(5),'method1,emp)) .
+result GroundTerm: 'invoc`(_`,_`,_`,_`)[''object1.Sort,'label['s_^5['0.Zero]],
+    ''method1.Sort,'emp.DataList]
+==========================================
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc('object1,label(5),'method1,
+    emp)), noMsg) .
+result [MMsg]: invoc('object1,label(5),'method1,emp)
 Bye.

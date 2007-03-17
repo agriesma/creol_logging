@@ -25,9 +25,11 @@ export OCAMLPATH
 
 # Subdirs
 SUBDIRS			= xml . doc emacs info share tests
+DIST_SUBDIRS		= xml . doc emacs info share tests
 
 MOSTLYCLEANFILES	= *~ *.aux *.log
-CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
+CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex \
+			  $(bin_SCRIPTS)
 DISTCLEANFILES		= Version.ml html-stamp
 MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 			  depcomp elisp-comp missing install-sh aclocal.m4 \
@@ -36,11 +38,13 @@ MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 
 EXTRA_DIST		= .depend \
 			  Creol.mll Creol.mly \
+			  creolshell.in \
 			  creoltools.spec creoltools.spec.in
 
 BUILT_SOURCES		= Version.ml CreolLex.ml CreolParser.ml CreolParser.mli
 
 bin_PROGRAMS		= creolc creolc.opt
+bin_SCRIPTS		= creolshell
 
 creolc_SOURCES		= Version.ml \
 			  CreolLex.ml CreolLex.mli \

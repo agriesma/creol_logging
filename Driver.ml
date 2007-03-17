@@ -38,12 +38,16 @@ let add_input name = inputs := (!inputs)@[name]
 
 type outputs = {
 	mutable maude: string option;
+	mutable maude_red_init: bool;
+	mutable maude_main: string option;
 	mutable xml: string option;
 	mutable pretty_print: string option;
 }
 
 let outputs = {
 	maude = Some "out.maude";
+	maude_red_init = false;
+	maude_main = None;
 	xml = None;
 	pretty_print = None;
 }
@@ -58,7 +62,7 @@ let apply_outputs tree =
     function None -> () | Some s -> CreolIO.creol_to_xml s Note.to_xml tree
   in
   (** Apply the output passes *)
-  do_out (function out -> maude_of_creol out tree) outputs.maude ;
+  do_out (function out -> maude_of_creol outputs.maude_red_init outputs.maude_main out tree) outputs.maude ;
   do_out (function out -> pretty_print out tree) outputs.pretty_print;
   do_xml tree outputs.xml
 
@@ -104,6 +108,8 @@ let main () =
     "  Print some information while processing");
     ("-M", Arg.String ignore,
     "  Compile the files for model checking and write the result to [file]");
+    ("-red-init", Arg.Unit (function () ->  outputs.maude_red_init <- true),
+    "  Generate an output that will reduce init as first step.");
     ("-o", Arg.String (function s ->  outputs.maude <- Some s),
     "  Compile the files for the interpreter and write the result to [file]");
     ("-syntax-only", Arg.Unit (function () ->  outputs.maude <- None),

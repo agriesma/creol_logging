@@ -41,13 +41,17 @@ TESTFILES	= Datatypes.maude Datatypes.expected \
 		  SantaClaus.creol SantaClaus.maude SantaClaus.expected \
 		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.expected
 
-TESTPARTS		= 
+TESTPARTS	= 
 
-EXTRA_DIST		= ${srcdir}/atlocal.in ${srcdir}/testsuite.at \
-			  package.m4 testsuite ${TESTPARTS} ${TESTFILES}
+EXTRA_DIST	= ${srcdir}/atlocal.in ${srcdir}/testsuite.at \
+		  package.m4 testsuite ${TESTPARTS} ${TESTFILES} \
+		  Signature.m4
 
-check-local: atconfig atlocal ${TESTSUITE}
+check-local: atconfig atlocal ${TESTSUITE} Signature.maude
 	$(SHELL) $(TESTSUITE)
+
+Signature.maude: ${srcdir}/Signature.m4
+	m4 $< > $@
 
 clean-local:
 	rm -rf testsuite.dir

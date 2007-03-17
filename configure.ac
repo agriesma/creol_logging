@@ -56,12 +56,13 @@ AC_CONFIG_SUBDIRS([xml])
 
 dnl Check for the programs needed by the test-suite.
 AC_CHECK_PROG([MAUDE], [maude], [maude], [:])
-AC_CHECK_PROG([DIFF], [diff], [diff], [:])
 
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
 AC_SUBST([OCAMLFIND_FLAGS])
 
 AC_CONFIG_TESTDIR(tests, source)
-AC_OUTPUT([Makefile doc/Makefile emacs/Makefile info/Makefile share/Makefile
-	   tests/atlocal tests/Makefile])
+AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
+AC_CONFIG_FILES([Makefile doc/Makefile emacs/Makefile info/Makefile 
+		 share/Makefile tests/atlocal tests/Makefile])
+AC_OUTPUT

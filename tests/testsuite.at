@@ -35,7 +35,7 @@ AT_CLEANUP
 ])
 
 AT_INIT([creolc])
-AT_TESTED([creolc creolc.opt])
+AT_TESTED([creolc creolc.opt creolshell])
 
 AT_SETUP([Datatypes])
 TEST_MAUDE([Datatypes], ${abs_srcdir}/Datatypes.maude)

@@ -2,12 +2,12 @@ dnl
 dnl Many tests are actually testing grammar, and for these we use
 dnl m4 to generate the test templates.
 dnl
+changequote({|,|})
 define(GRAMMAR_TEST,dnl
 red in $1 : $2 .
 red in $1 : upTerm($2) .
 red in $1 : downTerm(upTerm($2), $3) .
 )dnl
-
 ***
 *** Signature.maude -- Test cases for the common signature.
 ***
@@ -31,7 +31,9 @@ red in $1 : downTerm(upTerm($2), $3) .
 
 set show timing off .
 set show advise off .
-load interpreter
+in datatypes
+in signature
+
 
 red in SUBST : insert('var1, bool(true), noSubst) .
 red in SUBST : insert('var2, bool(false), insert('var1, bool(true), noSubst)) .
@@ -47,14 +49,44 @@ GRAMMAR_TEST(GUARDS, int(4) & int(5), noGuard)
 GRAMMAR_TEST(GUARDS, int(4) & int(5) & wait, noGuard)
 GRAMMAR_TEST(GUARDS, 'test ?, noGuard)
 GRAMMAR_TEST(GUARDS, 'test ? & 'pest, noGuard)
-GRAMMAR_TEST(GUARDS, 'add[[int(4) `#' int(5)]] & 'label ? & wait & bool(true) & wait, noGuard)
+GRAMMAR_TEST(GUARDS, {| 'add[[int(4) # int(5)]] & 'label ? & wait & bool(true) & wait |}, noGuard)
 
 GRAMMAR_TEST(STATEMENTS, 'a ::= 'a, skip)
 GRAMMAR_TEST(STATEMENTS, skip, 'a ::= 'a)
-GRAMMAR_TEST(STATEMENTS, 'var ::= new 'C (int(5) `#' bool(true)), skip)
+GRAMMAR_TEST(STATEMENTS, {| 'var ::= new 'C (int(5) # bool(true)) |}, skip)
 GRAMMAR_TEST(STATEMENTS, await 'test ? , skip)
 GRAMMAR_TEST(STATEMENTS, await (('test ?) & wait), skip)
 GRAMMAR_TEST(STATEMENTS, ! 'method (null), skip)
 GRAMMAR_TEST(STATEMENTS, 'getNeighbor(null : noAid), skip)
 GRAMMAR_TEST(STATEMENTS, 'label ! 'oid . 'mtd (emp), skip)
-dnl GRAMMAR_TEST(STATEMENTS, cont (label(5)), skip)
+
+GRAMMAR_TEST(STM-LIST, noStm, skip)
+GRAMMAR_TEST(STM-LIST, skip, noStm)
+GRAMMAR_TEST(STM-LIST, skip ; noStm, noStm)
+GRAMMAR_TEST(STM-LIST, 'var ::= int(4) [] 'var ::= new 'C (null), noStm)
+GRAMMAR_TEST(STM-LIST, 'var ::= int(4) [] 'var ::= new 'C (null) ||| skip, noStm)
+GRAMMAR_TEST(STM-LIST, 'var ::= int(4) [] 'var ::= new 'C (null) ||| noStm ||| skip, noStm)
+
+GRAMMAR_TEST(STM-LIST, idle, idle)
+GRAMMAR_TEST(STM-LIST, {| (insert('var2, int(4), insert('var1, str("test"), noSubst)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) |}, noProc)
+GRAMMAR_TEST(STM-LIST, noProc, idle)
+GRAMMAR_TEST(STM-LIST, idle, noProc)
+GRAMMAR_TEST(STM-LIST, {| (insert('var2, int(4), insert('var1, str("test"), noSubst)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) ++ idle |}, noProc)
+
+GRAMMAR_TEST(OBJECT, {| < ob('object1) : 'class | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 0 > |}, noObj)
+
+GRAMMAR_TEST(COMMUNICATION, noMsg, noMsg)
+GRAMMAR_TEST(COMMUNICATION, {| noQu |}, noQu)
+GRAMMAR_TEST(COMMUNICATION, {| < 'Ob1 : Qu | Dealloc: noDealloc , Ev: noMsg > |}, noQu)
+
+fmod CREOL-LABEL-TEST is
+  extending CREOL-DATA-SIG .
+  extending COMMUNICATION .
+  op label : Nat -> Label .
+endfm
+
+GRAMMAR_TEST(CREOL-LABEL-TEST, cont (label(5)), skip)
+GRAMMAR_TEST(CREOL-LABEL-TEST, {| comp(label(5), emp) |}, noMsg)
+GRAMMAR_TEST(CREOL-LABEL-TEST, {| invoc('object1, label(5), 'method1, emp) |}, noMsg)
+
+quit

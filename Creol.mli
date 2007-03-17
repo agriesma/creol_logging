@@ -201,4 +201,4 @@ val simplify: ('a, 'b) declaration list -> ('a, 'b) declaration list
 
 val find_definitions: (Note.t, 'a) declaration list -> (Note.t, 'a) declaration list
 
-val maude_of_creol: out_channel -> ('a, 'b) declaration list -> unit
+val maude_of_creol: bool -> string option -> out_channel -> ('a, 'b) declaration list -> unit

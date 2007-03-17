@@ -986,8 +986,14 @@ let rec maude_of_creol_decl_list out =
 (** Convert an abstract syntax tree l of a creol program to a
     representation for the Maude CMC and write the result to the output
     channel out. *)
-let maude_of_creol out l =
+let maude_of_creol red_init main out l =
   output_string out "load interpreter\nmod PROGRAM is\npr INTERPRETER .\nop init : -> Configuration [ctor] .\neq init =\n" ;
   maude_of_creol_decl_list out l ;
+  begin
+    match main with
+      None -> ()
+    | Some m -> output_string out ("main( '" ^ m ^ " , emp ) .")
+  end ;
   output_string out ".\nendm\n" ;
+  if red_init then output_string out "\nred init .\n" ;
   flush out
