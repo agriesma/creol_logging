@@ -227,6 +227,26 @@ and creol_statement_to_xml writer handler =
         XmlTextWriter.end_element writer ;
 	handler writer a ;
         XmlTextWriter.end_element writer
+    | LocalAsyncCall (a, l, m, lb, ub, es) ->
+	XmlTextWriter.start_element writer "local-async-call" ;
+	XmlTextWriter.write_attribute writer "method" m ;
+	(match l with
+	    None -> ()
+	  | Some n -> XmlTextWriter.write_attribute writer "label" n ) ;
+	(match lb with
+	    None -> ()
+	  | Some n -> XmlTextWriter.write_attribute writer "lower" n ) ;
+	(match ub with
+	    None -> ()
+	  | Some n -> XmlTextWriter.write_attribute writer "upper" n ) ;
+	XmlTextWriter.start_element writer "arguments" ;
+	List.iter (function e -> 
+	             XmlTextWriter.start_element writer "expression" ;
+		     creol_expression_to_xml writer e ;
+        	     XmlTextWriter.end_element writer ) es ;
+        XmlTextWriter.end_element writer ;
+	handler writer a ;
+        XmlTextWriter.end_element writer
     | LocalSyncCall (a, m, l, u, es, is) ->
 	XmlTextWriter.start_element writer "localsynccall" ;
 	XmlTextWriter.write_attribute writer "method" m ;
