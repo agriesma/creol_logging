@@ -116,10 +116,12 @@ fmod STATEMENTS is
   op _!_(_) : Aid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Aid AidList -> Stm [ctor prec 39] .
   op _?(_)  : Label AidList -> Stm [ctor prec 39] .
-  op cont : Label -> Stm [ctor] .
   op await_ : Guard    -> Stm [ctor] .
-  op return : ExprList -> Stm [ctor] .
-  op free : AidList -> Stm [ctor] .
+  op return : ExprList -> Stm [ctor format (c o)] .
+  op free : AidList -> Stm [ctor format (c o)] .
+  op cont : Label -> Stm [ctor format (c o)] .
+  op tailcall_(_) : Mid ExprList -> Stm [ctor format (c o c o c o)] .
+  op accept : Label -> Stm [ctor format (c o)].
 endfm
 
 view Stm from TRIV to STATEMENTS is

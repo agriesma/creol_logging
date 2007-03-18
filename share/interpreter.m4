@@ -199,15 +199,24 @@ op foundAttr : Oid Subst  StmList StmList        -> Msg [ctor format (n d)] .
 
 eq findAttr(O, noInh, S, SL, SL') = foundAttr(O, S, SL, SL') .
 
-eq findAttr(O,((C < EL >) {|#|}{|#|} I),S, SL, SL') 
-< C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
- = findAttr(O, I {|#|}{|#|} I',(L {|#|} S), (AL ::= EL) ; SL, 
+eq
+  findAttr(O,((C < EL >) {|#|}{|#|} I),S, SL, SL') 
+  < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
+  =
+  findAttr(O, I {|#|}{|#|} I',(L {|#|} S), (AL ::= EL) ; SL, 
               ('init @ C(emp : noAid)) ; SL') 
-   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
+  < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
 
-eq foundAttr(O, S', SL, SL') 
-< O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
- = < O : C | Att: ('this |-> O, S'), Pr: (noSubst, SL ; SL'), PrQ: W, Lcnt: N > .
+eq
+  foundAttr(O, S', SL, SL') 
+  < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: ('this |-> O, S'), Pr: (noSubst, SL ; SL'), PrQ: W, Lcnt: N >
+  .
+
+
+
+
 
 *** Non-deterministic choice ***
 *** Choice is comm, so [nondet] considers both SL1 and SL2.
@@ -218,6 +227,9 @@ CSTEP(dnl
   < O : Qu | Dealloc: LS, Ev: MM >|},
 {| ready(SL1, (S # L), MM)|},
 {|[label nondet]|})
+
+
+
 
 *** Merge ***
 *** Merge is comm, so [merge] considers both SL1 and SL2.
@@ -230,16 +242,17 @@ crl
   if ready(SL1,(S {|#|} L), MM)
   [label merge] .
 
-rl [merge-aux] :
-< O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER SL2); SL), PrQ: W, Lcnt: N >   
-< O : Qu | Dealloc: LS, Ev: MM >
-=>
-< O : Qu | Dealloc: LS, Ev: MM >
-if enabled(ST,(S {|#|} L), MM) then
-< O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER SL2)); SL)), PrQ: W, Lcnt: N >   
-else
-< O : C | Att: S, Pr: (L, ((ST ; SL') ||| SL2); SL), PrQ: W, Lcnt: N >   
-fi .
+rl
+  < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER SL2); SL), PrQ: W, Lcnt: N >   
+  < O : Qu | Dealloc: LS, Ev: MM >
+  =>
+  if enabled(ST,(S {|#|} L), MM) then
+    < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER SL2)); SL)), PrQ: W, Lcnt: N >   
+  else
+    < O : C | Att: S, Pr: (L, ((ST ; SL') ||| SL2); SL), PrQ: W, Lcnt: N >   
+  fi
+  < O : Qu | Dealloc: LS, Ev: MM >
+  [label merge-aux] .
 
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, (cont(Lab) MERGER SL'); SL''), 
@@ -291,7 +304,7 @@ CSTEP(dnl
 *** Evaluate guards in suspended processes ***
 
 *** Must be a rule, also in the interpreter.
-crl [PrQ-ready] :
+crl
   < O : C | Att: S, Pr: idle, PrQ: (L,SL) ++ W, Lcnt: N > 
   < O : Qu | Dealloc: LS, Ev: MM >
   => 
@@ -301,27 +314,59 @@ crl [PrQ-ready] :
   [label PrQ-ready] .
 
 
-eq < O : C | Att: S, Pr: idle, PrQ: (L, await wait ; SL) ++ W, Lcnt: N >  
- = < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N > [label wait] .
+eq
+  < O : C | Att: S, Pr: idle, PrQ: (L, await wait ; SL) ++ W, Lcnt: N >  
+  =
+  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N > [label wait] .
 
-eq < O : C | Att: S, Pr: idle, PrQ: (L, ((await wait ; SL)[] SL'); SL'')++ W,  
-   Lcnt: N >  
- = < O : C | Att: S, Pr: idle, PrQ: (L, (SL [] SL'); SL'') ++ W, Lcnt: N >
+eq
+  < O : C | Att: S, Pr: idle, PrQ: (L, ((await wait ; SL)[] SL'); SL'')++ W,  
+    Lcnt: N >  
+  =
+  < O : C | Att: S, Pr: idle, PrQ: (L, (SL [] SL'); SL'') ++ W, Lcnt: N >
 [label wait-nondet] .
 
-eq < O : C | Att: S, Pr: idle, PrQ: (L,((await wait ; SL)||| SL'); SL'')++ W,  
-   Lcnt: N >  
- = < O : C | Att: S, Pr: idle, PrQ: (L, (SL ||| SL'); SL'') ++ W, Lcnt: N >
-[label wait-merge] .
+eq
+  < O : C | Att: S, Pr: idle, PrQ: (L,((await wait ; SL)||| SL'); SL'')++ W,  
+    Lcnt: N >  
+  =
+  < O : C | Att: S, Pr: idle, PrQ: (L, (SL ||| SL'); SL'') ++ W, Lcnt: N >
+  [label wait-merge] .
+
+
+
+
 
 *** Optimization to avoid muiltiple lookups in the message queue for
 *** the same guard
 eq 
-< O : C | Att: S, Pr: P, PrQ: (L, await (Lab ? & G); SL) ++ W, Lcnt: F > 
-< O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) >  
-=
-< O : C | Att: S,  Pr: P, PrQ: (L, await G ; SL) ++ W, Lcnt: F >    
-< O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) > .
+  < O : C | Att: S, Pr: P, PrQ: (L, await (Lab ? & G); SL) ++ W, Lcnt: F > 
+  < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) >  
+  =
+  < O : C | Att: S,  Pr: P, PrQ: (L, await G ; SL) ++ W, Lcnt: F >    
+  < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) > .
+
+
+***
+*** Tail calls.
+***
+*** Fake the caller and the label and tag the label.  Since we do not
+*** want to interleave, this can also be an equation.
+STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
+{|< O : C | Att: S, Pr: (noSubst, accept(tag(L['label]))), PrQ: W, Lcnt: N >
+ bindMtd(O, L['caller], tag(L['label]), M, evalList(EL, (S # L)), C < emp >)
+|},
+{|[label tailcall]|})
+
+*** If we receive the method body, the call is accepted and the label untagged.
+CSTEP({|< O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: W, Lcnt: N >
+  boundMtd(O, (L, SL))|},
+{|< O : C | Att: S, Pr: (insert('label, tag(Lab), L), SL), PrQ: W, Lcnt: N >|},
+{|L['label] = Lab|},
+{|[label tailcall-accept]|})
+
+
+
 
 
 *** METHOD CALLS ***

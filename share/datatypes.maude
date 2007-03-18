@@ -33,6 +33,11 @@ fmod CREOL-DATA-SIG is
 
   op null    :           -> Data [ctor] .
 
+  *** Needed in the model checker for tail recursion.
+  op tag : Label -> Label [ctor format(c o)] .
+  var L : Label .
+  eq tag(tag(L)) = L .
+
   sorts   NeExprList ExprList NeDataList DataList .
   subsort Expr < NeExprList < ExprList .
   subsort Data < NeDataList < DataList .

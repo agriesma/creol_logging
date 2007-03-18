@@ -23,4 +23,26 @@ set show timing off .
 set show advise off .
 load interpreter .
 
+mod TEST-TAILCALL is
+  pr INTERPRETER .
+  op init : -> Configuration .
+  eq init =
+
+    < 'Tailcall : Cl | Inh: noInh, Par: 'x, Att: 'x |-> null, Mtds:
+	< 'init : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
+	< 'run : Mtdname | Param: noAid, Latt: noSubst, Code:
+          if 'less[[ int(0) # 'x ]] th 'x ::= ('minus[[ 'x # int(1) ]]) ;
+	    tailcall 'run(emp) el return(emp) fi >,
+      Ocnt: 0 >
+
+  main('Tailcall, int(5)) .
+
+endm
+
+red in TEST-TAILCALL : init .
+
+rew[22] in TEST-TAILCALL : init .
+
+rew in TEST-TAILCALL : init .
+
 quit
