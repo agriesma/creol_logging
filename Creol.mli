@@ -130,6 +130,9 @@ module Statement: sig
       | SyncCall of 'a * 'b expression * string *
 	  'b expression list * string list
 	  (** Call a (remote) method synchronously. *)
+      | LocalAsyncCall of 'a * string option * string * string option * string option *
+	  'b expression list
+	  (** Call a local method synchronously. *)
       | LocalSyncCall of 'a * string * string option * string option *
 	  'b expression list * string list
 	  (** Call a local method synchronously. *)

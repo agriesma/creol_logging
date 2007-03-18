@@ -218,8 +218,7 @@ basic_statement:
       lb = ioption(preceded(AT, CID)) ub = ioption(preceded(UPPER, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
       SEMI
-	{ let callee = Id ((Note.make $startpos), "this") in
-	    AsyncCall ((Note.make $startpos), l, callee, m, i) }
+	{ LocalAsyncCall ((Note.make $startpos), l, m, lb, ub, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN SEMI
 	{ Reply ((Note.make $startpos), l, o) }
     | c = expression DOT; m = ID;

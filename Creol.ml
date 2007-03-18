@@ -147,6 +147,8 @@ module Statement =
 	| Free of 'a * string
 	| SyncCall of 'a * 'b expression * string *
 	    'b expression list * string list
+	| LocalAsyncCall of 'a * string option * string * string option *
+	    string option * 'b expression list
 	| LocalSyncCall of 'a * string * string option * string option *
             'b expression list * string list
 	| If of 'a * 'b expression * ('a, 'b) t * ('a, 'b)t
@@ -165,6 +167,7 @@ module Statement =
 	| Reply(a, _, _) -> a
 	| Free(a, _) -> a
 	| SyncCall(a, _, _, _, _) -> a
+	| LocalAsyncCall(a, _, _, _, _, _) -> a
 	| LocalSyncCall(a, _, _, _, _, _) -> a
 	| If(a, _, _, _) -> a
 	| While(a, _, _, _) -> a
@@ -250,6 +253,8 @@ and simplify_statement =
     | Reply (a, l, v) -> Reply (a, l, v)
     | SyncCall (a, e, n, p, r) ->
 	SyncCall (a, simplify_expression e, n, List.map simplify_expression p, r)
+    | LocalAsyncCall (a, l, m, lb, ub, i) ->
+	LocalAsyncCall (a, l, m, lb, ub, List.map simplify_expression i)
     | LocalSyncCall (a, m, l, u, i, o) ->
 	LocalSyncCall (a, m, l, u, List.map simplify_expression i, o)
     | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
@@ -371,6 +376,8 @@ and definitions_in_statement note =
     | Free (n, v) -> assert false
     | SyncCall (n, c, m, ins, outs) ->
 	SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
+    | LocalAsyncCall (n, l, m, ub, lb, i) ->
+	LocalAsyncCall ({ n with Note.env = note.Note.env }, l, m, ub, lb, i) (* XXX *)
     | LocalSyncCall (n, m, u, l, a, r) ->
 	LocalSyncCall ({ n with Note.env = note.Note.env }, m, u, l, a, r) (* XXX *)
     | If (n, c, l, r) ->
@@ -587,9 +594,9 @@ and pretty_print_vardecl out_channel v =
 and pretty_print_statement out lvl statement =
   (** Pretty-print statements and write the code to out. *)
   let open_block prec op_prec =
-    if prec < op_prec then output_string out "{ "
+    if prec < op_prec then output_string out "begin "
   and close_block prec op_prec =
-    if prec < op_prec then output_string out " }"
+    if prec < op_prec then output_string out " end"
   in
   let rec print lvl prec =
     function
@@ -627,6 +634,14 @@ and pretty_print_statement out lvl statement =
 	  pretty_print_expression_list out a;
 	  output_string out "; " ;
 	  pretty_print_identifier_list out r;
+	  output_string out ")"
+      | LocalAsyncCall (_, l, m, lb, ub, i) ->
+	  output_string out (match l with None -> "!" | Some n -> (n ^ "!"));
+	  output_string out m;
+	  (match lb with None -> () | Some n -> output_string out ("@" ^ n));
+	  (match ub with None -> () | Some n -> output_string out ("<<" ^ n));
+	  output_string out "(" ;
+	  pretty_print_expression_list out i;
 	  output_string out ")"
       | LocalSyncCall (_, m, l, u, i, o) ->
 	  output_string out m;
@@ -842,11 +857,19 @@ let maude_of_creol_statement out stmt =
 	output_string out " : " ;
 	maude_of_creol_identifier_list out r;
 	output_string out " )"
+    | LocalAsyncCall (_, l, m, lb, ub, i) ->
+	output_string out (match l with None -> " !" | Some n -> ("'" ^ n ^ " !"));
+	output_string out ( " 'this . '" ^ m );
+	(match lb with None -> () | Some n -> output_string out (" @ '" ^ n));
+	(match ub with None -> () | Some n -> output_string out (" << '" ^ n));
+	output_string out " ( " ;
+	maude_of_creol_expression_list out i;
+	output_string out " )"
     | LocalSyncCall (_, m, l, u, i, o) ->
 	output_string out ( "'" ^ m );
 	(match l with None -> () | Some n -> output_string out (" @ '" ^ n));
 	(match u with None -> () | Some n -> output_string out (" << '" ^ n));
-	output_string out "( " ;
+	output_string out " ( " ;
 	maude_of_creol_expression_list out i;
 	output_string out " : " ;
 	maude_of_creol_identifier_list out o;
