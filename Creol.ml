@@ -772,6 +772,15 @@ and do_indent out lvl =
 
 
 
+module Maude =
+  struct
+
+    type options = {
+	mutable modelchecker: bool;
+	mutable red_init: bool;
+	mutable main: string option;
+    }
+
 (* Write a Creol program as a maude term. If the program is parsable
    but not semantically correct, this function will only produce
    garbage. *)
@@ -1010,14 +1019,22 @@ let rec maude_of_creol_decl_list out =
 (** Convert an abstract syntax tree l of a creol program to a
     representation for the Maude CMC and write the result to the output
     channel out. *)
-let maude_of_creol red_init main out l =
-  output_string out "load interpreter\nmod PROGRAM is\npr INTERPRETER .\nop init : -> Configuration [ctor] .\neq init =\n" ;
+let of_creol options out l =
+  if options.modelchecker then
+    output_string out "load modelchecker\n"
+  else
+    output_string out "load interpreter\n";
+  output_string out ("mod PROGRAM is\npr " ^
+  (if options.modelchecker then "MODEL-CHECKER" else "INTERPRETER") ^
+   " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
   maude_of_creol_decl_list out l ;
   begin
-    match main with
+    match options.main with
       None -> ()
     | Some m -> output_string out ("main( '" ^ m ^ " , emp )\n")
   end ;
   output_string out ".\nendm\n" ;
-  if red_init then output_string out "\nred init .\n" ;
+  if options.red_init then output_string out "\nred init .\n" ;
   flush out
+
+end

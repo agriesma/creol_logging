@@ -204,4 +204,14 @@ val simplify: ('a, 'b) declaration list -> ('a, 'b) declaration list
 
 val find_definitions: (Note.t, 'a) declaration list -> (Note.t, 'a) declaration list
 
-val maude_of_creol: bool -> string option -> out_channel -> ('a, 'b) declaration list -> unit
+module Maude :
+  sig
+    type options = {
+	mutable modelchecker: bool;
+	mutable red_init: bool;
+	mutable main: string option;
+    }
+
+    val of_creol: options -> out_channel -> ('a, 'b) declaration list -> unit
+  end
+
