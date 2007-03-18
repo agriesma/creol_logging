@@ -266,10 +266,8 @@ fmod COMMUNICATION is
 
   *** INVOCATION and REPLY
   op invoc(_,_,_,_) : *** Nat Oid 
-  Oid Label Mid ExprList -> Body [ctor                     *** invocation
-        format (! o o o o o o o o o o)] .  
-  op comp(_,_) : Label ExprList -> Body [ctor              *** completion
-        format (! o o o o o o)] .  
+  Oid Label Mid DataList -> Body [ctor format (! o o o o o o o o o o)] .  
+  op comp(_,_) : Label DataList -> Body [ctor format (! o o o o o o)] .  
 
   op _from_to_ : Body Oid Oid -> Msg [ctor format (o ! o ! o on)] .
   op error(_) : String -> [Msg] [ctor format (nnr r o! or onn)] .     *** error 
@@ -309,7 +307,7 @@ fmod CONFIG is
   op main : Cid ExprList -> Configuration .
 
   var C : Cid . var E : ExprList .
-  eq main(C,E) = < ob('main) : 'class | Att: noSubst, 
+  eq main(C,E) = < ob('main) : 'Class | Att: noSubst, 
                  Pr: (noSubst, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
                < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg > .
 

@@ -12,10 +12,10 @@ result Configuration:
     Ocnt: 1 >
  
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
-    idle,PrQ: noSubst,
+    idle,PrQ: 'Class |-> label(2),
 label(2) ?(noAid),Lcnt: 3 >
  
-< ob('main) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 ==========================================
 rewrite [1] in TEST-TAILCALL : init .
@@ -33,7 +33,7 @@ result Configuration:
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
     idle,PrQ: noProc,Lcnt: 3 >
  
-< ob('main) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 ==========================================
 rewrite in TEST-TAILCALL : init .
@@ -51,6 +51,6 @@ result Configuration:
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
     idle,PrQ: noProc,Lcnt: 3 >
  
-< ob('main) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 Bye.

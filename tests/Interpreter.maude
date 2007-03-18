@@ -41,7 +41,7 @@ endm
 
 red in TEST-TAILCALL : init .
 
-rew[22] in TEST-TAILCALL : init .
+rew[24] in TEST-TAILCALL : init .
 
 rew in TEST-TAILCALL : init .
 

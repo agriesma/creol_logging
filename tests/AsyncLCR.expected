@@ -71,6 +71,6 @@ result Configuration:
     'Process1), 'status |-> int(1), 'this |-> ob('Process2), 'u |-> int(3),Pr:
     idle,PrQ: noProc,Lcnt: 5 >
  
-< ob('main) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 Bye.

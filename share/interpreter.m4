@@ -178,6 +178,10 @@ rl
   [label while] .
 
 *** OBJECT CREATION
+***
+*** Using synchronous calls does not work for the model checker.
+*** Expanding 'init(emp:noAid) needs a label value, which we do
+*** not have.  We reserve a label for our purposes.
 STEP(dnl
 {|< O : C | Att: S,Pr: (L, (A ::= new C' (EL)); SL),PrQ: W, Lcnt: N > 
   < C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: F >|},
@@ -187,31 +191,36 @@ STEP(dnl
   < newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, (S {|#|} L))),
-    ('init (emp : noAid)) ; ('run (emp : noAid)))|},
+    ((noSubst, (C ! 'init (emp)) ; (C ?(noAid)) ; (C ! 'run (emp)) ; (C ?(noAid)))))|},
 {|[label new-object]|})
 
 
 *** ATTRIBUTE inheritance with multiple inheritance
 *** CMC assumes that all attributes names are (globally) different
 
-op findAttr  : Oid InhList Subst StmList StmList -> Msg [ctor format (n d)] .
-op foundAttr : Oid Subst  StmList StmList        -> Msg [ctor format (n d)] .
+op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor format (n d)] .
+op foundAttr : Oid Subst  StmList Process -> Msg [ctor format (n d)] .
 
-eq findAttr(O, noInh, S, SL, SL') = foundAttr(O, S, SL, SL') .
+eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 
+*** Good thing we cannot use class names as variables in (at least in
+*** the source language.  The name of the class will be used as the
+*** name of the variable used to call the init routine.
+***
+*** XXX: Why is the call prepended, shouldn't it be appended?
 eq
-  findAttr(O,((C < EL >) {|#|}{|#|} I),S, SL, SL') 
+  findAttr(O,((C < EL >) {|#|}{|#|} I),S, SL, (L', SL')) 
   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
   =
   findAttr(O, I {|#|}{|#|} I',(L {|#|} S), (AL ::= EL) ; SL, 
-              ('init @ C(emp : noAid)) ; SL') 
+           (L', (C ! 'init @ C(emp)) ; (C ?( noAid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
 
 eq
-  foundAttr(O, S', SL, SL') 
+  foundAttr(O, S', SL, (L', SL'))
   < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
   =
-  < O : C | Att: ('this |-> O, S'), Pr: (noSubst, SL ; SL'), PrQ: W, Lcnt: N >
+  < O : C | Att: ('this |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Lcnt: N >
   .
 
 
@@ -375,9 +384,9 @@ eq   ! Q(EL) =   ! 'this . Q(EL) . *** could alternatively use X@ this class
 
 *** receive invocation message ***
 STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q, EL) >|},
+  < O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q, DL) >|},
 {|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM > bindMtd(O, O', Lab, Q, EL, C < emp >)|},
+  < O : Qu | Dealloc: LS, Ev: MM > bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
 
 *** Method binding with multiple inheritance
@@ -392,9 +401,9 @@ eq bindMtd(O, O', Lab, M, EL, (C < EL' >) {|#|}{|#|} I')
                    else bindMtd(O,O',Lab,M,EL, I {|#|}{|#|} I') fi 
 < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F > .
 
-STEP({|< O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, EL) >|},
+STEP({|< O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, DL) >|},
 {|< O : Qu | Dealloc: LS, Ev: MM >
-    bindMtd(O, O', Lab, Q, EL, C < emp >)|},
+    bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
 
 STEP({|boundMtd(O, P) < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >|},
@@ -413,7 +422,7 @@ invoc(O, label(N), Q @ C', evalList(EL, (S # L))) from O to O |},
 
 *** REMOTE METHOD CALLS ***
 eq < O : C | Att: S, Pr: (L, (Q ! M(EL)); SL), PrQ: W, Lcnt: N >
-=  < O : C | Att: S, Pr: (L, (Q assign int(N)); (! M (EL));  SL), 
+=  < O : C | Att: S, Pr: (L, (Q assign label(N)); (! M (EL));  SL), 
              PrQ: W,  Lcnt: N > .
 
 
@@ -437,14 +446,26 @@ STEP({|< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >|},
 {|[label return]|})
 
 *** Optimization: reduce label to value only once
-eq < O : C |  Att: S, Pr: (L, (A ?(AL)); SL), PrQ: W, Lcnt: N > 
-= < O : C |  Att: S, Pr: (L, ((L[A]) ?(AL)); SL), PrQ: W, Lcnt: N > .
-
 eq
-  < O : C |  Att: S, Pr: (L, (Lab ? (AL)); SL), PrQ: W, Lcnt: F > 
+  < O : C |  Att: S, Pr: (L, (A ?(AL)); SL), PrQ: W, Lcnt: N > 
+  =
+  < O : C |  Att: S, Pr: (L, ((L[A]) ?(AL)); SL), PrQ: W, Lcnt: N > .
+
+
+*** Model checker behaves differently from interpreter in that receiving
+*** and freeing of label variables will set the variable containing this
+*** name to null.  This will save us some states.  In the model checker
+*** it is /guaranteed/ that exactly one variable exists, which holds the
+*** label value,
+eq
+  < O : C |  Att: S,
+    Pr: ((ifdef({|MODELCHECK|}, {|A |-> Lab, L|}, L)),
+         (Lab ? (AL)); SL), PrQ: W, Lcnt: F > 
   < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) >
   = 
-  < O : C |  Att: S, Pr: (L, (AL assign DL); SL), PrQ: W, Lcnt: F > 
+  < O : C |  Att: S,
+    Pr: ((ifdef({|MODELCHECKER|}, {|A |-> null, L|}, L)),
+         (AL assign DL); SL), PrQ: W, Lcnt: F > 
   < O : Qu | Dealloc: LS, Ev: MM >
   .
 

@@ -9,11 +9,11 @@ result Configuration:
     'x ::= ('minus[['x # int(1)]]) ; tailcall 'run(emp) el return(emp) fi >,
     Ocnt: 0 >
  
-< ob('main) : 'class | Att: noSubst,Pr: noSubst,
+< ob('main) : 'Class | Att: noSubst,Pr: noSubst,
 'var ::= new 'Tailcall(int(5)),PrQ: noProc,Lcnt: 0 >
 
 ==========================================
-rewrite [22] in TEST-TAILCALL : init .
+rewrite [24] in TEST-TAILCALL : init .
 result Configuration: boundMtd(ob('Tailcall0),('caller |-> ob('Tailcall0),
     'label |-> tag(label(2))),
 noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
@@ -31,10 +31,10 @@ noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
  
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(3),Pr:
     noSubst,
-accept(tag(label(2))),PrQ: noSubst,
+accept(tag(label(2))),PrQ: 'Class |-> label(2),
 label(2) ?(noAid),Lcnt: 3 >
  
-< ob('main) : 'class | Att: noSubst,Pr: noSubst,
+< ob('main) : 'Class | Att: noSubst,Pr: noSubst,
 'var assign ob('Tailcall0),PrQ: noProc,Lcnt: 0 >
 
 ==========================================
@@ -53,6 +53,6 @@ result Configuration:
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
     idle,PrQ: noProc,Lcnt: 3 >
  
-< ob('main) : 'class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
+< ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
 Bye.
