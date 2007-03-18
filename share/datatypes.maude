@@ -30,24 +30,35 @@ fmod CREOL-DATA-SIG is
   subsort Appl < Expr .                    *** Appl = function application
   subsort Label < Data .
   subsort Qid < Aid < Expr .
-  sorts   AidList ExprList DataList .
-  subsort Aid < AidList .
-  subsort Expr < ExprList .
-  subsort Data < DataList .
+
+  op null    :           -> Data [ctor] .
+
+  sorts   NeExprList ExprList NeDataList DataList .
+  subsort Expr < NeExprList < ExprList .
+  subsort Data < NeDataList < DataList .
   subsort DataList < ExprList .
+  subsort NeDataList < NeExprList .
 
   op emp : -> DataList [ctor] .
+
   op _#_ : ExprList ExprList -> ExprList [ctor assoc id: emp prec 27] .
-  *** op _#_ : NeExprList ExprList -> NeExprList [ctor ditto] .
-  *** op _#_ : ExprList NeExprList -> NeExprList [ctor ditto] .
-  op _#_ : DataList  DataList  -> DataList [ctor ditto] .
+  op _#_ : NeExprList ExprList -> NeExprList [ctor ditto] .
+  op _#_ : ExprList NeExprList -> NeExprList [ctor ditto] .
+  op _#_ : DataList DataList  -> DataList [ctor ditto] .
+  op _#_ : NeDataList DataList  -> NeDataList [ctor ditto] .
+  op _#_ : DataList NeDataList  -> NeDataList [ctor ditto] .
+
+  sorts NeAidList AidList .
+  subsort Aid < NeAidList < AidList .
 
   op noAid : -> AidList [ctor] .
+
   op _,,_ : AidList AidList -> AidList [ctor assoc id: noAid] .
+  op _,,_ : NeAidList AidList -> NeAidList [ctor ditto] .
+  op _,,_ : AidList NeAidList -> NeAidList [ctor ditto] .
 
   op _[[_]] : Qid ExprList -> Appl .
 
-  op null    :           -> Data [ctor] . *** undef. value/none pointer
   op ob      : Qid       -> Oid  [ctor] .
 
   *** The interpreter should extend this module with his own definition
@@ -57,10 +68,10 @@ fmod CREOL-DATA-SIG is
 
   var B : Bool .
   op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
+
   op _asBool            : Data -> Bool .
   eq bool(B) asBool     = B .
 
-  var  N        : Nat .
   vars D D'     : Data .
   vars E E'     : Expr .
   

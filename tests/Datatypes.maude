@@ -36,6 +36,7 @@ red in CREOL-DATA-SIG : 'a # 'a .
 red in CREOL-DATA-SIG : 'a ,, 'a .
 red in CREOL-DATA-SIG : 'a [[ 'a ]] .
 red in CREOL-DATA-SIG : null .
+red in CREOL-DATA-SIG : null # null .
 red in CREOL-DATA-SIG : null # 'a .
 red in CREOL-DATA-SIG : null # ('a [[ 'a ]]) # null .
 red in CREOL-DATA-SIG : ('a [[ 'a ]]) # null .

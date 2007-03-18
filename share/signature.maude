@@ -23,33 +23,27 @@
 fmod SUBST is
   protecting EXT-BOOL .
   protecting CREOL-DATA-SIG .
-  protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst, op empty : -> Map{Aid, Data} to noSubst ) .
+  protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst,
+                               op empty : -> Map{Aid, Data} to noSubst ) .
 
-  op dom : Aid Subst -> Bool .
+  vars A A' : Aid .
+  vars D D' : Data .
+  vars S1 S2  : Subst .
 
   *** Non-comm composition operator for substitutions
   op _#_ : Subst Subst -> Subst .
-
-
-  vars A A' : Aid . var D : Data . vars S1 S2  : Subst .
-
   eq S1 # noSubst = S1 .
-  eq S1 # ((A |-> D), S2) = insert(A,D,S1) # S2 .
+  eq S1 # (S2, (A |-> D)) = insert(A, D, S1) # S2 .
 
+  op dom : Aid Subst -> Bool .
   eq dom(A, noSubst) = false .
-  eq dom(A, ((A |-> D), S1)) = true .
-  eq dom(A, ((A' |-> D), S1)) = false [owise] .
+  eq dom(A, ((A' |-> D), S1)) = (A == A') or-else dom(A, S1) .
   eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
 endfm
 
 fmod EVAL is
   protecting DATATYPES .
   protecting SUBST .
-
-  op eval     : Data Subst     -> Data .
-  op eval     : Expr Subst     -> Data .
-  op evalList : DataList Subst -> DataList .
-  op evalList : ExprList Subst -> DataList .
 
   var D : Data .
   var DL : DataList .
@@ -61,18 +55,23 @@ fmod EVAL is
   var I : Int .
   var B : Bool .
 
+  op eval : Data Subst -> Data .
   eq eval(D, S) = D .
-  eq eval(A, S) =  S [A] .
 
   *** standard evaluation of expression
+  op eval     : Expr Subst     -> Data .
+  eq eval(A, S) =  S [A] .
+  eq eval(Q [[EL]], S) = Q [[ evalList(EL, S) ]] .
+  eq eval(list(EL), S) = list(evalList(EL, S)) .
   eq eval(pair(E,E'),S) = pair(eval(E,S),eval(E',S)) .
-  eq eval(list(EL), S)  = list(evalList(EL, S)) .
-  eq eval(setl(EL), S)  = setl(evalList(EL, S)) .
-  eq eval(Q [[EL]], S)  = Q [[ evalList(EL, S) ]] .
+  eq eval(setl(EL), S) = setl(evalList(EL, S)) .
 
-  eq evalList(emp, S)   = emp .
+  op evalList : DataList Subst -> DataList .
+  eq evalList(emp, S) = emp .
   eq evalList(DL, S)= DL .
-  eq evalList(E # EL, S)= eval(E, S) # evalList(EL, S) .
+
+  op evalList : ExprList Subst -> DataList .
+  eq evalList(E # EL, S) = eval(E, S) # evalList(EL, S) .
 
 endfm
 
@@ -80,22 +79,23 @@ endfm
 fmod GUARDS is
   protecting EVAL .
 
-  sorts     NoGuard Guard Wait Return PureGuard . 
-  subsorts  Return Expr < PureGuard .
-  subsorts  NoGuard Wait PureGuard < Guard .
+  sorts NoGuard Guard Wait Return PureGuard . 
+  subsorts Return Expr < PureGuard .
+  subsorts NoGuard Wait PureGuard < Guard .
 
-  op noGuard : -> NoGuard [ctor] . 
-  op wait :    -> Wait [ctor] .           *** suspension
-  op _?  : Aid -> Return [ctor] .         *** reply guard
-  op _?  : Label -> Return [ctor] .       *** low level reply guard
+  vars E E' : Expr .
+  var PG : PureGuard .
+
+  op noGuard : -> NoGuard [ctor format (b o)] .
+  op wait :    -> Wait [ctor format (b o)] .
+  op _?  : Aid -> Return [ctor] .
+  op _?  : Label -> Return [ctor] .
   op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
   op _&_ : PureGuard PureGuard -> PureGuard [ditto] .
 
-  *** reduction of guards to normalform: [wait &]? [bool &]? return ***
-  vars E  E' : Expr . var PG : PureGuard .
-  eq   wait & wait = wait .
-  eq   PG   & PG   = PG .
-  eq   E    & E'   = 'and[[E # E']] .
+  eq wait & wait = wait .
+  eq PG & PG = PG .
+  eq E & E' = 'and[[E # E']] .
 
 endfm
 
@@ -109,7 +109,7 @@ fmod STATEMENTS is
   op _@_   : Qid  Cid -> Mid [ctor prec 33] .
 
   op skip : -> Stm [ctor] .
-  op _::=_  : AidList ExprList -> Stm [ctor prec 39] .
+  op _::=_ : AidList ExprList -> Stm [ctor prec 39] .
   op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 format (d b d o d d d d)] .
   op _(_:_) : Mid ExprList AidList -> Stm [ctor prec 39] .
   op !_(_)  : Mid ExprList -> Stm [ctor] .
@@ -144,7 +144,6 @@ fmod STM-LIST is
   var NeSL : NeStmList .
   var EL : ExprList .
   var B : Expr .
-  var R : Return .
   var PG : PureGuard .
 
   *** Some simplifications:

@@ -1,1 +1,11 @@
 write me!
+
+* share/interpreter.m4:
+~~~~~~~~~~~~~~~~~~~~~~~
+This file contains the code of both the interpreter and the model checker.
+It is used to generate the Maude modules INTERPRETER and MODEL-CHECKER in
+the files interpreter.maude and modelchecker.maude.
+
+If you need to apply changes to the interpreter, you have to edit the
+file interpreter.m4, since all changes to the other files may be
+overwritten.
