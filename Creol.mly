@@ -6,8 +6,10 @@
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE
 %token WITH OP VAR IN OUT
 %token EQEQ COMMA SEMI COLON ASSIGN
-%token RBRACK LBRACK LPAREN RPAREN LBRACE RBRACE
-%token QUESTION BANG BOX MERGE DOT AT
+%token RBRACK LBRACK
+%token LPAREN RPAREN
+(* %token LBRACE RBRACE *)
+%token QUESTION BANG BOX MERGE DOT AT UPPER
 (* %token DIAMOND *)
 (* %token BAR *)
 (* %token DOTDOT *)
@@ -25,9 +27,6 @@
 %left PLUS MINUS
 %left TIMES DIV
 %right NOT
-%left SEMI
-%left MERGE
-%left BOX
 
 %start <'a list> main
 
@@ -159,7 +158,7 @@ outputs:
 
 method_def:
       d = method_decl; EQEQ; a = loption(terminated(attributes, SEMI));
-	s = statement ioption(SEMI)
+	s = statement (* ioption(SEMI) *)
     { { meth_name = d.meth_name; meth_coiface = d.meth_coiface;
 	  meth_inpars = d.meth_inpars; meth_outpars = d.meth_outpars;
 	  meth_vars = a; meth_body = Some s} }
@@ -181,41 +180,66 @@ method_decls:
     | m = method_decl l = method_decls { m::l }
 
 (* Statements *)
+
 statement:
-      SKIP { Skip (Note.make $startpos) }
-    | t = delimited(LBRACK, separated_nonempty_list(COMMA, ID), RBRACK) ASSIGN
-	e = delimited(LBRACK, separated_nonempty_list(COMMA, expression), RBRACK)
-	{ Assign((Note.make $startpos), t, e) }
-    | t = ID ASSIGN e = expression { Assign((Note.make $startpos), [t], [e]) }
+      l = choice_statement r = ioption(preceded(MERGE, statement))
+	{ match r with
+	      None -> l
+	    | Some s -> Merge((Note.make $startpos), l, s) }
+
+choice_statement:
+      l = statement_sequence r = ioption(preceded(BOX, choice_statement))
+	{ match r with
+	      None -> l
+	    | Some s -> Choice((Note.make $startpos), l, s) }
+
+statement_sequence:
+      l = basic_statement r = ioption(statement_sequence)
+	{ match r with
+	      None -> l
+	    | Some s -> Sequence((Note.make $startpos), l, s)
+	}
+
+basic_statement:
+      SKIP SEMI
+	{ Skip (Note.make $startpos) }
+    | t = ID ASSIGN e = expression SEMI
+	{ Assign((Note.make $startpos), [t], [e]) }
     | t = ID ASSIGN NEW c = CID;
-	l = delimited(LPAREN, separated_list(COMMA, expression), RPAREN)
+      l = delimited(LPAREN, separated_list(COMMA, expression), RPAREN) SEMI
         { New((Note.make $startpos), t, c, l) }
-    | IF e = expression THEN t = statement ELSE f = statement FI
-        { If((Note.make $startpos), e, t, f) }
-    | IF e = expression THEN t = statement FI
-        { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
-    | AWAIT g = guard { Await ((Note.make $startpos), g) }
-    | l = ioption(ID) BANG c = ioption(terminated(expression, DOT)) m = ID;
-	LPAREN i = separated_list(COMMA, expression) RPAREN
-	{ let caller = match c with
-	    None -> Id ((Note.make $startpos), "this")
-	  | Some e -> e in
-	      AsyncCall ((Note.make $startpos), l, caller, m, i) }
-    | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
+    | AWAIT g = guard SEMI
+	{ Await ((Note.make $startpos), g) }
+    | l = ioption(ID) BANG callee = expression DOT m = ID
+      LPAREN i = separated_list(COMMA, expression) RPAREN
+      SEMI
+	{ AsyncCall ((Note.make $startpos), l, callee, m, i) }
+    | l = ioption(ID) BANG m = ID
+      lb = ioption(preceded(AT, CID)) ub = ioption(preceded(UPPER, CID))
+      LPAREN i = separated_list(COMMA, expression) RPAREN
+      SEMI
+	{ let callee = Id ((Note.make $startpos), "this") in
+	    AsyncCall ((Note.make $startpos), l, callee, m, i) }
+    | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN SEMI
 	{ Reply ((Note.make $startpos), l, o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN
+	       o = separated_list(COMMA, ID) RPAREN SEMI
 	{ SyncCall ((Note.make $startpos), c, m, i, o) }
-    | m = ID l = ioption(preceded(AT, CID))
+    | m = ID lb = ioption(preceded(AT, CID)) ub = ioption(preceded(UPPER, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN
-	{ LocalSyncCall((Note.make $startpos), m, l, None, i, o) }
-    | LBRACE s = statement RBRACE { s }
-    | l = statement SEMI r = statement { Sequence((Note.make $startpos), l, r) }
-    | l = statement MERGE r = statement { Merge((Note.make $startpos), l, r) }
-    | l = statement BOX r = statement { Choice((Note.make $startpos), l, r) }
-    | error { signal_error $startpos "syntax error in statement" }
+	       o = separated_list(COMMA, ID) RPAREN SEMI
+	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
+    | BEGIN s = statement END ioption(SEMI)
+	{ s }
+    | IF e = expression THEN t = statement ELSE f = statement FI ioption(SEMI)
+        { If((Note.make $startpos), e, t, f) }
+    | IF e = expression THEN t = statement FI ioption(SEMI)
+        { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
+    | error SEMI| error ELSE | error FI | error OP | error WITH | error END
+    | error EOF
+	{ signal_error $startpos "syntax error in statement" }
+
 
 guard:
       l = ID QUESTION { Label ((Note.make $startpos), l) }
@@ -225,12 +249,16 @@ guard:
     | e = expression { Condition ((Note.make $startpos), e) }
 
 expression:
+      e = expression_no_fun
+	{ e }
+    | f = ID LPAREN l = separated_list(COMMA, expression) RPAREN
+	{ FuncCall((Note.make $startpos), f, l) }
+
+expression_no_fun:
       l = expression o = binop r = expression
         { Binary((Note.make $startpos), o, l, r) }
     | NOT  e = expression { Unary((Note.make $startpos), Not, e) }
     | MINUS e = expression %prec NOT { Unary((Note.make $startpos), UMinus, e) }
-    | f = ID LBRACK l = separated_nonempty_list(COMMA, expression) RBRACK
-	{ FuncCall((Note.make $startpos), f, l) }
     | i = INT { Int ((Note.make $startpos), i) }
     | f = FLOAT { Float ((Note.make $startpos), f) }
     | b = BOOL { Bool ((Note.make $startpos), b) }

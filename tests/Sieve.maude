@@ -9,6 +9,7 @@ eq init =
 
 < 'Sieve : Cl | Inh: noInh, Par: 'p, Att: 'p |-> null , 'next |-> null, Mtds: 
   < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; skip ; skip ; return ( emp ) > *
+  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; skip ; skip ; return ( emp ) > *
   < 'send : Mtdname | Param: 'n, Latt: 'n |-> null , 'res |-> null , 'd |-> null , 'r |-> null, Code: skip ; 'd ::= ( 'div[[ 'n # 'p ]] ) ; 'r ::= ( 'minus[[ 'n # ( 'times[[ 'd # 'p ]] ) ]] ) ; if ( 'equal[[ 'r # int(0) ]] ) th 'res ::= bool(false) el if ( 'not[[ ( 'equal[[ 'next # null ]] ) ]] ) th 'next . 'send( 'n : 'res ) el 'next ::= new 'Sieve( 'n ) ; 'res ::= bool(true) fi fi ; return ( 'res ) >, Ocnt: 0 >
 
 .

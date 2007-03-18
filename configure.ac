@@ -57,6 +57,7 @@ AC_CONFIG_SUBDIRS([xml])
 dnl Check for the programs needed by the test-suite.
 AC_CHECK_PROG([MAUDE], [maude], [maude], [:])
 
+AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
 AC_SUBST([OCAMLFIND_FLAGS])

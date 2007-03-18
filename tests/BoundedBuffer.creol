@@ -19,10 +19,10 @@ begin
   var n: Int := 0
 
   with Producer
-    op append(in d:Data) == await n < max; buffer := plus[buffer, d]
+    op append(in d:Data) == await n < max; buffer := plus(buffer, d);
   with Consumer
     op remove(out d:Data) ==
-      await n > 0; d := first[buffer]; buffer := rest[buffer]
+      await n > 0; d := first(buffer); buffer := rest(buffer);
 end
 
 
@@ -37,15 +37,15 @@ end
 class Prod(b: BufferA)
   implements Producer
 begin
-  op run == this!loop(0)
-  op loop(in i: Int) == b.append(i;); !this.loop(i+1)
+  op run == !this.loop(0);
+  op loop(in i: Int) == b.append(i;); !this.loop(i+1);
 end
 
 
 class Cons(b:BufferR) implements Consumer
 begin 
-  op run == !this.loop()
-  op loop == var y:Data; b.remove(;y); /* print(y;); */ !this.loop()
+  op run == !this.loop();
+  op loop == var y:Data; b.remove(;y); /* print(y;); */ !this.loop();
 end
 
 class Starter
@@ -53,5 +53,5 @@ begin
   op run == var b: Buffer; var p: Producer; var c: Consumer; 
             b := new BoundedBuffer(); 
             p := new Producer(b);
-            c := new Consumer(b)
+            c := new Consumer(b);
 end

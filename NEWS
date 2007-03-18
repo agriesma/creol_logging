@@ -1,4 +1,11 @@
 
+creoltools 0.0c (2007-MM-DD): alpha release.
+
+The grammar has been changed:  A semicolon is now terminating a statement,
+except for if statements and blocks.  Instead of braces, blocks are formed
+by begin ... end in statements.  Functions use parenthesis instead of
+brackets.
+
 creoltools 0.0b (2007-03-16): alpha release.
 
 The package has been renamed to `creoltools' and the compiler to `creolc'.

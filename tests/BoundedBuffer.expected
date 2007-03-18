@@ -19,8 +19,8 @@ result Configuration:
 < 'loop : Mtdname | Param: 'i,Latt: 'i |-> null,Code: skip ; skip ; 'b .
     'append('i : noAid) ; ! 'this . 'loop('plus[['i # int(1)]]) ; return(emp) >
     *
-< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'this ! 'this
-    . 'loop(int(0)) ; return(emp) >,Ocnt: 0 >
+< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; ! 'this .
+    'loop(int(0)) ; return(emp) >,Ocnt: 0 >
  
 < 'Starter : Cl | Inh: noInh,Par: noAid,Att: noSubst,Mtds:
 < 'run : Mtdname | Param: noAid,Latt: 'b |-> null, 'c |-> null, 'p |-> null,

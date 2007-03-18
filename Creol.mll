@@ -68,7 +68,7 @@ rule token = parse
     | "<=" { LE }
     | ">=" { GE }
     | ">>" { reserved lexbuf }
-    | "<<" { reserved lexbuf }
+    | "<<" { UPPER }
     | "<" { LT }
     | ">" { GT }
     | "/=" { NE }
@@ -86,8 +86,8 @@ rule token = parse
     | ']' { RBRACK }
     | '(' { LPAREN }
     | ')' { RPAREN }
-    | '{' { LBRACE }
-    | '}' { RBRACE }
+    | '{' { reserved lexbuf }
+    | '}' { reserved lexbuf }
     | "<>" { reserved lexbuf }
     | "|||" { MERGE }
     | "||" { reserved lexbuf }

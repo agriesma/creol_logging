@@ -61,11 +61,11 @@ result [Configuration]:
 < 'haveProblem : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ;
     'ctElves ::= ('plus[['ctElves # int(1)]]) ; 'waitElves ::= ('plus[[
     'waitElves # 'caller]]) ; return(emp) > *
-< 'loop : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; await (
-    'equal[['ctReindeers # int(5)]]) ; (await ('equal[[('and[[('lessEq[[int(3)
-    # 'ctElves]]) # ('not[['ctReindeers]])]]) # int(9)]])[]'deliverToys(emp :
-    noAid)) ; 'talkToElves(emp : noAid) ; ! 'this . 'loop(emp) ; return(emp) >
-    *
+< 'loop : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; (await (
+    'equal[['ctReindeers # int(5)]]) ; 'deliverToys(emp : noAid)[]await (
+    'equal[[('and[[('lessEq[[int(3) # 'ctElves]]) # ('not[['ctReindeers]])]]) #
+    int(9)]]) ; 'talkToElves(emp : noAid)) ; ! 'this . 'loop(emp) ; return(emp)
+    > *
 < 'run : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; ! 'this .
     'loop(emp) ; return(emp) > *
 < 'talkToelves : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ;

@@ -278,12 +278,8 @@ and creol_statement_to_xml writer handler =
         XmlTextWriter.end_element writer
     | Sequence (a, f, n) ->
 	XmlTextWriter.start_element writer "sequence" ;
-	XmlTextWriter.start_element writer "first" ;
 	creol_statement_to_xml writer handler f ;
-        XmlTextWriter.end_element writer ;
-	XmlTextWriter.start_element writer "second" ;
 	creol_statement_to_xml writer handler n ;
-        XmlTextWriter.end_element writer ;
 	handler writer a ;
         XmlTextWriter.end_element writer
     | Merge (a, f, n) ->

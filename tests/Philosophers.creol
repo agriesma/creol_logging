@@ -17,23 +17,23 @@ begin
   var history: String
  
   op init == history := ""; chopstick := true; hungry := false;
-    butler.getNeighbor(; neighbor)
+    butler.getNeighbor(; neighbor);
  
-  op run == !think() ||| !eat() ||| !digest() 
+  op run == !think(); ||| !eat(); ||| !digest(); 
 
-  op digest == await wait ; hungry := true; history := plus[history, "d"];
-    await wait; !digest()
+  op digest == await wait ; hungry := true; history := plus(history, "d");
+    await wait; !digest();
 
   op eat == await hungry; l!neighbor.borrowStick(); await l?; await chopstick;
-    history := plus[history, "e"]; hungry := false; !neighbor.returnStick();
-    await wait; !eat()
+    history := plus(history, "e"); hungry := false; !neighbor.returnStick();
+    await wait; !eat();
 
-  op think == await not hungry; history := plus[history, "t"];
-    await wait; !think()
+  op think == await not hungry; history := plus(history, "t");
+    await wait; !think();
 
   with Phil 
-    op borrowStick == await chopstick; chopstick := false 
-    op returnStick == chopstick := true 
+    op borrowStick == await chopstick; chopstick := false;
+    op returnStick == chopstick := true;
  
 end
 
@@ -46,22 +46,21 @@ begin
   var p5: Phil
 
   op init ==
-    skip
+    skip;
 
   op run ==
     p1 := new Philosopher(this);
     p2 := new Philosopher(this);
     p3 := new Philosopher(this);
     p4 := new Philosopher(this);
-    p5 := new Philosopher(this)
+    p5 := new Philosopher(this);
 
   with Phil
     op getNeighbor(out neighbor: Phil) ==
-      if caller = p1 then neighbor := p2 else
-      if caller = p2 then neighbor := p3 else
-      if caller = p3 then neighbor := p4 else
-      if caller = p4 then neighbor := p5 else
-      neighbor := p1 fi fi fi fi
+      if caller = p1 then neighbor := p2; else
+      if caller = p2 then neighbor := p3; else
+      if caller = p3 then neighbor := p4; else
+      if caller = p4 then neighbor := p5; else neighbor := p1; fi fi fi fi
 
 end
 

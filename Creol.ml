@@ -27,8 +27,8 @@ module Note =
     type type_info = {
       attribute: bool;
       label: bool;
-      mutable defined: bool;
-      mutable life: bool;
+      defined: bool;
+      life: bool;
     }
 
     module Environment = Map.Make(String)

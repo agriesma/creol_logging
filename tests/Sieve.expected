@@ -12,6 +12,8 @@ result Configuration:
 < 'Sieve : Cl | Inh: noInh,Par: 'p,Att: 'next |-> null, 'p |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; skip ;
     return(emp) > *
+< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; skip ;
+    return(emp) > *
 < 'send : Mtdname | Param: 'n,Latt: 'd |-> null, 'n |-> null, 'r |-> null, 'res
     |-> null,Code: skip ; 'd ::= ('div[['n # 'p]]) ; 'r ::= ('minus[['n # (
     'times[['d # 'p]])]]) ; if 'equal[['r # int(0)]] th 'res ::= bool(false) el
