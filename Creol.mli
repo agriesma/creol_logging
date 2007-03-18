@@ -140,7 +140,7 @@ module Statement: sig
 	  (** Conditional execution. *)
       | While of 'a * 'b expression * 'b expression * ('a, 'b) t
 	  (** While loops. *)
-      | Sequence of 'a * ('a, 'b) t * ('a, 'b) t
+      | Sequence of 'a * ('a, 'b) t list
 	  (** Sequential composition *)
       | Merge of 'a * ('a, 'b) t * ('a, 'b) t
 	  (** Merge of statements *)

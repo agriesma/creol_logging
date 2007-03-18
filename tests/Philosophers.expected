@@ -3,40 +3,37 @@ reduce in PROGRAM : init .
 result Configuration: 
 < 'Butler : Cl | Inh: noInh,Par: noAid,Att: 'p1 |-> null, 'p2 |-> null, 'p3 |->
     null, 'p4 |-> null, 'p5 |-> null,Mtds:
-< 'getNeighbor : Mtdname | Param: noAid,Latt: 'neighbor |-> null,Code: skip ;
-    skip ; if 'equal[['caller # 'p1]] th 'neighbor ::= 'p2 el if 'equal[[
-    'caller # 'p2]] th 'neighbor ::= 'p3 el if 'equal[['caller # 'p3]] th
-    'neighbor ::= 'p4 el if 'equal[['caller # 'p4]] th 'neighbor ::= 'p5 el
-    'neighbor ::= 'p1 fi fi fi fi ; return('neighbor) > *
-< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; skip ;
-    return(emp) > *
-< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'p1 ::= new
-    'Philosopher('this) ; 'p2 ::= new 'Philosopher('this) ; 'p3 ::= new
-    'Philosopher('this) ; 'p4 ::= new 'Philosopher('this) ; 'p5 ::= new
-    'Philosopher('this) ; return(emp) >,Ocnt: 0 >
+< 'getNeighbor : Mtdname | Param: noAid,Latt: 'neighbor |-> null,Code: if
+    'equal[['caller # 'p1]] th 'neighbor ::= 'p2 el if 'equal[['caller # 'p2]]
+    th 'neighbor ::= 'p3 el if 'equal[['caller # 'p3]] th 'neighbor ::= 'p4 el
+    if 'equal[['caller # 'p4]] th 'neighbor ::= 'p5 el 'neighbor ::= 'p1 fi fi
+    fi fi ; return('neighbor) > *
+< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; return(emp) > *
+< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: 'p1 ::= new 'Philosopher(
+    'this) ; 'p2 ::= new 'Philosopher('this) ; 'p3 ::= new 'Philosopher('this)
+    ; 'p4 ::= new 'Philosopher('this) ; 'p5 ::= new 'Philosopher('this) ;
+    return(emp) >,Ocnt: 0 >
  
 < 'Philosopher : Cl | Inh: noInh,Par: 'butler,Att: 'butler |-> null, 'chopstick
     |-> null, 'history |-> null, 'hungry |-> null, 'neighbor |-> null,Mtds:
-< 'borrowStick : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; await
-    'chopstick ; 'chopstick ::= bool(false) ; return(emp) > *
-< 'digest : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; await wait
-    ; 'hungry ::= bool(true) ; 'history ::= ('plus[['history # str("d")]]) ;
-    await wait ; ! 'this . 'digest(emp) ; return(emp) > *
-< 'eat : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; await 'hungry
-    ; 'l ! 'neighbor . 'borrowStick(emp) ; await ('l ?) ; await 'chopstick ;
-    'history ::= ('plus[['history # str("e")]]) ; 'hungry ::= bool(false) ; !
-    'neighbor . 'returnStick(emp) ; await wait ; ! 'this . 'eat(emp) ; return(
-    emp) > *
-< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'history ::=
-    str("") ; 'chopstick ::= bool(true) ; 'hungry ::= bool(false) ; 'butler .
+< 'borrowStick : Mtdname | Param: noAid,Latt: noSubst,Code: await 'chopstick ;
+    'chopstick ::= bool(false) ; return(emp) > *
+< 'digest : Mtdname | Param: noAid,Latt: noSubst,Code: await wait ; 'hungry ::=
+    bool(true) ; 'history ::= ('plus[['history # str("d")]]) ; await wait ; !
+    'this . 'digest(emp) ; return(emp) > *
+< 'eat : Mtdname | Param: noAid,Latt: noSubst,Code: await 'hungry ; 'l !
+    'neighbor . 'borrowStick(emp) ; await ('l ?) ; await 'chopstick ; 'history
+    ::= ('plus[['history # str("e")]]) ; 'hungry ::= bool(false) ; ! 'neighbor
+    . 'returnStick(emp) ; await wait ; ! 'this . 'eat(emp) ; return(emp) > *
+< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: 'history ::= str("") ;
+    'chopstick ::= bool(true) ; 'hungry ::= bool(false) ; 'butler .
     'getNeighbor(emp : 'neighbor) ; return(emp) > *
-< 'returnStick : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ;
-    'chopstick ::= bool(true) ; return(emp) > *
-< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; (! 'this .
-    'digest(emp) ||| ! 'this . 'eat(emp) ||| ! 'this . 'think(emp)) ; return(
-    emp) > *
-< 'think : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; await (
-    'not[['hungry]]) ; 'history ::= ('plus[['history # str("t")]]) ; await wait
-    ; ! 'this . 'think(emp) ; return(emp) >,Ocnt: 0 >
+< 'returnStick : Mtdname | Param: noAid,Latt: noSubst,Code: 'chopstick ::=
+    bool(true) ; return(emp) > *
+< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: (! 'this . 'digest(emp) |||
+    ! 'this . 'eat(emp) ||| ! 'this . 'think(emp)) ; return(emp) > *
+< 'think : Mtdname | Param: noAid,Latt: noSubst,Code: await ('not[['hungry]]) ;
+    'history ::= ('plus[['history # str("t")]]) ; await wait ; ! 'this .
+    'think(emp) ; return(emp) >,Ocnt: 0 >
 
 Bye.

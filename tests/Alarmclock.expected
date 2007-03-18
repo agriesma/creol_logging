@@ -2,12 +2,12 @@
 reduce in PROGRAM : init .
 result Class: 
 < 'Alarmclock : Cl | Inh: noInh,Par: noAid,Att: 'now |-> null,Mtds:
-< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'now ::= int(
-    0) ; return(emp) > *
-< 'tick : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; skip ; 'now ::= (
-    'plus[['now # int(1)]]) ; return(emp) > *
+< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: 'now ::= int(0) ; return(
+    emp) > *
+< 'tick : Mtdname | Param: noAid,Latt: noSubst,Code: 'now ::= ('plus[['now #
+    int(1)]]) ; return(emp) > *
 < 'wakeme : Mtdname | Param: 'n,Latt: 'alarmsetting |-> null, 'n |-> null,Code:
-    skip ; skip ; 'alarmsetting ::= ('plus[['now # 'n]]) ; await ('lessEq[[
-    'alarmsetting # 'now]]) ; return(emp) >,Ocnt: 0 >
+    'alarmsetting ::= ('plus[['now # 'n]]) ; await ('lessEq[['alarmsetting #
+    'now]]) ; return(emp) >,Ocnt: 0 >
 
 Bye.

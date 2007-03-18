@@ -296,10 +296,9 @@ and creol_statement_to_xml writer handler =
         XmlTextWriter.end_element writer ;
 	handler writer a ;
         XmlTextWriter.end_element writer
-    | Sequence (a, f, n) ->
+    | Sequence (a, sl) ->
 	XmlTextWriter.start_element writer "sequence" ;
-	creol_statement_to_xml writer handler f ;
-	creol_statement_to_xml writer handler n ;
+	List.iter (creol_statement_to_xml writer handler) sl ;
 	handler writer a ;
         XmlTextWriter.end_element writer
     | Merge (a, f, n) ->

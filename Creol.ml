@@ -153,7 +153,7 @@ module Statement =
             'b expression list * string list
 	| If of 'a * 'b expression * ('a, 'b) t * ('a, 'b)t
 	| While of 'a * 'b expression * 'b expression * ('a, 'b)t
-	| Sequence of 'a * ('a, 'b) t * ('a, 'b)t
+	| Sequence of 'a * ('a, 'b) t list
 	| Merge of 'a * ('a, 'b) t * ('a, 'b)t
 	| Choice of 'a * ('a, 'b) t * ('a, 'b)t
 
@@ -171,7 +171,7 @@ module Statement =
 	| LocalSyncCall(a, _, _, _, _, _) -> a
 	| If(a, _, _, _) -> a
 	| While(a, _, _, _) -> a
-	| Sequence(a, _, _) -> a
+	| Sequence(a, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a
 
@@ -262,34 +262,38 @@ and simplify_statement =
     | While (a, c, i, b) ->
 	While (a, simplify_expression c, simplify_expression i,
 	       simplify_statement b)
-    | Sequence (a, s1, s2) -> Sequence (a, simplify_statement s1,
-				       simplify_statement s2)
+    | Sequence (a, s1) -> Sequence (a, List.map simplify_statement s1)
     | Merge (a, s1, s2) -> Merge (a, simplify_statement s1,
 				 simplify_statement s2)
     | Choice (a, s1, s2) -> Choice (a, simplify_statement s1,
 				   simplify_statement s2)
 and simplify_method_variables note =
+  (** Compute a pair of a new list of local variable declarations
+      and a list of assignments used for initialisation. *)
   function
-      [] -> Skip note
-    | [{ var_name = n; var_type = _; var_init = Some i }] ->
-	Assign(note, [n], [simplify_expression i])
-    | { var_name = n; var_type = _; var_init = Some i }::l ->
-	Sequence(note, Assign(note, [n], [simplify_expression i]),
-		(simplify_method_variables note l))
-    | { var_name = _; var_type = _; var_init = None }::l ->
-	simplify_method_variables note l
+      [] -> ([], [])
+    | ({ var_name = _ ; var_type = _ ; var_init = None } as v)::l ->
+	let r = simplify_method_variables note l in
+	  (v::(fst r), snd r)
+    | ({ var_name = n; var_type = _ ; var_init = Some i } as v)::l ->
+	let r = simplify_method_variables note l in
+	let a = Assign(note, [n], [simplify_expression i]) in
+	  (v::(fst r), a::(snd r))
 and simplify_method m =
-  { meth_name = m.meth_name;
-    meth_coiface = m.meth_coiface;
-    meth_inpars = m.meth_inpars;
-    meth_outpars = m.meth_outpars;
-    meth_vars = m.meth_vars;
-    meth_body = match m.meth_body with
-	None -> None
-      | Some s ->
-	  let note = Statement.note s in
-	    Some (Sequence(note, simplify_method_variables note m.meth_vars,
-			 (simplify_statement s))) }
+  (** Simplify a method definition. *)
+  match m.meth_body with
+    None -> m
+  | Some mb  ->
+	let mv = m.meth_vars in
+	let note = Statement.note mb in
+	let smv = simplify_method_variables note mv in
+	let smb = simplify_statement mb in
+	{ m with meth_vars = fst smv ; meth_body =
+	  Some (begin
+	    match smb with
+	      Sequence (n, sl) -> Sequence (n, (snd smv)@ sl)
+	    | s -> Sequence (note, (snd smv)@[s])
+	  end) }
 and simplify_inherits =
   function
       (n, e) -> (n, List.map simplify_expression e)
@@ -347,8 +351,7 @@ and definitions_in_method attrs m =
 		Note.line = Note.line (Statement.note body);
 		Note.env = attrs }
 	    in
-	      Some (Sequence (note, Skip note,
-			     definitions_in_statement note body)) }
+	      Some (Sequence (note, [definitions_in_statement note body])) }
 and definitions_in_statement note =
   (** Compute the variables defined at a current statement.
 
@@ -393,13 +396,12 @@ and definitions_in_statement note =
     | While (n, c, i, b) ->
 	While ({ n with Note.env = note.Note.env }, c, i,
 	      definitions_in_statement n b)
-    | Sequence (n, f, s) ->
-	let nf = definitions_in_statement n f in
-	let ns = definitions_in_statement (Statement.note nf) s in
-	  Sequence ({ n with Note.env = (Statement.note ns).Note.env }, nf, ns)
-	    (* For merge and choice we do not enforce sequencing of the
-	       computation of the parts, but we allow the compiler to
-	       choose some order *)
+    | Sequence (n, l) ->
+	Sequence (n, l)
+	(* XXX *)
+	  (* For merge and choice we do not enforce sequencing of the
+	     computation of the parts, but we allow the compiler to
+	     choose some order *)
     | Merge (n, l, r) -> 
 	let nl = (definitions_in_statement note l)
 	and nr = (definitions_in_statement note r) in
@@ -676,14 +678,14 @@ and pretty_print_statement out lvl statement =
 	  print (lvl + 1) 25 b;
 	  output_string out " od";
 	  do_indent out lvl
-      | Sequence (_, l, r) -> 
+      | Sequence (_, sl) -> 
 	  let op_prec = 25 in
 	  let nl = lvl + if prec < op_prec then 1 else 0 in
 	    open_block prec op_prec;
-	    print nl op_prec l;
-	    output_string out ";";
-	    do_indent out nl;
-	    print nl op_prec r;
+	    List.iter
+	      (function s ->
+		print nl op_prec s;
+		do_indent out nl) sl;
 	    close_block prec op_prec
       | Merge (_, l, r) ->
 	  let op_prec = 29 in
@@ -885,12 +887,11 @@ let maude_of_creol_statement out stmt =
 	output_string out " do ";
 	print 25 b;
 	output_string out " od "
-    | Sequence (_, l, r) ->
+    | Sequence (_, sl) ->
 	let op_prec = 25 in
 	  open_paren prec op_prec ;
-	  print op_prec l; 
-	  output_string out " ; ";
-	  print op_prec r; 
+	  separated_list (function s -> print op_prec s)
+	    (function () -> output_string out " ; ") sl;
 	  close_paren prec op_prec
     | Merge (_, l, r) ->
 	let op_prec = 29 in

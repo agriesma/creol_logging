@@ -194,11 +194,8 @@ choice_statement:
 	    | Some s -> Choice((Note.make $startpos), l, s) }
 
 statement_sequence:
-      l = basic_statement r = ioption(statement_sequence)
-	{ match r with
-	      None -> l
-	    | Some s -> Sequence((Note.make $startpos), l, s)
-	}
+      l = nonempty_list(basic_statement)
+	{ Sequence((Note.make $startpos), l) }
 
 basic_statement:
       SKIP SEMI
