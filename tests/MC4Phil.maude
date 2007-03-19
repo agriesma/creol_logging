@@ -1,0 +1,58 @@
+*** The dining philosophers
+*** Version for new interpreter syntax
+*** Adapted by ebj, 23.04.2004
+
+mod CREOL-PHIL-PROG is
+pr INTERPRETER .
+
+op init : -> Global .
+
+eq init = {
+
+(new 'Butler (nil))
+
+< 'Butler : Class | Att: ('p1 |-> null), ('p2 |-> null), 
+                      ('p3 |-> null), ('p4 |-> null),
+
+Init: < 'init | no : ('p1 := new 'Philosopher('this)) ;
+      ('p2 := new 'Philosopher('this)) ;
+      ('p3 := new 'Philosopher('this)) ;
+      ('p4 := new 'Philosopher('this)) > ,
+
+Mtds:
+     < 'getNeighbor |
+       ('label |-> null), ('caller |-> null), ('n |-> null) :
+       (if ('caller = 'p1) th 'n := 'p2
+              el (if ('caller = 'p2) th 'n := 'p3
+              el (if ('caller = 'p3) th 'n := 'p4
+              el (if ('caller = 'p4) th 'n := 'p1
+               fi) fi) fi) fi) ; (end ( 'n )) > >
+
+< 'Philosopher : Class | 
+   Att: ('butler |-> null), ('hungry |-> null), 
+        ('chopstick |-> null), ('neighbor |-> null),
+   Init: < 'init | ('s |-> null) :
+		   ('chopstick := bool(true)) ; ('hungry := bool(false)) ; 
+         	   ('s ! 'butler . 'getNeighbor(nil)) ; ('s ? ( 'neighbor ) ) ;
+         	   ('s ! 'this . 'run(nil)) ; (kill('s)) > ,
+   Mtds: 
+     < 'think | ('label |-> null), ('caller |-> null), ('l |-> null) :
+            (await (not 'hungry )) ; ('hungry := bool(true));
+	    ( tailcall 'think (nil) ) > *
+     < 'eat | ('label |-> null), ('caller |-> null), ('l |-> null) :
+            (await 'hungry) ; ('l ! 'neighbor . 'borrowStick(nil)) ; 
+                  ('l ? (nil)) ; (await 'chopstick) ;
+                  ('hungry := bool(false)) ;
+                  ('l ! 'neighbor . 'returnStick(nil)) ; ('l ? (nil)) ;
+		  ( tailcall 'eat (nil) ) > *
+     < 'borrowStick | ('label |-> null), ('caller |-> null) : 
+            (await 'chopstick) ; ('chopstick := bool(false)) ; 
+                   end(nil) > *
+     < 'returnStick | ('label |-> null), ('caller |-> null), ('l |-> null ) :
+            ('chopstick := bool(true)); end(nil) > *
+     < 'run | ('label |-> null), ('caller |-> null),
+	    ('l |-> null), ('m |-> null), ('n |-> null) :
+            (('l ! 'this . 'think(nil)) ; kill('l)) |||
+		  (('m ! 'this . 'eat(nil)) ; kill('m)) ; end(nil) > > } .
+
+endm

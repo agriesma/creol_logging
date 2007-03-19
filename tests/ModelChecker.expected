@@ -12,7 +12,7 @@ result Configuration:
     Ocnt: 1 >
  
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
-    idle,PrQ: 'Class |-> label(2),
+    idle,PrQ: 'L0 |-> label(2),
 label(2) ?(noAid),Lcnt: 3 >
  
 < ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >

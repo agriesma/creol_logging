@@ -22,7 +22,7 @@ result Configuration:
     bool(true) ; 'history ::= ('plus[['history # str("d")]]) ; await wait ; !
     'this . 'digest(emp) ; return(emp) > *
 < 'eat : Mtdname | Param: noAid,Latt: noSubst,Code: await 'hungry ; 'l !
-    'neighbor . 'borrowStick(emp) ; await ('l ?) ; await 'chopstick ; 'history
+    'neighbor . 'borrowStick(emp) ; await ('l ??) ; await 'chopstick ; 'history
     ::= ('plus[['history # str("e")]]) ; 'hungry ::= bool(false) ; ! 'neighbor
     . 'returnStick(emp) ; await wait ; ! 'this . 'eat(emp) ; return(emp) > *
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: 'history ::= str("") ;

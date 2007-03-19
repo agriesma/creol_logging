@@ -5,7 +5,7 @@ op init : -> Configuration [ctor] .
 eq init =
 < 'Fibonacci : Cl | Inh: noInh, Par: 'n, Att: 'n |-> null, Mtds: 
   < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < 'run : Mtdname | Param: noAid, Latt: 'res |-> null, Code: 't ! 'this . 'fib ( 'n ) ; ( await ( 't ? ) ) ; ( 't ? ( 'res ) )  ; return ( emp ) > *
+  < 'run : Mtdname | Param: noAid, Latt: 'res |-> null, Code: 't ! 'this . 'fib ( 'n ) ; ( await ( 't ?? ) ) ; ( 't ? ( 'res ) )  ; return ( emp ) > *
   < 'fib : Mtdname | Param: 'n, Latt: 'n |-> null , 'f |-> null , 'a |-> null , 'b |-> null, Code: if ( 'equal[[ 'n # int(0) ]] ) th 'f ::= int(1) el if ( 'equal[[ 'n # int(1) ]] ) th 'f ::= int(1) el 's ! 'this . 'fib ( ( 'minus[[ 'n # int(1) ]] ) ) ; ( 's ? ( 'a ) )  ; 't ! 'this . 'fib ( ( 'minus[[ 'n # int(2) ]] ) ) ; ( 't ? ( 'b ) )  ; 'f ::= ( 'plus[[ 'a # 'b ]] ) fi fi ; return ( 'f ) > *
   < 'fibonacci : Mtdname | Param: 'n, Latt: 'n |-> null , 'f |-> null, Code: 't ! 'this . 'fib ( 'n ) ; ( 't ? ( 'f ) )  ; return ( 'f ) >, Ocnt: 0 >
 

@@ -87,7 +87,10 @@ mod ifdef({|MODELCHECK|},MODEL-CHECKER,INTERPRETER) is
 
   extending CREOL-DATA-SIG .
 
-  op label : Nat -> Label [ctor] .
+ifdef({|MODELCHECK|},dnl
+{|  op label : Nat -> Label [ctor] .|}
+,dnl
+{| op label : Nat -> Label [ctor] .|})
 
   protecting AUX-FUNCTIONS .
 
@@ -134,15 +137,20 @@ eq
   < O : C | Att: S, Pr: (L,((AL assign evalList(EL, (S {|#|} L))); SL)), 
 	    PrQ: W, Lcnt: N > .
 
-STEP({|< O : C | Att: S, Pr: (L,( (A ,, NeAL assign D # NeDL) ; SL)), PrQ: W, Lcnt: N >|},
+STEP(dnl
+{|< O : C | Att: S, Pr: (L,( (A ,, NeAL assign D # NeDL) ; SL)), PrQ: W,
+    Lcnt: N >|},
 {|if dom(A,S) then
-    < O : C | Att: insert(A, D, S), Pr: (L, (NeAL assign NeDL) ; SL), PrQ: W, Lcnt: N > 
+    < O : C | Att: insert(A, D, S), Pr: (L, (NeAL assign NeDL) ; SL), PrQ: W,
+      Lcnt: N > 
   else
-    < O : C | Att: S, Pr: (insert(A, D, L), (NeAL assign NeDL) ; SL), PrQ: W, Lcnt: N > 
+    < O : C | Att: S, Pr: (insert(A, D, L), (NeAL assign NeDL) ; SL), PrQ: W,
+      Lcnt: N > 
   fi|},
 {|[label assign]|})
 
-STEP({|< O : C | Att: S, Pr: (L,( (A assign D) ; SL)), PrQ: W, Lcnt: N >|},
+STEP(dnl
+{|< O : C | Att: S, Pr: (L,( (A assign D) ; SL)), PrQ: W, Lcnt: N >|},
 {|if dom(A,S) then
     < O : C | Att: insert(A, D, S), Pr: (L, SL), PrQ: W, Lcnt: N > 
   else
@@ -175,7 +183,8 @@ rl
   < O : C | Att: S,
             Pr: (L, (if E th (SL1 ; while E do SL1 od) el skip fi); SL2),
             PrQ: W, Lcnt: N >
-  [label while] .
+  [label while]
+  .
 
 *** OBJECT CREATION
 ***
@@ -191,7 +200,7 @@ STEP(dnl
   < newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, (S {|#|} L))),
-    ((noSubst, (C ! 'init (emp)) ; (C ?(noAid)) ; (C ! 'run (emp)) ; (C ?(noAid)))))|},
+    ((noSubst, ('L0 ! 'init (emp)) ; ('L0 ?(noAid)) ; ('L0 ! 'run (emp)) ; ('L0 ?(noAid)))))|},
 {|[label new-object]|})
 
 
@@ -285,7 +294,7 @@ ceq
 	    PrQ: W ++ (L', SL'), Lcnt: F >
   = 
   < O : C | Att: S,Pr: (L', SL'),
-	    PrQ: W ++ (L, (((await Lab ?) ; (Lab ?(AL)); SL) MERGER SL'')),
+	    PrQ: W ++ (L, (((await Lab ??) ; (Lab ?(AL)); SL) MERGER SL'')),
 	    Lcnt: F > 
   if (L'['label] == Lab)
   [label local-call-in-merge] .
@@ -349,7 +358,7 @@ eq
 *** Optimization to avoid muiltiple lookups in the message queue for
 *** the same guard
 eq 
-  < O : C | Att: S, Pr: P, PrQ: (L, await (Lab ? & G); SL) ++ W, Lcnt: F > 
+  < O : C | Att: S, Pr: P, PrQ: (L, await (Lab ?? & G); SL) ++ W, Lcnt: F > 
   < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) >  
   =
   < O : C | Att: S,  Pr: P, PrQ: (L, await G ; SL) ++ W, Lcnt: F >    

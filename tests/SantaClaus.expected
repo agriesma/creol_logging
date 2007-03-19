@@ -52,8 +52,8 @@ result [Configuration]:
     'waitReindeers]])]]) ; 'waitReindeers ::= ('rest[['waitReindeers]]) ; 't5 !
     ('first[['waitReindeers]]) . 'harness(emp) ; 'harnessedReindeers ::= (
     'plus[['harnessedReindeers # ('first[['waitReindeers]])]]) ; 'waitReindeers
-    ::= ('rest[['waitReindeers]]) ; await ('t1 ? 'and 't2 ? 'and 't3 ? 'and 't4
-    ? 'and 't5 ?) ; ! ('first[['harnessedReindeers]]) . 'unharness(emp) ;
+    ::= ('rest[['waitReindeers]]) ; await ('t1 ?? 'and 't2 ?? 'and 't3 ?? 'and
+    't4 ?? 'and 't5 ??) ; ! ('first[['harnessedReindeers]]) . 'unharness(emp) ;
     'harnessedReindeers ::= ('rest[['harnessedReindeers]]) ; ! ('first[[
     'harnessedReindeers]]) . 'unharness(emp) ; 'harnessedReindeers ::= ('rest[[
     'harnessedReindeers]]) ; return(emp) > *
@@ -74,11 +74,11 @@ result [Configuration]:
     'waitElves]])]]) ; 'waitElves ::= ('rest[['waitElves]]) ; 't3 ! ('first[[
     'waitElves]]) . 'showIn(emp) ; 'inofficeElves ::= ('plus[['inofficeElves #
     ('first[['waitElves]])]]) ; 'waitElves ::= ('rest[['waitElves]]) ; await (
-    't1 ? 'and 't2 ? 'and 't3 ?) ; 't1 ! ('first[['inoffcieElves]]) . 'showOut(
-    emp) ; 'inofficeElves ::= ('rest[['inofficeElves]]) ; 't2 ! ('first[[
-    'inoffcieElves]]) . 'showOut(emp) ; 'inofficeElves ::= ('rest[[
+    't1 ?? 'and 't2 ?? 'and 't3 ??) ; 't1 ! ('first[['inoffcieElves]]) .
+    'showOut(emp) ; 'inofficeElves ::= ('rest[['inofficeElves]]) ; 't2 ! (
+    'first[['inoffcieElves]]) . 'showOut(emp) ; 'inofficeElves ::= ('rest[[
     'inofficeElves]]) ; 't3 ! ('first[['inoffcieElves]]) . 'showOut(emp) ;
-    'inofficeElves ::= ('rest[['inofficeElves]]) ; await ('t1 ? 'and 't2 ? 'and
-    't3 ?) ; return(emp) >,Ocnt: 0 >
+    'inofficeElves ::= ('rest[['inofficeElves]]) ; await ('t1 ?? 'and 't2 ??
+    'and 't3 ??) ; return(emp) >,Ocnt: 0 >
 
 Bye.

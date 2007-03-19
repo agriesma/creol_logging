@@ -347,6 +347,10 @@ and creol_guard_to_xml writer expr_handler =
 	creol_guard_to_xml writer expr_handler g2;
 	expr_handler writer a ;
 	XmlTextWriter.end_element writer
+  | Wait (a) ->
+	XmlTextWriter.start_element writer "wait" ;
+	expr_handler writer a ;
+	XmlTextWriter.end_element writer
 and creol_expression_to_xml writer =
   function
       Null a -> 

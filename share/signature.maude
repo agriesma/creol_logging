@@ -88,8 +88,8 @@ fmod GUARDS is
 
   op noGuard : -> NoGuard [ctor format (b o)] .
   op wait :    -> Wait [ctor format (b o)] .
-  op _?  : Aid -> Return [ctor] .
-  op _?  : Label -> Return [ctor] .
+  op _??  : Aid -> Return [ctor] .
+  op _??  : Label -> Return [ctor] .
   op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
   op _&_ : PureGuard PureGuard -> PureGuard [ditto] .
 
@@ -348,8 +348,8 @@ fmod AUX-FUNCTIONS is
   eq enabledGuard(noGuard, S, MM)   = true .
   eq enabledGuard(wait, S, MM)      = false .       *** Note: no wait in PrQ!
   eq enabledGuard(E, S, MM)         = eval(E, S) asBool .
-  eq enabledGuard((A ?), S, MM)     = inqueue(S[A], MM) .
-  eq enabledGuard((L ?), S, MM)     = inqueue(L, MM) .
+  eq enabledGuard((A ??), S, MM)     = inqueue(S[A], MM) .
+  eq enabledGuard((L ??), S, MM)     = inqueue(L, MM) .
 
   vars  ST ST' : Stm . 
   vars SL SL' : StmList . 

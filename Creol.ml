@@ -838,7 +838,7 @@ struct
 
   let rec of_creol_guard out =
     function
-	Label (_, l) -> output_string out ("( '" ^ l ^ " ? )")
+	Label (_, l) -> output_string out ("( '" ^ l ^ " ?? )")
       | Wait _ -> output_string out "wait"
       | Condition (_, c) -> of_creol_expression out c
       | Conjunction (_, l, r) ->

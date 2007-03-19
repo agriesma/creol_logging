@@ -1,0 +1,64 @@
+in interpreter .
+
+mod PROGRAM is
+  pr INTERPRETER .
+
+op init : -> Configuration .
+
+eq init =
+
+< 'Butler : Cl | Inh: noInh, Par: noAid,
+  Att: ('p1 |-> null), ('p2 |-> null), ('p3 |-> null),
+  Mtds:
+    < 'init : Mtdname | Param: noAid, Latt: noSubst,
+		Code: ('p1 ::= new 'Philosopher('this)) ;
+		      ('p2 ::= new 'Philosopher('this)) ;
+		      ('p3 ::= new 'Philosopher('this)) ; return (emp) > *
+
+    < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: return (emp) > *
+
+    < 'getNeighbor : Mtdname | Param: noAid,
+      Latt: ('label |-> null), ('caller |-> null), ('n |-> null),
+      Code:
+       (if ('equal[[ 'caller # 'p1 ]]) th ('n ::= 'p2)
+        el (if ('equal[[ 'caller # 'p2 ]]) th ('n ::= 'p3)
+        el (if ('equal[[ 'caller # 'p3 ]]) th ('n ::= 'p1)
+        fi) fi) fi) ; (return ( 'n )) >, Ocnt: 0 >
+
+< 'Philosopher : Cl | Inh: noInh, Par: 'butler,
+   Att: ('butler |-> null), ('hungry |-> null), 
+        ('chopstick |-> null), ('neighbor |-> null),
+   Mtds:
+   < 'init : Mtdname | Param: noAid, Latt: ('s |-> null), Code:
+		   ('chopstick ::= bool(true)) ; ('hungry ::= bool(false)) ; 
+         	   ('s ! 'butler . 'getNeighbor(emp)) ; ('s ? ( 'neighbor ) ) ;
+         	   ('s ! 'this . 'run(emp)) ; (free('s)) > *
+
+     < 'think : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), ('l |-> null), Code:
+            (await ('not[[ 'hungry ]])) ; ('hungry ::= bool(true));
+		  (tailcall 'think(emp)) > *
+
+     < 'eat : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), ('l |-> null), Code:
+            (await 'hungry) ; ('l ! 'neighbor . 'borrowStick(emp)) ; 
+                  ('l ? (noAid)) ; (await 'chopstick) ;
+                  ('hungry ::= bool(false)) ;
+                  ('l ! 'neighbor . 'returnStick(emp)) ; ('l ? (noAid)) ;
+		  (tailcall 'eat(emp)) > *
+
+     < 'borrowStick : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), Code:
+            (await 'chopstick) ; ('chopstick ::= bool(false)) ; 
+                   return(emp) > *
+
+     < 'returnStick : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), ('l |-> null ), Code:
+            ('chopstick ::= bool(true)); return (emp) > *
+
+     < 'run : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null),
+	    ('l |-> null), ('m |-> null), ('n |-> null), Code:
+            (('l ! 'this . 'think(emp)) ; free('l)) |||
+		  (('m ! 'this . 'eat(emp)) ; free('m)) ; return (emp) >,
+      Ocnt: 0 >
+
+    main('Butler, emp)
+    .
+
+endm

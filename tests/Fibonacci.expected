@@ -16,6 +16,6 @@ result Configuration:
     'this . 'fib('n) ; 't ?('f) ; return('f) > *
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; return(emp) > *
 < 'run : Mtdname | Param: noAid,Latt: 'res |-> null,Code: 't ! 'this . 'fib('n)
-    ; await ('t ?) ; 't ?('res) ; return(emp) >,Ocnt: 0 >
+    ; await ('t ??) ; 't ?('res) ; return(emp) >,Ocnt: 0 >
 
 Bye.

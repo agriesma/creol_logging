@@ -63,45 +63,54 @@ result GroundTerm: '_&_['wait.Wait,'_`[`[_`]`][''and.Sort,'_#_['int`(_`)['s_^4[
 reduce in GUARDS : downTerm(upTerm(int(4) & wait & int(5)), noGuard) .
 result Guard: wait & 'and[[int(4) # int(5)]]
 ==========================================
-reduce in GUARDS : 'test ? .
-result Return: 'test ?
+reduce in GUARDS : 'test ?? .
+result Return: 'test ??
 ==========================================
-reduce in GUARDS : upTerm('test ?) .
-result GroundTerm: '_?[''test.Sort]
+reduce in GUARDS : upTerm('test ??) .
+result GroundTerm: '_??[''test.Sort]
 ==========================================
-reduce in GUARDS : downTerm(upTerm('test ?), noGuard) .
-result Return: 'test ?
+reduce in GUARDS : downTerm(upTerm('test ??), noGuard) .
+result Return: 'test ??
 ==========================================
-reduce in GUARDS : 'pest & 'test ? .
-result PureGuard: 'pest & 'test ?
+reduce in GUARDS : 'pest & 'test ?? .
+result PureGuard: 'pest & 'test ??
 ==========================================
-reduce in GUARDS : upTerm('pest & 'test ?) .
-result GroundTerm: '_&_[''pest.Sort,'_?[''test.Sort]]
+reduce in GUARDS : upTerm('pest & 'test ??) .
+result GroundTerm: '_&_[''pest.Sort,'_??[''test.Sort]]
 ==========================================
-reduce in GUARDS : downTerm(upTerm('pest & 'test ?), noGuard) .
-result PureGuard: 'pest & 'test ?
+reduce in GUARDS : downTerm(upTerm('pest & 'test ??), noGuard) .
+result PureGuard: 'pest & 'test ??
 ==========================================
-reduce in GUARDS : 'add[[int(4) # int(5)]] & 'label ? & wait & wait & bool(
+reduce in GUARDS : 'add[[int(4) # int(5)]] & 'label ?? & wait & wait & bool(
     true) .
-result Guard: wait & 'label ? & 'add[[int(4) # int(5)]]
+result Guard: wait & 'label ?? & 'add[[int(4) # int(5)]]
 ==========================================
-reduce in GUARDS : upTerm('add[[int(4) # int(5)]] & 'label ? & wait & wait &
+reduce in GUARDS : upTerm('add[[int(4) # int(5)]] & 'label ?? & wait & wait &
     bool(true)) .
-result GroundTerm: '_&_['wait.Wait,'_?[''label.Sort],'_`[`[_`]`][''add.Sort,
+result GroundTerm: '_&_['wait.Wait,'_??[''label.Sort],'_`[`[_`]`][''add.Sort,
     '_#_['int`(_`)['s_^4['0.Zero]],'int`(_`)['s_^5['0.Zero]]]]]
 ==========================================
-reduce in GUARDS : downTerm(upTerm('add[[int(4) # int(5)]] & 'label ? & wait &
+reduce in GUARDS : downTerm(upTerm('add[[int(4) # int(5)]] & 'label ?? & wait &
     wait & bool(true)), noGuard) .
-result Guard: wait & 'label ? & 'add[[int(4) # int(5)]]
+result Guard: wait & 'label ?? & 'add[[int(4) # int(5)]]
 ==========================================
-reduce in STATEMENTS : 'a ::= 'a .
-result Stm: 'a ::= 'a
+reduce in STATEMENTS : 'a . 'a .
+result Mid: 'a . 'a
 ==========================================
-reduce in STATEMENTS : upTerm('a ::= 'a) .
-result GroundTerm: '_::=_[''a.Sort,''a.Sort]
+reduce in STATEMENTS : upTerm('a . 'a) .
+result GroundTerm: '_._[''a.Sort,''a.Sort]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm('a ::= 'a), skip) .
-result Stm: 'a ::= 'a
+reduce in STATEMENTS : downTerm(upTerm('a . 'a), 'a) .
+result Mid: 'a . 'a
+==========================================
+reduce in STATEMENTS : 'a @ 'a .
+result Mid: 'a @ 'a
+==========================================
+reduce in STATEMENTS : upTerm('a @ 'a) .
+result GroundTerm: '_@_[''a.Sort,''a.Sort]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('a @ 'a), 'a) .
+result Mid: 'a @ 'a
 ==========================================
 reduce in STATEMENTS : skip .
 result Stm: skip
@@ -111,6 +120,15 @@ result Constant: 'skip.Stm
 ==========================================
 reduce in STATEMENTS : downTerm(upTerm(skip), 'a ::= 'a) .
 result Stm: skip
+==========================================
+reduce in STATEMENTS : 'a ::= 'a .
+result Stm: 'a ::= 'a
+==========================================
+reduce in STATEMENTS : upTerm('a ::= 'a) .
+result GroundTerm: '_::=_[''a.Sort,''a.Sort]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('a ::= 'a), skip) .
+result Stm: 'a ::= 'a
 ==========================================
 reduce in STATEMENTS : 'var ::= new 'C(int(5) # bool(true)) .
 result Stm: 'var ::= new 'C(int(5) # bool(true))
@@ -123,51 +141,178 @@ reduce in STATEMENTS : downTerm(upTerm('var ::= new 'C(int(5) # bool(true))),
     skip) .
 result Stm: 'var ::= new 'C(int(5) # bool(true))
 ==========================================
-reduce in STATEMENTS : await ('test ?) .
-result Stm: await ('test ?)
+reduce in STATEMENTS : 'm(emp : noAid) .
+result Stm: 'm(emp : noAid)
 ==========================================
-reduce in STATEMENTS : upTerm(await ('test ?)) .
-result GroundTerm: 'await_['_?[''test.Sort]]
+reduce in STATEMENTS : upTerm('m(emp : noAid)) .
+result GroundTerm: '_`(_:_`)[''m.Sort,'emp.DataList,'noAid.AidList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(await ('test ?)), skip) .
-result Stm: await ('test ?)
+reduce in STATEMENTS : downTerm(upTerm('m(emp : noAid)), skip) .
+result Stm: 'm(emp : noAid)
 ==========================================
-reduce in STATEMENTS : await (wait & 'test ?) .
-result Stm: await (wait & 'test ?)
+reduce in STATEMENTS : 'o . 'm(emp : noAid) .
+result Stm: 'o . 'm(emp : noAid)
 ==========================================
-reduce in STATEMENTS : upTerm(await (wait & 'test ?)) .
-result GroundTerm: 'await_['_&_['wait.Wait,'_?[''test.Sort]]]
+reduce in STATEMENTS : upTerm('o . 'm(emp : noAid)) .
+result GroundTerm: '_`(_:_`)['_._[''o.Sort,''m.Sort],'emp.DataList,
+    'noAid.AidList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(await (wait & 'test ?)), skip) .
-result Stm: await (wait & 'test ?)
+reduce in STATEMENTS : downTerm(upTerm('o . 'm(emp : noAid)), skip) .
+result Stm: 'o . 'm(emp : noAid)
 ==========================================
-reduce in STATEMENTS : ! 'method(null) .
-result Stm: ! 'method(null)
+reduce in STATEMENTS : 'o . 'm(bool(false) : noAid) .
+result Stm: 'o . 'm(bool(false) : noAid)
 ==========================================
-reduce in STATEMENTS : upTerm(! 'method(null)) .
-result GroundTerm: '!_`(_`)[''method.Sort,'null.Data]
+reduce in STATEMENTS : upTerm('o . 'm(bool(false) : noAid)) .
+result GroundTerm: '_`(_:_`)['_._[''o.Sort,''m.Sort],'bool`(_`)['false.Bool],
+    'noAid.AidList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(! 'method(null)), skip) .
-result Stm: ! 'method(null)
+reduce in STATEMENTS : downTerm(upTerm('o . 'm(bool(false) : noAid)), skip) .
+result Stm: 'o . 'm(bool(false) : noAid)
 ==========================================
-reduce in STATEMENTS : 'getNeighbor(null : noAid) .
-result Stm: 'getNeighbor(null : noAid)
+reduce in STATEMENTS : 'o . 'm(emp : 'r) .
+result Stm: 'o . 'm(emp : 'r)
 ==========================================
-reduce in STATEMENTS : upTerm('getNeighbor(null : noAid)) .
-result GroundTerm: '_`(_:_`)[''getNeighbor.Sort,'null.Data,'noAid.AidList]
+reduce in STATEMENTS : upTerm('o . 'm(emp : 'r)) .
+result GroundTerm: '_`(_:_`)['_._[''o.Sort,''m.Sort],'emp.DataList,''r.Sort]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm('getNeighbor(null : noAid)), skip) .
-result Stm: 'getNeighbor(null : noAid)
+reduce in STATEMENTS : downTerm(upTerm('o . 'm(emp : 'r)), skip) .
+result Stm: 'o . 'm(emp : 'r)
 ==========================================
-reduce in STATEMENTS : 'label ! 'oid . 'mtd(emp) .
-result Stm: 'label ! 'oid . 'mtd(emp)
+reduce in STATEMENTS : 'o . 'm(null : 'r) .
+result Stm: 'o . 'm(null : 'r)
 ==========================================
-reduce in STATEMENTS : upTerm('label ! 'oid . 'mtd(emp)) .
-result GroundTerm: '_!_`(_`)[''label.Sort,'_._[''oid.Sort,''mtd.Sort],
-    'emp.DataList]
+reduce in STATEMENTS : upTerm('o . 'm(null : 'r)) .
+result GroundTerm: '_`(_:_`)['_._[''o.Sort,''m.Sort],'null.Data,''r.Sort]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm('label ! 'oid . 'mtd(emp)), skip) .
-result Stm: 'label ! 'oid . 'mtd(emp)
+reduce in STATEMENTS : downTerm(upTerm('o . 'm(null : 'r)), skip) .
+result Stm: 'o . 'm(null : 'r)
+==========================================
+reduce in STATEMENTS : ! 'm(emp) .
+result Stm: ! 'm(emp)
+==========================================
+reduce in STATEMENTS : upTerm(! 'm(emp)) .
+result GroundTerm: '!_`(_`)[''m.Sort,'emp.DataList]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(! 'm(emp)), skip) .
+result Stm: ! 'm(emp)
+==========================================
+reduce in STATEMENTS : ! 'm(null # null) .
+result Stm: ! 'm(null # null)
+==========================================
+reduce in STATEMENTS : upTerm(! 'm(null # null)) .
+result GroundTerm: '!_`(_`)[''m.Sort,'_#_['null.Data,'null.Data]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(! 'm(null # null)), skip) .
+result Stm: ! 'm(null # null)
+==========================================
+reduce in STATEMENTS : ! 'o . 'm(null # 'a) .
+result Stm: ! 'o . 'm(null # 'a)
+==========================================
+reduce in STATEMENTS : upTerm(! 'o . 'm(null # 'a)) .
+result GroundTerm: '!_`(_`)['_._[''o.Sort,''m.Sort],'_#_['null.Data,''a.Sort]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(! 'o . 'm(null # 'a)), skip) .
+result Stm: ! 'o . 'm(null # 'a)
+==========================================
+reduce in STATEMENTS : 'a ?(noAid) .
+result Stm: 'a ?(noAid)
+==========================================
+reduce in STATEMENTS : upTerm('a ?(noAid)) .
+result GroundTerm: '_?`(_`)[''a.Sort,'noAid.AidList]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('a ?(noAid)), skip) .
+result Stm: 'a ?(noAid)
+==========================================
+reduce in STATEMENTS : 'a ?('a) .
+result Stm: 'a ?('a)
+==========================================
+reduce in STATEMENTS : upTerm('a ?('a)) .
+result GroundTerm: '_?`(_`)[''a.Sort,''a.Sort]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm('a ?('a)), skip) .
+result Stm: 'a ?('a)
+==========================================
+reduce in STATEMENTS : await ('test ??) .
+result Stm: await ('test ??)
+==========================================
+reduce in STATEMENTS : upTerm(await ('test ??)) .
+result GroundTerm: 'await_['_??[''test.Sort]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(await ('test ??)), skip) .
+result Stm: await ('test ??)
+==========================================
+reduce in STATEMENTS : await (wait & 'test ??) .
+result Stm: await (wait & 'test ??)
+==========================================
+reduce in STATEMENTS : upTerm(await (wait & 'test ??)) .
+result GroundTerm: 'await_['_&_['wait.Wait,'_??[''test.Sort]]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(await (wait & 'test ??)), skip) .
+result Stm: await (wait & 'test ??)
+==========================================
+reduce in STATEMENTS : await (wait & 'test ??) .
+result Stm: await (wait & 'test ??)
+==========================================
+reduce in STATEMENTS : upTerm(await (wait & 'test ??)) .
+result GroundTerm: 'await_['_&_['wait.Wait,'_??[''test.Sort]]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(await (wait & 'test ??)), skip) .
+result Stm: await (wait & 'test ??)
+==========================================
+reduce in STATEMENTS : return(emp) .
+result Stm: return(emp)
+==========================================
+reduce in STATEMENTS : upTerm(return(emp)) .
+result GroundTerm: 'return['emp.DataList]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(return(emp)), skip) .
+result Stm: return(emp)
+==========================================
+reduce in STATEMENTS : return('a # null # 'c) .
+result Stm: return('a # null # 'c)
+==========================================
+reduce in STATEMENTS : upTerm(return('a # null # 'c)) .
+result GroundTerm: 'return['_#_[''a.Sort,'null.Data,''c.Sort]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(return('a # null # 'c)), skip) .
+result Stm: return('a # null # 'c)
+==========================================
+reduce in STATEMENTS : free(noAid) .
+result Stm: free(noAid)
+==========================================
+reduce in STATEMENTS : upTerm(free(noAid)) .
+result GroundTerm: 'free['noAid.AidList]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(free(noAid)), skip) .
+result Stm: free(noAid)
+==========================================
+reduce in STATEMENTS : free('a,,'b,,'c) .
+result Stm: free('a,,'b,,'c)
+==========================================
+reduce in STATEMENTS : upTerm(free('a,,'b,,'c)) .
+result GroundTerm: 'free['_`,`,_[''a.Sort,''b.Sort,''c.Sort]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(free('a,,'b,,'c)), skip) .
+result Stm: free('a,,'b,,'c)
+==========================================
+reduce in STATEMENTS : tailcall 'm(emp) .
+result Stm: tailcall 'm(emp)
+==========================================
+reduce in STATEMENTS : upTerm(tailcall 'm(emp)) .
+result GroundTerm: 'tailcall_`(_`)[''m.Sort,'emp.DataList]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(tailcall 'm(emp)), skip) .
+result Stm: tailcall 'm(emp)
+==========================================
+reduce in STATEMENTS : tailcall 'm(null # 'a) .
+result Stm: tailcall 'm(null # 'a)
+==========================================
+reduce in STATEMENTS : upTerm(tailcall 'm(null # 'a)) .
+result GroundTerm: 'tailcall_`(_`)[''m.Sort,'_#_['null.Data,''a.Sort]]
+==========================================
+reduce in STATEMENTS : downTerm(upTerm(tailcall 'm(null # 'a)), skip) .
+result Stm: tailcall 'm(null # 'a)
 ==========================================
 reduce in STM-LIST : noStm .
 result StmList: noStm
@@ -356,6 +501,24 @@ result [Queue]:
 < 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
 
 ==========================================
+reduce in CREOL-LABEL-TEST : cont(label(1)) .
+result Stm: cont(label(1))
+==========================================
+reduce in CREOL-LABEL-TEST : upTerm(cont(label(1))) .
+result GroundTerm: 'cont['label['s_['0.Zero]]]
+==========================================
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(cont(label(1))), skip) .
+result Stm: cont(label(1))
+==========================================
+reduce in CREOL-LABEL-TEST : accept(label(1)) .
+result Stm: accept(label(1))
+==========================================
+reduce in CREOL-LABEL-TEST : upTerm(accept(label(1))) .
+result GroundTerm: 'accept['label['s_['0.Zero]]]
+==========================================
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(accept(label(1))), skip) .
+result Stm: accept(label(1))
+==========================================
 reduce in CREOL-LABEL-TEST : cont(label(5)) .
 result Stm: cont(label(5))
 ==========================================
@@ -374,14 +537,15 @@ result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
 reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5),emp)), noMsg) .
 result Body: comp(label(5),emp)
 ==========================================
-reduce in CREOL-LABEL-TEST : invoc('object1,label(5),'method1,emp) .
-result [MMsg]: invoc('object1,label(5),'method1,emp)
+reduce in CREOL-LABEL-TEST : invoc(ob('object1),label(5),'method1,emp) .
+result Body: invoc(ob('object1),label(5),'method1,emp)
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm(invoc('object1,label(5),'method1,emp)) .
-result GroundTerm: 'invoc`(_`,_`,_`,_`)[''object1.Sort,'label['s_^5['0.Zero]],
-    ''method1.Sort,'emp.DataList]
+reduce in CREOL-LABEL-TEST : upTerm(invoc(ob('object1),label(5),'method1,emp))
+    .
+result GroundTerm: 'invoc`(_`,_`,_`,_`)['ob[''object1.Sort],'label['s_^5[
+    '0.Zero]],''method1.Sort,'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc('object1,label(5),'method1,
-    emp)), noMsg) .
-result [MMsg]: invoc('object1,label(5),'method1,emp)
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob('object1),label(5),
+    'method1,emp)), noMsg) .
+result Body: invoc(ob('object1),label(5),'method1,emp)
 Bye.
