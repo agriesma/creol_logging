@@ -45,7 +45,11 @@ dnl TEST_MAUDE([meta-$1], metatest.maude) dnl Don't exec this, it takes ages.
 AT_CLEANUP
 ])
 
-
+m4_define([TEST_CREOLC_PP],[dnl
+AT_CHECK([creolc -syntax-only -p $1-pp1.creol ${abs_srcdir}/$1.creol])
+AT_CHECK([creolc -syntax-only -p $1-pp2.creol $1-pp1.creol])
+AT_CHECK([diff $1-pp1.creol $1-pp2.creol])
+])
 
 AT_INIT([creolc])
 AT_TESTED([creolc creolc.opt creolshell])
@@ -68,6 +72,16 @@ AT_CLEANUP
 
 AT_SETUP([ModelChecker])
 TEST_MAUDE([ModelChecker], ${abs_srcdir}/ModelChecker.maude)
+AT_CLEANUP
+
+AT_SETUP([PrettyPrinter])
+TEST_CREOLC_PP([Alarmclock])
+TEST_CREOLC_PP([AsyncLCR])
+TEST_CREOLC_PP([BoundedBuffer])
+TEST_CREOLC_PP([Fibonacci])
+TEST_CREOLC_PP([Philosophers])
+TEST_CREOLC_PP([SantaClaus])
+TEST_CREOLC_PP([SingleCellBuffer])
 AT_CLEANUP
 
 TEST_CREOLC([Alarmclock], [dnl

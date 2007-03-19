@@ -61,7 +61,7 @@ let apply_outputs tree =
       | Some "-" -> f stdout
       | Some s -> f (open_out s)
   and do_xml tree =
-    function None -> () | Some s -> CreolIO.creol_to_xml s Note.to_xml tree
+    function None -> () | Some s -> CreolIO.creol_to_xml s Note.to_xml (fun a b -> ()) tree
   in
   (** Apply the output passes *)
   do_out (function out -> Maude.of_creol outputs.maude out tree) outputs.maude_file ;

@@ -66,7 +66,7 @@ let from_channel channel =
 
 
 
-let rec creol_to_xml name note_handler tree =
+let rec creol_to_xml name stmt_handler expr_handler tree =
   let writer = XmlTextWriter.to_file name 0 in
     XmlTextWriter.set_indent writer true;
     XmlTextWriter.start_document writer None None None;
@@ -74,38 +74,38 @@ let rec creol_to_xml name note_handler tree =
     XmlTextWriter.write_attribute writer "version" "0.0";
     XmlTextWriter.write_attribute writer "exporter"
 	(Version.package ^ " " ^ Version.version);
-    List.iter (creol_declaration_to_xml writer note_handler) tree;
+    List.iter (creol_declaration_to_xml writer stmt_handler expr_handler) tree;
     XmlTextWriter.end_element writer;
     XmlTextWriter.end_document writer;
     XmlTextWriter.flush writer
-and creol_declaration_to_xml writer note_handler =
+and creol_declaration_to_xml writer stmt_handler expr_handler =
   function
-      (Class c) -> creol_class_to_xml writer note_handler c
-    | (Interface i) -> creol_interface_to_xml writer note_handler i
-and creol_class_to_xml writer note_handler c =
+      (Class c) -> creol_class_to_xml writer stmt_handler expr_handler c
+    | (Interface i) -> creol_interface_to_xml writer stmt_handler i
+and creol_class_to_xml writer stmt_handler expr_handler c =
     XmlTextWriter.start_element writer "class";
     XmlTextWriter.write_attribute writer "name" c.cls_name;
     XmlTextWriter.start_element writer "parameters";
-    List.iter (creol_vardecl_to_xml writer note_handler)
+    List.iter (creol_vardecl_to_xml writer stmt_handler)
 	c.cls_parameters;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "inherits";
-    List.iter (creol_inherits_to_xml writer note_handler) c.cls_inherits;
+    List.iter (creol_inherits_to_xml writer stmt_handler) c.cls_inherits;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "contracts";
-    List.iter (creol_contracts_to_xml writer note_handler) c.cls_contracts;
+    List.iter (creol_contracts_to_xml writer stmt_handler) c.cls_contracts;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "implements";
-    List.iter (creol_implements_to_xml writer note_handler) c.cls_implements;
+    List.iter (creol_implements_to_xml writer stmt_handler) c.cls_implements;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "attributes";
-    List.iter (creol_vardecl_to_xml writer note_handler) c.cls_attributes;
+    List.iter (creol_vardecl_to_xml writer stmt_handler) c.cls_attributes;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "methods";
-    List.iter (creol_method_to_xml writer note_handler) c.cls_methods;
+    List.iter (creol_method_to_xml writer stmt_handler expr_handler) c.cls_methods;
     XmlTextWriter.end_element writer;
     XmlTextWriter.end_element writer
-and creol_interface_to_xml writer note_handler i =
+and creol_interface_to_xml writer stmt_handler i =
     XmlTextWriter.start_element writer "interface";
     XmlTextWriter.write_attribute writer "name" i.iface_name;
     XmlTextWriter.end_element writer
@@ -114,36 +114,36 @@ and creol_inherits_to_xml writer handler (i, l) =
     XmlTextWriter.write_attribute writer "name" i;
     List.iter (creol_argument_to_xml writer handler) l;
     XmlTextWriter.end_element writer
-and creol_contracts_to_xml writer note_handler i =
+and creol_contracts_to_xml writer stmt_handler i =
     ()
-and creol_implements_to_xml writer note_handler i =
+and creol_implements_to_xml writer stmt_handler i =
     ()
-and creol_method_to_xml writer handler m =
+and creol_method_to_xml writer stmt_handler expr_handler m =
     XmlTextWriter.start_element writer "method" ; 
     XmlTextWriter.write_attribute writer "name" m.meth_name;
     XmlTextWriter.start_element writer "cointerface" ; 
-    creol_type_to_xml writer handler m.meth_coiface;
+    creol_type_to_xml writer stmt_handler m.meth_coiface;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "inputs" ; 
-    List.iter (creol_vardecl_to_xml writer handler) m.meth_inpars;
+    List.iter (creol_vardecl_to_xml writer stmt_handler) m.meth_inpars;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "outputs" ; 
-    List.iter (creol_vardecl_to_xml writer handler) m.meth_outpars;
+    List.iter (creol_vardecl_to_xml writer stmt_handler) m.meth_outpars;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "variables" ; 
-    List.iter (creol_vardecl_to_xml writer handler) m.meth_vars;
+    List.iter (creol_vardecl_to_xml writer stmt_handler) m.meth_vars;
     XmlTextWriter.end_element writer;
     (match m.meth_body with
 	None -> ()
       | Some s -> XmlTextWriter.start_element writer "body" ; 
-	    creol_statement_to_xml writer handler s;
+	    creol_statement_to_xml writer stmt_handler expr_handler s;
 	    XmlTextWriter.end_element writer) ;
     XmlTextWriter.end_element writer
-and creol_statement_to_xml writer handler =
+and creol_statement_to_xml writer stmt_handler expr_handler =
   function
       Skip a ->
 	XmlTextWriter.start_element writer "skip" ; 
-	handler writer a;
+	stmt_handler writer a;
         XmlTextWriter.end_element writer
     | Assign (a, vs, es) ->
 	XmlTextWriter.start_element writer "assign" ;
@@ -159,9 +159,13 @@ and creol_statement_to_xml writer handler =
 		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
-	handler writer a;
+	stmt_handler writer a;
         XmlTextWriter.end_element writer
-    | Await (a, g) -> ()
+    | Await (a, g) -> 
+	XmlTextWriter.start_element writer "await" ;
+	creol_guard_to_xml writer expr_handler g ;
+	stmt_handler writer a;
+        XmlTextWriter.end_element writer
     | New (a, v, c, es) ->
 	XmlTextWriter.start_element writer "new" ;
 	XmlTextWriter.write_attribute writer "name" v ;
@@ -172,7 +176,7 @@ and creol_statement_to_xml writer handler =
 		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | AsyncCall (a, l, c, m, es) ->
 	XmlTextWriter.start_element writer "asynccall" ;
@@ -189,7 +193,7 @@ and creol_statement_to_xml writer handler =
 		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | Reply (a, l, is) ->
 	XmlTextWriter.start_element writer "reply" ;
@@ -200,12 +204,12 @@ and creol_statement_to_xml writer handler =
 		     XmlTextWriter.write_attribute writer "name" i ;
         	     XmlTextWriter.end_element writer ) is ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | Free (a, l) ->
 	XmlTextWriter.start_element writer "free" ;
 	XmlTextWriter.write_attribute writer "label" l ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | SyncCall (a, c, m, es, is) ->
 	XmlTextWriter.start_element writer "synccall" ;
@@ -225,7 +229,7 @@ and creol_statement_to_xml writer handler =
 		     XmlTextWriter.write_attribute writer "name" i ;
         	     XmlTextWriter.end_element writer ) is ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | LocalAsyncCall (a, l, m, lb, ub, es) ->
 	XmlTextWriter.start_element writer "local-async-call" ;
@@ -245,7 +249,7 @@ and creol_statement_to_xml writer handler =
 		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | LocalSyncCall (a, m, l, u, es, is) ->
 	XmlTextWriter.start_element writer "localsynccall" ;
@@ -268,7 +272,7 @@ and creol_statement_to_xml writer handler =
 		     XmlTextWriter.write_attribute writer "name" i ;
         	     XmlTextWriter.end_element writer ) is ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | If (a, c, t, f) ->
 	XmlTextWriter.start_element writer "if" ;
@@ -276,12 +280,12 @@ and creol_statement_to_xml writer handler =
 	creol_expression_to_xml writer c ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "then" ;
-	creol_statement_to_xml writer handler t ;
+	creol_statement_to_xml writer stmt_handler expr_handler t ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "else" ;
-	creol_statement_to_xml writer handler f ;
+	creol_statement_to_xml writer stmt_handler expr_handler f ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | While (a, c, i, d) ->
 	XmlTextWriter.start_element writer "while" ;
@@ -292,47 +296,57 @@ and creol_statement_to_xml writer handler =
 	creol_expression_to_xml writer i ;
         XmlTextWriter.end_element writer ;
 	XmlTextWriter.start_element writer "do" ;
-	creol_statement_to_xml writer handler d ;
+	creol_statement_to_xml writer stmt_handler expr_handler d ;
         XmlTextWriter.end_element writer ;
-	handler writer a ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | Sequence (a, sl) ->
 	XmlTextWriter.start_element writer "sequence" ;
-	List.iter (creol_statement_to_xml writer handler) sl ;
-	handler writer a ;
+	List.iter (creol_statement_to_xml writer stmt_handler expr_handler) sl;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | Merge (a, f, n) ->
 	XmlTextWriter.start_element writer "merge" ;
-	XmlTextWriter.start_element writer "first" ;
-	creol_statement_to_xml writer handler f ;
-        XmlTextWriter.end_element writer ;
-	XmlTextWriter.start_element writer "second" ;
-	creol_statement_to_xml writer handler n ;
-        XmlTextWriter.end_element writer ;
-	handler writer a ;
+	creol_statement_to_xml writer stmt_handler expr_handler f ;
+	creol_statement_to_xml writer stmt_handler expr_handler n ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
     | Choice (a, f, n) ->
 	XmlTextWriter.start_element writer "choice" ;
-	XmlTextWriter.start_element writer "first" ;
-	creol_statement_to_xml writer handler f ;
-        XmlTextWriter.end_element writer ;
-	XmlTextWriter.start_element writer "second" ;
-	creol_statement_to_xml writer handler n ;
-        XmlTextWriter.end_element writer ;
-	handler writer a ;
+	creol_statement_to_xml writer stmt_handler expr_handler f ;
+	creol_statement_to_xml writer stmt_handler expr_handler n ;
+	stmt_handler writer a ;
         XmlTextWriter.end_element writer
-and creol_vardecl_to_xml writer handler v =
+and creol_vardecl_to_xml writer stmt_handler v =
     XmlTextWriter.start_element writer "vardecl";
     XmlTextWriter.write_attribute writer "name" v.var_name;
-    creol_type_to_xml writer handler v.var_type;
+    creol_type_to_xml writer stmt_handler v.var_type;
     (match v.var_init with
 	  None -> ()
-	| Some e -> creol_argument_to_xml writer handler e) ;
+	| Some e -> creol_argument_to_xml writer stmt_handler e) ;
     XmlTextWriter.end_element writer
-and creol_argument_to_xml writer handler e =
+and creol_argument_to_xml writer stmt_handler e =
     XmlTextWriter.start_element writer "argument" ; 
     creol_expression_to_xml writer e;
     XmlTextWriter.end_element writer
+and creol_guard_to_xml writer expr_handler =
+  function
+    Label (a, l) ->
+	XmlTextWriter.start_element writer "label" ;
+	XmlTextWriter.write_attribute writer "name" l;
+	expr_handler writer a;
+	XmlTextWriter.end_element writer
+  | Condition (a, e) -> 
+	XmlTextWriter.start_element writer "condition" ;
+	creol_expression_to_xml writer e;
+	expr_handler writer a ;
+	XmlTextWriter.end_element writer
+  | Conjunction (a, g1, g2) -> 
+	XmlTextWriter.start_element writer "conjunction" ;
+	creol_guard_to_xml writer expr_handler g1;
+	creol_guard_to_xml writer expr_handler g2;
+	expr_handler writer a ;
+	XmlTextWriter.end_element writer
 and creol_expression_to_xml writer =
   function
       Null a -> 

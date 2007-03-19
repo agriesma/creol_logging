@@ -2,23 +2,25 @@ class SAuth
   implements Auth
 begin
   var gr: Agent
-  op run == gr := null
-  op delay == await (gr = null)
+  op init == skip;
+  op run == gr := null;
+  op delay == await (gr = null);
 with Any
-  op grant(in x:Agent) == delay(;); gr := x
-  op revoke(in x:Agent) == if gr = x then gr := null fi
-  op auth(in x:Agent) == await (gr = x)
+  op grant(in x:Agent) == delay(;); gr := x;
+  op revoke(in x:Agent) == if gr = x then gr := null; fi
+  op auth(in x:Agent) == await (gr = x);
 end 
 
 class MAuth(gr: Agent)
   implements Auth
 begin 
   var gr: Agent
-  op run == gr := null
-  op delay == await (gr = null)
+  op init == skip;
+  op run == gr := null;
+  op delay == await (gr = null);
 with Any
-  op grant(in x:Agent) == delay(;); gr := x
-  op revoke(in x:Agent) == if gr = x then gr := null fi
+  op grant(in x:Agent) == delay(;); gr := x;
+  op revoke(in x:Agent) == if gr = x then gr := null; fi
   op auth(in x:Agent) == await (gr = x)
 end 
 

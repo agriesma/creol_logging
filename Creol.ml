@@ -215,8 +215,8 @@ type ('a, 'b) declaration =
     with there basic equivalents *)
 let rec simplify_expression =
   function
-      Unary(a, Not, e) -> FuncCall(a, "not", [e])
-    | Unary(a, UMinus, e) -> FuncCall(a, "neg", [e])
+      Unary(a, Not, e) -> FuncCall(a, "not", [simplify_expression e])
+    | Unary(a, UMinus, e) -> FuncCall(a, "neg", [simplify_expression e])
     | Binary(a, Plus, l, r) -> FuncCall(a, "plus", [simplify_expression l; simplify_expression r])
     | Binary(a, Minus, l, r) -> FuncCall(a, "minus", [simplify_expression l; simplify_expression r])
     | Binary(a, Times, l, r) -> FuncCall(a, "times", [simplify_expression l; simplify_expression r])
@@ -231,6 +231,7 @@ let rec simplify_expression =
     | Binary(a, Iff, l, r) -> FuncCall(a, "equal", [simplify_expression l; simplify_expression r])
     | Binary(a, Or, l, r) -> FuncCall(a, "or", [simplify_expression l; simplify_expression r])
     | Binary(a, Xor, l, r) -> FuncCall(a, "not", [FuncCall(a, "equal", [simplify_expression l; simplify_expression r])])
+    | FuncCall(a, f, args) -> FuncCall(a, f, List.map simplify_expression args)
     | t -> t
 and simplify_guard =
   function
@@ -278,7 +279,7 @@ and simplify_method_variables note =
     | ({ var_name = n; var_type = _ ; var_init = Some i } as v)::l ->
 	let r = simplify_method_variables note l in
 	let a = Assign(note, [n], [simplify_expression i]) in
-	  (v::(fst r), a::(snd r))
+	  ({ v with var_init = None}::(fst r), a::(snd r))
 and simplify_method m =
   (** Simplify a method definition. *)
   match m.meth_body with
@@ -510,7 +511,9 @@ and pretty_print_class out_channel c =
 	  output_string out_channel ")" ) ;
   ( match c.cls_inherits with
 	[] -> ()
-      | l -> output_string out_channel "\ninherits " ) ;
+      | l -> output_string out_channel "\ninherits ";
+	  separated_list (pretty_print_inherits out_channel)
+	    (function () -> output_string out_channel ", ") l) ;
   ( match c.cls_contracts with
 	[] -> ()
       | l -> output_string out_channel "\ncontracts " );
@@ -536,6 +539,15 @@ and pretty_print_class out_channel c =
   if [] = c.cls_attributes && [] = c.cls_methods then
     output_string out_channel "\n";
   output_string out_channel "end"
+and pretty_print_inherits out_channel (inh, args) =
+  output_string out_channel inh;
+  if args <> [] then
+    begin
+      output_string out_channel "(";
+      separated_list (pretty_print_expression out_channel)
+	(function () -> output_string out_channel ", ") args;
+      output_string out_channel ")"
+    end
 and pretty_print_methods out_channel list =
   separated_list
     (pretty_print_method out_channel)
@@ -544,18 +556,25 @@ and pretty_print_methods out_channel list =
 and pretty_print_method out_channel m =
   if m.meth_coiface <> Basic "" then
     output_string out_channel
-      ("with " ^ (string_of_creol_type m.meth_coiface));
+      ("with " ^ (string_of_creol_type m.meth_coiface) ^ " ");
   output_string out_channel ("op " ^ m.meth_name);
   if m.meth_inpars <> [] || m.meth_outpars <> [] then
     output_string out_channel "(";
-  (match m.meth_inpars with
-      [] -> ()
-    | l -> output_string out_channel "in ";
-	pretty_print_vardecls out_channel 0 "" ", " "" l) ;
-  (match m.meth_outpars with
-      [] -> ()
-    | l -> output_string out_channel "; out ";
-	pretty_print_vardecls out_channel 0 "" ", " "" l );
+  begin
+    match (m.meth_inpars, m.meth_outpars) with
+      ([], []) -> ()
+    | (i, []) ->
+	output_string out_channel "in ";
+	pretty_print_vardecls out_channel 0 "" ", " "" i
+    | ([], o) ->
+	output_string out_channel "out ";
+	pretty_print_vardecls out_channel 0 "" ", " "" o
+    | (i, o) -> 
+	output_string out_channel "in ";
+	pretty_print_vardecls out_channel 0 "" ", " "" i;
+	output_string out_channel "; out ";
+	pretty_print_vardecls out_channel 0 "" ", " "" o
+  end;
   if m.meth_inpars <> [] || m.meth_outpars <> [] then
     output_string out_channel ")";
   (match m.meth_body with
@@ -602,18 +621,20 @@ and pretty_print_statement out lvl statement =
   in
   let rec print lvl prec =
     function
-	Skip _ -> output_string out "skip";
+	Skip _ -> output_string out "skip;";
       | Assign (_, i, e) ->
 	  pretty_print_identifier_list out i;
 	  output_string out " := ";
-	  pretty_print_expression_list out e
+	  pretty_print_expression_list out e;
+	  output_string out ";"
       | Await (_, g) -> 
 	  output_string out "await ";
 	  pretty_print_guard out g;
+	  output_string out ";";
       | New (_, i, c, a) ->
           output_string out (i ^ " := new " ^ c ^ "(");
 	  pretty_print_expression_list out a ;
-	  output_string out ")"
+	  output_string out ");"
       | AsyncCall (_, l, c, m, a) ->
 	  (match l with
 	      None -> ()
@@ -623,11 +644,11 @@ and pretty_print_statement out lvl statement =
 	  output_string out ("." ^ m);
 	  output_string out "(" ;
 	  pretty_print_expression_list out a;
-	  output_string out ")"
+	  output_string out ");"
       | Reply (_, l, o) ->
 	  output_string out (l ^ "?(");
 	  pretty_print_identifier_list out o;
-	  output_string out ")";
+	  output_string out ");";
       | Free(_, l) -> output_string out ("/* free(" ^ l ^ ") */")
       | SyncCall (_, c, m, a, r) ->
 	  pretty_print_expression out c ;
@@ -636,7 +657,7 @@ and pretty_print_statement out lvl statement =
 	  pretty_print_expression_list out a;
 	  output_string out "; " ;
 	  pretty_print_identifier_list out r;
-	  output_string out ")"
+	  output_string out ");"
       | LocalAsyncCall (_, l, m, lb, ub, i) ->
 	  output_string out (match l with None -> "!" | Some n -> (n ^ "!"));
 	  output_string out m;
@@ -644,7 +665,7 @@ and pretty_print_statement out lvl statement =
 	  (match ub with None -> () | Some n -> output_string out ("<<" ^ n));
 	  output_string out "(" ;
 	  pretty_print_expression_list out i;
-	  output_string out ")"
+	  output_string out ");"
       | LocalSyncCall (_, m, l, u, i, o) ->
 	  output_string out m;
 	  (match l with None -> () | Some n -> output_string out ("@" ^ n));
@@ -653,7 +674,7 @@ and pretty_print_statement out lvl statement =
 	  pretty_print_expression_list out i;
 	  output_string out "; " ;
 	  pretty_print_identifier_list out o;
-	  output_string out ")"
+	  output_string out ");"
       | If (_, c, t, f) ->
 	  output_string out "if ";
 	  pretty_print_expression out c;
@@ -682,10 +703,8 @@ and pretty_print_statement out lvl statement =
 	  let op_prec = 25 in
 	  let nl = lvl + if prec < op_prec then 1 else 0 in
 	    open_block prec op_prec;
-	    List.iter
-	      (function s ->
-		print nl op_prec s;
-		do_indent out nl) sl;
+	    separated_list (function s -> print nl op_prec s)
+	      (function () -> do_indent out nl) sl;
 	    close_block prec op_prec
       | Merge (_, l, r) ->
 	  let op_prec = 29 in
@@ -754,9 +773,9 @@ and pretty_print_expression out_channel exp =
 	| Binary(_, Xor, l, r) -> generic 57 l " xor " r
 	(* | Binary(_, Implies, l, r) -> generic 61 l " implies " r *)
 	| FuncCall (_, i, a) ->
-	    output_string out_channel (i ^ "[");
+	    output_string out_channel (i ^ "(");
 	    pretty_print_expression_list out_channel a;
-	    output_string out_channel "]";
+	    output_string out_channel ")";
   in
     print 121 exp
 and pretty_print_expression_list out_channel l =

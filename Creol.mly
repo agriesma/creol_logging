@@ -21,12 +21,13 @@
 %token <float> FLOAT
 %token NIL NULL
 
-%nonassoc EQ NE
 %left AND OR XOR IFF
+%right NOT
+%nonassoc EQ NE
 %left LE LT GT GE
 %left PLUS MINUS
 %left TIMES DIV
-%right NOT
+%right UMINUS
 
 %start <'a list> main
 
@@ -245,16 +246,11 @@ guard:
     | e = expression { Condition ((Note.make $startpos), e) }
 
 expression:
-      e = expression_no_fun
-	{ e }
-    | f = ID LPAREN l = separated_list(COMMA, expression) RPAREN
-	{ FuncCall((Note.make $startpos), f, l) }
-
-expression_no_fun:
       l = expression o = binop r = expression
         { Binary((Note.make $startpos), o, l, r) }
     | NOT  e = expression { Unary((Note.make $startpos), Not, e) }
-    | MINUS e = expression %prec NOT { Unary((Note.make $startpos), UMinus, e) }
+    | MINUS e = expression %prec UMINUS
+	{ Unary((Note.make $startpos), UMinus, e) }
     | i = INT { Int ((Note.make $startpos), i) }
     | f = FLOAT { Float ((Note.make $startpos), f) }
     | b = BOOL { Bool ((Note.make $startpos), b) }
@@ -263,6 +259,8 @@ expression_no_fun:
     | NIL { Nil (Note.make $startpos) }
     | NULL { Null (Note.make $startpos) }
     | LPAREN e = expression RPAREN { e }
+    | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
+	{ FuncCall((Note.make $startpos), f, l) }
 
 %inline binop:
       AND { And }
@@ -279,6 +277,12 @@ expression_no_fun:
     | MINUS { Minus }
     | TIMES { Times }
     | DIV { Div }
+
+%inline function_name:
+      f = ID { f }
+    | AND { "and" }
+    | OR { "or" }
+    | XOR { "xor" }
 
 (* Poor mans types and type parameters *)
 creol_type:

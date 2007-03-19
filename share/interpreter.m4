@@ -124,7 +124,7 @@ mod ifdef({|MODELCHECK|},MODEL-CHECKER,INTERPRETER) is
 *** For the model checker the following will be evaluated as an
 *** equation and the old rule is not confluent.
 
-op _assign_ : AidList DataList -> Stm [ctor format (d c o d)] .
+op _assign_ : AidList DataList -> Stm [ctor {|format|} (d c o d)] .
 eq noAid assign emp = skip . *** Occurs during construction and returns.
 
 eq
@@ -198,8 +198,8 @@ STEP(dnl
 *** ATTRIBUTE inheritance with multiple inheritance
 *** CMC assumes that all attributes names are (globally) different
 
-op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor format (n d)] .
-op foundAttr : Oid Subst  StmList Process -> Msg [ctor format (n d)] .
+op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor {|format|} (n d)] .
+op foundAttr : Oid Subst  StmList Process -> Msg [ctor {|format|} (n d)] .
 
 eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 
