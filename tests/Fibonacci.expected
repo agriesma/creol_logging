@@ -3,8 +3,8 @@ reduce in PROGRAM : init .
 result Configuration: 
 < 'FibTester : Cl | Inh: noInh,Par: 'f,,'n,Att: 'f |-> null, 'n |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; return(emp) > *
-< 'run : Mtdname | Param: noAid,Latt: 'res |-> null,Code: 't ! 'f . 'fibonacci(
-    'n) ; 't ?('res) ; return(emp) >,Ocnt: 0 >
+< 'run : Mtdname | Param: noAid,Latt: 'res |-> null,Code: 'f . 'fibonacci('n :
+    'res) ; return(emp) >,Ocnt: 0 >
  
 < 'Fibonacci : Cl | Inh: noInh,Par: 'n,Att: 'n |-> null,Mtds:
 < 'fib : Mtdname | Param: 'n,Latt: 'a |-> null, 'b |-> null, 'f |-> null, 'n

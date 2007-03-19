@@ -73,23 +73,25 @@ let apply_outputs tree =
 module Passes =
   struct
     type t =
-	{ mutable pass_check_types: bool;
-	  mutable pass_simplify: bool;
-	  mutable pass_lifeness: bool }
+	{ mutable check_types: bool;
+	  mutable simplify: bool;
+	  mutable lifeness: bool;
+	  mutable tailcalls: bool }
 
     let passes =
-      { pass_check_types = false;
-	pass_simplify = true;
-	pass_lifeness = true }
+      { check_types = false;
+	simplify = true;
+	lifeness = true;
+        tailcalls = false }
 
     let apply tree =
       (** Transform the tree in accordance to the passes enabled by the
 	  user. *)
       let current = ref tree in
-	if passes.pass_check_types then current := !current else () ;
-	if passes.pass_simplify then current := simplify !current else () ;
-	if passes.pass_lifeness then current := find_definitions !current
-	else ();
+	if passes.check_types then current := !current;
+	if passes.simplify then current := simplify !current;
+	if passes.lifeness then current := find_definitions !current;
+	if passes.tailcalls then current := optimise_tailcalls !current;
 	!current
   end
 
@@ -111,7 +113,9 @@ let main () =
      Arg.Unit (function () -> ()),
     "  Print some information while processing");
     ("-mc",
-     Arg.Unit (function () -> outputs.maude.Maude.modelchecker <- true),
+     Arg.Unit (function () ->
+       outputs.maude.Maude.modelchecker <- true;
+       Passes.passes.Passes.tailcalls <- true ),
     "  Compile the files for model checking");
     ("-main",
      Arg.String (function s -> outputs.maude.Maude.main <- Some s),

@@ -136,6 +136,9 @@ module Statement: sig
       | LocalSyncCall of 'a * string * string option * string option *
 	  'b expression list * string list
 	  (** Call a local method synchronously. *)
+      | Tailcall of 'a * string * string option * string option *
+	  'b expression list
+	  (** Internal statement for eliminating tail calls. *)
       | If of 'a * 'b expression * ('a, 'b) t * ('a, 'b) t
 	  (** Conditional execution. *)
       | While of 'a * 'b expression * 'b expression * ('a, 'b) t
@@ -201,6 +204,10 @@ type ('a, 'b) declaration =
 val pretty_print: out_channel -> ('a, 'b) declaration list -> unit
 
 val simplify: ('a, 'b) declaration list -> ('a, 'b) declaration list
+
+val tailcall_successes : unit -> int
+
+val optimise_tailcalls: ('a, 'b) declaration list -> ('a, 'b) declaration list
 
 val find_definitions: (Note.t, 'a) declaration list -> (Note.t, 'a) declaration list
 

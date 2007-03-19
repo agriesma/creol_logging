@@ -21,6 +21,5 @@ begin
 	op init == skip;
 	op run ==
 	 	var res:Integer;
- 		t!f.fibonacci(n);
- 		t?(res);
+ 		f.fibonacci(n; res);
 end

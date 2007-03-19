@@ -151,6 +151,8 @@ module Statement =
 	    string option * 'b expression list
 	| LocalSyncCall of 'a * string * string option * string option *
             'b expression list * string list
+	| Tailcall of 'a * string * string option * string option *
+	    'b expression list
 	| If of 'a * 'b expression * ('a, 'b) t * ('a, 'b)t
 	| While of 'a * 'b expression * 'b expression * ('a, 'b)t
 	| Sequence of 'a * ('a, 'b) t list
@@ -169,6 +171,7 @@ module Statement =
 	| SyncCall(a, _, _, _, _) -> a
 	| LocalAsyncCall(a, _, _, _, _, _) -> a
 	| LocalSyncCall(a, _, _, _, _, _) -> a
+	| Tailcall(a, _, _, _, _) -> a
 	| If(a, _, _, _) -> a
 	| While(a, _, _, _) -> a
 	| Sequence(a, _) -> a
@@ -258,6 +261,8 @@ and simplify_statement =
 	LocalAsyncCall (a, l, m, lb, ub, List.map simplify_expression i)
     | LocalSyncCall (a, m, l, u, i, o) ->
 	LocalSyncCall (a, m, l, u, List.map simplify_expression i, o)
+    | Tailcall (a, m, l, u, i) ->
+	Tailcall (a, m, l, u, List.map simplify_expression i)
     | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
 			   simplify_statement f)
     | While (a, c, i, b) ->
@@ -312,7 +317,6 @@ and simplify =
       [] -> []
     | Class c::l -> (Class (simplify_class c))::(simplify l)
     | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
-
 
 let collect_declarations attribute =
     List.fold_left
@@ -384,6 +388,8 @@ and definitions_in_statement note =
 	LocalAsyncCall ({ n with Note.env = note.Note.env }, l, m, ub, lb, i) (* XXX *)
     | LocalSyncCall (n, m, u, l, a, r) ->
 	LocalSyncCall ({ n with Note.env = note.Note.env }, m, u, l, a, r) (* XXX *)
+    | Tailcall (n, m, u, l, a) ->
+	Tailcall ({ n with Note.env = note.Note.env }, m, u, l, a) (* XXX *)
     | If (n, c, l, r) ->
 	(* Beware, that the new note essentially contains the union
 	   of the definitions of both its branches, whereas the first
@@ -416,6 +422,43 @@ and definitions_in_statement note =
 	      (Statement.note nr).Note.env},
 		 nl, nr)
 
+let tailcall_counter = ref 0
+
+let tailcall_successes () = !tailcall_counter
+
+let optimise_tailcalls prg =
+  (** Take a program and try to replace tail calls with a version using
+      out special macro. *)
+  let rec optimise_declaration =
+    function
+      Class c -> Class (optimise_in_class c)
+    | Interface i -> Interface i
+  and optimise_in_class c =
+    { c with cls_methods = List.map optimise_in_method c.cls_methods }
+  and optimise_in_method m =
+    match m.meth_body with
+	None -> m
+      | Some body ->
+	  { m with meth_body =
+	      Some ((optimise_in_statement
+			(List.map (function v -> v.var_name) m.meth_outpars))
+		       body) } 
+  and optimise_in_statement outs =
+    function
+	Sequence (a, sl) ->
+	  Sequence (a, optimise_in_statement_inner outs sl)
+      | s -> s
+  and optimise_in_statement_inner outs =
+    function
+	[] -> assert false
+      | [LocalSyncCall(ia, m, lb, ub, i, o)] when o = outs ->
+	  tailcall_counter := !tailcall_counter + 1;
+	  [LocalSyncCall(ia, m, lb, ub, i, o)]
+      | [s] -> [s]
+      | s::l -> s::(optimise_in_statement_inner outs l)
+  in
+    tailcall_counter := 0;
+    List.map optimise_declaration prg
 
 
 let rec life_variables tree =
@@ -675,6 +718,7 @@ and pretty_print_statement out lvl statement =
 	  output_string out "; " ;
 	  pretty_print_identifier_list out o;
 	  output_string out ");"
+      | Tailcall (_, m, l, u, i) -> assert false
       | If (_, c, t, f) ->
 	  output_string out "if ";
 	  pretty_print_expression out c;
@@ -903,6 +947,13 @@ struct
 	    of_creol_expression_list out i;
 	    output_string out " : " ;
 	    of_creol_identifier_list out o;
+	    output_string out " )"
+	| Tailcall (_, m, l, u, i) ->
+	    output_string out ( "'" ^ m );
+	    (match l with None -> () | Some n -> output_string out (" @ '" ^ n));
+	    (match u with None -> () | Some n -> output_string out (" << '" ^ n));
+	    output_string out " ( " ;
+	    of_creol_expression_list out i;
 	    output_string out " )"
 	| If (_, c, t, f) ->
 	    output_string out "if "; of_creol_expression out c;

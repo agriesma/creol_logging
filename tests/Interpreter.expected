@@ -13,7 +13,7 @@ result Configuration:
 'var ::= new 'Tailcall(int(5)),PrQ: noProc,Lcnt: 0 >
 
 ==========================================
-search [1] in TEST-TAILCALL : init =>+ conf:Configuration 
+search in TEST-TAILCALL : init =>+ conf:Configuration 
 < ob('Tailcall0) : 'Tailcall | Att: A:Subst,Pr: L:Subst,
 accept(tag(label(2))) ; SL:StmList,PrQ: W:MProc,Lcnt: N:Nat >
  .
