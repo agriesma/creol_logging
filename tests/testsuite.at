@@ -6,7 +6,7 @@ dnl First parameter is the name of the test, second parameter is the maude
 dnl script to execute for the text.  Number of rewrites will be filtered.
 m4_define([TEST_MAUDE], [dnl
 AT_CHECK([$MAUDE -no-banner -no-advise -batch $2 dnl
-  | egrep -v '^rewrites: [[[:digit:]]]+' > $1.out])
+  | egrep -v '\<rewrites: [[[:digit:]]]+\>' > $1.out])
 AT_CHECK([diff $1.out ${abs_srcdir}/$1.expected])
 ])
 

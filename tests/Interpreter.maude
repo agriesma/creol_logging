@@ -41,7 +41,10 @@ endm
 
 red in TEST-TAILCALL : init .
 
-rew[24] in TEST-TAILCALL : init .
+search [1] in TEST-TAILCALL : init =>+
+  < ob('Tailcall0) : 'Tailcall | Att: A:Subst, Pr:
+    L:Subst, accept(tag(label(2))) ; SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
+  conf:Configuration .
 
 rew in TEST-TAILCALL : init .
 

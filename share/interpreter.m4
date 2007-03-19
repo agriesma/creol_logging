@@ -105,7 +105,7 @@ mod ifdef({|MODELCHECK|},MODEL-CHECKER,INTERPRETER) is
   var ST : Stm .
   vars SL SL' SL'' : StmList .
   vars SL1 SL2 : NeStmList .
-  var P : Process .
+  vars P P' : Process .
   var W : MProc .
   vars S S' L L' : Subst .
   vars N F : Nat .
@@ -272,21 +272,21 @@ STEP(dnl
 
 *** local call 
 ceq
-  boundMtd(O, (L', SL')) 
-  < O : C | Att: S,Pr: (L, ((Lab ?(AL)); SL)),PrQ: W,Lcnt: F >
+  < O : C | Att: S,Pr: (L, ((Lab ?(AL)); SL)),PrQ: W ++ (L', SL'),Lcnt: F >
   = 
-  < O : C | Att: S,Pr: (L', SL' ; cont(Lab)),PrQ: (L,((Lab ?(AL)); SL)) ++ W,
+  < O : C | Att: S,Pr: (L', SL' ; cont(Lab)),PrQ: W ++ (L,((Lab ?(AL)); SL)),
             Lcnt: F > 
   if (L'['label] == Lab)
   [label local-call] .
 
 *** local call within merge
 ceq
-  boundMtd(O, (L', SL')) 
-  < O : C | Att: S,Pr: (L,(((Lab ?(AL)); SL) MERGER SL'')),PrQ: W,Lcnt: F >
+  < O : C | Att: S,Pr: (L,(((Lab ?(AL)); SL) MERGER SL'')),
+	    PrQ: W ++ (L', SL'), Lcnt: F >
   = 
   < O : C | Att: S,Pr: (L', SL'),
-       PrQ: (L, (((await Lab ?) ; (Lab ?(AL)); SL) MERGER SL'')) ++ W,Lcnt: F > 
+	    PrQ: W ++ (L, (((await Lab ?) ; (Lab ?(AL)); SL) MERGER SL'')),
+	    Lcnt: F > 
   if (L'['label] == Lab)
   [label local-call-in-merge] .
 
@@ -368,8 +368,8 @@ STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
 {|[label tailcall]|})
 
 *** If we receive the method body, the call is accepted and the label untagged.
-CSTEP({|< O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: W, Lcnt: N >
-  boundMtd(O, (L, SL))|},
+CSTEP({|< O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
+         Lcnt: N >|},
 {|< O : C | Att: S, Pr: (insert('label, tag(Lab), L), SL), PrQ: W, Lcnt: N >|},
 {|L['label] = Lab|},
 {|[label tailcall-accept]|})
@@ -390,24 +390,32 @@ STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
 {|[label receive-call-req]|})
 
 *** Method binding with multiple inheritance
-ceq bindMtd(O, O',Lab,Q, EL,noInh) = 
-boundMtd(O,(('caller |-> O', 'label |-> Lab), return(emp)))
-if Q == 'run .
+eq
+  bindMtd(O, O', Lab, 'run, EL, noInh)
+  = 
+  boundMtd(O,(('caller |-> O', 'label |-> Lab), return(emp)))
+  .
 
 
-eq bindMtd(O, O', Lab, M, EL, (C < EL' >) {|#|}{|#|} I')
-< C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
-   =  if (M in MS) then boundMtd(O,get(M,MS,O', Lab, EL)) 
-                   else bindMtd(O,O',Lab,M,EL, I {|#|}{|#|} I') fi 
-< C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F > .
+eq
+  bindMtd(O, O', Lab, M, EL, (C < EL' >) {|#|}{|#|} I')
+  < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
+  =
+  if (M in MS) then
+    boundMtd(O,get(M,MS,O', Lab, EL)) 
+  else
+    bindMtd(O,O',Lab,M,EL, I {|##|} I')
+  fi 
+  < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
+  .
 
 STEP({|< O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, DL) >|},
 {|< O : Qu | Dealloc: LS, Ev: MM >
     bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
 
-STEP({|boundMtd(O, P) < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: idle, PrQ: W ++ P, Lcnt: N >|},
+STEP({|boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >|},
+{|< O : C | Att: S, Pr: P, PrQ: W ++ P', Lcnt: N >|},
 {|[label receive-call-bound]|})
 
 STEP({|< O : C | Att: S, Pr: (L, cont(Lab); SL), PrQ: (L',((Lab)?(AL); SL')) ++
