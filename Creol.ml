@@ -773,268 +773,268 @@ and do_indent out lvl =
 
 
 module Maude =
-  struct
+struct
 
-    type options = {
-	mutable modelchecker: bool;
-	mutable red_init: bool;
-	mutable main: string option;
-    }
+  type options = {
+    mutable modelchecker: bool;
+    mutable red_init: bool;
+    mutable main: string option;
+  }
 
-(* Write a Creol program as a maude term. If the program is parsable
-   but not semantically correct, this function will only produce
-   garbage. *)
+  (* Write a Creol program as a maude term. If the program is parsable
+     but not semantically correct, this function will only produce
+     garbage. *)
 
-let rec maude_of_creol_expression out =
-  function
-      Nil _ -> output_string out "list(emp)"
-    | Null _ -> output_string out "null"
-    | Int (_, i) -> output_string out ("int(" ^ (string_of_int i) ^ ")")
-    | Float (_, f) -> ()
-    | Bool (_, false) -> output_string out "bool(false)"
-    | Bool (_, true) -> output_string out "bool(true)"
-    | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
-    | Id (_, i) -> output_string out ("'" ^ i)
-    | Unary (_, _, _) -> assert false
-    | Binary (_, _, _, _) -> assert false
-    | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
-	maude_of_creol_expression_list out a;
-	output_string out " ]] )"
+  let rec of_creol_expression out =
+    function
+	Nil _ -> output_string out "list(emp)"
+      | Null _ -> output_string out "null"
+      | Int (_, i) -> output_string out ("int(" ^ (string_of_int i) ^ ")")
+      | Float (_, f) -> ()
+      | Bool (_, false) -> output_string out "bool(false)"
+      | Bool (_, true) -> output_string out "bool(true)"
+      | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
+      | Id (_, i) -> output_string out ("'" ^ i)
+      | Unary (_, _, _) -> assert false
+      | Binary (_, _, _, _) -> assert false
+      | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
+	  of_creol_expression_list out a;
+	  output_string out " ]] )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
-and maude_of_creol_expression_list out_channel =
-  (** Compile a list of expressions into the Creol Maude Machine. *)
-  function
-      [] -> output_string out_channel "emp"
-    | [e] -> maude_of_creol_expression out_channel e
-    | e::l -> maude_of_creol_expression out_channel e;
-	output_string out_channel " # ";
-	maude_of_creol_expression_list out_channel l
-and maude_of_creol_identifier_list out_channel =
-  (** Convert a list of identifiers into a list of Attribute identifiers. *)
-  function
-      [] -> output_string out_channel "noAid"
-    | [i] -> output_string out_channel ("'" ^ i)
-    | i::l -> output_string out_channel ("'" ^ i ^ " ,, ");
-	maude_of_creol_identifier_list out_channel l
+  and of_creol_expression_list out_channel =
+    (** Compile a list of expressions into the Creol Maude Machine. *)
+    function
+	[] -> output_string out_channel "emp"
+      | [e] -> of_creol_expression out_channel e
+      | e::l -> of_creol_expression out_channel e;
+	  output_string out_channel " # ";
+	  of_creol_expression_list out_channel l
+  and of_creol_identifier_list out_channel =
+    (** Convert a list of identifiers into a list of Attribute identifiers. *)
+    function
+	[] -> output_string out_channel "noAid"
+      | [i] -> output_string out_channel ("'" ^ i)
+      | i::l -> output_string out_channel ("'" ^ i ^ " ,, ");
+	  of_creol_identifier_list out_channel l
 
-let rec maude_of_creol_guard out =
-  function
-      Label (_, l) -> output_string out ("( '" ^ l ^ " ? )")
-    | Wait _ -> output_string out "wait"
-    | Condition (_, c) -> maude_of_creol_expression out c
-    | Conjunction (_, l, r) ->
-	output_string out "( "; maude_of_creol_guard out l;
-	output_string out " 'and "; maude_of_creol_guard out r ;
-	output_string out ") "
+  let rec of_creol_guard out =
+    function
+	Label (_, l) -> output_string out ("( '" ^ l ^ " ? )")
+      | Wait _ -> output_string out "wait"
+      | Condition (_, c) -> of_creol_expression out c
+      | Conjunction (_, l, r) ->
+	  output_string out "( "; of_creol_guard out l;
+	  output_string out " 'and "; of_creol_guard out r ;
+	  output_string out ") "
+	    
+  let of_creol_statement out stmt =
+    let open_paren prec op_prec =
+      if prec < op_prec then output_string out "( " ;
+    and close_paren prec op_prec =
+      if prec < op_prec then output_string out " )" ;
+    in let rec print prec =
+      function
+	  Skip _ -> output_string out "skip"
+	| Await (_, g) -> output_string out "( await ";
+	    of_creol_guard out g;
+	    output_string out " )"
+	| New (_, i, c, a) ->
+	    output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "( ") ;
+	    of_creol_expression_list out a ;
+	    output_string out " )"
+	| Assign (_, i, e) ->
+	    of_creol_identifier_list out i;
+	    output_string out " ::= " ;
+	    of_creol_expression_list out e
+	| AsyncCall (_, l, c, m, a) ->
+	    (match l with
+		None -> ()
+	      | Some l -> output_string out ("'" ^ l) ) ;
+	    output_string out " ! ";
+	    of_creol_expression out c ;
+	    output_string out (" . '" ^ m ^ " ( ") ;
+	    of_creol_expression_list out a;
+	    output_string out " )"
+	| Reply (_, l, o) ->
+	    output_string out ("( '" ^ l ^ " ? ( ") ;
+	    of_creol_identifier_list out o;
+	    output_string out " ) ) "
+	| Free (_, l) -> output_string out ("free( '" ^ l ^ " )")
+	| SyncCall (_, c, m, a, r) ->
+	    of_creol_expression out c ;
+	    output_string out (" . '" ^ m);
+	    output_string out "( " ;
+	    of_creol_expression_list out a;
+	    output_string out " : " ;
+	    of_creol_identifier_list out r;
+	    output_string out " )"
+	| LocalAsyncCall (_, l, m, lb, ub, i) ->
+	    output_string out (match l with None -> " !" | Some n -> ("'" ^ n ^ " !"));
+	    output_string out ( " 'this . '" ^ m );
+	    (match lb with None -> () | Some n -> output_string out (" @ '" ^ n));
+	    (match ub with None -> () | Some n -> output_string out (" << '" ^ n));
+	    output_string out " ( " ;
+	    of_creol_expression_list out i;
+	    output_string out " )"
+	| LocalSyncCall (_, m, l, u, i, o) ->
+	    output_string out ( "'" ^ m );
+	    (match l with None -> () | Some n -> output_string out (" @ '" ^ n));
+	    (match u with None -> () | Some n -> output_string out (" << '" ^ n));
+	    output_string out " ( " ;
+	    of_creol_expression_list out i;
+	    output_string out " : " ;
+	    of_creol_identifier_list out o;
+	    output_string out " )"
+	| If (_, c, t, f) ->
+	    output_string out "if "; of_creol_expression out c;
+	    output_string out " th "; print 25 t;
+	    output_string out " el "; print 25 f;
+	    output_string out " fi"
+	| While (_, c, _, b) ->
+	    output_string out "while " ;
+	    of_creol_expression out c;
+	    output_string out " do ";
+	    print 25 b;
+	    output_string out " od "
+	| Sequence (_, sl) ->
+	    let op_prec = 25 in
+	      open_paren prec op_prec ;
+	      separated_list (function s -> print op_prec s)
+		(function () -> output_string out " ; ") sl;
+	      close_paren prec op_prec
+	| Merge (_, l, r) ->
+	    let op_prec = 29 in
+	      open_paren prec op_prec ;
+	      print op_prec l; 
+	      output_string out " ||| ";
+	      print op_prec r; 
+	      close_paren prec op_prec
+	| Choice (_, l, r) ->
+	    let op_prec = 27 in
+	      open_paren prec op_prec ;
+	      print op_prec l; 
+	      output_string out " [] ";
+	      print op_prec r; 
+	      close_paren prec op_prec
+    in print 25 stmt
 
-let maude_of_creol_statement out stmt =
-  let open_paren prec op_prec =
-    if prec < op_prec then output_string out "( " ;
-  and close_paren prec op_prec =
-    if prec < op_prec then output_string out " )" ;
-  in let rec print prec =
-  function
-      Skip _ -> output_string out "skip"
-    | Await (_, g) -> output_string out "( await ";
-	maude_of_creol_guard out g;
-	output_string out " )"
-    | New (_, i, c, a) ->
-	output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "( ") ;
-	maude_of_creol_expression_list out a ;
-	output_string out " )"
-    | Assign (_, i, e) ->
-	maude_of_creol_identifier_list out i;
-	output_string out " ::= " ;
-	maude_of_creol_expression_list out e
-    | AsyncCall (_, l, c, m, a) ->
-	(match l with
-	    None -> ()
-	  | Some l -> output_string out ("'" ^ l) ) ;
-	output_string out " ! ";
-	maude_of_creol_expression out c ;
-	output_string out (" . '" ^ m ^ " ( ") ;
-	maude_of_creol_expression_list out a;
-	output_string out " )"
-    | Reply (_, l, o) ->
-	output_string out ("( '" ^ l ^ " ? ( ") ;
-	maude_of_creol_identifier_list out o;
-	output_string out " ) ) "
-    | Free (_, l) -> output_string out ("free( '" ^ l ^ " )")
-    | SyncCall (_, c, m, a, r) ->
-	maude_of_creol_expression out c ;
-	output_string out (" . '" ^ m);
-	output_string out "( " ;
-	maude_of_creol_expression_list out a;
-	output_string out " : " ;
-	maude_of_creol_identifier_list out r;
-	output_string out " )"
-    | LocalAsyncCall (_, l, m, lb, ub, i) ->
-	output_string out (match l with None -> " !" | Some n -> ("'" ^ n ^ " !"));
-	output_string out ( " 'this . '" ^ m );
-	(match lb with None -> () | Some n -> output_string out (" @ '" ^ n));
-	(match ub with None -> () | Some n -> output_string out (" << '" ^ n));
-	output_string out " ( " ;
-	maude_of_creol_expression_list out i;
-	output_string out " )"
-    | LocalSyncCall (_, m, l, u, i, o) ->
-	output_string out ( "'" ^ m );
-	(match l with None -> () | Some n -> output_string out (" @ '" ^ n));
-	(match u with None -> () | Some n -> output_string out (" << '" ^ n));
-	output_string out " ( " ;
-	maude_of_creol_expression_list out i;
-	output_string out " : " ;
-	maude_of_creol_identifier_list out o;
-	output_string out " )"
-    | If (_, c, t, f) ->
-	output_string out "if "; maude_of_creol_expression out c;
-	output_string out " th "; print 25 t;
-	output_string out " el "; print 25 f;
-	output_string out " fi"
-    | While (_, c, _, b) ->
-	output_string out "while " ;
-	maude_of_creol_expression out c;
-	output_string out " do ";
-	print 25 b;
-	output_string out " od "
-    | Sequence (_, sl) ->
-	let op_prec = 25 in
-	  open_paren prec op_prec ;
-	  separated_list (function s -> print op_prec s)
-	    (function () -> output_string out " ; ") sl;
-	  close_paren prec op_prec
-    | Merge (_, l, r) ->
-	let op_prec = 29 in
-	  open_paren prec op_prec ;
-	  print op_prec l; 
-	  output_string out " ||| ";
-	  print op_prec r; 
-	  close_paren prec op_prec
-    | Choice (_, l, r) ->
-	let op_prec = 27 in
-	  open_paren prec op_prec ;
-	  print op_prec l; 
-	  output_string out " [] ";
-	  print op_prec r; 
-	  close_paren prec op_prec
-  in print 25 stmt
 
+  let of_creol_attribute out a =
+    output_string out ("(" ^ a.var_name ^ ": ");
+    (match a.var_init with
+	None -> output_string out "null"
+      | Some e -> of_creol_expression out e);
+    output_string out ")"
 
-let maude_of_creol_attribute out a =
-  output_string out ("(" ^ a.var_name ^ ": ");
-  (match a.var_init with
-      None -> output_string out "null"
-    | Some e -> maude_of_creol_expression out e);
-  output_string out ")"
+  let rec of_creol_attribute_list out =
+    function
+	[] ->  output_string out "none"
+      | [a] -> of_creol_attribute out a
+      | a::l -> of_creol_attribute out a; output_string out ", ";
+	  of_creol_attribute_list out l
 
-let rec maude_of_creol_attribute_list out =
-  function
-      [] ->  output_string out "none"
-    | [a] -> maude_of_creol_attribute out a
-    | a::l -> maude_of_creol_attribute out a; output_string out ", ";
-	maude_of_creol_attribute_list out l
+  let of_creol_inherits out =
+    function
+	(i, l) -> output_string out ("'" ^ i ^ " < ");
+	  of_creol_expression_list out l;
+	  output_string out " > "
 
-let maude_of_creol_inherits out =
-  function
-      (i, l) -> output_string out ("'" ^ i ^ " < ");
-	maude_of_creol_expression_list out l;
-	output_string out " > "
+  let rec of_creol_inherits_list out =
+    function
+	[] -> output_string out "noInh"
+      | [i] -> of_creol_inherits out i
+      | i::r -> of_creol_inherits out i;
+	  output_string out " ## ";
+	  of_creol_inherits_list out r
 
-let rec maude_of_creol_inherits_list out =
-  function
-      [] -> output_string out "noInh"
-    | [i] -> maude_of_creol_inherits out i
-    | i::r -> maude_of_creol_inherits out i;
-	output_string out " ## ";
-	maude_of_creol_inherits_list out r
+  let rec of_creol_parameter_list out =
+    function
+	[] -> output_string out "noAid"
+      | [v] -> output_string out ("'" ^ v.var_name)
+      | v::r -> output_string out ("'" ^ v.var_name ^ " ,, ");
+	  of_creol_parameter_list out r
 
-let rec maude_of_creol_parameter_list out =
-  function
-      [] -> output_string out "noAid"
-    | [v] -> output_string out ("'" ^ v.var_name)
-    | v::r ->output_string out ("'" ^ v.var_name ^ " ,, ");
-	maude_of_creol_parameter_list out r
+  let rec of_creol_class_attribute_list out =
+    function
+	[] -> output_string out "noSubst" 
+      | [v] -> output_string out ("'" ^ v.var_name ^ " |-> null")
+      | v::r -> output_string out ("'" ^ v.var_name ^ " |-> null , ");
+	  of_creol_class_attribute_list out r
 
-let rec maude_of_creol_class_attribute_list out =
-  function
-      [] -> output_string out "noSubst" 
-    | [v] -> output_string out ("'" ^ v.var_name ^ " |-> null")
-    | v::r -> output_string out ("'" ^ v.var_name ^ " |-> null , ");
-	maude_of_creol_class_attribute_list out r
+  let rec of_creol_method_return out =
+    function
+	[] -> output_string out "emp" 
+      | [n] -> output_string out ("'" ^ n.var_name)
+      | n::l -> output_string out ("'" ^ n.var_name ^ " # ");
+          of_creol_method_return out l
 
-let rec maude_of_creol_method_return out =
-  function
-      [] -> output_string out "emp" 
-    | [n] -> output_string out ("'" ^ n.var_name)
-    | n::l -> output_string out ("'" ^ n.var_name ^ " # ");
-        maude_of_creol_method_return out l
+  let of_creol_method out m =
+    output_string out ("\n  < '" ^ m.meth_name ^ " : Mtdname | Param: ");
+    of_creol_parameter_list out m.meth_inpars;
+    output_string out ", Latt: " ;
+    of_creol_class_attribute_list out
+      (m.meth_inpars @ m.meth_outpars @ m.meth_vars);
+    output_string out ", Code: " ;
+    ( match m.meth_body with
+	None -> output_string out "skip"
+      | Some s -> of_creol_statement out s ;
+	  output_string out " ; return ( ";
+	  of_creol_method_return out m.meth_outpars;
+	  output_string out " )" ) ;
+    output_string out " >"
 
-let maude_of_creol_method out m =
-  output_string out ("\n  < '" ^ m.meth_name ^ " : Mtdname | Param: ");
-  maude_of_creol_parameter_list out m.meth_inpars;
-  output_string out ", Latt: " ;
-  maude_of_creol_class_attribute_list out
-    (m.meth_inpars @ m.meth_outpars @ m.meth_vars);
-  output_string out ", Code: " ;
-  ( match m.meth_body with
-      None -> output_string out "skip"
-    | Some s -> maude_of_creol_statement out s ;
-	output_string out " ; return ( ";
-	maude_of_creol_method_return out m.meth_outpars;
-	output_string out " )" ) ;
-  output_string out " >"
+  let rec of_creol_method_list out =
+    function
+	[] -> output_string out "empty" 
+      | [m] -> of_creol_method out m
+      | m::r -> of_creol_method out m;
+	  output_string out " *";
+	  of_creol_method_list out r
 
-let rec maude_of_creol_method_list out =
-  function
-      [] -> output_string out "empty" 
-    | [m] -> maude_of_creol_method out m
-    | m::r -> maude_of_creol_method out m;
-	output_string out " *";
-	maude_of_creol_method_list out r
+  let of_creol_class out c =
+    output_string out ("< \'" ^ c.cls_name ^ " : Cl | Inh: ");
+    of_creol_inherits_list out c.cls_inherits;
+    output_string out ", Par: ";
+    of_creol_parameter_list out c.cls_parameters;
+    output_string out ", Att: ";
+    of_creol_class_attribute_list out
+      (c.cls_parameters @ c.cls_attributes);
+    output_string out ", Mtds: ";
+    of_creol_method_list out c.cls_methods;
+    output_string out ", Ocnt: 0 >\n\n"
 
-let maude_of_creol_class out c =
-  output_string out ("< \'" ^ c.cls_name ^ " : Cl | Inh: ");
-  maude_of_creol_inherits_list out c.cls_inherits;
-  output_string out ", Par: ";
-  maude_of_creol_parameter_list out c.cls_parameters;
-  output_string out ", Att: ";
-  maude_of_creol_class_attribute_list out
-    (c.cls_parameters @ c.cls_attributes);
-  output_string out ", Mtds: ";
-  maude_of_creol_method_list out c.cls_methods;
-  output_string out ", Ocnt: 0 >\n\n"
+  let of_creol_interface out i = ()
 
-let maude_of_creol_interface out i = ()
+  let of_creol_declaration out =
+    function
+	Class c -> of_creol_class out c
+      | Interface i -> of_creol_interface out i
 
-let maude_of_creol_declaration out =
-  function
-      Class c -> maude_of_creol_class out c
-    | Interface i -> maude_of_creol_interface out i
+  let rec of_creol_decl_list out =
+    function
+	[] -> output_string out "noConf\n"
+      | [d] -> of_creol_declaration out d
+      | d::l -> of_creol_declaration out d; of_creol_decl_list out l
 
-let rec maude_of_creol_decl_list out =
-  function
-      [] -> output_string out "noConf\n"
-    | [d] -> maude_of_creol_declaration out d
-    | d::l -> maude_of_creol_declaration out d; maude_of_creol_decl_list out l
-
-(** Convert an abstract syntax tree l of a creol program to a
-    representation for the Maude CMC and write the result to the output
-    channel out. *)
-let of_creol options out l =
-  if options.modelchecker then
-    output_string out "load modelchecker\n"
-  else
-    output_string out "load interpreter\n";
-  output_string out ("mod PROGRAM is\npr " ^
-  (if options.modelchecker then "MODEL-CHECKER" else "INTERPRETER") ^
-   " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
-  maude_of_creol_decl_list out l ;
-  begin
-    match options.main with
-      None -> ()
-    | Some m -> output_string out ("main( '" ^ m ^ " , emp )\n")
-  end ;
-  output_string out ".\nendm\n" ;
-  if options.red_init then output_string out "\nred init .\n" ;
-  flush out
+  let of_creol options out l =
+    (** Convert an abstract syntax tree l of a creol program to a
+	representation for the Maude CMC and write the result to the
+	output channel out. *)
+    if options.modelchecker then
+      output_string out "load modelchecker\n"
+    else
+      output_string out "load interpreter\n";
+    output_string out ("mod PROGRAM is\npr " ^
+			  (if options.modelchecker then "MODEL-CHECKER" else "INTERPRETER") ^
+			  " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
+    of_creol_decl_list out l ;
+    begin
+      match options.main with
+	  None -> ()
+	| Some m -> output_string out ("main( '" ^ m ^ " , emp )\n")
+    end ;
+    output_string out ".\nendm\n" ;
+    if options.red_init then output_string out "\nred init .\n" ;
+    flush out
 
 end
