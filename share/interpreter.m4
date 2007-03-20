@@ -434,18 +434,18 @@ STEP({|< O : C | Att: S, Pr: (L, cont(Lab); SL), PrQ: (L',((Lab)?(AL); SL')) ++
 {|< O : C | Att: S, Pr: (L',(Lab)?(AL); SL'), PrQ: W, Lcnt: F >|},
 {|[label continue]|})
 
-ifdef({MODELCHECK|},dnl
+ifdef({|MODELCHECK|},
 {|eq
   < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
   =
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N + 1) >
-  invoc(O, label(O,O,Q @ C', evalList(EL, (S#L))), Q @ C',
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+  invoc(O, label(O,O,Q @ C', evalList(EL, (S # L))), Q @ C',
         evalList(EL, (S # L))) from O to O
 |},dnl
 {|rl
-  < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL), PrQ: W, Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N + 1) >
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: (N + 1) >
   invoc(O, label(N), Q @ C', evalList(EL, (S # L))) from O to O
 |})dnl
   [label local-async-qualified-req]
@@ -464,14 +464,14 @@ ifdef({|MODELCHECK|},dnl
 |})dnl
   .
 
-ifdef({MODELCHECK|},
+ifdef({|MODELCHECK|},
 {|eq
   < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
   =
   < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
-  invoc(O, label(O, eval(E, (S # L)), M, evalList(EL, (S # L))), M ,
+  invoc(O, label(O, {|eval|}(E, (S # L)), M, evalList(EL, (S # L))), M,
 	evalList(EL, (S # L)))
-    from O to eval(E, (S # L))
+    from O to {|eval|}(E, (S # L))
 |},dnl
 {|rl
   < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
