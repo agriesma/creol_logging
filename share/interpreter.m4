@@ -78,17 +78,19 @@ ifdef({|MODELCHECK|},dnl
 *** 02111-1307, USA.
 ***
 
+ifdef({|MODELCHECK|},{|in model-checker|})
+
 load datatypes
 
 load signature
 
 *** THE MACHINE ***
-mod ifdef({|MODELCHECK|},MODEL-CHECKER,INTERPRETER) is
+mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,INTERPRETER) is
 
   extending CREOL-DATA-SIG .
 
 ifdef({|MODELCHECK|},dnl
-{|  op label : Nat -> Label [ctor] .|}
+{|  op label : Oid Oid Mid DataList -> Label [ctor] .|}
 ,dnl
 {| op label : Nat -> Label [ctor] .|})
 
@@ -429,32 +431,66 @@ STEP({|boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >|},
 
 STEP({|< O : C | Att: S, Pr: (L, cont(Lab); SL), PrQ: (L',((Lab)?(AL); SL')) ++
     W, Lcnt: F >|},
-{|< O : C | Att: S, Pr: (L',(Lab)?(AL); SL'), PrQ: W, Lcnt: F >|}
+{|< O : C | Att: S, Pr: (L',(Lab)?(AL); SL'), PrQ: W, Lcnt: F >|},
 {|[label continue]|})
 
-STEP({|< O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N + 1 >
-invoc(O, label(N), Q @ C', evalList(EL, (S # L))) from O to O |},
-{|[label local-async-qualified-req]|})
+ifdef({MODELCHECK|},dnl
+{|eq
+  < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N + 1) >
+  invoc(O, label(O,O,Q @ C', evalList(EL, (S#L))), Q @ C',
+        evalList(EL, (S # L))) from O to O
+|},dnl
+{|rl
+  < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
+  =>
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N + 1) >
+  invoc(O, label(N), Q @ C', evalList(EL, (S # L))) from O to O
+|})dnl
+  [label local-async-qualified-req]
+  .
 
 *** REMOTE METHOD CALLS ***
-eq < O : C | Att: S, Pr: (L, (Q ! M(EL)); SL), PrQ: W, Lcnt: N >
-=  < O : C | Att: S, Pr: (L, (Q assign label(N)); (! M (EL));  SL), 
-             PrQ: W,  Lcnt: N > .
+eq
+  < O : C | Att: S, Pr: (L, (Q ! M(EL)); SL), PrQ: W, Lcnt: N >
+  =
+ifdef({|MODELCHECK|},dnl
+{|< O : C | Att: S, Pr: (L, (Q assign label(O, O, M, evalList(EL, (S # L)))); (! M (EL));  SL), 
+            PrQ: W,  Lcnt: N >
+|},dnl
+{|< O : C | Att: S, Pr: (L, (Q assign label(N)); (! M (EL));  SL), 
+            PrQ: W,  Lcnt: N >
+|})dnl
+  .
 
-
-STEP({|< O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N + 1 >
-  invoc(O, label(N), M , evalList(EL, (S # L)))
-    from O to {|eval|}(E, (S # L))|},
-{|[label remote-async-reply]|})
+ifdef({MODELCHECK|},
+{|eq
+  < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
+  invoc(O, label(O, eval(E, (S # L)), M, evalList(EL, (S # L))), M ,
+	evalList(EL, (S # L)))
+    from O to eval(E, (S # L))
+|},dnl
+{|rl
+  < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
+  =>
+  < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N + 1 >
+  invoc(O, label(N), M , evalList(EL, (S # L))) from O to eval(E, (S # L))
+|})dnl
+  [label remote-async-reply]
+  .
 
 *** Reduce sync. call  to async. call with reply 
 *** XXX: This rule will eventually go away once the compiler does this
 *** expansion.
 eq < O : C | Att: S, Pr: (L, (M(EL : AL)); SL), PrQ: W, Lcnt: N >
   =
-  < O : C | Att: S, Pr: (L, (! M(EL)); (label(N) ?(AL)); SL), PrQ: W,  Lcnt: N >  .
+ifdef({|MODELCHECK|},dnl
+{|  < O : C | Att: S, Pr: (L, (! M(EL)); (label(O, O, M, evalList(EL, (S # L))) ?(AL)); SL), PrQ: W,  Lcnt: N >|},
+{|  < O : C | Att: S, Pr: (L, (! M(EL)); (label(N) ?(AL)); SL), PrQ: W,  Lcnt: N >|})
+  .
 
 *** emit reply message ***
 STEP({|< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >|},
@@ -506,5 +542,32 @@ eq
   [label deallocate] .
 
 endm
+
+ifdef({|MODELCHECK|},{|dnl
+*** The predicates we can define on configurations.
+mod CREOL-PREDICATES is
+  protecting CREOL-MODEL-CHECKER .
+  including SATISFACTION .
+  including MODEL-CHECKER .
+  subsort Configuration < State .
+  ops objcnt maxobjcnt minobjcnt : Cid Nat -> Prop .
+  op hasvalue : Oid Aid Data -> Prop .
+  var A : Aid .
+  var D : Data .
+  var C : Cid .
+  var O : Oid .
+  vars S S' L L' : Subst .
+  var P : Process .
+  var Q : MProc .
+  vars N N' : Nat .
+  var c : Configuration .
+
+  eq c < C : Cl | Inh: I:InhList, Par: AL:AidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= objcnt(C, N') = N == N' .
+  eq c < C : Cl | Inh: I:InhList, Par: AL:AidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= maxobjcnt(C, N') = N <= N' .
+  eq c < C : Cl | Inh: I:InhList, Par: AL:AidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= minobjcnt(C, N') = N >= N' .
+  eq c < O : C | Att: S, Pr: P, PrQ: Q, Lcnt: N > c |= hasvalue(O, A, D) = D == S[A] .
+
+endm
+|})dnl
 
 eof

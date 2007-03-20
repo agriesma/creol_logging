@@ -32,6 +32,7 @@ TESTFILES	= Datatypes.maude Datatypes.expected \
 		  Interpreter.maude Interpreter.expected \
 		  MetaExec.maude MetaExec.expected \
 		  ModelChecker.maude ModelChecker.expected \
+		  Deadlock.creol Deadlock.maude Deadlock.expected \
 		  Alarmclock.creol Alarmclock.maude Alarmclock.expected \
 		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.expected \
 		  Philosophers.creol Philosophers.maude Philosophers.expected \
@@ -44,7 +45,7 @@ TESTFILES	= Datatypes.maude Datatypes.expected \
 
 TESTPARTS	= 
 
-EXTRA_DIST	= ${srcdir}/atlocal.in ${srcdir}/testsuite.at \
+EXTRA_DIST	= ${srcdir}/atlocal.in ${srcdir}/testsuite.at maude.sed \
 		  package.m4 testsuite ${TESTPARTS} ${TESTFILES} \
 		  Signature.m4
 

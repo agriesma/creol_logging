@@ -31,6 +31,8 @@
 open Creol
 open Arg
 
+let verbose = ref false
+
 let inputs : string list ref = ref []
 
 let add_input name = inputs := (!inputs)@[name]
@@ -76,22 +78,51 @@ module Passes =
 	{ mutable check_types: bool;
 	  mutable simplify: bool;
 	  mutable lifeness: bool;
-	  mutable tailcalls: bool }
+	  mutable tailcalls: bool;
+	  mutable timings: bool;
+	  mutable report: bool;
+	}
 
     let passes =
       { check_types = false;
 	simplify = true;
 	lifeness = true;
-        tailcalls = false }
+        tailcalls = false;
+        timings = false;
+        report = false;
+      }
 
     let apply tree =
       (** Transform the tree in accordance to the passes enabled by the
 	  user. *)
       let current = ref tree in
-	if passes.check_types then current := !current;
-	if passes.simplify then current := simplify !current;
-	if passes.lifeness then current := find_definitions !current;
-	if passes.tailcalls then current := optimise_tailcalls !current;
+      let total = ref 0.0 in
+      let execute name pass report =
+	if !verbose || passes.timings then print_string ("Pass: " ^ name);
+	if passes.timings then
+	  let now = ref (Unix.gettimeofday ()) in
+	    current := pass !current;
+	    let elapsed =
+	      (floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /.
+		1000.0
+	    in
+	      total := !total +. elapsed ;
+	      print_string (" " ^ (String.make (38 - String.length name) '.') ^
+			       " " ^ (string_of_float elapsed) ^ " msec.");
+	else
+	  current := pass !current;
+	if !verbose || passes.timings then print_newline ();
+      in
+	if passes.check_types then
+	  execute "type checking" (function x -> x) ignore;
+	if passes.simplify then
+	  execute "simplify" simplify ignore;
+	if passes.lifeness then
+	  execute "live variables" find_definitions ignore;
+	if passes.tailcalls then
+	  execute "optimise tailcalls" optimise_tailcalls ignore;
+	if passes.timings then print_string ("Total: ...................................... " ^
+				   (string_of_float !total) ^ " msec.\n");
 	!current
   end
 
@@ -110,8 +141,11 @@ let main () =
     ("-",
      Arg.Unit (function () -> add_input "-"), "Read from standard input");
     ("-v",
-     Arg.Unit (function () -> ()),
+     Arg.Unit (function () -> verbose := true),
     "  Print some information while processing");
+    ("-T",
+     Arg.Unit (function () -> Passes.passes.Passes.timings <- true),
+    "  Print timing information");
     ("-mc",
      Arg.Unit (function () ->
        outputs.maude.Maude.modelchecker <- true;

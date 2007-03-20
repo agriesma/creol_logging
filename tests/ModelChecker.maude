@@ -24,7 +24,7 @@ set show advise off .
 load modelchecker .
 
 mod TEST-TAILCALL is
-  pr MODEL-CHECKER .
+  pr CREOL-MODEL-CHECKER .
   op init : -> Configuration .
   eq init =
 

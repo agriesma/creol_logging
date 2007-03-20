@@ -1094,9 +1094,10 @@ struct
       output_string out "load modelchecker\n"
     else
       output_string out "load interpreter\n";
-    output_string out ("mod PROGRAM is\npr " ^
-			  (if options.modelchecker then "MODEL-CHECKER" else "INTERPRETER") ^
-			  " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
+    output_string out
+      ("mod PROGRAM is\npr " ^ (if options.modelchecker then
+	"CREOL-MODEL-CHECKER" else "INTERPRETER") ^
+	  " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
     of_creol_decl_list out l ;
     begin
       match options.main with
@@ -1104,6 +1105,10 @@ struct
 	| Some m -> output_string out ("main( '" ^ m ^ " , emp )\n")
     end ;
     output_string out ".\nendm\n" ;
+    if options.modelchecker then
+      begin
+	output_string out "\n\nmod PROGRAM-CHECKER is\n  protecting MODEL-CHECKER .\n  protecting PROGRAM .\n  protecting CREOL-PREDICATES .\nendm\n"
+      end;
     if options.red_init then output_string out "\nred init .\n" ;
     flush out
 

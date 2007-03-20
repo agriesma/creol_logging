@@ -1,7 +1,7 @@
-in interpreter .
+load modelchecker .
 
 mod PROGRAM is
-  pr INTERPRETER .
+  pr CREOL-MODEL-CHECKER .
 
 op init : -> Configuration .
 
@@ -62,3 +62,20 @@ eq init =
     .
 
 endm
+
+mod CREOL-PHIL-CHECK is
+  pr MODEL-CHECKER .
+  pr PROGRAM .
+  pr CREOL-PREDICATES .
+endm
+
+red modelCheck(init, <> objcnt('Butler, 1)) .
+
+red modelCheck(init, [] objcnt('Butler, 1)) .
+
+red modelCheck(init, [] maxobjcnt('Philosopher, 6)) .
+
+red modelCheck(init, [] objcnt('Butler, 2)) .
+
+red modelCheck(init, <> [] objcnt('Butler, 2)) .
+

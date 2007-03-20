@@ -1,15 +1,6 @@
 class Deadlock
-implements Deadlock
 begin
-  op init == skip
-  op run == skip
-  op m(in v: Int; out r: Int) == l!this.n(v); await wait; l?(r)
-  op n(in v: Int; out r: Int) == await wait;
-    r := v
-end
-
-class Init
-begin
-  op init == skip
-  op run == var d : Deadlock; var r: Int; d := new Deadlock(); d.m(2; r)
+  op init == skip;
+  op run == l!this.n(); await wait; skip; l?();
+  op n == await wait;
 end

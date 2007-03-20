@@ -57,7 +57,7 @@ creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 OCAMLC_FLAGS		+=
 OCAMLOPT_FLAGS		+= -w a
-OCAMLFIND_FLAGS		+= -package xml
+OCAMLFIND_FLAGS		+= -package unix,xml
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
 

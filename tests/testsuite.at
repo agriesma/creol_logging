@@ -6,7 +6,7 @@ dnl First parameter is the name of the test, second parameter is the maude
 dnl script to execute for the text.  Number of rewrites will be filtered.
 m4_define([TEST_MAUDE], [dnl
 AT_CHECK([$MAUDE -no-banner -no-advise -batch $2 dnl
-  | egrep -v '\<rewrites: [[[:digit:]]]+\>' > $1.out])
+  | sed -f ${abs_srcdir}/maude.sed > $1.out])
 AT_CHECK([diff $1.out ${abs_srcdir}/$1.expected])
 ])
 
@@ -83,6 +83,13 @@ TEST_CREOLC_PP([Philosophers])
 TEST_CREOLC_PP([SantaClaus])
 TEST_CREOLC_PP([SingleCellBuffer])
 AT_CLEANUP
+
+TEST_CREOLC([Deadlock], [dnl
+red init .
+])
+
+dnl This set of tests is testing our existing programs.
+dnl
 
 TEST_CREOLC([Alarmclock], [dnl
 red init .

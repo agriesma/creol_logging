@@ -19,6 +19,7 @@
 *** 02111-1307, USA.
 ***
 
+set show stats off .
 set show timing off .
 set show advise off .
 load interpreter .
