@@ -89,11 +89,6 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,INTERPRETER) is
 
   extending CREOL-DATA-SIG .
 
-ifdef({|MODELCHECK|},dnl
-{|  op label : Oid Oid Mid DataList -> Label [ctor] .|}
-,dnl
-{| op label : Nat -> Label [ctor] .|})
-
   protecting AUX-FUNCTIONS .
 
   vars O O' : Oid .
@@ -128,6 +123,14 @@ ifdef({|MODELCHECK|},dnl
 ***
 *** For the model checker the following will be evaluated as an
 *** equation and the old rule is not confluent.
+
+  op caller : Label -> Oid .
+ifdef({|MODELCHECK|},dnl
+{|  op label : Oid Oid Mid DataList -> Label [ctor] .
+    eq caller(label(O, O', M, DL)) = O . |}
+,dnl
+{| op label : Oid Nat -> Label [ctor] .
+   eq caller(label(O, N)) = O . |})
 
 op _assign_ : AidList DataList -> Stm [ctor {|format|} (d c o d)] .
 eq noAid assign emp = skip . *** Occurs during construction and returns.
@@ -374,7 +377,7 @@ eq
 *** want to interleave, this can also be an equation.
 STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
 {|< O : C | Att: S, Pr: (noSubst, accept(tag(L['label]))), PrQ: W, Lcnt: N >
- bindMtd(O, L['caller], tag(L['label]), M, evalList(EL, (S # L)), C < emp >)
+ bindMtd(O, O, tag(L['label]), M, evalList(EL, (S # L)), C < emp >)
 |},
 {|[label tailcall]|})
 
@@ -452,7 +455,7 @@ ifdef({|MODELCHECK|},
   < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL), PrQ: W, Lcnt: N >
   =>
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: (N + 1) >
-  invoc(O, label(N), Q @ C', evalList(EL, (S # L))) from O to O
+  invoc(O, label(O, N), Q @ C', evalList(EL, (S # L))) from O to O
 |})dnl
   [label local-async-qualified-req]
   .
@@ -465,7 +468,7 @@ ifdef({|MODELCHECK|},dnl
 {|< O : C | Att: S, Pr: (L, (Q assign label(O, O, M, evalList(EL, (S # L)))); (! M (EL));  SL), 
             PrQ: W,  Lcnt: N >
 |},dnl
-{|< O : C | Att: S, Pr: (L, (Q assign label(N)); (! M (EL));  SL), 
+{|< O : C | Att: S, Pr: (L, (Q assign label(O, N)); (! M (EL));  SL), 
             PrQ: W,  Lcnt: N >
 |})dnl
   .
@@ -483,7 +486,7 @@ ifdef({|MODELCHECK|},
   < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
   =>
   < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N + 1 >
-  invoc(O, label(N), M , evalList(EL, (S # L))) from O to eval(E, (S # L))
+  invoc(O, label(O, N), M , evalList(EL, (S # L))) from O to eval(E, (S # L))
 |})dnl
   [label remote-async-reply]
   .
@@ -495,13 +498,13 @@ eq < O : C | Att: S, Pr: (L, (M(EL : AL)); SL), PrQ: W, Lcnt: N >
   =
 ifdef({|MODELCHECK|},dnl
 {|  < O : C | Att: S, Pr: (L, (! M(EL)); (label(O, O, M, evalList(EL, (S # L))) ?(AL)); SL), PrQ: W,  Lcnt: N >|},
-{|  < O : C | Att: S, Pr: (L, (! M(EL)); (label(N) ?(AL)); SL), PrQ: W,  Lcnt: N >|})
+{|  < O : C | Att: S, Pr: (L, (! M(EL)); (label(O, N) ?(AL)); SL), PrQ: W,  Lcnt: N >|})
   .
 
 *** emit reply message ***
 STEP({|< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >|},
 {|< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  comp(L['label], evalList(EL, (S # L))) from O to L['caller]|},
+  comp(L['label], evalList(EL, (S # L))) from O to caller(L['label])|},
 {|[label return]|})
 
 *** Optimization: reduce label to value only once

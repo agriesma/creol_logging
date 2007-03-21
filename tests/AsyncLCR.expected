@@ -26,13 +26,14 @@ rewrite in PROGRAM : init main('Init, emp) .
 result Configuration: 
 < ob('Init0) : Qu | Dealloc: noDealloc,Ev: noMsg >
  
-< ob('Process0) : Qu | Dealloc: noDealloc,Ev: comp(label(3),emp) + comp(label(
-    5),emp) + comp(label(6),emp) >
+< ob('Process0) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Process0), 3),emp)
+    + comp(label(ob('Process0), 5),emp) + comp(label(ob('Process0), 6),emp) >
  
-< ob('Process1) : Qu | Dealloc: noDealloc,Ev: comp(label(3),emp) + comp(label(
-    5),emp) >
+< ob('Process1) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Process1), 3),emp)
+    + comp(label(ob('Process1), 5),emp) >
  
-< ob('Process2) : Qu | Dealloc: noDealloc,Ev: comp(label(3),emp) >
+< ob('Process2) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Process2), 3),emp)
+    >
  
 < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
  

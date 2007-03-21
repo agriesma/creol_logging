@@ -15,12 +15,12 @@ result Configuration:
 ==========================================
 search in TEST-TAILCALL : init =>+ conf:Configuration 
 < ob('Tailcall0) : 'Tailcall | Att: A:Subst,Pr: L:Subst,
-accept(tag(label(2))) ; SL:StmList,PrQ: W:MProc,Lcnt: N:Nat >
+accept(tag(label(ob('Tailcall0), 2))) ; SL:StmList,PrQ: W:MProc,Lcnt: N:Nat >
  .
 
 Solution 1 (state 42)
 conf:Configuration --> boundMtd(ob('Tailcall0),('caller |-> ob('Tailcall0),
-    'label |-> tag(label(2))),
+    'label |-> tag(label(ob('Tailcall0), 2))),
 noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
     tailcall 'run(emp) el return(emp) fi)
  
@@ -40,8 +40,8 @@ noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
 A:Subst --> 'this |-> ob('Tailcall0), 'x |-> int(4)
 L:Subst --> noSubst
 SL:StmList --> noStm
-W:MProc --> 'L0 |-> label(2),
-label(2) ?(noAid)
+W:MProc --> 'L0 |-> label(ob('Tailcall0), 2),
+label(ob('Tailcall0), 2) ?(noAid)
 N:Nat --> 3
 ==========================================
 rewrite in TEST-TAILCALL : init .
