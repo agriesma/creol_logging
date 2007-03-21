@@ -379,11 +379,14 @@ STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
 {|[label tailcall]|})
 
 *** If we receive the method body, the call is accepted and the label untagged.
-CSTEP({|< O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
-         Lcnt: N >|},
-{|< O : C | Att: S, Pr: (insert('label, tag(Lab), L), SL), PrQ: W, Lcnt: N >|},
-{|L['label] = Lab|},
-{|[label tailcall-accept]|})
+crl
+  < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
+         Lcnt: N >
+  =>
+  < O : C | Att: S, Pr: (insert('label, tag(Lab), L), SL), PrQ: W, Lcnt: N >
+  if L['label] = Lab
+  [label tailcall-accept]
+  .
 
 
 
@@ -429,10 +432,13 @@ STEP({|boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >|},
 {|< O : C | Att: S, Pr: P, PrQ: W ++ P', Lcnt: N >|},
 {|[label receive-call-bound]|})
 
-STEP({|< O : C | Att: S, Pr: (L, cont(Lab); SL), PrQ: (L',((Lab)?(AL); SL')) ++
-    W, Lcnt: F >|},
-{|< O : C | Att: S, Pr: (L',(Lab)?(AL); SL'), PrQ: W, Lcnt: F >|},
-{|[label continue]|})
+rl
+  < O : C | Att: S, Pr: (L, cont(Lab); SL), PrQ: (L',((Lab)?(AL); SL')) ++
+    W, Lcnt: F >
+  =>
+  < O : C | Att: S, Pr: (L',(Lab)?(AL); SL'), PrQ: W, Lcnt: F >
+  [label continue]
+  .
 
 ifdef({|MODELCHECK|},
 {|eq

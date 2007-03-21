@@ -1,7 +1,8 @@
 ==========================================
 reduce in TEST-TAILCALL : init .
 result Configuration: 
-< ob('Tailcall0) : Qu | Dealloc: noDealloc,Ev: comp(label(2),emp) >
+< ob('Tailcall0) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Tailcall0), ob(
+    'Tailcall0), 'init, emp),emp) >
  
 < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
  
@@ -11,9 +12,13 @@ result Configuration:
     'x ::= ('minus[['x # int(1)]]) ; tailcall 'run(emp) el return(emp) fi >,
     Ocnt: 1 >
  
-< ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
-    idle,PrQ: 'L0 |-> label(2),
-label(2) ?(noAid),Lcnt: 3 >
+< ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(5),Pr:
+    ('caller |-> ob('Tailcall0), 'label |-> label(ob('Tailcall0), ob(
+    'Tailcall0), 'init, emp)),
+cont(label(ob('Tailcall0), ob('Tailcall0), 'init, emp)),PrQ: 'L0 |-> label(ob(
+    'Tailcall0), ob('Tailcall0), 'init, emp),
+label(ob('Tailcall0), ob('Tailcall0), 'init, emp) ?(noAid) ; 'L0 ! 'run(emp) ;
+    'L0 ?(noAid),Lcnt: 1 >
  
 < ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
@@ -30,8 +35,15 @@ result Configuration:
     'x ::= ('minus[['x # int(1)]]) ; tailcall 'run(emp) el return(emp) fi >,
     Ocnt: 1 >
  
-< ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
-    idle,PrQ: noProc,Lcnt: 3 >
+< ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(4),Pr:
+    noSubst,
+accept(tag(label(ob('Tailcall0), ob('Tailcall0), 'run, emp))),PrQ: ('L0 |->
+    label(ob('Tailcall0), ob('Tailcall0), 'run, emp),
+label(ob('Tailcall0), ob('Tailcall0), 'run, emp) ?(noAid)) ++ ('caller |-> ob(
+    'Tailcall0), 'label |-> tag(label(ob('Tailcall0), ob('Tailcall0), 'run,
+    emp))),
+noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
+    tailcall 'run(emp) el return(emp) fi,Lcnt: 1 >
  
 < ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
@@ -49,7 +61,7 @@ result Configuration:
     Ocnt: 1 >
  
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(0),Pr:
-    idle,PrQ: noProc,Lcnt: 3 >
+    idle,PrQ: noProc,Lcnt: 1 >
  
 < ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
