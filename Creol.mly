@@ -201,11 +201,8 @@ statement_sequence:
 basic_statement:
       SKIP SEMI
 	{ Skip (Note.make $startpos) }
-    | t = ID ASSIGN e = expression SEMI
-	{ Assign((Note.make $startpos), [t], [e]) }
-    | t = ID ASSIGN NEW c = CID;
-      l = delimited(LPAREN, separated_list(COMMA, expression), RPAREN) SEMI
-        { New((Note.make $startpos), t, c, l) }
+    | t = separated_nonempty_list(COMMA, ID) ASSIGN e = separated_nonempty_list(COMMA, expression_or_new) SEMI
+	{ Assign((Note.make $startpos), t, e) }
     | AWAIT g = guard SEMI
 	{ Await ((Note.make $startpos), g) }
     | l = ioption(ID) BANG callee = expression DOT m = ID
@@ -244,6 +241,12 @@ guard:
     | l = ID QUESTION AND g = guard
         { Conjunction ((Note.make $startpos), Label((Note.make $startpos), l), g) }
     | e = expression { Condition ((Note.make $startpos), e) }
+
+expression_or_new:
+      e = expression
+	{ e }
+    | NEW t = creol_type LPAREN a = separated_list(COMMA, expression) RPAREN
+	{ New (Note.make $startpos, t, a) }
 
 expression:
       l = expression o = binop r = expression

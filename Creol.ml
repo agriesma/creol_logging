@@ -109,6 +109,7 @@ type 'a expression =
     | Unary of 'a * unaryop * 'a expression
     | Binary of 'a * binaryop * 'a expression * 'a expression
     | FuncCall of 'a * string * 'a expression list
+    | New of 'a * creol_type * 'a expression list
 and unaryop =
     Not
     | UMinus
@@ -140,7 +141,6 @@ module Statement =
 	Skip of 'a
 	| Assign of 'a * string list * 'b expression list
 	| Await of 'a * 'b guard
-	| New of 'a * string * string * 'b expression list
 	| AsyncCall of 'a * string option * 'b expression * string *
 	    'b expression list
 	| Reply of 'a * string * string list
@@ -164,7 +164,6 @@ module Statement =
 	  Skip a -> a
 	| Assign(a, _, _) -> a
 	| Await(a, _) -> a
-	| New(a, _, _, _) -> a
 	| AsyncCall(a, _, _, _, _) -> a
 	| Reply(a, _, _) -> a
 	| Free(a, _) -> a
@@ -235,6 +234,7 @@ let rec simplify_expression =
     | Binary(a, Or, l, r) -> FuncCall(a, "or", [simplify_expression l; simplify_expression r])
     | Binary(a, Xor, l, r) -> FuncCall(a, "not", [FuncCall(a, "equal", [simplify_expression l; simplify_expression r])])
     | FuncCall(a, f, args) -> FuncCall(a, f, List.map simplify_expression args)
+    | New (a, t, p) -> New (a, t, List.map simplify_expression p)
     | t -> t
 and simplify_guard =
   function
@@ -249,7 +249,6 @@ and simplify_statement =
       Skip a -> Skip a
     | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_guard g)
-    | New (a, s, c, p) -> New (a, s, c, List.map simplify_expression p)
     | AsyncCall (a, l, e, n, p) ->
 	AsyncCall (a, l, simplify_expression e, n,
 		  List.map simplify_expression p)
@@ -373,8 +372,6 @@ and definitions_in_statement note =
 	Assign ({ n with Note.env = note.Note.env }, lhs, rhs) (* XXX *)
     | Await (n, g) ->
 	Await ({ n with Note.env = note.Note.env }, g)
-    | New (n, var, cls, args) ->
-	New ({ n with Note.env = note.Note.env }, var, cls, args) (* XXX *)
     | AsyncCall (n, None, c, m, a) ->
 	AsyncCall ({ n with Note.env = note.Note.env }, None, c, m, a)
     | AsyncCall (n, Some l, c, m, a) ->
@@ -674,10 +671,6 @@ and pretty_print_statement out lvl statement =
 	  output_string out "await ";
 	  pretty_print_guard out g;
 	  output_string out ";";
-      | New (_, i, c, a) ->
-          output_string out (i ^ " := new " ^ c ^ "(");
-	  pretty_print_expression_list out a ;
-	  output_string out ");"
       | AsyncCall (_, l, c, m, a) ->
 	  (match l with
 	      None -> ()
@@ -820,6 +813,10 @@ and pretty_print_expression out_channel exp =
 	    output_string out_channel (i ^ "(");
 	    pretty_print_expression_list out_channel a;
 	    output_string out_channel ")";
+      | New (_, t, a) ->
+          output_string out_channel ("new " ^ (string_of_creol_type t) ^ "(");
+	  pretty_print_expression_list out_channel a ;
+	  output_string out_channel ")"
   in
     print 121 exp
 and pretty_print_expression_list out_channel l =
@@ -864,6 +861,10 @@ struct
 	  of_creol_expression_list out a;
 	  output_string out " ]] )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
+      | New (_, c, a) ->
+	  output_string out ("new '" ^ (match c with Basic s -> s | Application (s, _) -> s | _ -> assert false) ^ "( ") ;
+	  of_creol_expression_list out a ;
+	  output_string out " )"
   and of_creol_expression_list out_channel =
     (** Compile a list of expressions into the Creol Maude Machine. *)
     function
@@ -900,10 +901,6 @@ struct
 	  Skip _ -> output_string out "skip"
 	| Await (_, g) -> output_string out "( await ";
 	    of_creol_guard out g;
-	    output_string out " )"
-	| New (_, i, c, a) ->
-	    output_string out ("'" ^ i ^ " ::= new '" ^ c ^ "( ") ;
-	    of_creol_expression_list out a ;
 	    output_string out " )"
 	| Assign (_, i, e) ->
 	    of_creol_identifier_list out i;

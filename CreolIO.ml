@@ -166,18 +166,6 @@ and creol_statement_to_xml writer stmt_handler expr_handler =
 	creol_guard_to_xml writer expr_handler g ;
 	stmt_handler writer a;
         XmlTextWriter.end_element writer
-    | New (a, v, c, es) ->
-	XmlTextWriter.start_element writer "new" ;
-	XmlTextWriter.write_attribute writer "name" v ;
-	XmlTextWriter.write_attribute writer "class" c ;
-	XmlTextWriter.start_element writer "arguments" ;
-	List.iter (function e -> 
-	             XmlTextWriter.start_element writer "expression" ;
-		     creol_expression_to_xml writer e ;
-        	     XmlTextWriter.end_element writer ) es ;
-        XmlTextWriter.end_element writer ;
-	stmt_handler writer a ;
-        XmlTextWriter.end_element writer
     | AsyncCall (a, l, c, m, es) ->
 	XmlTextWriter.start_element writer "asynccall" ;
 	(match l with
@@ -421,6 +409,17 @@ and creol_expression_to_xml writer =
 		     creol_expression_to_xml writer e ;
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
+        XmlTextWriter.end_element writer
+    | New (a, c, es) ->
+	XmlTextWriter.start_element writer "new" ;
+	XmlTextWriter.write_attribute writer "class" (string_of_creol_type c) ;
+	XmlTextWriter.start_element writer "arguments" ;
+	List.iter (function e -> 
+	             XmlTextWriter.start_element writer "expression" ;
+		     creol_expression_to_xml writer e ;
+        	     XmlTextWriter.end_element writer ) es ;
+        XmlTextWriter.end_element writer ;
+	(* expr_handler writer a ; *)
         XmlTextWriter.end_element writer
 and creol_type_to_xml writer handler =
   function

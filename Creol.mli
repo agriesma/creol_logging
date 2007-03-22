@@ -52,6 +52,8 @@ type creol_type =
     | Variable of string
 	(** A type variable. *)
 
+val string_of_creol_type : creol_type -> string
+
 type 'a expression =
     (** Definition of the abstract syntax of Creol-expressions.
 
@@ -77,6 +79,7 @@ type 'a expression =
 	(** A binary expression *)
     | FuncCall of 'a * string * 'a expression list
 	(** A call of a primitive function *)
+    | New of 'a * creol_type * 'a expression list
 and unaryop =
 	(** Definition of the different unary operator symbols *)
     Not
@@ -117,8 +120,6 @@ module Statement: sig
 	      are of the same length. *)
       | Await of 'a * 'b guard
 	  (** An await statement. *)
-      | New of 'a * string * string * 'b expression list
-	  (** Create a new object. *)
       | AsyncCall of 'a * string option * 'b expression * string *
 	  'b expression list
 	  (** Call a method asynchronously. *)
