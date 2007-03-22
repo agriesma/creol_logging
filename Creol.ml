@@ -82,7 +82,7 @@ module Note =
 		  in Environment.add
 		    k
 		    { attribute = nl.attribute && nr.attribute;
-		      label = nl.attribute && nr.attribute;
+		      label = nl.label && nr.label ;
 		      defined = nl.defined || nr.defined;
 		      life = nl.life || nr.life }
 		    r
@@ -97,6 +97,7 @@ type creol_type =
       Basic of string
     | Application of string * creol_type list
     | Variable of string
+    | Label
 
 type 'a expression =
       Null of 'a
@@ -326,7 +327,8 @@ let collect_declarations attribute =
 		Note.label = false;
 		(* The value of an attribute is always defined *)
 		Note.defined = attribute;
-		Note.life = false }
+		(* The value of an attribute is always life *)
+		Note.life = attribute }
 	      map)
 	Note.Environment.empty
 
@@ -355,7 +357,7 @@ and definitions_in_method attrs m =
 		Note.line = Note.line (Statement.note body);
 		Note.env = attrs }
 	    in
-	      Some (Sequence (note, [definitions_in_statement note body])) }
+	      Some (definitions_in_statement note body) }
 and definitions_in_statement note =
   (** Compute the variables defined at a current statement.
 
@@ -385,8 +387,7 @@ and definitions_in_statement note =
 	LocalAsyncCall ({ n with Note.env = note.Note.env }, l, m, ub, lb, i) (* XXX *)
     | LocalSyncCall (n, m, u, l, a, r) ->
 	LocalSyncCall ({ n with Note.env = note.Note.env }, m, u, l, a, r) (* XXX *)
-    | Tailcall (n, m, u, l, a) ->
-	Tailcall ({ n with Note.env = note.Note.env }, m, u, l, a) (* XXX *)
+    | Tailcall (n, m, u, l, a) -> assert false
     | If (n, c, l, r) ->
 	(* Beware, that the new note essentially contains the union
 	   of the definitions of both its branches, whereas the first
@@ -401,8 +402,18 @@ and definitions_in_statement note =
 	While ({ n with Note.env = note.Note.env }, c, i,
 	      definitions_in_statement n b)
     | Sequence (n, l) ->
-	Sequence (n, l)
-	(* XXX *)
+	let rec definitions_in_sequence np =
+	  function
+	      [] -> assert false;
+	    | [s] -> [definitions_in_statement np s]
+	    | s::r -> let ns = definitions_in_statement np s in
+	      let nr = definitions_in_sequence (Statement.note ns) r in
+		ns::nr
+	in
+	let nl = definitions_in_sequence note l in
+	  Sequence({ n with Note.env =
+	      (Statement.note (List.nth nl ((List.length nl) - 1))).Note.env},
+		  nl)
 	  (* For merge and choice we do not enforce sequencing of the
 	     computation of the parts, but we allow the compiler to
 	     choose some order *)

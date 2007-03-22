@@ -51,6 +51,7 @@ type creol_type =
 	(** A type application. *)
     | Variable of string
 	(** A type variable. *)
+    | Label
 
 val string_of_creol_type : creol_type -> string
 
