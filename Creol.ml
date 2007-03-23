@@ -91,6 +91,26 @@ module Note =
 	      | (false, false) -> assert false)
 	  dom Environment.empty
 	
+    let meet left right =
+      let dom = Vars.union (domain left) (domain right) in
+	Vars.fold
+	  (fun k r ->
+	    match (Environment.mem k left, Environment.mem k right) with
+		(true, true) ->
+		  let nl = Environment.find k left
+		  and nr = Environment.find k right
+		  in Environment.add
+		    k
+		    { attribute = nl.attribute && nr.attribute;
+		      label = nl.label && nr.label ;
+		      defined = nl.defined || nr.defined;
+		      life = nl.life || nr.life }
+		    r
+	      | (true, false) -> Environment.add k (Environment.find k left) r
+	      | (false, true) -> Environment.add k (Environment.find k right) r
+	      | (false, false) -> assert false)
+	  dom Environment.empty
+	
   end
 
 type creol_type = 
@@ -358,7 +378,7 @@ and definitions_in_method attrs m =
 		Note.env = attrs }
 	    in
 	      Some (definitions_in_statement note body) }
-and definitions_in_statement note =
+and definitions_in_statement note stm =
   (** Compute the variables defined at a current statement.
 
       @param attrs is the set of names which are attributes.  They are always
@@ -367,68 +387,176 @@ and definitions_in_statement note =
       @param note is the updated note of the preceding statement.
 
       @return The statement with its note updated.  *)
+  let define env name label =
+    (** Define a name in an environment. *)
+    let v =
+      { Note.attribute = false;
+	Note.label = label;
+	Note.defined = true;
+	Note.life = false }
+    in
+      try
+	let n = Note.Environment.find name env in
+	  Note.Environment.add name v env
+      with Not_found ->
+	Note.Environment.add name v env
+  in
+    match stm with
+	Skip n ->
+	  Skip { n with Note.env = note.Note.env }
+      | Assign (n, lhs, rhs) ->
+	  Assign ({ n with Note.env = 
+	      List.fold_left (fun e n -> define e n false)
+		note.Note.env lhs}, lhs, rhs) (* XXX *)
+      | Await (n, g) ->
+	  Await ({ n with Note.env = note.Note.env }, g)
+      | AsyncCall (n, None, c, m, a) ->
+	  (* XXX: This should not happen, but if we resolve this, we need to
+	     rerun this for updating the chain... *)
+	  AsyncCall ({ n with Note.env = note.Note.env }, None, c, m, a)
+      | AsyncCall (n, Some l, c, m, a) ->
+	  AsyncCall ({ n with Note.env = (define note.Note.env l true) },
+		    Some l, c, m, a)
+      | Reply (n, l, p) ->
+	  Reply ({ n with Note.env = List.fold_left
+	      (fun e n -> define e n false) note.Note.env p } , l, p)
+| Free (n, v) -> assert false
+| SyncCall (n, c, m, ins, outs) ->
+    SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
+| LocalAsyncCall (n, None, m, ub, lb, i) ->
+    (* XXX: This should not happen, but if we resolve this, we need to
+       rerun this for updating the chain... *)
+    LocalAsyncCall ({ n with Note.env = note.Note.env}, None, m, ub, lb,
+		   i)
+| LocalAsyncCall (n, Some l, m, ub, lb, i) ->
+    LocalAsyncCall ({ n with Note.env = (define note.Note.env l true)},
+		   Some l, m, ub, lb, i)
+| LocalSyncCall (n, m, u, l, a, r) ->
+    LocalSyncCall ({ n with Note.env = note.Note.env },
+		  m, u, l, a, r) (* XXX *)
+| Tailcall (n, m, u, l, a) -> assert false
+| If (n, c, l, r) ->
+    (* Beware, that the new note essentially contains the union
+       of the definitions of both its branches, whereas the first
+       statement of each branch contains the updated note of the
+       preceding statement. *)
+    let nl = (definitions_in_statement note l)
+    and nr = (definitions_in_statement note r) in
+      If ({n with Note.env = Note.join (Statement.note nl).Note.env
+	  (Statement.note nr).Note.env},
+	 c, nl, nr)
+| While (n, c, i, b) ->
+    While ({ n with Note.env = note.Note.env }, c, i,
+	  definitions_in_statement n b)
+| Sequence (n, l) ->
+    let rec definitions_in_sequence np =
+      function
+	  [] -> assert false;
+	| [s] -> [definitions_in_statement np s]
+	| s::r -> let ns = definitions_in_statement np s in
+	  let nr = definitions_in_sequence (Statement.note ns) r in
+	    ns::nr
+    in
+    let nl = definitions_in_sequence note l in
+      Sequence({ n with Note.env =
+	  (Statement.note (List.nth nl ((List.length nl) - 1))).Note.env},
+	      nl)
+	(* For merge and choice we do not enforce sequencing of the
+	   computation of the parts, but we allow the compiler to
+	   choose some order *)
+| Merge (n, l, r) -> 
+    let nl = (definitions_in_statement note l)
+    and nr = (definitions_in_statement note r) in
+      Merge ({n with Note.env = Note.join (Statement.note nl).Note.env
+	  (Statement.note nr).Note.env},
+	    nl, nr)
+| Choice (n, l, r) -> 
+    let nl = (definitions_in_statement note l)
+    and nr = (definitions_in_statement note r) in
+      Choice ({n with Note.env = Note.join (Statement.note nl).Note.env
+	  (Statement.note nr).Note.env},
+	     nl, nr)
+
+let rec life_variables tree =
+  (** Compute whether a variable is still in use at a position in the
+      program.
+
+      The algorithm assumes that the input [tree] has been annotated with
+      information about the definitions of variables.  See
+      [find_definitions].
+
+      It will perform a back-ward pass and annotate each node with the
+      use-information.
+
+      This algorithms has been adapted from the algorithm described in
+      Section 9.5 "Next-Use Information" of A.V. Aho, R. Sethi, and J.D.
+      Ullman, "Compilers: Principles, Techniques, and Tools",
+      Addison-Wesley, 1986.
+
+      Where this algorithm comes from is not clear to me, but it may already
+      be mentioned in Knuth, Donald E. (1962), "A History of Writing
+      Compilers," Computers and Automation,, December, 1962, reprinted in
+      Pollock, Barry W., ed. Compiler Techniques, Auerbach Publishers,
+      1972. *)
+  List.map uses_in_declaration tree
+and uses_in_declaration =
   function
-      Skip n ->
-	Skip { n with Note.env = note.Note.env }
-    | Assign (n, lhs, rhs) ->
-	Assign ({ n with Note.env = note.Note.env }, lhs, rhs) (* XXX *)
-    | Await (n, g) ->
-	Await ({ n with Note.env = note.Note.env }, g)
-    | AsyncCall (n, None, c, m, a) ->
-	AsyncCall ({ n with Note.env = note.Note.env }, None, c, m, a)
-    | AsyncCall (n, Some l, c, m, a) ->
-	AsyncCall ({ n with Note.env = note.Note.env }, Some l, c, m, a) (* XXX *)
-    | Reply (n, l, p) ->
-	Reply ({ n with Note.env = note.Note.env }, l, p) (* XXX *)
-    | Free (n, v) -> assert false
-    | SyncCall (n, c, m, ins, outs) ->
-	SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
-    | LocalAsyncCall (n, l, m, ub, lb, i) ->
-	LocalAsyncCall ({ n with Note.env = note.Note.env }, l, m, ub, lb, i) (* XXX *)
-    | LocalSyncCall (n, m, u, l, a, r) ->
-	LocalSyncCall ({ n with Note.env = note.Note.env }, m, u, l, a, r) (* XXX *)
-    | Tailcall (n, m, u, l, a) -> assert false
-    | If (n, c, l, r) ->
-	(* Beware, that the new note essentially contains the union
-	   of the definitions of both its branches, whereas the first
-	   statement of each branch contains the updated note of the
-	   preceding statement. *)
-	let nl = (definitions_in_statement note l)
-	and nr = (definitions_in_statement note r) in
-	  If ({n with Note.env = Note.join (Statement.note nl).Note.env
-	      (Statement.note nr).Note.env},
-	     c, nl, nr)
-    | While (n, c, i, b) ->
-	While ({ n with Note.env = note.Note.env }, c, i,
-	      definitions_in_statement n b)
-    | Sequence (n, l) ->
-	let rec definitions_in_sequence np =
-	  function
-	      [] -> assert false;
-	    | [s] -> [definitions_in_statement np s]
-	    | s::r -> let ns = definitions_in_statement np s in
-	      let nr = definitions_in_sequence (Statement.note ns) r in
-		ns::nr
-	in
-	let nl = definitions_in_sequence note l in
-	  Sequence({ n with Note.env =
-	      (Statement.note (List.nth nl ((List.length nl) - 1))).Note.env},
-		  nl)
-	  (* For merge and choice we do not enforce sequencing of the
-	     computation of the parts, but we allow the compiler to
-	     choose some order *)
-    | Merge (n, l, r) -> 
-	let nl = (definitions_in_statement note l)
-	and nr = (definitions_in_statement note r) in
-	  Merge ({n with Note.env = Note.join (Statement.note nl).Note.env
-	      (Statement.note nr).Note.env},
-		nl, nr)
-    | Choice (n, l, r) -> 
-	let nl = (definitions_in_statement note l)
-	and nr = (definitions_in_statement note r) in
-	  Choice ({n with Note.env = Note.join (Statement.note nl).Note.env
-	      (Statement.note nr).Note.env},
-		 nl, nr)
+    Class c -> Class (uses_in_class c)
+  | Interface i -> Interface (uses_in_interface i)
+and uses_in_class c =
+  { c with cls_methods = List.map uses_in_method c.cls_methods }
+and uses_in_interface i =
+  i
+and uses_in_method m =
+  match m.meth_body with
+      None -> m
+    | Some body -> { m with meth_body = Some (uses_in_statement body) }
+and uses_in_statement =
+  function
+      Skip _ as s -> s
+    | Assign (a, l, r) -> assert false
+    | Await (a, g) -> assert false
+    | AsyncCall (a, None, c, m, ins) -> assert false
+    | AsyncCall (a, Some l, c, m, ins) -> assert false
+    | Reply (a, l, outs) -> assert false (* use l and clear p *)
+    | Free (a, v) -> assert false
+    | SyncCall (a, c, m, ins, outs) -> assert false
+    | LocalAsyncCall (a, None, m, lb, ub, ins) -> assert false
+    | LocalAsyncCall (a, Some l, m, lb, ub, ins) -> assert false
+    | LocalSyncCall (a, m, lb, ub, ins, outs) -> assert false
+    | Tailcall (a, m, lb, ub, ins) -> assert false
+    | If (a, c, s1, s2) ->
+	let ns1 = uses_in_statement s1
+	and ns2 = uses_in_statement s2 in
+	let nc = uses_in_expression c in
+	  If ({ a with
+	    Note.env = Note.meet (Statement.note ns1).Note.env
+	      (Statement.note ns2).Note.env },
+	     nc, ns1, ns2)
+    | While (a, c, i, b) -> assert false
+    | Sequence (a, sl) ->
+	let nsl = uses_in_sequence a sl in
+	  Sequence ({ a with Note.env =
+	      (Statement.note (List.nth nsl
+				  ((List.length nsl) - 1))).Note.env}, nsl)
+    | Merge (a, s1, s2) ->
+	let ns1 = uses_in_statement s1
+	and ns2 = uses_in_statement s2 in
+	  Merge ({ a with
+	    Note.env = Note.meet (Statement.note ns1).Note.env
+	      (Statement.note ns2).Note.env },
+		ns1, ns2)
+    | Choice (a, s1, s2) ->
+	let ns1 = uses_in_statement s1
+	and ns2 = uses_in_statement s2 in
+	  Choice ({ a with 
+	    Note.env = Note.meet (Statement.note ns1).Note.env
+	      (Statement.note ns2).Note.env },
+		 ns1, ns2)
+and uses_in_sequence note s = s
+and uses_in_expression e = e
+
+
 
 let tailcall_counter = ref 0
 
@@ -469,43 +597,6 @@ let optimise_tailcalls prg =
     List.map optimise_declaration prg
 
 
-let rec life_variables tree =
-  (** Compute whether a variable is still in use at a position in the
-      program.
-
-      The algorithm assumes that the input [tree] has been annotated with
-      information about the definitions of variables.  See
-      [find_definitions].
-
-      It will perform a back-ward pass and annotate each node with the
-      use-information.
-
-      This algorithms has been adapted from the algorithm described in
-      Section 9.5 "Next-Use Information" of A.V. Aho, R. Sethi, and J.D.
-      Ullman, "Compilers: Principles, Techniques, and Tools",
-      Addison-Wesley, 1986.
-
-      Where this algorithm comes from is not clear to me, but it may already
-      be mentioned in Knuth, Donald E. (1962), "A History of Writing
-      Compilers," Computers and Automation,, December, 1962, reprinted in
-      Pollock, Barry W., ed. Compiler Techniques, Auerbach Publishers,
-      1972. *)
-  List.map life_variables_in_declaration tree
-and life_variables_in_declaration =
-  function
-    Class c -> Class (life_variables_in_class c)
-  | Interface i -> Interface (life_variables_in_interface i)
-and life_variables_in_class c =
-  { c with cls_methods = List.map life_variables_in_method c.cls_methods }
-and life_variables_in_interface i =
-  i
-and life_variables_in_method m =
-  match m.meth_body with
-      None -> m
-    | Some body -> { m with meth_body = Some (life_variables_in_statement body) }
-and life_variables_in_statement =
-  function
-    s -> s
 
 
 

@@ -55,6 +55,7 @@ Software Foundation raise funds for GNU development.''
 * Introduction::        Introduction to Creol and its tools.
 * Invocation::          How to invoke the compiler.
 * Creol::               A description of the Creol language.
+* CMC::                 Creol Machine Code.
 * Licenses::            Your rights and freedoms.
 * Index::               Index of concepts.
 @end menu
@@ -62,6 +63,7 @@ Software Foundation raise funds for GNU development.''
 @include introduction.texi
 @include invocation.texi
 @include creol.texi
+@include cmc.texi
 
 @node Licenses
 @appendix Licenses
