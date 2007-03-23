@@ -542,7 +542,7 @@ STEP({|< O : Qu | Dealloc: LS, Ev: MM > (MsgBody from O' to O)|},
 STEP({|< O : C | Att: S, Pr: (L, free(A) ; SL), PrQ: W, Lcnt: N >
   < O : Qu | Dealloc: LS, Ev: MM >|},
   {|< O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > 
-  < O : Qu | Dealloc: ({|eval|}(A, (S # L)) ; LS), Ev: MM >|},
+  < O : Qu | Dealloc: ({|eval|}(A, (S # L)) ^ LS), Ev: MM >|},
   {|[label free]|})
 
 *** Deallocate

@@ -151,11 +151,13 @@ fmod STM-LIST is
 
   *** Some simplifications:
   eq await noGuard ; NeSL = NeSL . *** could be SL
+  eq noAid ::= emp = skip .
   ***  eq skip ; SL = SL . *** may affect ||| order 
   eq (noStm []  SL)  = SL . 
   eq (noStm ||| SL)  = SL . 
   eq (noStm MERGER SL)      = SL .
   eq (SL MERGER noStm)      = SL .
+  eq if B th SL fi = if B th SL el skip fi .
 
   eq await (wait & PG) = await wait ; await PG .
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!

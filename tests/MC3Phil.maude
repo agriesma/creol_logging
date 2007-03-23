@@ -32,7 +32,7 @@ eq init =
    < 'init : Mtdname | Param: noAid, Latt: ('s |-> null), Code:
 		   ('chopstick ::= bool(true)) ; ('hungry ::= bool(false)) ; 
          	   ('s ! 'butler . 'getNeighbor(emp)) ; ('s ? ( 'neighbor ) ) ;
-         	   ('s ! 'this . 'run(emp)) ; (free('s)) > *
+         	   return (emp) > *
 
      < 'think : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), ('l |-> null), Code:
             (await ('not[[ 'hungry ]])) ; ('hungry ::= bool(true));
@@ -75,7 +75,6 @@ red modelCheck(init, [] objcnt('Butler, 1)) .
 
 red modelCheck(init, [] maxobjcnt('Philosopher, 6)) .
 
-red modelCheck(init, [] objcnt('Butler, 2)) .
+*** red modelCheck(init, <> [] objcnt('Butler, 2)) .
 
-red modelCheck(init, <> [] objcnt('Butler, 2)) .
-
+quit .
