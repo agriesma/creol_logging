@@ -18,7 +18,7 @@ search in TEST-TAILCALL : init =>+ conf:Configuration
 accept(tag(label(ob('Tailcall0), 2))) ; SL:StmList,PrQ: W:MProc,Lcnt: N:Nat >
  .
 
-Solution 1 (state 38)
+Solution 1 (state 34)
 conf:Configuration --> boundMtd(ob('Tailcall0),('caller |-> ob('Tailcall0),
     'label |-> tag(label(ob('Tailcall0), 2))),
 noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;

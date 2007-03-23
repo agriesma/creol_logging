@@ -119,11 +119,6 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,INTERPRETER) is
   var Q : Qid .
   var MsgBody : Body .
 
-*** multiple assignment
-***
-*** For the model checker the following will be evaluated as an
-*** equation and the old rule is not confluent.
-
   op caller : Label -> Oid .
 ifdef({|MODELCHECK|},dnl
 {|  op label : Oid Oid Mid DataList -> Label [ctor] .
@@ -132,8 +127,18 @@ ifdef({|MODELCHECK|},dnl
 {| op label : Oid Nat -> Label [ctor] .
    eq caller(label(O, N)) = O . |})
 
+*** multiple assignment
+***
+*** For the model checker the following will be evaluated as an
+*** equation and the old rule is not confluent.
+
 op _assign_ : AidList DataList -> Stm [ctor {|format|} (d c o d)] .
 eq noAid assign emp = skip . *** Occurs during construction and returns.
+
+eq
+  < O : C | Att: S, Pr: (L, noAid ::= emp ; SL), PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > .
 
 eq
   < O : C | Att: S, Pr: (L, AL ::= EL ; SL),

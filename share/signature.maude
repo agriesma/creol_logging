@@ -151,7 +151,7 @@ fmod STM-LIST is
 
   *** Some simplifications:
   eq await noGuard ; NeSL = NeSL . *** could be SL
-  eq noAid ::= emp = skip .
+  eq noAid ::= emp = skip [nonexec] .
   ***  eq skip ; SL = SL . *** may affect ||| order 
   eq (noStm []  SL)  = SL . 
   eq (noStm ||| SL)  = SL . 
