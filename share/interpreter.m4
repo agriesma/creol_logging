@@ -205,7 +205,7 @@ STEP(dnl
   < newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, (S {|#|} L))),
-    ((noSubst, ('L0 ! 'init (emp)) ; ('L0 ?(noAid)) ; ('L0 ! 'run (emp)) ; ('L0 ?(noAid)))))|},
+    ((noSubst, ('Dummy ! 'init (emp)) ; ('Dummy ?(noAid)) ; ('Dummy ! 'run (emp)) ; ('Dummy ?(noAid)))))|},
 {|[label new-object]|})
 
 
@@ -397,8 +397,6 @@ crl
 
 *** METHOD CALLS ***
 
-eq   ! Q(EL) =   ! 'this . Q(EL) . *** could alternatively use X@ this class
-
 *** receive invocation message ***
 STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
   < O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q, DL) >|},
@@ -443,50 +441,54 @@ rl
   [label continue]
   .
 
+
 ifdef({|MODELCHECK|},
 {|eq
-  < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N >
   =
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: N >
+  invoc(O, label(O, O, Q, evalList(EL, (S # L))), Q, evalList(EL, (S # L)))
+    from O to O
+|},dnl
+{|rl
+  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N >
+  =>
+  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
+  invoc(O, label(O, N), Q, evalList(EL, (S # L))) from O to O
+|})dnl
+  [label local-async-reply]
+  .
+ifdef({|MODELCHECK|},
+{|eq
+  < O : C | Att: S, Pr: (L, ( A ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: N >
   invoc(O, label(O,O,Q @ C', evalList(EL, (S # L))), Q @ C',
         evalList(EL, (S # L))) from O to O
 |},dnl
 {|rl
-  < O : C | Att: S, Pr: (L, ( ! Q @ C'(EL)); SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, ( A ! Q @ C'(EL)); SL), PrQ: W, Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: (N + 1) >
+  < O : C | Att: S, Pr: (insert (A, label(O, N), L), SL), PrQ: W,
+    Lcnt: (N + 1) >
   invoc(O, label(O, N), Q @ C', evalList(EL, (S # L))) from O to O
 |})dnl
   [label local-async-qualified-req]
   .
 
-*** REMOTE METHOD CALLS ***
-eq
-  < O : C | Att: S, Pr: (L, (Q ! M(EL)); SL), PrQ: W, Lcnt: N >
-  =
-ifdef({|MODELCHECK|},dnl
-{|< O : C | Att: S, Pr: (L, (Q assign label(O, O, M, evalList(EL, (S # L)))); (! M (EL));  SL), 
-            PrQ: W,  Lcnt: N >
-|},dnl
-{|< O : C | Att: S, Pr: (L, (Q assign label(O, N)); (! M (EL));  SL), 
-            PrQ: W,  Lcnt: N >
-|})dnl
-  .
-
 ifdef({|MODELCHECK|},
 {|eq
-  < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Lcnt: N >
   =
-  < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
-  invoc(O, label(O, {|eval|}(E, (S # L)), M, evalList(EL, (S # L))), M,
-	evalList(EL, (S # L)))
+  < O : C | Att: S, Pr: (insert(A, label(O, {|eval|}(E, (S # L)), Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: N >
+  invoc(O, label(O, {|eval|}(E, (S # L)), Q, evalList(EL, (S # L))), Q, evalList(EL, (S # L)))
     from O to {|eval|}(E, (S # L))
 |},dnl
 {|rl
-  < O : C | Att: S, Pr: (L, ( ! E . M(EL)); SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N + 1 >
-  invoc(O, label(O, N), M , evalList(EL, (S # L))) from O to eval(E, (S # L))
+  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
+  invoc(O, label(O, N), Q , evalList(EL, (S # L))) from O to eval(E, (S # L))
 |})dnl
   [label remote-async-reply]
   .
@@ -497,8 +499,8 @@ ifdef({|MODELCHECK|},
 eq < O : C | Att: S, Pr: (L, (M(EL : AL)); SL), PrQ: W, Lcnt: N >
   =
 ifdef({|MODELCHECK|},dnl
-{|  < O : C | Att: S, Pr: (L, (! M(EL)); (label(O, O, M, evalList(EL, (S # L))) ?(AL)); SL), PrQ: W,  Lcnt: N >|},
-{|  < O : C | Att: S, Pr: (L, (! M(EL)); (label(O, N) ?(AL)); SL), PrQ: W,  Lcnt: N >|})
+{|  < O : C | Att: S, Pr: (L, ('Dummy ! M(EL)); ('Dummy ?(AL)); SL), PrQ: W,  Lcnt: N >|},
+{|  < O : C | Att: S, Pr: (L, ('Dummy ! M(EL)); ('Dummy ?(AL)); SL), PrQ: W,  Lcnt: N >|})
   .
 
 *** emit reply message ***
@@ -549,6 +551,19 @@ eq
   =
   < O : Qu | Dealloc: LS, Ev: MM >
   [label deallocate] .
+
+*** Bury a variable
+
+eq
+  < O : C | Att: S, Pr: ((L, (A |-> D)), bury(A) ; SL), PrQ: W, Lcnt: N > =
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+  .
+
+eq
+  < O : C | Att: S, Pr: ((L, (A |-> D)), bury(A ,, NeAL) ; SL), PrQ: W,
+    Lcnt: N > =
+  < O : C | Att: S, Pr: (L, bury(NeAL) ; SL), PrQ: W, Lcnt: N >
+  .
 
 endm
 

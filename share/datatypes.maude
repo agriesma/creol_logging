@@ -62,7 +62,7 @@ fmod CREOL-DATA-SIG is
   op _,,_ : NeAidList AidList -> NeAidList [ctor ditto] .
   op _,,_ : AidList NeAidList -> NeAidList [ctor ditto] .
 
-  op _[[_]] : Qid ExprList -> Appl .
+  op _[[_]] : Qid ExprList -> Appl [format (u o d d d d d) ] .
 
   op ob      : Qid       -> Oid  [ctor] .
 

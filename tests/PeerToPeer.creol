@@ -1,0 +1,62 @@
+interface ToClient
+begin
+  with Any
+    op availFiles
+    op reqFiles
+end
+
+interface ToServer
+begin
+  with toServer
+    op enquire
+    op getLength
+    op getPack
+end
+
+interface Peer
+  inherits ToClient, ToServer
+end
+
+interface DB
+begin
+  with ToServer
+    op getFile(in fId: String; out file: List[List[Data]])
+    op getLength(in fId: String; out length: Nat)
+    op storeFile(in fId: String, file: List[Data])
+    op listFiles(out fList: List[String])
+end
+
+class Node(db: DB)
+  implements Peer
+begin
+  with ToServer
+    op enquire(out files: List[String]) ==
+      await db.listFiles(; files);
+    op getLength(in fId: String; out lth: Nat) ==
+      await db.length(fId; lth);
+    op getPack(in fId: String, pNbr: Nat; out pack: List[Data]) ==
+      var f: List[List[Data]];
+      await db.getFile(db.getFile(fId; f);
+      pack := f[pNbr];
+  with Any
+    op availFiles (in sList: List[ToServer];
+		   out files: List[ToServer * List[Str]]) ==
+      if (sList = nil) then files := nil
+      else
+        l1!hd(sList).enquire();
+        l2!self.availFiles(tail(sList));
+	await l1 and l2;
+	l1?(fList);
+	l2?(files);
+    op reqFile(in sId: toServer, fId: String) ==
+      var file, pack: List[Data]
+      var lth: Nat;
+      await sId.getLength(fId, lth; pack);
+      while (lth > 0) do
+	await sId.getPack(fId, lth; pack);
+	file := append(pack, file);
+	lth := lth - 1;
+      od;
+      !db.storeFile(fId, file);
+end
+

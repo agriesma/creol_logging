@@ -57,4 +57,14 @@ result Data: bool(false)
 reduce in CREOL-DATA-SIG : 'or[[('equal[[null # null]]) # ('equal[[null #
     null]])]] .
 result Data: bool(true)
+==========================================
+reduce in CREOL-DATA-LIST : 'add[[list(int(1) # int(2)) # 'head[[list(int(1) #
+    int(2))]]]] .
+result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
+    ModuleExpression,Header,ExprList,AidList]: 'add[[list(int(1) # int(2)) #
+    'head[[list(int(1) # int(2))]]]]
+==========================================
+reduce in CREOL-DATA-LIST : 'add[[list(int(1) # int(2)) # ('head[[list(int(1) #
+    int(2))]])]] .
+result Data: list(int(1) # int(2) # int(1))
 Bye.

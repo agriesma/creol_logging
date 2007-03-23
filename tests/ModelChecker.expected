@@ -15,10 +15,10 @@ result Configuration:
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(5),Pr:
     ('caller |-> ob('Tailcall0), 'label |-> label(ob('Tailcall0), ob(
     'Tailcall0), 'init, emp)),
-cont(label(ob('Tailcall0), ob('Tailcall0), 'init, emp)),PrQ: 'L0 |-> label(ob(
-    'Tailcall0), ob('Tailcall0), 'init, emp),
-label(ob('Tailcall0), ob('Tailcall0), 'init, emp) ?(noAid) ; 'L0 ! 'run(emp) ;
-    'L0 ?(noAid),Lcnt: 1 >
+cont(label(ob('Tailcall0), ob('Tailcall0), 'init, emp)),PrQ: 'Dummy |-> label(
+    ob('Tailcall0), ob('Tailcall0), 'init, emp),
+label(ob('Tailcall0), ob('Tailcall0), 'init, emp) ?(noAid) ; 'Dummy ! 'run(emp)
+    ; 'Dummy ?(noAid),Lcnt: 1 >
  
 < ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
@@ -37,7 +37,7 @@ result Configuration:
  
 < ob('Tailcall0) : 'Tailcall | Att: 'this |-> ob('Tailcall0), 'x |-> int(4),Pr:
     noSubst,
-accept(tag(label(ob('Tailcall0), ob('Tailcall0), 'run, emp))),PrQ: ('L0 |->
+accept(tag(label(ob('Tailcall0), ob('Tailcall0), 'run, emp))),PrQ: ('Dummy |->
     label(ob('Tailcall0), ob('Tailcall0), 'run, emp),
 label(ob('Tailcall0), ob('Tailcall0), 'run, emp) ?(noAid)) ++ ('caller |-> ob(
     'Tailcall0), 'label |-> tag(label(ob('Tailcall0), ob('Tailcall0), 'run,

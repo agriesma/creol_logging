@@ -6,8 +6,8 @@ result Configuration:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: 'next ::= new 'Sieve(int(
     2)) ; 'n ::= int(3) ; return(emp) > *
 < 'run : Mtdname | Param: noAid,Latt: 'r |-> null,Code: 'next . 'send('n : 'r)
-    ; 'n ::= ('plus[['n # int(1)]]) ; ! 'this . 'run(emp) ; return(emp) >,Ocnt:
-    0 >
+    ; 'n ::= ('plus[['n # int(1)]]) ; 'Dummy ! 'this . 'run(emp) ; return(emp)
+    >,Ocnt: 0 >
  
 < 'Sieve : Cl | Inh: noInh,Par: 'p,Att: 'next |-> null, 'p |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: skip ; return(emp) > *

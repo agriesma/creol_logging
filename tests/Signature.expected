@@ -188,32 +188,33 @@ result GroundTerm: '_`(_:_`)['_._[''o.Sort,''m.Sort],'null.Data,''r.Sort]
 reduce in STATEMENTS : downTerm(upTerm('o . 'm(null : 'r)), skip) .
 result Stm: 'o . 'm(null : 'r)
 ==========================================
-reduce in STATEMENTS : ! 'm(emp) .
-result Stm: ! 'm(emp)
+reduce in STATEMENTS : 'a ! 'm(emp) .
+result Stm: 'a ! 'm(emp)
 ==========================================
-reduce in STATEMENTS : upTerm(! 'm(emp)) .
-result GroundTerm: '!_`(_`)[''m.Sort,'emp.DataList]
+reduce in STATEMENTS : upTerm('a ! 'm(emp)) .
+result GroundTerm: '_!_`(_`)[''a.Sort,''m.Sort,'emp.DataList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(! 'm(emp)), skip) .
-result Stm: ! 'm(emp)
+reduce in STATEMENTS : downTerm(upTerm('a ! 'm(emp)), skip) .
+result Stm: 'a ! 'm(emp)
 ==========================================
-reduce in STATEMENTS : ! 'm(null # null) .
-result Stm: ! 'm(null # null)
+reduce in STATEMENTS : 'a ! 'm(null # null) .
+result Stm: 'a ! 'm(null # null)
 ==========================================
-reduce in STATEMENTS : upTerm(! 'm(null # null)) .
-result GroundTerm: '!_`(_`)[''m.Sort,'_#_['null.Data,'null.Data]]
+reduce in STATEMENTS : upTerm('a ! 'm(null # null)) .
+result GroundTerm: '_!_`(_`)[''a.Sort,''m.Sort,'_#_['null.Data,'null.Data]]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(! 'm(null # null)), skip) .
-result Stm: ! 'm(null # null)
+reduce in STATEMENTS : downTerm(upTerm('a ! 'm(null # null)), skip) .
+result Stm: 'a ! 'm(null # null)
 ==========================================
-reduce in STATEMENTS : ! 'o . 'm(null # 'a) .
-result Stm: ! 'o . 'm(null # 'a)
+reduce in STATEMENTS : 'a ! 'o . 'm(null # 'a) .
+result Stm: 'a ! 'o . 'm(null # 'a)
 ==========================================
-reduce in STATEMENTS : upTerm(! 'o . 'm(null # 'a)) .
-result GroundTerm: '!_`(_`)['_._[''o.Sort,''m.Sort],'_#_['null.Data,''a.Sort]]
+reduce in STATEMENTS : upTerm('a ! 'o . 'm(null # 'a)) .
+result GroundTerm: '_!_`(_`)[''a.Sort,'_._[''o.Sort,''m.Sort],'_#_['null.Data,
+    ''a.Sort]]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(! 'o . 'm(null # 'a)), skip) .
-result Stm: ! 'o . 'm(null # 'a)
+reduce in STATEMENTS : downTerm(upTerm('a ! 'o . 'm(null # 'a)), skip) .
+result Stm: 'a ! 'o . 'm(null # 'a)
 ==========================================
 reduce in STATEMENTS : 'a ?(noAid) .
 result Stm: 'a ?(noAid)

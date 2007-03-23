@@ -11,15 +11,15 @@ result Configuration:
  
 < 'Cons : Cl | Inh: noInh,Par: 'b,Att: 'b |-> null,Mtds:
 < 'loop : Mtdname | Param: noAid,Latt: 'y |-> null,Code: 'b . 'remove(emp : 'y)
-    ; ! 'this . 'loop(emp) ; return(emp) > *
-< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: ! 'this . 'loop(emp) ;
-    return(emp) >,Ocnt: 0 >
+    ; 'Dummy ! 'this . 'loop(emp) ; return(emp) > *
+< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: 'Dummy ! 'this . 'loop(emp)
+    ; return(emp) >,Ocnt: 0 >
  
 < 'Prod : Cl | Inh: noInh,Par: 'b,Att: 'b |-> null,Mtds:
 < 'loop : Mtdname | Param: 'i,Latt: 'i |-> null,Code: 'b . 'append('i : noAid)
-    ; ! 'this . 'loop('plus[['i # int(1)]]) ; return(emp) > *
-< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: ! 'this . 'loop(int(0)) ;
-    return(emp) >,Ocnt: 0 >
+    ; 'Dummy ! 'this . 'loop('plus[['i # int(1)]]) ; return(emp) > *
+< 'run : Mtdname | Param: noAid,Latt: noSubst,Code: 'Dummy ! 'this . 'loop(int(
+    0)) ; return(emp) >,Ocnt: 0 >
  
 < 'Starter : Cl | Inh: noInh,Par: noAid,Att: noSubst,Mtds:
 < 'run : Mtdname | Param: noAid,Latt: 'b |-> null, 'c |-> null, 'p |-> null,

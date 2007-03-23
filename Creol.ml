@@ -918,9 +918,9 @@ struct
 	    output_string out " ::= " ;
 	    of_creol_expression_list out e
 	| AsyncCall (_, l, c, m, a) ->
-	    (match l with
-		None -> ()
-	      | Some l -> output_string out ("'" ^ l) ) ;
+	    output_string out (match l with
+		None -> "'Dummy"
+	      | Some l ->  "'" ^ l ) ;
 	    output_string out " ! ";
 	    of_creol_expression out c ;
 	    output_string out (" . '" ^ m ^ " ( ") ;
@@ -940,7 +940,8 @@ struct
 	    of_creol_identifier_list out r;
 	    output_string out " )"
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
-	    output_string out (match l with None -> " !" | Some n -> ("'" ^ n ^ " !"));
+	    output_string out
+	      (match l with None -> "'Dummy !" | Some n -> ("'" ^ n ^ " !"));
 	    output_string out ( " 'this . '" ^ m );
 	    (match lb with None -> () | Some n -> output_string out (" @ '" ^ n));
 	    (match ub with None -> () | Some n -> output_string out (" << '" ^ n));

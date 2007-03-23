@@ -5,10 +5,10 @@ op init : -> Configuration [ctor] .
 eq init =
 < 'Philosopher : Cl | Inh: noInh, Par: 'butler, Att: 'butler |-> null , 'hungry |-> null , 'chopstick |-> null , 'neighbor |-> null , 'history |-> null, Mtds: 
   < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: 'history ::= str("") ; 'chopstick ::= bool(true) ; 'hungry ::= bool(false) ; 'butler . 'getNeighbor( emp : 'neighbor ) ; return ( emp ) > *
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: (  ! 'this . 'think ( emp ) |||  ! 'this . 'eat ( emp ) |||  ! 'this . 'digest ( emp ) ) ; return ( emp ) > *
-  < 'digest : Mtdname | Param: noAid, Latt: noSubst, Code: ( await wait ) ; 'hungry ::= bool(true) ; 'history ::= ( 'plus[[ 'history # str("d") ]] ) ; ( await wait ) ;  ! 'this . 'digest ( emp ) ; return ( emp ) > *
-  < 'eat : Mtdname | Param: noAid, Latt: noSubst, Code: ( await 'hungry ) ; 'l ! 'neighbor . 'borrowStick ( emp ) ; ( await ( 'l ?? ) ) ; ( await 'chopstick ) ; 'history ::= ( 'plus[[ 'history # str("e") ]] ) ; 'hungry ::= bool(false) ;  ! 'neighbor . 'returnStick ( emp ) ; ( await wait ) ;  ! 'this . 'eat ( emp ) ; return ( emp ) > *
-  < 'think : Mtdname | Param: noAid, Latt: noSubst, Code: ( await ( 'not[[ 'hungry ]] ) ) ; 'history ::= ( 'plus[[ 'history # str("t") ]] ) ; ( await wait ) ;  ! 'this . 'think ( emp ) ; return ( emp ) > *
+  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: ( 'Dummy ! 'this . 'think ( emp ) ||| 'Dummy ! 'this . 'eat ( emp ) ||| 'Dummy ! 'this . 'digest ( emp ) ) ; return ( emp ) > *
+  < 'digest : Mtdname | Param: noAid, Latt: noSubst, Code: ( await wait ) ; 'hungry ::= bool(true) ; 'history ::= ( 'plus[[ 'history # str("d") ]] ) ; ( await wait ) ; 'Dummy ! 'this . 'digest ( emp ) ; return ( emp ) > *
+  < 'eat : Mtdname | Param: noAid, Latt: noSubst, Code: ( await 'hungry ) ; 'l ! 'neighbor . 'borrowStick ( emp ) ; ( await ( 'l ?? ) ) ; ( await 'chopstick ) ; 'history ::= ( 'plus[[ 'history # str("e") ]] ) ; 'hungry ::= bool(false) ; 'Dummy ! 'neighbor . 'returnStick ( emp ) ; ( await wait ) ; 'Dummy ! 'this . 'eat ( emp ) ; return ( emp ) > *
+  < 'think : Mtdname | Param: noAid, Latt: noSubst, Code: ( await ( 'not[[ 'hungry ]] ) ) ; 'history ::= ( 'plus[[ 'history # str("t") ]] ) ; ( await wait ) ; 'Dummy ! 'this . 'think ( emp ) ; return ( emp ) > *
   < 'borrowStick : Mtdname | Param: noAid, Latt: noSubst, Code: ( await 'chopstick ) ; 'chopstick ::= bool(false) ; return ( emp ) > *
   < 'returnStick : Mtdname | Param: noAid, Latt: noSubst, Code: 'chopstick ::= bool(true) ; return ( emp ) >, Ocnt: 0 >
 
