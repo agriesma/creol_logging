@@ -46,8 +46,8 @@ result [Configuration]:
 < 'backFromHoliday : Mtdname | Param: noAid,Latt: noSubst,Code: 'ctReindeers
     ::= ('plus[['ctReindeers # int(1)]]) ; 'waitReindeers ::= ('plus[[
     'waitReindeers # 'caller]]) ; return(emp) > *
-< 'deliverToys : Mtdname | Param: noAid,Latt: noSubst,Code: 'ctReindeers ::=
-    int(0) ; 't1 ! ('first[['waitReindeers]]) . 'harness(emp) ;
+< 'deliverToys : Mtdname | Param: noAid,Latt: noSubst,Code: ('ctReindeers
+    assign int(0)) ; 't1 ! ('first[['waitReindeers]]) . 'harness(emp) ;
     'harnessedReindeers ::= ('plus[['harnessedReindeers # ('first[[
     'waitReindeers]])]]) ; 'waitReindeers ::= ('rest[['waitReindeers]]) ; 't5 !
     ('first[['waitReindeers]]) . 'harness(emp) ; 'harnessedReindeers ::= (

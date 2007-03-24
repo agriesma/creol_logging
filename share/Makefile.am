@@ -25,7 +25,7 @@ DISTCLEANFILES		=
 MAINTAINERCLEANFILES	= prelude.creol modelcheck.creol Makefile.in
 
 EXTRA_DIST		= README interpreter.m4 prelude.m4
-dist_pkgdata_DATA	= datatypes.maude signature.maude \
+dist_pkgdata_DATA	= datatypes.maude \
 			  interpreter.maude metaexec.maude modelchecker.maude \
 			  prelude.creol modelcheck.creol
 

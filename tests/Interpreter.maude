@@ -22,6 +22,7 @@
 set show stats off .
 set show timing off .
 set show advise off .
+
 load interpreter .
 
 mod TEST-TAILCALL is

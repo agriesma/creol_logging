@@ -17,20 +17,20 @@ result Configuration:
 < 'Philosopher : Cl | Inh: noInh,Par: 'butler,Att: 'butler |-> null, 'chopstick
     |-> null, 'history |-> null, 'hungry |-> null, 'neighbor |-> null,Mtds:
 < 'borrowStick : Mtdname | Param: noAid,Latt: noSubst,Code: await 'chopstick ;
-    'chopstick ::= bool(false) ; return(emp) > *
-< 'digest : Mtdname | Param: noAid,Latt: noSubst,Code: await wait ; 'hungry ::=
-    bool(true) ; 'history ::= ('plus[['history # str("d")]]) ; await wait ;
-    'Dummy ! 'this . 'digest(emp) ; return(emp) > *
+    ('chopstick assign bool(false)) ; return(emp) > *
+< 'digest : Mtdname | Param: noAid,Latt: noSubst,Code: await wait ; ('hungry
+    assign bool(true)) ; 'history ::= ('plus[['history # str("d")]]) ; await
+    wait ; 'Dummy ! 'this . 'digest(emp) ; return(emp) > *
 < 'eat : Mtdname | Param: noAid,Latt: noSubst,Code: await 'hungry ; 'l !
     'neighbor . 'borrowStick(emp) ; await ('l ??) ; await 'chopstick ; 'history
-    ::= ('plus[['history # str("e")]]) ; 'hungry ::= bool(false) ; 'Dummy !
-    'neighbor . 'returnStick(emp) ; await wait ; 'Dummy ! 'this . 'eat(emp) ;
+    ::= ('plus[['history # str("e")]]) ; ('hungry assign bool(false)) ; 'Dummy
+    ! 'neighbor . 'returnStick(emp) ; await wait ; 'Dummy ! 'this . 'eat(emp) ;
     return(emp) > *
-< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: 'history ::= str("") ;
-    'chopstick ::= bool(true) ; 'hungry ::= bool(false) ; 'butler .
+< 'init : Mtdname | Param: noAid,Latt: noSubst,Code: ('history assign str(""))
+    ; ('chopstick assign bool(true)) ; ('hungry assign bool(false)) ; 'butler .
     'getNeighbor(emp : 'neighbor) ; return(emp) > *
-< 'returnStick : Mtdname | Param: noAid,Latt: noSubst,Code: 'chopstick ::=
-    bool(true) ; return(emp) > *
+< 'returnStick : Mtdname | Param: noAid,Latt: noSubst,Code: ('chopstick assign
+    bool(true)) ; return(emp) > *
 < 'run : Mtdname | Param: noAid,Latt: noSubst,Code: ('Dummy ! 'this . 'digest(
     emp) ||| 'Dummy ! 'this . 'eat(emp) ||| 'Dummy ! 'this . 'think(emp)) ;
     return(emp) > *

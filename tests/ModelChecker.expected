@@ -42,8 +42,8 @@ accept(tag(label(ob('Tailcall0), ob('Tailcall0), 'run, emp))),PrQ: ('Dummy |->
 label(ob('Tailcall0), ob('Tailcall0), 'run, emp) ?(noAid)) ++ ('caller |-> ob(
     'Tailcall0), 'label |-> tag(label(ob('Tailcall0), ob('Tailcall0), 'run,
     emp))),
-noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
-    tailcall 'run(emp) el return(emp) fi,Lcnt: 1 >
+if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ; tailcall 'run(emp)
+    el return(emp) fi,Lcnt: 1 >
  
 < ob('main) : 'Class | Att: noSubst,Pr: idle,PrQ: noProc,Lcnt: 0 >
 
