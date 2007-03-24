@@ -32,7 +32,7 @@ red in $1 : downTerm(upTerm($2), $3) .
 set show timing off .
 set show advise off .
 in datatypes
-in signature
+in interpreter
 
 
 red in SUBST : insert('var1, bool(true), noSubst) .

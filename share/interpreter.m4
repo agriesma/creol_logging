@@ -158,8 +158,8 @@ fmod GUARDS is
   vars E E' : Expr .
   var PG : PureGuard .
 
-  op noGuard : -> NoGuard [ctor format (b o)] .
-  op wait :    -> Wait [ctor format (b o)] .
+  op noGuard : -> NoGuard [ctor {|format|} (b o)] .
+  op wait :    -> Wait [ctor {|format|} (b o)] .
   op _??  : Aid -> Return [ctor] .
   op _??  : Label -> Return [ctor] .
   op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
@@ -182,19 +182,19 @@ fmod STATEMENTS is
 
   op skip : -> Stm [ctor] .
   op _::=_ : AidList ExprList -> Stm [ctor prec 39] .
-  op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 format (d b d o d d d d)] .
+  op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 {|format|} (d b d o d d d d)] .
   op _(_:_) : Mid ExprList AidList -> Stm [ctor prec 39] .
   *** op !_(_)  : Mid ExprList -> Stm [ctor] .
   op _!_(_) : Aid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Aid AidList -> Stm [ctor prec 39] .
   op _?(_)  : Label AidList -> Stm [ctor prec 39] .
   op await_ : Guard    -> Stm [ctor] .
-  op return : ExprList -> Stm [ctor format (c o)] .
-  op free : AidList -> Stm [ctor format (c o)] .
-  op bury : AidList -> Stm [ctor format (c o)] .
-  op cont : Label -> Stm [ctor format (c o)] .
-  op tailcall_(_) : Mid ExprList -> Stm [ctor format (c o c o c o)] .
-  op accept : Label -> Stm [ctor format (c o)] .
+  op return : ExprList -> Stm [ctor {|format|} (c o)] .
+  op free : AidList -> Stm [ctor {|format|} (c o)] .
+  op bury : AidList -> Stm [ctor {|format|} (c o)] .
+  op cont : Label -> Stm [ctor {|format|} (c o)] .
+  op tailcall_(_) : Mid ExprList -> Stm [ctor {|format|} (c o c o c o)] .
+  op accept : Label -> Stm [ctor {|format|} (c o)] .
 endfm
 
 view Stm from TRIV to STATEMENTS is
@@ -235,8 +235,8 @@ fmod STM-LIST is
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
 
   sort Process .
-  op idle : -> Process [format (!b o)] .  
-  op _,_ : Subst StmList -> Process [ctor format (o r nb o)] . 
+  op idle : -> Process [{|format|} (!b o)] .  
+  op _,_ : Subst StmList -> Process [ctor {|format|} (o r nb o)] . 
   var L : Subst .
   eq (L, noStm) = idle . *** if 'label is needed this is dangerous!
   eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
@@ -245,7 +245,7 @@ fmod STM-LIST is
   sorts NeMProc MProc .
   subsort Process < NeMProc < MProc .    *** Multiset of Processes
   op noProc : -> MProc [ctor] .
-  op _++_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 format (d r os d)] .
+  op _++_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 {|format|} (d r os d)] .
   op _++_ : NeMProc MProc -> NeMProc [ctor ditto] .
 
 endfm
@@ -277,16 +277,16 @@ fmod CLASS is
 
   op <_: Mtdname | Param:_, Latt:_, Code:_> : 
     Qid AidList Subst StmList -> Mtd [ctor
-      format (g! g o o o g o o g o o g o g o)] .
+      {|format|} (g! g o o o g o o g o o g o g o)] .
 
   subsort Mtd < MMtd .    *** Multiset of methods
 
   op noMtd : -> Mtd [ctor] .
-  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd format (o o on o)] .
+  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd {|format|} (o o on o)] .
 
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
     Cid InhList AidList Subst MMtd Nat -> Class 
-     [format (nb! b o o o b o o  b o o  b o o  b on o  b o  b! on )] .
+     [{|format|} (nb! b o o o b o o  b o o  b o o  b on o  b o  b! on )] .
 
   op emptyClass : -> Class .
   eq emptyClass =
@@ -320,7 +320,7 @@ fmod OBJECT is
 
   op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
        Oid Cid Subst Process MProc Nat -> Object 
-         [ctor format (nr! r o o o  r o r  r o r r o r r o r! no)] .
+         [ctor {|format|} (nr! r o o o  r o r  r o r r o r r o r! no)] .
 
   op noObj : -> Object [ctor] .
 
@@ -347,19 +347,19 @@ fmod COMMUNICATION is
 
   *** INVOCATION and REPLY
   op invoc(_,_,_,_) : *** Nat Oid 
-  Oid Label Mid DataList -> Body [ctor format (! o o o o o o o o o o)] .  
-  op comp(_,_) : Label DataList -> Body [ctor format (! o o o o o o)] .  
+  Oid Label Mid DataList -> Body [ctor {|format|} (! o o o o o o o o o o)] .  
+  op comp(_,_) : Label DataList -> Body [ctor {|format|} (! o o o o o o)] .  
 
-  op _from_to_ : Body Oid Oid -> Msg [ctor format (o ! o ! o on)] .
-  op error(_) : String -> [Msg] [ctor format (nnr r o! or onn)] .     *** error 
-  op warning(_) : String -> [Msg] [ctor format (nnr! r! r! or onn)] .   *** warning 
+  op _from_to_ : Body Oid Oid -> Msg [ctor {|format|} (o ! o ! o on)] .
+  op error(_) : String -> [Msg] [ctor {|format|} (nnr r o! or onn)] .     *** error 
+  op warning(_) : String -> [Msg] [ctor {|format|} (nnr! r! r! or onn)] .   *** warning 
 
   *** Method binding messages
   op bindMtd : Oid Oid Label Qid ExprList InhList -> Msg [ctor] . 
   ***Bind method request
   *** Given: caller callee method params (list of classes to look in)
   op boundMtd(_,_) : Oid Process -> Msg 
-    [ctor format (!r r o o o !r on)] . *** binding result
+    [ctor {|format|} (!r r o o o !r on)] . *** binding result
   *** CONSIDER the call O.Q(I). bindMtd(O,Q,I,C S) trie to find Q in
   *** class C or superclasses, then in S. boundMtd(O,Mt) is the result.
 
@@ -370,7 +370,7 @@ fmod COMMUNICATION is
 
   op noQu : -> Queue [ctor] .
   op <_: Qu | Size:_, Dealloc:_, Ev:_ > : Oid Nat Labels MMsg -> Queue 
-                          [format (nm! m o o o  m o o m o o m o m! no)] . 
+                          [{|format|} (nm! m o o o  m o o m o o m o m! no)] . 
 
 endfm
 
