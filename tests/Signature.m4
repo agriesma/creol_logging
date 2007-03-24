@@ -93,7 +93,7 @@ GRAMMAR_TEST(OBJECT, {| < ob('object1) : 'class | Att: noSubst, Pr: idle, PrQ: n
 
 GRAMMAR_TEST(COMMUNICATION, noMsg, noMsg)
 GRAMMAR_TEST(COMMUNICATION, {| noQu |}, noQu)
-GRAMMAR_TEST(COMMUNICATION, {| < 'Ob1 : Qu | Dealloc: noDealloc , Ev: noMsg > |}, noQu)
+GRAMMAR_TEST(COMMUNICATION, {| < 'Ob1 : Qu | Size: 1, Dealloc: noDealloc , Ev: noMsg > |}, noQu)
 
 fmod CREOL-LABEL-TEST is
   extending CREOL-DATA-SIG .

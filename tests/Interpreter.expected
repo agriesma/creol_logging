@@ -1,7 +1,7 @@
 ==========================================
 reduce in TEST-TAILCALL : init .
 result Configuration: 
-< ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('main) : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  
 < 'Tailcall : Cl | Inh: noInh,Par: 'x,Att: 'x |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: return(emp) > *
@@ -24,9 +24,9 @@ conf:Configuration --> boundMtd(ob('Tailcall0),('caller |-> ob('Tailcall0),
 noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
     tailcall 'run(emp) el return(emp) fi)
  
-< ob('Tailcall0) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Tailcall0) : Qu | Size: 10,Dealloc: noDealloc,Ev: noMsg >
  
-< ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('main) : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  
 < 'Tailcall : Cl | Inh: noInh,Par: 'x,Att: 'x |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: return(emp) > *
@@ -46,9 +46,9 @@ N:Nat --> 3
 ==========================================
 rewrite in TEST-TAILCALL : init .
 result Configuration: 
-< ob('Tailcall0) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Tailcall0) : Qu | Size: 10,Dealloc: noDealloc,Ev: noMsg >
  
-< ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('main) : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  
 < 'Tailcall : Cl | Inh: noInh,Par: 'x,Att: 'x |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: return(emp) > *

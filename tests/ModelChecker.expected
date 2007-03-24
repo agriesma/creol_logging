@@ -1,10 +1,10 @@
 ==========================================
 reduce in TEST-TAILCALL : init .
 result Configuration: 
-< ob('Tailcall0) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Tailcall0), ob(
-    'Tailcall0), 'init, emp),emp) >
+< ob('Tailcall0) : Qu | Size: 10,Dealloc: noDealloc,Ev: comp(label(ob(
+    'Tailcall0), ob('Tailcall0), 'init, emp),emp) >
  
-< ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('main) : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  
 < 'Tailcall : Cl | Inh: noInh,Par: 'x,Att: 'x |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: return(emp) > *
@@ -25,9 +25,9 @@ label(ob('Tailcall0), ob('Tailcall0), 'init, emp) ?(noAid) ; 'Dummy ! 'run(emp)
 ==========================================
 rewrite [1] in TEST-TAILCALL : init .
 result Configuration: 
-< ob('Tailcall0) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Tailcall0) : Qu | Size: 10,Dealloc: noDealloc,Ev: noMsg >
  
-< ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('main) : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  
 < 'Tailcall : Cl | Inh: noInh,Par: 'x,Att: 'x |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: return(emp) > *
@@ -50,9 +50,9 @@ noAid ::= emp ; if 'less[[int(0) # 'x]] th 'x ::= ('minus[['x # int(1)]]) ;
 ==========================================
 rewrite in TEST-TAILCALL : init .
 result Configuration: 
-< ob('Tailcall0) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Tailcall0) : Qu | Size: 10,Dealloc: noDealloc,Ev: noMsg >
  
-< ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('main) : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  
 < 'Tailcall : Cl | Inh: noInh,Par: 'x,Att: 'x |-> null,Mtds:
 < 'init : Mtdname | Param: noAid,Latt: noSubst,Code: return(emp) > *

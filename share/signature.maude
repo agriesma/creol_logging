@@ -264,8 +264,14 @@ fmod COMMUNICATION is
   sorts Body Msg MMsg Kid Queue .
   subsort Body < MMsg .
 
-  op noMsg : -> Body [ctor] .
+  op noMsg : -> MMsg [ctor] .
   op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
+
+  op size : MMsg -> Nat .
+  var M : Body .
+  var MB : MMsg .
+  eq size(M + MB) = 1 + size(MB) .
+  eq size(noMsg) = 0 .
 
   *** INVOCATION and REPLY
   op invoc(_,_,_,_) : *** Nat Oid 
@@ -291,8 +297,8 @@ fmod COMMUNICATION is
   op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
   op noQu : -> Queue [ctor] .
-  op <_: Qu | Dealloc:_, Ev:_ > : Oid Labels MMsg -> Queue 
-                          [format (nm! m o o o  m o o m o m! no)] . 
+  op <_: Qu | Size:_, Dealloc:_, Ev:_ > : Oid Nat Labels MMsg -> Queue 
+                          [format (nm! m o o o  m o o m o o m o m! no)] . 
 
 endfm
 
@@ -312,7 +318,7 @@ fmod CONFIG is
   var C : Cid . var E : ExprList .
   eq main(C,E) = < ob('main) : 'Class | Att: noSubst, 
                  Pr: (noSubst, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
-               < ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg > .
+               < ob('main) : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
 

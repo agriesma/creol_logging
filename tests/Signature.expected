@@ -465,13 +465,13 @@ result Object:
 
 ==========================================
 reduce in COMMUNICATION : noMsg .
-result Body: noMsg
+result MMsg: noMsg
 ==========================================
 reduce in COMMUNICATION : upTerm(noMsg) .
-result Constant: 'noMsg.Body
+result Constant: 'noMsg.MMsg
 ==========================================
 reduce in COMMUNICATION : downTerm(upTerm(noMsg), noMsg) .
-result Body: noMsg
+result MMsg: noMsg
 ==========================================
 reduce in COMMUNICATION : noQu .
 result Queue: noQu
@@ -483,23 +483,23 @@ reduce in COMMUNICATION : downTerm(upTerm(noQu), noQu) .
 result Queue: noQu
 ==========================================
 reduce in COMMUNICATION : 
-< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+< 'Ob1 : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  .
 result [Queue]: 
-< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+< 'Ob1 : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
 
 ==========================================
 reduce in COMMUNICATION : upTerm(
-< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+< 'Ob1 : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
 ) .
-result GroundTerm: '<_:`Qu`|`Dealloc:_`,Ev:_>[''Ob1.Sort,'noDealloc.Labels,
-    'noMsg.Body]
+result GroundTerm: '<_:`Qu`|`Size:_`,Dealloc:_`,Ev:_>[''Ob1.Sort,'s_['0.Zero],
+    'noDealloc.Labels,'noMsg.MMsg]
 ==========================================
 reduce in COMMUNICATION : downTerm(upTerm(
-< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+< 'Ob1 : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
 ), noQu) .
 result [Queue]: 
-< 'Ob1 : Qu | Dealloc: noDealloc,Ev: noMsg >
+< 'Ob1 : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
 
 ==========================================
 reduce in CREOL-LABEL-TEST : cont(label(1)) .

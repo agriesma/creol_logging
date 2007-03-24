@@ -69,6 +69,8 @@ mod CREOL-PHIL-CHECK is
   pr CREOL-PREDICATES .
 endm
 
+set show breakdown on .
+
 red modelCheck(init, <> objcnt('Butler, 1)) .
 
 red modelCheck(init, [] objcnt('Butler, 1)) .

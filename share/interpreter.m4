@@ -108,7 +108,7 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,INTERPRETER) is
   vars P P' : Process .
   var W : MProc .
   vars S S' L L' : Subst .
-  vars N F : Nat .
+  vars N F Sz : Nat .
   vars I I' : InhList .
   var MS : MMtd .
   vars Lab Lab' : Label .
@@ -207,7 +207,7 @@ STEP(dnl
 {|< O : C | Att: S, Pr: (L, (A assign newId(C', F)); SL), PrQ: W, Lcnt: N >
   < C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: (F + 1) >
   < newId(C',F) : C' | Att: S, Pr: idle, PrQ: noProc, Lcnt: 1 >
-  < newId(C',F) : Qu | Dealloc: noDealloc, Ev: noMsg > 
+  < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, (S {|#|} L))),
     ((noSubst, ('Dummy ! 'init (emp)) ; ('Dummy ?(noAid)) ; ('Dummy ! 'run (emp)) ; ('Dummy ?(noAid)))))|},
@@ -250,9 +250,9 @@ eq
 *** Choice is comm, so [nondet] considers both SL1 and SL2.
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L, (SL1 [] SL2); SL), PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM >|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|< O : C | Att: S, Pr: (L, (SL1 ; SL)), PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM >|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {| ready(SL1, (S # L), MM)|},
 {|[label nondet]|})
 
@@ -263,23 +263,23 @@ CSTEP(dnl
 *** Merge is comm, so [merge] considers both SL1 and SL2.
 crl
   < O : C | Att: S, Pr: (L, (SL1 ||| SL2); SL), PrQ: W, Lcnt: N >  
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =>
   < O : C | Att: S, Pr: (L, (SL1 MERGER SL2); SL), PrQ: W, Lcnt: N >  
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   if ready(SL1,(S {|#|} L), MM)
   [label merge] .
 
 rl
   < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER SL2); SL), PrQ: W, Lcnt: N >   
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =>
   if enabled(ST,(S {|#|} L), MM) then
     < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER SL2)); SL)), PrQ: W, Lcnt: N >   
   else
     < O : C | Att: S, Pr: (L, ((ST ; SL') ||| SL2); SL), PrQ: W, Lcnt: N >   
   fi
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label merge-aux] .
 
 STEP(dnl
@@ -313,9 +313,9 @@ ceq
 
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM >|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > *** clear(SL)
-  < O : Qu | Dealloc: LS, Ev: MM >|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|not enabled(SL, (S # L), MM)|},
 {|[label suspend]|})
 
@@ -323,9 +323,9 @@ CSTEP(dnl
 
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM >|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM > |},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > |},
 {|enabledGuard(G, (S # L), MM)|},
 {|[label guard]|})
 
@@ -334,10 +334,10 @@ CSTEP(dnl
 *** Must be a rule, also in the interpreter.
 crl
   < O : C | Att: S, Pr: idle, PrQ: (L,SL) ++ W, Lcnt: N > 
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   => 
   < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   if ready(SL, (S {|#|} L), MM) 
   [label PrQ-ready] .
 
@@ -369,10 +369,10 @@ eq
 *** the same guard
 eq 
   < O : C | Att: S, Pr: P, PrQ: (L, await (Lab ?? & G); SL) ++ W, Lcnt: F > 
-  < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) >  
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >  
   =
   < O : C | Att: S,  Pr: P, PrQ: (L, await G ; SL) ++ W, Lcnt: F >    
-  < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) > .
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) > .
 
 
 ***
@@ -404,9 +404,10 @@ crl
 
 *** receive invocation message ***
 STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q, DL) >|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + invoc(O', Lab, Q, DL) >|},
 {|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM > bindMtd(O, O', Lab, Q, DL, C < emp >)|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+	 bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
 
 *** Method binding with multiple inheritance
@@ -429,8 +430,8 @@ eq
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   .
 
-STEP({|< O : Qu | Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, DL) >|},
-{|< O : Qu | Dealloc: LS, Ev: MM >
+STEP({|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, DL) >|},
+{|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
     bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
 
@@ -448,12 +449,20 @@ rl
 
 
 ifdef({|MODELCHECK|},
-{|eq
-  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N >
+{|***(
+    The size of the queue is limited in the model checker, and we will
+    therefore check whether there is room for the message in the queue,
+    before sending.
+  )***
+  ceq
+  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: F >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: N >
-  invoc(O, label(O, O, Q, evalList(EL, (S # L))), Q, evalList(EL, (S # L)))
-    from O to O
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: F >
+  *** XXX: QUEUE
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM +
+    invoc(O, label(O, O, Q, evalList(EL, (S # L))), Q, evalList(EL, (S # L))) >
+  if size(MM) < Sz
 |},dnl
 {|rl
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N >
@@ -463,7 +472,8 @@ ifdef({|MODELCHECK|},
 |})dnl
   [label local-async-reply]
   .
-ifdef({|MODELCHECK|},
+
+ifdef({|MODELCHECK|},dnl
 {|eq
   < O : C | Att: S, Pr: (L, ( A ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
   =
@@ -530,31 +540,31 @@ eq
   < O : C |  Att: S,
     Pr: ((ifdef({|MODELCHECK|}, {|A |-> Lab, L|}, L)),
          (Lab ? (AL)); SL), PrQ: W, Lcnt: F > 
-  < O : Qu | Dealloc: LS, Ev: MM + comp(Lab, DL) >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
   = 
   < O : C |  Att: S,
     Pr: ((ifdef({|MODELCHECKER|}, {|A |-> null, L|}, L)),
          (AL assign DL); SL), PrQ: W, Lcnt: F > 
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   .
 
 *** Transport rule: include new message in queue
-STEP({|< O : Qu | Dealloc: LS, Ev: MM > (MsgBody from O' to O)|},
-  {|< O : Qu | Dealloc: LS, Ev: MM + MsgBody >|},
+STEP({|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM > (MsgBody from O' to O)|},
+  {|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM + MsgBody >|},
   {|[label invoc-msg]|})
 
 *** Free a label.
 STEP({|< O : C | Att: S, Pr: (L, free(A) ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Dealloc: LS, Ev: MM >|},
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
   {|< O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > 
-  < O : Qu | Dealloc: ({|eval|}(A, (S # L)) ^ LS), Ev: MM >|},
+  < O : Qu | Size: Sz, Dealloc: ({|eval|}(A, (S # L)) ^ LS), Ev: MM >|},
   {|[label free]|})
 
 *** Deallocate
 eq
-  < O : Qu | Dealloc: (Lab ^ LS), Ev: comp(Lab , DL) + MM >
+  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: comp(Lab , DL) + MM >
   =
-  < O : Qu | Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label deallocate] .
 
 *** Bury a variable

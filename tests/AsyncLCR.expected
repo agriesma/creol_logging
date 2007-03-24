@@ -24,18 +24,19 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : init main('Init, emp) .
 result Configuration: 
-< ob('Init0) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('Init0) : Qu | Size: 10,Dealloc: noDealloc,Ev: noMsg >
  
-< ob('Process0) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Process0), 3),emp)
-    + comp(label(ob('Process0), 5),emp) + comp(label(ob('Process0), 6),emp) >
+< ob('Process0) : Qu | Size: 10,Dealloc: noDealloc,Ev: comp(label(ob(
+    'Process0), 3),emp) + comp(label(ob('Process0), 5),emp) + comp(label(ob(
+    'Process0), 6),emp) >
  
-< ob('Process1) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Process1), 3),emp)
-    + comp(label(ob('Process1), 5),emp) >
+< ob('Process1) : Qu | Size: 10,Dealloc: noDealloc,Ev: comp(label(ob(
+    'Process1), 3),emp) + comp(label(ob('Process1), 5),emp) >
  
-< ob('Process2) : Qu | Dealloc: noDealloc,Ev: comp(label(ob('Process2), 3),emp)
-    >
+< ob('Process2) : Qu | Size: 10,Dealloc: noDealloc,Ev: comp(label(ob(
+    'Process2), 3),emp) >
  
-< ob('main) : Qu | Dealloc: noDealloc,Ev: noMsg >
+< ob('main) : Qu | Size: 1,Dealloc: noDealloc,Ev: noMsg >
  
 < 'Init : Cl | Inh: noInh,Par: noAid,Att: 'p1 |-> null, 'p2 |-> null, 'p3 |->
     null,Mtds:
