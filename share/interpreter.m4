@@ -108,9 +108,9 @@ fmod SUBST is
   eq (S1 {|#|} S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
 
   op dom : Aid Subst -> Bool .
-  eq dom(A, noSubst) = false .
-  eq dom(A, (S1, (A' |-> D))) = (A == A') or-else dom(A, S1) .
+  eq dom(A, (S1, A |-> D)) = true .
   eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
+  eq dom(A, S1) = false [owise] .
 endfm
 
 fmod EVAL is
@@ -121,6 +121,7 @@ fmod EVAL is
   var DL : DataList .
   vars E E' : Expr .
   var EL : ExprList .
+  var NeEL : NeExprList .
   var A : Aid .
   var S : Subst .
   var Q : Qid .
@@ -143,7 +144,8 @@ fmod EVAL is
   eq evalList(DL, S)= DL .
 
   op evalList : ExprList Subst -> DataList .
-  eq evalList(E {|#|} EL, S) = {|eval|}(E, S) {|#|} evalList(EL, S) .
+  eq evalList(E , S) = {|eval|}(E, S) .
+  eq evalList(E {|#|} NeEL, S) = {|eval|}(E, S) {|#|} evalList(NeEL, S) .
 
 endfm
 
