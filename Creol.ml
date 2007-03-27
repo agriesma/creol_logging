@@ -553,7 +553,14 @@ and uses_in_statement =
 	    Note.env = Note.meet (Statement.note ns1).Note.env
 	      (Statement.note ns2).Note.env },
 		 ns1, ns2)
-and uses_in_sequence note s = s
+and uses_in_sequence note =
+  function
+      [] -> assert false
+    | [s] -> assert false
+    | s::r ->
+	let nr = uses_in_sequence note r in
+	let ns = uses_in_statement s in
+	  ns::nr
 and uses_in_expression e = e
 
 

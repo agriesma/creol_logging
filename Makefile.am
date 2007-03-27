@@ -113,6 +113,7 @@ distclean-local:
 	test ! -d html || rm -rf html
 
 .depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
+	( cd xml && make )
 	$(OCAMLFIND) $(OCAMLDEP) $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
 
 html-local: html-stamp

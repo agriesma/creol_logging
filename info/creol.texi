@@ -12,7 +12,15 @@ IKT-2010. The goal of the project is to develop a formal framework and
 tool for reasoning about dynamic and reflective modifications in
 object-oriented open distributed systems, ensuring reliability and
 correctness of the overall system.
- 
+
+@menu
+* Overview::    A short overview to Creol and its ideas.
+* Syntax::      A short guide to the language.
+* Grammar::     Creol grammar in EBNF.
+@end menu
+
+
+@node Overview 
 @section Short project overview
 
 Open distributed systems consist of geographically spread system
@@ -64,6 +72,7 @@ extensions is presented in [4]. A type system for runtime class
 updates is presented in [3].
 
 
+@node Syntax
 @section Syntax of Creol
 
 In this section we describe the syntax of Creol and sketch the
@@ -153,3 +162,71 @@ Results are received by the statement @code{?(@var{outs})}, where
 @var{l} is a label name used for invoking the method, and @var{outs}
 is a list of variable names used to store the result.
 
+
+@node Grammar
+@section Creol Grammar
+
+For reference, we summarize the grammar of Creol.  The grammar of
+Creol is LR(1) and is used by the compiler.  @code{@{...@}} means a list
+of declarations, a decorator at the end 
+
+@format
+unit ::= @{declaration@}
+
+declaration ::= class-decl | interface-decl
+
+interface-decl ::= ``interface'' id [``inherits'' @{id,@}]
+               ``begin'' @{ op-decl @} @{ invariant @} ``end''
+
+class-decl ::= ``class'' cid [ ``('' @{var-decl-no-init,@} ``)'']
+           [``inherits'' @{ cid [``('' @{ expr ,@} ``)''] , @} ]
+           [``implements'' @{ cid , @} ]
+           [``contracts'' @{ cid , @} ]
+           ``begin'' @{ var-decl @} @{ op-def @} @{ invariant @} ``end''
+
+var-decl-no-init ::= ``var'' @{ id , @} ``:'' type
+
+var-decl ::= var-decl-no-init ``:='' @{expr , @}
+
+op-decl ::= ``op'' id ``('' ``in'' @{ var-decl-no-init , @} [ ``;''
+        ``out'' @{ var-decl-no-init , @} ] ``)''
+        [``requires'' assertion] [``ensures'' assertion]
+
+op-def ::= op-decl ``=='' @{ var-decl ``;'' @} statement
+
+statement ::= choice-statement ``|||'' statement
+
+choice-statement ::= seq-statement ``[]'' choice-statement
+
+seq-statement ::= @{ basic-statement @}
+
+basic-statement ::= ``skip'' ``;''
+                | @{ id , @} ``:='' @{ expr-or-new , @} ``;''
+                | ``await'' guard ``;''
+                | [ id ] ``!'' expr ``.'' id ``('' @{ expr , @} ``)'' ``;''
+                | [ id ] ``!'' id [``@'' cid] ``('' @{ expr , @} ``)'' ``;''
+                | id ``?'' ``(''  @{ id , @} ``)'' ``;''
+                | expr ``.'' id ``('' @{ expr , @} ``;'' @{ id , @}
+                ``)'' ``;''
+                | id [``@'' cid] ``('' @{ expr , @} ``;'' @{ id , @}
+                ``)'' ``;''
+                | ``begin'' statement ``end''
+                | ``if'' expr ``then'' statement [``else'' statement] ``fi''
+                | ``raise'' expr
+
+expr-or-new ::= ``new'' cid ``('' @{expr , @} ``)''
+            | expr
+
+expr ::= integer | float | string | ``true'' | ``false'' | ``nil'' |
+         ``null'' | id
+     | ``not'' expr | ``-'' expr
+     | expr binop expr
+     | id ``('' @{ expr , @} ``)''
+     | ``(`` expr ``)''
+
+binop ::= ``+'' | ``-'' | ``*'' | ``/'' | ``='' | ``<'' | ``>'' |
+          ``<='' | ``>='' | ``and'' | ``or'' 
+
+assertion ::= expr | ``forall'' var-decl-no-init ``:'' assertion
+          | ``exists'' var-decl-no-init ``:'' assertion
+@end format
