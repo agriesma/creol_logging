@@ -79,4 +79,6 @@ red modelCheck(init, [] maxobjcnt('Philosopher, 6)) .
 
 *** red modelCheck(init, <> [] objcnt('Butler, 2)) .
 
+red modelCheck(init, [] (hasvalue(ob('Philosopher1), 'hungry, bool(true)) => <> hasvalue(ob('Philosopher1), 'hungry, bool(false)))) .
+
 quit .
