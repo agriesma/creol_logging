@@ -105,12 +105,11 @@ fmod SUBST is
   op _#_ : Subst Subst -> Subst .
   eq S1 # noSubst = S1 .
   eq noSubst # S2 = S2 .
-  *** eq S1 {|#|} (S2, (A |-> D)) = insert(A, D, S1) {|#|} S2 .
   eq (S1 {|#|} S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
 
   op dom : Aid Subst -> Bool .
-  eq dom(A, (S1, A |-> D)) = true .
   eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
+  eq dom(A, (S1, A |-> D)) = true .
   eq dom(A, S1) = false [owise] .
 endfm
 
@@ -125,7 +124,6 @@ fmod EVAL is
   var NeEL : NeExprList .
   var A : Aid .
   var S : Subst .
-  var Q : Qid .
   var F : String .
   var I : Int .
   var B : Bool .
@@ -179,7 +177,7 @@ fmod STATEMENTS is
   pr GUARDS .
 
   sorts Mid Cid Stm .
-  subsort Qid < Mid Cid .
+  subsort String < Mid Cid .
 
   op _._   : Expr Mid -> Mid [ctor prec 33] .
   op _@_   : Mid  Cid -> Mid [ctor prec 33] .
@@ -188,8 +186,7 @@ fmod STATEMENTS is
   op skip : -> Stm [ctor] .
   op _::=_ : AidList ExprList -> Stm [ctor prec 39] .
   op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 {|format|} (d b d o d d d d)] .
-  op _(_:_) : Mid ExprList AidList -> Stm [ctor prec 39] .
-  *** op !_(_)  : Mid ExprList -> Stm [ctor] .
+  op _(_;_) : Mid ExprList AidList -> Stm [ctor prec 39] .
   op _!_(_) : Aid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Aid AidList -> Stm [ctor prec 39] .
   op _?(_)  : Label AidList -> Stm [ctor prec 39] .
@@ -200,6 +197,14 @@ fmod STATEMENTS is
   op cont : Label -> Stm [ctor {|format|} (c o)] .
   op tailcall_(_) : Mid ExprList -> Stm [ctor {|format|} (c o c o c o)] .
   op accept : Label -> Stm [ctor {|format|} (c o)] .
+
+  *** multiple assignment
+  ***
+  *** For the model checker the following will be evaluated as an
+  *** equation and the old rule is not confluent.
+
+  op _assign_ : AidList DataList -> Stm [ctor {|format|} (d c o d)] .
+
 endfm
 
 view Stm from TRIV to STATEMENTS is
@@ -221,6 +226,8 @@ fmod STM-LIST is
 
   var SL : StmList .
   var NeSL : NeStmList .
+  var AL : AidList .
+  var DL : DataList .
   var EL : ExprList .
   var B : Expr .
   var PG : PureGuard .
@@ -233,6 +240,13 @@ fmod STM-LIST is
   eq (noStm ||| SL)  = SL . 
   eq (noStm MERGER SL)      = SL .
   eq (SL MERGER noStm)      = SL .
+
+  *** Optimize assignments.  This way we save reducing a skip.  Also note
+  *** That the empty assignment is /not/ programmer syntax, it is inserted
+  *** during run-time.
+  eq (AL ::= DL) = (AL assign DL) .
+  eq (noAid assign emp) = noStm .
+  eq (noAid ::= emp) = noStm .
 
   eq await (wait & PG) = await wait ; await PG .
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
@@ -269,12 +283,12 @@ fmod CLASS is
   var IL : InhList .
   var S : Subst . 
   var SL : StmList . 
-  vars Q Q' : Qid . 
   var MM : MMtd .
   var EL : ExprList .
   var O : Oid .
   var N : Nat .
   var AL : AidList .
+  vars Q Q' : String .
 
   *** XXX: This looks dangerous or confusing for programmers.
   *** Why not: Ih ## IL ## Ih = IL ## Ih to have Ih initialised last?
@@ -282,7 +296,7 @@ fmod CLASS is
   eq  Ih ## IL ## Ih = Ih ## IL .
 
   op <_: Mtdname | Param:_, Latt:_, Code:_> : 
-    Qid AidList Subst StmList -> Mtd [ctor
+    String AidList Subst StmList -> Mtd [ctor
       {|format|} (b d o d d sb o d sb o d sb o b o)] .
 
   subsort Mtd < MMtd .    *** Multiset of methods
@@ -296,12 +310,12 @@ fmod CLASS is
 
   op emptyClass : -> Class .
   eq emptyClass =
-    < 'noClass : Cl | Inh: noInh , Par: noAid, Att: noSubst, Mtds: noMtd ,
+    < "NoClass" : Cl | Inh: noInh , Par: noAid, Att: noSubst, Mtds: noMtd ,
       Ocnt: 0 > .
 
   *** Class/method functions ***
-  op get : Qid MMtd Oid Label ExprList -> Process .  *** fetches pair (code, vars)
-  op _in_ : Qid MMtd -> Bool .  *** checks if Q is a declared 
+  op get : String MMtd Oid Label ExprList -> Process .  *** fetches pair (code, vars)
+  op _in_ : String MMtd -> Bool .  *** checks if Q is a declared 
                                 *** method in the method multiset
 
   eq Q in noMtd = false .
@@ -361,7 +375,7 @@ fmod COMMUNICATION is
   op warning(_) : String -> [Msg] [ctor {|format|} (nnr! r! r! or onn)] .   *** warning 
 
   *** Method binding messages
-  op bindMtd : Oid Oid Label Qid ExprList InhList -> Msg [ctor] . 
+  op bindMtd : Oid Oid Label String ExprList InhList -> Msg [ctor] . 
   ***Bind method request
   *** Given: caller callee method params (list of classes to look in)
   op boundMtd(_,_) : Oid Process -> Msg 
@@ -395,9 +409,9 @@ fmod CONFIG is
   op main : Cid ExprList -> Configuration .
 
   var C : Cid . var E : ExprList .
-  eq main(C,E) = < ob('main) : 'Class | Att: noSubst, 
+  eq main(C,E) = < ob("main") : "NoClass" | Att: noSubst, 
                  Pr: (noSubst, ("var" ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
-               < ob('main) : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
+               < ob("main") : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
 
@@ -419,7 +433,7 @@ fmod AUX-FUNCTIONS is
   vars E E' : Expr .
   var EL : ExprList .
   var A : Aid .
-  var Q : Qid .
+  var Q : String .
   vars G1 G2 : Guard .
   var S : Subst .
   var MM : MMsg .
@@ -427,7 +441,7 @@ fmod AUX-FUNCTIONS is
 
   *** Create a new fresh name for an object.
   op newId : Cid Nat -> Oid .
-  eq newId(C, N)  = ob(qid(string(C) + string(N,10))) .
+  eq newId(C, N)  = ob(C + string(N,10)) .
 
   eq inqueue(L, noMsg) = false .
   eq inqueue(L, comp(L', EL) + MM) = 
@@ -490,7 +504,7 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,INTERPRETER) is
   var MM : MMsg .
   var G : Guard .
   var M : Mid .
-  var Q : Qid .
+  var Q : String .
   var MsgBody : Body .
 
   op caller : Label -> Oid .
@@ -500,19 +514,6 @@ ifdef({|MODELCHECK|},dnl
 ,dnl
 {| op label(_,_) : Oid Nat -> Label [ctor {|format|} (d d ! d d o d)] .
    eq caller(label(O, N)) = O . |})
-
-*** multiple assignment
-***
-*** For the model checker the following will be evaluated as an
-*** equation and the old rule is not confluent.
-
-op _assign_ : AidList DataList -> Stm [ctor {|format|} (d c o d)] .
-
-*** Optimize assignments.  This way we save reducing a skip.  Also note
-*** That the empty assignment is /not/ programmer syntax, it is inserted
-*** during run-time.
-eq (AL ::= DL) = (AL assign DL) .
-eq (noAid assign emp) = noStm .
 
 eq
   < O : C | Att: S, Pr: (L, AL ::= EL ; SL),
@@ -573,7 +574,7 @@ rl
 *** OBJECT CREATION
 ***
 *** Using synchronous calls does not work for the model checker.
-*** Expanding 'init(emp:noAid) needs a label value, which we do
+*** Expanding "init" (emp ; noAid) needs a label value, which we do
 *** not have.  We reserve a label for our purposes.
 STEP(dnl
 {|< O : C | Att: S,Pr: (L, (A ::= new C' (EL)); SL),PrQ: W, Lcnt: N > 
@@ -584,7 +585,7 @@ STEP(dnl
   < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, (S {|#|} L))),
-    ((noSubst, ("Dummy" ! 'init (emp)) ; ("Dummy" ?(noAid)) ; ("Dummy" ! 'run (emp)) ; ("Dummy" ?(noAid)))))|},
+    ((noSubst, ("Dummy" ! "init" (emp)) ; ("Dummy" ?(noAid)) ; ("Dummy" ! "run" (emp)) ; ("Dummy" ?(noAid)))))|},
 {|[label new-object]|})
 
 
@@ -606,7 +607,7 @@ eq
   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
   =
   findAttr(O, I {|#|}{|#|} I',(L {|#|} S), (AL ::= EL) ; SL, 
-           (L', ("Dummy" ! 'init @ C(emp)) ; ("Dummy" ?( noAid)) ; SL'))
+           (L', ("Dummy" ! "init" @ C(emp)) ; ("Dummy" ?( noAid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
 
 eq
@@ -786,7 +787,7 @@ STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
 
 *** Method binding with multiple inheritance
 eq
-  bindMtd(O, O', Lab, 'run, EL, noInh)
+  bindMtd(O, O', Lab, "run", EL, noInh)
   = 
   boundMtd(O,(("caller" |-> O', "label" |-> Lab), return(emp)))
   .
@@ -885,7 +886,7 @@ ifdef({|MODELCHECK|},
 *** Reduce sync. call  to async. call with reply 
 *** XXX: This rule will eventually go away once the compiler does this
 *** expansion.
-eq < O : C | Att: S, Pr: (L, (M(EL : AL)); SL), PrQ: W, Lcnt: N >
+eq < O : C | Att: S, Pr: (L, (M(EL ; AL)); SL), PrQ: W, Lcnt: N >
   =
 ifdef({|MODELCHECK|},dnl
 {|  < O : C | Att: S, Pr: (L, ("Dummy" ! M(EL)); ("Dummy" ?(AL)); SL), PrQ: W,  Lcnt: N >|},

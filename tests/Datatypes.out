@@ -17,8 +17,8 @@ result Char: "a"
 reduce in CREOL-DATA-SIG : "a" # "a" .
 result NeExprList: "a" # "a"
 ==========================================
-reduce in CREOL-DATA-SIG : 'a,'a .
-result NeParameterList: 'a,'a
+reduce in CREOL-DATA-SIG : "a", "a" .
+result NeAidList: "a", "a"
 ==========================================
 reduce in CREOL-DATA-SIG : "a"("a") .
 result Appl: "a"("a")
@@ -41,8 +41,8 @@ result NeExprList: "a"("a") # null
 reduce in CREOL-DATA-SIG : null, "a" .
 result [ExprList,AidList]: null, "a"
 ==========================================
-reduce in CREOL-DATA-SIG : ob('a) .
-result Oid: ob('a)
+reduce in CREOL-DATA-SIG : ob("a") .
+result Oid: ob("a")
 ==========================================
 reduce in CREOL-DATA-SIG : bool(true) .
 result Data: bool(true)

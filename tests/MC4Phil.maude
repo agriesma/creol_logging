@@ -7,60 +7,61 @@ op init : -> Configuration .
 
 eq init =
 
-< 'Butler : Cl | Inh: noInh, Par: noAid,
-  Att: ('p1 |-> null), ('p2 |-> null), ('p3 |-> null), ('p4 |-> null),
+< "Butler" : Cl | Inh: noInh, Par: noAid,
+  Att: ("p1" |-> null), ("p2" |-> null), ("p3" |-> null), ("p4" |-> null),
   Mtds:
-    < 'init : Mtdname | Param: noAid, Latt: noSubst,
-		Code: ('p1 ::= new 'Philosopher('this)) ;
-		      ('p2 ::= new 'Philosopher('this)) ;
-		      ('p3 ::= new 'Philosopher('this)) ; 
-		      ('p4 ::= new 'Philosopher('this)) ; return (emp) > *
+    < "init" : Mtdname | Param: noAid, Latt: noSubst,
+		Code: ("p1" ::= new "Philosopher"("this")) ;
+		      ("p2" ::= new "Philosopher"("this")) ;
+		      ("p3" ::= new "Philosopher"("this")) ;
+		      ("p4" ::= new "Philosopher"("this")) ; return (emp) > *
 
-    < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: return (emp) > *
+    < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: return (emp) > *
 
-    < 'getNeighbor : Mtdname | Param: noAid,
-      Latt: ('label |-> null), ('caller |-> null), ('n |-> null),
+    < "getNeighbor" : Mtdname | Param: noAid,
+      Latt: ("label" |-> null), ("caller" |-> null), ("n" |-> null),
       Code:
-       (if ('equal[[ 'caller # 'p1 ]]) th ('n ::= 'p2)
-        el (if ('equal[[ 'caller # 'p2 ]]) th ('n ::= 'p3)
-        el (if ('equal[[ 'caller # 'p3 ]]) th ('n ::= 'p4)
-        el (if ('equal[[ 'caller # 'p4 ]]) th ('n ::= 'p1)
-        fi) fi) fi) fi) ; (return ( 'n )) >, Ocnt: 0 >
+       (if ("equal"( "caller" # "p1" )) th ("n" ::= "p2")
+        el (if ("equal"( "caller" # "p2" )) th ("n" ::= "p3")
+        el (if ("equal"( "caller" # "p3" )) th ("n" ::= "p4")
+        el (if ("equal"( "caller" # "p4" )) th ("n" ::= "p1") el skip
+        fi) fi) fi) fi); (return ( "n" )) >, Ocnt: 0 >
 
-< 'Philosopher : Cl | Inh: noInh, Par: 'butler,
-   Att: ('butler |-> null), ('hungry |-> null), 
-        ('chopstick |-> null), ('neighbor |-> null),
+< "Philosopher" : Cl | Inh: noInh, Par: "butler",
+   Att: ("butler" |-> null), ("hungry" |-> null), 
+        ("chopstick" |-> null), ("neighbor" |-> null),
    Mtds:
-   < 'init : Mtdname | Param: noAid, Latt: ('s |-> null), Code:
-		   ('chopstick ::= bool(true)) ; ('hungry ::= bool(false)) ; 
-         	   ('s ! 'butler . 'getNeighbor(emp)) ; ('s ? ( 'neighbor ) ) ;
+   < "init" : Mtdname | Param: noAid, Latt: ("s" |-> null), Code:
+		   ("chopstick" ::= bool(true)) ; ("hungry" ::= bool(false)) ; 
+         	   ("s" ! "butler" . "getNeighbor"(emp)) ;
+		   ("s" ? ( "neighbor" ) ) ;
          	   return (emp) > *
 
-     < 'think : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), ('l |-> null), Code:
-            (await ('not[[ 'hungry ]])) ; ('hungry ::= bool(true));
-		  (tailcall 'think(emp)) > *
+     < "think" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), ("l" |-> null), Code:
+            (await ("not" ( "hungry" ))) ; ("hungry" ::= bool(true));
+		  (tailcall "think"(emp)) > *
 
-     < 'eat : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), ('l |-> null), Code:
-            (await 'hungry) ; ('l ! 'neighbor . 'borrowStick(emp)) ; 
-                  ('l ? (noAid)) ; (await 'chopstick) ;
-                  ('hungry ::= bool(false)) ;
-                  ('l ! 'neighbor . 'returnStick(emp)) ; ('l ? (noAid)) ;
-		  (tailcall 'eat(emp)) > *
+     < "eat" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), ("l" |-> null), Code:
+            (await "hungry") ; ("l" ! "neighbor" . "borrowStick"(emp)) ; 
+                  ("l" ? (noAid)) ; (await "chopstick") ;
+                  ("hungry" ::= bool(false)) ;
+                  ("l" ! "neighbor" . "returnStick"(emp)) ; ("l" ? (noAid)) ;
+		  (tailcall "eat"(emp)) > *
 
-     < 'borrowStick : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), Code:
-            (await 'chopstick) ; ('chopstick ::= bool(false)) ; 
+     < "borrowStick" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), Code:
+            (await "chopstick") ; ("chopstick" ::= bool(false)) ; 
                    return(emp) > *
 
-     < 'returnStick : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null), ('l |-> null ), Code:
-            ('chopstick ::= bool(true)); return (emp) > *
+     < "returnStick" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), ("l" |-> null ), Code:
+            ("chopstick" ::= bool(true)); return (emp) > *
 
-     < 'run : Mtdname | Param: noAid, Latt: ('label |-> null), ('caller |-> null),
-	    ('l |-> null), ('m |-> null), ('n |-> null), Code:
-            (('l ! 'this . 'think(emp)) ; free('l)) |||
-		  (('m ! 'this . 'eat(emp)) ; free('m)) ; return (emp) >,
+     < "run" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null),
+	    ("l" |-> null), ("m" |-> null), Code:
+            (("l" ! "this" . "think"(emp)) ; free("l")) |||
+		  (("m" ! "this" . "eat"(emp)) ; free("m")) ; return (emp) >,
       Ocnt: 0 >
 
-    main('Butler, emp)
+    main("Butler", emp)
     .
 
 endm
@@ -73,14 +74,14 @@ endm
 
 set show breakdown on .
 
-red modelCheck(init, <> objcnt('Butler, 1)) .
+red modelCheck(init, <> objcnt("Butler", 1)) .
 
-*** red modelCheck(init, [] objcnt('Butler, 1)) .
+*** red modelCheck(init, [] objcnt("Butler", 1)) .
 
-red modelCheck(init, [] maxobjcnt('Philosopher, 6)) .
+red modelCheck(init, [] maxobjcnt("Philosopher", 6)) .
 
-*** red modelCheck(init, <> [] objcnt('Butler, 2)) .
+*** red modelCheck(init, <> [] objcnt("Butler", 2)) .
 
-red modelCheck(init, [] (hasvalue(ob('Philosopher1), 'hungry, bool(true)) => <> hasvalue(ob('Philosopher1), 'hungry, bool(false)))) .
+*** red modelCheck(init, [] (hasvalue(ob("Philosopher1"), "hungry", bool(true)) => <> hasvalue(ob("Philosopher1"), "hungry", bool(false)))) .
 
 quit .

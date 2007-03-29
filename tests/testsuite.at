@@ -94,26 +94,26 @@ dnl
 TEST_CREOLC([Alarmclock], [dnl
 red init .
 ],[dnl
-red simulate('PROGRAM, upTerm(init main('Alarmclock, emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(init main("Alarmclock", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([AsyncLCR], [dnl
 red init .
-rew init main('Init, emp) .
+rew init main("Init", emp) .
 ],[
-red simulate('PROGRAM, upTerm(init main('Init, emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(init main("Init", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Sieve], [dnl
 red init .
 ],[dnl
-red simulate('PROGRAM, upTerm(init main('Generator, emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(init main("Generator", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Philosophers], [dnl
 red init .
 ],[dnl
-red simulate('PROGRAM, upTerm(init main('Butler, emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([SingleCellBuffer], [dnl
@@ -124,17 +124,17 @@ red init .
 TEST_CREOLC([BoundedBuffer], [dnl
 red init .
 ],[dnl
-red simulate('PROGRAM, upTerm(init main('Starter, emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(init main("Starter", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Fibonacci], [dnl
 red init .
 ],[dnl
-red simulate('PROGRAM, upTerm(init main('Fibonacci, int(6))), 0, 1) .
+red simulate('PROGRAM, upTerm(init main("Fibonacci", int(6))), 0, 1) .
 ])
 
 TEST_CREOLC([SantaClaus], [dnl
 red init .
 ],[dnl
-red simulate('PROGRAM, upTerm(init main('Christmas, emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(init main("Christmas", emp)), 0, 1) .
 ])

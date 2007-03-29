@@ -22,7 +22,6 @@
 fmod CREOL-DATA-SIG is
 
   protecting META-LEVEL .
-  protecting QID .
   protecting STRING .
   protecting NAT .
 
@@ -67,7 +66,7 @@ fmod CREOL-DATA-SIG is
 
   op _(_) : String ExprList -> Appl [format (! o d d d) prec 12] .
 
-  op ob      : Qid       -> Oid  [ctor] .
+  op ob(_) : String -> Oid [ctor] .
 
   *** The interpreter should extend this module with his own definition
   *** of label values.  For example, the model checker uses his own version

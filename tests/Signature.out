@@ -94,23 +94,23 @@ reduce in GUARDS : downTerm(upTerm("add"(int(4) # int(5)) & "label" ?? & wait &
     wait & bool(true)), noGuard) .
 result Guard: wait & "label" ?? & "add"(int(4) # int(5))
 ==========================================
-reduce in STATEMENTS : "a" . 'a .
-result Mid: "a" . 'a
+reduce in STATEMENTS : "a" . "a" .
+result Mid: "a" . "a"
 ==========================================
-reduce in STATEMENTS : upTerm("a" . 'a) .
-result GroundTerm: '_._['"a".Char,''a.Sort]
+reduce in STATEMENTS : upTerm("a" . "a") .
+result GroundTerm: '_._['"a".Char,'"a".Char]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("a" . 'a), "a") .
-result Mid: "a" . 'a
+reduce in STATEMENTS : downTerm(upTerm("a" . "a"), "a") .
+result Mid: "a" . "a"
 ==========================================
-reduce in STATEMENTS : "a" @ 'a .
-result Mid: "a" @ 'a
+reduce in STATEMENTS : "a" @ "a" .
+result Mid: "a" @ "a"
 ==========================================
-reduce in STATEMENTS : upTerm("a" @ 'a) .
-result GroundTerm: '_@_['"a".Char,''a.Sort]
+reduce in STATEMENTS : upTerm("a" @ "a") .
+result GroundTerm: '_@_['"a".Char,'"a".Char]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("a" @ 'a), "a") .
-result Mid: "a" @ 'a
+reduce in STATEMENTS : downTerm(upTerm("a" @ "a"), "a") .
+result Mid: "a" @ "a"
 ==========================================
 reduce in STATEMENTS : skip .
 result Stm: skip
@@ -130,91 +130,91 @@ result GroundTerm: '_::=_['"a".Char,'"a".Char]
 reduce in STATEMENTS : downTerm(upTerm("a" ::= "a"), skip) .
 result Stm: "a" ::= "a"
 ==========================================
-reduce in STATEMENTS : "var" ::= new 'C(int(5) # bool(true)) .
-result Stm: "var" ::= new 'C(int(5) # bool(true))
+reduce in STATEMENTS : "var" ::= new "C"(int(5) # bool(true)) .
+result Stm: "var" ::= new "C"(int(5) # bool(true))
 ==========================================
-reduce in STATEMENTS : upTerm("var" ::= new 'C(int(5) # bool(true))) .
-result GroundTerm: '_::=`new_`(_`)['"var".String,''C.Sort,'_#_['int`(_`)['s_^5[
-    '0.Zero]],'bool`(_`)['true.Bool]]]
+reduce in STATEMENTS : upTerm("var" ::= new "C"(int(5) # bool(true))) .
+result GroundTerm: '_::=`new_`(_`)['"var".String,'"C".Char,'_#_['int`(_`)[
+    's_^5['0.Zero]],'bool`(_`)['true.Bool]]]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("var" ::= new 'C(int(5) # bool(true))),
+reduce in STATEMENTS : downTerm(upTerm("var" ::= new "C"(int(5) # bool(true))),
     skip) .
-result Stm: "var" ::= new 'C(int(5) # bool(true))
+result Stm: "var" ::= new "C"(int(5) # bool(true))
 ==========================================
-reduce in STATEMENTS : 'm(emp : noAid) .
-result Stm: 'm(emp : noAid)
+reduce in STATEMENTS : "m"(emp ; noAid) .
+result Stm: "m"(emp ; noAid)
 ==========================================
-reduce in STATEMENTS : upTerm('m(emp : noAid)) .
-result GroundTerm: '_`(_:_`)[''m.Sort,'emp.DataList,'noAid.AidList]
+reduce in STATEMENTS : upTerm("m"(emp ; noAid)) .
+result GroundTerm: '_`(_;_`)['"m".Char,'emp.DataList,'noAid.AidList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm('m(emp : noAid)), skip) .
-result Stm: 'm(emp : noAid)
+reduce in STATEMENTS : downTerm(upTerm("m"(emp ; noAid)), skip) .
+result Stm: "m"(emp ; noAid)
 ==========================================
-reduce in STATEMENTS : "o" . 'm(emp : noAid) .
-result Stm: "o" . 'm(emp : noAid)
+reduce in STATEMENTS : "o" . "m"(emp ; noAid) .
+result Stm: "o" . "m"(emp ; noAid)
 ==========================================
-reduce in STATEMENTS : upTerm("o" . 'm(emp : noAid)) .
-result GroundTerm: '_`(_:_`)['_._['"o".Char,''m.Sort],'emp.DataList,
+reduce in STATEMENTS : upTerm("o" . "m"(emp ; noAid)) .
+result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'emp.DataList,
     'noAid.AidList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("o" . 'm(emp : noAid)), skip) .
-result Stm: "o" . 'm(emp : noAid)
+reduce in STATEMENTS : downTerm(upTerm("o" . "m"(emp ; noAid)), skip) .
+result Stm: "o" . "m"(emp ; noAid)
 ==========================================
-reduce in STATEMENTS : "o" . 'm(bool(false) : noAid) .
-result Stm: "o" . 'm(bool(false) : noAid)
+reduce in STATEMENTS : "o" . "m"(bool(false) ; noAid) .
+result Stm: "o" . "m"(bool(false) ; noAid)
 ==========================================
-reduce in STATEMENTS : upTerm("o" . 'm(bool(false) : noAid)) .
-result GroundTerm: '_`(_:_`)['_._['"o".Char,''m.Sort],'bool`(_`)['false.Bool],
+reduce in STATEMENTS : upTerm("o" . "m"(bool(false) ; noAid)) .
+result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'bool`(_`)['false.Bool],
     'noAid.AidList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("o" . 'm(bool(false) : noAid)), skip) .
-result Stm: "o" . 'm(bool(false) : noAid)
+reduce in STATEMENTS : downTerm(upTerm("o" . "m"(bool(false) ; noAid)), skip) .
+result Stm: "o" . "m"(bool(false) ; noAid)
 ==========================================
-reduce in STATEMENTS : "o" . 'm(emp : "r") .
-result Stm: "o" . 'm(emp : "r")
+reduce in STATEMENTS : "o" . "m"(emp ; "r") .
+result Stm: "o" . "m"(emp ; "r")
 ==========================================
-reduce in STATEMENTS : upTerm("o" . 'm(emp : "r")) .
-result GroundTerm: '_`(_:_`)['_._['"o".Char,''m.Sort],'emp.DataList,'"r".Char]
+reduce in STATEMENTS : upTerm("o" . "m"(emp ; "r")) .
+result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'emp.DataList,'"r".Char]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("o" . 'm(emp : "r")), skip) .
-result Stm: "o" . 'm(emp : "r")
+reduce in STATEMENTS : downTerm(upTerm("o" . "m"(emp ; "r")), skip) .
+result Stm: "o" . "m"(emp ; "r")
 ==========================================
-reduce in STATEMENTS : "o" . 'm(null : "r") .
-result Stm: "o" . 'm(null : "r")
+reduce in STATEMENTS : "o" . "m"(null ; "r") .
+result Stm: "o" . "m"(null ; "r")
 ==========================================
-reduce in STATEMENTS : upTerm("o" . 'm(null : "r")) .
-result GroundTerm: '_`(_:_`)['_._['"o".Char,''m.Sort],'null.Data,'"r".Char]
+reduce in STATEMENTS : upTerm("o" . "m"(null ; "r")) .
+result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'null.Data,'"r".Char]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("o" . 'm(null : "r")), skip) .
-result Stm: "o" . 'm(null : "r")
+reduce in STATEMENTS : downTerm(upTerm("o" . "m"(null ; "r")), skip) .
+result Stm: "o" . "m"(null ; "r")
 ==========================================
-reduce in STATEMENTS : "l" ! 'm(emp) .
-result Stm: "l" ! 'm(emp)
+reduce in STATEMENTS : "l" ! "m"(emp) .
+result Stm: "l" ! "m"(emp)
 ==========================================
-reduce in STATEMENTS : upTerm("l" ! 'm(emp)) .
-result GroundTerm: '_!_`(_`)['"l".Char,''m.Sort,'emp.DataList]
+reduce in STATEMENTS : upTerm("l" ! "m"(emp)) .
+result GroundTerm: '_!_`(_`)['"l".Char,'"m".Char,'emp.DataList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("l" ! 'm(emp)), skip) .
-result Stm: "l" ! 'm(emp)
+reduce in STATEMENTS : downTerm(upTerm("l" ! "m"(emp)), skip) .
+result Stm: "l" ! "m"(emp)
 ==========================================
-reduce in STATEMENTS : "l" ! 'm(null # null) .
-result Stm: "l" ! 'm(null # null)
+reduce in STATEMENTS : "l" ! "m"(null # null) .
+result Stm: "l" ! "m"(null # null)
 ==========================================
-reduce in STATEMENTS : upTerm("l" ! 'm(null # null)) .
-result GroundTerm: '_!_`(_`)['"l".Char,''m.Sort,'_#_['null.Data,'null.Data]]
+reduce in STATEMENTS : upTerm("l" ! "m"(null # null)) .
+result GroundTerm: '_!_`(_`)['"l".Char,'"m".Char,'_#_['null.Data,'null.Data]]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("l" ! 'm(null # null)), skip) .
-result Stm: "l" ! 'm(null # null)
+reduce in STATEMENTS : downTerm(upTerm("l" ! "m"(null # null)), skip) .
+result Stm: "l" ! "m"(null # null)
 ==========================================
-reduce in STATEMENTS : "l" ! "o" . 'm(null # "a") .
-result Stm: "l" ! "o" . 'm(null # "a")
+reduce in STATEMENTS : "l" ! "o" . "m"(null # "a") .
+result Stm: "l" ! "o" . "m"(null # "a")
 ==========================================
-reduce in STATEMENTS : upTerm("l" ! "o" . 'm(null # "a")) .
-result GroundTerm: '_!_`(_`)['"l".Char,'_._['"o".Char,''m.Sort],'_#_[
+reduce in STATEMENTS : upTerm("l" ! "o" . "m"(null # "a")) .
+result GroundTerm: '_!_`(_`)['"l".Char,'_._['"o".Char,'"m".Char],'_#_[
     'null.Data,'"a".Char]]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm("l" ! "o" . 'm(null # "a")), skip) .
-result Stm: "l" ! "o" . 'm(null # "a")
+reduce in STATEMENTS : downTerm(upTerm("l" ! "o" . "m"(null # "a")), skip) .
+result Stm: "l" ! "o" . "m"(null # "a")
 ==========================================
 reduce in STATEMENTS : "l" ?(noAid) .
 result Stm: "l" ?(noAid)
@@ -297,23 +297,23 @@ result GroundTerm: 'free['_`,_['"a".Char,'"b".Char,'"c".Char]]
 reduce in STATEMENTS : downTerm(upTerm(free("a", "b", "c")), skip) .
 result Stm: free("a", "b", "c")
 ==========================================
-reduce in STATEMENTS : tailcall 'm(emp) .
-result Stm: tailcall 'm(emp)
+reduce in STATEMENTS : tailcall "m"(emp) .
+result Stm: tailcall "m"(emp)
 ==========================================
-reduce in STATEMENTS : upTerm(tailcall 'm(emp)) .
-result GroundTerm: 'tailcall_`(_`)[''m.Sort,'emp.DataList]
+reduce in STATEMENTS : upTerm(tailcall "m"(emp)) .
+result GroundTerm: 'tailcall_`(_`)['"m".Char,'emp.DataList]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(tailcall 'm(emp)), skip) .
-result Stm: tailcall 'm(emp)
+reduce in STATEMENTS : downTerm(upTerm(tailcall "m"(emp)), skip) .
+result Stm: tailcall "m"(emp)
 ==========================================
-reduce in STATEMENTS : tailcall 'm(null # "a") .
-result Stm: tailcall 'm(null # "a")
+reduce in STATEMENTS : tailcall "m"(null # "a") .
+result Stm: tailcall "m"(null # "a")
 ==========================================
-reduce in STATEMENTS : upTerm(tailcall 'm(null # "a")) .
-result GroundTerm: 'tailcall_`(_`)[''m.Sort,'_#_['null.Data,'"a".Char]]
+reduce in STATEMENTS : upTerm(tailcall "m"(null # "a")) .
+result GroundTerm: 'tailcall_`(_`)['"m".Char,'_#_['null.Data,'"a".Char]]
 ==========================================
-reduce in STATEMENTS : downTerm(upTerm(tailcall 'm(null # "a")), skip) .
-result Stm: tailcall 'm(null # "a")
+reduce in STATEMENTS : downTerm(upTerm(tailcall "m"(null # "a")), skip) .
+result Stm: tailcall "m"(null # "a")
 ==========================================
 reduce in STM-LIST : noStm .
 result StmList: noStm
@@ -342,41 +342,41 @@ result Constant: 'skip.Stm
 reduce in STM-LIST : downTerm(upTerm(skip), noStm) .
 result Stm: skip
 ==========================================
-reduce in STM-LIST : "var" ::= int(4)[]"var" ::= new 'C(null) .
-result Stm: "var" ::= int(4)[]"var" ::= new 'C(null)
+reduce in STM-LIST : "var" ::= int(4)[]"var" ::= new "C"(null) .
+result Stm: "var" assign int(4)[]"var" ::= new "C"(null)
 ==========================================
-reduce in STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new 'C(null)) .
-result GroundTerm: '_`[`]_['_::=_['"var".String,'int`(_`)['s_^4['0.Zero]]],
-    '_::=`new_`(_`)['"var".String,''C.Sort,'null.Data]]
+reduce in STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new "C"(null)) .
+result GroundTerm: '_`[`]_['_assign_['"var".String,'int`(_`)['s_^4['0.Zero]]],
+    '_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]
 ==========================================
-reduce in STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new 'C(null)),
-    noStm) .
-result Stm: "var" ::= int(4)[]"var" ::= new 'C(null)
+reduce in STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new "C"(
+    null)), noStm) .
+result Stm: "var" assign int(4)[]"var" ::= new "C"(null)
 ==========================================
-reduce in STM-LIST : skip ||| "var" ::= int(4)[]"var" ::= new 'C(null) .
-result Stm: skip ||| "var" ::= int(4)[]"var" ::= new 'C(null)
+reduce in STM-LIST : skip ||| "var" ::= int(4)[]"var" ::= new "C"(null) .
+result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
 ==========================================
-reduce in STM-LIST : upTerm(skip ||| "var" ::= int(4)[]"var" ::= new 'C(null))
+reduce in STM-LIST : upTerm(skip ||| "var" ::= int(4)[]"var" ::= new "C"(null))
     .
-result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)[
-    's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,''C.Sort,'null.Data]]]
+result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)[
+    's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]
 ==========================================
 reduce in STM-LIST : downTerm(upTerm(skip ||| "var" ::= int(4)[]"var" ::= new
-    'C(null)), noStm) .
-result Stm: skip ||| "var" ::= int(4)[]"var" ::= new 'C(null)
+    "C"(null)), noStm) .
+result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
 ==========================================
-reduce in STM-LIST : "var" ::= int(4)[]"var" ::= new 'C(null) ||| skip |||
+reduce in STM-LIST : "var" ::= int(4)[]"var" ::= new "C"(null) ||| skip |||
     noStm .
-result Stm: skip ||| "var" ::= int(4)[]"var" ::= new 'C(null)
+result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
 ==========================================
-reduce in STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new 'C(null) ||| skip
+reduce in STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new "C"(null) ||| skip
     ||| noStm) .
-result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)[
-    's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,''C.Sort,'null.Data]]]
+result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)[
+    's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]
 ==========================================
-reduce in STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new 'C(null)
+reduce in STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new "C"(null)
     ||| skip ||| noStm), noStm) .
-result Stm: skip ||| "var" ::= int(4)[]"var" ::= new 'C(null)
+result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in STM-LIST : idle .
 result Process: idle
@@ -388,22 +388,22 @@ reduce in STM-LIST : downTerm(upTerm(idle), idle) .
 result Process: idle
 ==========================================
 reduce in STM-LIST : insert("var2", int(4), insert("var1", str("test"),
-    noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new 'C(null)) .
+    noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)) .
 result Process: ("var1" |-> str("test"), "var2" |-> int(4)), (skip ||| "var"
-    ::= int(4)[]"var" ::= new 'C(null))
+    assign int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in STM-LIST : upTerm(insert("var2", int(4), insert("var1", str("test"),
-    noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new 'C(null))) .
+    noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null))) .
 result GroundTerm: '_`,_['_`,_['_|->_['"var1".String,'str`(_`)[
     '"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4['0.Zero]]]],'_|||_[
-    'skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)['s_^4['0.Zero]]],
-    '_::=`new_`(_`)['"var".String,''C.Sort,'null.Data]]]]
+    'skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)['s_^4['0.Zero]]],
+    '_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]]
 ==========================================
 reduce in STM-LIST : downTerm(upTerm(insert("var2", int(4), insert("var1", str(
-    "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new 'C(null))),
+    "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null))),
     noProc) .
 result Process: ("var1" |-> str("test"), "var2" |-> int(4)), (skip ||| "var"
-    ::= int(4)[]"var" ::= new 'C(null))
+    assign int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in STM-LIST : noProc .
 result MProc: noProc
@@ -424,45 +424,46 @@ reduce in STM-LIST : downTerm(upTerm(idle), noProc) .
 result Process: idle
 ==========================================
 reduce in STM-LIST : idle ++ insert("var2", int(4), insert("var1", str("test"),
-    noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new 'C(null)) .
+    noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)) .
 result NeMProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
-    "var" ::= int(4)[]"var" ::= new 'C(null))
+    "var" assign int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in STM-LIST : upTerm(idle ++ insert("var2", int(4), insert("var1", str(
-    "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new 'C(null))) .
+    "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null))) .
 result GroundTerm: '_++_['idle.Process,'_`,_['_`,_['_|->_['"var1".String,
     'str`(_`)['"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4[
-    '0.Zero]]]],'_|||_['skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)['s_^4[
-    '0.Zero]]],'_::=`new_`(_`)['"var".String,''C.Sort,'null.Data]]]]]
+    '0.Zero]]]],'_|||_['skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)[
+    's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]]]
 ==========================================
 reduce in STM-LIST : downTerm(upTerm(idle ++ insert("var2", int(4), insert(
     "var1", str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new
-    'C(null))), noProc) .
+    "C"(null))), noProc) .
 result NeMProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
-    "var" ::= int(4)[]"var" ::= new 'C(null))
+    "var" assign int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in OBJECT : 
-< ob('object1) : 'class | Att: noSubst,
+< ob("object1") : "Class" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 > .
 result Object: 
-< ob('object1) : 'class | Att: noSubst,
+< ob("object1") : "Class" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 ==========================================
 reduce in OBJECT : upTerm(
-< ob('object1) : 'class | Att: noSubst,
+< ob("object1") : "Class" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >) .
-result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Lcnt:_>['ob[''object1.Sort],
-    ''class.Sort,'noSubst.Subst,'idle.Process,'noProc.MProc,'0.Zero]
+result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Lcnt:_>['ob`(_`)[
+    '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
+    'noProc.MProc,'0.Zero]
 ==========================================
 reduce in OBJECT : downTerm(upTerm(
-< ob('object1) : 'class | Att: noSubst,
+< ob("object1") : "Class" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >), noObj) .
 result Object: 
-< ob('object1) : 'class | Att: noSubst,
+< ob("object1") : "Class" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 ==========================================
@@ -485,19 +486,19 @@ reduce in COMMUNICATION : downTerm(upTerm(noQu), noQu) .
 result Queue: noQu
 ==========================================
 reduce in COMMUNICATION : 
-< ob('Ob1) : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg > .
+< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg > .
 result Queue: 
-< ob('Ob1) : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
+< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 ==========================================
 reduce in COMMUNICATION : upTerm(
-< ob('Ob1) : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >) .
-result GroundTerm: '<_:`Qu`|`Size:_`,Dealloc:_`,Ev:_>['ob[''Ob1.Sort],'s_[
-    '0.Zero],'noDealloc.Labels,'noMsg.MMsg]
+< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >) .
+result GroundTerm: '<_:`Qu`|`Size:_`,Dealloc:_`,Ev:_>['ob`(_`)['"Ob1".String],
+    's_['0.Zero],'noDealloc.Labels,'noMsg.MMsg]
 ==========================================
 reduce in COMMUNICATION : downTerm(upTerm(
-< ob('Ob1) : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >), noQu) .
+< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >), noQu) .
 result Queue: 
-< ob('Ob1) : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
+< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 ==========================================
 reduce in CREOL-LABEL-TEST : cont(label(1)) .
 result Stm: cont(label(1))
@@ -535,15 +536,15 @@ result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
 reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5),emp)), noMsg) .
 result Body: comp(label(5),emp)
 ==========================================
-reduce in CREOL-LABEL-TEST : invoc(ob('object1),label(5),'method1,emp) .
-result Body: invoc(ob('object1),label(5),'method1,emp)
+reduce in CREOL-LABEL-TEST : invoc(ob("object1"),label(5),"method1",emp) .
+result Body: invoc(ob("object1"),label(5),"method1",emp)
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm(invoc(ob('object1),label(5),'method1,emp))
-    .
-result GroundTerm: 'invoc`(_`,_`,_`,_`)['ob[''object1.Sort],'label['s_^5[
-    '0.Zero]],''method1.Sort,'emp.DataList]
+reduce in CREOL-LABEL-TEST : upTerm(invoc(ob("object1"),label(5),"method1",
+    emp)) .
+result GroundTerm: 'invoc`(_`,_`,_`,_`)['ob`(_`)['"object1".String],'label[
+    's_^5['0.Zero]],'"method1".String,'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob('object1),label(5),
-    'method1,emp)), noMsg) .
-result Body: invoc(ob('object1),label(5),'method1,emp)
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob("object1"),label(5),
+    "method1",emp)), noMsg) .
+result Body: invoc(ob("object1"),label(5),"method1",emp)
 Bye.

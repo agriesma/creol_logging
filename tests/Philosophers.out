@@ -1,43 +1,44 @@
 ==========================================
 reduce in PROGRAM : init .
 result Configuration: 
-< 'Butler : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null,
+< "Butler" : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
-  < 'getNeighbor : Mtdname | Param: noAid, Latt: "neighbor" |-> null, Code: if
+  < "getNeighbor" : Mtdname | Param: noAid, Latt: "neighbor" |-> null, Code: if
     "equal"("caller" # "p1") th "neighbor" ::= "p2" el if "equal"("caller" #
     "p2") th "neighbor" ::= "p3" el if "equal"("caller" # "p3") th "neighbor"
     ::= "p4" el if "equal"("caller" # "p4") th "neighbor" ::= "p5" el
     "neighbor" ::= "p1" fi fi fi fi ; return("neighbor") > *
-  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) > *
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new
-    'Philosopher("this") ; "p2" ::= new 'Philosopher("this") ; "p3" ::= new
-    'Philosopher("this") ; "p4" ::= new 'Philosopher("this") ; "p5" ::= new
-    'Philosopher("this") ; return(emp) >,
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+    *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new
+    "Philosopher"("this") ; "p2" ::= new "Philosopher"("this") ; "p3" ::= new
+    "Philosopher"("this") ; "p4" ::= new "Philosopher"("this") ; "p5" ::= new
+    "Philosopher"("this") ; return(emp) >,
   Ocnt: 0 >
 
-< 'Philosopher : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null,
+< "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null,
     "chopstick" |-> null, "history" |-> null, "hungry" |-> null, "neighbor" |->
     null, Mtds:
-  < 'borrowStick : Mtdname | Param: noAid, Latt: noSubst, Code: await
+  < "borrowStick" : Mtdname | Param: noAid, Latt: noSubst, Code: await
     "chopstick" ; ("chopstick" assign bool(false)) ; return(emp) > *
-  < 'digest : Mtdname | Param: noAid, Latt: noSubst, Code: await wait ; (
+  < "digest" : Mtdname | Param: noAid, Latt: noSubst, Code: await wait ; (
     "hungry" assign bool(true)) ; "history" ::= "plus"("history" # str("d")) ;
-    await wait ; "Dummy" ! "this" . 'digest(emp) ; return(emp) > *
-  < 'eat : Mtdname | Param: noAid, Latt: noSubst, Code: await "hungry" ; "l" !
-    "neighbor" . 'borrowStick(emp) ; await ("l" ??) ; await "chopstick" ;
+    await wait ; "Dummy" ! "this" . "digest"(emp) ; return(emp) > *
+  < "eat" : Mtdname | Param: noAid, Latt: noSubst, Code: await "hungry" ; "l" !
+    "neighbor" . "borrowStick"(emp) ; await ("l" ??) ; await "chopstick" ;
     "history" ::= "plus"("history" # str("e")) ; ("hungry" assign bool(false))
-    ; "Dummy" ! "neighbor" . 'returnStick(emp) ; await wait ; "Dummy" ! "this"
-    . 'eat(emp) ; return(emp) > *
-  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: ("history" assign str(
-    "")) ; ("chopstick" assign bool(true)) ; ("hungry" assign bool(false)) ;
-    "butler" . 'getNeighbor(emp : "neighbor") ; return(emp) > *
-  < 'returnStick : Mtdname | Param: noAid, Latt: noSubst, Code: ("chopstick"
+    ; "Dummy" ! "neighbor" . "returnStick"(emp) ; await wait ; "Dummy" ! "this"
+    . "eat"(emp) ; return(emp) > *
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("history" assign
+    str("")) ; ("chopstick" assign bool(true)) ; ("hungry" assign bool(false))
+    ; "butler" . "getNeighbor"(emp ; "neighbor") ; return(emp) > *
+  < "returnStick" : Mtdname | Param: noAid, Latt: noSubst, Code: ("chopstick"
     assign bool(true)) ; return(emp) > *
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: ("Dummy" ! "this" .
-    'digest(emp) ||| "Dummy" ! "this" . 'eat(emp) ||| "Dummy" ! "this" .
-    'think(emp)) ; return(emp) > *
-  < 'think : Mtdname | Param: noAid, Latt: noSubst, Code: await "not"("hungry")
-    ; "history" ::= "plus"("history" # str("t")) ; await wait ; "Dummy" !
-    "this" . 'think(emp) ; return(emp) >,
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ("Dummy" ! "this" .
+    "digest"(emp) ||| "Dummy" ! "this" . "eat"(emp) ||| "Dummy" ! "this" .
+    "think"(emp)) ; return(emp) > *
+  < "think" : Mtdname | Param: noAid, Latt: noSubst, Code: await "not"(
+    "hungry") ; "history" ::= "plus"("history" # str("t")) ; await wait ;
+    "Dummy" ! "this" . "think"(emp) ; return(emp) >,
   Ocnt: 0 >
 Bye.

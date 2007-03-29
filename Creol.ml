@@ -971,7 +971,7 @@ struct
 	  output_string out " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
       | New (_, c, a) ->
-	  output_string out ("new '" ^ (match c with Basic s -> s | Application (s, _) -> s | _ -> assert false) ^ "( ") ;
+	  output_string out ("new \"" ^ (match c with Basic s -> s | Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
 	  of_creol_expression_list out a ;
 	  output_string out " )"
   and of_creol_expression_list out_channel =
@@ -1021,7 +1021,7 @@ struct
 	      | Some l ->  "\"" ^ l ^ "\"") ;
 	    output_string out " ! ";
 	    of_creol_expression out c ;
-	    output_string out (" . '" ^ m ^ " ( ") ;
+	    output_string out (" . \"" ^ m ^ "\" ( ") ;
 	    of_creol_expression_list out a;
 	    output_string out " )"
 	| Reply (_, l, o) ->
@@ -1031,34 +1031,33 @@ struct
 	| Free (_, l) -> output_string out ("free( \"" ^ l ^ "\" )")
 	| SyncCall (_, c, m, a, r) ->
 	    of_creol_expression out c ;
-	    output_string out (" . '" ^ m);
-	    output_string out "( " ;
+	    output_string out (" . \"" ^ m ^ "\" ( ");
 	    of_creol_expression_list out a;
-	    output_string out " : " ;
+	    output_string out " ; " ;
 	    of_creol_identifier_list out r;
 	    output_string out " )"
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
 	    output_string out
 	      (match l with None -> "\"Dummy\" !" | Some n -> ("\"" ^ n ^ "\" !"));
-	    output_string out ( " \"this\" . '" ^ m );
-	    (match lb with None -> () | Some n -> output_string out (" @ '" ^ n));
-	    (match ub with None -> () | Some n -> output_string out (" << '" ^ n));
+	    output_string out ( " \"this\" . \"" ^ m ^ "\"");
+	    (match lb with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
+	    (match ub with None -> () | Some n -> output_string out (" << \"" ^ n ^ "\""));
 	    output_string out " ( " ;
 	    of_creol_expression_list out i;
 	    output_string out " )"
 	| LocalSyncCall (_, m, l, u, i, o) ->
-	    output_string out ( "'" ^ m );
-	    (match l with None -> () | Some n -> output_string out (" @ '" ^ n));
-	    (match u with None -> () | Some n -> output_string out (" << '" ^ n));
+	    output_string out ( "\"" ^ m ^ "\"");
+	    (match l with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
+	    (match u with None -> () | Some n -> output_string out (" << \"" ^ n ^ "\""));
 	    output_string out " ( " ;
 	    of_creol_expression_list out i;
-	    output_string out " : " ;
+	    output_string out " ; " ;
 	    of_creol_identifier_list out o;
 	    output_string out " )"
 	| Tailcall (_, m, l, u, i) ->
-	    output_string out ( "'" ^ m );
-	    (match l with None -> () | Some n -> output_string out (" @ '" ^ n));
-	    (match u with None -> () | Some n -> output_string out (" << '" ^ n));
+	    output_string out ( "\"" ^ m ^ "\"");
+	    (match l with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
+	    (match u with None -> () | Some n -> output_string out (" << \"" ^ n ^ "\""));
 	    output_string out " ( " ;
 	    of_creol_expression_list out i;
 	    output_string out " )"
@@ -1112,7 +1111,7 @@ struct
 
   let of_creol_inherits out =
     function
-	(i, l) -> output_string out ("'" ^ i ^ " < ");
+	(i, l) -> output_string out ("\"" ^ i ^ "\" < ");
 	  of_creol_expression_list out l;
 	  output_string out " > "
 
@@ -1146,7 +1145,7 @@ struct
           of_creol_method_return out l
 
   let of_creol_method out m =
-    output_string out ("\n  < '" ^ m.meth_name ^ " : Mtdname | Param: ");
+    output_string out ("\n  < \"" ^ m.meth_name ^ "\" : Mtdname | Param: ");
     of_creol_parameter_list out m.meth_inpars;
     output_string out ", Latt: " ;
     of_creol_class_attribute_list out
@@ -1169,7 +1168,7 @@ struct
 	  of_creol_method_list out r
 
   let of_creol_class out c =
-    output_string out ("< \'" ^ c.cls_name ^ " : Cl | Inh: ");
+    output_string out ("< \"" ^ c.cls_name ^ "\" : Cl | Inh: ");
     of_creol_inherits_list out c.cls_inherits;
     output_string out ", Par: ";
     of_creol_parameter_list out c.cls_parameters;
@@ -1209,7 +1208,7 @@ struct
     begin
       match options.main with
 	  None -> ()
-	| Some m -> output_string out ("main( '" ^ m ^ " , emp )\n")
+	| Some m -> output_string out ("main( \"" ^ m ^ "\" , emp )\n")
     end ;
     output_string out ".\nendm\n" ;
     if options.modelchecker then

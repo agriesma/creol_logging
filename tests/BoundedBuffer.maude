@@ -3,20 +3,20 @@ mod PROGRAM is
 pr INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
-< 'BoundedBuffer : Cl | Inh: noInh, Par: noAid, Att: "buffer" |-> null , "max" |-> null , "n" |-> null, Mtds: 
-  < 'append : Mtdname | Param: "d", Latt: "d" |-> null, Code: ( await "less" ( "n" # "max" ) ) ; "buffer" ::= "plus" ( "buffer" # "d" ) ; return ( emp ) > *
-  < 'remove : Mtdname | Param: noAid, Latt: "d" |-> null, Code: ( await "less" ( int(0) # "n" ) ) ; "d" ::= "first" ( "buffer" ) ; "buffer" ::= "rest" ( "buffer" ) ; return ( "d" ) >, Ocnt: 0 >
+< "BoundedBuffer" : Cl | Inh: noInh, Par: noAid, Att: "buffer" |-> null , "max" |-> null , "n" |-> null, Mtds: 
+  < "append" : Mtdname | Param: "d", Latt: "d" |-> null, Code: ( await "less" ( "n" # "max" ) ) ; "buffer" ::= "plus" ( "buffer" # "d" ) ; return ( emp ) > *
+  < "remove" : Mtdname | Param: noAid, Latt: "d" |-> null, Code: ( await "less" ( int(0) # "n" ) ) ; "d" ::= "first" ( "buffer" ) ; "buffer" ::= "rest" ( "buffer" ) ; return ( "d" ) >, Ocnt: 0 >
 
-< 'Prod : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" . 'loop ( int(0) ) ; return ( emp ) > *
-  < 'loop : Mtdname | Param: "i", Latt: "i" |-> null, Code: "b" . 'append( "i" : noAid ) ; "Dummy" ! "this" . 'loop ( "plus" ( "i" # int(1) ) ) ; return ( emp ) >, Ocnt: 0 >
+< "Prod" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" . "loop" ( int(0) ) ; return ( emp ) > *
+  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "b" . "append" ( "i" ; noAid ) ; "Dummy" ! "this" . "loop" ( "plus" ( "i" # int(1) ) ) ; return ( emp ) >, Ocnt: 0 >
 
-< 'Cons : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" . 'loop ( emp ) ; return ( emp ) > *
-  < 'loop : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "b" . 'remove( emp : "y" ) ; "Dummy" ! "this" . 'loop ( emp ) ; return ( emp ) >, Ocnt: 0 >
+< "Cons" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" . "loop" ( emp ) ; return ( emp ) > *
+  < "loop" : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "b" . "remove" ( emp ; "y" ) ; "Dummy" ! "this" . "loop" ( emp ) ; return ( emp ) >, Ocnt: 0 >
 
-< 'Starter : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds: 
-  < 'run : Mtdname | Param: noAid, Latt: "b" |-> null , "p" |-> null , "c" |-> null, Code: "b" ::= new 'BoundedBuffer( emp ) ; "p" ::= new 'Producer( "b" ) ; "c" ::= new 'Consumer( "b" ) ; return ( emp ) >, Ocnt: 0 >
+< "Starter" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds: 
+  < "run" : Mtdname | Param: noAid, Latt: "b" |-> null , "p" |-> null , "c" |-> null, Code: "b" ::= new "BoundedBuffer" ( emp ) ; "p" ::= new "Producer" ( "b" ) ; "c" ::= new "Consumer" ( "b" ) ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

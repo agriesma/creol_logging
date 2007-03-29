@@ -33,7 +33,7 @@ red in CREOL-DATA-SIG : noAid .
 red in CREOL-DATA-SIG : noAid , noAid .
 red in CREOL-DATA-SIG : "a" .
 red in CREOL-DATA-SIG : "a" # "a" .
-red in CREOL-DATA-SIG : 'a , 'a .
+red in CREOL-DATA-SIG : "a" , "a" .
 red in CREOL-DATA-SIG : "a" ( "a" ) .
 red in CREOL-DATA-SIG : null .
 red in CREOL-DATA-SIG : null # null .
@@ -41,7 +41,7 @@ red in CREOL-DATA-SIG : null # "a" .
 red in CREOL-DATA-SIG : null # ("a" ( "a" )) # null .
 red in CREOL-DATA-SIG : ("a" ( "a" )) # null .
 red in CREOL-DATA-SIG : null , "a" .
-red in CREOL-DATA-SIG : ob('a) .
+red in CREOL-DATA-SIG : ob("a") .
 red in CREOL-DATA-SIG : bool(true) .
 red in CREOL-DATA-SIG : "equal" ( null # null ) .
 red in CREOL-DATA-SIG : "not" ( "equal" ( null # null ) ) .

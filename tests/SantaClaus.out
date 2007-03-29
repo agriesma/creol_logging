@@ -1,89 +1,89 @@
 ==========================================
 reduce in PROGRAM : init .
 result Configuration: 
-< 'Christmas : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds:
-  < 'run : Mtdname | Param: noAid, Latt: "e" |-> null, "r" |-> null, "sc" |->
-    null, Code: "sc" ::= new 'SantaClausClass(emp) ; "r" ::= new 'Reindeer(
-    "sc") ; "r" ::= new 'Reindeer("sc") ; "r" ::= new 'Reindeer("sc") ; "r" ::=
-    new 'Reindeer("sc") ; "r" ::= new 'Reindeer("sc") ; "e" ::= new 'Elf("sc")
-    ; "e" ::= new 'Elf("sc") ; "e" ::= new 'Elf("sc") ; "e" ::= new 'Elf("sc")
-    ; "e" ::= new 'Elf("sc") ; "e" ::= new 'Elf("sc") ; "e" ::= new 'Elf("sc")
-    ; return(emp) >,
+< "Christmas" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds:
+  < "run" : Mtdname | Param: noAid, Latt: "e" |-> null, "r" |-> null, "sc" |->
+    null, Code: "sc" ::= new "SantaClausClass"(emp) ; "r" ::= new "Reindeer"(
+    "sc") ; "r" ::= new "Reindeer"("sc") ; "r" ::= new "Reindeer"("sc") ; "r"
+    ::= new "Reindeer"("sc") ; "r" ::= new "Reindeer"("sc") ; "e" ::= new
+    "Elf"("sc") ; "e" ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc") ; "e" ::=
+    new "Elf"("sc") ; "e" ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc") ; "e"
+    ::= new "Elf"("sc") ; return(emp) >,
   Ocnt: 0 >
 
-< 'ElfC : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    'work(emp) ; return(emp) > *
-  < 'showIn : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    'talkToSanta(emp) ; return(emp) > *
-  < 'showOut : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    'work(emp) ; return(emp) > *
-  < 'talkToSanta : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
+< "ElfC" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+    "work"(emp) ; return(emp) > *
+  < "showIn" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+    "talkToSanta"(emp) ; return(emp) > *
+  < "showOut" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+    "work"(emp) ; return(emp) > *
+  < "talkToSanta" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
     emp) > *
-  < 'work : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "sc" .
-    'haveProblem(emp) ; return(emp) >,
+  < "work" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "sc" .
+    "haveProblem"(emp) ; return(emp) >,
   Ocnt: 0 >
 
-< 'LeaderElfC : Cl | Inh: 'ElfC < emp >, Par: "sc", "elves", Att: "elves" |->
+< "LeaderElfC" : Cl | Inh: "ElfC" < emp >, Par: "sc", "elves", Att: "elves" |->
     null, "sc" |-> null, Mtds:
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: 'run @ 'ElfC(emp :
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "run" @ "ElfC"(emp ;
     noAid) ; return(emp) > *
-  < 'work : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "sc" .
-    'haveProblem(emp) ; return(emp) >,
+  < "work" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "sc" .
+    "haveProblem"(emp) ; return(emp) >,
   Ocnt: 0 >
 
-< 'ReindeerC : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
-  < 'deliverToys : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
+< "ReindeerC" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
+  < "deliverToys" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
     emp) > *
-  < 'harness : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    'deliverToys(emp) ; return(emp) > *
-  < 'holiday : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "sc" .
-    'backFromHoliday(emp) ; return(emp) > *
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    'holiday(emp) ; return(emp) > *
-  < 'unharness : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this"
-    . 'holiday(emp) ; return(emp) >,
+  < "harness" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+    "deliverToys"(emp) ; return(emp) > *
+  < "holiday" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "sc" .
+    "backFromHoliday"(emp) ; return(emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+    "holiday"(emp) ; return(emp) > *
+  < "unharness" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this"
+    . "holiday"(emp) ; return(emp) >,
   Ocnt: 0 >
 
-< 'SantaClausC : Cl | Inh: noInh, Par: noAid, Att: "ctElves" |-> null,
+< "SantaClausC" : Cl | Inh: noInh, Par: noAid, Att: "ctElves" |-> null,
     "ctRreindeers" |-> null, "harnessedReindeers" |-> null, "inofficeElves" |->
     null, "waitElves" |-> null, "waitRreindeers" |-> null, Mtds:
-  < 'backFromHoliday : Mtdname | Param: noAid, Latt: noSubst, Code:
+  < "backFromHoliday" : Mtdname | Param: noAid, Latt: noSubst, Code:
     "ctReindeers" ::= "plus"("ctReindeers" # int(1)) ; "waitReindeers" ::=
     "plus"("waitReindeers" # "caller") ; return(emp) > *
-  < 'deliverToys : Mtdname | Param: noAid, Latt: noSubst, Code: ("ctReindeers"
-    assign int(0)) ; "t1" ! "first"("waitReindeers") . 'harness(emp) ;
+  < "deliverToys" : Mtdname | Param: noAid, Latt: noSubst, Code: ("ctReindeers"
+    assign int(0)) ; "t1" ! "first"("waitReindeers") . "harness"(emp) ;
     "harnessedReindeers" ::= "plus"("harnessedReindeers" # "first"(
     "waitReindeers")) ; "waitReindeers" ::= "rest"("waitReindeers") ; "t5" !
-    "first"("waitReindeers") . 'harness(emp) ; "harnessedReindeers" ::= "plus"(
-    "harnessedReindeers" # "first"("waitReindeers")) ; "waitReindeers" ::=
-    "rest"("waitReindeers") ; await ("t1" ?? & "t2" ?? & "t3" ?? & "t4" ?? &
-    "t5" ??) ; "Dummy" ! "first"("harnessedReindeers") . 'unharness(emp) ;
+    "first"("waitReindeers") . "harness"(emp) ; "harnessedReindeers" ::=
+    "plus"("harnessedReindeers" # "first"("waitReindeers")) ; "waitReindeers"
+    ::= "rest"("waitReindeers") ; await ("t1" ?? & "t2" ?? & "t3" ?? & "t4" ??
+    & "t5" ??) ; "Dummy" ! "first"("harnessedReindeers") . "unharness"(emp) ;
     "harnessedReindeers" ::= "rest"("harnessedReindeers") ; "Dummy" ! "first"(
-    "harnessedReindeers") . 'unharness(emp) ; "harnessedReindeers" ::= "rest"(
+    "harnessedReindeers") . "unharness"(emp) ; "harnessedReindeers" ::= "rest"(
     "harnessedReindeers") ; return(emp) > *
-  < 'haveProblem : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
+  < "haveProblem" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
     "plus"("ctElves" # int(1)) ; "waitElves" ::= "plus"("waitElves" # "caller")
     ; return(emp) > *
-  < 'loop : Mtdname | Param: noAid, Latt: noSubst, Code: (await "and"("lessEq"(
-    int(3) # "ctElves") # "not"("equal"("ctReindeers" # int(9)))) ;
-    'talkToElves(emp : noAid)[]await "equal"("ctReindeers" # int(5)) ;
-    'deliverToys(emp : noAid)) ; "Dummy" ! "this" . 'loop(emp) ; return(emp) >
-    *
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    'loop(emp) ; return(emp) > *
-  < 'talkToelves : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
-    "minus"("ctElves" # int(3)) ; "t1" ! "first"("waitElves") . 'showIn(emp) ;
+  < "loop" : Mtdname | Param: noAid, Latt: noSubst, Code: (await "and"(
+    "lessEq"(int(3) # "ctElves") # "not"("equal"("ctReindeers" # int(9)))) ;
+    "talkToElves"(emp ; noAid)[]await "equal"("ctReindeers" # int(5)) ;
+    "deliverToys"(emp ; noAid)) ; "Dummy" ! "this" . "loop"(emp) ; return(emp)
+    > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+    "loop"(emp) ; return(emp) > *
+  < "talkToelves" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
+    "minus"("ctElves" # int(3)) ; "t1" ! "first"("waitElves") . "showIn"(emp) ;
     "inofficeElves" ::= "plus"("inofficeElves" # "first"("waitElves")) ;
     "waitElves" ::= "rest"("waitElves") ; "t2" ! "first"("waitElves") .
-    'showIn(emp) ; "inofficeElves" ::= "plus"("inofficeElves" # "first"(
+    "showIn"(emp) ; "inofficeElves" ::= "plus"("inofficeElves" # "first"(
     "waitElves")) ; "waitElves" ::= "rest"("waitElves") ; "t3" ! "first"(
-    "waitElves") . 'showIn(emp) ; "inofficeElves" ::= "plus"("inofficeElves" #
+    "waitElves") . "showIn"(emp) ; "inofficeElves" ::= "plus"("inofficeElves" #
     "first"("waitElves")) ; "waitElves" ::= "rest"("waitElves") ; await ("t1"
-    ?? & "t2" ?? & "t3" ??) ; "t1" ! "first"("inoffcieElves") . 'showOut(emp) ;
-    "inofficeElves" ::= "rest"("inofficeElves") ; "t2" ! "first"(
-    "inoffcieElves") . 'showOut(emp) ; "inofficeElves" ::= "rest"(
-    "inofficeElves") ; "t3" ! "first"("inoffcieElves") . 'showOut(emp) ;
+    ?? & "t2" ?? & "t3" ??) ; "t1" ! "first"("inoffcieElves") . "showOut"(emp)
+    ; "inofficeElves" ::= "rest"("inofficeElves") ; "t2" ! "first"(
+    "inoffcieElves") . "showOut"(emp) ; "inofficeElves" ::= "rest"(
+    "inofficeElves") ; "t3" ! "first"("inoffcieElves") . "showOut"(emp) ;
     "inofficeElves" ::= "rest"("inofficeElves") ; await ("t1" ?? & "t2" ?? &
     "t3" ??) ; return(emp) >,
   Ocnt: 0 >
