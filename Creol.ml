@@ -996,10 +996,10 @@ struct
       | Wait _ -> output_string out "wait"
       | Condition (_, c) -> of_creol_expression out c
       | Conjunction (_, l, r) ->
-	  output_string out "\"and\" ( "; of_creol_guard out l;
-	  output_string out " # "; of_creol_guard out r ;
+	  output_string out "( "; of_creol_guard out l;
+	  output_string out " & "; of_creol_guard out r ;
 	  output_string out ") "
-	    
+
   let of_creol_statement out stmt =
     let open_paren prec op_prec =
       if prec < op_prec then output_string out "( " ;

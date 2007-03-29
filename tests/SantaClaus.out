@@ -1,6 +1,6 @@
 ==========================================
 reduce in PROGRAM : init .
-result [Configuration]: 
+result Configuration: 
 < 'Christmas : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds:
   < 'run : Mtdname | Param: noAid, Latt: "e" |-> null, "r" |-> null, "sc" |->
     null, Code: "sc" ::= new 'SantaClausClass(emp) ; "r" ::= new 'Reindeer(
@@ -57,11 +57,11 @@ result [Configuration]:
     "waitReindeers")) ; "waitReindeers" ::= "rest"("waitReindeers") ; "t5" !
     "first"("waitReindeers") . 'harness(emp) ; "harnessedReindeers" ::= "plus"(
     "harnessedReindeers" # "first"("waitReindeers")) ; "waitReindeers" ::=
-    "rest"("waitReindeers") ; await "and"("t1" ?? # "and"("t2" ?? # "and"("t3"
-    ?? # "and"("t4" ?? # "t5" ??)))) ; "Dummy" ! "first"("harnessedReindeers")
-    . 'unharness(emp) ; "harnessedReindeers" ::= "rest"("harnessedReindeers") ;
-    "Dummy" ! "first"("harnessedReindeers") . 'unharness(emp) ;
-    "harnessedReindeers" ::= "rest"("harnessedReindeers") ; return(emp) > *
+    "rest"("waitReindeers") ; await ("t1" ?? & "t2" ?? & "t3" ?? & "t4" ?? &
+    "t5" ??) ; "Dummy" ! "first"("harnessedReindeers") . 'unharness(emp) ;
+    "harnessedReindeers" ::= "rest"("harnessedReindeers") ; "Dummy" ! "first"(
+    "harnessedReindeers") . 'unharness(emp) ; "harnessedReindeers" ::= "rest"(
+    "harnessedReindeers") ; return(emp) > *
   < 'haveProblem : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
     "plus"("ctElves" # int(1)) ; "waitElves" ::= "plus"("waitElves" # "caller")
     ; return(emp) > *
@@ -79,12 +79,12 @@ result [Configuration]:
     'showIn(emp) ; "inofficeElves" ::= "plus"("inofficeElves" # "first"(
     "waitElves")) ; "waitElves" ::= "rest"("waitElves") ; "t3" ! "first"(
     "waitElves") . 'showIn(emp) ; "inofficeElves" ::= "plus"("inofficeElves" #
-    "first"("waitElves")) ; "waitElves" ::= "rest"("waitElves") ; await "and"(
-    "t1" ?? # "and"("t2" ?? # "t3" ??)) ; "t1" ! "first"("inoffcieElves") .
-    'showOut(emp) ; "inofficeElves" ::= "rest"("inofficeElves") ; "t2" !
-    "first"("inoffcieElves") . 'showOut(emp) ; "inofficeElves" ::= "rest"(
+    "first"("waitElves")) ; "waitElves" ::= "rest"("waitElves") ; await ("t1"
+    ?? & "t2" ?? & "t3" ??) ; "t1" ! "first"("inoffcieElves") . 'showOut(emp) ;
+    "inofficeElves" ::= "rest"("inofficeElves") ; "t2" ! "first"(
+    "inoffcieElves") . 'showOut(emp) ; "inofficeElves" ::= "rest"(
     "inofficeElves") ; "t3" ! "first"("inoffcieElves") . 'showOut(emp) ;
-    "inofficeElves" ::= "rest"("inofficeElves") ; await "and"("t1" ?? # "and"(
-    "t2" ?? # "t3" ??)) ; return(emp) >,
+    "inofficeElves" ::= "rest"("inofficeElves") ; await ("t1" ?? & "t2" ?? &
+    "t3" ??) ; return(emp) >,
   Ocnt: 0 >
 Bye.
