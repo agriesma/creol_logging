@@ -28,10 +28,10 @@ mod TEST-TAILCALL is
   op init : -> Configuration .
   eq init =
 
-    < 'Tailcall : Cl | Inh: noInh, Par: 'x, Att: 'x |-> null, Mtds:
+    < 'Tailcall : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
 	< 'init : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
 	< 'run : Mtdname | Param: noAid, Latt: noSubst, Code:
-          if 'less[[ int(0) # 'x ]] th 'x ::= ('minus[[ 'x # int(1) ]]) ;
+          if "less" ( int(0) # "x" ) th "x" ::= "minus" ( "x" # int(1) ) ;
 	    tailcall 'run(emp) el return(emp) fi >,
       Ocnt: 0 >
 

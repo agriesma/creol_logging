@@ -35,65 +35,65 @@ in datatypes
 in interpreter
 
 
-red in SUBST : insert('var1, bool(true), noSubst) .
-red in SUBST : insert('var2, bool(false), insert('var1, bool(true), noSubst)) .
-red in SUBST : insert('var2, bool(false), insert('var1, bool(true), noSubst)) ['var1] .
-red in SUBST : upTerm(insert('var1, bool(false), noSubst)) .
-red in SUBST : downTerm(upTerm(insert('var1, bool(false), noSubst)),noSubst) .
-red in SUBST : downTerm(upTerm(insert('var2, bool(true), insert('var1, bool(false), noSubst)) ['var1]), null) .
-red in SUBST : dom('var1, insert('var2, bool(true), insert('var1, bool(false), noSubst))) .
+red in SUBST : insert("var1", bool(true), noSubst) .
+red in SUBST : insert("var2", bool(false), insert("var1", bool(true), noSubst)) .
+red in SUBST : insert("var2", bool(false), insert("var1", bool(true), noSubst)) ["var1"] .
+red in SUBST : upTerm(insert("var1", bool(false), noSubst)) .
+red in SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),noSubst) .
+red in SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", bool(false), noSubst)) ["var1"]), null) .
+red in SUBST : dom("var1", insert("var2", bool(true), insert("var1", bool(false), noSubst))) .
 
 GRAMMAR_TEST(GUARDS, wait, noGuard)
 GRAMMAR_TEST(GUARDS, bool(true), noGuard)
 GRAMMAR_TEST(GUARDS, int(4) & int(5), noGuard)
 GRAMMAR_TEST(GUARDS, int(4) & int(5) & wait, noGuard)
-GRAMMAR_TEST(GUARDS, 'test ??, noGuard)
-GRAMMAR_TEST(GUARDS, 'test ?? & 'pest, noGuard)
-GRAMMAR_TEST(GUARDS, {| 'add[[int(4) # int(5)]] & 'label ?? & wait & bool(true) & wait |}, noGuard)
+GRAMMAR_TEST(GUARDS, "test" ??, noGuard)
+GRAMMAR_TEST(GUARDS, "test" ?? & "pest", noGuard)
+GRAMMAR_TEST(GUARDS, {| "add" (int(4) # int(5)) & "label" ?? & wait & bool(true) & wait |}, noGuard)
 
-GRAMMAR_TEST(STATEMENTS, 'a . 'a, 'a)
-GRAMMAR_TEST(STATEMENTS, 'a @ 'a, 'a)
-GRAMMAR_TEST(STATEMENTS, skip, 'a ::= 'a)
-GRAMMAR_TEST(STATEMENTS, 'a ::= 'a, skip)
-GRAMMAR_TEST(STATEMENTS, {| 'var ::= new 'C (int(5) # bool(true)) |}, skip)
+GRAMMAR_TEST(STATEMENTS, "a" . 'a, "a")
+GRAMMAR_TEST(STATEMENTS, "a" @ 'a, "a")
+GRAMMAR_TEST(STATEMENTS, skip, "a" ::= "a")
+GRAMMAR_TEST(STATEMENTS, "a" ::= "a", skip)
+GRAMMAR_TEST(STATEMENTS, {| "var" ::= new 'C (int(5) # bool(true)) |}, skip)
 GRAMMAR_TEST(STATEMENTS, 'm (emp : noAid), skip)
-GRAMMAR_TEST(STATEMENTS, 'o . 'm (emp : noAid), skip)
-GRAMMAR_TEST(STATEMENTS, 'o . 'm (bool(false) : noAid), skip)
-GRAMMAR_TEST(STATEMENTS, 'o . 'm (emp : 'r), skip)
-GRAMMAR_TEST(STATEMENTS, 'o . 'm (null : 'r), skip)
-GRAMMAR_TEST(STATEMENTS, 'a ! 'm (emp), skip)
-GRAMMAR_TEST(STATEMENTS, {| 'a ! 'm (null # null) |}, skip)
-GRAMMAR_TEST(STATEMENTS, {| 'a ! 'o . 'm (null # 'a) |}, skip)
-GRAMMAR_TEST(STATEMENTS, {| (('a)?(noAid)) |}, skip)
-GRAMMAR_TEST(STATEMENTS, (('a)?('a)), skip)
-GRAMMAR_TEST(STATEMENTS, await ('test ??) , skip)
-GRAMMAR_TEST(STATEMENTS, await (('test ??) & wait), skip)
-GRAMMAR_TEST(STATEMENTS, await (('test ??) & wait), skip)
+GRAMMAR_TEST(STATEMENTS, "o" . 'm (emp : noAid), skip)
+GRAMMAR_TEST(STATEMENTS, "o" . 'm (bool(false) : noAid), skip)
+GRAMMAR_TEST(STATEMENTS, "o" . 'm (emp : "r"), skip)
+GRAMMAR_TEST(STATEMENTS, "o" . 'm (null : "r"), skip)
+GRAMMAR_TEST(STATEMENTS, "l" ! 'm (emp), skip)
+GRAMMAR_TEST(STATEMENTS, {| "l" ! 'm (null # null) |}, skip)
+GRAMMAR_TEST(STATEMENTS, {| "l" ! "o" . 'm (null # "a") |}, skip)
+GRAMMAR_TEST(STATEMENTS, {| (("l")?(noAid)) |}, skip)
+GRAMMAR_TEST(STATEMENTS, (("l")?("l")), skip)
+GRAMMAR_TEST(STATEMENTS, await ("test" ??) , skip)
+GRAMMAR_TEST(STATEMENTS, await (("test" ??) & wait), skip)
+GRAMMAR_TEST(STATEMENTS, await (("test" ??) & wait), skip)
 GRAMMAR_TEST(STATEMENTS, return (emp), skip)
-GRAMMAR_TEST(STATEMENTS, {| return ('a # null # 'c) |}, skip)
+GRAMMAR_TEST(STATEMENTS, {| return ("a" # null # "c") |}, skip)
 GRAMMAR_TEST(STATEMENTS, free (noAid), skip)
-GRAMMAR_TEST(STATEMENTS, free ('a ,, 'b ,, 'c), skip)
+GRAMMAR_TEST(STATEMENTS, free ("a" , "b" , "c"), skip)
 GRAMMAR_TEST(STATEMENTS, tailcall 'm (emp), skip)
-GRAMMAR_TEST(STATEMENTS, {| tailcall 'm (null # 'a) |}, skip)
+GRAMMAR_TEST(STATEMENTS, {| tailcall 'm (null # "a") |}, skip)
 
 GRAMMAR_TEST(STM-LIST, noStm, skip)
 GRAMMAR_TEST(STM-LIST, skip, noStm)
 GRAMMAR_TEST(STM-LIST, skip ; noStm, noStm)
-GRAMMAR_TEST(STM-LIST, 'var ::= int(4) [] 'var ::= new 'C (null), noStm)
-GRAMMAR_TEST(STM-LIST, 'var ::= int(4) [] 'var ::= new 'C (null) ||| skip, noStm)
-GRAMMAR_TEST(STM-LIST, 'var ::= int(4) [] 'var ::= new 'C (null) ||| noStm ||| skip, noStm)
+GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new 'C (null), noStm)
+GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new 'C (null) ||| skip, noStm)
+GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new 'C (null) ||| noStm ||| skip, noStm)
 
 GRAMMAR_TEST(STM-LIST, idle, idle)
-GRAMMAR_TEST(STM-LIST, {| (insert('var2, int(4), insert('var1, str("test"), noSubst)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) |}, noProc)
+GRAMMAR_TEST(STM-LIST, {| (insert("var2", int(4), insert("var1", str("test"), noSubst)), ((("var" ::= int(4)) [] ("var" ::= new 'C (null))) ||| skip)) |}, noProc)
 GRAMMAR_TEST(STM-LIST, noProc, idle)
 GRAMMAR_TEST(STM-LIST, idle, noProc)
-GRAMMAR_TEST(STM-LIST, {| (insert('var2, int(4), insert('var1, str("test"), noSubst)), ((('var ::= int(4)) [] ('var ::= new 'C (null))) ||| skip)) ++ idle |}, noProc)
+GRAMMAR_TEST(STM-LIST, {| (insert("var2", int(4), insert("var1", str("test"), noSubst)), ((("var" ::= int(4)) [] ("var" ::= new 'C (null))) ||| skip)) ++ idle |}, noProc)
 
 GRAMMAR_TEST(OBJECT, {| < ob('object1) : 'class | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 0 > |}, noObj)
 
 GRAMMAR_TEST(COMMUNICATION, noMsg, noMsg)
 GRAMMAR_TEST(COMMUNICATION, {| noQu |}, noQu)
-GRAMMAR_TEST(COMMUNICATION, {| < 'Ob1 : Qu | Size: 1, Dealloc: noDealloc , Ev: noMsg > |}, noQu)
+GRAMMAR_TEST(COMMUNICATION, {| < ob('Ob1) : Qu | Size: 1, Dealloc: noDealloc , Ev: noMsg > |}, noQu)
 
 fmod CREOL-LABEL-TEST is
   extending CREOL-DATA-SIG .

@@ -7,7 +7,7 @@ dnl script to execute for the text.  Number of rewrites will be filtered.
 m4_define([TEST_MAUDE], [dnl
 AT_CHECK([$MAUDE -no-banner -no-advise -batch $2 dnl
   | sed -f ${abs_srcdir}/maude.sed > $1.out])
-AT_CHECK([diff $1.out ${abs_srcdir}/$1.expected])
+AT_CHECK([diff $1.out ${abs_srcdir}/$1.out])
 ])
 
 dnl Test our tool chain.  Requires maude,

@@ -11,17 +11,17 @@ result AidList: noAid
 reduce in CREOL-DATA-SIG : noAid .
 result AidList: noAid
 ==========================================
-reduce in CREOL-DATA-SIG : 'a .
-result Sort: 'a
+reduce in CREOL-DATA-SIG : "a" .
+result Char: "a"
 ==========================================
-reduce in CREOL-DATA-SIG : 'a # 'a .
-result NeExprList: 'a # 'a
+reduce in CREOL-DATA-SIG : "a" # "a" .
+result NeExprList: "a" # "a"
 ==========================================
-reduce in CREOL-DATA-SIG : 'a,,'a .
-result NeAidList: 'a,,'a
+reduce in CREOL-DATA-SIG : 'a,'a .
+result NeParameterList: 'a,'a
 ==========================================
-reduce in CREOL-DATA-SIG : 'a[['a]] .
-result Appl: 'a[['a]]
+reduce in CREOL-DATA-SIG : "a"("a") .
+result Appl: "a"("a")
 ==========================================
 reduce in CREOL-DATA-SIG : null .
 result Data: null
@@ -29,18 +29,17 @@ result Data: null
 reduce in CREOL-DATA-SIG : null # null .
 result NeDataList: null # null
 ==========================================
-reduce in CREOL-DATA-SIG : null # 'a .
-result NeExprList: null # 'a
+reduce in CREOL-DATA-SIG : null # "a" .
+result NeExprList: null # "a"
 ==========================================
-reduce in CREOL-DATA-SIG : null # ('a[['a]]) # null .
-result NeExprList: null # ('a[['a]]) # null
+reduce in CREOL-DATA-SIG : null # "a"("a") # null .
+result NeExprList: null # "a"("a") # null
 ==========================================
-reduce in CREOL-DATA-SIG : ('a[['a]]) # null .
-result NeExprList: ('a[['a]]) # null
+reduce in CREOL-DATA-SIG : "a"("a") # null .
+result NeExprList: "a"("a") # null
 ==========================================
-reduce in CREOL-DATA-SIG : null,,'a .
-result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
-    ModuleExpression,Header,ExprList,AidList]: null,,'a
+reduce in CREOL-DATA-SIG : null, "a" .
+result [ExprList,AidList]: null, "a"
 ==========================================
 reduce in CREOL-DATA-SIG : ob('a) .
 result Oid: ob('a)
@@ -48,23 +47,20 @@ result Oid: ob('a)
 reduce in CREOL-DATA-SIG : bool(true) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-DATA-SIG : 'equal[[null # null]] .
+reduce in CREOL-DATA-SIG : "equal"(null # null) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-DATA-SIG : 'not[['equal[[null # null]]]] .
+reduce in CREOL-DATA-SIG : "not"("equal"(null # null)) .
 result Data: bool(false)
 ==========================================
-reduce in CREOL-DATA-SIG : 'or[[('equal[[null # null]]) # ('equal[[null #
-    null]])]] .
+reduce in CREOL-DATA-SIG : "or"("equal"(null # null) # "equal"(null # null)) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-DATA-LIST : 'add[[list(int(1) # int(2)) # 'head[[list(int(1) #
-    int(2))]]]] .
-result [QidSet,QidList,TypeListSet,GTermList,ParameterList,Type?,
-    ModuleExpression,Header,ExprList,AidList]: 'add[[list(int(1) # int(2)) #
-    'head[[list(int(1) # int(2))]]]]
+reduce in CREOL-DATA-LIST : "add"(list(int(1) # int(2)) # "head"(list(int(1) #
+    int(2)))) .
+result Appl: "add"(list(int(1) # int(2)) # int(1))
 ==========================================
-reduce in CREOL-DATA-LIST : 'add[[list(int(1) # int(2)) # ('head[[list(int(1) #
-    int(2))]])]] .
-result Data: list(int(1) # int(2) # int(1))
+reduce in CREOL-DATA-LIST : "add"(list(int(1) # int(2)) # "head"(list(int(1) #
+    int(2)))) .
+result Appl: "add"(list(int(1) # int(2)) # int(1))
 Bye.

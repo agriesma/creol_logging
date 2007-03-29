@@ -3,11 +3,11 @@ mod PROGRAM is
 pr INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
-< 'Buffer : Cl | Inh: noInh, Par: noAid, Att: 'cell |-> null , 'ctr |-> null , 'next |-> null, Mtds: 
-  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: 'ctr ::= int(0) ; return ( emp ) > *
+< 'Buffer : Cl | Inh: noInh, Par: noAid, Att: "cell" |-> null , "ctr" |-> null , "next" |-> null, Mtds: 
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: "ctr" ::= int(0) ; return ( emp ) > *
   < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < 'put : Mtdname | Param: 'x, Latt: 'x |-> null, Code: if ( 'equal[[ 'ctr # int(0) ]] ) th 'cell ::= 'x el if ( 'equal[[ 'next # null ]] ) th 'next ::= new 'Buffer( emp ) el skip fi ; 'next . 'put( 'x : noAid ) fi ; 'ctr ::= ( 'plus[[ 'ctr # int(1) ]] ) ; return ( emp ) > *
-  < 'get : Mtdname | Param: noAid, Latt: 'x |-> null, Code: ( await ( 'less[[ int(0) # 'ctr ]] ) ) ; if ( 'not[[ ( 'equal[[ 'cell # null ]] ) ]] ) th 'x ::= 'cell el 'next . 'get( emp : 'x ) fi ; 'ctr ::= ( 'minus[[ 'ctr # int(1) ]] ) ; 'cell ::= null ; return ( 'x ) >, Ocnt: 0 >
+  < 'put : Mtdname | Param: "x", Latt: "x" |-> null, Code: if "equal" ( "ctr" # int(0) ) th "cell" ::= "x" el if "equal" ( "next" # null ) th "next" ::= new 'Buffer( emp ) el skip fi ; "next" . 'put( "x" : noAid ) fi ; "ctr" ::= "plus" ( "ctr" # int(1) ) ; return ( emp ) > *
+  < 'get : Mtdname | Param: noAid, Latt: "x" |-> null, Code: ( await "less" ( int(0) # "ctr" ) ) ; if "not" ( "equal" ( "cell" # null ) ) th "x" ::= "cell" el "next" . 'get( emp : "x" ) fi ; "ctr" ::= "minus" ( "ctr" # int(1) ) ; "cell" ::= null ; return ( "x" ) >, Ocnt: 0 >
 
 .
 endm

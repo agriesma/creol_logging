@@ -27,21 +27,21 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
-TESTFILES	= Datatypes.maude Datatypes.expected \
-		  Signature.maude Signature.expected \
-		  Interpreter.maude Interpreter.expected \
-		  MetaExec.maude MetaExec.expected \
-		  ModelChecker.maude ModelChecker.expected \
-		  Deadlock.creol Deadlock.maude Deadlock.expected \
-		  Alarmclock.creol Alarmclock.maude Alarmclock.expected \
-		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.expected \
-		  Philosophers.creol Philosophers.maude Philosophers.expected \
-		  Sieve.creol Sieve.maude Sieve.expected \
+TESTFILES	= Datatypes.maude Datatypes.out \
+		  Signature.maude Signature.out \
+		  Interpreter.maude Interpreter.out \
+		  MetaExec.maude MetaExec.out \
+		  ModelChecker.maude ModelChecker.out \
+		  Deadlock.creol Deadlock.maude Deadlock.out \
+		  Alarmclock.creol Alarmclock.maude Alarmclock.out \
+		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.out \
+		  Philosophers.creol Philosophers.maude Philosophers.out \
+		  Sieve.creol Sieve.maude Sieve.out \
 		  SingleCellBuffer.creol SingleCellBuffer.maude \
-		  SingleCellBuffer.expected \
-		  Fibonacci.creol Fibonacci.maude Fibonacci.expected \
-		  SantaClaus.creol SantaClaus.maude SantaClaus.expected \
-		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.expected
+		  SingleCellBuffer.out \
+		  Fibonacci.creol Fibonacci.maude Fibonacci.out \
+		  SantaClaus.creol SantaClaus.maude SantaClaus.out \
+		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.out
 
 TESTPARTS	= 
 

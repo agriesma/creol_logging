@@ -1,0 +1,86 @@
+==========================================
+reduce in PROGRAM : init .
+result Configuration: 
+< 'Init : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null, "p3"
+    |-> null, Mtds:
+  < 'getNeighbor : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if
+    "equal"("caller" # "p1") th "p" ::= "p3" el if "equal"("caller" # "p2") th
+    "p" ::= "p1" el "p" ::= "p2" fi fi ; return("p") > *
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new 'Process(
+    "this" # int(1)) ; "p2" ::= new 'Process("this" # int(2)) ; "p3" ::= new
+    'Process("this" # int(3)) ; return(emp) >,
+  Ocnt: 0 >
+
+< 'Process : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
+    null, "status" |-> null, "u" |-> null, Mtds:
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
+    0)) ; "i" . 'getNeighbor(emp : "neighbor") ; "Dummy" ! "neighbor" .
+    'receive("u") ; return(emp) > *
+  < 'receive : Mtdname | Param: "v", Latt: "v" |-> null, Code: if "less"("u" #
+    "v") th "Dummy" ! "neighbor" . 'receive("v") el if "equal"("v" # "u") th
+    "status" assign int(1) el skip fi fi ; return(emp) > *
+  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+==========================================
+rewrite in PROGRAM : init
+main('Init, emp) .
+result Configuration: 
+< ob('Init0) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
+
+< ob('Process0) : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
+    'Process0),3),emp) + comp(label(ob('Process0),5),emp) + comp(label(ob(
+    'Process0),6),emp) >
+
+< ob('Process1) : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
+    'Process1),3),emp) + comp(label(ob('Process1),5),emp) >
+
+< ob('Process2) : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
+    'Process2),3),emp) >
+
+< ob('main) : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
+
+< 'Init : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null, "p3"
+    |-> null, Mtds:
+  < 'getNeighbor : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if
+    "equal"("caller" # "p1") th "p" ::= "p3" el if "equal"("caller" # "p2") th
+    "p" ::= "p1" el "p" ::= "p2" fi fi ; return("p") > *
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new 'Process(
+    "this" # int(1)) ; "p2" ::= new 'Process("this" # int(2)) ; "p3" ::= new
+    'Process("this" # int(3)) ; return(emp) >,
+  Ocnt: 1 >
+
+< 'Process : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
+    null, "status" |-> null, "u" |-> null, Mtds:
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
+    0)) ; "i" . 'getNeighbor(emp : "neighbor") ; "Dummy" ! "neighbor" .
+    'receive("u") ; return(emp) > *
+  < 'receive : Mtdname | Param: "v", Latt: "v" |-> null, Code: if "less"("u" #
+    "v") th "Dummy" ! "neighbor" . 'receive("v") el if "equal"("v" # "u") th
+    "status" assign int(1) el skip fi fi ; return(emp) > *
+  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  Ocnt: 3 >
+
+< ob('Init0) : 'Init | Att: "p1" |-> ob('Process0), "p2" |-> ob('Process1),
+    "p3" |-> ob('Process2), "this" |-> ob('Init0),
+  Pr: idle,
+  PrQ: noProc, Lcnt: 3 >
+
+< ob('Process0) : 'Process | Att: "i" |-> ob('Init0), "neighbor" |-> ob(
+    'Process2), "status" |-> int(0), "this" |-> ob('Process0), "u" |-> int(1),
+  Pr: idle,
+  PrQ: noProc, Lcnt: 7 >
+
+< ob('Process1) : 'Process | Att: "i" |-> ob('Init0), "neighbor" |-> ob(
+    'Process0), "status" |-> int(0), "this" |-> ob('Process1), "u" |-> int(2),
+  Pr: idle,
+  PrQ: noProc, Lcnt: 6 >
+
+< ob('Process2) : 'Process | Att: "i" |-> ob('Init0), "neighbor" |-> ob(
+    'Process1), "status" |-> int(1), "this" |-> ob('Process2), "u" |-> int(3),
+  Pr: idle,
+  PrQ: noProc, Lcnt: 5 >
+
+< ob('main) : 'Class | Att: noSubst,
+  Pr: idle,
+  PrQ: noProc, Lcnt: 0 >
+Bye.

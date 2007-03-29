@@ -80,6 +80,7 @@ ifdef({|MODELCHECK|},dnl
 
 ifdef({|MODELCHECK|},{|in model-checker|})
 
+*** Data types are in their own module.
 load datatypes
 
 
@@ -125,6 +126,7 @@ fmod EVAL is
   var A : Aid .
   var S : Subst .
   var Q : Qid .
+  var F : String .
   var I : Int .
   var B : Bool .
 
@@ -134,7 +136,7 @@ fmod EVAL is
   *** standard evaluation of expression
   op eval     : Expr Subst     -> Data .
   eq {|eval|}(A, S) =  S [A] .
-  eq {|eval|}(Q [[EL]], S) = Q [[ evalList(EL, S) ]] .
+  eq {|eval|}(F (EL), S) = F ( evalList(EL, S) ) .
   eq {|eval|}(list(EL), S) = list(evalList(EL, S)) .
   eq {|eval|}(pair(E,E'),S) = pair({|eval|}(E,S),{|eval|}(E',S)) .
   eq {|eval|}(setl(EL), S) = setl(evalList(EL, S)) .
@@ -169,7 +171,7 @@ fmod GUARDS is
 
   eq wait & wait = wait .
   eq PG & PG = PG .
-  eq E & E' = 'and[[E # E']] .
+  eq E & E' = "and" (E # E') .
 
 endfm
 
@@ -180,7 +182,8 @@ fmod STATEMENTS is
   subsort Qid < Mid Cid .
 
   op _._   : Expr Mid -> Mid [ctor prec 33] .
-  op _@_   : Qid  Cid -> Mid [ctor prec 33] .
+  op _@_   : Mid  Cid -> Mid [ctor prec 33] .
+  op _@_   : Aid  Cid -> Mid [ctor prec 33] .
 
   op skip : -> Stm [ctor] .
   op _::=_ : AidList ExprList -> Stm [ctor prec 39] .
@@ -211,7 +214,6 @@ fmod STM-LIST is
 			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_) .
 
   op if_th_el_fi : Expr StmList StmList -> Stm [ctor] . 
-  op if_th_fi    : Expr StmList -> Stm [ctor] . 
   op while_do_od : Expr StmList -> Stm [ctor] .
   op _[]_  : StmList StmList -> Stm [ctor comm assoc prec 45] .
   op _|||_ : StmList StmList -> Stm [ctor comm assoc prec 47] .
@@ -231,16 +233,15 @@ fmod STM-LIST is
   eq (noStm ||| SL)  = SL . 
   eq (noStm MERGER SL)      = SL .
   eq (SL MERGER noStm)      = SL .
-  eq if B th SL fi = if B th SL el skip fi .
 
   eq await (wait & PG) = await wait ; await PG .
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
 
   sort Process .
   op idle : -> Process [{|format|} (!b o)] .  
-  op _,_ : Subst StmList -> Process [ctor {|format|} (o r nb o)] . 
+  op _,_ : Subst StmList -> Process [ctor {|format|} (o r sbu o)] . 
   var L : Subst .
-  eq (L, noStm) = idle . *** if 'label is needed this is dangerous!
+  eq (L, noStm) = idle . *** if "label" is needed this is dangerous!
   eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
 
 
@@ -275,20 +276,23 @@ fmod CLASS is
   var N : Nat .
   var AL : AidList .
 
+  *** XXX: This looks dangerous or confusing for programmers.
+  *** Why not: Ih ## IL ## Ih = IL ## Ih to have Ih initialised last?
+
   eq  Ih ## IL ## Ih = Ih ## IL .
 
   op <_: Mtdname | Param:_, Latt:_, Code:_> : 
     Qid AidList Subst StmList -> Mtd [ctor
-      {|format|} (g! g o o o g o o g o o g o g o)] .
+      {|format|} (b d o d d sb o d sb o d sb o b o)] .
 
   subsort Mtd < MMtd .    *** Multiset of methods
 
   op noMtd : -> Mtd [ctor] .
-  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd {|format|} (o o on o)] .
+  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd {|format|} (d d ni d)] .
 
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
     Cid InhList AidList Subst MMtd Nat -> Class 
-     [{|format|} (nb! b o o o b o o  b o o  b o o  b on o  b o  b! on )] .
+     [{|format|} (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
 
   op emptyClass : -> Class .
   eq emptyClass =
@@ -309,7 +313,7 @@ fmod CLASS is
   eq get(Q, noMtd, O, Lab, EL) = noProc . 
   eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, Lab, EL) = 
     if Q == Q' 
-    then (insert('caller, O, insert('label, Lab, S)), (AL ::= EL) ; SL)
+    then (insert("caller", O, insert("label", Lab, S)), (AL ::= EL) ; SL)
     else get(Q, MM, O, Lab, EL) fi .
 
 endfm
@@ -322,7 +326,7 @@ fmod OBJECT is
 
   op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
        Oid Cid Subst Process MProc Nat -> Object 
-         [ctor {|format|} (nr! r o o o  r o r  r o r r o r r o r! no)] .
+         [ctor {|format|} (nr d d g r d o  r++ ni o  r ni o  r s o--  r o)] .
 
   op noObj : -> Object [ctor] .
 
@@ -372,7 +376,7 @@ fmod COMMUNICATION is
 
   op noQu : -> Queue [ctor] .
   op <_: Qu | Size:_, Dealloc:_, Ev:_ > : Oid Nat Labels MMsg -> Queue 
-                          [{|format|} (nm! m o o o  m o o m o o m o m! no)] . 
+                          [{|format|} (nm r o d d sm o d sm o d sm o m o)] .
 
 endfm
 
@@ -386,12 +390,13 @@ fmod CONFIG is
   subsorts Object Msg Queue Class < Configuration .
 
   op noConf : -> Configuration [ctor] .
-  op __ : Configuration Configuration -> Configuration [ctor assoc comm id: noConf] .
+  op __ : Configuration Configuration -> Configuration
+	[ctor assoc comm id: noConf {|format|} (d n d)] .
   op main : Cid ExprList -> Configuration .
 
   var C : Cid . var E : ExprList .
   eq main(C,E) = < ob('main) : 'Class | Att: noSubst, 
-                 Pr: (noSubst, ('var ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
+                 Pr: (noSubst, ("var" ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
                < ob('main) : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
@@ -493,7 +498,7 @@ ifdef({|MODELCHECK|},dnl
 {|  op label : Oid Oid Mid DataList -> Label [ctor] .
     eq caller(label(O, O', M, DL)) = O . |}
 ,dnl
-{| op label : Oid Nat -> Label [ctor] .
+{| op label(_,_) : Oid Nat -> Label [ctor {|format|} (d d ! d d o d)] .
    eq caller(label(O, N)) = O . |})
 
 *** multiple assignment
@@ -517,7 +522,7 @@ eq
 	    PrQ: W, Lcnt: N > .
 
 STEP(dnl
-{|< O : C | Att: S, Pr: (L,( (A ,, NeAL assign D # NeDL) ; SL)), PrQ: W,
+{|< O : C | Att: S, Pr: (L,( (A , NeAL assign D # NeDL) ; SL)), PrQ: W,
     Lcnt: N >|},
 {|if dom(A,S) then
     < O : C | Att: insert(A, D, S), Pr: (L, (NeAL assign NeDL) ; SL), PrQ: W,
@@ -579,7 +584,7 @@ STEP(dnl
   < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, (S {|#|} L))),
-    ((noSubst, ('Dummy ! 'init (emp)) ; ('Dummy ?(noAid)) ; ('Dummy ! 'run (emp)) ; ('Dummy ?(noAid)))))|},
+    ((noSubst, ("Dummy" ! 'init (emp)) ; ("Dummy" ?(noAid)) ; ("Dummy" ! 'run (emp)) ; ("Dummy" ?(noAid)))))|},
 {|[label new-object]|})
 
 
@@ -601,14 +606,14 @@ eq
   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
   =
   findAttr(O, I {|#|}{|#|} I',(L {|#|} S), (AL ::= EL) ; SL, 
-           (L', (C ! 'init @ C(emp)) ; (C ?( noAid)) ; SL'))
+           (L', ("Dummy" ! 'init @ C(emp)) ; ("Dummy" ?( noAid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
 
 eq
   foundAttr(O, S', SL, (L', SL'))
   < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
   =
-  < O : C | Att: ('this |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Lcnt: N >
+  < O : C | Att: ("this" |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Lcnt: N >
   .
 
 
@@ -664,7 +669,7 @@ ceq
   = 
   < O : C | Att: S,Pr: (L', SL' ; cont(Lab)),PrQ: W ++ (L,((Lab ?(AL)); SL)),
             Lcnt: F > 
-  if (L'['label] == Lab)
+  if (L'["label"] == Lab)
   [label local-call] .
 
 *** local call within merge
@@ -675,7 +680,7 @@ ceq
   < O : C | Att: S,Pr: (L', SL'),
 	    PrQ: W ++ (L, (((await Lab ??) ; (Lab ?(AL)); SL) MERGER SL'')),
 	    Lcnt: F > 
-  if (L'['label] == Lab)
+  if (L'["label"] == Lab)
   [label local-call-in-merge] .
 
 *** Suspension ***
@@ -750,8 +755,8 @@ eq
 *** Fake the caller and the label and tag the label.  Since we do not
 *** want to interleave, this can also be an equation.
 STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (noSubst, accept(tag(L['label]))), PrQ: W, Lcnt: N >
- bindMtd(O, O, tag(L['label]), M, evalList(EL, (S # L)), C < emp >)
+{|< O : C | Att: S, Pr: (noSubst, accept(tag(L["label"]))), PrQ: W, Lcnt: N >
+ bindMtd(O, O, tag(L["label"]), M, evalList(EL, (S # L)), C < emp >)
 |},
 {|[label tailcall]|})
 
@@ -760,8 +765,8 @@ crl
   < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
          Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (insert('label, tag(Lab), L), SL), PrQ: W, Lcnt: N >
-  if L['label] = Lab
+  < O : C | Att: S, Pr: (insert("label", tag(Lab), L), SL), PrQ: W, Lcnt: N >
+  if L["label"] = Lab
   [label tailcall-accept]
   .
 
@@ -783,7 +788,7 @@ STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
 eq
   bindMtd(O, O', Lab, 'run, EL, noInh)
   = 
-  boundMtd(O,(('caller |-> O', 'label |-> Lab), return(emp)))
+  boundMtd(O,(("caller" |-> O', "label" |-> Lab), return(emp)))
   .
 
 
@@ -883,14 +888,14 @@ ifdef({|MODELCHECK|},
 eq < O : C | Att: S, Pr: (L, (M(EL : AL)); SL), PrQ: W, Lcnt: N >
   =
 ifdef({|MODELCHECK|},dnl
-{|  < O : C | Att: S, Pr: (L, ('Dummy ! M(EL)); ('Dummy ?(AL)); SL), PrQ: W,  Lcnt: N >|},
-{|  < O : C | Att: S, Pr: (L, ('Dummy ! M(EL)); ('Dummy ?(AL)); SL), PrQ: W,  Lcnt: N >|})
+{|  < O : C | Att: S, Pr: (L, ("Dummy" ! M(EL)); ("Dummy" ?(AL)); SL), PrQ: W,  Lcnt: N >|},
+{|  < O : C | Att: S, Pr: (L, ("Dummy" ! M(EL)); ("Dummy" ?(AL)); SL), PrQ: W,  Lcnt: N >|})
   .
 
 *** emit reply message ***
 STEP({|< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >|},
 {|< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  comp(L['label], evalList(EL, (S # L))) from O to caller(L['label])|},
+  comp(L["label"], evalList(EL, (S # L))) from O to caller(L["label"])|},
 {|[label return]|})
 
 *** Optimization: reduce label to value only once
@@ -944,7 +949,7 @@ eq
   .
 
 eq
-  < O : C | Att: S, Pr: ((L, (A |-> D)), bury(A ,, NeAL) ; SL), PrQ: W,
+  < O : C | Att: S, Pr: ((L, (A |-> D)), bury(A , NeAL) ; SL), PrQ: W,
     Lcnt: N > =
   < O : C | Att: S, Pr: (L, bury(NeAL) ; SL), PrQ: W, Lcnt: N >
   .

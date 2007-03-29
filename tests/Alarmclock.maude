@@ -3,10 +3,10 @@ mod PROGRAM is
 pr INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
-< 'Alarmclock : Cl | Inh: noInh, Par: noAid, Att: 'now |-> null, Mtds: 
-  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: 'now ::= int(0) ; return ( emp ) > *
-  < 'wakeme : Mtdname | Param: 'n, Latt: 'n |-> null , 'alarmsetting |-> null, Code: 'alarmsetting ::= ( 'plus[[ 'now # 'n ]] ) ; ( await ( 'lessEq[[ 'alarmsetting # 'now ]] ) ) ; return ( emp ) > *
-  < 'tick : Mtdname | Param: noAid, Latt: noSubst, Code: 'now ::= ( 'plus[[ 'now # int(1) ]] ) ; return ( emp ) >, Ocnt: 0 >
+< 'Alarmclock : Cl | Inh: noInh, Par: noAid, Att: "now" |-> null, Mtds: 
+  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: "now" ::= int(0) ; return ( emp ) > *
+  < 'wakeme : Mtdname | Param: "n", Latt: "n" |-> null , "alarmsetting" |-> null, Code: "alarmsetting" ::= "plus" ( "now" # "n" ) ; ( await "lessEq" ( "alarmsetting" # "now" ) ) ; return ( emp ) > *
+  < 'tick : Mtdname | Param: noAid, Latt: noSubst, Code: "now" ::= "plus" ( "now" # int(1) ) ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

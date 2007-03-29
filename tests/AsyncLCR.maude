@@ -3,14 +3,14 @@ mod PROGRAM is
 pr INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
-< 'Process : Cl | Inh: noInh, Par: 'i ,, 'u, Att: 'i |-> null , 'u |-> null , 'status |-> null , 'neighbor |-> null, Mtds: 
-  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: 'status ::= int(0) ; 'i . 'getNeighbor( emp : 'neighbor ) ; 'Dummy ! 'neighbor . 'receive ( 'u ) ; return ( emp ) > *
+< 'Process : Cl | Inh: noInh, Par: "i" , "u", Att: "i" |-> null , "u" |-> null , "status" |-> null , "neighbor" |-> null, Mtds: 
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: "status" ::= int(0) ; "i" . 'getNeighbor( emp : "neighbor" ) ; "Dummy" ! "neighbor" . 'receive ( "u" ) ; return ( emp ) > *
   < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < 'receive : Mtdname | Param: 'v, Latt: 'v |-> null, Code: if ( 'less[[ 'u # 'v ]] ) th 'Dummy ! 'neighbor . 'receive ( 'v ) el if ( 'equal[[ 'v # 'u ]] ) th 'status ::= int(1) el skip fi fi ; return ( emp ) >, Ocnt: 0 >
+  < 'receive : Mtdname | Param: "v", Latt: "v" |-> null, Code: if "less" ( "u" # "v" ) th "Dummy" ! "neighbor" . 'receive ( "v" ) el if "equal" ( "v" # "u" ) th "status" ::= int(1) el skip fi fi ; return ( emp ) >, Ocnt: 0 >
 
-< 'Init : Cl | Inh: noInh, Par: noAid, Att: 'p1 |-> null , 'p2 |-> null , 'p3 |-> null, Mtds: 
-  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: 'p1 ::= new 'Process( 'this # int(1) ) ; 'p2 ::= new 'Process( 'this # int(2) ) ; 'p3 ::= new 'Process( 'this # int(3) ) ; return ( emp ) > *
-  < 'getNeighbor : Mtdname | Param: noAid, Latt: 'p |-> null, Code: if ( 'equal[[ 'caller # 'p1 ]] ) th 'p ::= 'p3 el if ( 'equal[[ 'caller # 'p2 ]] ) th 'p ::= 'p1 el 'p ::= 'p2 fi fi ; return ( 'p ) >, Ocnt: 0 >
+< 'Init : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null, Mtds: 
+  < 'init : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new 'Process( "this" # int(1) ) ; "p2" ::= new 'Process( "this" # int(2) ) ; "p3" ::= new 'Process( "this" # int(3) ) ; return ( emp ) > *
+  < 'getNeighbor : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if "equal" ( "caller" # "p1" ) th "p" ::= "p3" el if "equal" ( "caller" # "p2" ) th "p" ::= "p1" el "p" ::= "p2" fi fi ; return ( "p" ) >, Ocnt: 0 >
 
 .
 endm

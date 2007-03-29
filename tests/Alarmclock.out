@@ -1,0 +1,13 @@
+==========================================
+reduce in PROGRAM : init .
+result Class: 
+< 'Alarmclock : Cl | Inh: noInh, Par: noAid, Att: "now" |-> null, Mtds:
+  < 'run : Mtdname | Param: noAid, Latt: noSubst, Code: ("now" assign int(0)) ;
+    return(emp) > *
+  < 'tick : Mtdname | Param: noAid, Latt: noSubst, Code: "now" ::= "plus"("now"
+    # int(1)) ; return(emp) > *
+  < 'wakeme : Mtdname | Param: "n", Latt: "alarmsetting" |-> null, "n" |->
+    null, Code: "alarmsetting" ::= "plus"("now" # "n") ; await "lessEq"(
+    "alarmsetting" # "now") ; return(emp) >,
+  Ocnt: 0 >
+Bye.

@@ -963,12 +963,12 @@ struct
       | Bool (_, false) -> output_string out "bool(false)"
       | Bool (_, true) -> output_string out "bool(true)"
       | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
-      | Id (_, i) -> output_string out ("'" ^ i)
+      | Id (_, i) -> output_string out ("\"" ^ i ^ "\"")
       | Unary (_, _, _) -> assert false
       | Binary (_, _, _, _) -> assert false
-      | FuncCall(_, f, a) -> output_string out ("( '" ^ f ^ "[[ " );
+      | FuncCall(_, f, a) -> output_string out ("\"" ^ f ^ "\" ( " );
 	  of_creol_expression_list out a;
-	  output_string out " ]] )"
+	  output_string out " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
       | New (_, c, a) ->
 	  output_string out ("new '" ^ (match c with Basic s -> s | Application (s, _) -> s | _ -> assert false) ^ "( ") ;
@@ -986,18 +986,18 @@ struct
     (** Convert a list of identifiers into a list of Attribute identifiers. *)
     function
 	[] -> output_string out_channel "noAid"
-      | [i] -> output_string out_channel ("'" ^ i)
-      | i::l -> output_string out_channel ("'" ^ i ^ " ,, ");
+      | [i] -> output_string out_channel ("\"" ^ i ^ "\"")
+      | i::l -> output_string out_channel ("\"" ^ i ^ "\", ");
 	  of_creol_identifier_list out_channel l
 
   let rec of_creol_guard out =
     function
-	Label (_, l) -> output_string out ("( '" ^ l ^ " ?? )")
+	Label (_, l) -> output_string out ("( \"" ^ l ^ "\" ?? )")
       | Wait _ -> output_string out "wait"
       | Condition (_, c) -> of_creol_expression out c
       | Conjunction (_, l, r) ->
-	  output_string out "( "; of_creol_guard out l;
-	  output_string out " 'and "; of_creol_guard out r ;
+	  output_string out "\"and\" ( "; of_creol_guard out l;
+	  output_string out " # "; of_creol_guard out r ;
 	  output_string out ") "
 	    
   let of_creol_statement out stmt =
@@ -1017,18 +1017,18 @@ struct
 	    of_creol_expression_list out e
 	| AsyncCall (_, l, c, m, a) ->
 	    output_string out (match l with
-		None -> "'Dummy"
-	      | Some l ->  "'" ^ l ) ;
+		None -> "\"Dummy\""
+	      | Some l ->  "\"" ^ l ^ "\"") ;
 	    output_string out " ! ";
 	    of_creol_expression out c ;
 	    output_string out (" . '" ^ m ^ " ( ") ;
 	    of_creol_expression_list out a;
 	    output_string out " )"
 	| Reply (_, l, o) ->
-	    output_string out ("( '" ^ l ^ " ? ( ") ;
+	    output_string out ("( \"" ^ l ^ "\" ? ( ") ;
 	    of_creol_identifier_list out o;
 	    output_string out " ) ) "
-	| Free (_, l) -> output_string out ("free( '" ^ l ^ " )")
+	| Free (_, l) -> output_string out ("free( \"" ^ l ^ "\" )")
 	| SyncCall (_, c, m, a, r) ->
 	    of_creol_expression out c ;
 	    output_string out (" . '" ^ m);
@@ -1039,8 +1039,8 @@ struct
 	    output_string out " )"
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
 	    output_string out
-	      (match l with None -> "'Dummy !" | Some n -> ("'" ^ n ^ " !"));
-	    output_string out ( " 'this . '" ^ m );
+	      (match l with None -> "\"Dummy\" !" | Some n -> ("\"" ^ n ^ "\" !"));
+	    output_string out ( " \"this\" . '" ^ m );
 	    (match lb with None -> () | Some n -> output_string out (" @ '" ^ n));
 	    (match ub with None -> () | Some n -> output_string out (" << '" ^ n));
 	    output_string out " ( " ;
@@ -1127,22 +1127,22 @@ struct
   let rec of_creol_parameter_list out =
     function
 	[] -> output_string out "noAid"
-      | [v] -> output_string out ("'" ^ v.var_name)
-      | v::r -> output_string out ("'" ^ v.var_name ^ " ,, ");
+      | [v] -> output_string out ("\"" ^ v.var_name ^ "\"")
+      | v::r -> output_string out ("\"" ^ v.var_name ^ "\" , ");
 	  of_creol_parameter_list out r
 
   let rec of_creol_class_attribute_list out =
     function
 	[] -> output_string out "noSubst" 
-      | [v] -> output_string out ("'" ^ v.var_name ^ " |-> null")
-      | v::r -> output_string out ("'" ^ v.var_name ^ " |-> null , ");
+      | [v] -> output_string out ("\"" ^ v.var_name ^ "\" |-> null")
+      | v::r -> output_string out ("\"" ^ v.var_name ^ "\" |-> null , ");
 	  of_creol_class_attribute_list out r
 
   let rec of_creol_method_return out =
     function
 	[] -> output_string out "emp" 
-      | [n] -> output_string out ("'" ^ n.var_name)
-      | n::l -> output_string out ("'" ^ n.var_name ^ " # ");
+      | [n] -> output_string out ("\"" ^ n.var_name ^ "\"")
+      | n::l -> output_string out ("\"" ^ n.var_name ^ "\" # ");
           of_creol_method_return out l
 
   let of_creol_method out m =
