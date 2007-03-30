@@ -507,7 +507,6 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,INTERPRETER) is
   var Q : String .
   var MsgBody : Body .
 
-  op caller : Label -> Oid .
 ifdef({|MODELCHECK|},dnl
 {|  op label : Oid Oid Mid DataList -> Label [ctor] .
     eq caller(label(O, O', M, DL)) = O . |}

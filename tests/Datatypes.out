@@ -58,9 +58,9 @@ result Data: bool(true)
 ==========================================
 reduce in CREOL-DATA-LIST : "add"(list(int(1) # int(2)) # "head"(list(int(1) #
     int(2)))) .
-result Appl: "add"(list(int(1) # int(2)) # int(1))
+result Data: "add"(list(int(1) # int(2)) # int(1))
 ==========================================
 reduce in CREOL-DATA-LIST : "add"(list(int(1) # int(2)) # "head"(list(int(1) #
     int(2)))) .
-result Appl: "add"(list(int(1) # int(2)) # int(1))
+result Data: "add"(list(int(1) # int(2)) # int(1))
 Bye.

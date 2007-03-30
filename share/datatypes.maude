@@ -25,10 +25,9 @@ fmod CREOL-DATA-SIG is
   protecting STRING .
   protecting NAT .
 
-  sorts   Aid Oid Data Label Appl Expr .
+  sorts   Aid Oid Data Appl Expr .
   subsort Oid < Data < Expr .
-  subsort Appl < Expr .
-  subsort Label < Data .
+  subsort Data < Appl < Expr .
   subsort String < Aid < Expr .
 
   op null    :           -> Data [ctor] .
@@ -64,7 +63,8 @@ fmod CREOL-DATA-SIG is
   op _,_ : NeAidList AidList -> NeAidList [ctor ditto] .
   op _,_ : AidList NeAidList -> NeAidList [ctor ditto] .
 
-  op _(_) : String ExprList -> Appl [format (! o d d d) prec 12] .
+  op _(_) : String DataList -> Data [format (! o d d d) prec 12] .
+  op _(_) : String ExprList -> Appl [ctor ditto] .
 
   op ob(_) : String -> Oid [ctor] .
 
@@ -72,6 +72,10 @@ fmod CREOL-DATA-SIG is
   *** of label values.  For example, the model checker uses his own version
   *** of labels.  This definition is the one used in the interpreter.
   *** op label : Nat -> Label [ctor] .
+  sort Label .
+  subsort Label < Data .
+
+  op caller : Label -> Oid .
 
   var B : Bool .
   op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
@@ -88,8 +92,7 @@ fmod CREOL-DATA-SIG is
   eq "or"(bool(true) # E) = bool(true) .
   eq "or"(bool(false) # E) = E .
   eq "and"(bool(false) # E) = bool(false) .
-  eq "and"(bool(true) #  E) = E .
-  
+  eq "and"(bool(true) #  E) = E .  
 endfm
 
 view Aid from TRIV to CREOL-DATA-SIG is
@@ -111,8 +114,15 @@ fmod CREOL-DATA-INT is
 
   op int(_)  : Int       -> Data [ctor format(o o ! o o)] . 
 
-  vars I I'     : Int .
-  
+  vars I I' : Int .
+  var N : Nat .
+
+  op _asInt : Data -> Int .
+  eq int(I) asInt = I .
+
+  op _asNat : Data -> Nat .
+  eq int(N)  asNat      = N .
+
   eq "neg" (int(I)) = int(-(I)) .
   eq "less"  (int(I)# int(I')) = bool(I < I') .
   eq "lessEq" (int(I)# int(I')) = bool(I <= I') .
@@ -120,7 +130,6 @@ fmod CREOL-DATA-INT is
   eq "minus" (int(I)# int(I')) = int( _-_(I, I')) .
   eq "times" (int(I)# int(I')) = int(I * I') .
   eq "div" (int(I)# int(I')) = int(I quo I') .
-
 endfm
 
 fmod CREOL-DATA-FLOAT is
@@ -131,14 +140,16 @@ fmod CREOL-DATA-FLOAT is
   op float(_): Float     -> Data [ctor format(o o ! o o)] . 
 
   vars F F' : Float .
-  
+
+  op _asFloat : Data -> Float .
+  eq float(F) asFloat = F .
+
   eq "less" (float(F)# float(F')) = bool(F < F') .
   eq "lessEq" (float(F)# float(F')) = bool(F <= F') .
   eq "plus" (float(F)# float(F')) = float(F + F') .
   eq "minus" (float(F)# float(F')) = float(_-_(F, F')) .
   eq "times" (float(F)# float(F')) = float(F * F') .
   eq "div" (float(F)# float(F')) = float(F / F') .
-
 endfm
 
 fmod CREOL-DATA-STRING is
@@ -148,12 +159,14 @@ fmod CREOL-DATA-STRING is
 
   op str(_) : String    -> Data [ctor format(o o ! o o)] .
 
-  vars S S'     : String . 
-  
+  vars S S' : String .
+
+  op _asString : Data -> String .
+  eq str(S) asString = S .
+
   eq "less" (str(S)# str(S')) = bool(S < S') .
   eq "lessEq" (str(S)# str(S')) = bool(S <= S') .
   eq "plus" (str(S)# str(S')) = str(S + S') .
-
 endfm
 
 fmod CREOL-DATA-LIST is
@@ -248,14 +261,16 @@ endfm
 
 fmod CREOL-DATA-PAIR is
   extending CREOL-DATA-SIG .
+  sort Pair .
+  subsort Pair < Data .
 
-  op pair : Expr Expr    -> Expr .        *** pairs
-  op pair : Data Data    -> Data [ctor] . *** pairs
+  op pair : Data Data -> Pair [ctor] .
 
-  vars E E'     : Expr .
-  
-  eq "fst" (pair(E, E')) = E . 
-  eq "snd" (pair(E, E')) = E' .
+  vars D D'     : Data .
+
+  eq "pair" (D # D') = pair(D, D') .
+  eq "fst" (pair(D, D')) = D . 
+  eq "snd" (pair(D, D')) = D' .
 endfm
 
 fmod DATA is 
@@ -265,27 +280,9 @@ fmod DATA is
   extending CREOL-DATA-FLOAT .
   extending CREOL-DATA-STRING .
 
-  *** Reconversion for evaluation
-  op _asInt             : Data -> Int .
-  op _asNat             : Data -> Nat .
-  op _asStr             : Data -> String .
- 
-
-  var N : Nat .
-  var I : Int .
-  var B : Bool .
-  var S : String .
-
-  eq int(I)  asInt      = I . 
-  eq int(N)  asNat      = N .  *** otherwise error, i.e. irreducible...
-  eq str(S)  asStr      = S .
-
-  *** red int(4) .
-  *** red int(4) asInt .
-
 endfm  
 
-fmod DATATYPES is  
+fmod DATATYPES is
   *** may easily keep various data types on separate file(s), 
   *** and plug in upon need.
   protecting DATA .
@@ -294,19 +291,9 @@ fmod DATATYPES is
   extending CREOL-DATA-PAIR .
 
 
-  vars I I'     : Int .
-  vars N        : Nat .
-  vars F F'     : Float .
-  vars S S'     : String . 
-  vars D D'     : Data .
-  vars E E'     : Expr .
-  vars L L' L'' : ExprList .
-  
+  var L : ExprList .
  
   eq  "setl" (list(L)) = setl(L) .
   eq  "listl" (setl(L)) = list(L) .
-  ***var Q : Qid .
-  ***eq  Q(setl(L)# setl(L')) = 'setl(Q(list(L)# list(L'))).
 
 endfm
-

@@ -44,14 +44,14 @@ reduce in GUARDS : downTerm(upTerm(bool(true)), noGuard) .
 result Data: bool(true)
 ==========================================
 reduce in GUARDS : int(4) & int(5) .
-result Appl: "and"(int(4) # int(5))
+result Data: "and"(int(4) # int(5))
 ==========================================
 reduce in GUARDS : upTerm(int(4) & int(5)) .
 result GroundTerm: '_`(_`)['"and".String,'_#_['int`(_`)['s_^4['0.Zero]],
     'int`(_`)['s_^5['0.Zero]]]]
 ==========================================
 reduce in GUARDS : downTerm(upTerm(int(4) & int(5)), noGuard) .
-result Appl: "and"(int(4) # int(5))
+result Data: "and"(int(4) # int(5))
 ==========================================
 reduce in GUARDS : int(4) & wait & int(5) .
 result Guard: wait & "and"(int(4) # int(5))

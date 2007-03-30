@@ -1,3 +1,197 @@
+@c node-name, next, previous, up
 @node CMC
 @chapter Creol Machine Code
 
+In this chapter we describe the general structure of the machine in
+maude.  It is best understood as a user guide.
+
+@menu
+* Data Types::          Explanation of data types.
+* Configuration::       Data Structures describing configurations.
+* Interpreter::         Creol Interpreter.
+* Model Checker::       Creol Model Checker in Maude.
+@end menu
+
+@node Data Types
+@section Data Types
+
+The file @file{datatypes.maude} containes the framework for data type
+definitions as well as the definition of the pre-defined data types.
+
+The module @code{CREOL-DATA-SIG} defines the basic features of data
+types for the machine.  First, it defines the basic sorts of the
+expression language:  Attribute names @code{Aid} and so on ...
+
+In addition, it defines the constant @code{null}, object identities
+@code{ob(_)} and booleans @code{bool(_)}.
+
+Operations are defined in terms of applications, which are given as
+@code{Appl} terms.  They are declared as @c
+@code{op _(_) : String ExprList -> Appl}.
+
+@menu
+* Predefined Data Types::       Predefined Data Types.
+* User Defined Data Types::     How to define new data types.
+@end menu
+
+@node Predefined Data Types
+@subsection Predefined Data Types
+
+In this section we describe the pre-defined data types in the virtual
+machine, the operations defined on them, and their semantics.
+
+@menu
+* Boolean::     Booleans.
+* Integer::     Integers.
+* Float::       Floats.
+* String::      String.
+* List::        List.
+* Set::         Set.
+* Pair::        Pair.
+@end menu
+
+
+@node Boolean
+@subsubsection Boolean
+
+XXX
+
+
+@node Integer
+@subsubsection Integer
+
+XXX
+
+
+@node Float
+@subsubsection Float
+
+XXX
+
+
+@node String
+@subsubsection String
+
+XXX
+
+
+@node List
+@subsubsection List
+
+XXX
+
+
+@node Set
+@subsubsection Set
+
+XXX
+
+
+@node Pair
+@subsubsection Pair
+
+XXX
+
+
+@node User Defined Data Types
+@subsection Creating Your own Data Type
+
+The procedure for creating your own data type is illustrated with the
+pair type.  The first thing to do is to write a functional module
+which defines your new data type as a subsort of @code{Data}.
+Actuallly, we do not need to define another sort, but it is sometimes
+useful for debugging.
+
+@example
+fmod CREOL-DATA-PAIR is
+  extending CREOL-DATA-SIG .
+  sort Pair .
+  subsort Pair < Data .
+@end example
+
+Next we need a constructor for describing values of the new data
+type.  Because a pair is a pair of values, we define:
+
+@example
+  op pair(_,_) : Data Data -> Pair [ctor] .
+@end example
+
+Now we need to define constructors and destructors for pairs.  These
+are defined in terms of applications:
+
+@example
+  eq "pair" (D # D') = pair(D, D') .
+  eq "fst" (pair(D, D')) = D .
+  eq "snd" (pair(D, D')) = D' .
+@end example
+
+Note that we only define equations describing the semantics of the
+functions ``pair'', ``fst'', and ``snd''.  This finishes the example.
+Other functions can be defined, too, in this way.
+
+@example
+endfm
+@end example
+
+
+@node Configuration
+@section Data Structures Describing Configurations
+
+XXX
+
+@subsection Substitutions
+
+XXX
+
+
+@subsection Evaluation of expressions
+
+XXX
+
+
+@subsection Guards
+
+XXX
+
+
+@subsection Statements
+
+XXX
+
+
+@subsection Compound Statements
+
+XXX
+
+
+@subsection Classes
+
+XXX
+
+
+@subsection Objects
+
+XXX
+
+
+@subsection Messages
+
+XXX
+
+
+@subsection Configurations
+
+XXX
+
+
+
+@node Interpreter
+@section Creol Interpreter
+
+XXX
+
+
+@node Model Checker
+@section Creol Model Checker
+
+XXX
