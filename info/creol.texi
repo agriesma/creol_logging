@@ -167,66 +167,87 @@ is a list of variable names used to store the result.
 @section Creol Grammar
 
 For reference, we summarize the grammar of Creol.  The grammar of
-Creol is LR(1) and is used by the compiler.  @code{@{...@}} means a list
-of declarations, a decorator at the end 
+Creol is LR(1) and is used by the compiler.  @code{@{...@}} means a
+list of symbols, where the optional decorator at the end indicates the
+separator.  An optional symbol is enclosed in square brackets like
+this: @code{[ ... ]}.  Terminal symbols are enclosed in quotes:
+``...'' Finally, the symbol @var{id}, denoting method names,
+functions, and variables, refers to an identifier, which is any string
+that matches the regular expression @code{[a-z][_0-9A-Za-z]*}, and
+@var{cid}, denoting class and type names, refers to any string that
+matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
 
 @format
-unit ::= @{declaration@}
+unit ::=
+    @{ declaration @}
 
-declaration ::= class-decl | interface-decl
+declaration ::=
+    class-decl
+  | interface-decl
 
-interface-decl ::= ``interface'' id [``inherits'' @{id,@}]
-               ``begin'' @{ op-decl @} @{ invariant @} ``end''
+interface-decl ::=
+    ``interface'' id [``inherits'' @{ id ``,'' @}]
+    ``begin'' @{ op-decl @} @{ invariant @} ``end''
 
-class-decl ::= ``class'' cid [ ``('' @{var-decl-no-init,@} ``)'']
-           [``inherits'' @{ cid [``('' @{ expr ,@} ``)''] , @} ]
-           [``implements'' @{ cid , @} ]
-           [``contracts'' @{ cid , @} ]
-           ``begin'' @{ var-decl @} @{ op-def @} @{ invariant @} ``end''
+class-decl ::=
+    ``class'' cid [ ``('' @{var-decl-no-init ``,'' @} ``)'']
+    [``inherits'' @{ cid [``('' @{ expr ``,'' @} ``)''] , @} ]
+    [``implements'' @{ cid ``,'' @} ]
+    [``contracts'' @{ cid ``,'' @} ]
+    ``begin'' @{ var-decl @} @{ op-def @} @{ invariant @} ``end''
 
-var-decl-no-init ::= ``var'' @{ id , @} ``:'' type
+var-decl-no-init ::=
+    ``var'' @{ id ``,'' @} ``:'' type
 
-var-decl ::= var-decl-no-init ``:='' @{expr , @}
+var-decl ::=
+    var-decl-no-init ``:='' @{ expr ``,'' @}
 
-op-decl ::= ``op'' id ``('' ``in'' @{ var-decl-no-init , @} [ ``;''
-        ``out'' @{ var-decl-no-init , @} ] ``)''
-        [``requires'' assertion] [``ensures'' assertion]
+op-decl ::=
+    ``op'' id ``('' ``in'' @{ var-decl-no-init ``,'' @} [ ``;''
+    ``out'' @{ var-decl-no-init ``,'' @} ] ``)''
+    [``requires'' assertion] [``ensures'' assertion]
 
-op-def ::= op-decl ``=='' @{ var-decl ``;'' @} statement
+op-def ::=
+    op-decl ``=='' @{ var-decl ``;'' @} statement
 
-statement ::= choice-statement ``|||'' statement
+statement ::=
+    choice-statement ``|||'' statement
 
-choice-statement ::= seq-statement ``[]'' choice-statement
+choice-statement ::=
+    seq-statement ``[]'' choice-statement
 
-seq-statement ::= @{ basic-statement @}
+seq-statement ::=
+    @{ basic-statement @}
 
-basic-statement ::= ``skip'' ``;''
-                | @{ id , @} ``:='' @{ expr-or-new , @} ``;''
-                | ``await'' guard ``;''
-                | [ id ] ``!'' expr ``.'' id ``('' @{ expr , @} ``)'' ``;''
-                | [ id ] ``!'' id [``@'' cid] ``('' @{ expr , @} ``)'' ``;''
-                | id ``?'' ``(''  @{ id , @} ``)'' ``;''
-                | expr ``.'' id ``('' @{ expr , @} ``;'' @{ id , @}
-                ``)'' ``;''
-                | id [``@'' cid] ``('' @{ expr , @} ``;'' @{ id , @}
-                ``)'' ``;''
-                | ``begin'' statement ``end''
-                | ``if'' expr ``then'' statement [``else'' statement] ``fi''
-                | ``raise'' expr
+basic-statement ::=
+    ``skip'' ``;''
+  | @{ id ``,'' @} ``:='' @{ expr-or-new , @} ``;''
+  | ``await'' guard ``;''
+  | [ id ] ``!'' expr ``.'' id ``('' @{ expr ``,'' @} ``)'' ``;''
+  | [ id ] ``!'' id [``@'' cid] ``('' @{ expr ``,'' @} ``)'' ``;''
+  | id ``?'' ``(''  @{ id ``,'' @} ``)'' ``;''
+  | expr ``.'' id ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)'' ``;''
+  | id [``@'' cid] ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)'' ``;''
+  | ``begin'' statement ``end''
+  | ``if'' expr ``then'' statement [``else'' statement] ``fi''
+  | ``raise'' expr
 
-expr-or-new ::= ``new'' cid ``('' @{expr , @} ``)''
-            | expr
+expr-or-new ::=
+    ``new'' cid ``('' @{ expr ``,'' @} ``)''
+  | expr
 
-expr ::= integer | float | string | ``true'' | ``false'' | ``nil'' |
-         ``null'' | id
-     | ``not'' expr | ``-'' expr
-     | expr binop expr
-     | id ``('' @{ expr , @} ``)''
-     | ``(`` expr ``)''
+expr ::=
+    integer | float | string | ``true'' | ``false'' | ``nil'' |
+    ``null''
+  | id | ``not'' expr | ``-'' expr | expr binop expr
+  | id ``('' @{ expr ``,'' @} ``)''
+  | ``(`` expr ``)''
 
 binop ::= ``+'' | ``-'' | ``*'' | ``/'' | ``='' | ``<'' | ``>'' |
           ``<='' | ``>='' | ``and'' | ``or'' 
 
-assertion ::= expr | ``forall'' var-decl-no-init ``:'' assertion
-          | ``exists'' var-decl-no-init ``:'' assertion
+assertion ::=
+    expr
+  | ``forall'' var-decl-no-init ``:'' assertion
+  | ``exists'' var-decl-no-init ``:'' assertion
 @end format
