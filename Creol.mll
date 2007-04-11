@@ -75,6 +75,7 @@ rule token = parse
     | '*' { TIMES }
     | '/' { DIV }
     | '+' { PLUS }
+    | "-|" { reserved lexbuf }
     | '-' { MINUS }
     | '=' { EQ }
     | ',' { COMMA }
@@ -91,6 +92,8 @@ rule token = parse
     | "<>" { reserved lexbuf }
     | "|||" { MERGE }
     | "||" { reserved lexbuf }
+    | "|-|" { reserved lexbuf }
+    | "|-" { reserved lexbuf }
     | "|" { reserved lexbuf }
     | "and" { AND }
     | "await" { AWAIT }

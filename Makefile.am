@@ -33,8 +33,7 @@ CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex \
 DISTCLEANFILES		= Version.ml html-stamp
 MAINTAINERCLEANFILES	= .depend Makefile.in configure \
 			  depcomp elisp-comp missing install-sh aclocal.m4 \
-			  CreolLex.ml CreolParser.ml CreolParser.mli \
-			  creoltools.spec
+			  $(BUILT_SOURCES) creoltools.spec
 
 EXTRA_DIST		= .depend \
 			  Creol.mll Creol.mly \
@@ -46,7 +45,7 @@ BUILT_SOURCES		= Version.ml CreolLex.ml CreolParser.ml CreolParser.mli
 bin_PROGRAMS		= creolc creolc.opt
 bin_SCRIPTS		= creolshell
 
-creolc_SOURCES		= Version.ml \
+creolc_SOURCES		= Version.ml Messages.ml \
 			  CreolLex.ml CreolLex.mli \
 			  Creol.mli Creol.ml \
 			  CreolParser.mli CreolParser.ml \

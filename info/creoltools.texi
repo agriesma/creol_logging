@@ -2,13 +2,13 @@
 @c %**start of header
 @documentlanguage en
 @setfilename creoltools.info
-@settitle Creol Compiler
+@settitle Creol Tools
 @c %**end of header
 @afourpaper
 @include version.texi
 
 @copying
-This manual is describing a Creol Compiler
+This manual is describing Tools for Creol
 (version @value{VERSION}, @value{UPDATED}).
 
 Copyright @copyright{} 2007 Marcel Kyas.
@@ -34,7 +34,7 @@ Software Foundation raise funds for GNU development.''
 @end direntry
 
 @titlepage
-@title Creol Compiler User Guide
+@title Creol Tools User Guide
 @subtitle for version @value{VERSION}, @value{UPDATED}
 @author Marcel Kyas
 @page
@@ -68,9 +68,9 @@ Software Foundation raise funds for GNU development.''
 @node Licenses
 @appendix Licenses
 
-The software is licensed under the terms of the general public license,
-the documentation is licensed under the terms of the free documentation
-license.
+The software is licensed under the terms of the GNU General Public
+License.  The accompanying documentation is licensed under the terms of
+the GNU Free Documentation License.
 
 @menu
 * Copying::
