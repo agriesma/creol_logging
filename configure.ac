@@ -23,7 +23,7 @@ AC_INIT([Creol Tools], 0.0b, kyas@ifi.uio.no, [creoltools])
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([Driver.ml])
-AM_INIT_AUTOMAKE([1.9 dist-bzip2 dist-zip readme-alpha check-news])
+AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 

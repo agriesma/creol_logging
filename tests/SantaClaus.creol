@@ -37,8 +37,8 @@ begin
 
   op run == !loop();
 
-  op loop == begin await ctReindeers = 5; deliverToys(;); []
-              await  3 <= ctElves and not ctReindeers = 9; talkToElves(;); end; 
+  op loop == { await ctReindeers = 5; deliverToys(;); []
+              await  3 <= ctElves and not ctReindeers = 9; talkToElves(;); } ; 
              !loop();
 
   op deliverToys ==

@@ -163,6 +163,16 @@ Results are received by the statement @code{?(@var{outs})}, where
 is a list of variable names used to store the result.
 
 
+@subsection Interface Declarations
+
+TBD
+
+
+@subsection Class Declarations
+
+TBD
+
+
 @node Grammar
 @section Creol Grammar
 
@@ -187,14 +197,14 @@ declaration ::=
 
 interface-decl ::=
     ``interface'' id [``inherits'' @{ id ``,'' @}]
-    ``begin'' @{ op-decl @} @{ invariant @} ``end''
+    ``begin'' ``with'' cid @{ op-decl @} @{ invariant @} ``end''
 
 class-decl ::=
     ``class'' cid [ ``('' @{var-decl-no-init ``,'' @} ``)'']
     [``inherits'' @{ cid [``('' @{ expr ``,'' @} ``)''] , @} ]
     [``implements'' @{ cid ``,'' @} ]
     [``contracts'' @{ cid ``,'' @} ]
-    ``begin'' @{ var-decl @} @{ op-def @} @{ invariant @} ``end''
+    ``begin'' @{ var-decl @} @{ op-def @} @{ invariant @} @{ with-def @} ``end''
 
 var-decl-no-init ::=
     ``var'' @{ id ``,'' @} ``:'' type
@@ -207,6 +217,9 @@ op-decl ::=
     ``out'' @{ var-decl-no-init ``,'' @} ] ``)''
     [``requires'' assertion] [``ensures'' assertion]
 
+with-def ::=
+    ``with'' cid @{ op-def @} @{ invariant @} 
+
 op-def ::=
     op-decl ``=='' @{ var-decl ``;'' @} statement
 
@@ -217,20 +230,27 @@ choice-statement ::=
     seq-statement ``[]'' choice-statement
 
 seq-statement ::=
-    @{ basic-statement @}
+    @{ basic-statement ``;'' @}
 
 basic-statement ::=
-    ``skip'' ``;''
-  | @{ id ``,'' @} ``:='' @{ expr-or-new , @} ``;''
-  | ``await'' guard ``;''
-  | [ id ] ``!'' expr ``.'' id ``('' @{ expr ``,'' @} ``)'' ``;''
-  | [ id ] ``!'' id [``@'' cid] ``('' @{ expr ``,'' @} ``)'' ``;''
-  | id ``?'' ``(''  @{ id ``,'' @} ``)'' ``;''
-  | expr ``.'' id ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)'' ``;''
-  | id [``@'' cid] ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)'' ``;''
-  | ``begin'' statement ``end''
+    ``skip''
+  | @{ id ``,'' @} ``:='' @{ expr-or-new ``,'' @}
+  | ``await'' guard
+  | [ id ] ``!'' expr ``.'' id ``('' @{ expr ``,'' @} ``)''
+  | [ id ] ``!'' id [``@'' cid] ``('' @{ expr ``,'' @} ``)''
+  | id ``?'' ``(''  @{ id ``,'' @} ``)''
+  | expr ``.'' id ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)''
+  | id [``@'' cid] ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)''
+  | ``@{'' statement ``@}''
   | ``if'' expr ``then'' statement [``else'' statement] ``fi''
-  | ``raise'' expr
+  | ``raise'' cid [ ``('' @{ expr ``,'' @} ``)'' ]
+  | ``try'' statement ``with'' catchers
+  | ``case'' expr ``of'' cases ``fo''
+  | ``case'' expr ``as'' type-cases ``sa''
+
+catchers ::=
+    @{ cid [ ``(`` @{ id ``,'' @} ``)'' ] ``->'' statement ``|'' @}
+    [ ``else'' statement ]
 
 expr-or-new ::=
     ``new'' cid ``('' @{ expr ``,'' @} ``)''

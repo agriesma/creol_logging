@@ -764,9 +764,9 @@ and pretty_print_vardecl out_channel v =
 and pretty_print_statement out lvl statement =
   (** Pretty-print statements and write the code to out. *)
   let open_block prec op_prec =
-    if prec < op_prec then output_string out "begin "
+    if prec < op_prec then output_string out "{ "
   and close_block prec op_prec =
-    if prec < op_prec then output_string out " end"
+    if prec < op_prec then output_string out " }"
   in
   let rec print lvl prec =
     function

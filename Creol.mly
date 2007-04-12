@@ -8,7 +8,7 @@
 %token EQEQ COMMA SEMI COLON ASSIGN
 %token RBRACK LBRACK
 %token LPAREN RPAREN
-(* %token LBRACE RBRACE *)
+%token LBRACE RBRACE
 %token QUESTION BANG BOX MERGE DOT AT UPPER
 (* %token DIAMOND *)
 (* %token BAR *)
@@ -145,16 +145,16 @@ parameters_opt:
       (* empty *) { ([], []) }
     | LPAREN ins = inputs RPAREN { (ins, []) }
     | LPAREN outs = outputs RPAREN { ([], outs) }
-    | LPAREN ins = inputs SEMI outs = outputs RPAREN { (ins, outs) }
+    | LPAREN ins = inputs ioption(SEMI) outs = outputs RPAREN { (ins, outs) }
 
 inputs:
-      IN l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
-    | IN error
+      ioption(IN) l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
+    | error COMMA | error SEMI | error OUT | error RPAREN
 	{ signal_error $startpos "syntax error in method declaration" }
 
 outputs:
       OUT l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
-    | OUT error
+    | error COMMA | error RPAREN
 	{ signal_error $startpos "syntax error in method declaration" }
 
 method_def:
@@ -224,7 +224,7 @@ basic_statement:
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN SEMI
 	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
-    | BEGIN s = statement END ioption(SEMI)
+    | LBRACE s = statement RBRACE ioption(SEMI)
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement FI ioption(SEMI)
         { If((Note.make $startpos), e, t, f) }

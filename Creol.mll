@@ -87,8 +87,8 @@ rule token = parse
     | ']' { RBRACK }
     | '(' { LPAREN }
     | ')' { RPAREN }
-    | '{' { reserved lexbuf }
-    | '}' { reserved lexbuf }
+    | '{' { LBRACE }
+    | '}' { RBRACE }
     | "<>" { reserved lexbuf }
     | "|||" { MERGE }
     | "||" { reserved lexbuf }
