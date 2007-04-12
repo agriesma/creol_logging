@@ -102,6 +102,7 @@ creoltools.spec: ${srcdir}/creoltools.spec.in ${srcdir}/configure.ac
 #
 CreolParser.ml CreolParser.mli: Creol.mly
 	( cd xml && make )
+	rm -f CreolParser.conflicts
 	$(OCAMLFIND) $(OCAMLC) $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
 	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
 

@@ -262,6 +262,23 @@ and creol_statement_to_xml writer stmt_handler expr_handler =
         XmlTextWriter.end_element writer ;
 	stmt_handler writer a ;
         XmlTextWriter.end_element writer
+    | Tailcall (a, m, l, u, es) ->
+	XmlTextWriter.start_element writer "tailcall" ;
+	XmlTextWriter.write_attribute writer "method" m ;
+	(match l with
+	    None -> ()
+	  | Some n -> XmlTextWriter.write_attribute writer "lower" n ) ;
+	(match u with
+	    None -> ()
+	  | Some n -> XmlTextWriter.write_attribute writer "upper" n ) ;
+	XmlTextWriter.start_element writer "arguments" ;
+	List.iter (function e -> 
+	             XmlTextWriter.start_element writer "expression" ;
+		     creol_expression_to_xml writer e ;
+        	     XmlTextWriter.end_element writer ) es ;
+        XmlTextWriter.end_element writer ;
+	stmt_handler writer a ;
+        XmlTextWriter.end_element writer
     | If (a, c, t, f) ->
 	XmlTextWriter.start_element writer "if" ;
 	XmlTextWriter.start_element writer "condition" ;
@@ -436,3 +453,7 @@ and creol_type_to_xml writer handler =
 	XmlTextWriter.start_element writer "typevariable" ; 
         XmlTextWriter.write_attribute writer "name" s ;
         XmlTextWriter.end_element writer
+    | TLabel ->
+	XmlTextWriter.start_element writer "label" ; 
+        XmlTextWriter.end_element writer
+	

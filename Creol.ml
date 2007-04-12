@@ -117,7 +117,7 @@ type creol_type =
       Basic of string
     | Application of string * creol_type list
     | Variable of string
-    | Label
+    | TLabel
 
 type 'a expression =
       Null of 'a
@@ -395,11 +395,7 @@ and definitions_in_statement note stm =
 	Note.defined = true;
 	Note.life = false }
     in
-      try
-	let n = Note.Environment.find name env in
-	  Note.Environment.add name v env
-      with Not_found ->
-	Note.Environment.add name v env
+      Note.Environment.add name v env
   in
     match stm with
 	Skip n ->
@@ -615,6 +611,7 @@ let rec string_of_creol_type =
     | Application (s, p) ->
 	s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
     | Variable s -> s
+    | TLabel -> "/* Label */"
 and string_of_creol_type_list =
   function
       [t] -> string_of_creol_type t

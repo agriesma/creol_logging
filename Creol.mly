@@ -149,7 +149,7 @@ parameters_opt:
 
 inputs:
       ioption(IN) l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
-    | error COMMA | error SEMI | error OUT | error RPAREN
+    | error SEMI | error OUT
 	{ signal_error $startpos "syntax error in method declaration" }
 
 outputs:
