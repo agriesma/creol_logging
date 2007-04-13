@@ -109,9 +109,11 @@ Generally, applying a function is written as
 of a function and @var{e},@var{d},@dots{} refers to expressions
 representing the actual arguments.
 
+
 @subsection Basic Statements
 
 In this section we describe the statements of Creol programs.
+
 
 @subsubsection Assignments
 
@@ -120,7 +122,7 @@ A single assignment may be written as @code{@var{x} := @var{e}}, where
 is an expression.
 
 A multiple assingment is written as
-@code{[@var{x},@var{y},...,@var{z}] := [@var{e},@var{f},...,@var{g}]},
+@code{@var{x},@var{y},...,@var{z} := @var{e},@var{f},...,@var{g}},
 where the left hand side is a tuple of variable names and the right
 hand side is a tuple of expressions.  Both tuples should have the same
 length.
@@ -162,6 +164,76 @@ Results are received by the statement @code{?(@var{outs})}, where
 @var{l} is a label name used for invoking the method, and @var{outs}
 is a list of variable names used to store the result.
 
+
+@subsubsection Blocks
+
+Groups of statements are formed using braces, i.e., any statement or
+compound statement inside braces @code{@{ ... @}} form a basic
+statement.
+
+
+@subsection Compound Statements
+
+These are the operators available for combining statements in Creol.
+
+
+@subsubsection Conditional Statement
+
+The usual @code{if ... then ... else ... fi} statement.
+
+
+@subsubsection Loop Statements
+
+Currently, loop statements are not supported, because Creol needs the
+guarantee that each statement will eventually reach a processor
+release point.  Instead, Creol prefers @emph{recursion} over loop
+constructs.
+
+For convenience, however, we may want to introduce simple
+@emph{iteration} statements in the form of @code{for ... in ... do
+... od} or similar in the future.
+
+
+@subsubsection Sequential Composition
+
+Statements can be composed sequentially using the @code{;} operator.
+
+Note that contrary to Java and C @code{;} is a @emph{binary operator}
+on statements, i.e., it is not a statement terminator.
+
+
+@subsubsection Non-deterministic merge
+
+TBD
+
+
+@subsubsection Non-deterministic choice
+
+The statement @code{S1 [] S2} chooses either @code{S1} or @code{S2}
+for execution.
+
+If both statements are @emph{guarded} by an @code{await} statement,
+then execution is suspended, if both await statements are not enabled.
+If exactly one of the await statements is enabled, then this one will
+be chosen and the process will not be suspended.  If both guards are
+enabled, one of the statements is chosen non-deterministically.
+
+Observe, that @code{S1 [] S2} is semantically equivalent to @code{S2
+[] S1}.  Also, the statement @code{skip; S1 [] await b; S2} is
+semantically equivalent to @code{S1} if @code{b} is false.
+
+External choice can be implemented as
+@code{await b1; S1 [] await b2; S2}
+and internal choice as
+@code{skip; await b1; S1 [] skip; await b2; S2}.
+
+
+@subsubsection Precedence of Statement Composition
+
+The operators @code{;}, @code{[]}, and @code{|||} are binary operators
+on statements.  All of them are @emph{left-associative}, @code{;}
+binds strongest and @code{|||} binds weakest.  Braces may be omitted
+in @code{@{ S; T @} [] U} but not in @code{S; @{ T [] U @}}.
 
 @subsection Interface Declarations
 
@@ -224,10 +296,10 @@ op-def ::=
     op-decl ``=='' @{ var-decl ``;'' @} statement
 
 statement ::=
-    choice-statement ``|||'' statement
+    choice-statement [ ``|||'' statement ]
 
 choice-statement ::=
-    seq-statement ``[]'' choice-statement
+    seq-statement [ ``[]'' choice-statement ]
 
 seq-statement ::=
     @{ basic-statement ``;'' @}
