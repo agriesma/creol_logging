@@ -7,15 +7,15 @@ begin
   var status: Nat
   var neighbor: Process
 
-  op init == status := 0; i.getNeighbor(; neighbor); !neighbor.receive(u);
+  op init == status := 0; i.getNeighbor(; neighbor); !neighbor.receive(u)
 
-  op run == skip;
+  op run == skip
 
   op receive(in v: Nat) ==
 	if v > u
-	then !neighbor.receive(v);
+	then !neighbor.receive(v)
 	else if v = u
-	     then status := 1; fi fi;
+	     then status := 1 fi fi
 end
 
 class Init
@@ -25,10 +25,10 @@ begin
   var p3 : Process
 
   op init == p1 := new Process(this, 1); p2 := new Process(this, 2);
-    p3 := new Process(this, 3);
+    p3 := new Process(this, 3)
 
   op getNeighbor(out p: Process) ==
-    if caller = p1 then p := p3; else
-    if caller = p2 then p := p1; else p := p2; fi fi
+    if caller = p1 then p := p3 else
+    if caller = p2 then p := p1 else p := p2 fi fi
 
 end

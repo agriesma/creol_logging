@@ -1,25 +1,25 @@
 class Fibonacci(n:Integer)
 begin
-  op init == skip;
+  op init == skip
 
-  op run == var res: Integer; t!fib(n); await t?; t?(res);
+  op run == var res: Integer; t!fib(n); await t?; t?(res)
 
   op fib(in n:Integer; out f:Integer) ==
     var a:Integer; var b:Integer;
-    if n = 0 then f := 1; else
-      if n = 1 then f := 1; else
-  	s!fib(n - 1); s?(a); t!fib(n - 2); t?(b); f := a + b;
+    if n = 0 then f := 1 else
+      if n = 1 then f := 1 else
+  	s!fib(n - 1); s?(a); t!fib(n - 2); t?(b); f := a + b
       fi
-    fi;
+    fi
 
 with Any
-  op fibonacci(in n:Integer; out f:Integer) == t!fib(n); t?(f);
+  op fibonacci(in n:Integer; out f:Integer) == t!fib(n); t?(f)
 end
 
 class FibTester(f: Fibonacci, n: Integer)
 begin
-	op init == skip;
+	op init == skip
 	op run ==
 	 	var res:Integer;
- 		f.fibonacci(n; res);
+ 		f.fibonacci(n; res)
 end

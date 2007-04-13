@@ -35,20 +35,20 @@ begin
   var waitElves:List := nil
   var inofficeElves:List := nil
 
-  op run == !loop();
+  op run == !loop()
 
-  op loop == { await ctReindeers = 5; deliverToys(;); []
-              await  3 <= ctElves and not ctReindeers = 9; talkToElves(;); } ; 
-             !loop();
+  op loop == { await ctReindeers = 5; deliverToys(;) []
+              await  3 <= ctElves and not ctReindeers = 9; talkToElves(;) } ;
+             !loop()
 
   op deliverToys ==
 	ctReindeers := 0;
 	t1!first(waitReindeers).harness(); 
 	harnessedReindeers := plus(harnessedReindeers, first(waitReindeers)); 
-		waitReindeers := rest(waitReindeers);
+	waitReindeers := rest(waitReindeers);
 	// ....;
-		t5!first(waitReindeers).harness(); 
-		harnessedReindeers := plus(harnessedReindeers, first(waitReindeers)); 
+	t5!first(waitReindeers).harness(); 
+	harnessedReindeers := plus(harnessedReindeers, first(waitReindeers)); 
 	waitReindeers := rest(waitReindeers);
 	await t1? and t2? and t3? and t4? and t5?;
 	// <Deliver Toys>;
@@ -56,76 +56,76 @@ begin
 	harnessedReindeers := rest(harnessedReindeers);
 	// ....;
 	!first(harnessedReindeers).unharness();
-	harnessedReindeers := rest(harnessedReindeers);
+	harnessedReindeers := rest(harnessedReindeers)
 
 
-	op talkToelves ==
-		ctElves := ctElves - 3; 
-		t1!first(waitElves).showIn();
-		inofficeElves := plus(inofficeElves, first(waitElves));
-		waitElves := rest(waitElves);
-		t2!first(waitElves).showIn();
-		inofficeElves := plus(inofficeElves, first(waitElves));
-		waitElves := rest(waitElves);
-		t3!first(waitElves).showIn();
-		inofficeElves := plus(inofficeElves, first(waitElves));
-		waitElves := rest(waitElves);
-		await t1? and t2? and t3?;
-		// <Talk to elves>;
-		t1!first(inoffcieElves).showOut();
-		inofficeElves := rest(inofficeElves);
-		t2!first(inoffcieElves).showOut();
-		inofficeElves := rest(inofficeElves);
-		t3!first(inoffcieElves).showOut();
-		inofficeElves := rest(inofficeElves);
-		await t1? and t2? and t3?;
+  op talkToelves ==
+	ctElves := ctElves - 3; 
+	t1!first(waitElves).showIn();
+	inofficeElves := plus(inofficeElves, first(waitElves));
+	waitElves := rest(waitElves);
+	t2!first(waitElves).showIn();
+	inofficeElves := plus(inofficeElves, first(waitElves));
+	waitElves := rest(waitElves);
+	t3!first(waitElves).showIn();
+	inofficeElves := plus(inofficeElves, first(waitElves));
+	waitElves := rest(waitElves);
+	await t1? and t2? and t3?;
+	// <Talk to elves>;
+	t1!first(inoffcieElves).showOut();
+	inofficeElves := rest(inofficeElves);
+	t2!first(inoffcieElves).showOut();
+	inofficeElves := rest(inofficeElves);
+	t3!first(inoffcieElves).showOut();
+	inofficeElves := rest(inofficeElves);
+	await t1? and t2? and t3?
 
 with Reindeer
-	op backFromHoliday ==
-		ctReindeers := ctReindeers + 1; 
-		waitReindeers := plus(waitReindeers, caller);
+  op backFromHoliday ==
+	ctReindeers := ctReindeers + 1; 
+	waitReindeers := plus(waitReindeers, caller)
 
 with Elf
-	op haveProblem ==
-		ctElves := ctElves + 1; 
-		waitElves := plus(waitElves, caller);
+  op haveProblem ==
+	ctElves := ctElves + 1; 
+	waitElves := plus(waitElves, caller)
 end
 
 
 class ReindeerC(sc: ReinDeer) implements Reindeer
 begin
-	op run == !holiday();
-	op holiday == // <go on holiday>;
-		!sc.backFromHoliday();
-	op deliverToys == skip; // <deliver Toys>
+  op run == !holiday()
+  op holiday == // <go on holiday>;
+	!sc.backFromHoliday()
+  op deliverToys == skip // <deliver Toys>
 
-  with SantaClausR
-	op harness == !deliverToys();
-	op unharness == !holiday();
+with SantaClausR
+  op harness == !deliverToys()
+  op unharness == !holiday()
 end
 
 
 
 class ElfC(sc:SantaClaus) implements Elf
 begin 
-	op run == !work();
-	op work == // <do work>;
-		!sc.haveProblem();
-	op talkToSanta == skip; // <talk to Santa>
+  op run == !work()
+  op work == // <do work>;
+		!sc.haveProblem()
+  op talkToSanta == skip // <talk to Santa>
 
-  with SantaClausE
-	op showIn == !talkToSanta();
-	op showOut == !work();
+with SantaClausE
+  op showIn == !talkToSanta()
+  op showOut == !work()
 end
 
 class LeaderElfC(sc:SantaClaus, elves: List)
 	inherits ElfC
 	implements Elf
 begin
-  op run == run@ElfC(;);
+  op run == run@ElfC(;)
   op work ==
 	// (<Lead elves> ||| <Make toys>);
-	!sc.haveProblem();
+	!sc.haveProblem()
 end
 
 class Christmas
@@ -146,7 +146,7 @@ begin
 	e := new Elf(sc);
 	e := new Elf(sc);
 	e := new Elf(sc);
-	e := new Elf(sc);
+	e := new Elf(sc)
 end
 
 //	#COMMENTS:

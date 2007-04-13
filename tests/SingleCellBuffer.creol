@@ -14,27 +14,21 @@ var cell : Data
 var ctr : Int
 var next : Buff
 
-op init == ctr := 0;
-op run == skip;
+op init == ctr := 0
+op run == skip
 op put(in x : Data) ==
-    if ctr = 0 then
-      cell := x ;
-    else
-      if next = null then
-	next := new Buffer();
-      fi
-      next.put(x;);
-    fi
-    ctr := ctr + 1;
+    if ctr = 0 then cell := x
+    else if next = null then next := new Buffer() fi; next.put(x;) fi;
+    ctr := ctr + 1
 
 op get(out x : Data) ==
-    await (ctr > 0) ; 
+    await (ctr > 0) ;
     if cell /= null then
-      x := cell;
+      x := cell
     else
-      next.get(; x);
-    fi
+      next.get(; x)
+    fi;
     ctr := ctr - 1;
-    cell := null;
+    cell := null
 
 end

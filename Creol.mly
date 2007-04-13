@@ -195,43 +195,43 @@ choice_statement:
 	    | Some s -> Choice((Note.make $startpos), l, s) }
 
 statement_sequence:
-      l = nonempty_list(basic_statement)
+      l = separated_nonempty_list(SEMI, basic_statement)
 	{ Sequence((Note.make $startpos), l) }
+    | error SEMI
+	{ signal_error $startpos "syntax error in statement" }
 
 basic_statement:
-      SKIP SEMI
+      SKIP
 	{ Skip (Note.make $startpos) }
-    | t = separated_nonempty_list(COMMA, ID) ASSIGN e = separated_nonempty_list(COMMA, expression_or_new) SEMI
+    | t = separated_nonempty_list(COMMA, ID) ASSIGN
+          e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((Note.make $startpos), t, e) }
-    | AWAIT g = guard SEMI
+    | AWAIT g = guard
 	{ Await ((Note.make $startpos), g) }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
-      SEMI
 	{ AsyncCall ((Note.make $startpos), l, callee, m, i) }
     | l = ioption(ID) BANG m = ID
       lb = ioption(preceded(AT, CID)) ub = ioption(preceded(UPPER, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
-      SEMI
 	{ LocalAsyncCall ((Note.make $startpos), l, m, lb, ub, i) }
-    | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN SEMI
+    | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
 	{ Reply ((Note.make $startpos), l, o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN SEMI
+	       o = separated_list(COMMA, ID) RPAREN
 	{ SyncCall ((Note.make $startpos), c, m, i, o) }
     | m = ID lb = ioption(preceded(AT, CID)) ub = ioption(preceded(UPPER, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN SEMI
+	       o = separated_list(COMMA, ID) RPAREN
 	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
-    | LBRACE s = statement RBRACE ioption(SEMI)
+    | LBRACE s = statement RBRACE
 	{ s }
-    | IF e = expression THEN t = statement ELSE f = statement FI ioption(SEMI)
+    | IF e = expression THEN t = statement ELSE f = statement FI
         { If((Note.make $startpos), e, t, f) }
-    | IF e = expression THEN t = statement FI ioption(SEMI)
+    | IF e = expression THEN t = statement FI
         { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
-    | error SEMI| error ELSE | error FI | error OP | error WITH | error END
-    | error EOF
+    | error ELSE | error FI | error OP | error WITH | error END | error EOF
 	{ signal_error $startpos "syntax error in statement" }
 
 

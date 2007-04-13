@@ -767,16 +767,14 @@ and pretty_print_statement out lvl statement =
   in
   let rec print lvl prec =
     function
-	Skip _ -> output_string out "skip;";
+	Skip _ -> output_string out "skip";
       | Assign (_, i, e) ->
 	  pretty_print_identifier_list out i;
 	  output_string out " := ";
 	  pretty_print_expression_list out e;
-	  output_string out ";"
       | Await (_, g) -> 
 	  output_string out "await ";
 	  pretty_print_guard out g;
-	  output_string out ";";
       | AsyncCall (_, l, c, m, a) ->
 	  (match l with
 	      None -> ()
@@ -786,11 +784,11 @@ and pretty_print_statement out lvl statement =
 	  output_string out ("." ^ m);
 	  output_string out "(" ;
 	  pretty_print_expression_list out a;
-	  output_string out ");"
+	  output_string out ")"
       | Reply (_, l, o) ->
 	  output_string out (l ^ "?(");
 	  pretty_print_identifier_list out o;
-	  output_string out ");";
+	  output_string out ")";
       | Free(_, l) -> output_string out ("/* free(" ^ l ^ ") */")
       | SyncCall (_, c, m, a, r) ->
 	  pretty_print_expression out c ;
@@ -799,7 +797,7 @@ and pretty_print_statement out lvl statement =
 	  pretty_print_expression_list out a;
 	  output_string out "; " ;
 	  pretty_print_identifier_list out r;
-	  output_string out ");"
+	  output_string out ")"
       | LocalAsyncCall (_, l, m, lb, ub, i) ->
 	  output_string out (match l with None -> "!" | Some n -> (n ^ "!"));
 	  output_string out m;
@@ -807,7 +805,7 @@ and pretty_print_statement out lvl statement =
 	  (match ub with None -> () | Some n -> output_string out ("<<" ^ n));
 	  output_string out "(" ;
 	  pretty_print_expression_list out i;
-	  output_string out ");"
+	  output_string out ")"
       | LocalSyncCall (_, m, l, u, i, o) ->
 	  output_string out m;
 	  (match l with None -> () | Some n -> output_string out ("@" ^ n));
@@ -816,7 +814,7 @@ and pretty_print_statement out lvl statement =
 	  pretty_print_expression_list out i;
 	  output_string out "; " ;
 	  pretty_print_identifier_list out o;
-	  output_string out ");"
+	  output_string out ")"
       | Tailcall (_, m, l, u, i) -> assert false
       | If (_, c, t, f) ->
 	  output_string out "if ";
@@ -847,7 +845,7 @@ and pretty_print_statement out lvl statement =
 	  let nl = lvl + if prec < op_prec then 1 else 0 in
 	    open_block prec op_prec;
 	    separated_list (function s -> print nl op_prec s)
-	      (function () -> do_indent out nl) sl;
+	      (function () -> output_string out ";" ; do_indent out nl) sl ;
 	    close_block prec op_prec
       | Merge (_, l, r) ->
 	  let op_prec = 29 in
