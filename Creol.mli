@@ -43,17 +43,20 @@ module Note :
       (** Write a note to an XML file. *)
   end
 
-type creol_type = 
-    (** A type as defined in Creol. *)
-      Basic of string
-	(** A basic type. *)
-    | Application of string * creol_type list
-	(** A type application. *)
-    | Variable of string
-	(** A type variable. *)
-    | TLabel
+module Type :
+  sig
+    type t = 
+	(** A type as defined in Creol. *)
+	Basic of string
+	  (** A basic type. *)
+	| Application of string * t list
+	    (** A type application. *)
+	| Variable of string
+	    (** A type variable. *)
+	| TLabel
 
-val string_of_creol_type : creol_type -> string
+    val as_string : t -> string
+  end
 
 type 'a expression =
     (** Definition of the abstract syntax of Creol-expressions.
@@ -80,7 +83,7 @@ type 'a expression =
 	(** A binary expression *)
     | FuncCall of 'a * string * 'a expression list
 	(** A call of a primitive function *)
-    | New of 'a * creol_type * 'a expression list
+    | New of 'a * Type.t * 'a expression list
 and unaryop =
 	(** Definition of the different unary operator symbols *)
     Not
@@ -161,7 +164,7 @@ type 'a creol_vardecl =
     (** Abstract syntax representing a variable declaration. *)
     { var_name: string;
 	(** Name of the variable. *)
-      var_type: creol_type;
+      var_type: Type.t;
 	(** Type of the variable. *)
       var_init: 'a expression option
 	(** Expression used for initialisation. *)
@@ -171,7 +174,7 @@ type ('a, 'b) creolmethod =
     (** Abstract syntax of a method declaration and definition. *)
     { meth_name: string;
 	(** The name of the method. *)
-      meth_coiface: creol_type;
+      meth_coiface: Type.t;
 	(** The co-interface of the method. *)
       meth_inpars: 'b creol_vardecl list;
 	(** A list of input parameters. *)

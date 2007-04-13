@@ -429,7 +429,7 @@ and creol_expression_to_xml writer =
         XmlTextWriter.end_element writer
     | New (a, c, es) ->
 	XmlTextWriter.start_element writer "new" ;
-	XmlTextWriter.write_attribute writer "class" (string_of_creol_type c) ;
+	XmlTextWriter.write_attribute writer "class" (Type.as_string c) ;
 	XmlTextWriter.start_element writer "arguments" ;
 	List.iter (function e -> 
 	             XmlTextWriter.start_element writer "expression" ;
@@ -440,20 +440,20 @@ and creol_expression_to_xml writer =
         XmlTextWriter.end_element writer
 and creol_type_to_xml writer handler =
   function
-      Basic s ->
+      Type.Basic s ->
 	XmlTextWriter.start_element writer "type" ; 
         XmlTextWriter.write_attribute writer "name" s ;
         XmlTextWriter.end_element writer
-    | Application (s, l) ->
+    | Type.Application (s, l) ->
 	XmlTextWriter.start_element writer "typeapplication" ; 
         XmlTextWriter.write_attribute writer "name" s ;
 	List.iter (creol_type_to_xml writer handler) l;
         XmlTextWriter.end_element writer
-    | Variable s ->
+    | Type.Variable s ->
 	XmlTextWriter.start_element writer "typevariable" ; 
         XmlTextWriter.write_attribute writer "name" s ;
         XmlTextWriter.end_element writer
-    | TLabel ->
+    | Type.TLabel ->
 	XmlTextWriter.start_element writer "label" ; 
         XmlTextWriter.end_element writer
 	

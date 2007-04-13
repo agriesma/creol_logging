@@ -126,12 +126,12 @@ vardecl:
 method_decl:
       WITH m = CID OP i = ID p = parameters_opt {
 	match p with (ins, outs) ->
-	  { meth_name = i; meth_coiface = Basic m; meth_inpars = ins;
+	  { meth_name = i; meth_coiface = Type.Basic m; meth_inpars = ins;
 	    meth_outpars = outs; meth_vars = []; meth_body = None} }
     | OP i = ID p = parameters_opt {
 	match p with
 	    (ins, outs) ->
-	      { meth_name = i; meth_coiface = Basic ""; meth_inpars = ins;
+	      { meth_name = i; meth_coiface = Type.Basic ""; meth_inpars = ins;
 		meth_outpars = outs; meth_vars = []; meth_body = None} }
     | WITH error
     | WITH CID error
@@ -290,9 +290,9 @@ expression:
 (* Poor mans types and type parameters *)
 creol_type:
       t = CID
-	{ Basic t }
+	{ Type.Basic t }
     | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
-	{ Application(t, p) } 
+	{ Type.Application(t, p) } 
     | CID LT error { signal_error $startpos "Error in type" }
 
 %%

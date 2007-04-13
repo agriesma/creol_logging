@@ -113,11 +113,30 @@ module Note =
 	
   end
 
-type creol_type = 
-      Basic of string
-    | Application of string * creol_type list
-    | Variable of string
-    | TLabel
+module Type =
+  struct
+    type t =
+	Basic of string
+	| Application of string * t list
+	| Variable of string
+	| TLabel
+
+    (* These are the support functions for the abstract syntax tree. *)
+
+    let rec as_string =
+      function
+	  Basic s -> s
+	| Application (s, p) ->
+	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
+	| Variable s -> s
+	| TLabel -> "/* Label */"
+    and string_of_creol_type_list =
+      function
+	  [t] -> as_string t
+	| t::l -> (as_string t) ^ ", " ^
+	    (string_of_creol_type_list l)
+	| [] -> assert false (* Silence a compiler warning. *)
+  end
 
 type 'a expression =
       Null of 'a
@@ -130,7 +149,7 @@ type 'a expression =
     | Unary of 'a * unaryop * 'a expression
     | Binary of 'a * binaryop * 'a expression * 'a expression
     | FuncCall of 'a * string * 'a expression list
-    | New of 'a * creol_type * 'a expression list
+    | New of 'a * Type.t * 'a expression list
 and unaryop =
     Not
     | UMinus
@@ -204,11 +223,11 @@ open Statement
 
 (** The abstract syntax of Creol *)
 type 'a creol_vardecl =
-    { var_name: string; var_type: creol_type; var_init: 'a expression option }
+    { var_name: string; var_type: Type.t; var_init: 'a expression option }
 
 type ('a, 'b) creolmethod =
     { meth_name: string;
-      meth_coiface: creol_type;
+      meth_coiface: Type.t;
       meth_inpars: 'b creol_vardecl list;
       meth_outpars: 'b creol_vardecl list;
       meth_vars: 'b creol_vardecl list;
@@ -603,25 +622,6 @@ let optimise_tailcalls prg =
 
 
 
-(* These are the support functions for the abstract syntax tree. *)
-
-let rec string_of_creol_type =
-  function
-      Basic s -> s
-    | Application (s, p) ->
-	s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
-    | Variable s -> s
-    | TLabel -> "/* Label */"
-and string_of_creol_type_list =
-  function
-      [t] -> string_of_creol_type t
-    | t::l -> (string_of_creol_type t) ^ ", " ^ (string_of_creol_type_list l)
-    | [] -> assert false (* Silence a compiler warning. *)
-
-
-
-
-
 let rec separated_list elt_fun sep_fun =
   (** Helper function for outputting a separated list.
       It will call [elt_fun] for each element of the list and
@@ -700,9 +700,9 @@ and pretty_print_methods out_channel list =
     (function () -> do_indent out_channel 1)
     list
 and pretty_print_method out_channel m =
-  if m.meth_coiface <> Basic "" then
+  if m.meth_coiface <> Type.Basic "" then
     output_string out_channel
-      ("with " ^ (string_of_creol_type m.meth_coiface) ^ " ");
+      ("with " ^ (Type.as_string m.meth_coiface) ^ " ");
   output_string out_channel ("op " ^ m.meth_name);
   if m.meth_inpars <> [] || m.meth_outpars <> [] then
     output_string out_channel "(";
@@ -753,7 +753,7 @@ and pretty_print_vardecls out_channel lvl p d s list =
       if lvl > 0 then do_indent out_channel lvl)
     list
 and pretty_print_vardecl out_channel v =
-  output_string out_channel (v.var_name ^ ": " ^ (string_of_creol_type v.var_type ));
+  output_string out_channel (v.var_name ^ ": " ^ (Type.as_string v.var_type ));
   ( match v.var_init with
       Some e -> output_string out_channel " := " ;
 	pretty_print_expression out_channel e
@@ -918,7 +918,7 @@ and pretty_print_expression out_channel exp =
 	    pretty_print_expression_list out_channel a;
 	    output_string out_channel ")";
       | New (_, t, a) ->
-          output_string out_channel ("new " ^ (string_of_creol_type t) ^ "(");
+          output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
 	  pretty_print_expression_list out_channel a ;
 	  output_string out_channel ")"
   in
@@ -966,7 +966,7 @@ struct
 	  output_string out " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
       | New (_, c, a) ->
-	  output_string out ("new \"" ^ (match c with Basic s -> s | Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
+	  output_string out ("new \"" ^ (match c with Type.Basic s -> s | Type.Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
 	  of_creol_expression_list out a ;
 	  output_string out " )"
   and of_creol_expression_list out_channel =
