@@ -19,7 +19,6 @@ BuildRequires: ocaml >= 3.09
 
 
 %prep
-rm -rf %{buildroot}
 %setup -q
 
 %build

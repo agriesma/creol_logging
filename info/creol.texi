@@ -15,6 +15,7 @@ correctness of the overall system.
 
 @menu
 * Overview::    A short overview to Creol and its ideas.
+* Features::    What Creol provides and why it is different.
 * Syntax::      A short guide to the language.
 * Grammar::     Creol grammar in EBNF.
 @end menu
@@ -70,6 +71,30 @@ interpreter with a dynamic class construct is presented in [5]. A
 binding strategy for method calls which is adapted to dynamic class
 extensions is presented in [4]. A type system for runtime class
 updates is presented in [3].
+
+
+@node Features
+@section Features
+
+Creol is a @emph{strongly typed} language, in the sense that it is
+type safe.  Function and method calls which disregard data types
+are rejected.
+
+Creol is a @emph{statically typed} language.  The compiler tries to
+infer, whether a function call or a method call is safe in the sense
+that it will succeed.  Programs in which a call cannot succeed because
+of the type of an operation or a method are rejected.
+
+Message dispatch in Creol is based not only on the type of the receiver
+of the message, but also on the arguments (multiple dispatch @cite{XXX}),
+especially the type of the caller (which is constrained by the
+@emph{co-interface} and available in any method body under the name
+@code{caller}.
+
+The @code{caller} mechanism is similar to @code{context} in Smalltalk-80,
+but it does not, e.g., provide information on the call-chain.
+
+
 
 
 @node Syntax
@@ -184,14 +209,44 @@ The usual @code{if ... then ... else ... fi} statement.
 
 @subsubsection Loop Statements
 
-Currently, loop statements are not supported, because Creol needs the
-guarantee that each statement will eventually reach a processor
-release point.  Instead, Creol prefers @emph{recursion} over loop
-constructs.
+Loops should be avoided in Creol programs.  Creol provides to variants
+of loops:
 
-For convenience, however, we may want to introduce simple
-@emph{iteration} statements in the form of @code{for ... in ... do
-... od} or similar in the future.
+The ``for''-loop is guaranteed to terminate.  Its syntax is @code{for
+@var{i} := @var{lower} to @var{upper} by @var{stride} do
+@var{statement} od}.  First, the expressions denoted by @var{lower}
+and @var{upper} are evaluated.  Then @var{i} assumes each value which
+is greater or equal to @var{lower} until it is greater or equal to
+@var{upper}.  Furthermore, the variable @var{i} is @emph{read-only} in
+@var{statement}.
+
+Essentially, a for-statement can be transformed to the following
+pseudo-program using a while loop:
+@verbatim
+let l = lower in
+  let u = upper in
+    let st = stride in
+      i := l;
+      while i <= u do s; i := i + st done
+@end verbatim
+
+Analogously, Creol programs may contain while loops.  Use of while
+loops is @emph{strongly} discouraged, because they may make
+class-updates impossible.  The syntax is @code{while @var{c} do
+@var{s} od}.
+
+Both variants of loops may be annotated by a @emph{loop invariant}.
+The invariant is a proof obligation which must hoold at the beginning
+of a loop, the end of a loop, @emph{and} every processor release-point
+within the loop body.  It is therefore advisable, that the loop
+invariant restricted to instance variables is @emph{implied} by the
+class invariant.
+
+The statement @code{while true inv @var{i} do s; await wait od} is an
+infinite loop which allows class updates.  The invariant @var{i}
+should be implied by the class invariant, because during the release
+in @code{await wait}, only the class invariant is guaranteed to hold
+(and, of course, the local state of the method remains invariant).
 
 
 @subsubsection Sequential Composition
@@ -259,6 +314,43 @@ that matches the regular expression @code{[a-z][_0-9A-Za-z]*}, and
 @var{cid}, denoting class and type names, refers to any string that
 matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
 
+
+@subsection Reserved Keywords
+
+The following are reserved as keywords and cannot be used for
+variable or method names in programs.
+
+@c 45678901 34567890123 56789012345 78901234567 90123456789 12345678901
+@verbatim
+and         await       begin       by          caller      class
+contracts   do          else        end         ensures     exception
+false       fi          for         history     iff         if
+implements  inherits    interface   inv         in          new
+nil         null        not         od          op          or
+out         raise       requires    self        skip        system
+then        this        to          true        try         var          
+wait        while       with        xor         History     Label          
+System
+@end verbatim
+
+The following symbols are used as operator symbols.  They are listed
+in the order of their precedence.  Operators on any line bind stronger
+than ones on the lines above.
+
+@verbatim
+and or xor iff
+not
+= /=
+<= < > >=
+|- |-| -|
++ -
+* /
+-
+@end verbatim
+
+
+@subsection Grammar
+
 @format
 unit ::=
     @{ declaration @}
@@ -266,17 +358,20 @@ unit ::=
 declaration ::=
     class-decl
   | interface-decl
-
-interface-decl ::=
-    ``interface'' id [``inherits'' @{ id ``,'' @}]
-    ``begin'' ``with'' cid @{ op-decl @} @{ invariant @} ``end''
+  | exception-decl
 
 class-decl ::=
-    ``class'' cid [ ``('' @{var-decl-no-init ``,'' @} ``)'']
+    ``class'' cid [ ``('' @{ var-decl-no-init ``,'' @} ``)'']
     [``inherits'' @{ cid [``('' @{ expr ``,'' @} ``)''] , @} ]
     [``implements'' @{ cid ``,'' @} ]
     [``contracts'' @{ cid ``,'' @} ]
     ``begin'' @{ var-decl @} @{ op-def @} @{ invariant @} @{ with-def @} ``end''
+interface-decl ::=
+    ``interface'' id [``inherits'' @{ id ``,'' @}]
+    ``begin'' ``with'' cid @{ op-decl @} @{ invariant @} ``end''
+
+exception.decl ::=
+    ``exception'' cid [ ``('' @{ var-decl-no-init ``,'' @} ``)'' ]
 
 var-decl-no-init ::=
     ``var'' @{ id ``,'' @} ``:'' type
@@ -315,13 +410,14 @@ basic-statement ::=
   | id [``@'' cid] ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)''
   | ``@{'' statement ``@}''
   | ``if'' expr ``then'' statement [``else'' statement] ``fi''
+  | ``for'' id ``:='' expression ``to'' expression
+      [ ``by'' expression ] [ ``inv'' assertion ] ``do'' statement ``od''
+  | ``while'' expression [ ``inv'' assertion ] ``do'' statement ``od''
   | ``raise'' cid [ ``('' @{ expr ``,'' @} ``)'' ]
-  | ``try'' statement ``with'' catchers
-  | ``case'' expr ``of'' cases ``fo''
-  | ``case'' expr ``as'' type-cases ``sa''
+  | ``try'' statement catchers ``end''
 
 catchers ::=
-    @{ cid [ ``(`` @{ id ``,'' @} ``)'' ] ``->'' statement ``|'' @}
+    @{ ``with'' cid [ ``(`` @{ id ``,'' @} ``)'' ] ``do'' statement @}
     [ ``else'' statement ]
 
 expr-or-new ::=

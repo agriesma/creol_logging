@@ -1,5 +1,6 @@
 interface Phil
 begin
+  with Phil
   op borrowStick
   op returnStick
 end
@@ -14,21 +15,21 @@ begin
   var hungry: Bool
   var chopstick: Bool
   var neighbor: Phil
-  var history: String
+  var hist: String
  
-  op init == history := ""; chopstick := true; hungry := false;
+  op init == hist := ""; chopstick := true; hungry := false;
     butler.getNeighbor(; neighbor)
  
   op run == !think() ||| !eat() ||| !digest()
 
-  op digest == await wait ; hungry := true; history := plus(history, "d");
+  op digest == await wait ; hungry := true; hist := plus(hist, "d");
     await wait; !digest()
 
   op eat == await hungry; l!neighbor.borrowStick(); await l?; await chopstick;
-    history := plus(history, "e"); hungry := false; !neighbor.returnStick();
+    hist := plus(hist, "e"); hungry := false; !neighbor.returnStick();
     await wait; !eat()
 
-  op think == await not hungry; history := plus(history, "t");
+  op think == await not hungry; hist := plus(hist, "t");
     await wait; !think()
 
   with Phil 

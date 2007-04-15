@@ -101,14 +101,23 @@ and creol_class_to_xml writer stmt_handler expr_handler c =
     XmlTextWriter.start_element writer "attributes";
     List.iter (creol_vardecl_to_xml writer stmt_handler) c.cls_attributes;
     XmlTextWriter.end_element writer;
-    XmlTextWriter.start_element writer "methods";
-    List.iter (creol_method_to_xml writer stmt_handler expr_handler) c.cls_methods;
-    XmlTextWriter.end_element writer;
+    List.iter (creol_with_to_xml writer stmt_handler expr_handler)
+      c.cls_with_defs;
     XmlTextWriter.end_element writer
 and creol_interface_to_xml writer stmt_handler i =
     XmlTextWriter.start_element writer "interface";
     XmlTextWriter.write_attribute writer "name" i.iface_name;
     XmlTextWriter.end_element writer
+and creol_with_to_xml writer stmt_handler expr_handler w =
+  XmlTextWriter.start_element writer "with";
+  begin
+    match w.With.co_interface with
+	None -> XmlTextWriter.write_attribute writer "co-interface" "None"
+      | Some i -> XmlTextWriter.write_attribute writer "co-interface" i
+  end;
+  List.iter (creol_method_to_xml writer stmt_handler expr_handler)
+    w.With.methods;
+  XmlTextWriter.end_element writer
 and creol_inherits_to_xml writer handler (i, l) =
     XmlTextWriter.start_element writer "inherits";
     XmlTextWriter.write_attribute writer "name" i;
@@ -121,9 +130,6 @@ and creol_implements_to_xml writer stmt_handler i =
 and creol_method_to_xml writer stmt_handler expr_handler m =
     XmlTextWriter.start_element writer "method" ; 
     XmlTextWriter.write_attribute writer "name" m.meth_name;
-    XmlTextWriter.start_element writer "cointerface" ; 
-    creol_type_to_xml writer stmt_handler m.meth_coiface;
-    XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "inputs" ; 
     List.iter (creol_vardecl_to_xml writer stmt_handler) m.meth_inpars;
     XmlTextWriter.end_element writer;
@@ -297,9 +303,14 @@ and creol_statement_to_xml writer stmt_handler expr_handler =
 	XmlTextWriter.start_element writer "condition" ;
 	creol_expression_to_xml writer c ;
         XmlTextWriter.end_element writer ;
-	XmlTextWriter.start_element writer "invariant" ;
-	creol_expression_to_xml writer i ;
-        XmlTextWriter.end_element writer ;
+	begin
+	  match i with
+	    None -> ()
+	  | Some inv ->
+	      XmlTextWriter.start_element writer "invariant" ;
+	      creol_expression_to_xml writer inv ;
+              XmlTextWriter.end_element writer ;
+	end ;
 	XmlTextWriter.start_element writer "do" ;
 	creol_statement_to_xml writer stmt_handler expr_handler d ;
         XmlTextWriter.end_element writer ;
@@ -358,58 +369,59 @@ and creol_guard_to_xml writer expr_handler =
 	XmlTextWriter.end_element writer
 and creol_expression_to_xml writer =
   function
-      Null a -> 
+      Expression.Null a -> 
 	XmlTextWriter.start_element writer "null" ; 
         XmlTextWriter.end_element writer
-    | Nil a -> 
+    | Expression.Nil a -> 
 	XmlTextWriter.start_element writer "nil" ; 
         XmlTextWriter.end_element writer
-    | Bool (a, v) -> 
+    | Expression.Bool (a, v) -> 
 	XmlTextWriter.start_element writer "bool" ; 
 	XmlTextWriter.write_attribute writer "value" (string_of_bool v) ;
         XmlTextWriter.end_element writer
-    | Int (a, v) -> 
+    | Expression.Int (a, v) -> 
 	XmlTextWriter.start_element writer "int" ; 
 	XmlTextWriter.write_attribute writer "value" (string_of_int v) ;
         XmlTextWriter.end_element writer
-    | Float (a, v) -> 
+    | Expression.Float (a, v) -> 
 	XmlTextWriter.start_element writer "float" ; 
 	XmlTextWriter.write_attribute writer "value" (string_of_float v) ;
         XmlTextWriter.end_element writer
-    | String (a, v) -> 
+    | Expression.String (a, v) -> 
 	XmlTextWriter.start_element writer "string" ; 
 	XmlTextWriter.write_attribute writer "value" v ;
         XmlTextWriter.end_element writer
-    | Id (a, v) -> 
+    | Expression.Id (a, v) -> 
 	XmlTextWriter.start_element writer "identifier" ; 
 	XmlTextWriter.write_attribute writer "value" v ;
         XmlTextWriter.end_element writer
-    | Unary (a, o, f) -> 
+    | Expression.Unary (a, o, f) -> 
 	XmlTextWriter.start_element writer "unary" ; 
 	XmlTextWriter.write_attribute writer "operator" 
-	    (match o with Not -> "not" | UMinus -> "minus" ) ;
+	    (match o with Expression.Not -> "not" |
+		Expression.UMinus -> "minus" ) ;
 	XmlTextWriter.start_element writer "argument" ;
 	creol_expression_to_xml writer f ;
         XmlTextWriter.end_element writer ;
         XmlTextWriter.end_element writer
-    | Binary (a, o, f, s) -> 
+    | Expression.Binary (a, o, f, s) -> 
 	XmlTextWriter.start_element writer "binary" ; 
 	XmlTextWriter.write_attribute writer "operator"
 	    (match o with
-		Plus -> "plus"
-	      | Minus -> "minus"
-	      | Times -> "times"
-	      | Div -> "divide"
-	      | Eq -> "equals"
-	      | Ne -> "not equals"
-	      | Le -> "less than or equal"
-	      | Lt -> "less than"
-	      | Ge -> "greater than or equal"
-	      | Gt -> "greater than"
-	      | And -> "and"
-	      | Or -> "or"
-	      | Xor -> "exclusive or"
-	      | Iff -> "if and only if") ;
+		Expression.Plus -> "plus"
+	      | Expression.Minus -> "minus"
+	      | Expression.Times -> "times"
+	      | Expression.Div -> "divide"
+	      | Expression.Eq -> "equals"
+	      | Expression.Ne -> "not equals"
+	      | Expression.Le -> "less than or equal"
+	      | Expression.Lt -> "less than"
+	      | Expression.Ge -> "greater than or equal"
+	      | Expression.Gt -> "greater than"
+	      | Expression.And -> "and"
+	      | Expression.Or -> "or"
+	      | Expression.Xor -> "exclusive or"
+	      | Expression.Iff -> "if and only if") ;
 	XmlTextWriter.start_element writer "first" ;
 	creol_expression_to_xml writer f ;
         XmlTextWriter.end_element writer ;
@@ -417,7 +429,7 @@ and creol_expression_to_xml writer =
 	creol_expression_to_xml writer s ;
         XmlTextWriter.end_element writer ;
         XmlTextWriter.end_element writer
-    | FuncCall (a, f, es) -> 
+    | Expression.FuncCall (a, f, es) -> 
 	XmlTextWriter.start_element writer "funccall" ; 
 	XmlTextWriter.write_attribute writer "name" f ;
 	XmlTextWriter.start_element writer "arguments" ;
@@ -427,7 +439,7 @@ and creol_expression_to_xml writer =
         	     XmlTextWriter.end_element writer ) es ;
         XmlTextWriter.end_element writer ;
         XmlTextWriter.end_element writer
-    | New (a, c, es) ->
+    | Expression.New (a, c, es) ->
 	XmlTextWriter.start_element writer "new" ;
 	XmlTextWriter.write_attribute writer "class" (Type.as_string c) ;
 	XmlTextWriter.start_element writer "arguments" ;
@@ -453,7 +465,7 @@ and creol_type_to_xml writer handler =
 	XmlTextWriter.start_element writer "typevariable" ; 
         XmlTextWriter.write_attribute writer "name" s ;
         XmlTextWriter.end_element writer
-    | Type.TLabel ->
+    | Type.Label ->
 	XmlTextWriter.start_element writer "label" ; 
         XmlTextWriter.end_element writer
 	

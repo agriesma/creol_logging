@@ -119,7 +119,7 @@ module Type =
 	Basic of string
 	| Application of string * t list
 	| Variable of string
-	| TLabel
+	| Label
 
     (* These are the support functions for the abstract syntax tree. *)
 
@@ -129,7 +129,7 @@ module Type =
 	| Application (s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Variable s -> s
-	| TLabel -> "/* Label */"
+	| Label -> "/* Label */"
     and string_of_creol_type_list =
       function
 	  [t] -> as_string t
@@ -138,63 +138,73 @@ module Type =
 	| [] -> assert false (* Silence a compiler warning. *)
   end
 
-type 'a expression =
-      Null of 'a
-    | Nil of 'a
-    | Bool of 'a * bool
-    | Int of 'a * int
-    | Float of 'a * float
-    | String of 'a * string
-    | Id of 'a * string
-    | Unary of 'a * unaryop * 'a expression
-    | Binary of 'a * binaryop * 'a expression * 'a expression
-    | FuncCall of 'a * string * 'a expression list
-    | New of 'a * Type.t * 'a expression list
-and unaryop =
-    Not
-    | UMinus
-and binaryop =
-    Plus
-    | Minus
-    | Times
-    | Div
-    | Eq
-    | Ne
-    | Le
-    | Lt
-    | Ge
-    | Gt
-    | And
-    | Or
-    | Xor
-    | Iff
+module Expression =
+  struct
+    
+    type 'a t =
+	Null of 'a
+	| Nil of 'a
+	| Bool of 'a * bool
+	| Int of 'a * int
+	| Float of 'a * float
+	| String of 'a * string
+	| Id of 'a * string
+	| Unary of 'a * unaryop * 'a t
+	| Binary of 'a * binaryop * 'a t * 'a t
+	| FuncCall of 'a * string * 'a t list
+	| New of 'a * Type.t * 'a t list
+    and unaryop =
+	Not
+	| UMinus
+    and binaryop =
+	Plus
+	| Minus
+	| Times
+	| Div
+	| Eq
+	| Ne
+	| Le
+	| Lt
+	| Ge
+	| Gt
+	| And
+	| Or
+	| Xor
+	| Iff
+	| LAppend
+	| RAppend
+	| Concat
+
+  end
+
+open Expression
 
 type 'a guard =
     Wait of 'a
     | Label of 'a * string
-    | Condition of 'a * 'a expression
+    | Condition of 'a * 'a Expression.t
     | Conjunction of 'a * 'a guard * 'a guard
 
 module Statement =
   struct
     type ('a, 'b) t =
 	Skip of 'a
-	| Assign of 'a * string list * 'b expression list
+	| Assign of 'a * string list * 'b Expression.t list
 	| Await of 'a * 'b guard
-	| AsyncCall of 'a * string option * 'b expression * string *
-	    'b expression list
+	| AsyncCall of 'a * string option * 'b Expression.t * string *
+	    'b Expression.t list
 	| Reply of 'a * string * string list
 	| Free of 'a * string
-	| SyncCall of 'a * 'b expression * string *
-	    'b expression list * string list
+	| SyncCall of 'a * 'b Expression.t * string *
+	    'b Expression.t list * string list
 	| LocalAsyncCall of 'a * string option * string * string option *
-	    string option * 'b expression list
+	    string option * 'b Expression.t list
 	| LocalSyncCall of 'a * string * string option * string option *
-            'b expression list * string list
+            'b Expression.t list * string list
 	| Tailcall of 'a * string * string option * string option *
-	    'b expression list
-	| If of 'a * 'b expression * ('a, 'b) t * ('a, 'b)t
-	| While of 'a * 'b expression * 'b expression * ('a, 'b)t
+	    'b Expression.t list
+	| If of 'a * 'b Expression.t * ('a, 'b) t * ('a, 'b)t
+	| While of 'a * 'b Expression.t * 'b Expression.t option * ('a, 'b) t
 	| Sequence of 'a * ('a, 'b) t list
 	| Merge of 'a * ('a, 'b) t * ('a, 'b)t
 	| Choice of 'a * ('a, 'b) t * ('a, 'b)t
@@ -223,17 +233,26 @@ open Statement
 
 (** The abstract syntax of Creol *)
 type 'a creol_vardecl =
-    { var_name: string; var_type: Type.t; var_init: 'a expression option }
+    { var_name: string; var_type: Type.t; var_init: 'a Expression.t option }
 
 type ('a, 'b) creolmethod =
     { meth_name: string;
-      meth_coiface: Type.t;
       meth_inpars: 'b creol_vardecl list;
       meth_outpars: 'b creol_vardecl list;
       meth_vars: 'b creol_vardecl list;
       meth_body: ('a, 'b) Statement.t option }
 
-type 'a inherits = string * ('a expression list)
+module With = struct
+
+  type ('a, 'b) t = {
+    co_interface: string option;
+    methods: ('a, 'b) creolmethod list;
+    invariants: 'b Expression.t list
+  }
+
+end
+
+type 'a inherits = string * ('a Expression.t list)
 
 type ('a, 'b) classdecl =
     { cls_name: string;
@@ -242,16 +261,22 @@ type ('a, 'b) classdecl =
       cls_contracts: string list;
       cls_implements: string list;
       cls_attributes: 'b creol_vardecl list;
-      cls_methods: ('a, 'b) creolmethod list }
+      cls_with_defs: ('a, 'b) With.t list }
 
 type  ('a, 'b) interfacedecl =
     { iface_name: string;
       iface_inherits: string list;
       iface_methods: ('a, 'b) creolmethod list }
 
+module Exception =
+  struct
+    type 'b t = { name: string; parameters: 'b creol_vardecl list }
+  end
+
 type ('a, 'b) declaration =
     Class of ('a, 'b) classdecl
     | Interface of ('a, 'b) interfacedecl
+    | Exception of 'b Exception.t
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
     with there basic equivalents *)
@@ -304,8 +329,10 @@ and simplify_statement =
 	Tailcall (a, m, l, u, List.map simplify_expression i)
     | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
 			   simplify_statement f)
-    | While (a, c, i, b) ->
-	While (a, simplify_expression c, simplify_expression i,
+    | While (a, c, None, b) ->
+	While (a, simplify_expression c, None, simplify_statement b)
+    | While (a, c, Some i, b) ->
+	While (a, simplify_expression c, Some (simplify_expression i),
 	       simplify_statement b)
     | Sequence (a, s1) -> Sequence (a, List.map simplify_statement s1)
     | Merge (a, s1, s2) -> Merge (a, simplify_statement s1,
@@ -339,6 +366,8 @@ and simplify_method m =
 	      Sequence (n, sl) -> Sequence (n, (snd smv)@ sl)
 	    | s -> Sequence (note, (snd smv)@[s])
 	  end) }
+and simplify_with w =
+  { w with With.methods = List.map simplify_method w.With.methods }
 and simplify_inherits =
   function
       (n, e) -> (n, List.map simplify_expression e)
@@ -348,7 +377,7 @@ and simplify_inherits_list =
     | i::l -> (simplify_inherits i)::(simplify_inherits_list l)
 and simplify_class c =
   { c with cls_inherits = simplify_inherits_list c.cls_inherits;
-    cls_methods = List.map simplify_method c.cls_methods }
+    cls_with_defs = List.map simplify_with c.cls_with_defs }
 and simplify_interface i =
   i
 and simplify =
@@ -383,9 +412,13 @@ and definitions_in_declaration =
 and definitions_in_class c =
   let attrs = collect_declarations true
     (c.cls_parameters @ c.cls_attributes) in
-    { c with cls_methods = List.map (definitions_in_method attrs) c.cls_methods }
+    { c with
+      cls_with_defs = List.map (definitions_in_with attrs) c.cls_with_defs }
 and definitions_in_interface i =
   i
+and definitions_in_with attrs w =
+  { w with
+    With.methods = List.map (definitions_in_method attrs) w.With.methods }
 and definitions_in_method attrs m =
   match m.meth_body with
       None -> m
@@ -519,9 +552,11 @@ and uses_in_declaration =
     Class c -> Class (uses_in_class c)
   | Interface i -> Interface (uses_in_interface i)
 and uses_in_class c =
-  { c with cls_methods = List.map uses_in_method c.cls_methods }
+  { c with cls_with_defs = List.map uses_in_with c.cls_with_defs }
 and uses_in_interface i =
   i
+and uses_in_with w =
+  { w with With.methods = List.map uses_in_method w.With.methods }
 and uses_in_method m =
   match m.meth_body with
       None -> m
@@ -592,7 +627,9 @@ let optimise_tailcalls prg =
       Class c -> Class (optimise_in_class c)
     | Interface i -> Interface i
   and optimise_in_class c =
-    { c with cls_methods = List.map optimise_in_method c.cls_methods }
+    { c with cls_with_defs = List.map optimise_in_with c.cls_with_defs }
+  and optimise_in_with w =
+    { w with With.methods = List.map optimise_in_method w.With.methods }
   and optimise_in_method m =
     match m.meth_body with
 	None -> m
@@ -677,12 +714,11 @@ and pretty_print_class out_channel c =
       pretty_print_vardecls out_channel 1 "var " "" "\n" c.cls_attributes;
       output_string out_channel "\n";
     end;
-  if [] <> c.cls_methods then
+  if [] <> c.cls_with_defs then
     begin
-      do_indent out_channel 1;
-      pretty_print_methods out_channel c.cls_methods
-    end;
-  if [] = c.cls_attributes && [] = c.cls_methods then
+      List.iter (pretty_print_with out_channel) c.cls_with_defs ;
+    end ;
+  if [] = c.cls_attributes && [] = c.cls_with_defs then
     output_string out_channel "\n";
   output_string out_channel "end"
 and pretty_print_inherits out_channel (inh, args) =
@@ -694,15 +730,25 @@ and pretty_print_inherits out_channel (inh, args) =
 	(function () -> output_string out_channel ", ") args;
       output_string out_channel ")"
     end
-and pretty_print_methods out_channel list =
+and pretty_print_with out_channel w =
+  let indent = if w.With.co_interface = None then 1 else 2
+  in
+    begin
+      match w.With.co_interface with
+	  None -> ()
+	| Some c ->
+	    do_indent out_channel 1;
+	    output_string out_channel ("with " ^ c);
+    end ;
+    do_indent out_channel indent;
+    pretty_print_methods out_channel indent w.With.methods
+      (* XXX: Take care of invariants later *)
+and pretty_print_methods out_channel indent list =
   separated_list
-    (pretty_print_method out_channel)
-    (function () -> do_indent out_channel 1)
+    (pretty_print_method out_channel (indent + 1))
+    (function () -> do_indent out_channel indent)
     list
-and pretty_print_method out_channel m =
-  if m.meth_coiface <> Type.Basic "" then
-    output_string out_channel
-      ("with " ^ (Type.as_string m.meth_coiface) ^ " ");
+and pretty_print_method out_channel indent m =
   output_string out_channel ("op " ^ m.meth_name);
   if m.meth_inpars <> [] || m.meth_outpars <> [] then
     output_string out_channel "(";
@@ -727,21 +773,21 @@ and pretty_print_method out_channel m =
       None -> ()
     | Some s ->
 	output_string out_channel " == " ;
-	do_indent out_channel 2;
+	do_indent out_channel indent;
 	separated_list
 	  (function v ->
 	    output_string out_channel "var " ;
 	    pretty_print_vardecl out_channel v)
 	  (function () ->
 	    output_string out_channel ";" ;
-	    do_indent out_channel 2)
+	    do_indent out_channel indent)
 	  m.meth_vars;
 	if [] <> m.meth_vars then
 	  begin
 	    output_string out_channel ";" ;
-	    do_indent out_channel 2
+	    do_indent out_channel indent
 	  end ;
-	pretty_print_statement out_channel 2 s);
+	pretty_print_statement out_channel indent s);
   output_string out_channel "\n"
 and pretty_print_vardecls out_channel lvl p d s list =
   separated_list
@@ -828,7 +874,15 @@ and pretty_print_statement out lvl statement =
 	  print (lvl + 1) 25 f;
 	  do_indent out lvl;
 	  output_string out "fi"
-      | While (_, c, i, b) ->
+      | While (_, c, None, b) ->
+	  output_string out "while ";
+	  pretty_print_expression out c;
+	  output_string out " do ";
+	  do_indent out (lvl + 1);
+	  print (lvl + 1) 25 b;
+	  output_string out " od";
+	  do_indent out lvl
+      | While (_, c, Some i, b) ->
 	  output_string out "while ";
 	  pretty_print_expression out c;
 	  do_indent out lvl;
@@ -1162,6 +1216,10 @@ struct
 	  output_string out " *";
 	  of_creol_method_list out r
 
+  let of_creol_with_defs out ws =
+    let methods = List.flatten (List.map (function w -> w.With.methods) ws) in
+      of_creol_method_list out methods
+
   let of_creol_class out c =
     output_string out ("< \"" ^ c.cls_name ^ "\" : Cl | Inh: ");
     of_creol_inherits_list out c.cls_inherits;
@@ -1171,7 +1229,7 @@ struct
     of_creol_class_attribute_list out
       (c.cls_parameters @ c.cls_attributes);
     output_string out ", Mtds: ";
-    of_creol_method_list out c.cls_methods;
+    of_creol_with_defs out c.cls_with_defs;
     output_string out ", Ocnt: 0 >\n\n"
 
   let of_creol_interface out i = ()

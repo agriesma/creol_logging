@@ -55,56 +55,74 @@ rule token = parse
     | COMMENT { token lexbuf }
     | "/*" { c_style_comment lexbuf }
     | '\n' { update_loc lexbuf; token lexbuf }
-    | ":=" { ASSIGN }
-    | "::" { reserved lexbuf }
-    | '_' { reserved lexbuf }
-    | ':' { COLON }
-    | '?' { QUESTION }
     | '!' { BANG }
-    | "@@" { reserved lexbuf }
-    | '@' { AT }
+	(* '"' *)
     | '#' { reserved lexbuf }
-    | "==" { EQEQ }
-    | "<=" { LE }
-    | ">=" { GE }
-    | ">>" { reserved lexbuf }
-    | "<<" { UPPER }
-    | "<" { LT }
-    | ">" { GT }
-    | "/=" { NE }
-    | '*' { TIMES }
-    | '/' { DIV }
-    | '+' { PLUS }
-    | "-|" { reserved lexbuf }
-    | '-' { MINUS }
-    | '=' { EQ }
-    | ',' { COMMA }
-    | ';' { SEMI }
-    | ".." { reserved lexbuf }
-    | '.' { DOT }
-    | "[]" { BOX }
-    | '[' { LBRACK }
-    | ']' { RBRACK }
+    | '$' { reserved lexbuf }
+    | '%' { reserved lexbuf }
+    | "&&" { AMPAMP }
+    | '&' { AMP }
+    | '\'' { reserved lexbuf }
     | '(' { LPAREN }
     | ')' { RPAREN }
-    | '{' { LBRACE }
-    | '}' { RBRACE }
+    | '*' { TIMES }
+    | '+' { PLUS }
+    | ',' { COMMA }
+    | "-|" { LAPPEND }
+    | '-' { MINUS }
+    | ".." { reserved lexbuf }
+    | '.' { DOT }
+    | "/=" { NE }
+    | '/' { DIV }
+	(* Digits 0 to 9 *)
+    | ":=" { ASSIGN }
+    | ':' { COLON }
+    | ';' { SEMI }
+    | "<=" { LE }
     | "<>" { reserved lexbuf }
+    | "<<" { UPPER }
+    | '<' { LT }
+    | "==" { EQEQ }
+    | '=' { EQ }
+    | ">=" { GE }
+    | ">>" { reserved lexbuf }
+    | ">" { GT }
+    | '?' { QUESTION }
+    | "@@" { reserved lexbuf }
+    | '@' { AT }
+	(* Upper case letters *)
+    | "[]" { BOX }
+    | '[' { LBRACK }
+    | '\\' { reserved lexbuf }
+    | ']' { RBRACK }
+    | '^' { reserved lexbuf }
+    | '_' { reserved lexbuf }
+    | '`' { reserved lexbuf }
+	(* lower case letters *)
+    | '{' { LBRACE }
     | "|||" { MERGE }
-    | "||" { reserved lexbuf }
-    | "|-|" { reserved lexbuf }
-    | "|-" { reserved lexbuf }
-    | "|" { reserved lexbuf }
+    | "|-|" { CONCAT }
+    | "|-" { RAPPEND }
+    | "||" { BARBAR }
+    | "|" { BAR }
+    | '}' { RBRACE }
+    | '~' { reserved lexbuf }
     | "and" { AND }
     | "await" { AWAIT }
     | "begin" { BEGIN }
+    | "by" { BY }
     | "caller" { ID("caller") (* XXX: Should be special *) }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
+    | "do" { DO }
     | "else" { ELSE }
     | "end" { END }
+    | "ensures" { ENSURES }
+    | "exception" { EXCEPTION }
     | "false" { BOOL(false) }
     | "fi" { FI }
+    | "for" { FOR }
+    | "history" { reserved lexbuf }
     | "iff" { IFF }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
@@ -116,20 +134,26 @@ rule token = parse
     | "nil" { NIL }
     | "null" { NULL }
     | "not" { NOT }
+    | "od" { OD }
     | "op" { OP }
     | "or" { OR }
     | "out" { OUT }
-    | "pre" { reserved lexbuf }
-    | "post" { reserved lexbuf }
+    | "raise" { RAISE }
+    | "requires" { REQUIRES }
+    | "self" { ID("this") (* XXX: Should be special, too. *) }
     | "skip" { SKIP }
     | "system" { reserved lexbuf }
     | "then" { THEN }
     | "this" { ID("this") (* XXX: Should be special, too. *) }
+    | "to" { TO }
     | "true" { BOOL(true) }
+    | "try" { TRY }
     | "var" { VAR }
     | "wait" { WAIT }
+    | "while" { WHILE }
     | "with" { WITH }
     | "xor" { XOR }
+    | "History" { reserved lexbuf }
     | "Label" { reserved lexbuf }
     | "System" { reserved lexbuf }
     | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }

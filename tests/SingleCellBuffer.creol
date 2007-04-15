@@ -4,6 +4,7 @@
 
 interface Buff
 begin
+with Any
 op put(in x : Data)
 op get(out x : Data)
 end

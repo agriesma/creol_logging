@@ -4,7 +4,11 @@
 
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE
-%token WITH OP VAR IN OUT
+%token VAR WITH OP IN OUT
+%token REQUIRES ENSURES INV
+%token IF THEN ELSE FI SKIP AWAIT WAIT NEW
+%token FOR TO BY DO OD WHILE
+%token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON ASSIGN
 %token RBRACK LBRACK
 %token LPAREN RPAREN
@@ -13,18 +17,20 @@
 (* %token DIAMOND *)
 (* %token BAR *)
 (* %token DOTDOT *)
-%token IF THEN ELSE FI SKIP AWAIT WAIT NEW
 %token AND OR XOR IFF NOT PLUS MINUS TIMES DIV EQ NE LT LE GT GE
+%token AMP AMPAMP BAR BARBAR
+%token LAPPEND CONCAT RAPPEND
 %token <string> CID ID STRING
 %token <int>  INT
 %token <bool> BOOL
 %token <float> FLOAT
 %token NIL NULL
 
-%left AND OR XOR IFF
+%left AND AMP AMPAMP OR BAR BARBAR XOR IFF
 %right NOT
 %nonassoc EQ NE
 %left LE LT GT GE
+%left LAPPEND CONCAT RAPPEND
 %left PLUS MINUS
 %left TIMES DIV
 %right UMINUS
@@ -65,6 +71,7 @@
 
 open Lexing
 open Creol
+open Expression
 open Statement
 
 exception Error
@@ -89,6 +96,7 @@ declarations:
 declaration:
       d = classdecl { Class d }
     | d = interfacedecl	{ Interface d }
+    | d = exceptiondecl { Exception d }
 
 classdecl:
       CLASS n = CID;
@@ -96,10 +104,11 @@ classdecl:
 	i = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
 	c = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, CID)))
 	j = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, CID)))
-	BEGIN a = loption(attributes) m = list(method_def) END {
+	BEGIN a = loption(attributes)
+        aw = ioption(anon_with_def) m = list(with_def) END {
       { cls_name = n; cls_parameters = p; cls_inherits = i;
 	cls_contracts = c; cls_implements = j; cls_attributes = a;
-	cls_methods = m } }
+	cls_with_defs = match aw with None -> m | Some w -> w::m } }
     | CLASS error
     | CLASS CID error
 	{ signal_error $startpos "syntax error in class declaration" }
@@ -124,19 +133,13 @@ vardecl:
       i = ID COLON t = creol_type { { var_name = i; var_type = t; var_init = None } }
 
 method_decl:
-      WITH m = CID OP i = ID p = parameters_opt {
+      OP i = ID p = parameters_opt
+      ioption(preceded(REQUIRES, assertion))
+      ioption(preceded(ENSURES, assertion))
+      {
 	match p with (ins, outs) ->
-	  { meth_name = i; meth_coiface = Type.Basic m; meth_inpars = ins;
+	  { meth_name = i; meth_inpars = ins;
 	    meth_outpars = outs; meth_vars = []; meth_body = None} }
-    | OP i = ID p = parameters_opt {
-	match p with
-	    (ins, outs) ->
-	      { meth_name = i; meth_coiface = Type.Basic ""; meth_inpars = ins;
-		meth_outpars = outs; meth_vars = []; meth_body = None} }
-    | WITH error
-    | WITH CID error
-    | WITH CID OP error
-    | WITH CID OP ID error
     | OP error
     | OP ID error
 	{ signal_error $startpos "syntax error in method declaration" }
@@ -157,28 +160,38 @@ outputs:
     | error COMMA | error RPAREN
 	{ signal_error $startpos "syntax error in method declaration" }
 
+anon_with_def:
+    l = nonempty_list(method_def) i = list(invariant)
+    { { With.co_interface = None; With.methods = l; With.invariants = i } }
+
+with_def:
+      WITH m = CID l = nonempty_list(method_def) i = list(invariant)
+    { { With.co_interface = Some m; With.methods = l; With.invariants = i } }
+
 method_def:
       d = method_decl; EQEQ; a = loption(terminated(attributes, SEMI));
 	s = statement (* ioption(SEMI) *)
-    { { meth_name = d.meth_name; meth_coiface = d.meth_coiface;
-	  meth_inpars = d.meth_inpars; meth_outpars = d.meth_outpars;
-	  meth_vars = a; meth_body = Some s} }
+    { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
+	meth_outpars = d.meth_outpars; meth_vars = a; meth_body = Some s} }
 
 interfacedecl:
-      INTERFACE n = CID i = iface_inherits_opt BEGIN m = method_decls_opt END {
-	{ iface_name = n; iface_inherits = i; iface_methods = m } }
+      INTERFACE n = CID i = iface_inherits_opt BEGIN m = loption(with_decl) END
+    { { iface_name = n; iface_inherits = i; iface_methods = m } }
 
 iface_inherits_opt:
       (* empty *) { [] }
     | INHERITS l = separated_nonempty_list(COMMA, CID) { l }
 
-method_decls_opt:
-      (* empty *) { [] }
-    | m = method_decls { m }
+with_decl:
+      WITH m = CID l = nonempty_list(method_decl) { l }
 
-method_decls:
-      m = method_decl { [m] }
-    | m = method_decl l = method_decls { m::l }
+
+(* Exception declaration *)
+
+exceptiondecl:
+      EXCEPTION n = CID
+        p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
+	{ { Exception.name = n; Exception.parameters = p } }
 
 (* Statements *)
 
@@ -203,7 +216,7 @@ statement_sequence:
 basic_statement:
       SKIP
 	{ Skip (Note.make $startpos) }
-    | t = separated_nonempty_list(COMMA, ID) ASSIGN
+    | t = separated_nonempty_list(COMMA, lvalue) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((Note.make $startpos), t, e) }
     | AWAIT g = guard
@@ -231,9 +244,34 @@ basic_statement:
         { If((Note.make $startpos), e, t, f) }
     | IF e = expression THEN t = statement FI
         { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
+    | FOR v = ID ASSIGN f = expression TO u = expression
+	b = ioption(preceded(BY,expression))
+	i = ioption(preceded(INV, assertion))
+	DO s = statement OD
+	{ Skip (Note.make $startpos) }
+    | WHILE b = expression i = ioption(preceded(INV, assertion))
+      DO s = statement OD
+	{ While (Note.make $startpos, b, i, s) }
+    | RAISE e = CID a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
+	{ Skip (Note.make $startpos) }
+    | TRY s = statement c = catchers END
+	{ Skip (Note.make $startpos) }
     | error ELSE | error FI | error OP | error WITH | error END | error EOF
 	{ signal_error $startpos "syntax error in statement" }
 
+catchers:
+    nonempty_list(catch_clause)
+    ioption(preceded(ELSE, statement))
+    { }
+
+catch_clause:
+    WITH c = CID
+         l = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
+         DO s = statement
+    { }
+
+lvalue:
+     i = ID { i }
 
 guard:
       l = ID QUESTION { Label ((Note.make $startpos), l) }
@@ -266,8 +304,12 @@ expression:
 	{ FuncCall((Note.make $startpos), f, l) }
 
 %inline binop:
-      AND { And }
+      AND { And (* XXX *) }
+    | AMP { And (* XXX *) }
+    | AMPAMP { And (* XXX *) }
     | OR { Or }
+    | BAR { Or (* XXX *) }
+    | BARBAR { Or (* XXX *) }
     | XOR { Ne }
     | IFF { Eq }
     | EQ { Eq }
@@ -280,6 +322,9 @@ expression:
     | MINUS { Minus }
     | TIMES { Times }
     | DIV { Div }
+    | LAPPEND { LAppend }
+    | RAPPEND { RAppend }
+    | CONCAT { Concat }
 
 %inline function_name:
       f = ID { f }
@@ -294,5 +339,13 @@ creol_type:
     | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Application(t, p) } 
     | CID LT error { signal_error $startpos "Error in type" }
+
+(* Assertions. *)
+
+invariant:
+    INV a = assertion { a }
+
+assertion:
+    e = expression { e }
 
 %%
