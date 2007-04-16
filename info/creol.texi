@@ -137,12 +137,42 @@ Object expressions and literals are expressions whose value is a
 reference to an object.  The only literal is @code{null}, representing
 the null-pointer.
 
+
 @subsubsection Function Application
 
 Generally, applying a function is written as
 @code{@var{f}[@var{e},@var{d},...,@var{c}]}, where @var{f} is the name
 of a function and @var{e},@var{d},@dots{} refers to expressions
 representing the actual arguments.
+
+
+@subsubsection Field Access
+
+While the fields of objects are considered to be private to the
+object, the functional sub-language generates automatic projections
+for structures.
+
+Structures may arise, e.g., from data type definitions (see below).
+
+@example
+datatype Note
+begin
+  var file: String
+  var line: Integer
+end
+@end example
+
+In this example, an exception e is of type @code{ParseError}, which is
+a structure with the two fields @code{file} and @code{line}.  If
+·@code{n} is a variable of type @code{Note}, then @code{n`file} is the
+value of the file component.
+
+@itemize @bullet
+@item
+Field access expressions should only be valid within the data type
+module?  Otherwise we do not adhere to the principles of encapsulation
+for abstract data types.
+@end itemize
 
 
 @node Statements
@@ -218,7 +248,7 @@ The usual @code{if ... then ... else ... fi} statement.
 Loops should be avoided in Creol programs.  Creol provides to variants
 of loops:
 
-The ``for''-loop is guaranteed to terminate.  Its syntax is @code{for
+The @code{for}-loop is guaranteed to terminate.  Its syntax is @code{for
 @var{i} := @var{lower} to @var{upper} by @var{stride} do
 @var{statement} od}.  First, the expressions denoted by @var{lower}
 and @var{upper} are evaluated.  Then @var{i} assumes each value which
@@ -305,12 +335,46 @@ All objects in Creol are typed by interface.
 Each class is assumed to implement the empty interface @code{Any}.
 This interface is the implicit superinterface of all other interfaces.
 
+An interace may inherit from other interfaces, making an instance of
+this interface also an instance of all super-interfaces.
+
 An interface has a unique name.  It declares a @emph{co-interface},
 which expresses mutual dependencies and constrains the users of this
 interface:  Each caller of a method specified in an interface
 @emph{must} implement its co-interface.
 
 An interface specifies the signature of a sequence of methods.
+
+@example
+interface @var{I} [ inherits @var{@{ cid @}} ]
+begin
+  [ with @var{I'}
+    @var{@{ method-decl @}}
+    @var{@{ invariants @}} ]
+end
+@end example
+
+@subsubsection Open Issues
+
+With respect to interface declarations, the following ideas may be
+considered:
+@itemize @bullet
+@item
+May be we want to allow more than one co-interface declaration in an
+interface?  Currently, an interface with two co-interface declarations
+has to be constructed by inheriting the block with one interface.  On
+the other hand, one might feel that both blocks form a unit and should
+not be used separately.
+
+@item
+One might be tempted to introduce type-parameterised interfaces or
+value-parameterised interfaces.  But a concrete use case is needed,
+first.
+
+@item
+Why do we use @code{inherits} if the semantics of sub-interfacing is
+much closer to @code{contracts}, or is it not?
+@end itemize
 
 
 @node Class Declaration
@@ -372,7 +436,20 @@ TBD
 @node Exception Declaration
 @subsection Exception Declarations
 
-TBD
+Exception have to be declared for type checking.  A declaration has
+the form
+@example
+exception @var{E} [ ( @var{@{ var-decl-no-init @}} ) ]
+@end example
+
+This allows a programmer to supply additional information to an
+exception.
+
+@itemize @bullet
+@item
+Actually, only a sequence of types should be sufficient, or we may use
+these names as record names.
+@end itemize
 
 
 @node Grammar
@@ -382,12 +459,12 @@ For reference, we summarize the grammar of Creol.  The grammar of
 Creol is LR(1) and is used by the compiler.  @code{@{...@}} means a
 list of symbols, where the optional decorator at the end indicates the
 separator.  An optional symbol is enclosed in square brackets like
-this: @code{[ ... ]}.  Terminal symbols are enclosed in quotes:
-``...'' Finally, the symbol @var{id}, denoting method names,
-functions, and variables, refers to an identifier, which is any string
-that matches the regular expression @code{[a-z][_0-9A-Za-z]*}, and
-@var{cid}, denoting class and type names, refers to any string that
-matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
+this: @code{[ ... ]}.  Terminal symbols are printed like this:
+@strong{terminal}.  Finally, the symbol @var{id}, denoting method
+names, functions, and variables, refers to an identifier, which is any
+string that matches the regular expression @code{[a-z][_0-9A-Za-z]*},
+and @var{cid}, denoting class and type names, refers to any string
+that matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
 
 
 @subsection Reserved Keywords
@@ -436,100 +513,100 @@ declaration ::=
   | datatype-decl
 
 class-decl ::=
-    ``class'' cid [ ``('' @{ var-decl-no-init ``,'' @} ``)'']
-    [``inherits'' @{ cid [``('' @{ expr ``,'' @} ``)''] , @} ]
-    [``implements'' @{ cid ``,'' @} ]
-    [``contracts'' @{ cid ``,'' @} ]
-    ``begin'' @{ ``var'' var-decl @} [ anon-with-def ] @{ with-def @}
-    ``end''
+    @strong{class} cid [ @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)}]
+    [@strong{inherits} @{ cid [@strong{(} @{ expr @strong{,} @} @strong{)}] , @} ]
+    [@strong{implements} @{ cid @strong{,} @} ]
+    [@strong{contracts} @{ cid @strong{,} @} ]
+    @strong{begin} @{ @strong{var} var-decl @} [ anon-with-def ] @{ with-def @}
+    @strong{end}
 
 interface-decl ::=
-    ``interface'' id [``inherits'' @{ id ``,'' @}]
-    ``begin'' ``with'' cid @{ op-decl @} @{ invariant @} ``end''
+    @strong{interface} id [@strong{inherits} @{ id @strong{,} @}]
+    @strong{begin} @strong{with} cid @{ op-decl @} @{ invariant @} @strong{end}
 
 exception.decl ::=
-    ``exception'' cid [ ``('' @{ var-decl-no-init ``,'' @} ``)'' ]
+    @strong{exception} cid [ @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)} ]
 
 datatype-decl ::=
-    ``datatype'' cid [ ``by'' @{ cid ``,'' @} ] ``begin''
-    @{ constructor @} @{ function @} @{ invariant @} ``end''
+    @strong{datatype} cid [ @strong{by} @{ cid @strong{,} @} ] @strong{begin}
+    @{ constructor @} @{ function @} @{ invariant @} @strong{end}
 
 var-decl-no-init ::=
-    @{ id ``,'' @} ``:'' type
+    @{ id @strong{,} @} @strong{:} type
 
 var-decl ::=
-    var-decl-no-init ``:='' @{ expr ``,'' @}
+    var-decl-no-init @strong{:=} @{ expr @strong{,} @}
 
 op-decl ::=
-    ``op'' id ``('' ``in'' @{ var-decl-no-init ``,'' @} [ ``;''
-    ``out'' @{ var-decl-no-init ``,'' @} ] ``)''
-    [``requires'' assertion] [``ensures'' assertion]
+    @strong{op} id @strong{(} @strong{in} @{ var-decl-no-init @strong{,} @} [ @strong{;}
+    @strong{out} @{ var-decl-no-init @strong{,} @} ] @strong{)}
+    [@strong{requires} assertion] [@strong{ensures} assertion]
 
 anon-with-def ::=
     @{ op-def @} @{ invariant @}
 
 with-def ::=
-    ``with'' cid @{ op-def @} @{ invariant @}
+    @strong{with} cid @{ op-def @} @{ invariant @}
 
 op-def ::=
-    op-decl ``=='' @{ ``var'' var-decl ``;'' @} statement
+    op-decl @strong{==} @{ @strong{var} var-decl @strong{;} @} statement
 
 constructor ::=
-    ``constructor'' cid [ ``('' @{ type ``,'' ``)'' ] ``:'' cid
+    @strong{constructor} cid [ @strong{(} @{ type @strong{,} @strong{)} ] @strong{:} cid
 
 function ::=
-    ``function'' id ``('' @{ var-decl-no-init ``,'' @} ``)'' ``==''
+    @strong{function} id @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)} @strong{==}
     expression
 
 statement ::=
-    choice-statement [ ``|||'' statement ]
+    choice-statement [ @strong{|||} statement ]
 
 choice-statement ::=
-    seq-statement [ ``[]'' choice-statement ]
+    seq-statement [ @strong{[]} choice-statement ]
 
 seq-statement ::=
-    @{ basic-statement ``;'' @}
+    @{ basic-statement @strong{;} @}
 
 basic-statement ::=
-    ``skip''
-  | @{ id ``,'' @} ``:='' @{ expr-or-new ``,'' @}
-  | ``await'' guard
-  | [ id ] ``!'' expr ``.'' id ``('' @{ expr ``,'' @} ``)''
-  | [ id ] ``!'' id [``@'' cid] ``('' @{ expr ``,'' @} ``)''
-  | id ``?'' ``(''  @{ id ``,'' @} ``)''
-  | expr ``.'' id ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)''
-  | id [``@'' cid] ``('' @{ expr ``,'' @} ``;'' @{ id ``,'' @} ``)''
-  | ``@{'' statement ``@}''
-  | ``if'' expr ``then'' statement [``else'' statement] ``fi''
-  | ``for'' id ``:='' expression ``to'' expression
-      [ ``by'' expression ] [ ``inv'' assertion ] ``do'' statement ``od''
-  | ``while'' expression [ ``inv'' assertion ] ``do'' statement ``od''
-  | ``raise'' cid [ ``('' @{ expr ``,'' @} ``)'' ]
-  | ``try'' statement catchers ``end''
+    @strong{skip}
+  | @{ id @strong{,} @} @strong{:=} @{ expr-or-new @strong{,} @}
+  | @strong{await} guard
+  | [ id ] @strong{!} expr @strong{.} id @strong{(} @{ expr @strong{,} @} @strong{)}
+  | [ id ] @strong{!} id [ @strong{@@} cid ] @strong{(} @{ expr @strong{,} @} @strong{)}
+  | id @strong{?} @strong{(}  @{ id @strong{,} @} @strong{)}
+  | expr @strong{.} id @strong{(} @{ expr @strong{,} @} @strong{;} @{ id @strong{,} @} @strong{)}
+  | id [@strong{@@} cid] @strong{(} @{ expr @strong{,} @} @strong{;} @{ id @strong{,} @} @strong{)}
+  | @strong{@{} statement @strong{@}}
+  | @strong{if} expr @strong{then} statement [@strong{else} statement] @strong{fi}
+  | @strong{for} id @strong{:=} expression @strong{to} expression
+      [ @strong{by} expression ] [ @strong{inv} assertion ] @strong{do} statement @strong{od}
+  | @strong{while} expression [ @strong{inv} assertion ] @strong{do} statement @strong{od}
+  | @strong{raise} cid [ @strong{(} @{ expr @strong{,} @} @strong{)} ]
+  | @strong{try} statement catchers @strong{end}
 
 catchers ::=
-    @{ ``with'' cid [ ``(`` @{ id ``,'' @} ``)'' ] ``do'' statement @}
-    [ ``else'' statement ]
+    @{ @strong{with} cid [ @strong{(} @{ id @strong{,} @} @strong{)} ] @strong{do} statement @}
+    [ @strong{else} statement ]
 
 expr-or-new ::=
-    ``new'' cid ``('' @{ expr ``,'' @} ``)''
+    @strong{new} cid @strong{(} @{ expr @strong{,} @} @strong{)}
   | expr
 
 expr ::=
-    integer | float | string | ``true'' | ``false'' | ``nil'' |
-    ``null''
+    integer | float | string | @strong{true} | @strong{false} | @strong{nil} |
+    @strong{null}
   | id | unaryop expr |  expr binop expr
-  | id ``('' @{ expr ``,'' @} ``)''
-  | ``(`` expr ``)''
+  | id @strong{(} @{ expr @strong{,} @} @strong{)} | expr @strong{`} id
+  | @strong{(} expr @strong{)}
 
-binop ::= ``+'' | ``-'' | ``*'' | ``/'' | ``='' | ``<'' | ``>'' |
-          ``<='' | ``>='' | ``and'' | ``&'' | ``&&'' | ``/\'' |
-          ``or'' | ``|'' | ``||'' | ``\/'' | ``|-'' | ``|-|'' | ``-|''
+binop ::= @strong{+} | @strong{-} | @strong{*} | @strong{/} | @strong{=} | @strong{<} | @strong{>} |
+          @strong{<=} | @strong{>=} | @strong{and} | @strong{&} | @strong{&&} | @strong{/\} |
+          @strong{or} | @strong{|} | @strong{||} | @strong{\/} | @strong{|-} | @strong{|-|} | @strong{-|}
 
-unaryop ::= ``not'' | ``-'' | ``#''
+unaryop ::= @strong{not} | @strong{-} | @strong{#}
 
 assertion ::=
     expr
-  | ``forall'' var-decl-no-init ``:'' assertion
-  | ``exists'' var-decl-no-init ``:'' assertion
+  | @strong{forall} var-decl-no-init @strong{:} assertion
+  | @strong{exists} var-decl-no-init @strong{:} assertion
 @end format

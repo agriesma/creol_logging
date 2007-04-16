@@ -83,6 +83,8 @@ sig
 	  (** A string literal. *)
       | Id of 'a * string
 	  (** An identifier, usually an attribute or a local variable name *)
+      | FieldAccess of 'a * 'a t * string
+	  (** Access the field of a structure. *)
       | Unary of 'a * unaryop * 'a t
 	  (** A unary expression *)
       | Binary of 'a * binaryop * 'a t * 'a t

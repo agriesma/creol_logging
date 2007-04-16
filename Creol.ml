@@ -149,6 +149,7 @@ module Expression =
 	| Float of 'a * float
 	| String of 'a * string
 	| Id of 'a * string
+        | FieldAccess of 'a * 'a t * string
 	| Unary of 'a * unaryop * 'a t
 	| Binary of 'a * binaryop * 'a t * 'a t
 	| FuncCall of 'a * string * 'a t list

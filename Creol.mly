@@ -36,6 +36,7 @@
 %left PLUS MINUS
 %left TIMES DIV
 %right UMINUS HASH
+%left BACKTICK
 
 %start <'a list> main
 
@@ -314,6 +315,8 @@ expression:
 	{ Unary((Note.make $startpos), UMinus, e) }
     | HASH e = expression
 	{ Unary((Note.make $startpos), Length, e) }
+    | e = expression BACKTICK i = ID
+	{ FieldAccess ((Note.make $startpos), e, i) }
     | i = INT { Int ((Note.make $startpos), i) }
     | f = FLOAT { Float ((Note.make $startpos), f) }
     | b = BOOL { Bool ((Note.make $startpos), b) }
