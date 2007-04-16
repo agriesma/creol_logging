@@ -32,6 +32,7 @@
 
 open Creol
 open Statement
+open Declaration
 
 let from_file name =
   (** Read the contents of a file and return an abstract syntax tree.
@@ -80,33 +81,50 @@ let rec creol_to_xml name stmt_handler expr_handler tree =
     XmlTextWriter.flush writer
 and creol_declaration_to_xml writer stmt_handler expr_handler =
   function
-      (Class c) -> creol_class_to_xml writer stmt_handler expr_handler c
-    | (Interface i) -> creol_interface_to_xml writer stmt_handler i
+      Class c -> creol_class_to_xml writer stmt_handler expr_handler c
+    | Interface i -> creol_interface_to_xml writer stmt_handler i
+    | Datatype d -> creol_datatype_to_xml writer stmt_handler expr_handler d
+    | Exception e -> creol_exception_to_xml writer stmt_handler expr_handler e
+and creol_exception_to_xml writer stmt_handler expr_handler e =
+  XmlTextWriter.start_element writer "exception";
+  XmlTextWriter.write_attribute writer "name" e.Exception.name;
+  if e.Exception.parameters <> [] then
+    begin
+      XmlTextWriter.start_element writer "parameters";
+      List.iter (creol_vardecl_to_xml writer stmt_handler)
+	e.Exception.parameters;
+      XmlTextWriter.end_element writer
+    end ;
+  XmlTextWriter.end_element writer
+and creol_datatype_to_xml writer stmt_handler expr_handler d =
+  XmlTextWriter.start_element writer "datatype";
+  XmlTextWriter.write_attribute writer "name" d.Datatype.name;
+  XmlTextWriter.end_element writer
 and creol_class_to_xml writer stmt_handler expr_handler c =
     XmlTextWriter.start_element writer "class";
-    XmlTextWriter.write_attribute writer "name" c.cls_name;
+    XmlTextWriter.write_attribute writer "name" c.Class.name;
     XmlTextWriter.start_element writer "parameters";
     List.iter (creol_vardecl_to_xml writer stmt_handler)
-	c.cls_parameters;
+	c.Class.parameters;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "inherits";
-    List.iter (creol_inherits_to_xml writer stmt_handler) c.cls_inherits;
+    List.iter (creol_inherits_to_xml writer stmt_handler) c.Class.inherits;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "contracts";
-    List.iter (creol_contracts_to_xml writer stmt_handler) c.cls_contracts;
+    List.iter (creol_contracts_to_xml writer stmt_handler) c.Class.contracts;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "implements";
-    List.iter (creol_implements_to_xml writer stmt_handler) c.cls_implements;
+    List.iter (creol_implements_to_xml writer stmt_handler) c.Class.implements;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "attributes";
-    List.iter (creol_vardecl_to_xml writer stmt_handler) c.cls_attributes;
+    List.iter (creol_vardecl_to_xml writer stmt_handler) c.Class.attributes;
     XmlTextWriter.end_element writer;
     List.iter (creol_with_to_xml writer stmt_handler expr_handler)
-      c.cls_with_defs;
+      c.Class.with_defs;
     XmlTextWriter.end_element writer
 and creol_interface_to_xml writer stmt_handler i =
     XmlTextWriter.start_element writer "interface";
-    XmlTextWriter.write_attribute writer "name" i.iface_name;
+    XmlTextWriter.write_attribute writer "name" i.Interface.name;
     XmlTextWriter.end_element writer
 and creol_with_to_xml writer stmt_handler expr_handler w =
   XmlTextWriter.start_element writer "with";

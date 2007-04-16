@@ -3,22 +3,24 @@
    This file is an input file to the menhir parser generator. *)
 
 %token EOF
-%token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE
-%token VAR WITH OP IN OUT
-%token REQUIRES ENSURES INV
+%token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
+%token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
+%token REQUIRES ENSURES INV WHEN WHERE SOME FORALL EXISTS
 %token IF THEN ELSE FI SKIP AWAIT WAIT NEW
 %token FOR TO BY DO OD WHILE
 %token EXCEPTION RAISE TRY
-%token EQEQ COMMA SEMI COLON ASSIGN
+%token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token RBRACK LBRACK
 %token LPAREN RPAREN
 %token LBRACE RBRACE
-%token QUESTION BANG BOX MERGE DOT AT UPPER
-(* %token DIAMOND *)
-(* %token BAR *)
-(* %token DOTDOT *)
-%token AND OR XOR IFF NOT PLUS MINUS TIMES DIV EQ NE LT LE GT GE
-%token AMP AMPAMP BAR BARBAR
+%token HASHHASH HASH QQUESTION QUESTION BANGBANG BANG DOTDOT DOT ATAT AT
+%token LTLT GTGT SUBTYPE SUPERTYPE DLRARROW
+%token DOLLAR PERCENT TICK BACKTICK
+%token BOX DIAMOND MERGE
+%token AND OR XOR IFF NOT PLUSPLUS PLUS MINUSMINUS MINUS
+%token TIMESTIMES TIMES ARROW DARROW DIVDIV DIV EQ NE LT LE GT GE
+%token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE MODELS MAPSTO UNDERSCORE
+%token HAT HATHAT BACKSLASH 
 %token LAPPEND CONCAT RAPPEND
 %token <string> CID ID STRING
 %token <int>  INT
@@ -26,14 +28,14 @@
 %token <float> FLOAT
 %token NIL NULL
 
-%left AND AMP AMPAMP OR BAR BARBAR XOR IFF
+%left AND AMP AMPAMP WEDGE OR BAR BARBAR VEE XOR IFF
 %right NOT
 %nonassoc EQ NE
 %left LE LT GT GE
 %left LAPPEND CONCAT RAPPEND
 %left PLUS MINUS
 %left TIMES DIV
-%right UMINUS
+%right UMINUS HASH
 
 %start <'a list> main
 
@@ -94,9 +96,10 @@ declarations:
     | d = declaration l = declarations { d::l }
 
 declaration:
-      d = classdecl { Class d }
-    | d = interfacedecl	{ Interface d }
-    | d = exceptiondecl { Exception d }
+      d = classdecl { Declaration.Class d }
+    | d = interfacedecl	{ Declaration.Interface d }
+    | d = exceptiondecl { Declaration.Exception d }
+    | d = datatypedecl { Declaration.Datatype d }
 
 classdecl:
       CLASS n = CID;
@@ -106,9 +109,9 @@ classdecl:
 	j = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, CID)))
 	BEGIN a = loption(attributes)
         aw = ioption(anon_with_def) m = list(with_def) END {
-      { cls_name = n; cls_parameters = p; cls_inherits = i;
-	cls_contracts = c; cls_implements = j; cls_attributes = a;
-	cls_with_defs = match aw with None -> m | Some w -> w::m } }
+      { Class.name = n; Class.parameters = p; Class.inherits = i;
+	Class.contracts = c; Class.implements = j; Class.attributes = a;
+	Class.with_defs = match aw with None -> m | Some w -> w::m } }
     | CLASS error
     | CLASS CID error
 	{ signal_error $startpos "syntax error in class declaration" }
@@ -176,7 +179,7 @@ method_def:
 
 interfacedecl:
       INTERFACE n = CID i = iface_inherits_opt BEGIN m = loption(with_decl) END
-    { { iface_name = n; iface_inherits = i; iface_methods = m } }
+    { { Interface.name = n; Interface.inherits = i; Interface.methods = m } }
 
 iface_inherits_opt:
       (* empty *) { [] }
@@ -192,6 +195,23 @@ exceptiondecl:
       EXCEPTION n = CID
         p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
 	{ { Exception.name = n; Exception.parameters = p } }
+
+
+(* Data type declaration *)
+
+datatypedecl:
+    DATATYPE n = CID loption(preceded(BY, separated_list(COMMA, CID))) BEGIN
+      list(constructordecl) list(functiondecl) list(invariant) END
+    { { Datatype.name = n } }
+
+constructordecl:
+    CONSTRUCTOR CID COLON loption(delimited(LPAREN, separated_nonempty_list(COMMA, creol_type), RPAREN))
+    { () }
+
+functiondecl:
+    FUNCTION ID LPAREN separated_list(COMMA, vardecl_no_init) RPAREN
+    COLON CID EQEQ expression
+    { () }
 
 (* Statements *)
 
@@ -225,7 +245,7 @@ basic_statement:
       LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ AsyncCall ((Note.make $startpos), l, callee, m, i) }
     | l = ioption(ID) BANG m = ID
-      lb = ioption(preceded(AT, CID)) ub = ioption(preceded(UPPER, CID))
+      lb = ioption(preceded(AT, CID)) ub = ioption(preceded(LTLT, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ LocalAsyncCall ((Note.make $startpos), l, m, lb, ub, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
@@ -234,7 +254,7 @@ basic_statement:
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN
 	{ SyncCall ((Note.make $startpos), c, m, i, o) }
-    | m = ID lb = ioption(preceded(AT, CID)) ub = ioption(preceded(UPPER, CID))
+    | m = ID lb = ioption(preceded(AT, CID)) ub = ioption(preceded(LTLT, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN
 	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
@@ -292,6 +312,8 @@ expression:
     | NOT  e = expression { Unary((Note.make $startpos), Not, e) }
     | MINUS e = expression %prec UMINUS
 	{ Unary((Note.make $startpos), UMinus, e) }
+    | HASH e = expression
+	{ Unary((Note.make $startpos), Length, e) }
     | i = INT { Int ((Note.make $startpos), i) }
     | f = FLOAT { Float ((Note.make $startpos), f) }
     | b = BOOL { Bool ((Note.make $startpos), b) }
@@ -304,12 +326,14 @@ expression:
 	{ FuncCall((Note.make $startpos), f, l) }
 
 %inline binop:
-      AND { And (* XXX *) }
+      AND { And }
     | AMP { And (* XXX *) }
     | AMPAMP { And (* XXX *) }
+    | WEDGE { And (* XXX *) }
     | OR { Or }
     | BAR { Or (* XXX *) }
     | BARBAR { Or (* XXX *) }
+    | VEE { Or (* XXX *) }
     | XOR { Ne }
     | IFF { Eq }
     | EQ { Eq }

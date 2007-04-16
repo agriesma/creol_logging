@@ -55,58 +55,76 @@ rule token = parse
     | COMMENT { token lexbuf }
     | "/*" { c_style_comment lexbuf }
     | '\n' { update_loc lexbuf; token lexbuf }
+    | "!!" { BANGBANG }
     | '!' { BANG }
 	(* '"' *)
-    | '#' { reserved lexbuf }
-    | '$' { reserved lexbuf }
-    | '%' { reserved lexbuf }
+    | "##" { HASHHASH }
+    | '#' { HASH }
+    | '$' { DOLLAR }
+    | '%' { PERCENT }
     | "&&" { AMPAMP }
     | '&' { AMP }
-    | '\'' { reserved lexbuf }
+    | '\'' { TICK }
     | '(' { LPAREN }
     | ')' { RPAREN }
+    | "**" { TIMESTIMES }
     | '*' { TIMES }
+    | "++" { PLUSPLUS }
     | '+' { PLUS }
     | ',' { COMMA }
+    | "->" { ARROW }
     | "-|" { LAPPEND }
+    | "--" { MINUSMINUS }
     | '-' { MINUS }
-    | ".." { reserved lexbuf }
+    | ".." { DOTDOT }
     | '.' { DOT }
+    | "//" { DIVDIV }
     | "/=" { NE }
+    | "/\\" { WEDGE }
     | '/' { DIV }
 	(* Digits 0 to 9 *)
+    | "::" { DCOLON }
+    | ":>" { SUPERTYPE }
     | ":=" { ASSIGN }
     | ':' { COLON }
     | ';' { SEMI }
+    | "<=>" { DLRARROW }
     | "<=" { LE }
-    | "<>" { reserved lexbuf }
-    | "<<" { UPPER }
+    | "<:" { SUBTYPE }
+    | "<>" { DIAMOND }
+    | "<<" { LTLT }
     | '<' { LT }
+    | "=>" { DARROW }
     | "==" { EQEQ }
     | '=' { EQ }
     | ">=" { GE }
-    | ">>" { reserved lexbuf }
+    | ">>" { GTGT }
     | ">" { GT }
+    | "??" { QQUESTION }
     | '?' { QUESTION }
-    | "@@" { reserved lexbuf }
+    | "@@" { ATAT }
     | '@' { AT }
 	(* Upper case letters *)
     | "[]" { BOX }
     | '[' { LBRACK }
-    | '\\' { reserved lexbuf }
+    | "\\/" { VEE }
+    | '\\' { BACKSLASH }
     | ']' { RBRACK }
-    | '^' { reserved lexbuf }
-    | '_' { reserved lexbuf }
-    | '`' { reserved lexbuf }
+    | "^^" { HATHAT }
+    | '^' { HAT }
+    | '_' { UNDERSCORE }
+    | '`' { BACKTICK }
 	(* lower case letters *)
     | '{' { LBRACE }
     | "|||" { MERGE }
+    | "|->" { MAPSTO }
     | "|-|" { CONCAT }
     | "|-" { RAPPEND }
+    | "|=" { MODELS }
     | "||" { BARBAR }
     | "|" { BAR }
     | '}' { RBRACE }
-    | '~' { reserved lexbuf }
+    | '~' { TILDE }
     | "and" { AND }
     | "await" { AWAIT }
     | "begin" { BEGIN }
@@ -114,21 +132,26 @@ rule token = parse
     | "caller" { ID("caller") (* XXX: Should be special *) }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
+    | "constructor" { CONSTRUCTOR }
+    | "datatype" { DATATYPE }
     | "do" { DO }
     | "else" { ELSE }
     | "end" { END }
     | "ensures" { ENSURES }
     | "exception" { EXCEPTION }
+    | "exists" { EXISTS }
     | "false" { BOOL(false) }
     | "fi" { FI }
     | "for" { FOR }
-    | "history" { reserved lexbuf }
+    | "forall" { FORALL }
+    | "function" { FUNCTION }
+    | "history" { ID("history") (* XXX: Should be special *) }
     | "iff" { IFF }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
     | "inherits" { INHERITS }
     | "interface" { INTERFACE }
-    | "inv" { reserved lexbuf }
+    | "inv" { INV }
     | "in" { IN }
     | "new" { NEW }
     | "nil" { NIL }
@@ -142,7 +165,8 @@ rule token = parse
     | "requires" { REQUIRES }
     | "self" { ID("this") (* XXX: Should be special, too. *) }
     | "skip" { SKIP }
-    | "system" { reserved lexbuf }
+    | "some" { SOME }
+    | "system" { ID("system") (* XXX: Should be special, too. *) }
     | "then" { THEN }
     | "this" { ID("this") (* XXX: Should be special, too. *) }
     | "to" { TO }
@@ -150,6 +174,8 @@ rule token = parse
     | "try" { TRY }
     | "var" { VAR }
     | "wait" { WAIT }
+    | "when" { WHEN }
+    | "where" { WHERE }
     | "while" { WHILE }
     | "with" { WITH }
     | "xor" { XOR }

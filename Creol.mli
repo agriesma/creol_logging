@@ -96,6 +96,8 @@ sig
 	(** The negation of boolean values *)
       | UMinus
 	  (** Invert a floating point number or an integer. *)
+      | Length
+	  (** The length of an expression *)
   and binaryop =
       (** Definition of the different binary operator symbols *)
       Plus
@@ -115,6 +117,10 @@ sig
       | LAppend
       | RAppend
       | Concat
+
+  val string_of_binaryop : binaryop -> string
+
+  val string_of_unaryop : unaryop -> string
 end
 
 type 'a guard =
@@ -217,21 +223,49 @@ end
 
 
 
-type 'a inherits = string * ('a Expression.t list)
+module Class : sig
 
-type ('a, 'b) classdecl =
-    { cls_name: string;
-      cls_parameters: 'b creol_vardecl list;
-      cls_inherits: 'b inherits list;
-      cls_contracts: string list;
-      cls_implements: string list;
-      cls_attributes: 'b creol_vardecl list;
-      cls_with_defs: ('a, 'b) With.t list }
+  type 'a inherits = string * ('a Expression.t list)
 
-type  ('a, 'b) interfacedecl =
-    { iface_name: string;
-      iface_inherits: string list;
-      iface_methods: ('a, 'b) creolmethod list }
+  type ('a, 'b) t =
+      { name: string;
+	parameters: 'b creol_vardecl list;
+	inherits: 'b inherits list;
+	contracts: string list;
+	implements: string list;
+	attributes: 'b creol_vardecl list;
+	with_defs: ('a, 'b) With.t list }
+
+end
+
+
+
+
+
+module Interface : sig
+
+  type ('a, 'b) t =
+    { name: string;
+      inherits: string list;
+      methods: ('a, 'b) creolmethod list }
+
+end
+
+
+
+
+
+module Datatype : sig
+
+  type ('a, 'b) t = {
+    name: string
+  }
+
+end
+
+
+
+
 
 module Exception : sig
 
@@ -239,20 +273,22 @@ module Exception : sig
 
 end
 
-type ('a, 'b) declaration =
-    Class of ('a, 'b) classdecl
-    | Interface of ('a, 'b) interfacedecl
-    | Exception of 'b Exception.t
 
-val pretty_print: out_channel -> ('a, 'b) declaration list -> unit
 
-val simplify: ('a, 'b) declaration list -> ('a, 'b) declaration list
 
-val tailcall_successes : unit -> int
+module Declaration : sig
 
-val optimise_tailcalls: ('a, 'b) declaration list -> ('a, 'b) declaration list
+  type ('a, 'b) t =
+      Class of ('a, 'b) Class.t
+      | Interface of ('a, 'b) Interface.t
+      | Datatype of ('a, 'b) Datatype.t
+      | Exception of 'b Exception.t
 
-val find_definitions: (Note.t, 'a) declaration list -> (Note.t, 'a) declaration list
+end
+
+
+
+
 
 module Maude :
   sig
@@ -262,6 +298,18 @@ module Maude :
 	mutable main: string option;
     }
 
-    val of_creol: options -> out_channel -> ('a, 'b) declaration list -> unit
+    val of_creol: options -> out_channel -> ('a, 'b) Declaration.t list -> unit
   end
 
+
+
+
+val pretty_print: out_channel -> ('a, 'b) Declaration.t list -> unit
+
+val simplify: ('a, 'b) Declaration.t list -> ('a, 'b) Declaration.t list
+
+val tailcall_successes : unit -> int
+
+val optimise_tailcalls: ('a, 'b) Declaration.t list -> ('a, 'b) Declaration.t list
+
+val find_definitions: (Note.t, 'a) Declaration.t list -> (Note.t, 'a) Declaration.t list

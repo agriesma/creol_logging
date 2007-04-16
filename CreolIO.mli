@@ -32,12 +32,12 @@
 
 open Creol
 
-val from_channel : in_channel -> ('a, 'b) declaration list
+val from_channel : in_channel -> ('a, 'b) Declaration.t list
 
-val from_file : string -> ('a, 'b) declaration list
+val from_file : string -> ('a, 'b) Declaration.t list
 
-val from_files : string list -> ('a, 'b) declaration list
+val from_files : string list -> ('a, 'b) Declaration.t list
 
 val creol_to_xml : string -> (XmlTextWriter.xmlwriter -> 'a -> unit) ->
 	(XmlTextWriter.xmlwriter -> 'b -> unit) ->
-		('a, 'b) declaration list -> unit
+		('a, 'b) Declaration.t list -> unit

@@ -156,6 +156,7 @@ module Expression =
     and unaryop =
 	Not
 	| UMinus
+	| Length
     and binaryop =
 	Plus
 	| Minus
@@ -174,6 +175,32 @@ module Expression =
 	| LAppend
 	| RAppend
 	| Concat
+
+    let string_of_binaryop =
+      function
+	  Plus -> "+"
+	| Minus -> "-"
+	| Times -> "*"
+	| Div -> "/"
+	| Eq -> "="
+	| Ne -> "/="
+	| Le -> "<="
+	| Lt -> "<"
+	| Ge -> ">="
+	| Gt -> ">"
+	| And -> "and"
+	| Or -> "or"
+	| Xor -> "xor"
+	| Iff -> "iff"
+	| LAppend -> "|-"
+	| RAppend -> "-|"
+	| Concat -> "|-|"
+
+    let string_of_unaryop =
+      function
+	  Not -> "not"
+	| UMinus -> "-"
+	| Length -> "#"
 
   end
 
@@ -242,6 +269,10 @@ type ('a, 'b) creolmethod =
       meth_vars: 'b creol_vardecl list;
       meth_body: ('a, 'b) Statement.t option }
 
+
+
+
+
 module With = struct
 
   type ('a, 'b) t = {
@@ -252,31 +283,79 @@ module With = struct
 
 end
 
-type 'a inherits = string * ('a Expression.t list)
 
-type ('a, 'b) classdecl =
-    { cls_name: string;
-      cls_parameters: 'b creol_vardecl list;
-      cls_inherits: 'b inherits list;
-      cls_contracts: string list;
-      cls_implements: string list;
-      cls_attributes: 'b creol_vardecl list;
-      cls_with_defs: ('a, 'b) With.t list }
 
-type  ('a, 'b) interfacedecl =
-    { iface_name: string;
-      iface_inherits: string list;
-      iface_methods: ('a, 'b) creolmethod list }
+
+
+module Class =
+struct
+
+  type 'a inherits = string * ('a Expression.t list)
+
+  type ('a, 'b) t =
+      { name: string;
+	parameters: 'b creol_vardecl list;
+	inherits: 'b inherits list;
+	contracts: string list;
+	implements: string list;
+	attributes: 'b creol_vardecl list;
+	with_defs: ('a, 'b) With.t list }
+
+end
+
+
+
+
+
+module Interface =
+struct
+
+  type  ('a, 'b) t =
+      { name: string;
+	inherits: string list;
+	methods: ('a, 'b) creolmethod list }
+
+end
 
 module Exception =
-  struct
-    type 'b t = { name: string; parameters: 'b creol_vardecl list }
-  end
+struct
+  type 'b t = { name: string; parameters: 'b creol_vardecl list }
+end
 
-type ('a, 'b) declaration =
-    Class of ('a, 'b) classdecl
-    | Interface of ('a, 'b) interfacedecl
-    | Exception of 'b Exception.t
+
+
+
+
+module Datatype =
+struct
+
+  type ('a, 'b) t = {
+    name: string
+  }
+
+end
+
+
+
+
+
+module Declaration =
+struct
+
+  type ('a, 'b) t =
+      Class of ('a, 'b) Class.t
+      | Interface of ('a, 'b) Interface.t
+      | Datatype of ('a, 'b) Datatype.t
+      | Exception of 'b Exception.t
+
+end
+
+open Declaration
+
+
+
+
+
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
     with there basic equivalents *)
@@ -376,8 +455,8 @@ and simplify_inherits_list =
       [] -> []
     | i::l -> (simplify_inherits i)::(simplify_inherits_list l)
 and simplify_class c =
-  { c with cls_inherits = simplify_inherits_list c.cls_inherits;
-    cls_with_defs = List.map simplify_with c.cls_with_defs }
+  { c with Class.inherits = simplify_inherits_list c.Class.inherits;
+    Class.with_defs = List.map simplify_with c.Class.with_defs }
 and simplify_interface i =
   i
 and simplify =
@@ -385,6 +464,7 @@ and simplify =
       [] -> []
     | Class c::l -> (Class (simplify_class c))::(simplify l)
     | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
+    | Exception e::l -> (Exception e)::(simplify l)
 
 let collect_declarations attribute =
     List.fold_left
@@ -409,11 +489,12 @@ and definitions_in_declaration =
   function
       Class c -> Class (definitions_in_class c)
     | Interface i -> Interface (definitions_in_interface i)
+    | Exception e -> Exception e
 and definitions_in_class c =
   let attrs = collect_declarations true
-    (c.cls_parameters @ c.cls_attributes) in
+    (c.Class.parameters @ c.Class.attributes) in
     { c with
-      cls_with_defs = List.map (definitions_in_with attrs) c.cls_with_defs }
+      Class.with_defs = List.map (definitions_in_with attrs) c.Class.with_defs }
 and definitions_in_interface i =
   i
 and definitions_in_with attrs w =
@@ -551,8 +632,9 @@ and uses_in_declaration =
   function
     Class c -> Class (uses_in_class c)
   | Interface i -> Interface (uses_in_interface i)
+  | Exception e -> Exception e
 and uses_in_class c =
-  { c with cls_with_defs = List.map uses_in_with c.cls_with_defs }
+  { c with Class.with_defs = List.map uses_in_with c.Class.with_defs }
 and uses_in_interface i =
   i
 and uses_in_with w =
@@ -626,8 +708,9 @@ let optimise_tailcalls prg =
     function
       Class c -> Class (optimise_in_class c)
     | Interface i -> Interface i
+    | Exception e -> Exception e
   and optimise_in_class c =
-    { c with cls_with_defs = List.map optimise_in_with c.cls_with_defs }
+    { c with Class.with_defs = List.map optimise_in_with c.Class.with_defs }
   and optimise_in_with w =
     { w with With.methods = List.map optimise_in_method w.With.methods }
   and optimise_in_method m =
@@ -676,49 +759,57 @@ let rec pretty_print out list =
     (function () -> output_string out "\n\n") list;
   output_string out "\n";
   flush out
-and pretty_print_declaration out =
+and pretty_print_declaration out_channel =
   function
-      Class c -> pretty_print_class out c
-    | Interface i -> pretty_print_iface out i
+      Class c -> pretty_print_class out_channel c
+    | Interface i -> pretty_print_iface out_channel i
+    | Exception e -> pretty_print_exception out_channel e
+and pretty_print_exception out_channel e =
+  output_string out_channel ("exception " ^ e.Exception.name) ;
+  match e.Exception.parameters with
+      [] -> ()
+    | l -> output_string out_channel "(";
+	pretty_print_vardecls out_channel 0 "" ", " "" l;
+	output_string out_channel ")" 
 and pretty_print_iface out_channel i =
   output_string out_channel "interface ";
-  output_string out_channel i.iface_name;
+  output_string out_channel i.Interface.name;
   output_string out_channel "\nbegin\n";  
   output_string out_channel "end"
 and pretty_print_class out_channel c =
-  output_string out_channel ("class " ^ c.cls_name ^ " ") ;
-  ( match c.cls_parameters with
+  output_string out_channel ("class " ^ c.Class.name ^ " ") ;
+  ( match c.Class.parameters with
 	[] -> ()
       | l -> output_string out_channel "(";
 	  pretty_print_vardecls out_channel 0 "" ", " "" l;
 	  output_string out_channel ")" ) ;
-  ( match c.cls_inherits with
+  ( match c.Class.inherits with
 	[] -> ()
       | l -> output_string out_channel "\ninherits ";
 	  separated_list (pretty_print_inherits out_channel)
 	    (function () -> output_string out_channel ", ") l) ;
-  ( match c.cls_contracts with
+  ( match c.Class.contracts with
 	[] -> ()
       | l -> output_string out_channel "\ncontracts " );
-  if [] <> c.cls_implements then
+  if [] <> c.Class.implements then
     begin
       output_string out_channel "\nimplements " ;
       separated_list (output_string out_channel)
-	(function () -> output_string out_channel ", ") c.cls_implements;
+	(function () -> output_string out_channel ", ") c.Class.implements;
     end;
   do_indent out_channel 0;
   output_string out_channel "begin";
-  if [] <> c.cls_attributes then
+  if [] <> c.Class.attributes then
     begin
       do_indent out_channel 1 ;
-      pretty_print_vardecls out_channel 1 "var " "" "\n" c.cls_attributes;
+      pretty_print_vardecls out_channel 1 "var " "" "\n" c.Class.attributes;
       output_string out_channel "\n";
     end;
-  if [] <> c.cls_with_defs then
+  if [] <> c.Class.with_defs then
     begin
-      List.iter (pretty_print_with out_channel) c.cls_with_defs ;
+      List.iter (pretty_print_with out_channel) c.Class.with_defs ;
     end ;
-  if [] = c.cls_attributes && [] = c.cls_with_defs then
+  if [] = c.Class.attributes && [] = c.Class.with_defs then
     output_string out_channel "\n";
   output_string out_channel "end"
 and pretty_print_inherits out_channel (inh, args) =
@@ -1221,15 +1312,15 @@ struct
       of_creol_method_list out methods
 
   let of_creol_class out c =
-    output_string out ("< \"" ^ c.cls_name ^ "\" : Cl | Inh: ");
-    of_creol_inherits_list out c.cls_inherits;
+    output_string out ("< \"" ^ c.Class.name ^ "\" : Cl | Inh: ");
+    of_creol_inherits_list out c.Class.inherits;
     output_string out ", Par: ";
-    of_creol_parameter_list out c.cls_parameters;
+    of_creol_parameter_list out c.Class.parameters;
     output_string out ", Att: ";
     of_creol_class_attribute_list out
-      (c.cls_parameters @ c.cls_attributes);
+      (c.Class.parameters @ c.Class.attributes);
     output_string out ", Mtds: ";
-    of_creol_with_defs out c.cls_with_defs;
+    of_creol_with_defs out c.Class.with_defs;
     output_string out ", Ocnt: 0 >\n\n"
 
   let of_creol_interface out i = ()

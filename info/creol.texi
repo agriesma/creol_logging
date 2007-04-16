@@ -103,6 +103,16 @@ but it does not, e.g., provide information on the call-chain.
 In this section we describe the syntax of Creol and sketch the
 informal semantics of Creol programs.
 
+@menu
+* Literals and Expression::     The functional sub-language.
+* Statements::                  The object-oriented sub-language.
+* Interface Declaration::       Types for objects.
+* Class Declaration::           Implementation for types.
+* Datatype Declaration::
+* Exception Declaration::
+@end menu
+
+@node Literals and Expression
 @subsection Literals and Expressions
 
 Creol assumes a functional sub-language, which we describe in this
@@ -135,7 +145,8 @@ of a function and @var{e},@var{d},@dots{} refers to expressions
 representing the actual arguments.
 
 
-@subsection Basic Statements
+@node Statements
+@subsection Statements
 
 In this section we describe the statements of Creol programs.
 
@@ -197,11 +208,6 @@ compound statement inside braces @code{@{ ... @}} form a basic
 statement.
 
 
-@subsection Compound Statements
-
-These are the operators available for combining statements in Creol.
-
-
 @subsubsection Conditional Statement
 
 The usual @code{if ... then ... else ... fi} statement.
@@ -222,13 +228,13 @@ is greater or equal to @var{lower} until it is greater or equal to
 
 Essentially, a for-statement can be transformed to the following
 pseudo-program using a while loop:
-@verbatim
+@example
 let l = lower in
   let u = upper in
     let st = stride in
       i := l;
       while i <= u do s; i := i + st done
-@end verbatim
+@end example
 
 Analogously, Creol programs may contain while loops.  Use of while
 loops is @emph{strongly} discouraged, because they may make
@@ -290,12 +296,81 @@ on statements.  All of them are @emph{left-associative}, @code{;}
 binds strongest and @code{|||} binds weakest.  Braces may be omitted
 in @code{@{ S; T @} [] U} but not in @code{S; @{ T [] U @}}.
 
+
+@node Interface Declaration
 @subsection Interface Declarations
+
+All objects in Creol are typed by interface.
+
+Each class is assumed to implement the empty interface @code{Any}.
+This interface is the implicit superinterface of all other interfaces.
+
+An interface has a unique name.  It declares a @emph{co-interface},
+which expresses mutual dependencies and constrains the users of this
+interface:  Each caller of a method specified in an interface
+@emph{must} implement its co-interface.
+
+An interface specifies the signature of a sequence of methods.
+
+
+@node Class Declaration
+@subsection Class Declarations
+
+A class provides the implementation of an object.
+
+A class declaration specifies the name of the class, which must start
+with an upper-case letter, and optionally a list of @emph{class
+parameters}.  These parameters are like read-only attributes of the
+class and provide the signature of the @emph{only} constructor.
+
+A class can inherit from a list of super-classes, which are defined in
+an @code{inherits} specification.
+
+A class can declare to @emph{implement} a set of interfaces.  These
+interfaces are @emph{not} inherited.
+
+A class can declare to @emph{contract} a set of interfaces.  This
+clause is similar to an @code{implements} clause, but in addition it
+requires each @emph{sub-class} to implement these interfaces, too.
+
+If an object calls methods of itself, which are specified in an
+interface, we suggest that the class should @emph{contract} the
+interface, in order to make sure that the call will succeed if the
+methods are inherited, and especially, if the subclass overrides the
+method's definition.
+
+A class may specify a list of attributes or class variables.
+
+A class may then specify a list of private methods.
+
+A class may specify a list of public methods by using a @emph{with
+definition}.  A with deginition has the format @code{with
+@var{interface} @var{operations} @var{invariants}}, where
+@code{with @var{interface}} specifies the co-interface.
+
+An operation definition has the form @code{op @var{name} (in
+@var{ins}; out @var{outs}) requires @var{precondition} ensures
+@var{postcondition} == @var{variables} @var{statement}}.  @var{ins} is
+a list of variable declarations describing the @emph{input}
+parameters.  @var{outs} is a list of variables describing the output
+parameters.  In principle, one should only read from input parameters
+and only write to output parameters.
+
+The precondition and postcondition are optional and their meaning can
+be easily defined using invariants.
+
+The body of a method consists of local variable definitions followed
+by a statement.
+
+
+@node Datatype Declaration
+@subsection Datatype Declarations
 
 TBD
 
 
-@subsection Class Declarations
+@node Exception Declaration
+@subsection Exception Declarations
 
 TBD
 
@@ -321,7 +396,7 @@ The following are reserved as keywords and cannot be used for
 variable or method names in programs.
 
 @c 45678901 34567890123 56789012345 78901234567 90123456789 12345678901
-@verbatim
+@example
 and         await       begin       by          caller      class
 contracts   do          else        end         ensures     exception
 false       fi          for         history     iff         if
@@ -330,24 +405,23 @@ nil         null        not         od          op          or
 out         raise       requires    self        skip        system
 then        this        to          true        try         var          
 wait        while       with        xor         History     Label          
-System
-@end verbatim
+System      constructor function
+@end example
 
 The following symbols are used as operator symbols.  They are listed
 in the order of their precedence.  Operators on any line bind stronger
 than ones on the lines above.
 
-@verbatim
+@example
 and or xor iff
-not
+not                              @r{unary operator}
 = /=
 <= < > >=
 |- |-| -|
 + -
 * /
--
-@end verbatim
-
+- #                              @r{unary operators}
+@end example
 
 @subsection Grammar
 
@@ -359,13 +433,16 @@ declaration ::=
     class-decl
   | interface-decl
   | exception-decl
+  | datatype-decl
 
 class-decl ::=
     ``class'' cid [ ``('' @{ var-decl-no-init ``,'' @} ``)'']
     [``inherits'' @{ cid [``('' @{ expr ``,'' @} ``)''] , @} ]
     [``implements'' @{ cid ``,'' @} ]
     [``contracts'' @{ cid ``,'' @} ]
-    ``begin'' @{ var-decl @} @{ op-def @} @{ invariant @} @{ with-def @} ``end''
+    ``begin'' @{ ``var'' var-decl @} [ anon-with-def ] @{ with-def @}
+    ``end''
+
 interface-decl ::=
     ``interface'' id [``inherits'' @{ id ``,'' @}]
     ``begin'' ``with'' cid @{ op-decl @} @{ invariant @} ``end''
@@ -373,8 +450,12 @@ interface-decl ::=
 exception.decl ::=
     ``exception'' cid [ ``('' @{ var-decl-no-init ``,'' @} ``)'' ]
 
+datatype-decl ::=
+    ``datatype'' cid [ ``by'' @{ cid ``,'' @} ] ``begin''
+    @{ constructor @} @{ function @} @{ invariant @} ``end''
+
 var-decl-no-init ::=
-    ``var'' @{ id ``,'' @} ``:'' type
+    @{ id ``,'' @} ``:'' type
 
 var-decl ::=
     var-decl-no-init ``:='' @{ expr ``,'' @}
@@ -384,11 +465,21 @@ op-decl ::=
     ``out'' @{ var-decl-no-init ``,'' @} ] ``)''
     [``requires'' assertion] [``ensures'' assertion]
 
+anon-with-def ::=
+    @{ op-def @} @{ invariant @}
+
 with-def ::=
-    ``with'' cid @{ op-def @} @{ invariant @} 
+    ``with'' cid @{ op-def @} @{ invariant @}
 
 op-def ::=
-    op-decl ``=='' @{ var-decl ``;'' @} statement
+    op-decl ``=='' @{ ``var'' var-decl ``;'' @} statement
+
+constructor ::=
+    ``constructor'' cid [ ``('' @{ type ``,'' ``)'' ] ``:'' cid
+
+function ::=
+    ``function'' id ``('' @{ var-decl-no-init ``,'' @} ``)'' ``==''
+    expression
 
 statement ::=
     choice-statement [ ``|||'' statement ]
@@ -427,12 +518,15 @@ expr-or-new ::=
 expr ::=
     integer | float | string | ``true'' | ``false'' | ``nil'' |
     ``null''
-  | id | ``not'' expr | ``-'' expr | expr binop expr
+  | id | unaryop expr |  expr binop expr
   | id ``('' @{ expr ``,'' @} ``)''
   | ``(`` expr ``)''
 
 binop ::= ``+'' | ``-'' | ``*'' | ``/'' | ``='' | ``<'' | ``>'' |
-          ``<='' | ``>='' | ``and'' | ``or'' 
+          ``<='' | ``>='' | ``and'' | ``&'' | ``&&'' | ``/\'' |
+          ``or'' | ``|'' | ``||'' | ``\/'' | ``|-'' | ``|-|'' | ``-|''
+
+unaryop ::= ``not'' | ``-'' | ``#''
 
 assertion ::=
     expr
