@@ -275,7 +275,7 @@ fmod CLASS is
   subsorts Inh < Expr .  
   subsorts Inh < InhList .
 
-  op  _<_> : Cid  ExprList -> Inh .     *** initialised superclass
+  op  _<_> : Cid  ExprList -> Inh [ctor prec 15] . *** initialised superclass
   op noInh : -> InhList [ctor] .
   op  _##_   : InhList InhList -> InhList [ctor assoc id: noInh] .
 
@@ -602,7 +602,7 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 ***
 *** XXX: Why is the call prepended, shouldn't it be appended?
 eq
-  findAttr(O,((C < EL >) {|#|}{|#|} I),S, SL, (L', SL')) 
+  findAttr(O,((C < EL >) {|##|} I),S, SL, (L', SL')) 
   < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
   =
   findAttr(O, I {|#|}{|#|} I',(L {|#|} S), (AL ::= EL) ; SL, 

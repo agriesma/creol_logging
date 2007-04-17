@@ -7,7 +7,7 @@
 %token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
 %token REQUIRES ENSURES INV WHEN WHERE SOME FORALL EXISTS
 %token IF THEN ELSE FI SKIP AWAIT WAIT NEW
-%token FOR TO BY DO OD WHILE
+%token FOR TO BY DO OD WHILE OF CASE
 %token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token RBRACK LBRACK
@@ -20,7 +20,7 @@
 %token AND OR XOR IFF NOT PLUSPLUS PLUS MINUSMINUS MINUS
 %token TIMESTIMES TIMES ARROW DARROW DIVDIV DIV EQ NE LT LE GT GE
 %token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE MODELS MAPSTO UNDERSCORE
-%token HAT HATHAT BACKSLASH 
+%token HAT HATHAT BACKSLASH ASSERT PROVE
 %token LAPPEND CONCAT RAPPEND
 %token <string> CID ID STRING
 %token <int>  INT
@@ -32,6 +32,7 @@
 %right NOT
 %nonassoc EQ NE
 %left LE LT GT GE
+%left BACKSLASH
 %left LAPPEND CONCAT RAPPEND
 %left PLUS MINUS
 %left TIMES DIV
@@ -277,6 +278,10 @@ basic_statement:
 	{ Skip (Note.make $startpos) }
     | TRY s = statement c = catchers END
 	{ Skip (Note.make $startpos) }
+    | ASSERT a = assertion
+	{ Assert (Note.make $startpos, a) }
+    | PROVE a = assertion
+	{ Prove (Note.make $startpos, a) }
     | error ELSE | error FI | error OP | error WITH | error END | error EOF
 	{ signal_error $startpos "syntax error in statement" }
 
@@ -327,6 +332,8 @@ expression:
     | LPAREN e = expression RPAREN { e }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall((Note.make $startpos), f, l) }
+    | CASE expression OF separated_nonempty_list(BAR, case_decl) END
+	{ Null (Note.make $startpos) }
 
 %inline binop:
       AND { And }
@@ -352,12 +359,21 @@ expression:
     | LAPPEND { LAppend }
     | RAPPEND { RAppend }
     | CONCAT { Concat }
+    | BACKSLASH { Project }
 
 %inline function_name:
       f = ID { f }
     | AND { "and" }
     | OR { "or" }
     | XOR { "xor" }
+
+%inline case_decl:
+      pattern ARROW expression
+	{ () }
+
+%inline pattern:
+      UNDERSCORE
+	{ () }
 
 (* Poor mans types and type parameters *)
 creol_type:

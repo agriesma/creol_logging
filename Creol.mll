@@ -126,10 +126,12 @@ rule token = parse
     | '}' { RBRACE }
     | '~' { TILDE }
     | "and" { AND }
+    | "assert" { ASSERT }
     | "await" { AWAIT }
     | "begin" { BEGIN }
     | "by" { BY }
     | "caller" { ID("caller") (* XXX: Should be special *) }
+    | "case" { CASE }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
     | "constructor" { CONSTRUCTOR }
@@ -158,9 +160,11 @@ rule token = parse
     | "null" { NULL }
     | "not" { NOT }
     | "od" { OD }
+    | "of" { OF }
     | "op" { OP }
     | "or" { OR }
     | "out" { OUT }
+    | "prove" { PROVE }
     | "raise" { RAISE }
     | "requires" { REQUIRES }
     | "self" { ID("this") (* XXX: Should be special, too. *) }

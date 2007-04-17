@@ -176,6 +176,7 @@ module Expression =
 	| LAppend
 	| RAppend
 	| Concat
+	| Project
 
     let string_of_binaryop =
       function
@@ -196,6 +197,7 @@ module Expression =
 	| LAppend -> "|-"
 	| RAppend -> "-|"
 	| Concat -> "|-|"
+	| Project -> "\\"
 
     let prec_of_binaryop =
       function
@@ -216,6 +218,7 @@ module Expression =
 	| LAppend -> (33, 33)
 	| RAppend -> (33, 33)
 	| Concat -> (33, 33)
+	| Project -> (35, 35)
 
     let string_of_unaryop =
       function
@@ -243,6 +246,8 @@ module Statement =
   struct
     type ('a, 'b) t =
 	Skip of 'a
+	| Assert of 'a * 'b Expression.t
+	| Prove of 'a * 'b Expression.t
 	| Assign of 'a * string list * 'b Expression.t list
 	| Await of 'a * 'b guard
 	| AsyncCall of 'a * string option * 'b Expression.t * string *
@@ -266,6 +271,8 @@ module Statement =
     let note =
       function
 	  Skip a -> a
+	| Assert (a, _) -> a
+	| Prove (a, _) -> a
 	| Assign(a, _, _) -> a
 	| Await(a, _) -> a
 	| AsyncCall(a, _, _, _, _) -> a
@@ -418,6 +425,8 @@ and simplify_guard =
 and simplify_statement =
   function
       Skip a -> Skip a
+    | Assert (a, e) -> Assert (a, simplify_expression e)
+    | Prove (a, e) -> Prove (a, simplify_expression e)
     | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_guard g)
     | AsyncCall (a, l, e, n, p) ->
@@ -492,6 +501,7 @@ and simplify =
     | Class c::l -> (Class (simplify_class c))::(simplify l)
     | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
     | Exception e::l -> (Exception e)::(simplify l)
+    | Datatype d::l -> (Datatype d)::(simplify l)
 
 let collect_declarations attribute =
     List.fold_left
@@ -517,6 +527,7 @@ and definitions_in_declaration =
       Class c -> Class (definitions_in_class c)
     | Interface i -> Interface (definitions_in_interface i)
     | Exception e -> Exception e
+    | Datatype d -> Datatype d (* XXX *)
 and definitions_in_class c =
   let attrs = collect_declarations true
     (c.Class.parameters @ c.Class.attributes) in
@@ -560,6 +571,10 @@ and definitions_in_statement note stm =
     match stm with
 	Skip n ->
 	  Skip { n with Note.env = note.Note.env }
+      | Assert (n, e) ->
+	  Assert ({ n with Note.env = note.Note.env }, e)
+      | Prove (n, e) ->
+	  Prove ({ n with Note.env = note.Note.env }, e)
       | Assign (n, lhs, rhs) ->
 	  Assign ({ n with Note.env = 
 	      List.fold_left (fun e n -> define e n false)
@@ -660,6 +675,7 @@ and uses_in_declaration =
     Class c -> Class (uses_in_class c)
   | Interface i -> Interface (uses_in_interface i)
   | Exception e -> Exception e
+  | Datatype d -> Datatype d (* XXX *)
 and uses_in_class c =
   { c with Class.with_defs = List.map uses_in_with c.Class.with_defs }
 and uses_in_interface i =
@@ -673,6 +689,8 @@ and uses_in_method m =
 and uses_in_statement =
   function
       Skip _ as s -> s
+    | Assert (_, _) as s -> s
+    | Prove (_, _) as s -> s
     | Assign (a, l, r) -> assert false
     | Await (a, g) -> assert false
     | AsyncCall (a, None, c, m, ins) -> assert false
@@ -736,6 +754,7 @@ let optimise_tailcalls prg =
       Class c -> Class (optimise_in_class c)
     | Interface i -> Interface i
     | Exception e -> Exception e
+    | Datatype d -> Datatype d
   and optimise_in_class c =
     { c with Class.with_defs = List.map optimise_in_with c.Class.with_defs }
   and optimise_in_with w =
@@ -791,13 +810,21 @@ and pretty_print_declaration out_channel =
       Class c -> pretty_print_class out_channel c
     | Interface i -> pretty_print_iface out_channel i
     | Exception e -> pretty_print_exception out_channel e
+    | Datatype d -> pretty_print_datatype out_channel d
+and pretty_print_datatype out_channel d =
+  output_string out_channel ("datatype " ^ d.Datatype.name ^ "\n");
+  output_string out_channel "begin\n" ;
+  output_string out_channel "end\n"
 and pretty_print_exception out_channel e =
   output_string out_channel ("exception " ^ e.Exception.name) ;
-  match e.Exception.parameters with
-      [] -> ()
-    | l -> output_string out_channel "(";
-	pretty_print_vardecls out_channel 0 "" ", " "" l;
-	output_string out_channel ")" 
+  begin
+    match e.Exception.parameters with
+        [] -> ()
+      | l -> output_string out_channel "(";
+	  pretty_print_vardecls out_channel 0 "" ", " "" l;
+	  output_string out_channel ")" 
+  end ;
+  output_string out_channel "\n"
 and pretty_print_iface out_channel i =
   output_string out_channel "interface ";
   output_string out_channel i.Interface.name;
@@ -932,6 +959,10 @@ and pretty_print_statement out lvl statement =
   let rec print lvl prec =
     function
 	Skip _ -> output_string out "skip";
+      | Assert (_, e) ->
+	output_string out "assert " ; pretty_print_expression out e
+      | Prove (_, e) ->
+	output_string out "prove " ; pretty_print_expression out e
       | Assign (_, i, e) ->
 	  pretty_print_identifier_list out i;
 	  output_string out " := ";
@@ -1126,6 +1157,7 @@ struct
 	  of_creol_expression_list out a;
 	  output_string out " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
+      | FieldAccess(_, e, f) -> assert false (* XXX *)
       | New (_, c, a) ->
 	  output_string out ("new \"" ^ (match c with Type.Basic s -> s | Type.Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
 	  of_creol_expression_list out a ;
@@ -1164,6 +1196,8 @@ struct
     in let rec print prec =
       function
 	  Skip _ -> output_string out "skip"
+	| Assert (_, _) -> output_string out "skip"
+	| Prove (_, _) -> output_string out "skip"
 	| Await (_, g) -> output_string out "( await ";
 	    of_creol_guard out g;
 	    output_string out " )"
@@ -1317,7 +1351,7 @@ struct
 
   let rec of_creol_method_list out =
     function
-	[] -> output_string out "empty" 
+	[] -> output_string out "noMtd" 
       | [m] -> of_creol_method out m
       | m::r -> of_creol_method out m;
 	  output_string out " *";
@@ -1341,10 +1375,16 @@ struct
 
   let of_creol_interface out i = ()
 
+  let of_exception out e = ()
+
+  let of_datatype out d = ()
+
   let of_creol_declaration out =
     function
 	Class c -> of_creol_class out c
       | Interface i -> of_creol_interface out i
+      | Exception e -> of_exception out e
+      | Datatype d -> of_datatype out d
 
   let rec of_creol_decl_list out =
     function

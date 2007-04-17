@@ -569,6 +569,8 @@ seq-statement ::=
 
 basic-statement ::=
     @strong{skip}
+  | @strong{assert} expression
+  | @strong{prove} expression
   | @{ id @strong{,} @} @strong{:=} @{ expr-or-new @strong{,} @}
   | @strong{await} guard
   | [ id ] @strong{!} expr @strong{.} id @strong{(} @{ expr @strong{,} @} @strong{)}
@@ -601,7 +603,7 @@ expr ::=
 
 binop ::= @strong{+} | @strong{-} | @strong{*} | @strong{/} | @strong{=} | @strong{<} | @strong{>} |
           @strong{<=} | @strong{>=} | @strong{and} | @strong{&} | @strong{&&} | @strong{/\} |
-          @strong{or} | @strong{|} | @strong{||} | @strong{\/} | @strong{|-} | @strong{|-|} | @strong{-|}
+          @strong{or} | @strong{|} | @strong{||} | @strong{\/} | @strong{|-} | @strong{|-|} | @strong{-|} | @strong{\}
 
 unaryop ::= @strong{not} | @strong{-} | @strong{#}
 
