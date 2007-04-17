@@ -441,6 +441,34 @@ reduce in STM-LIST : downTerm(upTerm(idle ++ insert("var2", int(4), insert(
 result NeMProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
     "var" assign int(4)[]"var" ::= new "C"(null))
 ==========================================
+reduce in CLASS : noInh .
+result InhList: noInh
+==========================================
+reduce in CLASS : upTerm(noInh) .
+result Constant: 'noInh.InhList
+==========================================
+reduce in CLASS : downTerm(upTerm(noInh), noInh) .
+result InhList: noInh
+==========================================
+reduce in CLASS : "A" < emp > .
+result Inh: "A" < emp >
+==========================================
+reduce in CLASS : upTerm("A" < emp >) .
+result GroundTerm: '_<_>['"A".Char,'emp.DataList]
+==========================================
+reduce in CLASS : downTerm(upTerm("A" < emp >), noInh) .
+result Inh: "A" < emp >
+==========================================
+reduce in CLASS : "A" < emp > ## "B" < "x" > .
+result InhList: "A" < emp > ## "B" < "x" >
+==========================================
+reduce in CLASS : upTerm("A" < emp > ## "B" < "x" >) .
+result GroundTerm: '_##_['_<_>['"A".Char,'emp.DataList],'_<_>['"B".Char,
+    '"x".Char]]
+==========================================
+reduce in CLASS : downTerm(upTerm("A" < emp > ## "B" < "x" >), noInh) .
+result InhList: "A" < emp > ## "B" < "x" >
+==========================================
 reduce in OBJECT : 
 < ob("object1") : "Class" | Att: noSubst,
   Pr: idle,
