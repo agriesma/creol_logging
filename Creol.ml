@@ -197,11 +197,37 @@ module Expression =
 	| RAppend -> "-|"
 	| Concat -> "|-|"
 
+    let prec_of_binaryop =
+      function
+	  Plus -> (33, 33)
+	| Minus -> (33, 33)
+	| Times -> (31, 31)
+	| Div -> (31, 31)
+	| Eq -> (51, 51)
+	| Ne -> (51, 51)
+	| Le -> (37, 37)
+	| Lt -> (37, 37)
+	| Ge -> (37, 37)
+	| Gt -> (37, 37)
+	| And -> (55, 55)
+	| Or -> (59, 59)
+	| Xor -> (57, 57)
+	| Iff -> (51, 51)
+	| LAppend -> (33, 33)
+	| RAppend -> (33, 33)
+	| Concat -> (33, 33)
+
     let string_of_unaryop =
       function
 	  Not -> "not"
 	| UMinus -> "-"
 	| Length -> "#"
+
+    let prec_of_unaryop =
+      function
+	  Not -> 53
+	| UMinus -> 15
+	| Length -> 15
 
   end
 
@@ -1028,41 +1054,30 @@ and pretty_print_expression out_channel exp =
   and close_paren prec op_prec =
     if prec < op_prec then output_string out_channel ")"
   in
-  let rec print prec expr =
-    let generic op_prec l oper r =
-      open_paren prec op_prec; print op_prec l;
-      output_string out_channel oper;
-      print op_prec r; close_paren prec op_prec
-    in
-      match expr with  
-	  Nil _ -> output_string out_channel "nil"
-	| Null _ -> output_string out_channel "null"
-	| Int (_, i) -> output_string out_channel (string_of_int i)
-	| Float (_, f) -> output_string out_channel (string_of_float f)
-	| Bool (_, b) -> output_string out_channel (string_of_bool b)
-	| String (_, s) -> output_string out_channel ("\"" ^ s ^ "\"")
-	| Id (_, i) -> output_string out_channel i
-	| Unary (_, Not, e) -> output_string out_channel "not "; print 53 e
-	| Unary (_, UMinus, e) -> output_string out_channel "- "; print 53 e
-	| Binary(_, Plus, l, r) -> generic 33 l " + " r
-	| Binary(_, Minus, l, r) -> generic 23 l " - " r
-	| Binary(_, Times, l, r) -> generic 31 l " * " r
-	| Binary(_, Div, l, r) -> generic 31 l " / " r
-	| Binary(_, Le, l, r) -> generic 37 l " <= " r
-	| Binary(_, Lt, l, r) -> generic 37 l " < " r
-	| Binary(_, Ge, l, r) -> generic 37 l " >= " r
-	| Binary(_, Gt, l, r) -> generic 37 l " > " r
-	| Binary(_, Eq, l, r) -> generic 51 l " = " r
-	| Binary(_, Ne, l, r) -> generic 51 l " /= " r
-	| Binary(_, And, l, r) -> generic 55 l " and " r
-	| Binary(_, Iff, l, r) -> generic 51 l " iff " r
-	| Binary(_, Or, l, r) -> generic 59 l " or " r
-	| Binary(_, Xor, l, r) -> generic 57 l " xor " r
-	(* | Binary(_, Implies, l, r) -> generic 61 l " implies " r *)
-	| FuncCall (_, i, a) ->
-	    output_string out_channel (i ^ "(");
-	    pretty_print_expression_list out_channel a;
-	    output_string out_channel ")";
+  let rec print prec =
+    function
+	Nil _ -> output_string out_channel "nil"
+      | Null _ -> output_string out_channel "null"
+      | Int (_, i) -> output_string out_channel (string_of_int i)
+      | Float (_, f) -> output_string out_channel (string_of_float f)
+      | Bool (_, b) -> output_string out_channel (string_of_bool b)
+      | String (_, s) -> output_string out_channel ("\"" ^ s ^ "\"")
+      | Id (_, i) -> output_string out_channel i
+      | Unary (_, o, e) ->
+	  output_string out_channel (string_of_unaryop o ^ " ");
+	  print (prec_of_unaryop o) e
+      | Binary(_, o, l, r) ->
+	  let lp = fst (prec_of_binaryop o)
+	  and rp = snd (prec_of_binaryop o)
+	  in
+      	    open_paren prec lp; print lp l;
+	    output_string out_channel (" " ^ (string_of_binaryop o) ^ " ");
+	    print rp r; close_paren prec rp
+      | FuncCall (_, i, a) ->
+	  output_string out_channel (i ^ "(");
+	  pretty_print_expression_list out_channel a;
+	  output_string out_channel ")";
+      | FieldAccess(_, e, f) -> print 15 e; output_string out_channel ("`" ^ f)
       | New (_, t, a) ->
           output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
 	  pretty_print_expression_list out_channel a ;
