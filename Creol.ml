@@ -153,6 +153,8 @@ module Expression =
 	| Unary of 'a * unaryop * 'a t
 	| Binary of 'a * binaryop * 'a t * 'a t
 	| FuncCall of 'a * string * 'a t list
+	| Wait of 'a
+	| Label of 'a * string
 	| New of 'a * Type.t * 'a t list
     and unaryop =
 	Not
@@ -177,6 +179,7 @@ module Expression =
 	| RAppend
 	| Concat
 	| Project
+	| GuardAnd
 
     let string_of_binaryop =
       function
@@ -198,6 +201,7 @@ module Expression =
 	| RAppend -> "-|"
 	| Concat -> "|-|"
 	| Project -> "\\"
+	| GuardAnd -> "&"
 
     let prec_of_binaryop =
       function
@@ -219,6 +223,7 @@ module Expression =
 	| RAppend -> (33, 33)
 	| Concat -> (33, 33)
 	| Project -> (35, 35)
+	| GuardAnd -> (61, 61)
 
     let string_of_unaryop =
       function
@@ -236,12 +241,6 @@ module Expression =
 
 open Expression
 
-type 'a guard =
-    Wait of 'a
-    | Label of 'a * string
-    | Condition of 'a * 'a Expression.t
-    | Conjunction of 'a * 'a guard * 'a guard
-
 module Statement =
   struct
     type ('a, 'b) t =
@@ -249,7 +248,7 @@ module Statement =
 	| Assert of 'a * 'b Expression.t
 	| Prove of 'a * 'b Expression.t
 	| Assign of 'a * string list * 'b Expression.t list
-	| Await of 'a * 'b guard
+	| Await of 'a * 'b Expression.t
 	| AsyncCall of 'a * string option * 'b Expression.t * string *
 	    'b Expression.t list
 	| Reply of 'a * string * string list
@@ -411,24 +410,18 @@ let rec simplify_expression =
     | Binary(a, Iff, l, r) -> FuncCall(a, "equal", [simplify_expression l; simplify_expression r])
     | Binary(a, Or, l, r) -> FuncCall(a, "or", [simplify_expression l; simplify_expression r])
     | Binary(a, Xor, l, r) -> FuncCall(a, "not", [FuncCall(a, "equal", [simplify_expression l; simplify_expression r])])
+    | Binary(a, GuardAnd, l, r) -> Binary(a, GuardAnd, simplify_expression l,
+	simplify_expression r)
     | FuncCall(a, f, args) -> FuncCall(a, f, List.map simplify_expression args)
     | New (a, t, p) -> New (a, t, List.map simplify_expression p)
     | t -> t
-and simplify_guard =
-  function
-      Condition (a, e) ->
-	Condition (a, simplify_expression e)
-    | Conjunction (a, g1, g2) ->
-	Conjunction (a, simplify_guard g1, simplify_guard g2)
-    | Wait a -> Wait a
-    | Label (a, l) -> Label (a, l)
 and simplify_statement =
   function
       Skip a -> Skip a
     | Assert (a, e) -> Assert (a, simplify_expression e)
     | Prove (a, e) -> Prove (a, simplify_expression e)
     | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
-    | Await (a, g) -> Await (a, simplify_guard g)
+    | Await (a, g) -> Await (a, simplify_expression g)
     | AsyncCall (a, l, e, n, p) ->
 	AsyncCall (a, l, simplify_expression e, n,
 		  List.map simplify_expression p)
@@ -967,9 +960,9 @@ and pretty_print_statement out lvl statement =
 	  pretty_print_identifier_list out i;
 	  output_string out " := ";
 	  pretty_print_expression_list out e;
-      | Await (_, g) -> 
+      | Await (_, e) -> 
 	  output_string out "await ";
-	  pretty_print_guard out g;
+	  pretty_print_expression out e;
       | AsyncCall (_, l, c, m, a) ->
 	  (match l with
 	      None -> ()
@@ -1070,15 +1063,6 @@ and pretty_print_statement out lvl statement =
 	    close_block prec op_prec
   in
     print lvl 25 statement
-and pretty_print_guard out_channel =
-  function
-      Wait _ -> output_string out_channel "wait"
-    | Label(_, l) -> output_string out_channel (l ^ "?")
-    | Condition (_, c) -> pretty_print_expression out_channel c
-    | Conjunction (_, l, r) ->
-	pretty_print_guard out_channel l;
-	output_string out_channel " and ";
-	pretty_print_guard out_channel r
 and pretty_print_expression out_channel exp =
   let open_paren prec op_prec =
     if prec < op_prec then output_string out_channel "("
@@ -1109,6 +1093,8 @@ and pretty_print_expression out_channel exp =
 	  pretty_print_expression_list out_channel a;
 	  output_string out_channel ")";
       | FieldAccess(_, e, f) -> print 15 e; output_string out_channel ("`" ^ f)
+      | Wait _ -> output_string out_channel "wait"
+      | Label (_, l) -> output_string out_channel (l ^ "?")
       | New (_, t, a) ->
           output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
 	  pretty_print_expression_list out_channel a ;
@@ -1152,12 +1138,17 @@ struct
       | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
       | Id (_, i) -> output_string out ("\"" ^ i ^ "\"")
       | Unary (_, _, _) -> assert false
+      | Binary (_, GuardAnd, l, r) -> output_string out "( " ;
+	of_creol_expression out l ; output_string out " & " ;
+	of_creol_expression out r ; output_string out " )"
       | Binary (_, _, _, _) -> assert false
       | FuncCall(_, f, a) -> output_string out ("\"" ^ f ^ "\" ( " );
 	  of_creol_expression_list out a;
 	  output_string out " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
       | FieldAccess(_, e, f) -> assert false (* XXX *)
+      | Wait _ -> output_string out "wait"
+      | Label(_, l) -> output_string out ("( \"" ^ l ^ "\" ?? )")
       | New (_, c, a) ->
 	  output_string out ("new \"" ^ (match c with Type.Basic s -> s | Type.Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
 	  of_creol_expression_list out a ;
@@ -1178,16 +1169,6 @@ struct
       | i::l -> output_string out_channel ("\"" ^ i ^ "\", ");
 	  of_creol_identifier_list out_channel l
 
-  let rec of_creol_guard out =
-    function
-	Label (_, l) -> output_string out ("( \"" ^ l ^ "\" ?? )")
-      | Wait _ -> output_string out "wait"
-      | Condition (_, c) -> of_creol_expression out c
-      | Conjunction (_, l, r) ->
-	  output_string out "( "; of_creol_guard out l;
-	  output_string out " & "; of_creol_guard out r ;
-	  output_string out ") "
-
   let of_creol_statement out stmt =
     let open_paren prec op_prec =
       if prec < op_prec then output_string out "( " ;
@@ -1198,8 +1179,8 @@ struct
 	  Skip _ -> output_string out "skip"
 	| Assert (_, _) -> output_string out "skip"
 	| Prove (_, _) -> output_string out "skip"
-	| Await (_, g) -> output_string out "( await ";
-	    of_creol_guard out g;
+	| Await (_, e) -> output_string out "( await ";
+	    of_creol_expression out e;
 	    output_string out " )"
 	| Assign (_, i, e) ->
 	    of_creol_identifier_list out i;

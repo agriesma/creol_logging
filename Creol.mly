@@ -302,9 +302,10 @@ lvalue:
 guard:
       l = ID QUESTION { Label ((Note.make $startpos), l) }
     | WAIT { Wait (Note.make $startpos) }
-    | l = ID QUESTION AND g = guard
-        { Conjunction ((Note.make $startpos), Label((Note.make $startpos), l), g) }
-    | e = expression { Condition ((Note.make $startpos), e) }
+    | l = ID QUESTION AMP g = guard
+        { Binary ((Note.make $startpos), GuardAnd,
+		  Label((Note.make $startpos), l), g) }
+    | e = expression { e }
 
 expression_or_new:
       e = expression

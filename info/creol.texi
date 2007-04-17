@@ -590,6 +590,9 @@ catchers ::=
     @{ @strong{with} cid [ @strong{(} @{ id @strong{,} @} @strong{)} ] @strong{do} statement @}
     [ @strong{else} statement ]
 
+guard ::=
+    @strong{wait} | id @strong{?} [ @strong{&} guard ] | expression
+
 expr-or-new ::=
     @strong{new} cid @strong{(} @{ expr @strong{,} @} @strong{)}
   | expr

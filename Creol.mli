@@ -91,7 +91,12 @@ sig
 	  (** A binary expression *)
       | FuncCall of 'a * string * 'a t list
 	  (** A call of a primitive function *)
+      | Wait of 'a
+	  (** The wait expression, permitted only in guards *)
+      | Label of 'a * string
+	  (** The label expression, permitted only in guards *)
       | New of 'a * Type.t * 'a t list
+	  (** Object creation expression, permitted only as top nodes *)
   and unaryop =
       (** Definition of the different unary operator symbols *)
       Not
@@ -120,17 +125,12 @@ sig
       | RAppend
       | Concat
       | Project
+      | GuardAnd
 
   val string_of_binaryop : binaryop -> string
 
   val string_of_unaryop : unaryop -> string
 end
-
-type 'a guard =
-    Wait of 'a
-    | Label of 'a * string
-    | Condition of 'a * 'a Expression.t
-    | Conjunction of 'a * 'a guard * 'a guard
 
 module Statement: sig
   type ('a, 'b) t =
@@ -145,7 +145,7 @@ module Statement: sig
       | Assign of 'a * string list * 'b Expression.t list
 	  (** A multiple assignment statement.  Requires that the two lists
 	      are of the same length. *)
-      | Await of 'a * 'b guard
+      | Await of 'a * 'b Expression.t
 	  (** An await statement. *)
       | AsyncCall of 'a * string option * 'b Expression.t * string *
 	  'b Expression.t list

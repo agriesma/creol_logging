@@ -50,7 +50,7 @@ begin
 	t5!first(waitReindeers).harness(); 
 	harnessedReindeers := plus(harnessedReindeers, first(waitReindeers)); 
 	waitReindeers := rest(waitReindeers);
-	await t1? and t2? and t3? and t4? and t5?;
+	await t1? & t2? & t3? & t4? & t5?;
 	// <Deliver Toys>;
 	!first(harnessedReindeers).unharness();
 	harnessedReindeers := rest(harnessedReindeers);
@@ -70,7 +70,7 @@ begin
 	t3!first(waitElves).showIn();
 	inofficeElves := plus(inofficeElves, first(waitElves));
 	waitElves := rest(waitElves);
-	await t1? and t2? and t3?;
+	await t1? & t2? & t3?;
 	// <Talk to elves>;
 	t1!first(inoffcieElves).showOut();
 	inofficeElves := rest(inofficeElves);
@@ -78,7 +78,7 @@ begin
 	inofficeElves := rest(inofficeElves);
 	t3!first(inoffcieElves).showOut();
 	inofficeElves := rest(inofficeElves);
-	await t1? and t2? and t3?
+	await t1? & t2? & t3?
 
 with Reindeer
   op backFromHoliday ==

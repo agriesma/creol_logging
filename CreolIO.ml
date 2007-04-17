@@ -197,7 +197,7 @@ and creol_statement_to_xml writer stmt_handler expr_handler =
         XmlTextWriter.end_element writer
     | Await (a, g) -> 
 	XmlTextWriter.start_element writer "await" ;
-	creol_guard_to_xml writer expr_handler g ;
+	creol_expression_to_xml writer expr_handler g ;
 	stmt_handler writer a;
         XmlTextWriter.end_element writer
     | AsyncCall (a, l, c, m, es) ->
@@ -373,28 +373,6 @@ and creol_argument_to_xml writer expr_handler e =
     XmlTextWriter.start_element writer "argument" ; 
     creol_expression_to_xml writer expr_handler e;
     XmlTextWriter.end_element writer
-and creol_guard_to_xml writer expr_handler =
-  function
-    Label (a, l) ->
-	XmlTextWriter.start_element writer "label" ;
-	XmlTextWriter.write_attribute writer "name" l;
-	expr_handler writer a ;
-	XmlTextWriter.end_element writer
-  | Condition (a, e) -> 
-	XmlTextWriter.start_element writer "condition" ;
-	creol_expression_to_xml writer expr_handler e;
-	expr_handler writer a ;
-	XmlTextWriter.end_element writer
-  | Conjunction (a, g1, g2) -> 
-	XmlTextWriter.start_element writer "conjunction" ;
-	creol_guard_to_xml writer expr_handler g1;
-	creol_guard_to_xml writer expr_handler g2;
-	expr_handler writer a ;
-	XmlTextWriter.end_element writer
-  | Wait (a) ->
-	XmlTextWriter.start_element writer "wait" ;
-	expr_handler writer a ;
-	XmlTextWriter.end_element writer
 and creol_expression_to_xml writer expr_handler =
   function
       Expression.Null a -> 
@@ -468,6 +446,15 @@ and creol_expression_to_xml writer expr_handler =
 	creol_expression_to_xml writer expr_handler e ;
 	expr_handler writer a ;
         XmlTextWriter.end_element writer
+    | Expression.Label (a, l) ->
+	XmlTextWriter.start_element writer "label" ;
+	XmlTextWriter.write_attribute writer "name" l;
+	expr_handler writer a ;
+	XmlTextWriter.end_element writer
+    | Expression.Wait (a) ->
+	XmlTextWriter.start_element writer "wait" ;
+	expr_handler writer a ;
+	XmlTextWriter.end_element writer
     | Expression.New (a, c, es) ->
 	XmlTextWriter.start_element writer "new" ;
 	XmlTextWriter.write_attribute writer "class" (Type.as_string c) ;
