@@ -78,14 +78,32 @@ AT_SETUP([PrettyPrinter])
 TEST_CREOLC_PP([Alarmclock])
 TEST_CREOLC_PP([AsyncLCR])
 TEST_CREOLC_PP([BoundedBuffer])
+TEST_CREOLC_PP([Diamond])
 TEST_CREOLC_PP([Fibonacci])
+TEST_CREOLC_PP([Inheritance])
 TEST_CREOLC_PP([Philosophers])
 TEST_CREOLC_PP([SantaClaus])
 TEST_CREOLC_PP([SingleCellBuffer])
 AT_CLEANUP
 
+TEST_CREOLC([Inheritance], [dnl
+red init .
+rew init main("B", int(1)) .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("B", int(1))), 0, 1) .
+])
+
+TEST_CREOLC([Diamond], [dnl
+red init .
+rew init main("D", emp) .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("D", emp)), 0, 1) .
+])
+
 TEST_CREOLC([Deadlock], [dnl
 red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 ])
 
 dnl This set of tests is testing our existing programs.

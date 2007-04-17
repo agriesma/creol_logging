@@ -1,0 +1,26 @@
+load interpreter
+mod PROGRAM is
+pr INTERPRETER .
+op init : -> Configuration [ctor] .
+eq init =
+< "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "m" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "a" ; return ( "r" ) >, Ocnt: 0 >
+
+< "B" : Cl | Inh: "A" < "b" > , Par: "b", Att: "b" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "n" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "b" ; return ( "r" ) >, Ocnt: 0 >
+
+< "C" : Cl | Inh: "A" < "c" > , Par: "c", Att: "c" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "n" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "c" ; return ( "r" ) >, Ocnt: 0 >
+
+< "D" : Cl | Inh: "B" < int(1) >  ## "C" < int(2) > , Par: noAid, Att: "x" |-> null , "y" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "m" ( emp ; "x" ) ; "n" ( emp ; "y" ) ; skip ; return ( emp ) >, Ocnt: 0 >
+
+.
+endm

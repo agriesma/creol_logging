@@ -1,0 +1,12 @@
+
+class A(a: Integer)
+begin
+  op init == skip
+  op run == skip
+end
+
+class B(b: Integer) inherits A(b)
+begin
+  op init == prove a = b
+  op run == skip
+end

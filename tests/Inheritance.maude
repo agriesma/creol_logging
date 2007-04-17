@@ -1,0 +1,15 @@
+load interpreter
+mod PROGRAM is
+pr INTERPRETER .
+op init : -> Configuration [ctor] .
+eq init =
+< "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) >, Ocnt: 0 >
+
+< "B" : Cl | Inh: "A" < "b" > , Par: "b", Att: "b" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) >, Ocnt: 0 >
+
+.
+endm

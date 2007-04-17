@@ -32,6 +32,8 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  Interpreter.maude Interpreter.out \
 		  MetaExec.maude MetaExec.out \
 		  ModelChecker.maude ModelChecker.out \
+		  Inheritance.creol Inheritance.maude Inheritance.out \
+		  Diamond.creol Diamond.maude Diamond.out \
 		  Deadlock.creol Deadlock.maude Deadlock.out \
 		  Alarmclock.creol Alarmclock.maude Alarmclock.out \
 		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.out \
