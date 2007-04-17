@@ -1,26 +1,32 @@
 
-class A(x: Integer)
+class A(a: Integer)
 begin
-  var a: Integer
-  op init == a := x
+  op init == skip
+  op run == skip
   with Any
     op m(out r: Integer) == r := a
 end
 
-class B(x: Integer) inherits A(x)
+class B(b: Integer) inherits A(b)
 begin
-  var b: Integer
-  op init == b := x ; prove a = b
+  op init == prove a = b
+  op run == skip
   with Any
     op n(out r: Integer) == r := b
 end
 
-class C(x: Integer) inherits A(x)
+class C(c: Integer) inherits A(c)
 begin
+  op init == prove a = c
+  op run == skip
+  with Any
+    op n(out r: Integer) == r := c
 end
 
 class D inherits B(1), C(2)
 begin
+  var x: Integer
+  var y: Integer
   op init == skip
-  op run == var x: Integer; var y: Integer; m(; x); n(; y); prove x = y
+  op run == m(; x); n(; y); prove x = 1 and y = 2
 end

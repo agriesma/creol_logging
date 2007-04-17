@@ -101,11 +101,18 @@ fmod SUBST is
   vars D D' : Data .
   vars S1 S2  : Subst .
 
-  *** Non-comm composition operator for substitutions
+  *** Lazy composition operator for substitutions
   op _#_ : Subst Subst -> Subst .
   eq S1 # noSubst = S1 .
   eq noSubst # S2 = S2 .
   eq (S1 {|#|} S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
+
+  *** Composition operater for substitutions
+  op compose : Subst Subst -> Subst .
+  eq compose(S1, noSubst) = S1 .
+  eq compose(noSubst, S1) = S1 .
+  eq compose(S1, (S2, (A |-> D))) = compose(insert(A, D, S1), S2) .
+  
 
   op dom : Aid Subst -> Bool .
   eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
@@ -583,13 +590,15 @@ STEP(dnl
   < newId(C',F) : C' | Att: S, Pr: idle, PrQ: noProc, Lcnt: 1 >
   < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
-    (AL assign evalList(EL, (S {|#|} L))),
+    (AL assign evalList(EL, compose(S,  L))),
     ((noSubst, ("Dummy" ! "init" (emp)) ; ("Dummy" ?(noAid)) ; ("Dummy" ! "run" (emp)) ; ("Dummy" ?(noAid)))))|},
 {|[label new-object]|})
 
 
 *** ATTRIBUTE inheritance with multiple inheritance
-*** CMC assumes that all attributes names are (globally) different
+*** CMC assumes that all attributes names are (globally) different.
+*** For the purpose of the CMC the class parameters are treated as
+*** attributes!
 
 op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor {|format|} (n d)] .
 op foundAttr : Oid Subst  StmList Process -> Msg [ctor {|format|} (n d)] .
@@ -600,14 +609,21 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 *** the source language.  The name of the class will be used as the
 *** name of the variable used to call the init routine.
 ***
-*** XXX: Why is the call prepended, shouldn't it be appended?
+*** The initialisation of the attributes is ordered from class to
+*** super-class, *** because we want to pass on the class parameters to
+*** the super-class.  The initialisation, i.e., calling the init method,
+*** is done from the super classes to the sub-classes, making sure that
+*** the state of the object at the beginning of the init call is in a
+*** consistent state.
 eq
-  findAttr(O,((C < EL >) {|##|} I),S, SL, (L', SL')) 
-  < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F >
+  findAttr(O,(C < EL > {|##|} I), S, SL, (L', SL')) 
+  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
   =
-  findAttr(O, I {|#|}{|#|} I',(L {|#|} S), (AL ::= EL) ; SL, 
+  findAttr(O, I {|#|}{|#|} I', compose(S', S),
+           SL ; (AL ::= EL), 
            (L', ("Dummy" ! "init" @ C(emp)) ; ("Dummy" ?( noAid)) ; SL'))
-  < C : Cl | Inh: I', Par: AL, Att: L, Mtds: MS, Ocnt: F > .
+  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
+  [label find-attr] .
 
 eq
   foundAttr(O, S', SL, (L', SL'))
