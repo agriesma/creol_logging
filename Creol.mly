@@ -7,7 +7,7 @@
 %token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
 %token REQUIRES ENSURES INV WHEN WHERE SOME FORALL EXISTS
 %token IF THEN ELSE FI SKIP AWAIT WAIT NEW
-%token FOR TO BY DO OD WHILE OF CASE
+%token FOR TO BY DO OD WHILE OF CASE AS
 %token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token RBRACK LBRACK
@@ -28,12 +28,19 @@
 %token <float> FLOAT
 %token NIL NULL
 
-%left AND AMP AMPAMP WEDGE OR BAR BARBAR VEE XOR IFF
+%left COMMA
+%left BAR
+%left IFF
+%left XOR
+%left OR BARBAR VEE
+%left AMP
+%left AND AMPAMP WEDGE
 %right NOT
 %nonassoc EQ NE
 %left LE LT GT GE
 %left BACKSLASH
-%left LAPPEND CONCAT RAPPEND
+%right LAPPEND
+%left CONCAT RAPPEND
 %left PLUS MINUS
 %left TIMES DIV
 %right UMINUS HASH
@@ -372,8 +379,24 @@ expression:
       pattern ARROW expression
 	{ () }
 
-%inline pattern:
-      UNDERSCORE
+pattern:
+      ID
+	{ () }
+    | UNDERSCORE
+	{ () }
+    | pattern AS ID
+	{ () }
+    | LPAREN pattern RPAREN
+	{ () }
+    | CID pattern
+	{ () }
+    | pattern BAR pattern
+	{ () }
+    | pattern COMMA pattern
+	{ () }
+    | pattern LAPPEND pattern
+	{ () }
+    | pattern RAPPEND pattern
 	{ () }
 
 (* Poor mans types and type parameters *)
