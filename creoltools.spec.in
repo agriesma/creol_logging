@@ -2,17 +2,20 @@ Summary:	Environment for the Creol Language
 Name:		creoltools
 Version:	@VERSION@
 Release:	0%{?dist}
+Vendor:		Universitetet i Oslo
 URL:		http://creol.berlios.de/
-Source0:	%{name}-%{version}.tar.bz2
 License:	GPL
 Group:		Development/Languages
 BuildRoot:	%{_tmppath}/%{name}-root
+Source0:	%{name}-%{version}.tar.bz2
 
+%if ! %{?atuio}0
 BuildRequires: ocaml >= 3.09
 BuildRequires: ocaml-findlib
+%endif
+BuildRequires: /usr/bin/texi2pdf
 BuildRequires: libxml2-devel >= 2.6.16
 BuildRequires: libxslt-devel >= 1.1.11
-BuildRequires: texinfo-tex >= 4.7
 Requires: libxml2 >= 2.6.16
 Requires: libxslt >= 1.1.11
 Requires: maude >= 2.2
@@ -21,6 +24,9 @@ Requires: %{_sysconfdir}/profile.d
 Requires: %{_sysconfdir}/profile.d/maude.sh
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
+Provides: creolshell = %{version}
+Provides: creolc = %{version}
+Provides: creol-mode = %{version}
 
 %define ocamllib %(ocamlc -where)
 %define sitelib %{ocamllib}/site-lib
@@ -34,6 +40,10 @@ in Maude.
 %setup -q
 
 %build
+%if %{?atuio}0
+CC=/usr/bin/gcc
+export CC
+%endif
 %configure
 make
 

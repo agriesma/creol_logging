@@ -128,7 +128,7 @@ module Type =
 	  Basic s -> s
 	| Application (s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Variable s -> s
+	| Variable s -> "$" ^ s
 	| Label -> "/* Label */"
     and string_of_creol_type_list =
       function
@@ -149,9 +149,12 @@ module Expression =
 	| Float of 'a * float
 	| String of 'a * string
 	| Id of 'a * string
+	| Cast of 'a * 'a t * Type.t
+	| Index of 'a * 'a t * 'a t
         | FieldAccess of 'a * 'a t * string
 	| Unary of 'a * unaryop * 'a t
 	| Binary of 'a * binaryop * 'a t * 'a t
+	| If of 'a * 'a t * 'a t * 'a t
 	| FuncCall of 'a * string * 'a t list
 	| Wait of 'a
 	| Label of 'a * string
@@ -174,6 +177,7 @@ module Expression =
 	| And
 	| Or
 	| Xor
+	| Implies
 	| Iff
 	| LAppend
 	| RAppend
@@ -263,9 +267,20 @@ module Statement =
 	    'b Expression.t list
 	| If of 'a * 'b Expression.t * ('a, 'b) t * ('a, 'b)t
 	| While of 'a * 'b Expression.t * 'b Expression.t option * ('a, 'b) t
+	| For of 'a * string * 'b Expression.t * 'b Expression.t *
+	    'b Expression.t option * 'b Expression.t option * ('a, 'b) t
+	| Raise of 'a * string * 'b Expression.t list
+	| Try of 'a * ('a, 'b) t * ('a, 'b) catcher list
+	| Typecase of 'a * 'b Expression.t * ('a, 'b) typecase list
 	| Sequence of 'a * ('a, 'b) t list
-	| Merge of 'a * ('a, 'b) t * ('a, 'b)t
+	| Merge of 'a * ('a, 'b) t * ('a, 'b) t
 	| Choice of 'a * ('a, 'b) t * ('a, 'b)t
+    and ('a, 'b) catcher =
+	{ catch: string option;
+	  catch_parameters: string list;
+	  catch_statement: ('a, 'b) t }
+    and ('a, 'b) typecase =
+	{ with_type: Type.t option; with_statement: ('a, 'b) t }
 
     let note =
       function
@@ -283,6 +298,10 @@ module Statement =
 	| Tailcall(a, _, _, _, _) -> a
 	| If(a, _, _, _) -> a
 	| While(a, _, _, _) -> a
+	| For(a, _, _, _, _, _, _) -> a
+	| Raise (a, _, _) -> a
+	| Try (a, _, _) -> a
+	| Typecase (a, _, _) -> a
 	| Sequence(a, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a
@@ -346,7 +365,7 @@ struct
   type  ('a, 'b) t =
       { name: string;
 	inherits: string list;
-	methods: ('a, 'b) creolmethod list }
+	with_decl: ('a, 'b) With.t option }
 
 end
 

@@ -87,12 +87,12 @@ fmod CREOL-DATA-SIG is
   vars E E'     : Expr .
   
   eq "equal" (D # D') = bool(D == D') .
-  eq "not"(bool(false)) = bool(true) .  
-  eq "not"(bool(true)) = bool(false) . 
-  eq "or"(bool(true) # E) = bool(true) .
-  eq "or"(bool(false) # E) = E .
-  eq "and"(bool(false) # E) = bool(false) .
-  eq "and"(bool(true) #  E) = E .  
+  eq "not" (bool(false)) = bool(true) .  
+  eq "not" (bool(true)) = bool(false) . 
+  eq "or" (bool(true) # E) = bool(true) .
+  eq "or" (bool(false) # E) = E .
+  eq "and" (bool(false) # E) = bool(false) .
+  eq "and" (bool(true) #  E) = E .  
 endfm
 
 view Aid from TRIV to CREOL-DATA-SIG is

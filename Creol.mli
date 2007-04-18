@@ -83,12 +83,18 @@ sig
 	  (** A string literal. *)
       | Id of 'a * string
 	  (** An identifier, usually an attribute or a local variable name *)
+      | Cast of 'a * 'a t * Type.t
+	  (** Re-type an expression.  Involves a run-time check *)
+      | Index of 'a * 'a t * 'a t
+	  (** Convenience for indexing a sequence/vector/array *)
       | FieldAccess of 'a * 'a t * string
 	  (** Access the field of a structure. *)
       | Unary of 'a * unaryop * 'a t
 	  (** A unary expression *)
       | Binary of 'a * binaryop * 'a t * 'a t
 	  (** A binary expression *)
+      | If of 'a * 'a t * 'a t * 'a t
+	  (** Conditional expression *)
       | FuncCall of 'a * string * 'a t list
 	  (** A call of a primitive function *)
       | Wait of 'a
@@ -120,6 +126,7 @@ sig
       | And
       | Or
       | Xor
+      | Implies
       | Iff
       | LAppend
       | RAppend
@@ -158,8 +165,8 @@ module Statement: sig
       | SyncCall of 'a * 'b Expression.t * string *
 	  'b Expression.t list * string list
 	  (** Call a (remote) method synchronously. *)
-      | LocalAsyncCall of 'a * string option * string * string option * string option *
-	  'b Expression.t list
+      | LocalAsyncCall of 'a * string option * string * string option *
+	  string option * 'b Expression.t list
 	  (** Call a local method synchronously. *)
       | LocalSyncCall of 'a * string * string option * string option *
 	  'b Expression.t list * string list
@@ -171,12 +178,28 @@ module Statement: sig
 	  (** Conditional execution. *)
       | While of 'a * 'b Expression.t * 'b Expression.t option * ('a, 'b) t
 	  (** While loops. *)
+      | For of 'a * string * 'b Expression.t * 'b Expression.t *
+	  'b Expression.t option * 'b Expression.t option * ('a, 'b) t
+	  (** For loop *)
+      | Raise of 'a * string * 'b Expression.t list
+	  (** Raising an exception *)
+      | Try of 'a * ('a, 'b) t * ('a, 'b) catcher list
+	  (** Try and catch exception *)
+      | Typecase of 'a * 'b Expression.t * ('a, 'b) typecase list
+	  (** Type case statement *)
       | Sequence of 'a * ('a, 'b) t list
 	  (** Sequential composition *)
       | Merge of 'a * ('a, 'b) t * ('a, 'b) t
 	  (** Merge of statements *)
       | Choice of 'a * ('a, 'b) t * ('a, 'b) t
 	  (** Choice between statements *)
+  and  ('a, 'b) catcher =
+      { catch: string option;
+	catch_parameters: string list;
+	catch_statement: ('a, 'b) t }
+  and ('a, 'b) typecase =
+      { with_type: Type.t option; with_statement: ('a, 'b) t }
+
 
   val note: ('a, 'b) t -> 'a
 end
@@ -254,7 +277,7 @@ module Interface : sig
   type ('a, 'b) t =
     { name: string;
       inherits: string list;
-      methods: ('a, 'b) creolmethod list }
+      with_decl: ('a, 'b) With.t option }
 
 end
 

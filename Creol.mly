@@ -5,7 +5,7 @@
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
 %token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
-%token REQUIRES ENSURES INV WHEN WHERE SOME FORALL EXISTS
+%token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
 %token IF THEN ELSE FI SKIP AWAIT WAIT NEW
 %token FOR TO BY DO OD WHILE OF CASE AS
 %token EXCEPTION RAISE TRY
@@ -17,9 +17,9 @@
 %token LTLT GTGT SUBTYPE SUPERTYPE DLRARROW
 %token DOLLAR PERCENT TICK BACKTICK
 %token BOX DIAMOND MERGE
-%token AND OR XOR IFF NOT PLUSPLUS PLUS MINUSMINUS MINUS
+%token AND OR NOT PLUSPLUS PLUS MINUSMINUS MINUS
 %token TIMESTIMES TIMES ARROW DARROW DIVDIV DIV EQ NE LT LE GT GE
-%token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE MODELS MAPSTO UNDERSCORE
+%token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE MODELS UNDERSCORE
 %token HAT HATHAT BACKSLASH ASSERT PROVE
 %token LAPPEND CONCAT RAPPEND
 %token <string> CID ID STRING
@@ -30,21 +30,25 @@
 
 %left COMMA
 %left BAR
-%left IFF
-%left XOR
+%left AS
+%left DLRARROW
+%left DARROW
+%left HAT
+(* %left AMP *)
 %left OR BARBAR VEE
-%left AMP
 %left AND AMPAMP WEDGE
-%right NOT
+%right NOT TILDE
 %nonassoc EQ NE
 %left LE LT GT GE
 %left BACKSLASH
+%left CONCAT
 %right LAPPEND
-%left CONCAT RAPPEND
+%left  RAPPEND
 %left PLUS MINUS
 %left TIMES DIV
 %right UMINUS HASH
 %left BACKTICK
+%right CID
 
 %start <'a list> main
 
@@ -97,8 +101,7 @@ let signal_error s m =
 %%
 
 main:
-      d = declarations EOF { d }
-    | EOF { [] }
+      d = loption(declarations) EOF { d }
 
 declarations:
       d = declaration { [d] }
@@ -186,16 +189,19 @@ method_def:
     { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
 	meth_outpars = d.meth_outpars; meth_vars = a; meth_body = Some s} }
 
+(* Interface Declaration *)
+
 interfacedecl:
-      INTERFACE n = CID i = iface_inherits_opt BEGIN m = loption(with_decl) END
-    { { Interface.name = n; Interface.inherits = i; Interface.methods = m } }
+      INTERFACE n = CID i = iface_inherits_opt BEGIN w = ioption(with_decl) END
+    { { Interface.name = n; Interface.inherits = i; Interface.with_decl = w } }
 
 iface_inherits_opt:
       (* empty *) { [] }
     | INHERITS l = separated_nonempty_list(COMMA, CID) { l }
 
 with_decl:
-      WITH m = CID l = nonempty_list(method_decl) { l }
+      WITH m = CID l = nonempty_list(method_decl) i = list(invariant)
+    { { With.co_interface = Some m; With.methods = l; With.invariants = i } }
 
 
 (* Exception declaration *)
@@ -273,18 +279,21 @@ basic_statement:
         { If((Note.make $startpos), e, t, f) }
     | IF e = expression THEN t = statement FI
         { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
-    | FOR v = ID ASSIGN f = expression TO u = expression
+    | CASE v = ID WHEN c = separated_nonempty_list(BAR, type_case) END
+        { Typecase (Note.make $startpos, Id (Note.make $startpos, v), c) }
+    | FOR i = ID ASSIGN f = expression TO l = expression
 	b = ioption(preceded(BY,expression))
-	i = ioption(preceded(INV, assertion))
+	inv = ioption(preceded(INV, assertion))
 	DO s = statement OD
-	{ Skip (Note.make $startpos) }
+	{ For (Note.make $startpos, i, f, l, b, inv, s) }
     | WHILE b = expression i = ioption(preceded(INV, assertion))
       DO s = statement OD
 	{ While (Note.make $startpos, b, i, s) }
-    | RAISE e = CID a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
-	{ Skip (Note.make $startpos) }
-    | TRY s = statement c = catchers END
-	{ Skip (Note.make $startpos) }
+    | RAISE e = CID
+      a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
+	{ Raise (Note.make $startpos, e, a) }
+    | TRY s = statement c = separated_nonempty_list(BAR, catcher) END
+	{ Try (Note.make $startpos, s, c) }
     | ASSERT a = assertion
 	{ Assert (Note.make $startpos, a) }
     | PROVE a = assertion
@@ -292,19 +301,21 @@ basic_statement:
     | error ELSE | error FI | error OP | error WITH | error END | error EOF
 	{ signal_error $startpos "syntax error in statement" }
 
-catchers:
-    nonempty_list(catch_clause)
-    ioption(preceded(ELSE, statement))
-    { }
-
-catch_clause:
-    WITH c = CID
-         l = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
-         DO s = statement
-    { }
-
-lvalue:
+%inline lvalue:
      i = ID { i }
+
+type_case:
+      t = creol_type ARROW s = statement
+	{ { with_type = Some t; with_statement = s } }
+    | UNDERSCORE ARROW s = statement
+	{ { with_type = None; with_statement = s } }
+
+catcher:
+      c = CID p = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
+      ARROW s = statement
+    { { catch = Some c; catch_parameters = p; catch_statement = s } }
+    | UNDERSCORE ARROW s = statement
+    { { catch = None; catch_parameters = []; catch_statement = s } }
 
 guard:
       l = ID QUESTION { Label ((Note.make $startpos), l) }
@@ -323,13 +334,16 @@ expression_or_new:
 expression:
       l = expression o = binop r = expression
         { Binary((Note.make $startpos), o, l, r) }
-    | NOT  e = expression { Unary((Note.make $startpos), Not, e) }
+    | NOT e = expression
+        { Unary((Note.make $startpos), Not, e) }
+    | TILDE e = expression
+        { Unary((Note.make $startpos), Not, e) }
     | MINUS e = expression %prec UMINUS
 	{ Unary((Note.make $startpos), UMinus, e) }
     | HASH e = expression
 	{ Unary((Note.make $startpos), Length, e) }
-    | e = expression BACKTICK i = ID
-	{ FieldAccess ((Note.make $startpos), e, i) }
+    | e = expression AS t = creol_type
+	{ Cast (Note.make $startpos, e, t) }
     | i = INT { Int ((Note.make $startpos), i) }
     | f = FLOAT { Float ((Note.make $startpos), f) }
     | b = BOOL { Bool ((Note.make $startpos), b) }
@@ -338,22 +352,29 @@ expression:
     | NIL { Nil (Note.make $startpos) }
     | NULL { Null (Note.make $startpos) }
     | LPAREN e = expression RPAREN { e }
+    | s = ID LBRACK i = expression RBRACK
+        { let n = Note.make $startpos in Index (n, Id (n, s), i) }
+    | LPAREN s = expression RPAREN LBRACK i = expression RBRACK
+        { let n = Note.make $startpos in Index (n, s, i) }
+    | e = expression BACKTICK i = ID
+	{ FieldAccess ((Note.make $startpos), e, i) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall((Note.make $startpos), f, l) }
+    | IF c = expression THEN t = expression ELSE f = expression END
+        { Expression.If (Note.make $startpos, c, t, f) }
     | CASE expression OF separated_nonempty_list(BAR, case_decl) END
 	{ Null (Note.make $startpos) }
 
 %inline binop:
       AND { And }
-    | AMP { And (* XXX *) }
     | AMPAMP { And (* XXX *) }
     | WEDGE { And (* XXX *) }
     | OR { Or }
-    | BAR { Or (* XXX *) }
     | BARBAR { Or (* XXX *) }
     | VEE { Or (* XXX *) }
-    | XOR { Ne }
-    | IFF { Eq }
+    | HAT { Xor }
+    | DLRARROW { Iff }
+    | DARROW { Implies }
     | EQ { Eq }
     | NE { Ne }
     | LE { Le }
@@ -373,10 +394,9 @@ expression:
       f = ID { f }
     | AND { "and" }
     | OR { "or" }
-    | XOR { "xor" }
 
 %inline case_decl:
-      pattern ARROW expression
+      pattern ioption(preceded(WHEN, expression)) ARROW expression
 	{ () }
 
 pattern:
@@ -405,7 +425,10 @@ creol_type:
 	{ Type.Basic t }
     | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Application(t, p) } 
-    | CID LT error { signal_error $startpos "Error in type" }
+    | DOLLAR v = CID
+	{ Type.Variable v }
+    | error RBRACK
+	{ signal_error $startpos "Error in type" }
 
 (* Assertions. *)
 
@@ -414,5 +437,7 @@ invariant:
 
 assertion:
     e = expression { e }
+    | FORALL vardecl_no_init COLON a = assertion { a }
+    | EXISTS vardecl_no_init COLON a = assertion { a }
 
 %%

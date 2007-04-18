@@ -1,4 +1,90 @@
 @node Introduction
 @chapter Introduction
 
+CREOL: An exciting mix of the best ingredients from many cultures!
+
+
+CREOL: A formal framework for reflective component modelling
+
+ The CREOL project is an ongoing research project 2004 - 2008, funded
+by the Research Council of Norway through the strategic programme
+IKT-2010. The goal of the project is to develop a formal framework and
+tool for reasoning about dynamic and reflective modifications in
+object-oriented open distributed systems, ensuring reliability and
+correctness of the overall system.
+
+
+@section Short project overview
+
+Open distributed systems consist of geographically spread system
+components subject to run-time modifications. These systems are
+becoming increasingly important in modern society, for instance for
+safety-critical infrastructure. A major challenge for safety-critical
+open distributed systems is to ensure the reliability and correctness
+of the overall system when components are dynamically modified, so
+that development, maintenance, and upgrade of system components happen
+in a controlled manner.
+
+The CREOL project is a research project to investigate programming
+constructs and reasoning control in the context of open distributed
+systems, and in particular the issue of maintenance control, taking an
+object-oriented approach. The project focuses on support for component
+adaptability, combined with a platform for executable specification
+and analysis of system models. This allows an investigation at two
+levels: a theoretical framework for reasoning about software and
+software updates, and a tool for practical experimentation with the
+consequences and possibilities of the theoretical choices. The goal of
+the project is to develop a formal framework and tool for reasoning
+about dynamic and reflective modifications in open distributed
+systems, ensuring reliability and correctness of the overall system.
+
+These issues will be investigated in the context of Creol, an
+experimental high-level object-oriented language for distributed
+objects. The name is an acronym for Concurrent Reflective
+Object-oriented Language. The language is based on concurrent objects
+communicating by means of asynchronous method calls, and is formally
+defined with an operational semantics expressed in rewriting
+logic. The basic communication mechanisms and operational semantics of
+the language are described in [9, 2]. The inclusion of multiple
+inheritance in the language and the operational semantics is described
+in [7]. A type and effect system for the language is given in [1].
+
+Specifications in rewriting logic are executable in the rewriting
+logic tool Maude. A prototype Maude interpreter for the communication
+basis of the Creol language has been developed and extended with a
+pseudo-deterministic rewrite strategy in order to better simulate the
+non-determinism of a distributed environment [11].
+
+The language and the interpreter will gradually be extended to
+incorporate facilities for reflective programming, dynamic updates,
+and a coordination language based on viewpoint specifications (or
+behavioral interfaces) [12, 17]. An extension of the language and the
+interpreter with a dynamic class construct is presented in [5]. A
+binding strategy for method calls which is adapted to dynamic class
+extensions is presented in [4]. A type system for runtime class
+updates is presented in [3].
+
+
+@section Features
+
+Creol is a @emph{strongly typed} language, in the sense that it is
+type safe.  Function and method calls which disregard data types
+are rejected.
+
+Creol is a @emph{statically typed} language.  The compiler tries to
+infer, whether a function call or a method call is safe in the sense
+that it will succeed.  Programs in which a call cannot succeed because
+of the type of an operation or a method are rejected.
+
+Message dispatch in Creol is based not only on the type of the receiver
+of the message, but also on the arguments (multiple dispatch @cite{XXX}),
+especially the type of the caller (which is constrained by the
+@emph{co-interface} and available in any method body under the name
+@code{caller}.
+
+The @code{caller} mechanism is similar to @code{context} in Smalltalk-80,
+but it does not, e.g., provide information on the call-chain.
+
+
+
 

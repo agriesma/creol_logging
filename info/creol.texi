@@ -1,107 +1,8 @@
 @node Creol
 @chapter Creol
 
-CREOL: An exciting mix of the best ingredients from many cultures!
-
-
-CREOL: A formal framework for reflective component modelling
-
- The CREOL project is an ongoing research project 2004 - 2008, funded
-by the Research Council of Norway through the strategic programme
-IKT-2010. The goal of the project is to develop a formal framework and
-tool for reasoning about dynamic and reflective modifications in
-object-oriented open distributed systems, ensuring reliability and
-correctness of the overall system.
-
-@menu
-* Overview::    A short overview to Creol and its ideas.
-* Features::    What Creol provides and why it is different.
-* Syntax::      A short guide to the language.
-* Grammar::     Creol grammar in EBNF.
-@end menu
-
-
-@node Overview 
-@section Short project overview
-
-Open distributed systems consist of geographically spread system
-components subject to run-time modifications. These systems are
-becoming increasingly important in modern society, for instance for
-safety-critical infrastructure. A major challenge for safety-critical
-open distributed systems is to ensure the reliability and correctness
-of the overall system when components are dynamically modified, so
-that development, maintenance, and upgrade of system components happen
-in a controlled manner.
-
-The CREOL project is a research project to investigate programming
-constructs and reasoning control in the context of open distributed
-systems, and in particular the issue of maintenance control, taking an
-object-oriented approach. The project focuses on support for component
-adaptability, combined with a platform for executable specification
-and analysis of system models. This allows an investigation at two
-levels: a theoretical framework for reasoning about software and
-software updates, and a tool for practical experimentation with the
-consequences and possibilities of the theoretical choices. The goal of
-the project is to develop a formal framework and tool for reasoning
-about dynamic and reflective modifications in open distributed
-systems, ensuring reliability and correctness of the overall system.
-
-These issues will be investigated in the context of Creol, an
-experimental high-level object-oriented language for distributed
-objects. The name is an acronym for Concurrent Reflective
-Object-oriented Language. The language is based on concurrent objects
-communicating by means of asynchronous method calls, and is formally
-defined with an operational semantics expressed in rewriting
-logic. The basic communication mechanisms and operational semantics of
-the language are described in [9, 2]. The inclusion of multiple
-inheritance in the language and the operational semantics is described
-in [7]. A type and effect system for the language is given in [1].
-
-Specifications in rewriting logic are executable in the rewriting
-logic tool Maude. A prototype Maude interpreter for the communication
-basis of the Creol language has been developed and extended with a
-pseudo-deterministic rewrite strategy in order to better simulate the
-non-determinism of a distributed environment [11].
-
-The language and the interpreter will gradually be extended to
-incorporate facilities for reflective programming, dynamic updates,
-and a coordination language based on viewpoint specifications (or
-behavioral interfaces) [12, 17]. An extension of the language and the
-interpreter with a dynamic class construct is presented in [5]. A
-binding strategy for method calls which is adapted to dynamic class
-extensions is presented in [4]. A type system for runtime class
-updates is presented in [3].
-
-
-@node Features
-@section Features
-
-Creol is a @emph{strongly typed} language, in the sense that it is
-type safe.  Function and method calls which disregard data types
-are rejected.
-
-Creol is a @emph{statically typed} language.  The compiler tries to
-infer, whether a function call or a method call is safe in the sense
-that it will succeed.  Programs in which a call cannot succeed because
-of the type of an operation or a method are rejected.
-
-Message dispatch in Creol is based not only on the type of the receiver
-of the message, but also on the arguments (multiple dispatch @cite{XXX}),
-especially the type of the caller (which is constrained by the
-@emph{co-interface} and available in any method body under the name
-@code{caller}.
-
-The @code{caller} mechanism is similar to @code{context} in Smalltalk-80,
-but it does not, e.g., provide information on the call-chain.
-
-
-
-
-@node Syntax
-@section Syntax of Creol
-
-In this section we describe the syntax of Creol and sketch the
-informal semantics of Creol programs.
+This chapter describes the concrete syntax of Creol.  It also gives an
+informal semantics.
 
 @menu
 * Literals and Expression::     The functional sub-language.
@@ -110,43 +11,93 @@ informal semantics of Creol programs.
 * Class Declaration::           Implementation for types.
 * Datatype Declaration::
 * Exception Declaration::
+* Grammar::                     Creol grammar in EBNF.
 @end menu
 
 @node Literals and Expression
-@subsection Literals and Expressions
+@section Literals and Expressions
 
 Creol assumes a functional sub-language, which we describe in this
-section.
+section.  The equality symbol
 
-@subsubsection Boolean Expressions
+
+@subsection Literals
+
+The boolean literals of creol are @code{true} and @code{false}.
+
+The integer literals match the regular expression @code{[0-9]+}.
+
+Floating-point literals match the regular expression
+@code{(0|([1-9][0-9]+)).[0-9]*([eE]-?[1-9][0-9]+)?}.
+
+A string literal is a sequence of characters enclosed in quotes:
+@code{"}.  The usual escape sequences using backslash, e.g.,
+@code{\n}, @code{\"}, @code{\\}, are supported.
+
+The empty list is represented by the literal @code{nil}.
+
+The null-reference is represented by the literal @code{null}.
+
+The self-reference is represented by the literal @code{this}.
+
+
+@subsection Variables
+
+Variables are lower-case character-sequences, matching the regular
+expression @code{[a-z][a-zA-Z0-9]}.  Variables are typed (see below).
+
+
+@subsection Boolean Expressions
+
+The boolean expressions are:
+
+@code{@var{expression} = @var{expression}} for equality.
+
+@code{@var{expression} /= @var{expression}} for in-equality.
+
+@code{~ @var{expression}} for negation.
+
+@code{@var{expression} && @var{expression}} for conjunction.
+
+@code{@var{expression} || @var{expression}} for disjunction.
+
+@code{@var{expression} => @var{expression}} for implication.
+
+@code{@var{expression} <=> @var{expression}} for bi-implication.
+
+@code{@var{expression} ^ @var{expression}} for exclusive or.
+
+
+@subsection Integers, Reals, and Arithmetic Expressions
 
 TBD
 
-@subsubsection Integers, Reals, and Arithmetic Expressions
-
-TBD
-
-@subsubsection Strings
+@subsection Strings
 
 TBD
 
 
-@subsubsection Object Expressions and Literals
+@subsection 
+
+@subsection Object Expressions and Literals
 
 Object expressions and literals are expressions whose value is a
 reference to an object.  The only literal is @code{null}, representing
 the null-pointer.
 
+The expression @code{@var{expression} as @var{type}} represents
+re-typing.  This usually involves a run-time check.
 
-@subsubsection Function Application
+
+@subsection Function Application
 
 Generally, applying a function is written as
-@code{@var{f}[@var{e},@var{d},...,@var{c}]}, where @var{f} is the name
+@code{@var{f}(@var{e},@var{d},...,@var{c})}, where @var{f} is the name
 of a function and @var{e},@var{d},@dots{} refers to expressions
 representing the actual arguments.
 
 
-@subsubsection Field Access
+@subsection Field Access
 
 While the fields of objects are considered to be private to the
 object, the functional sub-language generates automatic projections
@@ -176,12 +127,12 @@ for abstract data types.
 
 
 @node Statements
-@subsection Statements
+@section Statements
 
 In this section we describe the statements of Creol programs.
 
 
-@subsubsection Assignments
+@subsection Assignments
 
 A single assignment may be written as @code{@var{x} := @var{e}}, where
 @var{x} is the name of an attribute or a local variable and @var{e}
@@ -194,7 +145,7 @@ hand side is a tuple of expressions.  Both tuples should have the same
 length.
 
 
-@subsubsection Object Creation
+@subsection Object Creation
 
 The creation of an object is written as @code{@var{v}:= new
 @var{C}(@var{e},...)}.  @var{v} is the variable which will hold the
@@ -203,13 +154,14 @@ new object.  @var{e}, @dots{} are the arguments to the constructor.
 Note that @var{C} has to implement an interface which is a subtype of
 the interface type of @var{v}.
 
-@subsubsection Synchronous Method Calls
+@subsection Synchronous Method Calls
 
 A @emph{local} synchronous method call is written as
-@code{@var{m}(@var{ins};@var{outs})}, where @var{m} is the name of a
-method, @var{ins} is a possibly empty list of expressions describing
-the actual arguments to the call and @var{outs} is a possibly empty
-list of variable or attribute names used to store the result values.
+@code{@var{m}[@@@var{C}](@var{ins};@var{outs})}, where @var{m} is the
+name of a method, @var{C} is an optional class name, @var{ins} is a
+possibly empty list of expressions describing the actual arguments to
+the call and @var{outs} is a possibly empty list of variable or
+attribute names used to store the result values.
 
 A @emph{remote} synchronous method call is written as
 @code{@var{e}.@var{m}(@var{ins};@var{outs})}, where @var{e} is an
@@ -219,7 +171,7 @@ the actual arguments to the call and @var{outs} is a possibly empty
 list of variable or attribute names used to store the result values.
 
 
-@subsubsection Asynchronous Method Calls
+@subsection Asynchronous Method Calls
 
 A @emph{asynchronous} method call is written as
 @code{@var{l}!@var{e}.@var{m}(@var{ins})}, where @var{l} is the name
@@ -231,19 +183,46 @@ Results are received by the statement @code{?(@var{outs})}, where
 is a list of variable names used to store the result.
 
 
-@subsubsection Blocks
+@subsection Blocks
 
 Groups of statements are formed using braces, i.e., any statement or
 compound statement inside braces @code{@{ ... @}} form a basic
 statement.
 
 
-@subsubsection Conditional Statement
+@subsection Conditional Statement
 
 The usual @code{if ... then ... else ... fi} statement.
 
 
-@subsubsection Loop Statements
+@subsection Type inspection using type cases
+
+Creol does not support casting.  Instead, we use a type case construct
+to execute code which depends on the type of an object.
+
+@example
+case @var{variable} when
+  @var{type} -> @var{statement}
+| @var{type} -> @var{statement}
+| @var{type} -> @var{statement}
+| _ -> @var{statement}
+end
+@end example
+
+The value of @var{variable} is tested to be an instance of the type
+given by the label @var{type} from left to right.  Only the first
+match is executed.
+
+Within the code following the type label the value of @var{variable}
+is typed by the type label.  Retyping does not happen in the default
+case, which is labeled by @code{_}, i.e., the type of @var{variable}
+is its declared type.
+
+A compile time error shall occur if a label is used which is not a
+subtype of the type of @var{variable}.
+
+
+@subsection Loop Statements
 
 Loops should be avoided in Creol programs.  Creol provides to variants
 of loops:
@@ -285,7 +264,7 @@ in @code{await wait}, only the class invariant is guaranteed to hold
 (and, of course, the local state of the method remains invariant).
 
 
-@subsubsection Sequential Composition
+@subsection Sequential Composition
 
 Statements can be composed sequentially using the @code{;} operator.
 
@@ -293,12 +272,12 @@ Note that contrary to Java and C @code{;} is a @emph{binary operator}
 on statements, i.e., it is not a statement terminator.
 
 
-@subsubsection Non-deterministic merge
+@subsection Non-deterministic merge
 
 TBD
 
 
-@subsubsection Non-deterministic choice
+@subsection Non-deterministic choice
 
 The statement @code{S1 [] S2} chooses either @code{S1} or @code{S2}
 for execution.
@@ -319,7 +298,7 @@ and internal choice as
 @code{skip; await b1; S1 [] skip; await b2; S2}.
 
 
-@subsubsection Precedence of Statement Composition
+@subsection Precedence of Statement Composition
 
 The operators @code{;}, @code{[]}, and @code{|||} are binary operators
 on statements.  All of them are @emph{left-associative}, @code{;}
@@ -328,7 +307,7 @@ in @code{@{ S; T @} [] U} but not in @code{S; @{ T [] U @}}.
 
 
 @node Interface Declaration
-@subsection Interface Declarations
+@section Interface Declarations
 
 All objects in Creol are typed by interface.
 
@@ -354,7 +333,7 @@ begin
 end
 @end example
 
-@subsubsection Open Issues
+@subsection Open Issues
 
 With respect to interface declarations, the following ideas may be
 considered:
@@ -378,7 +357,7 @@ much closer to @code{contracts}, or is it not?
 
 
 @node Class Declaration
-@subsection Class Declarations
+@section Class Declarations
 
 A class provides the implementation of an object.
 
@@ -428,13 +407,13 @@ by a statement.
 
 
 @node Datatype Declaration
-@subsection Datatype Declarations
+@section Datatype Declarations
 
 TBD
 
 
 @node Exception Declaration
-@subsection Exception Declarations
+@section Exception Declarations
 
 Exception have to be declared for type checking.  A declaration has
 the form
@@ -500,6 +479,7 @@ not                              @r{unary operator}
 - #                              @r{unary operators}
 @end example
 
+
 @subsection Grammar
 
 @format
@@ -555,8 +535,7 @@ constructor ::=
     @strong{constructor} cid [ @strong{(} @{ type @strong{,} @strong{)} ] @strong{:} cid
 
 function ::=
-    @strong{function} id @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)} @strong{==}
-    expression
+    @strong{function} id @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)} @strong{==} expression
 
 statement ::=
     choice-statement [ @strong{|||} statement ]
@@ -569,8 +548,6 @@ seq-statement ::=
 
 basic-statement ::=
     @strong{skip}
-  | @strong{assert} expression
-  | @strong{prove} expression
   | @{ id @strong{,} @} @strong{:=} @{ expr-or-new @strong{,} @}
   | @strong{await} guard
   | [ id ] @strong{!} expr @strong{.} id @strong{(} @{ expr @strong{,} @} @strong{)}
@@ -580,15 +557,20 @@ basic-statement ::=
   | id [@strong{@@} cid] @strong{(} @{ expr @strong{,} @} @strong{;} @{ id @strong{,} @} @strong{)}
   | @strong{@{} statement @strong{@}}
   | @strong{if} expr @strong{then} statement [@strong{else} statement] @strong{fi}
+  | @strong{case} id @strong{when} @{ type-case @strong{|} @} @strong{end}
   | @strong{for} id @strong{:=} expression @strong{to} expression
       [ @strong{by} expression ] [ @strong{inv} assertion ] @strong{do} statement @strong{od}
   | @strong{while} expression [ @strong{inv} assertion ] @strong{do} statement @strong{od}
   | @strong{raise} cid [ @strong{(} @{ expr @strong{,} @} @strong{)} ]
-  | @strong{try} statement catchers @strong{end}
+  | @strong{try} statement @strong{with} @{ catcher @strong{|} @} @strong{end}
+  | @strong{assert} assertion
+  | @strong{prove} assertion
 
-catchers ::=
-    @{ @strong{with} cid [ @strong{(} @{ id @strong{,} @} @strong{)} ] @strong{do} statement @}
-    [ @strong{else} statement ]
+type-case ::=
+    (type | @strong{_}) @strong{->} statement
+
+catcher ::=
+    ( ( cid [ @strong{(} @{ id @strong{,} @} @strong{)} ] ) | @strong{_} ) @strong{->} statement
 
 guard ::=
     @strong{wait} | id @strong{?} [ @strong{&} guard ] | expression
@@ -598,17 +580,32 @@ expr-or-new ::=
   | expr
 
 expr ::=
-    integer | float | string | @strong{true} | @strong{false} | @strong{nil} |
-    @strong{null}
-  | id | unaryop expr |  expr binop expr
+    integer | float | string | @strong{true} | @strong{false} | @strong{nil} | @strong{null}
+  | id | unaryop expr | expr binop expr | expr @strong{as} type
   | id @strong{(} @{ expr @strong{,} @} @strong{)} | expr @strong{`} id
+  | @strong{case} expr @strong{of} @{ case-decl @strong{|} @} @strong{end}
   | @strong{(} expr @strong{)}
 
-binop ::= @strong{+} | @strong{-} | @strong{*} | @strong{/} | @strong{=} | @strong{<} | @strong{>} |
-          @strong{<=} | @strong{>=} | @strong{and} | @strong{&} | @strong{&&} | @strong{/\} |
-          @strong{or} | @strong{|} | @strong{||} | @strong{\/} | @strong{|-} | @strong{|-|} | @strong{-|} | @strong{\}
-
 unaryop ::= @strong{not} | @strong{-} | @strong{#}
+
+binop ::=
+    @strong{+} | @strong{-} | @strong{*} | @strong{/} | @strong{=} | @strong{<} | @strong{>} |
+    @strong{<=} | @strong{>=} | @strong{and} | @strong{&} | @strong{&&} | @strong{/\} |
+    @strong{or} | @strong{|} | @strong{||} | @strong{\/} | @strong{|-} | @strong{|-|} | @strong{-|} | @strong{\}
+
+case-decl ::=
+    pattern [ @strong{when} expression ] @strong{->} expression
+
+pattern ::=
+    id
+  | @strong{_}
+  | pattern @strong{as} id
+  | @strong{(} pattern @strong{)}
+  | cid pattern
+  | pattern @strong{|} pattern
+  | pattern @strong{,} pattern
+  | pattern @strong{|-} pattern
+  | pattern @strong{-|} pattern
 
 assertion ::=
     expr

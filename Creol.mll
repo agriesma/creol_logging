@@ -117,7 +117,6 @@ rule token = parse
 	(* lower case letters *)
     | '{' { LBRACE }
     | "|||" { MERGE }
-    | "|->" { MAPSTO }
     | "|-|" { CONCAT }
     | "|-" { RAPPEND }
     | "|=" { MODELS }
@@ -148,7 +147,6 @@ rule token = parse
     | "forall" { FORALL }
     | "function" { FUNCTION }
     | "history" { ID("history") (* XXX: Should be special *) }
-    | "iff" { IFF }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
     | "inherits" { INHERITS }
@@ -179,10 +177,8 @@ rule token = parse
     | "var" { VAR }
     | "wait" { WAIT }
     | "when" { WHEN }
-    | "where" { WHERE }
     | "while" { WHILE }
     | "with" { WITH }
-    | "xor" { XOR }
     | "History" { reserved lexbuf }
     | "Label" { reserved lexbuf }
     | "System" { reserved lexbuf }
