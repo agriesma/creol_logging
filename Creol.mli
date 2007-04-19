@@ -62,6 +62,28 @@ module Type :
     val as_string : t -> string
   end
 
+module Pattern :
+sig
+  type ('a, 'b, 'c) t =
+    { pattern: 'a; when_clause: 'b option; match_clause: 'c }
+end
+ 
+
+module Case :
+sig
+
+  type ('a, 'b, 'c, 'd) t =
+    { what: 'a; cases: ('b, 'c, 'd) Pattern.t list }
+end
+
+module Try :
+sig
+  type ('a, 'b, 'c, 'd) t =
+    { what: 'a; catches: ('b, 'c, 'd) Pattern.t list }
+end
+
+
+
 module Expression :
 sig
   type 'a t =
@@ -95,6 +117,10 @@ sig
 	  (** A binary expression *)
       | If of 'a * 'a t * 'a t * 'a t
 	  (** Conditional expression *)
+      | Case of 'a * ('a t, unit, 'a t, 'a t) Case.t
+	  (** Case expression *)
+      | Typecase of 'a * ('a t, Type.t, 'a t, 'a t) Case.t
+	  (** Type case expression *)
       | FuncCall of 'a * string * 'a t list
 	  (** A call of a primitive function *)
       | Wait of 'a
@@ -117,6 +143,8 @@ sig
       | Minus
       | Times
       | Div
+      | Modulo
+      | Exponent
       | Eq
       | Ne
       | Le
@@ -132,6 +160,7 @@ sig
       | RAppend
       | Concat
       | Project
+      | In
       | GuardAnd
 
   val string_of_binaryop : binaryop -> string
@@ -185,7 +214,9 @@ module Statement: sig
 	  (** Raising an exception *)
       | Try of 'a * ('a, 'b) t * ('a, 'b) catcher list
 	  (** Try and catch exception *)
-      | Typecase of 'a * 'b Expression.t * ('a, 'b) typecase list
+      | Case of 'a * ('b Expression.t, unit, 'b Expression.t, ('a, 'b) t) Case.t
+	  (** Case statement *)
+      | Typecase of 'a * ('b Expression.t, Type.t, 'b Expression.t, ('a, 'b) t) Case.t
 	  (** Type case statement *)
       | Sequence of 'a * ('a, 'b) t list
 	  (** Sequential composition *)

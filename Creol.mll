@@ -78,7 +78,6 @@ rule token = parse
     | '-' { MINUS }
     | ".." { DOTDOT }
     | '.' { DOT }
-    | "//" { DIVDIV }
     | "/=" { NE }
     | "/\\" { WEDGE }
     | '/' { DIV }
@@ -124,7 +123,6 @@ rule token = parse
     | "|" { BAR }
     | '}' { RBRACE }
     | '~' { TILDE }
-    | "and" { AND }
     | "assert" { ASSERT }
     | "await" { AWAIT }
     | "begin" { BEGIN }
@@ -156,16 +154,13 @@ rule token = parse
     | "new" { NEW }
     | "nil" { NIL }
     | "null" { NULL }
-    | "not" { NOT }
     | "od" { OD }
     | "of" { OF }
     | "op" { OP }
-    | "or" { OR }
     | "out" { OUT }
     | "prove" { PROVE }
     | "raise" { RAISE }
     | "requires" { REQUIRES }
-    | "self" { ID("this") (* XXX: Should be special, too. *) }
     | "skip" { SKIP }
     | "some" { SOME }
     | "system" { ID("system") (* XXX: Should be special, too. *) }

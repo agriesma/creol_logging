@@ -45,7 +45,7 @@ begin
       else
         l1!hd(sList).enquire();
         l2!self.availFiles(tail(sList));
-	await l1 and l2;
+	await l1 && l2;
 	l1?(fList);
 	l2?(files);
     op reqFile(in sId: toServer, fId: String) ==

@@ -17,8 +17,8 @@
 %token LTLT GTGT SUBTYPE SUPERTYPE DLRARROW
 %token DOLLAR PERCENT TICK BACKTICK
 %token BOX DIAMOND MERGE
-%token AND OR NOT PLUSPLUS PLUS MINUSMINUS MINUS
-%token TIMESTIMES TIMES ARROW DARROW DIVDIV DIV EQ NE LT LE GT GE
+%token PLUSPLUS PLUS MINUSMINUS MINUS
+%token TIMESTIMES TIMES ARROW DARROW DIV EQ NE LT LE GT GE
 %token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE MODELS UNDERSCORE
 %token HAT HATHAT BACKSLASH ASSERT PROVE
 %token LAPPEND CONCAT RAPPEND
@@ -30,14 +30,15 @@
 
 %left COMMA
 %left BAR
+%left IN
 %left AS
 %left DLRARROW
 %left DARROW
 %left HAT
 (* %left AMP *)
-%left OR BARBAR VEE
-%left AND AMPAMP WEDGE
-%right NOT TILDE
+%left BARBAR VEE
+%left AMPAMP WEDGE
+%right TILDE
 %nonassoc EQ NE
 %left LE LT GT GE
 %left BACKSLASH
@@ -45,7 +46,8 @@
 %right LAPPEND
 %left  RAPPEND
 %left PLUS MINUS
-%left TIMES DIV
+%left TIMES DIV PERCENT
+%left TIMESTIMES
 %right UMINUS HASH
 %left BACKTICK
 %right CID
@@ -279,8 +281,10 @@ basic_statement:
         { If((Note.make $startpos), e, t, f) }
     | IF e = expression THEN t = statement FI
         { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
-    | CASE v = ID WHEN c = separated_nonempty_list(BAR, type_case) END
-        { Typecase (Note.make $startpos, Id (Note.make $startpos, v), c) }
+    | c = case(OF, pattern, statement)
+	{ Statement.Case (Note.make $startpos, c) }
+    | c = case(WHEN, creol_type, statement)
+        { Typecase (Note.make $startpos, c) }
     | FOR i = ID ASSIGN f = expression TO l = expression
 	b = ioption(preceded(BY,expression))
 	inv = ioption(preceded(INV, assertion))
@@ -304,12 +308,6 @@ basic_statement:
 %inline lvalue:
      i = ID { i }
 
-type_case:
-      t = creol_type ARROW s = statement
-	{ { with_type = Some t; with_statement = s } }
-    | UNDERSCORE ARROW s = statement
-	{ { with_type = None; with_statement = s } }
-
 catcher:
       c = CID p = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
       ARROW s = statement
@@ -332,10 +330,28 @@ expression_or_new:
 	{ New (Note.make $startpos, t, a) }
 
 expression:
-      l = expression o = binop r = expression
+      b = BOOL
+	{ Bool ((Note.make $startpos), b) }
+    | i = INT
+	{ Int ((Note.make $startpos), i) }
+    | f = FLOAT
+	{ Float ((Note.make $startpos), f) }
+    | s = STRING
+	{ String ((Note.make $startpos), s) }
+    | id = ID
+	{ Id ((Note.make $startpos), id) }
+    | NIL
+	{ Nil (Note.make $startpos) }
+    | NULL
+	{ Null (Note.make $startpos) }
+    | LBRACK separated_list(COMMA, expression) RBRACK
+	{ Null (Note.make $startpos) }
+    | LBRACE separated_list(COMMA, expression) RBRACE
+	{ Null (Note.make $startpos) }
+    | LBRACE vardecl_no_init BAR expression RBRACE
+	{ Null (Note.make $startpos) }
+    | l = expression o = binop r = expression
         { Binary((Note.make $startpos), o, l, r) }
-    | NOT e = expression
-        { Unary((Note.make $startpos), Not, e) }
     | TILDE e = expression
         { Unary((Note.make $startpos), Not, e) }
     | MINUS e = expression %prec UMINUS
@@ -344,13 +360,6 @@ expression:
 	{ Unary((Note.make $startpos), Length, e) }
     | e = expression AS t = creol_type
 	{ Cast (Note.make $startpos, e, t) }
-    | i = INT { Int ((Note.make $startpos), i) }
-    | f = FLOAT { Float ((Note.make $startpos), f) }
-    | b = BOOL { Bool ((Note.make $startpos), b) }
-    | id = ID { Id ((Note.make $startpos), id) }
-    | s = STRING { String ((Note.make $startpos), s) }
-    | NIL { Nil (Note.make $startpos) }
-    | NULL { Null (Note.make $startpos) }
     | LPAREN e = expression RPAREN { e }
     | s = ID LBRACK i = expression RBRACK
         { let n = Note.make $startpos in Index (n, Id (n, s), i) }
@@ -362,14 +371,14 @@ expression:
 	{ FuncCall((Note.make $startpos), f, l) }
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (Note.make $startpos, c, t, f) }
-    | CASE expression OF separated_nonempty_list(BAR, case_decl) END
-	{ Null (Note.make $startpos) }
+    | e = case(OF, pattern, expression)
+	{ Expression.Case (Note.make $startpos, e) }
+    | e = case(WHEN, creol_type, expression)
+	{ Expression.Typecase (Note.make $startpos, e) }
 
 %inline binop:
-      AND { And }
-    | AMPAMP { And (* XXX *) }
+      AMPAMP { And (* XXX *) }
     | WEDGE { And (* XXX *) }
-    | OR { Or }
     | BARBAR { Or (* XXX *) }
     | VEE { Or (* XXX *) }
     | HAT { Xor }
@@ -385,19 +394,25 @@ expression:
     | MINUS { Minus }
     | TIMES { Times }
     | DIV { Div }
+    | PERCENT { Modulo }
+    | TIMESTIMES { Exponent }
     | LAPPEND { LAppend }
     | RAPPEND { RAppend }
     | CONCAT { Concat }
     | BACKSLASH { Project }
+    | IN { In }
 
 %inline function_name:
       f = ID { f }
-    | AND { "and" }
-    | OR { "or" }
 
-%inline case_decl:
-      pattern ioption(preceded(WHEN, expression)) ARROW expression
-	{ () }
+%inline case(S, P, T):
+      CASE e = expression S
+      c = separated_nonempty_list(BAR, case_decl(P, T)) END
+	{ { Case.what = e; Case.cases = c } }
+
+%inline case_decl(P, T):
+      p = P w = ioption(preceded(WHEN, expression)) ARROW t = T
+	{ { Pattern.pattern = p; when_clause = w; match_clause = t } }
 
 pattern:
       ID

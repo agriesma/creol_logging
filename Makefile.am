@@ -118,9 +118,9 @@ distclean-local:
 
 html-local: html-stamp
 
-html-stamp: $(creolc_SOURCES)
+html-stamp: ${srcdir}/Makefile.am $(creolc_SOURCES)
 	test -d html || mkdir html
-	$(OCAMLFIND) $(OCAMLDOC) $(OCAMLFIND_FLAGS) -html -d html $^
+	$(OCAMLFIND) $(OCAMLDOC) $(OCAMLFIND_FLAGS) -html -d html $(creolc_SOURCES)
 
 CreolLex.cmo: CreolParser.cmi
 include ${srcdir}/.depend

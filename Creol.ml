@@ -138,6 +138,24 @@ module Type =
 	| [] -> assert false (* Silence a compiler warning. *)
   end
 
+module Pattern =
+struct
+  type ('a, 'b, 'c) t =
+    { pattern: 'a; when_clause: 'b option; match_clause: 'c }
+end
+
+module Case =
+struct
+  type ('a, 'b, 'c, 'd) t =
+    { what: 'a; cases: ('b, 'c, 'd) Pattern.t list }
+end
+
+module Try =
+struct
+  type ('a, 'b, 'c, 'd) t =
+    { what: 'a; catches: ('b, 'c, 'd) Pattern.t list }
+end
+
 module Expression =
   struct
     
@@ -155,6 +173,8 @@ module Expression =
 	| Unary of 'a * unaryop * 'a t
 	| Binary of 'a * binaryop * 'a t * 'a t
 	| If of 'a * 'a t * 'a t * 'a t
+	| Case of 'a * ('a t, unit, 'a t, 'a t) Case.t
+	| Typecase of 'a * ('a t, Type.t, 'a t, 'a t) Case.t
 	| FuncCall of 'a * string * 'a t list
 	| Wait of 'a
 	| Label of 'a * string
@@ -168,6 +188,8 @@ module Expression =
 	| Minus
 	| Times
 	| Div
+	| Modulo
+	| Exponent
 	| Eq
 	| Ne
 	| Le
@@ -183,6 +205,7 @@ module Expression =
 	| RAppend
 	| Concat
 	| Project
+	| In
 	| GuardAnd
 
     let string_of_binaryop =
@@ -197,10 +220,10 @@ module Expression =
 	| Lt -> "<"
 	| Ge -> ">="
 	| Gt -> ">"
-	| And -> "and"
-	| Or -> "or"
-	| Xor -> "xor"
-	| Iff -> "iff"
+	| And -> "&&"
+	| Or -> "||"
+	| Xor -> "^"
+	| Iff -> "<=>"
 	| LAppend -> "|-"
 	| RAppend -> "-|"
 	| Concat -> "|-|"
@@ -271,7 +294,10 @@ module Statement =
 	    'b Expression.t option * 'b Expression.t option * ('a, 'b) t
 	| Raise of 'a * string * 'b Expression.t list
 	| Try of 'a * ('a, 'b) t * ('a, 'b) catcher list
-	| Typecase of 'a * 'b Expression.t * ('a, 'b) typecase list
+        | Case of 'a *
+	    ('b Expression.t, unit, 'b Expression.t, ('a, 'b) t) Case.t
+	| Typecase of 'a *
+	    ('b Expression.t, Type.t, 'b Expression.t, ('a, 'b) t) Case.t
 	| Sequence of 'a * ('a, 'b) t list
 	| Merge of 'a * ('a, 'b) t * ('a, 'b) t
 	| Choice of 'a * ('a, 'b) t * ('a, 'b)t
@@ -287,21 +313,22 @@ module Statement =
 	  Skip a -> a
 	| Assert (a, _) -> a
 	| Prove (a, _) -> a
-	| Assign(a, _, _) -> a
-	| Await(a, _) -> a
-	| AsyncCall(a, _, _, _, _) -> a
-	| Reply(a, _, _) -> a
-	| Free(a, _) -> a
-	| SyncCall(a, _, _, _, _) -> a
-	| LocalAsyncCall(a, _, _, _, _, _) -> a
-	| LocalSyncCall(a, _, _, _, _, _) -> a
-	| Tailcall(a, _, _, _, _) -> a
-	| If(a, _, _, _) -> a
-	| While(a, _, _, _) -> a
-	| For(a, _, _, _, _, _, _) -> a
+	| Assign (a, _, _) -> a
+	| Await (a, _) -> a
+	| AsyncCall (a, _, _, _, _) -> a
+	| Reply (a, _, _) -> a
+	| Free (a, _) -> a
+	| SyncCall (a, _, _, _, _) -> a
+	| LocalAsyncCall (a, _, _, _, _, _) -> a
+	| LocalSyncCall (a, _, _, _, _, _) -> a
+	| Tailcall (a, _, _, _, _) -> a
+	| If (a, _, _, _) -> a
+	| While (a, _, _, _) -> a
+	| For (a, _, _, _, _, _, _) -> a
 	| Raise (a, _, _) -> a
 	| Try (a, _, _) -> a
-	| Typecase (a, _, _) -> a
+	| Case (a, _) -> a
+	| Typecase (a, _) -> a
 	| Sequence(a, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a

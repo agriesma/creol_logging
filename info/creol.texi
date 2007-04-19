@@ -70,14 +70,64 @@ The boolean expressions are:
 
 @subsection Integers, Reals, and Arithmetic Expressions
 
-TBD
+The arithmetic expressions are:
+
+@code{- @var{expression}} for negation.
+
+@code{@var{expression} ** @var{expression}} for exponentiation.
+
+@code{@var{expression} * @var{expression}} for multiplication.
+
+@code{@var{expression} / @var{expression}} for division.
+
+@code{@var{expression} % @var{expression}} for modulo.
+
+@code{@var{expression} + @var{expression}} for addition.
+
+@code{@var{expression} - @var{expression}} for substraction.
+
 
 @subsection Strings
 
-TBD
+The operations on strings are the same as the ones on sequences.
+Single-letter strings are considered to be characters.
 
 
-@subsection 
+@subsection Sequences
+
+The operatons on sequences are:
+
+@code{@var{expression} |- @var{expression}} for appending to the right.
+
+@code{@var{expression} -| @var{expression}} for appending to the left.
+
+@code{@var{expression} |-| @var{expression}} for concatenation.
+
+@code{@var{expression} \ @var{expression}} for projection.
+
+Sequences can be constructed by enumerating their elements in order:
+@code{[ @{ @var{expression} , @} ]}.
+
+
+@subsection Sets
+
+The operations on sets are:
+
+@code{@var{expression} \ @var{expression}} for set-difference.
+
+@code{@var{expression} || @var{expression}} for union.
+
+@code{@var{expression} && @var{expression}} for intersection.
+
+@code{@var{expression} in @var{expression}} for testing membership.
+
+@code{@{ @}} represents the empty set.  Generally, sets can be
+constructed by enumerating the elements: @code{@{ @{ @var{expression}
+, @} @}}.
+
+Sets can also be formed using set aggregation:
+@code{@{ @var{id} : @var{type} | @var{expression} @}}
+
 
 @subsection Object Expressions and Literals
 

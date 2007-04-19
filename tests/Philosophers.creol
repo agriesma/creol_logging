@@ -29,7 +29,7 @@ begin
     hist := plus(hist, "e"); hungry := false; !neighbor.returnStick();
     await wait; !eat()
 
-  op think == await not hungry; hist := plus(hist, "t");
+  op think == await ~ hungry; hist := plus(hist, "t");
     await wait; !think()
 
   with Phil 

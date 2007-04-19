@@ -38,7 +38,7 @@ begin
   op run == !loop()
 
   op loop == { await ctReindeers = 5; deliverToys(;) []
-              await  3 <= ctElves and not ctReindeers = 9; talkToElves(;) } ;
+              await  3 <= ctElves && ~ ctReindeers = 9; talkToElves(;) } ;
              !loop()
 
   op deliverToys ==
@@ -154,5 +154,5 @@ end
 //	Local synchronous calls: m(...;...) is same as t!m(...;..); t?() //-
 //	an abbrevation. 
 //
-//	!m(..)  or with no arguments  !m  starts the method call m but does
-//	not wait for any answer...
+//	!m(..)  || with no arguments  !m  starts the method call m but does
+//	~ wait for any answer...

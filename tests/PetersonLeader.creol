@@ -2,7 +2,7 @@ class Process(i: Nat, p: Init)
 begin
 
   var mode: Bool // true is active, false is relay
-  var status: Nat // 0 and null is unknown, 1 is chosen, 2 is reported
+  var status: Nat // 0 && null is unknown, 1 is chosen, 2 is reported
   var uid1: Nat
   var uid2: Nat
   var uid3: Nat
@@ -25,11 +25,11 @@ begin
     fi
 
   op becomeRelay ==
-    await mode and uid3 /= null and (uid2 <= uid1 or uid2 <= uid3);
+    await mode && uid3 /= null && (uid2 <= uid1 || uid2 <= uid3);
      mode := false
 
   op advancePhase ==
-    await mode and uid3 /= null and (uid1 < uid2 and uid3 < uid2);
+    await mode && uid3 /= null && (uid1 < uid2 && uid3 < uid2);
     [uid1, uid2, uid3]:= [uid2, null, null];
     !neighbor.get(uid1)
 

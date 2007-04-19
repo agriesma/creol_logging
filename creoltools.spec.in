@@ -44,7 +44,7 @@ in Maude.
 CC=/usr/bin/gcc
 export CC
 %endif
-%configure
+%configure OCAMLOPT_FLAGS='-cc $CC -ccopt "%{optflags}" -inline 5'
 make
 
 # Build the pdf, because most people seem to prefer hard copy stuff.
