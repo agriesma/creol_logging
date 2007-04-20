@@ -7,7 +7,7 @@
 %token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
 %token IF THEN ELSE FI SKIP AWAIT WAIT NEW
-%token FOR TO BY DO OD WHILE OF CASE AS
+%token FOR TO BY DO WHILE OF CASE AS
 %token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token RBRACK LBRACK
@@ -253,7 +253,7 @@ statement_sequence:
 basic_statement:
       SKIP
 	{ Skip (Note.make $startpos) }
-    | t = separated_nonempty_list(COMMA, lvalue) ASSIGN
+    | t = separated_nonempty_list(COMMA, ID) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((Note.make $startpos), t, e) }
     | AWAIT g = guard
@@ -275,7 +275,7 @@ basic_statement:
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN
 	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
-    | LBRACE s = statement RBRACE
+    | BEGIN s = statement END
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement FI
         { If((Note.make $startpos), e, t, f) }
@@ -285,28 +285,25 @@ basic_statement:
 	{ Statement.Case (Note.make $startpos, c) }
     | c = case(WHEN, creol_type, statement)
         { Typecase (Note.make $startpos, c) }
-    | FOR i = ID ASSIGN f = expression TO l = expression
-	b = ioption(preceded(BY,expression))
-	inv = ioption(preceded(INV, assertion))
-	DO s = statement OD
-	{ For (Note.make $startpos, i, f, l, b, inv, s) }
-    | WHILE b = expression i = ioption(preceded(INV, assertion))
-      DO s = statement OD
-	{ While (Note.make $startpos, b, i, s) }
     | RAISE e = CID
       a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
 	{ Raise (Note.make $startpos, e, a) }
-    | TRY s = statement c = separated_nonempty_list(BAR, catcher) END
+    | TRY s = statement WITH c = separated_nonempty_list(BAR, catcher) END
 	{ Try (Note.make $startpos, s, c) }
+    | FOR i = ID ASSIGN f = expression TO l = expression
+	b = ioption(preceded(BY,expression))
+	inv = ioption(preceded(INV, assertion))
+	DO s = statement END
+	{ For (Note.make $startpos, i, f, l, b, inv, s) }
+    | WHILE b = expression i = ioption(preceded(INV, assertion))
+      DO s = statement END
+	{ While (Note.make $startpos, b, i, s) }
     | ASSERT a = assertion
 	{ Assert (Note.make $startpos, a) }
     | PROVE a = assertion
 	{ Prove (Note.make $startpos, a) }
     | error ELSE | error FI | error OP | error WITH | error END | error EOF
 	{ signal_error $startpos "syntax error in statement" }
-
-%inline lvalue:
-     i = ID { i }
 
 catcher:
       c = CID p = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
@@ -338,17 +335,21 @@ expression:
 	{ Float ((Note.make $startpos), f) }
     | s = STRING
 	{ String ((Note.make $startpos), s) }
-    | id = ID
-	{ Id ((Note.make $startpos), id) }
     | NIL
 	{ Nil (Note.make $startpos) }
     | NULL
 	{ Null (Note.make $startpos) }
+    | id = ID
+	{ Id ((Note.make $startpos), id) }
+    | LPAREN l = separated_list(COMMA, expression) RPAREN 
+	{ (* let n = Note.make $startpos in *)
+	    match l with
+		[e] -> e }
     | LBRACK separated_list(COMMA, expression) RBRACK
 	{ Null (Note.make $startpos) }
     | LBRACE separated_list(COMMA, expression) RBRACE
 	{ Null (Note.make $startpos) }
-    | LBRACE vardecl_no_init BAR expression RBRACE
+    | LBRACE ID COLON expression BAR expression RBRACE
 	{ Null (Note.make $startpos) }
     | l = expression o = binop r = expression
         { Binary((Note.make $startpos), o, l, r) }
@@ -360,21 +361,21 @@ expression:
 	{ Unary((Note.make $startpos), Length, e) }
     | e = expression AS t = creol_type
 	{ Cast (Note.make $startpos, e, t) }
-    | LPAREN e = expression RPAREN { e }
-    | s = ID LBRACK i = expression RBRACK
-        { let n = Note.make $startpos in Index (n, Id (n, s), i) }
-    | LPAREN s = expression RPAREN LBRACK i = expression RBRACK
-        { let n = Note.make $startpos in Index (n, s, i) }
-    | e = expression BACKTICK i = ID
-	{ FieldAccess ((Note.make $startpos), e, i) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall((Note.make $startpos), f, l) }
+    | e = expression BACKTICK i = ID
+	{ FieldAccess ((Note.make $startpos), e, i) }
+(* XXX: Might be nice to have but does not work.
+    | e = expression LBRACK i = expression RBRACK
+        { let n = Note.make $startpos in Index (n, e, i) } *)
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (Note.make $startpos, c, t, f) }
     | e = case(OF, pattern, expression)
 	{ Expression.Case (Note.make $startpos, e) }
     | e = case(WHEN, creol_type, expression)
 	{ Expression.Typecase (Note.make $startpos, e) }
+    | TRY e = expression WITH c = separated_nonempty_list(BAR, catch_expr) END
+	{  Null (Note.make $startpos) }
 
 %inline binop:
       AMPAMP { And (* XXX *) }
@@ -404,6 +405,13 @@ expression:
 
 %inline function_name:
       f = ID { f }
+
+%inline catch_expr:
+      c = CID p = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
+      ARROW s = statement
+    { () }
+    | UNDERSCORE ARROW s = statement
+    { () }
 
 %inline case(S, P, T):
       CASE e = expression S

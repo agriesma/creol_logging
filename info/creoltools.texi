@@ -28,7 +28,7 @@ Software Foundation raise funds for GNU development.''
 @end quotation
 @end copying
 
-@dircategory UML
+@dircategory Creol
 @direntry
 * creoltools:: A Creol Compiler.
 @end direntry
@@ -57,6 +57,7 @@ Software Foundation raise funds for GNU development.''
 * Creol::               A description of the Creol language.
 * CMC::                 Creol Machine Code.
 * Licenses::            Your rights and freedoms.
+* Bibliography::        Further reading.
 * Index::               Index of concepts.
 @end menu
 
@@ -64,6 +65,7 @@ Software Foundation raise funds for GNU development.''
 @include invocation.texi
 @include creol.texi
 @include cmc.texi
+
 
 @node Licenses
 @appendix Licenses
@@ -81,6 +83,8 @@ the GNU Free Documentation License.
 @include gpl.texi
 @raisesections
 @include fdl.texi
+
+@include bibliography.texi
 
 @node Index
 @unnumbered Index

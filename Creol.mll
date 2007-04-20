@@ -131,7 +131,7 @@ rule token = parse
     | "case" { CASE }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
-    | "constructor" { CONSTRUCTOR }
+    | "ctor" { CONSTRUCTOR }
     | "datatype" { DATATYPE }
     | "do" { DO }
     | "else" { ELSE }
@@ -141,9 +141,9 @@ rule token = parse
     | "exists" { EXISTS }
     | "false" { BOOL(false) }
     | "fi" { FI }
-    | "for" { FOR }
     | "forall" { FORALL }
-    | "function" { FUNCTION }
+    | "for" { FOR }
+    | "fun" { FUNCTION }
     | "history" { ID("history") (* XXX: Should be special *) }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
@@ -154,7 +154,6 @@ rule token = parse
     | "new" { NEW }
     | "nil" { NIL }
     | "null" { NULL }
-    | "od" { OD }
     | "of" { OF }
     | "op" { OP }
     | "out" { OUT }
@@ -163,7 +162,6 @@ rule token = parse
     | "requires" { REQUIRES }
     | "skip" { SKIP }
     | "some" { SOME }
-    | "system" { ID("system") (* XXX: Should be special, too. *) }
     | "then" { THEN }
     | "this" { ID("this") (* XXX: Should be special, too. *) }
     | "to" { TO }
@@ -174,9 +172,6 @@ rule token = parse
     | "when" { WHEN }
     | "while" { WHILE }
     | "with" { WITH }
-    | "History" { reserved lexbuf }
-    | "Label" { reserved lexbuf }
-    | "System" { reserved lexbuf }
     | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
     | ['0'-'9']+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
     | CID { CID(Lexing.lexeme lexbuf) }
