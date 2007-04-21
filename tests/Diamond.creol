@@ -9,7 +9,7 @@ end
 
 class B(b: Integer) inherits A(b)
 begin
-  op init == prove a = b
+  op init == assert a = b
   op run == skip
   with Any
     op n(out r: Integer) == r := b
@@ -17,7 +17,7 @@ end
 
 class C(c: Integer) inherits A(c)
 begin
-  op init == prove a = c
+  op init == assert a = c
   op run == skip
   with Any
     op n(out r: Integer) == r := c
@@ -28,5 +28,5 @@ begin
   var x: Integer
   var y: Integer
   op init == skip
-  op run == m(; x); n(; y); prove x = 1 && y = 2
+  op run == m(; x); n(; y); assert x = 1 && y = 2
 end

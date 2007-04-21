@@ -22,7 +22,7 @@ dnl 02111-1307, USA.
 AC_INIT([Creol Tools], 0.0b, kyas@ifi.uio.no, [creoltools])
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
-AC_CONFIG_SRCDIR([Driver.ml])
+AC_CONFIG_SRCDIR([creolc/Driver.ml])
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
@@ -40,12 +40,8 @@ dnl See whether we have chcon in order to fix tests with selinux.
 AC_PATH_PROG([CHCON], chcon)
 
 dnl Check for the tools needed to compile ocaml code.
-AC_CHECK_PROG([OCAMLC], [ocamlc], [ocamlc], [false])
-AC_CHECK_PROG([OCAMLOPT], [ocamlopt], [ocamlopt], [echo])
-AC_CHECK_PROG([OCAMLDEP], [ocamldep], [ocamldep], [false])
-AC_CHECK_PROG([OCAMLDOC], [ocamldoc], [ocamldoc], [echo])
-AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
+AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
 AC_CHECK_PROG([MENHIR], [menhir], [menhir], [echo])
 
 dnl Configure for building the creol mode.
@@ -62,8 +58,10 @@ AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
 AC_SUBST([OCAMLFIND_FLAGS])
 
-AC_CONFIG_TESTDIR(tests, source)
+AC_CONFIG_TESTDIR(tests, creolc)
+
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
-AC_CONFIG_FILES([Makefile doc/Makefile emacs/Makefile info/Makefile 
-		 share/Makefile tests/atlocal tests/Makefile])
+AC_CONFIG_FILES([creolc/Version.ml])
+AC_CONFIG_FILES([Makefile creolc/Makefile doc/Makefile emacs/Makefile
+		 info/Makefile share/Makefile tests/atlocal tests/Makefile])
 AC_OUTPUT

@@ -1,8 +1,4 @@
 
-# Modify path to find the binaries.
-PATH=$PATH:@abs_top_builddir@
-export PATH
-
 # modify path to find the xml2 bindings for the byte-code interpreted
 # version
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:@abs_top_builddir@/xml
@@ -17,4 +13,3 @@ MAUDE_LIB=$CREOL_PATH:@abs_top_srcdir@:$MAUDE_LIB
 export MAUDE_LIB
 
 MAUDE=@MAUDE@
-DIFF=@DIFF@

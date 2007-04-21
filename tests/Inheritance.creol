@@ -7,6 +7,6 @@ end
 
 class B(b: Integer) inherits A(b)
 begin
-  op init == prove a = b
+  op init == assert a = b
   op run == skip
 end

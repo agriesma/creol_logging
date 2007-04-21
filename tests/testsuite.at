@@ -52,7 +52,7 @@ AT_CHECK([diff $1-pp1.creol $1-pp2.creol])
 ])
 
 AT_INIT([creolc])
-AT_TESTED([creolc creolc.opt creolshell])
+AT_TESTED([creolc creolc.opt])
 
 AT_SETUP([Datatypes])
 TEST_MAUDE([Datatypes], ${abs_srcdir}/Datatypes.maude)
