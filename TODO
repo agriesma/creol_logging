@@ -1,0 +1,6 @@
+* Implement dead-variable elimination.
+
+* Implement tail call elimination.
+
+* Figure out why self-calls go to the queue and not directly to the class
+  for binding.
