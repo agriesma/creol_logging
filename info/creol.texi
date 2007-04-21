@@ -249,7 +249,7 @@ statement.
 
 @subsection Conditional Statement
 
-The usual @code{if ... then ... else ... fi} statement.
+The usual @code{if ... then ... else ... end} statement.
 
 
 @subsection Type inspection using type cases
@@ -512,13 +512,12 @@ variable or method names in programs.
 @example
 assert      await       begin       by          caller      case
 class       contracts   ctor        datatype    do          else
-end         ensures     exception   exists      false       fi
-for         forall      fun         history     if          implements
-inherits    interface   inv         in          new         nil
-null        not         of          op          out         prove
-raise       requires    skip        some        then        this
-to          true        try         var         wait        when
-while       with
+end         ensures     exception   exists      false       for
+forall      fun         history     if          implements  inherits
+interface   inv         in          new         nil         null
+not         of          op          out         raise       requires
+skip        some        then        this        to          true
+try         var         wait        when        while       with
 @end example
 
 The following symbols are used as operator symbols.  They are listed
@@ -613,7 +612,7 @@ basic-statement ::=
   | expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ id @code{,} @} @code{)}
   | id [@code{@@} cid] [ @code{<<} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ id @code{,} @} @code{)}
   | @code{begin} statement @code{end}
-  | @code{if} expr @code{then} statement [@code{else} statement] @code{fi}
+  | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
   | @code{case} expr @code{of} @{ case-stmt @code{|} @} @code{end}
   | @code{case} id @code{when} @{ type-case-stmt @code{|} @} @code{end}
   | @code{raise} cid [ @code{(} @{ expr @code{,} @} @code{)} ]
@@ -622,7 +621,6 @@ basic-statement ::=
       [ @code{by} expression ] [ @code{inv} assertion ] @code{do} statement @code{end}
   | @code{while} expression [ @code{inv} assertion ] @code{do} statement @code{end}
   | @code{assert} assertion
-  | @code{prove} assertion
 
 case-stmt ::=
     pattern [ @code{when} expression ] @code{->} statement

@@ -7,7 +7,7 @@ begin
   op delay == await (gr = null);
 with Any
   op grant(in x:Agent) == delay(;); gr := x;
-  op revoke(in x:Agent) == if gr = x then gr := null; fi
+  op revoke(in x:Agent) == if gr = x then gr := null; end
   op auth(in x:Agent) == await (gr = x);
 end 
 
@@ -20,7 +20,7 @@ begin
   op delay == await (gr = null);
 with Any
   op grant(in x:Agent) == delay(;); gr := x;
-  op revoke(in x:Agent) == if gr = x then gr := null; fi
+  op revoke(in x:Agent) == if gr = x then gr := null; end
   op auth(in x:Agent) == await (gr = x)
 end 
 
@@ -31,7 +31,7 @@ begin
 with Agent
   op openH(out ok:Bool) == 
   	await clear(caller;ok);
-  	if ok then grant<<Sauth(caller) fi
+  	if ok then grant<<Sauth(caller) end
   op access(in key:int; out y:Data) == 
   	auth<<SAuth(caller);
   	await access@DB(key, true; y)
@@ -43,7 +43,7 @@ class LAuth implements Low
 begin with Agent
   op openL == -- <denne er gal!!!!!!!!! skal ikke kalle clear(..)!!> 
   	await clear(caller;ok);
-  	if ok then grant<<MAuth(caller) fi
+  	if ok then grant<<MAuth(caller) end
   op access(in key:int; out y:Data) == 
   	auth<<MAuth(caller);
   	await access@DB(key, false; y)
@@ -57,7 +57,7 @@ end
 class HLAuth implements HighLow
              inherits LAuth, HAuth
 begin with Agent
-  op access(in key:int; out y:Data) == if caller=gr@SAuth then access2@HAuth(key, caller;y) else access2@LAuth(key, caller;y) fi
+  op access(in key:int; out y:Data) == if caller=gr@SAuth then access2@HAuth(key, caller;y) else access2@LAuth(key, caller;y) end
 end
 
 class TestAgent(db:HLAuth) implements Agent
@@ -71,7 +71,7 @@ begin
 			db.access(123; result);
 			-- print "Result 1: " + result;
 			db.closeH()
-		fi;
+		end;
 		db.openL();
 		db.access(123; result);
 		-- print "Result 2: " + result;
@@ -87,7 +87,7 @@ begin
 		then if b
 			 then y := "123 is customer Ole Hansen. Phone no: 90807060." 
 			 else y := "123 is customer Ole Hansen."
-			 fi
+			 end
 		else y := "Unknown customer."
-		fi
+		end
 end

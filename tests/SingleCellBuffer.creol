@@ -19,7 +19,7 @@ op init == ctr := 0
 op run == skip
 op put(in x : Data) ==
     if ctr = 0 then cell := x
-    else if next = null then next := new Buffer() fi; next.put(x;) fi;
+    else if next = null then next := new Buffer() end; next.put(x;) end;
     ctr := ctr + 1
 
 op get(out x : Data) ==
@@ -28,7 +28,7 @@ op get(out x : Data) ==
       x := cell
     else
       next.get(; x)
-    fi;
+    end;
     ctr := ctr - 1;
     cell := null
 

@@ -6,7 +6,7 @@
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
 %token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
-%token IF THEN ELSE FI SKIP AWAIT WAIT NEW
+%token IF THEN ELSE SKIP AWAIT WAIT NEW
 %token FOR TO BY DO WHILE OF CASE AS
 %token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
@@ -277,9 +277,9 @@ basic_statement:
 	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }
-    | IF e = expression THEN t = statement ELSE f = statement FI
+    | IF e = expression THEN t = statement ELSE f = statement END
         { If((Note.make $startpos), e, t, f) }
-    | IF e = expression THEN t = statement FI
+    | IF e = expression THEN t = statement END
         { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
     | c = case(OF, pattern, statement)
 	{ Statement.Case (Note.make $startpos, c) }
@@ -300,9 +300,7 @@ basic_statement:
 	{ While (Note.make $startpos, b, i, s) }
     | ASSERT a = assertion
 	{ Assert (Note.make $startpos, a) }
-    | PROVE a = assertion
-	{ Prove (Note.make $startpos, a) }
-    | error ELSE | error FI | error OP | error WITH | error END | error EOF
+    | error ELSE | error OP | error WITH | error END | error EOF
 	{ signal_error $startpos "syntax error in statement" }
 
 catcher:
@@ -344,7 +342,8 @@ expression:
     | LPAREN l = separated_list(COMMA, expression) RPAREN 
 	{ (* let n = Note.make $startpos in *)
 	    match l with
-		[e] -> e }
+		[] -> Nil (Note.make $startpos) (* XXX: Should be unit *)
+	      | [e] -> e }
     | LBRACK separated_list(COMMA, expression) RBRACK
 	{ Null (Note.make $startpos) }
     | LBRACE separated_list(COMMA, expression) RBRACE

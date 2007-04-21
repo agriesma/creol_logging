@@ -174,11 +174,6 @@ and creol_statement_to_xml writer stmt_handler expr_handler =
 	creol_expression_to_xml writer expr_handler e ;
 	stmt_handler writer a;
         XmlTextWriter.end_element writer
-    | Prove (a, e) ->
-	XmlTextWriter.start_element writer "prove" ; 
-	creol_expression_to_xml writer expr_handler e ;
-	stmt_handler writer a;
-        XmlTextWriter.end_element writer
     | Assign (a, vs, es) ->
 	XmlTextWriter.start_element writer "assign" ;
 	XmlTextWriter.start_element writer "targets" ;

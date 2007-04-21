@@ -176,8 +176,6 @@ module Statement: sig
 	(** A skip statement *)
       | Assert of 'a * 'b Expression.t
 	(** Check a condition at runtime. *)
-      | Prove of 'a * 'b Expression.t
-	(** Generate a proof obligation. *)
       | Assign of 'a * string list * 'b Expression.t list
 	  (** A multiple assignment statement.  Requires that the two lists
 	      are of the same length. *)

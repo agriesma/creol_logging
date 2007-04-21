@@ -273,7 +273,6 @@ module Statement =
     type ('a, 'b) t =
 	Skip of 'a
 	| Assert of 'a * 'b Expression.t
-	| Prove of 'a * 'b Expression.t
 	| Assign of 'a * string list * 'b Expression.t list
 	| Await of 'a * 'b Expression.t
 	| AsyncCall of 'a * string option * 'b Expression.t * string *
@@ -312,7 +311,6 @@ module Statement =
       function
 	  Skip a -> a
 	| Assert (a, _) -> a
-	| Prove (a, _) -> a
 	| Assign (a, _, _) -> a
 	| Await (a, _) -> a
 	| AsyncCall (a, _, _, _, _) -> a
@@ -465,7 +463,6 @@ and simplify_statement =
   function
       Skip a -> Skip a
     | Assert (a, e) -> Assert (a, simplify_expression e)
-    | Prove (a, e) -> Prove (a, simplify_expression e)
     | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_expression g)
     | AsyncCall (a, l, e, n, p) ->
@@ -612,8 +609,6 @@ and definitions_in_statement note stm =
 	  Skip { n with Note.env = note.Note.env }
       | Assert (n, e) ->
 	  Assert ({ n with Note.env = note.Note.env }, e)
-      | Prove (n, e) ->
-	  Prove ({ n with Note.env = note.Note.env }, e)
       | Assign (n, lhs, rhs) ->
 	  Assign ({ n with Note.env = 
 	      List.fold_left (fun e n -> define e n false)
@@ -729,7 +724,6 @@ and uses_in_statement =
   function
       Skip _ as s -> s
     | Assert (_, _) as s -> s
-    | Prove (_, _) as s -> s
     | Assign (a, l, r) -> assert false
     | Await (a, g) -> assert false
     | AsyncCall (a, None, c, m, ins) -> assert false
@@ -1000,8 +994,6 @@ and pretty_print_statement out lvl statement =
 	Skip _ -> output_string out "skip";
       | Assert (_, e) ->
 	output_string out "assert " ; pretty_print_expression out e
-      | Prove (_, e) ->
-	output_string out "prove " ; pretty_print_expression out e
       | Assign (_, i, e) ->
 	  pretty_print_identifier_list out i;
 	  output_string out " := ";
@@ -1061,7 +1053,7 @@ and pretty_print_statement out lvl statement =
 	  do_indent out (lvl + 1);
 	  print (lvl + 1) 25 f;
 	  do_indent out lvl;
-	  output_string out "fi"
+	  output_string out "end"
       | While (_, c, None, b) ->
 	  output_string out "while ";
 	  pretty_print_expression out c;
@@ -1224,7 +1216,6 @@ struct
       function
 	  Skip _ -> output_string out "skip"
 	| Assert (_, _) -> output_string out "skip"
-	| Prove (_, _) -> output_string out "skip"
 	| Await (_, e) -> output_string out "( await ";
 	    of_creol_expression out e;
 	    output_string out " )"

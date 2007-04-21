@@ -15,7 +15,7 @@ begin
 	if v > u
 	then !neighbor.receive(v)
 	else if v = u
-	     then status := 1 fi fi
+	     then status := 1 end end
 end
 
 class Init
@@ -29,6 +29,6 @@ begin
 
   op getNeighbor(out p: Process) ==
     if caller = p1 then p := p3 else
-    if caller = p2 then p := p1 else p := p2 fi fi
+    if caller = p2 then p := p1 else p := p2 end end
 
 end

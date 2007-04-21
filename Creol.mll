@@ -140,7 +140,6 @@ rule token = parse
     | "exception" { EXCEPTION }
     | "exists" { EXISTS }
     | "false" { BOOL(false) }
-    | "fi" { FI }
     | "forall" { FORALL }
     | "for" { FOR }
     | "fun" { FUNCTION }
@@ -157,7 +156,6 @@ rule token = parse
     | "of" { OF }
     | "op" { OP }
     | "out" { OUT }
-    | "prove" { PROVE }
     | "raise" { RAISE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }

@@ -29,6 +29,6 @@ begin
          else
 	   next := new Sieve(n);
 	   res := true
-         fi
-    fi
+         end
+    end
 end

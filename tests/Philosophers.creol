@@ -61,7 +61,7 @@ begin
       if caller = p1 then neighbor := p2 else
       if caller = p2 then neighbor := p3 else
       if caller = p3 then neighbor := p4 else
-      if caller = p4 then neighbor := p5 else neighbor := p1 fi fi fi fi
+      if caller = p4 then neighbor := p5 else neighbor := p1 end end end end
 
 end
 

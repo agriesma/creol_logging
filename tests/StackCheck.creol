@@ -6,6 +6,6 @@ begin
   op run == test(;)
   op test ==
     var temp: Int; depth := depth + 1; temp := depth;
-    if depth <= max then test(;) fi;
+    if depth <= max then test(;) end;
     await depth = temp; depth := depth - 1
 end

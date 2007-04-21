@@ -18,11 +18,11 @@ begin
 	  uid3 := u
 	else
 	  await false
-	fi
-      fi
+	end
+      end
     else // The process is only acting as a relay
       !neighbor.get(u)
-    fi
+    end
 
   op becomeRelay ==
     await mode && uid3 /= null && (uid2 <= uid1 || uid2 <= uid3);
