@@ -1,0 +1,4 @@
+creol-isabelle 0.0a - alpha release
+
+This is an initial version of a dep embedding of Creol into the theorem
+prover Isabelle.
