@@ -128,12 +128,13 @@ The operations on sets are:
 
 @code{@var{expression} in @var{expression}} for testing membership.
 
+@code{@{ @var{id} : @var{expression} | @var{expression} @}}
+for set aggregation:
+
 @code{@{ @}} represents the empty set.  Generally, sets can be
 constructed by enumerating the elements: @code{@{ @{ @var{expression}
 , @} @}}.
 
-Sets can also be formed using set aggregation:
-@code{@{ @var{id} : @var{type} | @var{expression} @}}
 
 
 @subsection Object Expressions and Literals

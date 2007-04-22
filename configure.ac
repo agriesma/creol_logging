@@ -47,7 +47,7 @@ AC_CHECK_PROG([MENHIR], [menhir], [menhir], [echo])
 dnl Configure for building the creol mode.
 AM_PATH_LISPDIR
 
-dnl Configure the XML Text reader and writer library.
+dnl Configure the subdirectories.
 AC_CONFIG_SUBDIRS([xml])
 
 dnl Check for the programs needed by the test-suite.
@@ -62,6 +62,12 @@ AC_CONFIG_TESTDIR(tests, creolc)
 
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
 AC_CONFIG_FILES([creolc/Version.ml])
-AC_CONFIG_FILES([Makefile creolc/Makefile doc/Makefile emacs/Makefile
-		 info/Makefile share/Makefile tests/atlocal tests/Makefile])
+AC_CONFIG_FILES([Makefile
+		 creolc/Makefile
+		 doc/Makefile
+		 emacs/Makefile
+		 info/Makefile
+		 share/Makefile
+		 tests/atlocal
+		 tests/Makefile])
 AC_OUTPUT

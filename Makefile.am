@@ -24,8 +24,8 @@ OCAMLPATH		= $(top_builddir)
 export OCAMLPATH
 
 # Subdirs
-SUBDIRS			= xml creolc doc emacs info share tests
-DIST_SUBDIRS		= xml creolc doc emacs info share tests
+DIST_SUBDIRS		= xml creolc share emacs doc info tests
+SUBDIRS			= xml creolc share emacs doc info tests
 
 MOSTLYCLEANFILES	= *~
 CLEANFILES		=
