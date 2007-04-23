@@ -4,10 +4,10 @@ result Configuration:
 < "Butler" : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
   < "getNeighbor" : Mtdname | Param: noAid, Latt: "neighbor" |-> null, Code: if
-    "equal"("caller" # "p1") th "neighbor" ::= "p2" el if "equal"("caller" #
-    "p2") th "neighbor" ::= "p3" el if "equal"("caller" # "p3") th "neighbor"
-    ::= "p4" el if "equal"("caller" # "p4") th "neighbor" ::= "p5" el
-    "neighbor" ::= "p1" fi fi fi fi ; return("neighbor") > *
+    "="("caller" # "p1") th "neighbor" ::= "p2" el if "="("caller" # "p2") th
+    "neighbor" ::= "p3" el if "="("caller" # "p3") th "neighbor" ::= "p4" el if
+    "="("caller" # "p4") th "neighbor" ::= "p5" el "neighbor" ::= "p1" fi fi fi
+    fi ; return("neighbor") > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new
@@ -37,8 +37,8 @@ result Configuration:
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ("Dummy" ! "this" .
     "digest"(emp) ||| "Dummy" ! "this" . "eat"(emp) ||| "Dummy" ! "this" .
     "think"(emp)) ; return(emp) > *
-  < "think" : Mtdname | Param: noAid, Latt: noSubst, Code: await "not"(
-    "hungry") ; "hist" ::= "plus"("hist" # str("t")) ; await wait ; "Dummy" !
-    "this" . "think"(emp) ; return(emp) >,
+  < "think" : Mtdname | Param: noAid, Latt: noSubst, Code: await "~"("hungry")
+    ; "hist" ::= "plus"("hist" # str("t")) ; await wait ; "Dummy" ! "this" .
+    "think"(emp) ; return(emp) >,
   Ocnt: 0 >
 Bye.

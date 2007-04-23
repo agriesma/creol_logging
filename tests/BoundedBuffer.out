@@ -3,10 +3,10 @@ reduce in PROGRAM : init .
 result Configuration: 
 < "BoundedBuffer" : Cl | Inh: noInh, Par: noAid, Att: "buffer" |-> null, "max"
     |-> null, "n" |-> null, Mtds:
-  < "append" : Mtdname | Param: "d", Latt: "d" |-> null, Code: await "less"("n"
-    # "max") ; "buffer" ::= "plus"("buffer" # "d") ; return(emp) > *
-  < "remove" : Mtdname | Param: noAid, Latt: "d" |-> null, Code: await "less"(
-    int(0) # "n") ; "d" ::= "first"("buffer") ; "buffer" ::= "rest"("buffer") ;
+  < "append" : Mtdname | Param: "d", Latt: "d" |-> null, Code: await "<"("n" #
+    "max") ; "buffer" ::= "plus"("buffer" # "d") ; return(emp) > *
+  < "remove" : Mtdname | Param: noAid, Latt: "d" |-> null, Code: await ">"("n"
+    # int(0)) ; "d" ::= "first"("buffer") ; "buffer" ::= "rest"("buffer") ;
     return("d") >,
   Ocnt: 0 >
 
@@ -19,8 +19,7 @@ result Configuration:
 
 < "Prod" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
   < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "b" . "append"("i"
-    ; noAid) ; "Dummy" ! "this" . "loop"("plus"("i" # int(1))) ; return(emp) >
-    *
+    ; noAid) ; "Dummy" ! "this" . "loop"("+"("i" # int(1))) ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
     "loop"(int(0)) ; return(emp) >,
   Ocnt: 0 >

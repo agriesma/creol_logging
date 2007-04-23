@@ -49,8 +49,8 @@ result Configuration:
     "ctRreindeers" |-> null, "harnessedReindeers" |-> null, "inofficeElves" |->
     null, "waitElves" |-> null, "waitRreindeers" |-> null, Mtds:
   < "backFromHoliday" : Mtdname | Param: noAid, Latt: noSubst, Code:
-    "ctReindeers" ::= "plus"("ctReindeers" # int(1)) ; "waitReindeers" ::=
-    "plus"("waitReindeers" # "caller") ; return(emp) > *
+    "ctReindeers" ::= "+"("ctReindeers" # int(1)) ; "waitReindeers" ::= "plus"(
+    "waitReindeers" # "caller") ; return(emp) > *
   < "deliverToys" : Mtdname | Param: noAid, Latt: noSubst, Code: ("ctReindeers"
     assign int(0)) ; "t1" ! "first"("waitReindeers") . "harness"(emp) ;
     "harnessedReindeers" ::= "plus"("harnessedReindeers" # "first"(
@@ -63,17 +63,16 @@ result Configuration:
     "harnessedReindeers") . "unharness"(emp) ; "harnessedReindeers" ::= "rest"(
     "harnessedReindeers") ; return(emp) > *
   < "haveProblem" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
-    "plus"("ctElves" # int(1)) ; "waitElves" ::= "plus"("waitElves" # "caller")
-    ; return(emp) > *
-  < "loop" : Mtdname | Param: noAid, Latt: noSubst, Code: (await "and"(
-    "lessEq"(int(3) # "ctElves") # "not"("equal"("ctReindeers" # int(9)))) ;
-    "talkToElves"(emp ; noAid)[]await "equal"("ctReindeers" # int(5)) ;
-    "deliverToys"(emp ; noAid)) ; "Dummy" ! "this" . "loop"(emp) ; return(emp)
-    > *
+    "+"("ctElves" # int(1)) ; "waitElves" ::= "plus"("waitElves" # "caller") ;
+    return(emp) > *
+  < "loop" : Mtdname | Param: noAid, Latt: noSubst, Code: (await "&&"("<="(int(
+    3) # "ctElves") # "~"("="("ctReindeers" # int(9)))) ; "talkToElves"(emp ;
+    noAid)[]await "="("ctReindeers" # int(5)) ; "deliverToys"(emp ; noAid)) ;
+    "Dummy" ! "this" . "loop"(emp) ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
     "loop"(emp) ; return(emp) > *
   < "talkToelves" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
-    "minus"("ctElves" # int(3)) ; "t1" ! "first"("waitElves") . "showIn"(emp) ;
+    "-"("ctElves" # int(3)) ; "t1" ! "first"("waitElves") . "showIn"(emp) ;
     "inofficeElves" ::= "plus"("inofficeElves" # "first"("waitElves")) ;
     "waitElves" ::= "rest"("waitElves") ; "t2" ! "first"("waitElves") .
     "showIn"(emp) ; "inofficeElves" ::= "plus"("inofficeElves" # "first"(

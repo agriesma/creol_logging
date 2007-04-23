@@ -3,9 +3,9 @@ reduce in PROGRAM : init .
 result Configuration: 
 < "Init" : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
-  < "getNeighbor" : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if
-    "equal"("caller" # "p1") th "p" ::= "p3" el if "equal"("caller" # "p2") th
-    "p" ::= "p1" el "p" ::= "p2" fi fi ; return("p") > *
+  < "getNeighbor" : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if "="(
+    "caller" # "p1") th "p" ::= "p3" el if "="("caller" # "p2") th "p" ::= "p1"
+    el "p" ::= "p2" fi fi ; return("p") > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new
     "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
     ::= new "Process"("this" # int(3)) ; return(emp) >,
@@ -16,8 +16,8 @@ result Configuration:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
     0)) ; "i" . "getNeighbor"(emp ; "neighbor") ; "Dummy" ! "neighbor" .
     "receive"("u") ; return(emp) > *
-  < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if "less"("u" #
-    "v") th "Dummy" ! "neighbor" . "receive"("v") el if "equal"("v" # "u") th
+  < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
+    "u") th "Dummy" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
     "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
@@ -41,9 +41,9 @@ result Configuration:
 
 < "Init" : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
-  < "getNeighbor" : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if
-    "equal"("caller" # "p1") th "p" ::= "p3" el if "equal"("caller" # "p2") th
-    "p" ::= "p1" el "p" ::= "p2" fi fi ; return("p") > *
+  < "getNeighbor" : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if "="(
+    "caller" # "p1") th "p" ::= "p3" el if "="("caller" # "p2") th "p" ::= "p1"
+    el "p" ::= "p2" fi fi ; return("p") > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new
     "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
     ::= new "Process"("this" # int(3)) ; return(emp) >,
@@ -54,8 +54,8 @@ result Configuration:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
     0)) ; "i" . "getNeighbor"(emp ; "neighbor") ; "Dummy" ! "neighbor" .
     "receive"("u") ; return(emp) > *
-  < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if "less"("u" #
-    "v") th "Dummy" ! "neighbor" . "receive"("v") el if "equal"("v" # "u") th
+  < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
+    "u") th "Dummy" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
     "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >
