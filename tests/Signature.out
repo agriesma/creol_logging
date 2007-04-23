@@ -44,24 +44,24 @@ reduce in GUARDS : downTerm(upTerm(bool(true)), noGuard) .
 result Data: bool(true)
 ==========================================
 reduce in GUARDS : int(4) & int(5) .
-result Data: "and"(int(4) # int(5))
+result Data: "&&"(int(4) # int(5))
 ==========================================
 reduce in GUARDS : upTerm(int(4) & int(5)) .
-result GroundTerm: '_`(_`)['"and".String,'_#_['int`(_`)['s_^4['0.Zero]],
+result GroundTerm: '_`(_`)['"&&".String,'_#_['int`(_`)['s_^4['0.Zero]],
     'int`(_`)['s_^5['0.Zero]]]]
 ==========================================
 reduce in GUARDS : downTerm(upTerm(int(4) & int(5)), noGuard) .
-result Data: "and"(int(4) # int(5))
+result Data: "&&"(int(4) # int(5))
 ==========================================
 reduce in GUARDS : int(4) & wait & int(5) .
-result Guard: wait & "and"(int(4) # int(5))
+result Guard: wait & "&&"(int(4) # int(5))
 ==========================================
 reduce in GUARDS : upTerm(int(4) & wait & int(5)) .
-result GroundTerm: '_&_['wait.Wait,'_`(_`)['"and".String,'_#_['int`(_`)['s_^4[
+result GroundTerm: '_&_['wait.Wait,'_`(_`)['"&&".String,'_#_['int`(_`)['s_^4[
     '0.Zero]],'int`(_`)['s_^5['0.Zero]]]]]
 ==========================================
 reduce in GUARDS : downTerm(upTerm(int(4) & wait & int(5)), noGuard) .
-result Guard: wait & "and"(int(4) # int(5))
+result Guard: wait & "&&"(int(4) # int(5))
 ==========================================
 reduce in GUARDS : "test" ?? .
 result Return: "test" ??
@@ -81,18 +81,18 @@ result GroundTerm: '_&_['"pest".String,'_??['"test".String]]
 reduce in GUARDS : downTerm(upTerm("pest" & "test" ??), noGuard) .
 result PureGuard: "pest" & "test" ??
 ==========================================
-reduce in GUARDS : "add"(int(4) # int(5)) & "label" ?? & wait & wait & bool(
-    true) .
-result Guard: wait & "label" ?? & "add"(int(4) # int(5))
+reduce in GUARDS : "+"(int(4) # int(5)) & "label" ?? & wait & wait & bool(true)
+    .
+result Guard: wait & int(9) & "label" ??
 ==========================================
-reduce in GUARDS : upTerm("add"(int(4) # int(5)) & "label" ?? & wait & wait &
+reduce in GUARDS : upTerm("+"(int(4) # int(5)) & "label" ?? & wait & wait &
     bool(true)) .
-result GroundTerm: '_&_['wait.Wait,'_??['"label".String],'_`(_`)['"add".String,
-    '_#_['int`(_`)['s_^4['0.Zero]],'int`(_`)['s_^5['0.Zero]]]]]
+result GroundTerm: '_&_['wait.Wait,'int`(_`)['s_^9['0.Zero]],'_??[
+    '"label".String]]
 ==========================================
-reduce in GUARDS : downTerm(upTerm("add"(int(4) # int(5)) & "label" ?? & wait &
+reduce in GUARDS : downTerm(upTerm("+"(int(4) # int(5)) & "label" ?? & wait &
     wait & bool(true)), noGuard) .
-result Guard: wait & "label" ?? & "add"(int(4) # int(5))
+result Guard: wait & int(9) & "label" ??
 ==========================================
 reduce in STATEMENTS : "a" . "a" .
 result Mid: "a" . "a"

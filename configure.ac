@@ -41,8 +41,11 @@ AC_PATH_PROG([CHCON], chcon)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
-AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [false])
-AC_CHECK_PROG([MENHIR], [menhir], [menhir], [echo])
+AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [missing])
+AC_CHECK_PROG([MENHIR], [menhir], [menhir], [missing])
+
+dnl For documentation.
+AC_CHECK_PROG([DOT], [dot], [dot], [missing])
 
 dnl Configure for building the creol mode.
 AM_PATH_LISPDIR

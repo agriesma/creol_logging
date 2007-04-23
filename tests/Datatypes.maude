@@ -43,10 +43,10 @@ red in CREOL-DATA-SIG : ("a" ( "a" )) # null .
 red in CREOL-DATA-SIG : null , "a" .
 red in CREOL-DATA-SIG : ob("a") .
 red in CREOL-DATA-SIG : bool(true) .
-red in CREOL-DATA-SIG : "equal" ( null # null ) .
-red in CREOL-DATA-SIG : "not" ( "equal" ( null # null ) ) .
-red in CREOL-DATA-SIG : "or" ( ("equal" ( null # null )) # ("equal" ( null # null )) ) .
-red in CREOL-DATA-LIST : "add" (list(int(1) # int(2)) # "head" (list(int(1) # int(2))) ) .
-red in CREOL-DATA-LIST : "add" (list(int(1) # int(2)) # ("head" (list(int(1) # int(2)))) ) .
+red in CREOL-DATA-SIG : "=" ( null # null ) .
+red in CREOL-DATA-SIG : "/=" ( null # null ) .
+red in CREOL-DATA-SIG : "~" ( "=" ( null # null ) ) .
+red in CREOL-DATA-SIG : "||" ( ("=" ( null # null )) # ("=" ( null # null )) ) .
+red in CREOL-DATA-LIST : "|-" (list(int(1) # int(2)) # "head" (list(int(1) # int(2))) ) .
 
 quit

@@ -25,12 +25,25 @@ fmod CREOL-DATA-SIG is
   protecting STRING .
   protecting NAT .
 
-  sorts   Aid Oid Data Appl Expr .
+  *** Data is declared to be a subsort of Appl, because Application terms
+  *** of the form "string" ( datalist ) are not constructors, but they should
+  *** be reduced to data (see below).  If we do not include this test, then
+  *** the theory is not pre-regular.
+  sorts   Expr Data Aid Oid Appl .
   subsort Oid < Data < Expr .
   subsort Data < Appl < Expr .
   subsort String < Aid < Expr .
 
-  op null    :           -> Data [ctor] .
+  op null : -> Data [ctor format (! o)] .
+
+  *** The interpreter should extend this module with his own definition
+  *** of label values.  For example, the model checker uses his own version
+  *** of labels.  This definition is the one used in the interpreter.
+  *** op label : Nat -> Label [ctor] .
+  sort Label .
+  subsort Label < Data .
+
+  op caller : Label -> Oid .
 
   *** Needed in the model checker for tail recursion.
   op tag : Label -> Label [ctor format(c o)] .
@@ -68,31 +81,29 @@ fmod CREOL-DATA-SIG is
 
   op ob(_) : String -> Oid [ctor] .
 
-  *** The interpreter should extend this module with his own definition
-  *** of label values.  For example, the model checker uses his own version
-  *** of labels.  This definition is the one used in the interpreter.
-  *** op label : Nat -> Label [ctor] .
-  sort Label .
-  subsort Label < Data .
-
-  op caller : Label -> Oid .
-
-  var B : Bool .
+  vars B B' : Bool .
   op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
 
   op _asBool            : Data -> Bool .
   eq bool(B) asBool     = B .
 
   vars D D'     : Data .
-  vars E E'     : Expr .
   
-  eq "equal" (D # D') = bool(D == D') .
-  eq "not" (bool(false)) = bool(true) .  
-  eq "not" (bool(true)) = bool(false) . 
-  eq "or" (bool(true) # E) = bool(true) .
-  eq "or" (bool(false) # E) = E .
-  eq "and" (bool(false) # E) = bool(false) .
-  eq "and" (bool(true) #  E) = E .  
+  eq "=" (D # D') = bool(D == D') .
+  eq "/=" (D # D') = bool(D =/= D') .
+  eq "~" (bool(false)) = bool(true) .  
+  eq "~" (bool(true)) = bool(false) . 
+
+  vars E E' : Expr .
+  eq "||" (bool(true) # E) = bool(true) .
+  eq "||" (bool(false) # E) = E .
+  eq "&&" (bool(false) # E) = bool(false) .
+  eq "&&" (bool(true) #  E) = E .
+  eq "=>" (bool(true) # bool(false)) = bool(false) .
+  eq "=>" (bool(true) # bool(true)) = bool(true) .
+  eq "=>" (bool(false) # E') = bool(true) .
+  eq "^" (bool(B) # bool(B')) = bool(B xor B') .
+  eq "<=>" (bool(B) # bool(B')) = bool(B == B') .
 endfm
 
 view Aid from TRIV to CREOL-DATA-SIG is
@@ -112,7 +123,7 @@ fmod CREOL-DATA-INT is
 
   protecting INT .
 
-  op int(_)  : Int       -> Data [ctor format(o o ! o o)] . 
+  op int(_)  : Int -> Data [ctor format(o o ! o o)] . 
 
   vars I I' : Int .
   var N : Nat .
@@ -123,13 +134,17 @@ fmod CREOL-DATA-INT is
   op _asNat : Data -> Nat .
   eq int(N)  asNat      = N .
 
-  eq "neg" (int(I)) = int(-(I)) .
-  eq "less"  (int(I)# int(I')) = bool(I < I') .
-  eq "lessEq" (int(I)# int(I')) = bool(I <= I') .
-  eq "plus" (int(I)# int(I')) = int(I + I') .
-  eq "minus" (int(I)# int(I')) = int( _-_(I, I')) .
-  eq "times" (int(I)# int(I')) = int(I * I') .
-  eq "div" (int(I)# int(I')) = int(I quo I') .
+  eq "-" (int(I)) = int(-(I)) .
+  eq "<"  (int(I) # int(I')) = bool(I < I') .
+  eq "<=" (int(I) # int(I')) = bool(I <= I') .
+  eq ">"  (int(I) # int(I')) = bool(I > I') .
+  eq ">=" (int(I) # int(I')) = bool(I >= I') .
+  eq "+" (int(I) # int(I')) = int(I + I') .
+  eq "-" (int(I) # int(I')) = int( _-_(I, I')) .
+  eq "*" (int(I) # int(I')) = int(I * I') .
+  eq "/" (int(I) # int(I')) = int(I quo I') .
+  eq "%" (int(I) # int(I')) = int(I rem I') .
+  eq "**" (int(I) # int(I')) = int(I ^ I') .
 endfm
 
 fmod CREOL-DATA-FLOAT is
@@ -144,12 +159,16 @@ fmod CREOL-DATA-FLOAT is
   op _asFloat : Data -> Float .
   eq float(F) asFloat = F .
 
-  eq "less" (float(F)# float(F')) = bool(F < F') .
-  eq "lessEq" (float(F)# float(F')) = bool(F <= F') .
-  eq "plus" (float(F)# float(F')) = float(F + F') .
-  eq "minus" (float(F)# float(F')) = float(_-_(F, F')) .
-  eq "times" (float(F)# float(F')) = float(F * F') .
-  eq "div" (float(F)# float(F')) = float(F / F') .
+  eq "-" (float(F)) = float(-(F)) .
+  eq "<"  (float(F) # float(F')) = bool(F < F') .
+  eq "<=" (float(F) # float(F')) = bool(F <= F') .
+  eq ">"  (float(F) # float(F')) = bool(F > F') .
+  eq ">=" (float(F) # float(F')) = bool(F >= F') .
+  eq "+" (float(F) # float(F')) = float(F + F') .
+  eq "-" (float(F) # float(F')) = float( _-_(F, F')) .
+  eq "*" (float(F) # float(F')) = float(F * F') .
+  eq "/" (float(F) # float(F')) = float(F / F') .
+  eq "**" (float(F) # float(F')) = float(F ^ F') .
 endfm
 
 fmod CREOL-DATA-STRING is
@@ -164,9 +183,13 @@ fmod CREOL-DATA-STRING is
   op _asString : Data -> String .
   eq str(S) asString = S .
 
-  eq "less" (str(S)# str(S')) = bool(S < S') .
-  eq "lessEq" (str(S)# str(S')) = bool(S <= S') .
-  eq "plus" (str(S)# str(S')) = str(S + S') .
+  eq "<" (str(S)# str(S')) = bool(S < S') .
+  eq "<=" (str(S)# str(S')) = bool(S <= S') .
+  eq ">" (str(S)# str(S')) = bool(S > S') .
+  eq ">=" (str(S)# str(S')) = bool(S >= S') .
+  eq "-|" (str(S) # str(S')) = str(S + S') .
+  eq "|-|" (str(S) # str(S')) = str(S + S') .
+  eq "|-" (str(S) # str(S')) = str(S + S') .
 endfm
 
 fmod CREOL-DATA-LIST is
@@ -191,40 +214,41 @@ fmod CREOL-DATA-LIST is
   eq "tail" (list(E # L)) = list(L) .
 
   eq "length" (list(emp)) = int(0) .
-  eq "length" (list(E # L)) = "plus" (int(1) # ("length" (list(L)))) .
+  eq "length" (list(E # L)) = "+" (int(1) # ("length" (list(L)))) .
   
   eq "isempty" (list(emp))  = bool(true) .
   eq "isempty" (list(E # L))= bool(false) .
   
   eq "remove" (list(E) #   E')  = if  E == E' then list(emp) else list(E) fi .
   eq "remove" (list(emp)# E )  = list(emp) .
-  eq "remove" (list(E # L)# E')  = if E == E' then "remove" ((list(L))# E') 
-			 else "plus" (list(E)# ("remove" ((list(L))# E'))) fi .
+  eq "remove" (list(E # L)# E') =
+    if E == E' then "remove" ((list(L))# E') 
+      else "|-|" (list(E) # ("remove" (list(L) # E'))) fi .
 
-  eq "appendLeft" (list(L)# E) = list(E # L) .
-  eq "appendRight" (list(L)# E) = list(L # E) .
+  eq "-|" (D # list(L)) = list(D # L) .
+  eq "|-" (list(L) # D) = list(L # D) .
 
   eq "has" (list(emp)# E ) = bool(false) .
   eq "has" (list(E # L) # E) = bool(true) .
-  eq "has" (list(E # L) # E') = "has" (list(L)) [otherwise] .
+  eq "has" (list(E # L) # E') = "has" (list(L) # E') [otherwise] .
 
   ***index starts at 1
-  eq "after" (list(emp)# int(N))    = null . 
-  eq "after" (list(E # L)# int(0))  = list(E # L) .
-  eq "after" (list(E # L)# int(N))  =
-    "after" ((list(L)) # "minus" (int(N) # int(1))) .
+  eq "after" (list(emp) # int(N))    = null . 
+  eq "after" (list(E # L) # int(0))  = list(E # L) .
+  eq "after" (list(E # L) # int(N))  =
+    "after" (list(L) # "-" (int(N) # int(1))) .
 
-  eq "index" ((list(L))#   int(0))  = null .
-  eq "index" ((list(emp))# int(N))  = null .
-  eq "index" ((list(E # L))# int(N))= if (N == 1) then E else
-				  "index" ((list(L))# int( _-_(N,1))) fi .
+  eq "index" ((list(L)) # int(0))  = null .
+  eq "index" ((list(emp)) # int(N))  = null .
+  eq "index" ((list(E # L)) # int(N)) =
+    if (N == 1) then E else "index" (list(L) # "-" (int(N) # int(1))) fi .
 
-  eq "begwith" (list(E)# E')        = bool("head" (list(E)) == E') .
-  eq "begwith" (list(E # L)# E')    = bool("head" (list(E # L)) == E') .
-  eq "begwith" (list(E)# E')        = bool("last" (list(E)) == E') .
-  eq "begwith" (list(E # L)# E')    = bool("last" (list(L)) == E') .
+  eq "begwith" (list(E) # E') = bool("head" (list(E)) == E') .
+  eq "begwith" (list(E # L)# E') = bool("head" (list(E # L)) == E') .
+  eq "begwith" (list(E)# E') = bool("last" (list(E)) == E') .
+  eq "begwith" (list(E # L)# E') = bool("last" (list(L)) == E') .
 
-  eq "plus" (list(L)# list(L'))   = list(L # L') .
+  eq "|-|" (list(L) # list(L'))   = list(L # L') .
 endfm
 
 fmod CREOL-DATA-SET is
@@ -240,7 +264,7 @@ fmod CREOL-DATA-SET is
   
   *** reduction for sets 
   eq  setl(L # E # L' # E # L'') = setl(L # E # L' # L'') .
-  ceq setl(D # D' # L) = setl(D' # D # L) if ("less" (D' # D)) asBool .
+  ceq setl(D # D' # L) = setl(D' # D # L) if ("<" (D' # D)) asBool .
   *** ceq setl(L # D # L' # D' # L'') = setl(L # D' # L' # D # L'') 
   *** if (D > D')asBool . *** old
 

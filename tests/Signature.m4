@@ -49,7 +49,7 @@ GRAMMAR_TEST(GUARDS, int(4) & int(5), noGuard)
 GRAMMAR_TEST(GUARDS, int(4) & int(5) & wait, noGuard)
 GRAMMAR_TEST(GUARDS, "test" ??, noGuard)
 GRAMMAR_TEST(GUARDS, "test" ?? & "pest", noGuard)
-GRAMMAR_TEST(GUARDS, {| "add" (int(4) # int(5)) & "label" ?? & wait & bool(true) & wait |}, noGuard)
+GRAMMAR_TEST(GUARDS, {| "+" (int(4) # int(5)) & "label" ?? & wait & bool(true) & wait |}, noGuard)
 
 GRAMMAR_TEST(STATEMENTS, "a" . "a", "a")
 GRAMMAR_TEST(STATEMENTS, "a" @ "a", "a")

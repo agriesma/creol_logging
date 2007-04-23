@@ -85,7 +85,7 @@ module Passes =
 
     let passes =
       { check_types = false;
-	simplify = true;
+	simplify = false;
 	lifeness = true;
         tailcalls = false;
         timings = false;

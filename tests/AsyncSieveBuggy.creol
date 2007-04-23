@@ -1,0 +1,45 @@
+/*
+ * The asynchronous sieve example.
+ */
+
+/*
+ * This version is a naive transformation of the synchronous example to
+ * communicate asynchronously.  However, it has an error, since it does
+ * not take the unorderedness of the communication into account.
+ */
+
+interface Sieve
+begin
+with Any
+  op send(in x: Nat; out r: Bool)
+end
+
+class Generator
+begin
+  var n: Integer
+  var next: Sieve
+  op init == next := new Sieve(2); n := 3
+  op run == var r: Bool; l!next.send(n); n := n + 1; m!run(); await wait;
+    l?(r); m?()
+end
+
+class Sieve(p: Integer) implements Sieve
+begin
+  var next: Sieve
+  op init == skip
+  op run == skip
+  op send(in n: Integer; out res: Bool) ==
+    var d: Integer := n / p, r: Integer := n - d * p;
+    if r = 0
+    then res := false
+    else if next /= null
+         then
+	   l!next.send(n);
+	   await wait;
+	   l?(res)
+         else
+	   next := new Sieve(n);
+	   res := true
+         end
+    end
+end

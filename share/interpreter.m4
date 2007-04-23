@@ -176,7 +176,7 @@ fmod GUARDS is
 
   eq wait & wait = wait .
   eq PG & PG = PG .
-  eq E & E' = "and" (E # E') .
+  eq E & E' = "&&" (E # E') .
 
 endfm
 
@@ -278,9 +278,8 @@ endfm
 fmod CLASS is
   protecting STM-LIST .
 
-  sorts    Class Mtd MMtd Inh InhList . *** inheritance list
-  subsorts Inh < Expr .  
-  subsorts Inh < InhList .
+  sorts    Class Mtd MMtd Inh InhList NeInhList . *** inheritance list
+  subsorts Inh < NeInhList < InhList .
 
   op  _<_> : Cid  ExprList -> Inh [ctor prec 15] . *** initialised superclass
   op noInh : -> InhList [ctor] .

@@ -254,7 +254,7 @@ module Expression =
 
     let string_of_unaryop =
       function
-	  Not -> "not"
+	  Not -> "~"
 	| UMinus -> "-"
 	| Length -> "#"
 
@@ -438,24 +438,10 @@ open Declaration
     with there basic equivalents *)
 let rec simplify_expression =
   function
-      Unary(a, Not, e) -> FuncCall(a, "not", [simplify_expression e])
-    | Unary(a, UMinus, e) -> FuncCall(a, "neg", [simplify_expression e])
-    | Binary(a, Plus, l, r) -> FuncCall(a, "plus", [simplify_expression l; simplify_expression r])
-    | Binary(a, Minus, l, r) -> FuncCall(a, "minus", [simplify_expression l; simplify_expression r])
-    | Binary(a, Times, l, r) -> FuncCall(a, "times", [simplify_expression l; simplify_expression r])
-    | Binary(a, Div, l, r) -> FuncCall(a, "div", [simplify_expression l; simplify_expression r])
-    | Binary(a, Le, l, r) -> FuncCall(a, "lessEq", [simplify_expression l; simplify_expression r])
-    | Binary(a, Lt, l, r) -> FuncCall(a, "less", [simplify_expression l; simplify_expression r])
-    | Binary(a, Ge, l, r) -> FuncCall(a, "lessEq", [simplify_expression r; simplify_expression l])
-    | Binary(a, Gt, l, r) -> FuncCall(a, "less", [simplify_expression r; simplify_expression l])
-    | Binary(a, Eq, l, r) -> FuncCall(a, "equal", [simplify_expression l; simplify_expression r])
-    | Binary(a, Ne, l, r) -> FuncCall(a, "not", [FuncCall(a, "equal", [simplify_expression l; simplify_expression r])])
-    | Binary(a, And, l, r) -> FuncCall(a, "and", [simplify_expression l; simplify_expression r])
-    | Binary(a, Iff, l, r) -> FuncCall(a, "equal", [simplify_expression l; simplify_expression r])
-    | Binary(a, Or, l, r) -> FuncCall(a, "or", [simplify_expression l; simplify_expression r])
-    | Binary(a, Xor, l, r) -> FuncCall(a, "not", [FuncCall(a, "equal", [simplify_expression l; simplify_expression r])])
+      Unary(a, o, e) -> FuncCall(a, string_of_unaryop o, [simplify_expression e])
     | Binary(a, GuardAnd, l, r) -> Binary(a, GuardAnd, simplify_expression l,
 	simplify_expression r)
+    | Binary(a, o, l, r) -> FuncCall(a, string_of_binaryop o, [simplify_expression l; simplify_expression r])
     | FuncCall(a, f, args) -> FuncCall(a, f, List.map simplify_expression args)
     | New (a, t, p) -> New (a, t, List.map simplify_expression p)
     | t -> t

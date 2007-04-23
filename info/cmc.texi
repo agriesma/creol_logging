@@ -3,13 +3,14 @@
 @chapter Creol Machine Code
 
 In this chapter we describe the general structure of the machine in
-maude.  It is best understood as a user guide.
+Maude.  The contents of this chapter assumes familarity with Maude.
 
 @menu
 * Data Types::          Explanation of data types.
 * Configuration::       Data Structures describing configurations.
 * Interpreter::         Creol Interpreter.
 * Model Checker::       Creol Model Checker in Maude.
+* Sort Hierarchy::      Summary of all sorts and how they relate.
 @end menu
 
 @node Data Types
@@ -30,11 +31,115 @@ Operations are defined in terms of applications, which are given as
 @code{op _(_) : String ExprList -> Appl}.
 
 @menu
-* Predefined Data Types::       Predefined Data Types.
-* User Defined Data Types::     How to define new data types.
+* Datatype Signature::          How datatypes are defined.
+* Predefined Datatypes::        Predefined datatypes.
+* User Defined Datatypes::      How to define new datatypes.
 @end menu
 
-@node Predefined Data Types
+
+@node Datatype Signature
+@subsection Datatype Signature
+
+The module @code{CREOL-DATA-SIG} defines the signature of the
+datatypes and expressions, i.e., it defines a kind of abstract syntax.
+It also defines the basic functions defined for @emph{all} datatypes.
+
+It defines the following sorts:
+@table @code
+@item Expr
+Values of sort @code{Expr} are expressions.  Expressions are either
+literals, which is any ground term of sort @code{Data}, variables,
+which are of sort @code{Aid}, or applications, which are of sort
+@code{Appl}.
+
+@item Data
+Values of sort @code{Data} are literals.  @code{Data} is a subsort of
+@code{Expr}.
+
+@item Aid
+Values of sort @code{Aid} range over the attribute and variable
+names.  While the creol language uses only lower-case variable names,
+the interpreter reserves some other strings for its own purposes.
+
+@item Oid
+Values of sort @code{Oid} are the object identifiers.  The sort
+@code{Oid} is a subsort of @code{Data}.
+
+@item Label
+Values of sort @code{Label} are the values of the labels of
+asynchronous calls.  This sort is a subsort of @code{Data}.
+
+@item Appl
+Terms of this sort are function applications.  The sort @code{Appl} is
+a subsort of term.  The sort @code{Appl} is a supersort of @code{Data}
+(see @pxref{Application} for an explanation).
+@end table
+
+Lists of expressions and of data values are defined in this module,
+too.  These lists are constructed using the @code{#} operator.  
+@table @code
+@item ExprList
+A possibly empty list of expressions with identity @code{emp}.
+
+@item DataList
+A possibly empty list of values with identity @code{emp}.  This sort
+is a subsort of @code{ExprList}.
+
+@item NeExprList
+A non-empty list of expressions.  This sort is a subsort of
+@code{ExprList}.  @code{Expr} is a subsort of this sort.
+
+@item NeDataList
+A non-empty list of data.  This sort is a subsort of @code{DataList}.
+@code{Data} is a subsort of this sort.
+@end table
+
+Furthermore, lists of attribute identifiers can be formed using
+@code{,} as a constructor, with identity @code{noAid}.  These lists
+occur as lists of parameters or as the left-hand side of assignments.
+
+@table @code
+@item AidList
+A possibly empty list of @code{Aid}.
+
+@item NeAidList
+A non-empty list of @code{Aid}.  This sort is a subsort of
+@code{AidList}.  The sort @code{Aid} is a subsort of this sort.
+@end table
+
+In addition, this module defines the sort @code{Bool} (@pxref{Boolean}).
+
+@anchor{Application}
+@subsubsection Application terms
+
+At the core of the expression language is function application.  The
+machine will maintain all function applications in prenex form, i.e.,
+they are declared by the operators
+@example
+op _(_) : String DataList -> Data .
+op _(_) : String ExprList -> Appl [ctor] .
+@end example
+In order to have a pre-regular model, the sort @code{Data} has to be a
+subsort of @code{Appl}.
+
+It is an error if a term @code{S:String(D:DataList)} cannot be reduced
+to a @code{Data} value.  This usually occurs if the term is ill-typed,
+i.e., we try to add an integer to a boolean.
+
+
+@anchor{Equality}
+@subsubsection Equality
+
+Equality (and inequality) is defined for all datatypes.
+
+@example
+  vars D D' : Data .
+  eq "=" (D # D') = bool(D == D') .
+  eq "/=" (D # D') = bool(D =/= D') .
+@end example
+
+
+@node Predefined Datatypes
 @subsection Predefined Data Types
 
 In this section we describe the pre-defined data types in the virtual
@@ -56,11 +161,46 @@ machine, the operations defined on them, and their semantics.
 
 XXX
 
+@example
+  vars B B' : Bool .
+  vars E E' : Expr .
+  eq "||" (bool(true) # E) = bool(true) .
+  eq "||" (bool(false) # E) = E .
+  eq "&&" (bool(false) # E) = bool(false) .
+  eq "&&" (bool(true) #  E) = E .
+  eq "=>" (bool(true) # bool(false)) = bool(false) .
+  eq "=>" (bool(true) # bool(true)) = bool(true) .
+  eq "=>" (bool(false) # E') = bool(true) .
+  eq "^" (bool(B) # bool(B')) = bool(B xor B') .
+  eq "<=>" (bool(B) # bool(B')') = bool(B == B') .
+@end example
+
 
 @node Integer
 @subsubsection Integer
 
 XXX
+
+The integer datatype is defined in the module @code{CREOL-DATA-INT}.
+Integer values are constructed with
+@example
+  op int(_) : Int -> Data [ctor] .
+@end example
+
+The functions are defined as:
+@example
+  eq "-" (int(I)) = int(-(I)) .
+  eq "<"  (int(I) # int(I')) = bool(I < I') .
+  eq "<=" (int(I) # int(I')) = bool(I <= I') .
+  eq ">"  (int(I) # int(I')) = bool(I > I') .
+  eq ">=" (int(I) # int(I')) = bool(I >= I') .
+  eq "+" (int(I) # int(I')) = int(I + I') .
+  eq "-" (int(I) # int(I')) = int( _-_(I, I')) .
+  eq "*" (int(I) # int(I')) = int(I * I') .
+  eq "/" (int(I) # int(I')) = int(I quo I') .
+  eq "%" (int(I) # int(I')) = int(I rem I') .
+  eq "**" (int(I) # int(I')) = int(I ^ I') .
+@end example
 
 
 @node Float
@@ -68,17 +208,115 @@ XXX
 
 XXX
 
+The floating point datatype is defined in the module
+@code{CREOL-DATA-FLOAT}.  Integer values are constructed with
+@example
+  op float(_) : Float -> Data [ctor] .
+@end example
+
+The functions are defined as:
+@example
+  eq "-" (float(I)) = float(-(I)) .
+  eq "<"  (float(I) # float(I')) = bool(I < I') .
+  eq "<=" (float(I) # float(I')) = bool(I <= I') .
+  eq ">"  (float(I) # float(I')) = bool(I > I') .
+  eq ">=" (float(I) # float(I')) = bool(I >= I') .
+  eq "+" (float(I) # float(I')) = float(I + I') .
+  eq "-" (float(I) # float(I')) = float( _-_(I, I')) .
+  eq "*" (float(I) # float(I')) = float(I * I') .
+  eq "/" (float(I) # float(I')) = float(I quo I') .
+  eq "%" (float(I) # float(I')) = float(I rem I') .
+  eq "**" (float(I) # float(I')) = float(I ^ I') .
+@end example
+
+
+
 
 @node String
 @subsubsection String
 
 XXX
 
+Strings are considered to be list of characters.  Strings are defined
+in the module @code{CREOL-DATA-STRING}.  Therefore, the same
+notation is used as for @code{List} (see @pxref{List}).
+
+Strings are constructed with
+@example
+  op string(_) : String -> Data [ctor] .
+@end example
+
+The defined functions are:
+@example
+  eq "<" (str(S)# str(S')) = bool(S < S') .
+  eq "<=" (str(S)# str(S')) = bool(S <= S') .
+  eq ">" (str(S)# str(S')) = bool(S > S') .
+  eq ">=" (str(S)# str(S')) = bool(S >= S') .
+  eq "-|" (str(S) # str(S')) = str(S + S') .
+  eq "|-|" (str(S) # str(S')) = str(S + S') .
+  eq "|-" (str(S) # str(S')) = str(S + S') .
+@end example
+
 
 @node List
 @subsubsection List
 
 XXX
+
+Lists are defined in the module @code{CREOL-DATA-LIST}.  A list is
+constructed by:
+@example
+  op list(_) : DataList -> Data [ctor] .
+@end example
+
+The defined functions are:
+@example
+  eq "head" (list(emp)) = null .
+  eq "head" (list(E # L)) = E .
+  eq "last" (list(emp)) = null .
+  eq "last" (list(L # E)) = E .
+  eq "rest" (list(emp)) = null .
+  eq "rest" (list(L # E)) = list(L) .
+  eq "tail" (list(emp)) = null .
+  eq "tail" (list(E # L)) = list(L) .
+
+  eq "length" (list(emp)) = int(0) .
+  eq "length" (list(E # L)) = "+" (int(1) # ("length" (list(L)))) .
+
+  eq "isempty" (list(emp))  = bool(true) .
+  eq "isempty" (list(E # L))= bool(false) .
+
+  eq "remove" (list(E) # E')  = if  E == E' then list(emp) else list(E) fi .
+  eq "remove" (list(emp)# E )  = list(emp) .
+  eq "remove" (list(E # L)# E') =
+    if E == E' then "remove" ((list(L))# E')
+      else "|-|" (list(E) # ("remove" (list(L) # E'))) fi .
+
+  eq "-|" (D # list(L)) = list(D # L) .
+  eq "|-" (list(L) # D) = list(L # D) .
+
+  eq "has" (list(emp)# E ) = bool(false) .
+  eq "has" (list(E # L) # E) = bool(true) .
+  eq "has" (list(E # L) # E') = "has" (list(L) # E') [otherwise] .
+
+  ***index starts at 1
+  eq "after" (list(emp) # int(N))    = null .
+  eq "after" (list(E # L) # int(0))  = list(E # L) .
+  eq "after" (list(E # L) # int(N))  =
+    "after" ((list(L)) # "-" (int(N) # int(1))) .
+
+  eq "index" ((list(L)) # int(0)) = null .
+  eq "index" ((list(emp)) # int(N)) = null .
+  eq "index" ((list(E # L)) # int(N)) =
+    if (N == 1) then E else "index" (list(L) # "-" (int(N) # int(1))) fi .
+
+  eq "begwith" (list(E) # E') = bool("head" (list(E)) == E') .
+  eq "begwith" (list(E # L) # E') = bool("head" (list(E # L)) == E') .
+  eq "begwith" (list(E) # E') = bool("last" (list(E)) == E') .
+  eq "begwith" (list(E # L) # E') = bool("last" (list(L)) == E') .
+
+  eq "|-|" (list(L) # list(L'))   = list(L # L') .
+@end example
 
 
 @node Set
@@ -90,10 +328,13 @@ XXX
 @node Pair
 @subsubsection Pair
 
-XXX
+Pairs are explained in the next section. @c
+@xref{User Defined Datatypes}.
 
 
-@node User Defined Data Types
+
+
+@node User Defined Datatypes
 @subsection Creating Your own Data Type
 
 The procedure for creating your own data type is illustrated with the
@@ -195,3 +436,8 @@ XXX
 @section Creol Model Checker
 
 XXX
+
+
+@node Sort Hierarchy
+@section Sort Hierarchy
+

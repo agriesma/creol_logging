@@ -39,6 +39,7 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.out \
 		  Philosophers.creol Philosophers.maude Philosophers.out \
 		  Sieve.creol Sieve.maude Sieve.out \
+		  AsyncSieveBuggy.creol AsyncSieveBuggy.maude AsyncSieveBuggy.out \
 		  SingleCellBuffer.creol SingleCellBuffer.maude \
 		  SingleCellBuffer.out \
 		  Fibonacci.creol Fibonacci.maude Fibonacci.out \

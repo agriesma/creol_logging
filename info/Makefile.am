@@ -24,7 +24,23 @@ creoltools_TEXINFOS	= introduction.texi invocation.texi creol.texi \
 			  cmc.texi bibliography.texi \
 			  fdl.texi gpl.texi
 
+EXTRA_DIST		= sorts.dot
+BUILT_SOURCES		=
+
 MOSTLYCLEANFILES	= *~ *.cps
 CLEANFILES		=
 DISTCLEANFILES		=
 MAINTAINERCLEANFILES	=
+
+.dot.eps:
+	${DOT} -Tps -o temp.ps $<
+	cp temp.ps $@
+	rm -f temp.ps
+
+.dot.pdf:
+	${DOT} -Tps -o temp.ps $<
+	ps2pdf14 temp.ps $@
+	rm -f temp.ps
+
+.dot.png:
+	${DOT} -Tpng -o $@ $<

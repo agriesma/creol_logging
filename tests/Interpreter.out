@@ -5,9 +5,8 @@ result Configuration:
 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "less"(int(0) #
-    "x") th "x" ::= "minus"("x" # int(1)) ; tailcall "run"(emp) el return(emp)
-    fi >,
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "<"(int(0) # "x")
+    th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 0 >
 
 < ob("main") : "NoClass" | Att: noSubst,
@@ -22,8 +21,8 @@ search in TEST-TAILCALL : init =>+ conf:Configuration
 
 Solution 1 (state 32)
 conf:Configuration --> boundMtd(ob("Tailcall0"),("caller" |-> ob("Tailcall0"),
-    "label" |-> tag(label(ob("Tailcall0"),2))), if "less"(int(0) # "x") th "x"
-    ::= "minus"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi)
+    "label" |-> tag(label(ob("Tailcall0"),2))), if "<"(int(0) # "x") th "x" ::=
+    "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi)
 
 
 < ob("Tailcall0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
@@ -32,9 +31,8 @@ conf:Configuration --> boundMtd(ob("Tailcall0"),("caller" |-> ob("Tailcall0"),
 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "less"(int(0) #
-    "x") th "x" ::= "minus"("x" # int(1)) ; tailcall "run"(emp) el return(emp)
-    fi >,
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "<"(int(0) # "x")
+    th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
 
 < ob("main") : "NoClass" | Att: noSubst,
@@ -55,9 +53,8 @@ result Configuration:
 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "less"(int(0) #
-    "x") th "x" ::= "minus"("x" # int(1)) ; tailcall "run"(emp) el return(emp)
-    fi >,
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "<"(int(0) # "x")
+    th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
 
 < ob("Tailcall0") : "Tailcall" | Att: "this" |-> ob("Tailcall0"), "x" |-> int(
