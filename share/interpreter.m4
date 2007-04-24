@@ -127,7 +127,7 @@ fmod CREOL-EVAL is
 
   var D : Data .
   var DL : DataList .
-  vars E E' : Expr .
+  vars E E' E'' : Expr .
   var EL : ExprList .
   var NeEL : NeExprList .
   var A : Aid .
@@ -155,6 +155,25 @@ fmod CREOL-EVAL is
   eq evalList(E , S) = {|eval|}(E, S) .
   eq evalList(E {|#|} NeEL, S) = {|eval|}(E, S) {|#|} evalList(NeEL, S) .
 
+  *** multi-way conditional expression
+  sorts Case NeCases Cases .
+  subsorts Case < NeCases < Cases .
+  op of_wh_do_ : Expr Expr Expr -> Case [ctor {|format|} (b o b o b o d)] .
+  op noCase : -> Cases [ctor] .
+  op _|_ : Case Case -> NeCases [ctor assoc id: noCase] .
+  op case__ : Expr Cases -> Expr [ctor] .
+  op case__ : Data Cases -> Data [ditto] .
+
+  var C : Cases .
+
+  eq {|eval|}(case E noCase, S) = null .
+  eq {|eval|}(case D ((of E wh E' do E'') | C), S) =
+    if {|eval|}(E, S) == D then
+      {|eval|}(E'', S)
+    else
+      {|eval|}(case D C, S)
+    fi .
+  eq {|eval|}(case E C, S) = case {|eval|}(E, S) C [owise] .
 endfm
 
 
