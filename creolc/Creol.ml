@@ -1161,13 +1161,13 @@ struct
       | Bool (_, true) -> output_string out "bool(true)"
       | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
       | Id (_, i) -> output_string out ("\"" ^ i ^ "\"")
-      | Unary (a, o, l) ->
-	of_creol_expression out (FuncCall (a, string_of_unaryop o, [l]))
+      | Unary (_, _, _) as e ->
+	of_creol_expression out (simplify_expression e)
       | Binary (_, GuardAnd, l, r) -> output_string out "( " ;
 	of_creol_expression out l ; output_string out " & " ;
 	of_creol_expression out r ; output_string out " )"
-      | Binary (a, o, l, r) ->
-	of_creol_expression out (FuncCall (a, string_of_binaryop o, [l; r]))
+      | Binary (_, _, _, _) as e ->
+	of_creol_expression out (simplify_expression e)
       | FuncCall(_, f, a) -> output_string out ("\"" ^ f ^ "\" ( " );
 	  of_creol_expression_list out a;
 	  output_string out " )"
