@@ -91,11 +91,11 @@ load datatypes
 ***************************************************************************
 
 *** Bound variables ***
-fmod SUBST is
+fmod CREOL-SUBST is
   protecting EXT-BOOL .
   protecting CREOL-DATA-SIG .
-  protecting MAP{Aid, Data} * (sort Map{Aid, Data} to Subst,
-                               op empty : -> Map{Aid, Data} to noSubst ) .
+  extending MAP{Aid, Data} * (sort Map{Aid, Data} to Subst,
+                              op empty : -> Map{Aid, Data} to noSubst ) .
 
   vars A A' : Aid .
   vars D D' : Data .
@@ -120,9 +120,10 @@ fmod SUBST is
   eq dom(A, S1) = false [owise] .
 endfm
 
-fmod EVAL is
+fmod CREOL-EVAL is
+
   protecting DATATYPES .
-  protecting SUBST .
+  protecting CREOL-SUBST .
 
   var D : Data .
   var DL : DataList .
@@ -139,7 +140,7 @@ fmod EVAL is
   eq {|eval|}(D, S) = D .
 
   *** standard evaluation of expression
-  op eval     : Expr Subst     -> Data .
+  op eval : Expr Subst -> Data .
   eq {|eval|}(A, S) =  S [A] .
   eq {|eval|}(F (EL), S) = F ( evalList(EL, S) ) .
   eq {|eval|}(list(EL), S) = list(evalList(EL, S)) .
@@ -157,8 +158,8 @@ fmod EVAL is
 endfm
 
 
-fmod GUARDS is
-  protecting EVAL .
+fmod CREOL-GUARDS is
+  protecting CREOL-EVAL .
 
   sorts NoGuard Guard Wait Return PureGuard . 
   subsorts Return Expr < PureGuard .
@@ -172,7 +173,7 @@ fmod GUARDS is
   op _??  : Aid -> Return [ctor] .
   op _??  : Label -> Return [ctor] .
   op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
-  op _&_ : PureGuard PureGuard -> PureGuard [ditto] .
+  op _&_ : PureGuard PureGuard -> PureGuard [ctor ditto] .
 
   eq wait & wait = wait .
   eq PG & PG = PG .
@@ -180,8 +181,8 @@ fmod GUARDS is
 
 endfm
 
-fmod STATEMENTS is
-  pr GUARDS .
+fmod CREOL-STATEMENT is
+  pr CREOL-GUARDS .
 
   sorts Mid Cid Stm .
   subsort String < Mid Cid .
@@ -199,8 +200,8 @@ fmod STATEMENTS is
   op _?(_)  : Label AidList -> Stm [ctor prec 39] .
   op await_ : Guard    -> Stm [ctor] .
   op return : ExprList -> Stm [ctor {|format|} (c o)] .
-  op free : AidList -> Stm [ctor {|format|} (c o)] .
   op bury : AidList -> Stm [ctor {|format|} (c o)] .
+  op free : AidList -> Stm [ctor {|format|} (c o)] .
   op cont : Label -> Stm [ctor {|format|} (c o)] .
   op tailcall_(_) : Mid ExprList -> Stm [ctor {|format|} (c o c o c o)] .
   op accept : Label -> Stm [ctor {|format|} (c o)] .
@@ -214,12 +215,12 @@ fmod STATEMENTS is
 
 endfm
 
-view Stm from TRIV to STATEMENTS is
+view Stm from TRIV to CREOL-STATEMENT is
    sort Elt to Stm .
 endv
 
-fmod STM-LIST is
-  pr STATEMENTS .                
+fmod CREOL-STM-LIST is
+  pr CREOL-STATEMENT .                
   protecting LIST{Stm} * (sort List{Stm} to StmList,
                           sort NeList{Stm} to NeStmList,
 			  op nil : -> List{Stm} to noStm,
@@ -275,8 +276,8 @@ fmod STM-LIST is
 endfm
 
 *** CREOL classes ***
-fmod CLASS is
-  protecting STM-LIST .
+fmod CREOL-CLASS is
+  protecting CREOL-STM-LIST .
 
   sorts    Class Mtd MMtd Inh InhList NeInhList . *** inheritance list
   subsorts Inh < NeInhList < InhList .
@@ -339,8 +340,8 @@ fmod CLASS is
 endfm
 
 *** CREOL objects ***
-fmod OBJECT is
-  protecting CLASS .
+fmod CREOL-OBJECT is
+  protecting CREOL-CLASS .
 
   sort Object .
 
@@ -353,8 +354,8 @@ fmod OBJECT is
 endfm
 
 *** CREOL messages and queues ***
-fmod COMMUNICATION is
-  protecting OBJECT .
+fmod CREOL-COMMUNICATION is
+  protecting CREOL-OBJECT .
 
   sort Labels . *** list of labels
   subsort Label < Labels .
@@ -401,9 +402,8 @@ fmod COMMUNICATION is
 endfm
 
 *** STATE CONFIGURATION ***
-fmod CONFIG is
-  protecting OBJECT .
-  protecting COMMUNICATION .
+fmod CREOL-CONFIG is
+  protecting CREOL-COMMUNICATION .
 
   sort Configuration .
 
@@ -422,9 +422,9 @@ fmod CONFIG is
 endfm
 
 *** AUXILIARY FUNCTIONS ***
-fmod AUX-FUNCTIONS is
+fmod CREOL-AUX-FUNCTIONS is
 
-  protecting CONFIG .
+  protecting CREOL-CONFIG .
   protecting CONVERSION .
 
   *** Check if a message is in the queue.
@@ -479,11 +479,11 @@ fmod AUX-FUNCTIONS is
 endfm
 
 *** THE MACHINE ***
-mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,INTERPRETER) is
+mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
 
   extending CREOL-DATA-SIG .
 
-  protecting AUX-FUNCTIONS .
+  protecting CREOL-AUX-FUNCTIONS .
 
   vars O O' : Oid .
   vars C C' : Cid .

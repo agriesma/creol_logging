@@ -26,7 +26,7 @@ set show advise off .
 load interpreter .
 
 mod TEST-TAILCALL is
-  pr INTERPRETER .
+  pr CREOL-INTERPRETER .
   op init : -> Configuration .
   eq init =
 

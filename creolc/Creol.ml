@@ -1408,7 +1408,7 @@ struct
       output_string out "load interpreter\n";
     output_string out
       ("mod PROGRAM is\npr " ^ (if options.modelchecker then
-	"CREOL-MODEL-CHECKER" else "INTERPRETER") ^
+	"CREOL-MODEL-CHECKER" else "CREOL-INTERPRETER") ^
 	  " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
     of_creol_decl_list out l ;
     begin

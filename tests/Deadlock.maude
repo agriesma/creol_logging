@@ -1,6 +1,6 @@
 load interpreter
 mod PROGRAM is
-pr INTERPRETER .
+pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
 < "Deadlock" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds: 

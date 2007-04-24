@@ -1,6 +1,6 @@
 load interpreter
 mod PROGRAM is
-pr INTERPRETER .
+pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
 < "Generator" : Cl | Inh: noInh, Par: noAid, Att: "n" |-> null , "next" |-> null, Mtds: 

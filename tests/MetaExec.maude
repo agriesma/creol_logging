@@ -24,7 +24,7 @@ set show advise off .
 in interpreter .
 
 mod PROGRAM is
-  protecting INTERPRETER .
+  protecting CREOL-INTERPRETER .
   op init : -> Configuration .
   eq init = noConf .
 endm

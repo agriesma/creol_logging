@@ -4,9 +4,9 @@ dnl m4 to generate the test templates.
 dnl
 changequote({|,|})
 define(GRAMMAR_TEST,dnl
-red in $1 : $2 .
-red in $1 : upTerm($2) .
-red in $1 : downTerm(upTerm($2), $3) .
+red in CREOL-$1 : $2 .
+red in CREOL-$1 : upTerm($2) .
+red in CREOL-$1 : downTerm(upTerm($2), $3) .
 )dnl
 ***
 *** Signature.maude -- Test cases for the common signature.
@@ -35,13 +35,13 @@ in datatypes
 in interpreter
 
 
-red in SUBST : insert("var1", bool(true), noSubst) .
-red in SUBST : insert("var2", bool(false), insert("var1", bool(true), noSubst)) .
-red in SUBST : insert("var2", bool(false), insert("var1", bool(true), noSubst)) ["var1"] .
-red in SUBST : upTerm(insert("var1", bool(false), noSubst)) .
-red in SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),noSubst) .
-red in SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", bool(false), noSubst)) ["var1"]), null) .
-red in SUBST : dom("var1", insert("var2", bool(true), insert("var1", bool(false), noSubst))) .
+red in CREOL-SUBST : insert("var1", bool(true), noSubst) .
+red in CREOL-SUBST : insert("var2", bool(false), insert("var1", bool(true), noSubst)) .
+red in CREOL-SUBST : insert("var2", bool(false), insert("var1", bool(true), noSubst)) ["var1"] .
+red in CREOL-SUBST : upTerm(insert("var1", bool(false), noSubst)) .
+red in CREOL-SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),noSubst) .
+red in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", bool(false), noSubst)) ["var1"]), null) .
+red in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1", bool(false), noSubst))) .
 
 GRAMMAR_TEST(GUARDS, wait, noGuard)
 GRAMMAR_TEST(GUARDS, bool(true), noGuard)
@@ -51,30 +51,30 @@ GRAMMAR_TEST(GUARDS, "test" ??, noGuard)
 GRAMMAR_TEST(GUARDS, "test" ?? & "pest", noGuard)
 GRAMMAR_TEST(GUARDS, {| "+" (int(4) # int(5)) & "label" ?? & wait & bool(true) & wait |}, noGuard)
 
-GRAMMAR_TEST(STATEMENTS, "a" . "a", "a")
-GRAMMAR_TEST(STATEMENTS, "a" @ "a", "a")
-GRAMMAR_TEST(STATEMENTS, skip, "a" ::= "a")
-GRAMMAR_TEST(STATEMENTS, "a" ::= "a", skip)
-GRAMMAR_TEST(STATEMENTS, {| "var" ::= new "C" (int(5) # bool(true)) |}, skip)
-GRAMMAR_TEST(STATEMENTS, "m" (emp ; noAid), skip)
-GRAMMAR_TEST(STATEMENTS, "o" . "m" (emp ; noAid), skip)
-GRAMMAR_TEST(STATEMENTS, "o" . "m" (bool(false) ; noAid), skip)
-GRAMMAR_TEST(STATEMENTS, "o" . "m" (emp ; "r"), skip)
-GRAMMAR_TEST(STATEMENTS, "o" . "m" (null ; "r"), skip)
-GRAMMAR_TEST(STATEMENTS, "l" ! "m" (emp), skip)
-GRAMMAR_TEST(STATEMENTS, {| "l" ! "m" (null # null) |}, skip)
-GRAMMAR_TEST(STATEMENTS, {| "l" ! "o" . "m" (null # "a") |}, skip)
-GRAMMAR_TEST(STATEMENTS, {| (("l")?(noAid)) |}, skip)
-GRAMMAR_TEST(STATEMENTS, (("l")?("l")), skip)
-GRAMMAR_TEST(STATEMENTS, await ("test" ??) , skip)
-GRAMMAR_TEST(STATEMENTS, await (("test" ??) & wait), skip)
-GRAMMAR_TEST(STATEMENTS, await (("test" ??) & wait), skip)
-GRAMMAR_TEST(STATEMENTS, return (emp), skip)
-GRAMMAR_TEST(STATEMENTS, {| return ("a" # null # "c") |}, skip)
-GRAMMAR_TEST(STATEMENTS, free (noAid), skip)
-GRAMMAR_TEST(STATEMENTS, free ("a" , "b" , "c"), skip)
-GRAMMAR_TEST(STATEMENTS, tailcall "m" (emp), skip)
-GRAMMAR_TEST(STATEMENTS, {| tailcall "m" (null # "a") |}, skip)
+GRAMMAR_TEST(STATEMENT, "a" . "a", "a")
+GRAMMAR_TEST(STATEMENT, "a" @ "a", "a")
+GRAMMAR_TEST(STATEMENT, skip, "a" ::= "a")
+GRAMMAR_TEST(STATEMENT, "a" ::= "a", skip)
+GRAMMAR_TEST(STATEMENT, {| "var" ::= new "C" (int(5) # bool(true)) |}, skip)
+GRAMMAR_TEST(STATEMENT, "m" (emp ; noAid), skip)
+GRAMMAR_TEST(STATEMENT, "o" . "m" (emp ; noAid), skip)
+GRAMMAR_TEST(STATEMENT, "o" . "m" (bool(false) ; noAid), skip)
+GRAMMAR_TEST(STATEMENT, "o" . "m" (emp ; "r"), skip)
+GRAMMAR_TEST(STATEMENT, "o" . "m" (null ; "r"), skip)
+GRAMMAR_TEST(STATEMENT, "l" ! "m" (emp), skip)
+GRAMMAR_TEST(STATEMENT, {| "l" ! "m" (null # null) |}, skip)
+GRAMMAR_TEST(STATEMENT, {| "l" ! "o" . "m" (null # "a") |}, skip)
+GRAMMAR_TEST(STATEMENT, {| (("l")?(noAid)) |}, skip)
+GRAMMAR_TEST(STATEMENT, (("l")?("l")), skip)
+GRAMMAR_TEST(STATEMENT, await ("test" ??) , skip)
+GRAMMAR_TEST(STATEMENT, await (("test" ??) & wait), skip)
+GRAMMAR_TEST(STATEMENT, await (("test" ??) & wait), skip)
+GRAMMAR_TEST(STATEMENT, return (emp), skip)
+GRAMMAR_TEST(STATEMENT, {| return ("a" # null # "c") |}, skip)
+GRAMMAR_TEST(STATEMENT, free (noAid), skip)
+GRAMMAR_TEST(STATEMENT, free ("a" , "b" , "c"), skip)
+GRAMMAR_TEST(STATEMENT, tailcall "m" (emp), skip)
+GRAMMAR_TEST(STATEMENT, {| tailcall "m" (null # "a") |}, skip)
 
 GRAMMAR_TEST(STM-LIST, noStm, skip)
 GRAMMAR_TEST(STM-LIST, skip, noStm)
@@ -101,14 +101,14 @@ GRAMMAR_TEST(COMMUNICATION, {| < ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc , 
 
 fmod CREOL-LABEL-TEST is
   extending CREOL-DATA-SIG .
-  extending COMMUNICATION .
+  extending CREOL-COMMUNICATION .
   op label : Nat -> Label .
 endfm
 
-GRAMMAR_TEST(CREOL-LABEL-TEST, cont(label(1)), skip)
-GRAMMAR_TEST(CREOL-LABEL-TEST, accept(label(1)), skip)
-GRAMMAR_TEST(CREOL-LABEL-TEST, cont (label(5)), skip)
-GRAMMAR_TEST(CREOL-LABEL-TEST, {| comp(label(5), emp) |}, noMsg)
-GRAMMAR_TEST(CREOL-LABEL-TEST, {| invoc(ob("object1"), label(5), "method1", emp) |}, noMsg)
+GRAMMAR_TEST(LABEL-TEST, cont(label(1)), skip)
+GRAMMAR_TEST(LABEL-TEST, accept(label(1)), skip)
+GRAMMAR_TEST(LABEL-TEST, cont (label(5)), skip)
+GRAMMAR_TEST(LABEL-TEST, {| comp(label(5), emp) |}, noMsg)
+GRAMMAR_TEST(LABEL-TEST, {| invoc(ob("object1"), label(5), "method1", emp) |}, noMsg)
 
 quit

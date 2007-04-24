@@ -5,6 +5,7 @@ This chapter describes the concrete syntax of Creol.  It also gives an
 informal semantics.
 
 @menu
+* Comments::                    Comments in Creol.
 * Literals and Expression::     The functional sub-language.
 * Statements::                  The object-oriented sub-language.
 * Interface Declaration::       Types for objects.
@@ -13,6 +14,22 @@ informal semantics.
 * Exception Declaration::
 * Grammar::                     Creol grammar in EBNF.
 @end menu
+
+
+@node Comments
+@section Comments
+
+Creol supports too kinds of comments, both have been derived from C++
+abd Java.
+
+The first kind begins with @code{//} and extends until the first
+following linebreak.
+
+The secon kind starts with @code{/*} and extends until the first
+following @code{*/}.  Comments of this kind do not nest.
+
+The parser ignores all comments.
+
 
 @node Literals and Expression
 @section Literals and Expressions
@@ -526,14 +543,27 @@ in the order of their precedence.  Operators on any line bind stronger
 than ones on the lines above.
 
 @example
-and or xor iff
-not                              @r{unary operator}
-= /=
-<= < > >=
-|- |-| -|
-+ -
-* /
-- #                              @r{unary operators}
+,                               @r{left}
+|                               @r{left}
+in                              @r{left}
+as                              @r{left}
+<=>                             @r{left}
+=>                              @r{left}
+^                               @r{left}
+|| \/                           @r{left}
+&& /\                           @r{right}
+~                               @r{right, unary operator}
+= /=                            @r{non-associative}
+<= < > >=                       @r{left}
+\                               @r{left}
+|-|                             @r{left}
+-|                              @r{right}
+|-                              @r{left}
++ -                             @r{left}
+* / %                           @r{left}
+**                              @r{left}
+- #                             @r{right, unary operators}
+`                               @r{left}
 @end example
 
 

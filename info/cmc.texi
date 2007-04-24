@@ -6,18 +6,18 @@ In this chapter we describe the general structure of the machine in
 Maude.  The contents of this chapter assumes familarity with Maude.
 
 @menu
-* Data Types::          Explanation of data types.
+* Datatypes::          Explanation of datatypes.
 * Configuration::       Data Structures describing configurations.
 * Interpreter::         Creol Interpreter.
 * Model Checker::       Creol Model Checker in Maude.
 * Sort Hierarchy::      Summary of all sorts and how they relate.
 @end menu
 
-@node Data Types
-@section Data Types
+@node Datatypes
+@section Datatypes
 
-The file @file{datatypes.maude} containes the framework for data type
-definitions as well as the definition of the pre-defined data types.
+The file @file{datatypes.maude} containes the framework for datatype
+definitions as well as the definition of the pre-defined datatypes.
 
 The module @code{CREOL-DATA-SIG} defines the basic features of data
 types for the machine.  First, it defines the basic sorts of the
@@ -140,9 +140,9 @@ Equality (and inequality) is defined for all datatypes.
 
 
 @node Predefined Datatypes
-@subsection Predefined Data Types
+@subsection Predefined Datatypes
 
-In this section we describe the pre-defined data types in the virtual
+In this section we describe the pre-defined datatypes in the virtual
 machine, the operations defined on them, and their semantics.
 
 @menu
@@ -335,11 +335,11 @@ Pairs are explained in the next section. @c
 
 
 @node User Defined Datatypes
-@subsection Creating Your own Data Type
+@subsection Creating Your own Datatype
 
-The procedure for creating your own data type is illustrated with the
+The procedure for creating your own datatype is illustrated with the
 pair type.  The first thing to do is to write a functional module
-which defines your new data type as a subsort of @code{Data}.
+which defines your new datatype as a subsort of @code{Data}.
 Actuallly, we do not need to define another sort, but it is sometimes
 useful for debugging.
 
@@ -378,48 +378,247 @@ endfm
 @node Configuration
 @section Data Structures Describing Configurations
 
-XXX
+In this section we explain the data structures forming a state of a
+Creol system.
 
+@menu
+* Substitution::        Mapping variables to values.
+* Guard::               Expressions used as guards.
+* Statement::           Statements.
+* Classes::             Classes.
+* Object::              Objects as processors.
+* Message::             Messages exchanged by objects.
+* Configurations::      Combining parts to global states.
+@end menu
+
+
+@node Substitution
 @subsection Substitutions
 
-XXX
+The module @code{CREOL-SUBST} defines a mapping from attribute names
+(of sort @code{Aid}) to values (of sort @code{Data}).  We call this
+mapping a @emph{substitution}.  This substitution is defined using
+Maude's @code{MAP} module.  In addition, the following operators are
+defined:
+
+@table @code
+@item dom(aid, subst)
+This predicate tests, whether the attribute name @code{aid} has a
+value in the substitution @code{subst}.
+
+@item compose(S1, S2)
+This function computes the @emph{union} of the substitutions @code{S1}
+and @code{S2}, where the bindings in @code{S2} override the bindings
+in @code{S1}.
+
+@item S1 # S2
+This function constructs a @emph{union} of @code{S1} and @code{S2},
+too.  However, in contrast to @code{compose(S1, S2)}, the union is not
+actually computed, but if bindings are accessed, it is first checked,
+whether it is defined in @code{S2} and then in @code{S1}.
+@end table
+
+Observe, that for all substitutions @code{S1} and @code{S2} and all
+attribute identifiers @code{a} we have:
+@example
+compose(S1, S2)[a] = (S1 # S2)[a]
+@end example
+
+The advantage of @code{_#_} over compose is, that more attributes
+are looked up from the local environment and the computation of the
+union is costly.
 
 
-@subsection Evaluation of expressions
+@subsection Evaluation of Expressions
 
-XXX
+The module @code{CREOL-EVAL} defines expressions and how they are
+evaluated, by extending the @code{DATATYPE} module, which defines the
+semantics of all (elementary) datatypes (see @pxref{Datatypes}).
+
+The operation @code{eval(e, S)} evaluates an expression @code{e} in
+the context @code{S}.  This is essentially done by reducing all
+function arguments to data in the hope that an equation defined for
+the data types can be applied to obtain the function-application's
+value.
+
+The operation @code{evalList} maps eval on expression lists (of sort
+@code{ExprList}).
 
 
+@node Guard
 @subsection Guards
 
+The module @code{CREOL-GUARD} defines the syntax of guard
+expressions on the machine level.
+
 XXX
 
 
+@node Statement
 @subsection Statements
 
+The module @code{CREOL-STATEMENT} defines the syntax of statements on
+the machine level.
+
+@table @code
+@item skip
+This is a do-nothing statement.  It has, however, the effect of
+generating a successor state.
+
+@item _::=_
+An assignment statement.
+
+@item _::= new_(_)
+An object creation statement.
+
+@item _(_;_)
+A synchronous call statement.
+
+@item _!_(_)
+An asynchronous call statement.
+
+@item _?(_)
+Receiving a reply.
+
+@item await _
+Awaiting a condition.
+@end table
+
+In addition to these statements, which correspond to the statements of
+the programming language, some support statements are defined on the
+machine level.  They are not available to the programmer, but are
+inserted by the compiler and the run-time system.
+
+@table @code
+@item return
+This statement is used to generate the reply message.  It takes a list
+of expressions as its argument.  This statement is generated by the
+compiler as the last statement of each method.  The argument list is
+@emph{always} the list of the method's out-parameters.
+
+@item bury
+This statement removes the binding of a variable from the local
+environment (see @pxref{Process}).  It is generated by the compiler to
+eliminate dead variables from the state.  This only occurs for model
+checking.
+
+@item free
+This statement is used to notify a queue to discard a reply to a
+label, as soon as it arrives.  In addition, the mapping of the label
+name may be removed from the local invariant, like with the
+@code{bury} statement above.  This only happens while model checking.
+
+@item cont
+This statement is generated by the run-time system to handle
+self-calls.  If an object tries to receive the reply to a call sent to
+itself, the object would usually dead-lock.  Instead, control is given
+to the process of which the reply is expected.  The @code{cont}
+statement is appended as the @emph{last} statement of the invoked
+method, with the label as an argument, to indicate that control must
+return to the corresponding reply statement.
+
+@item tailcall
+This statement is used to @emph{replace} the current process with a
+new process, as indicated by the argument.  The purpose of this
+statement is to optimize the number of states in tail-recursive calls
+during model checking.
+
+@item accept
 XXX
 
+@item assign
+This statement is generated by the run-time system.  It performs the
+actual substitution of the values in assignment statements.
+@end table
 
-@subsection Compound Statements
+
+@anchor{Compound Statements}
+@subsubsection Compound Statements
 
 XXX
 
+@table @code
+@item _;_
+XXX
 
+@item _[]_
+XXX
+
+@item _|||_
+XXX
+
+@item if_th_el_fi
+XXX
+
+@item while_do_od
+XXX
+@end table
+
+In addition, the run-time system may introduce the following
+statements:
+@table @code
+@item _MERGER_
+A non-associative merge statement.
+@end table
+
+
+@anchor{Process}
+@subsubsection Process
+
+A process is a term of sort @code{Process} and is defined to be a pair
+@code{(L, S)} of a substitution @code{L} and a (compound) statement
+@code{S}.  The terminated process is also represented as @code{idle}.
+
+
+@subsubsection Process Queue
+
+A process queue is a @emph{multi-set} of processes, constructed by
+@code{_++_}.  The empty process queue is represented by @code{noProc}.
+
+
+@node Classes
 @subsection Classes
 
 XXX
 
+@menu
+* Inherit::
+* Method::
+* Class::
+@end menu
 
+
+@node Inherit
+@subsubsection Inherit
+
+XXX
+
+
+@node Method
+@subsubsection Method
+
+XXX
+
+
+@node Class
+@subsubsection Class
+
+XXX
+
+
+@node Object
 @subsection Objects
 
 XXX
 
 
+@node Message
 @subsection Messages
 
 XXX
 
 
+@node Configurations
 @subsection Configurations
 
 XXX
@@ -429,7 +628,102 @@ XXX
 @node Interpreter
 @section Creol Interpreter
 
-XXX
+The interpreter defines the semantics of Creol in terms of rewriting
+rules.  We refer the reader to the module @code{INTERPRETER} for the
+exact definition of the rules.  Here, we give an overview of the rules
+and equations.  The names given below can be used for tracing the
+rules using Maudes trace facility.
+
+@table @code
+@item assign
+These rules execute assignment statements of the form @code{AL assign
+DL}, where @code{AL} and @code{DL} are lists of attributes resp. lists
+of data values.
+
+@item skip
+This rule executes a skip statement.
+
+@item if-th
+This rule executes an if-then-else statement.
+
+@item while
+This rule executes a while statement.
+
+@item new-object
+This rule creates a new object, initialises it, and executes its
+run-method.
+
+@item nondet
+This rule executes a non-deterministic choice statetement.
+
+@item merge
+This rule executes a merge (@code{S1 ||| S2}) statement by choosing an
+enabled branch and setting up a @code{S1 MERGER S2} statement, where
+@code{S1} is the statement to execute now.
+
+@item merge-aux
+This rule executes a @code{S1 MERGER S2} statement.
+
+@item continue2
+This rule executes a continue statement in a @code{S1 MERGER S2}
+statement.
+
+Can this actually happen?
+
+@item local-call
+This rule executes a local call statement.
+
+XXX: See also above for continue.
+
+@item local-call-in-merge
+This rule executes a local call within a @code{MERGER} statement.
+
+@item suspend
+Suspend a process.
+
+@item guard
+Execute an await statement if the guard is enabled.
+
+@item PrQ-ready
+Wake up a suspended process.
+
+@item tailcall
+Execute a @code{tailcall} statement.
+
+@item accept
+Execute a @code{accept} statement.
+
+@item receive-call-req
+If we receive an invocation message, start binding the method body.
+@code{m} and @code{m @ c}.
+
+@item receive-call-bound
+If a method is bound, enqueue it into the process queue.
+
+@item continue
+Continue from a self call.
+
+@item local-async-reply
+Execute a local asynchronous method call.
+
+@item local-async-qualified-req
+Execute a local asynchronous method call with a class qualifier.
+
+@item return
+Emit a reply statement.
+
+@item invoc-msg
+Move an invocation message into the queue.
+
+@item free
+Schedule a label such that the corresponding reply can be removed.
+
+@item deallocate
+If the reply arrives, remove it immediately.
+
+@item bury
+Bury a variable, i.e., remove it from the local bindings.
+@end table
 
 
 @node Model Checker

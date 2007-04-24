@@ -1,6 +1,6 @@
 load interpreter
 mod PROGRAM is
-pr INTERPRETER .
+pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
 < "SantaClausC" : Cl | Inh: noInh, Par: noAid, Att: "ctRreindeers" |-> null , "waitRreindeers" |-> null , "harnessedReindeers" |-> null , "ctElves" |-> null , "waitElves" |-> null , "inofficeElves" |-> null, Mtds: 
