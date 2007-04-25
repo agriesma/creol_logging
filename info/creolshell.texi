@@ -1,0 +1,5 @@
+@node creolshell
+@chapter The @command{creolshell}
+@cindex @command{creolshell}
+
+

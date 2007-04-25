@@ -37,38 +37,37 @@ let inputs : string list ref = ref []
 
 let add_input name = inputs := (!inputs)@[name]
 
+module Target =
+  struct
+    type t = No | Creol | Maude | MaudeMC | XML
 
-type outputs = {
-	mutable maude_file: string option;
-	mutable maude: Maude.options;
-	mutable xml: string option;
-	mutable pretty_print: string option;
-}
+    let target = ref Maude
 
-let outputs = {
-    maude_file = Some "out.maude";
-    maude = {
-	Maude.red_init = false;
-	Maude.modelchecker = false;
-	Maude.main = None;
-    };
-    xml = None;
-    pretty_print = None;
-}
+    let file = ref "creolc.out"
 
-let apply_outputs tree =
-  let do_out f =
-    function
-        None -> ()
-      | Some "-" -> f stdout
-      | Some s -> f (open_out s)
-  and do_xml tree =
-    function None -> () | Some s -> CreolIO.creol_to_xml s Note.to_xml (fun a b -> ()) tree
-  in
-  (** Apply the output passes *)
-  do_out (function out -> Maude.of_creol outputs.maude out tree) outputs.maude_file ;
-  do_out (function out -> pretty_print out tree) outputs.pretty_print;
-  do_xml tree outputs.xml
+    let options = { Maude.modelchecker = false; red_init = false; main = None }
+
+    let set =
+	function
+	    "none" -> target := No
+	  | "creol" -> target := Creol
+	  | "maude" -> options.Maude.modelchecker <- false; target := Maude
+	  | "maudemc" -> options.Maude.modelchecker <- true; target := MaudeMC
+	  | "xml" -> target := XML
+	  | s -> raise (Arg.Bad ("unknown target " ^ s))
+
+    let output tree =
+      let out =
+	  match !file with
+          | "-" -> stdout
+          | s -> open_out s
+	in
+	match !target with
+	  No -> ()
+	| Creol -> pretty_print out tree
+	| Maude | MaudeMC -> Maude.of_creol options out tree
+	| XML -> CreolIO.creol_to_xml !file Note.to_xml (fun a b -> ()) tree
+  end
 
 (* Pass management *)
 
@@ -140,32 +139,50 @@ let main () =
   let options = [
     ("-",
      Arg.Unit (function () -> add_input "-"), "Read from standard input");
+    ("-o",
+     Set_string Target.file,
+     "  Write the output to file");
     ("-v",
      Arg.Unit (function () -> verbose := true),
-    "  Print some information while processing");
+     "  Print some information while processing");
+    ("-w",
+     Arg.Set_string (ref ""),
+     "[name]   Enable warning:\n" ^
+     "    all        Enable all warnings");
+    ("-W",
+     Arg.Set_string (ref ""),
+     " [name]   Disable the warning.  [name]s are the same as for `-w'");
+    ("-d",
+     Arg.Set_string (ref ""),
+     "  Dump tree after pass [name] to out.[name].  [name]s are the same as for `-t'");
+    ("-t",
+     Arg.Set_string (ref ""),
+     "[name]   Enable the pass:\n" ^
+     "    all        All passes described below\n" ^
+     "    lifeness   Determine if variables are life or not\n" ^
+     "    deadvars   Eliminate dead variables\n" ^
+     "    tailcall   Optimize tail calls");
     ("-T",
+     Arg.Set_string (ref ""),
+     "  Disable the pass [name].  [name]s are the same as for `-t'");
+    ("-times",
      Arg.Unit (function () -> Passes.passes.Passes.timings <- true),
-    "  Print timing information");
-    ("-mc",
-     Arg.Unit (function () ->
-       outputs.maude.Maude.modelchecker <- true;
-       Passes.passes.Passes.tailcalls <- true ),
-    "  Compile the files for model checking");
+     "  Print timing information");
+    ("-target",
+     Arg.String Target.set,
+     "[name]   Provides the target of the translation:\n" ^
+     "    none       Do not generate any result\n" ^
+     "    creol      Write out a creol program\n" ^
+     "    maude      Write a maude file suitable for the interpreter\n" ^
+     "    maudemc    Write a maude file suitable for the model checker");
     ("-main",
-     Arg.String (function s -> outputs.maude.Maude.main <- Some s),
-    "  Compile the files for model checking and write the result to [file]");
+     Arg.String (function s -> Target.options.Maude.main <- Some s),
+     "  Compile the files for model checking and write the result to [file]");
     ("-red-init",
-     Arg.Unit (function () ->  outputs.maude.Maude.red_init <- true),
-    "  Generate an output that will reduce init as first step.");
-    ("-o", Arg.String (function s ->  outputs.maude_file <- Some s),
-    "  Compile the files for the interpreter and write the result to [file]");
-    ("-syntax-only", Arg.Unit (function () ->  outputs.maude_file <- None),
-    "  Do not write any outputs.");
-    ("-p", Arg.String (function s -> outputs.pretty_print <- Some s),
-    "  Pretty-print the parse tree after processing to [file]");
-    ("-x", Arg.String (function s -> outputs.xml <- Some s),
-    "  Export the input files to XML file [name]");
+     Arg.Unit (function () ->  Target.options.Maude.red_init <- true),
+     "  Generate an output that will reduce init as first step.");
     ("-V", Unit show_version, "  Show the version and exit");
+    ("-version", Unit show_version, "  Show the version and exit");
     ("--version", Unit show_version, "  Show the version and exit")]
   in
     parse options add_input (Sys.executable_name ^ " [options]") ;
@@ -174,7 +191,7 @@ let main () =
 	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
 	| ["-"] -> CreolIO.from_channel stdin
 	| _ ->  CreolIO.from_files !inputs in
-      apply_outputs (Passes.apply tree) ;
+      Target.output (Passes.apply tree) ;
       exit 0 ;;
 
 main()
