@@ -38,7 +38,7 @@ right.
 * Overall Options::           Controlling the general behaviour.
 * Warning Options::           How picky should the compiler be?
 * Debugging Options::         Tables, measurements, and debugging dumps.
-* Transformation Options::    Which transformations should be applied?
+* Pass Options::              Which passes should be applied?
 * Target Options::            What should be output?
 @end menu
 
@@ -72,15 +72,15 @@ The file name @file{-} instructs the compiler to write the file to the
 standard output.  This allows processing of the output by other tools.
 
 @item -v
-Print (on standard error) some information on the transformations
-applied to the input program.
+Print (on standard error) some information on the passes applied to
+the input program.
 
 @item -help
-Print (on standard XXX) a description of the command line options
+Print (on standard output) a description of the command line options
 understood by @command{creolc}.
 
 @item -version
-Print (on standard XXX) the version number and copyrights of the
+Print (on standard output) the version number and copyrights of the
 invoked @command{creolc} compiler.
 @end table
 
@@ -103,13 +103,17 @@ Enables/disables all the warnings listen below.
 @node Debugging Options
 @subsection Debugging Options
 
-TBD
+The compiler provides some options which help in debugging the
+compiler itself: if you are interested in what the compiler is doing
+or if you suspect a bug in the compiler, the following options may
+help in understanding what the compiler does and how much time it
+spent for what.  However, these options are of little use for normal
+users.
 
 @table @option
 @item -dump @var{name}
 Write the tree returned after the pass @var{name} to the file
-@file{out.@var{name}} as an XML document.  @xref{Transformation
-Options} for a summary of passes.
+@file{out.@var{name}} as an XML document.  @xref{Pass Options}.
 
 @item -times
 Measure the time used for a pass and print a summary of time spent for
@@ -118,14 +122,30 @@ each pass after finishing the compilation.
 
 
 
-@node Transformation Options
-@subsection Transformation Options
+@node Pass Options
+@subsection Pass Options
 
-TBD
+The compiler implements passes and analysis in different passes.  The
+option @option{-p @var{name}} enables a particular pass @var{name},
+whereas @option{-P @var{name}} disables it.
 
-
+Some passes, however, have dependencies on other passes, as stated
+below.  If you enable such a pass, all the ones it depends on are
+enabled.  If you disable a pass in the command line, and there is
+another pass enabled that depends on the disabled one, the behaviour
+of the compiler is undefined.
 
 @table @option
+@item all
+Enables all passes.
+
+@item liveness
+Compute live ranges of labels and variables.
+
+@item deadvars
+Insert instructions which remove dead variables from the state.
+Depends on @option{liveness}.
+
 @item tailcall
 Perform tailcall optimisations.
 
@@ -135,13 +155,13 @@ Perform tailcall optimisations.
 @node Target Options
 @subsection Target Options
 
-The @command{creolc} compiler can output the result of its
-transformations into many output formats.  A target option has the
-form @option{-target @var{NAME}}, where @var{NAME} is of the list
-given below.  If multiple target options are provided, only the latest
-one is effective, except an unknown target is provided.  In that case,
-the compiler will abort with an error message.  Currently, the
-following target languages are supported:
+The @command{creolc} compiler can output the result of its passes into
+many output formats.  A target option has the form @option{-target
+@var{NAME}}, where @var{NAME} is of the list given below.  If multiple
+target options are provided, only the latest one is effective, except
+an unknown target is provided.  In that case, the compiler will abort
+with an error message.  Currently, the following target languages are
+supported:
 
 @table @option
 @item none
@@ -150,9 +170,13 @@ output.
 
 @item creol
 Output the transformed program as a Creol program.  Without any
-transformations, this target can be used as a pretty printer for Creol
+passes, this target can be used as a pretty printer for Creol
 programs.  Virtual statements, which may be inserted during the
 compiler, are output in comments.
+
+Comments which occurred in the source file are @emph{not} written into
+the output, because the compiler ignores comments in the source files
+and discards them during parsing.
 
 @item maude
 Output the transformed program as Creol Machine Code.  In this mode,
@@ -164,8 +188,8 @@ the resulting maude file uses the @emph{model checker} for Creol.
 
 @item xml
 Output the transformed program as an XML document.  The resulting XML
-file is equivalent to the debugging dump after the final
-transformation, but its name is determined by the @option{-o} option.
+file is equivalent to the debugging dump after the final pass, but its
+name is determined by the @option{-o} option.
 @end table
 
 

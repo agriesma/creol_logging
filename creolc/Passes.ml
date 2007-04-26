@@ -21,34 +21,73 @@
  * 02111-1307, USA.
  *)
 
+open Creol
+
 type pass = {
   name: string;
-  help: string;
-  pass: ('a, 'b) Declaration.t list -> ('c, 'd) Declaration.t list
+  dependencies: string list;
+  pass: (Note.t, Note.t) Declaration.t list ->
+			     (Note.t, Note.t) Declaration.t list;
   mutable elapsed: float;
   mutable needed: bool;
   mutable dump: bool
 }
 
 let passes = [
-  { name = "";
-    help = "";
-    pass = check_types;
+  { name = "liveness";
+    dependencies = [];
+    pass = find_definitions;
+    elapsed = 0.0; needed = true; dump = false };
+  { name = "deadvars";
+    dependencies = ["liveness"];
+    pass = find_definitions;
     elapsed = 0.0; needed = false; dump = false };
-  { name = "";
-    help = "";
-    pass = simplify;
-    elapsed = 0.0; needed = false; dump = false };
-  { name = "";
-    help = "";
-    pass = lifeness;
-    elapsed = 0.0; needed = false; dump = false };
-  { name = "";
-    help = "";
-    pass = tailcalls;
-    elapsed = 0.0; needed = false; dump = false };
-  { name = "";
-    help = "";
-    pass = tailcalls;
+  { name = "tailcall";
+    dependencies = [];
+    pass = optimise_tailcalls;
     elapsed = 0.0; needed = false; dump = false };
 ]
+
+let enable_passes passes =
+  ()
+
+let disable_passes passes =
+  ()
+
+let dump_passes passes =
+  ()
+
+let execute_passes tree =
+  let rec execute tree =
+    function 
+	[] -> tree
+      | p::rest -> execute (run p tree) rest
+  and run p tree =
+    if p.needed then
+      begin
+	let now = ref (Unix.gettimeofday ()) in
+	let result =  (p.pass tree) in
+	let elapsed =
+	  (floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0
+	in
+	  p.elapsed <- p.elapsed +. elapsed;
+	  if p.dump then ();
+	  result
+      end
+    else
+      tree
+  in
+    execute tree passes
+
+let report_timings () =
+  let total = ref 0.0 in
+  let rec report =
+    function
+	[] -> print_string ("Total: ...................................... " ^
+			       (string_of_float !total) ^ " msec.\n");
+      | p::r ->
+	  print_string (" " ^ (String.make (38 - String.length p.name) '.') ^
+			   " " ^ (string_of_float p.elapsed) ^ " msec.");
+	  total := !total +. p.elapsed ; report r
+  in
+    report passes

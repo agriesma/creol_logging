@@ -47,9 +47,6 @@ MAUDE=maude
 # Choose a default creol compiler.  User may override on the CLI.
 creolc=creolc.opt
 
-# Use the following for output
-creolc_output=`mktemp creolc.XXXXXXXXXX`
-
 # Command line arguments.
 for option
 do
@@ -63,23 +60,26 @@ do
   optarg=`expr "x$option" : 'x[^=]*=\(.*\)'`
 
   case $option in
-  --creolc) creolshell_prev=creolc ;;
-  --creolc=*) creolc=$optarg ;;
-  --maude) creolshell_prev=maude ;;
-  --maude=*) maude=$optarg ;;
-  --version | -V) version=yes ;;
-  --version=*) version=$optarg ;;
-  --verbose) verbose=yes ;;
-  --verbose=*) verbose=$optarg ;;
-  --keep-output) keep_output=yes ;;
-  --keep-output=*) keep_output=$optarg ;;
+  -creolc) creolshell_prev=creolc ;;
+  -creolc=*) creolc=$optarg ;;
+  -maude) creolshell_prev=maude ;;
+  -maude=*) maude=$optarg ;;
+  -version | -V) version=yes ;;
+  -verbose) verbose=yes ;;
+  -verbose=*) verbose=$optarg ;;
+  -keep-output) keep_output=yes ;;
+  -keep-output=*) keep_output=$optarg ;;
   --help) help=yes ;;
   --help=*) help=$optarg ;;
   # Maude options
-  -no-prelude | -no-banner | -no-advise | -no-mixfix | -no-wrap | \
-  -ansi-color | -no-ansi-color | -tecla | -no-tecla | -batch | -interactive | \
+  -no-prelude | -batch | -interactive) ;;
+  -prelude | -no-banner | -no-advise | -no-mixfix | -no-wrap | \
+  -ansi-color | -no-ansi-color | -tecla | -no-tecla | \
   -random-seed=* | -xml-log=*) maude_flags="$maude_flags \"$option\"" ;;
 
+  # creolc options
+  -target) creolshell_prev=creolc_target ;;
+  -target=*) creolc_target=$optarg ;;
   -o) creolshell_prev=creolc_output ;;
   -o=*) creolc_output=$optarg ;;
 
@@ -105,6 +105,13 @@ for creolc in $creolc creolc.opt ./creolc.opt ../creolc.opt creolc ./creolc ../c
     fi
 done
   
+test -n "$creolc_output" || creolc_output=`mktemp creolc.XXXXXXXXXX`
+test -n "$creolc_target" || creolc_target=maude
+
+case $creolc_target in
+maude | maudemc) ;;
+*) echo "unknown target $creolc_target"; exit 1
+esac
 
 # After having gathered all necessary information we execute the command.
 if [ "$version" = "yes" ] ; then
@@ -119,13 +126,13 @@ else
     if [ "$verbose" = "yes" ] ; then
 	 echo Compiling with: $creolc -red-init -o "$creolc_output $creolc_flags"
     fi
-    $creolc $creolc_flags -red-init -o "$creolc_output" || exit 1
+    $creolc $creolc_flags -red-init -target "$creol_target" -o "$creolc_output" || exit 1
 
     # Launching maude.
     if [ "$verbose" = "yes" ] ; then
-	 echo "Executing maude as : $MAUDE $MAUDE_FLAGS $creolc_output"
+	 echo "Executing maude as : $MAUDE -interactive $MAUDE_FLAGS $creolc_output"
     fi
-    $MAUDE $MAUDE_FLAGS $creolc_output
+    $MAUDE -interactive $MAUDE_FLAGS $creolc_output
 
     # Cleaning up
     echo

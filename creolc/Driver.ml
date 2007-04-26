@@ -35,6 +35,8 @@ let verbose = ref false
 
 let inputs : string list ref = ref []
 
+let times = ref false
+
 let add_input name = inputs := (!inputs)@[name]
 
 module Target =
@@ -71,60 +73,6 @@ module Target =
 
 (* Pass management *)
 
-module Passes =
-  struct
-    type t =
-	{ mutable check_types: bool;
-	  mutable simplify: bool;
-	  mutable lifeness: bool;
-	  mutable tailcalls: bool;
-	  mutable timings: bool;
-	  mutable report: bool;
-	}
-
-    let passes =
-      { check_types = false;
-	simplify = false;
-	lifeness = true;
-        tailcalls = false;
-        timings = false;
-        report = false;
-      }
-
-    let apply tree =
-      (** Transform the tree in accordance to the passes enabled by the
-	  user. *)
-      let current = ref tree in
-      let total = ref 0.0 in
-      let execute name pass report =
-	if !verbose || passes.timings then print_string ("Pass: " ^ name);
-	if passes.timings then
-	  let now = ref (Unix.gettimeofday ()) in
-	    current := pass !current;
-	    let elapsed =
-	      (floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /.
-		1000.0
-	    in
-	      total := !total +. elapsed ;
-	      print_string (" " ^ (String.make (38 - String.length name) '.') ^
-			       " " ^ (string_of_float elapsed) ^ " msec.");
-	else
-	  current := pass !current;
-	if !verbose || passes.timings then print_newline ();
-      in
-	if passes.check_types then
-	  execute "type checking" (function x -> x) ignore;
-	if passes.simplify then
-	  execute "simplify" simplify ignore;
-	if passes.lifeness then
-	  execute "live variables" find_definitions ignore;
-	if passes.tailcalls then
-	  execute "optimise tailcalls" optimise_tailcalls ignore;
-	if passes.timings then print_string ("Total: ...................................... " ^
-				   (string_of_float !total) ^ " msec.\n");
-	!current
-  end
-
 let show_version () =
   (** Show the name and the version of the program and exit. *)
   print_string (Version.package ^ " " ^ Version.version ^ " (" ^
@@ -154,19 +102,19 @@ let main () =
      " [name]   Disable the warning.  [name]s are the same as for `-w'");
     ("-d",
      Arg.Set_string (ref ""),
-     "  Dump tree after pass [name] to out.[name].  [name]s are the same as for `-t'");
-    ("-t",
+     "  Dump tree after [name] to out.[name].  [name]s are identical to `-p'");
+    ("-p",
      Arg.Set_string (ref ""),
      "[name]   Enable the pass:\n" ^
      "    all        All passes described below\n" ^
      "    lifeness   Determine if variables are life or not\n" ^
      "    deadvars   Eliminate dead variables\n" ^
      "    tailcall   Optimize tail calls");
-    ("-T",
+    ("-P",
      Arg.Set_string (ref ""),
      "  Disable the pass [name].  [name]s are the same as for `-t'");
     ("-times",
-     Arg.Unit (function () -> Passes.passes.Passes.timings <- true),
+     Arg.Unit (function () -> times := true),
      "  Print timing information");
     ("-target",
      Arg.String Target.set,
@@ -191,7 +139,8 @@ let main () =
 	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
 	| ["-"] -> CreolIO.from_channel stdin
 	| _ ->  CreolIO.from_files !inputs in
-      Target.output (Passes.apply tree) ;
+      Target.output (Passes.execute_passes tree) ;
+      if !times then Passes.report_timings();
       exit 0 ;;
 
 main()

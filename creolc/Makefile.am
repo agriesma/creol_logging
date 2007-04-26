@@ -40,6 +40,7 @@ creolc_SOURCES		= Version.ml Messages.ml \
 			  CreolLex.ml CreolLex.mli \
 			  CreolParser.mli CreolParser.ml \
 			  CreolIO.mli CreolIO.ml \
+			  Passes.ml \
 			  Driver.ml
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)

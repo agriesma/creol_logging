@@ -4,6 +4,11 @@
 This chapter describes the concrete syntax of Creol.  It also gives an
 informal semantics.
 
+This chapter is not yet finished.  Some constructs described in this
+chapter need not be implemented by the compiler or the maude
+semantics, yet.
+
+
 @menu
 * Comments::                    Comments in Creol.
 * Literals and Expression::     The functional sub-language.
@@ -25,10 +30,8 @@ abd Java.
 The first kind begins with @code{//} and extends until the first
 following linebreak.
 
-The secon kind starts with @code{/*} and extends until the first
+The second kind starts with @code{/*} and extends until the first
 following @code{*/}.  Comments of this kind do not nest.
-
-The parser ignores all comments.
 
 
 @node Literals and Expression
