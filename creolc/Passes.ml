@@ -48,6 +48,18 @@ let passes = [
     elapsed = 0.0; needed = false; dump = false };
 ]
 
+let split str =
+  let rec _split str res =
+    try
+      let p = String.index str ',' in
+       _split (String.sub str (p + 1) (String.length str))
+	((String.sub str 1 (p - 1))::res)
+    with
+      Not_found -> res
+  in
+    _split str []
+  
+
 let enable_passes passes =
   ()
 

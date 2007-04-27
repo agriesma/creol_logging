@@ -21,6 +21,10 @@
  * 02111-1307, USA.
  *)
 
+let verbose = ref 0
+
+let message lvl msg = if !verbose > lvl then prerr_endline msg
+
 let error file line message =
   prerr_endline (file ^ ":" ^ (string_of_int line) ^ ": " ^ message)
 
