@@ -126,7 +126,7 @@ else
     if [ "$verbose" = "yes" ] ; then
 	 echo Compiling with: $creolc -red-init -o "$creolc_output $creolc_flags"
     fi
-    $creolc $creolc_flags -red-init -target "$creol_target" -o "$creolc_output" || exit 1
+    $creolc $creolc_flags -red-init -target "$creolc_target" -o "$creolc_output" || exit 1
 
     # Launching maude.
     if [ "$verbose" = "yes" ] ; then

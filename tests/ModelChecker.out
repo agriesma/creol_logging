@@ -17,9 +17,9 @@ result Configuration:
   Pr: ("caller" |-> ob("Tailcall0"), "label" |-> label(ob("Tailcall0"), ob(
     "Tailcall0"), "init", emp)), cont(label(ob("Tailcall0"), ob("Tailcall0"),
     "init", emp)),
-  PrQ: "Dummy" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), label(
-    ob("Tailcall0"), ob("Tailcall0"), "init", emp) ?(noAid) ; "Dummy" ! "run"(
-    emp) ; "Dummy" ?(noAid), Lcnt: 1 >
+  PrQ: "label init" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp),
+    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ?(noAid) ; "label run"
+    ! "run"(emp) ; "label run" ?(noAid), Lcnt: 1 >
 
 < ob("main") : "NoClass" | Att: noSubst,
   Pr: idle,
@@ -41,11 +41,11 @@ result Configuration:
     4),
   Pr: noSubst, accept(tag(label(ob("Tailcall0"), ob("Tailcall0"), "run",
     emp))),
-  PrQ: ("Dummy" |-> label(ob("Tailcall0"), ob("Tailcall0"), "run", emp), label(
-    ob("Tailcall0"), ob("Tailcall0"), "run", emp) ?(noAid)) ++ ("caller" |->
-    ob("Tailcall0"), "label" |-> tag(label(ob("Tailcall0"), ob("Tailcall0"),
-    "run", emp))), if "<"(int(0) # "x") th "x" ::= "-"("x" # int(1)) ; tailcall
-    "run"(emp) el return(emp) fi, Lcnt: 1 >
+  PrQ: ("label run" |-> label(ob("Tailcall0"), ob("Tailcall0"), "run", emp),
+    label(ob("Tailcall0"), ob("Tailcall0"), "run", emp) ?(noAid)) ++ ("caller"
+    |-> ob("Tailcall0"), "label" |-> tag(label(ob("Tailcall0"), ob(
+    "Tailcall0"), "run", emp))), if "<"(int(0) # "x") th "x" ::= "-"("x" # int(
+    1)) ; tailcall "run"(emp) el return(emp) fi, Lcnt: 1 >
 
 < ob("main") : "NoClass" | Att: noSubst,
   Pr: idle,

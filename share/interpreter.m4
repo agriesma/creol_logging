@@ -609,7 +609,7 @@ STEP(dnl
   < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, compose(S,  L))),
-    ((noSubst, ("Dummy" ! "init" (emp)) ; ("Dummy" ?(noAid)) ; ("Dummy" ! "run" (emp)) ; ("Dummy" ?(noAid)))))|},
+    ((noSubst, ("label init" ! "init" (emp)) ; ("label init" ?(noAid)) ; ("label run" ! "run" (emp)) ; ("label run" ?(noAid)))))|},
 {|[label new-object]|})
 
 
@@ -690,20 +690,14 @@ rl
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label merge-aux] .
 
-STEP(dnl
-{|< O : C | Att: S, Pr: (L, (cont(Lab) MERGER SL'); SL''), 
-            PrQ: (L', ((Lab ?(A)); SL)) ++ W, Lcnt: F >|},
-{|< O : C | Att: S, Pr: (L',((((Lab ?(A)) ; SL) MERGER SL'); SL'')), 
-            PrQ: W, Lcnt: F >|},
-{|[label continue2]|})
-
 *** local call 
 ceq
-  < O : C | Att: S,Pr: (L, ((Lab ?(AL)); SL)),PrQ: W ++ (L', SL'),Lcnt: F >
+  < O : C | Att: S, Pr: (L, ((Lab ?(AL)); SL)),
+            PrQ: W ++ (L', SL'), Lcnt: F >
   = 
-  < O : C | Att: S,Pr: (L', SL' ; cont(Lab)),PrQ: W ++ (L,((Lab ?(AL)); SL)),
-            Lcnt: F > 
-  if (L'["label"] == Lab)
+  < O : C | Att: S, Pr: (L', (SL' ; cont(Lab))),
+            PrQ: W ++ (L, ((Lab ?(AL)); SL)), Lcnt: F >
+  if L'["label"] == Lab
   [label local-call] .
 
 *** local call within merge
@@ -741,7 +735,7 @@ CSTEP(dnl
 
 *** Must be a rule, also in the interpreter.
 crl
-  < O : C | Att: S, Pr: idle, PrQ: (L,SL) ++ W, Lcnt: N > 
+  < O : C | Att: S, Pr: idle, PrQ: W ++ (L,SL), Lcnt: N > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   => 
   < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
@@ -847,11 +841,12 @@ STEP({|boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >|},
 {|< O : C | Att: S, Pr: P, PrQ: W ++ P', Lcnt: N >|},
 {|[label receive-call-bound]|})
 
+*** May be we should do something smarter here?
 rl
-  < O : C | Att: S, Pr: (L, cont(Lab); SL), PrQ: (L',((Lab)?(AL); SL')) ++
-    W, Lcnt: F >
+  < O : C | Att: S, Pr: (L, (cont(Lab); SL)),
+	    PrQ: W ++ (L',((Lab)?(AL); SL')), Lcnt: F >
   =>
-  < O : C | Att: S, Pr: (L',(Lab)?(AL); SL'), PrQ: W, Lcnt: F >
+  < O : C | Att: S, Pr: (L', ((Lab)?(AL); SL')), PrQ: W, Lcnt: F >
   [label continue]
   .
 
@@ -954,6 +949,7 @@ eq
     Pr: ((ifdef({|MODELCHECKER|}, {|A |-> null, L|}, L)),
          (AL assign DL); SL), PrQ: W, Lcnt: F > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  [label receive-reply]
   .
 
 *** Transport rule: include new message in queue

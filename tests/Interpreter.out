@@ -41,8 +41,8 @@ conf:Configuration --> boundMtd(ob("Tailcall0"),("caller" |-> ob("Tailcall0"),
 A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
 L:Subst --> noSubst
 SL:StmList --> noStm
-W:MProc --> "Dummy" |-> label(ob("Tailcall0"),2), label(ob("Tailcall0"),2) ?(
-    noAid)
+W:MProc --> ("label init" |-> label(ob("Tailcall0"),1), "label run" |-> label(
+    ob("Tailcall0"),2)), label(ob("Tailcall0"),2) ?(noAid)
 N:Nat --> 3
 ==========================================
 rewrite in TEST-TAILCALL : init .
