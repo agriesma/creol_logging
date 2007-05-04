@@ -282,7 +282,7 @@ fmod CREOL-STM-LIST is
   op idle : -> Process [{|format|} (!b o)] .  
   op _,_ : Subst StmList -> Process [ctor {|format|} (o r sbu o)] . 
   var L : Subst .
-  eq (L, noStm) = idle . *** if "label" is needed this is dangerous!
+  eq (L, noStm) = idle . *** if "_label" is needed this is dangerous!
   eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
 
 
@@ -353,7 +353,7 @@ fmod CREOL-CLASS is
   eq get(Q, noMtd, O, Lab, EL) = noProc . 
   eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, Lab, EL) = 
     if Q == Q' 
-    then (insert("caller", O, insert("label", Lab, S)), (AL ::= EL) ; SL)
+    then (insert("caller", O, insert("_label", Lab, S)), (AL ::= EL) ; SL)
     else get(Q, MM, O, Lab, EL) fi .
 
 endfm
@@ -609,7 +609,7 @@ STEP(dnl
   < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, compose(S,  L))),
-    ((noSubst, ("label init" ! "init" (emp)) ; ("label init" ?(noAid)) ; ("label run" ! "run" (emp)) ; ("label run" ?(noAid)))))|},
+    ((noSubst, ("_init" ! "init" (emp)) ; ("_init" ?(noAid)) ; ("_run" ! "run" (emp)) ; ("_run" ?(noAid)))))|},
 {|[label new-object]|})
 
 
@@ -639,7 +639,7 @@ eq
   =
   findAttr(O, I {|#|}{|#|} I', compose(S', S),
            SL ; (AL ::= EL), 
-           (L', ("Dummy" ! "init" @ C(emp)) ; ("Dummy" ?( noAid)) ; SL'))
+           (L', ("_init" ! "init" @ C(emp)) ; ("_init" ?( noAid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
   [label find-attr] .
 
@@ -690,36 +690,32 @@ rl
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label merge-aux] .
 
-*** local call 
+
+
+
+
+*** local call
 ceq
   < O : C | Att: S, Pr: (L, ((Lab ?(AL)); SL)),
             PrQ: W ++ (L', SL'), Lcnt: F >
   = 
   < O : C | Att: S, Pr: (L', (SL' ; cont(Lab))),
             PrQ: W ++ (L, ((Lab ?(AL)); SL)), Lcnt: F >
-  if L'["label"] == Lab
-  [label local-call] .
+  if L'["_label"] == Lab
+  [label local-call]
+  .
 
-*** local call within merge
-ceq
-  < O : C | Att: S,Pr: (L,(((Lab ?(AL)); SL) MERGER SL'')),
-	    PrQ: W ++ (L', SL'), Lcnt: F >
-  = 
-  < O : C | Att: S,Pr: (L', SL'),
-	    PrQ: W ++ (L, (((await Lab ??) ; (Lab ?(AL)); SL) MERGER SL'')),
-	    Lcnt: F > 
-  if (L'["label"] == Lab)
-  [label local-call-in-merge] .
 
 *** Suspension ***
 
 CSTEP(dnl
-{|< O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
+{|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > *** clear(SL)
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|not enabled(SL, (S # L), MM)|},
 {|[label suspend]|})
+
 
 *** Guards ***
 
@@ -735,33 +731,40 @@ CSTEP(dnl
 
 *** Must be a rule, also in the interpreter.
 crl
-  < O : C | Att: S, Pr: idle, PrQ: W ++ (L,SL), Lcnt: N > 
+  < O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   => 
-  < O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   if ready(SL, (S {|#|} L), MM) 
-  [label PrQ-ready] .
+  [label PrQ-ready]
+  .
 
 
+*** Handle await wait in different contexts.  I might change this
+*** to the version of the spin paper.
 eq
   < O : C | Att: S, Pr: idle, PrQ: (L, await wait ; SL) ++ W, Lcnt: N >  
   =
-  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N > [label wait] .
+  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
+  [label wait]
+  .
 
 eq
   < O : C | Att: S, Pr: idle, PrQ: (L, ((await wait ; SL)[] SL'); SL'')++ W,  
     Lcnt: N >  
   =
   < O : C | Att: S, Pr: idle, PrQ: (L, (SL [] SL'); SL'') ++ W, Lcnt: N >
-[label wait-nondet] .
+  [label wait-nondet]
+  .
 
 eq
   < O : C | Att: S, Pr: idle, PrQ: (L,((await wait ; SL)||| SL'); SL'')++ W,  
     Lcnt: N >  
   =
   < O : C | Att: S, Pr: idle, PrQ: (L, (SL ||| SL'); SL'') ++ W, Lcnt: N >
-  [label wait-merge] .
+  [label wait-merge]
+  .
 
 
 
@@ -774,7 +777,8 @@ eq
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >  
   =
   < O : C | Att: S,  Pr: P, PrQ: (L, await G ; SL) ++ W, Lcnt: F >    
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) > .
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
+  .
 
 
 ***
@@ -783,8 +787,8 @@ eq
 *** Fake the caller and the label and tag the label.  Since we do not
 *** want to interleave, this can also be an equation.
 STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (noSubst, accept(tag(L["label"]))), PrQ: W, Lcnt: N >
- bindMtd(O, O, tag(L["label"]), M, evalList(EL, (S # L)), C < emp >)
+{|< O : C | Att: S, Pr: (noSubst, accept(tag(L["_label"]))), PrQ: W, Lcnt: N >
+ bindMtd(O, O, tag(L["_label"]), M, evalList(EL, (S # L)), C < emp >)
 |},
 {|[label tailcall]|})
 
@@ -793,8 +797,8 @@ crl
   < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
          Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (insert("label", tag(Lab), L), SL), PrQ: W, Lcnt: N >
-  if L["label"] = Lab
+  < O : C | Att: S, Pr: (insert("_label", tag(Lab), L), SL), PrQ: W, Lcnt: N >
+  if L["_label"] = Lab
   [label tailcall-accept]
   .
 
@@ -812,27 +816,38 @@ STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
 	 bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
 
+
 *** Method binding with multiple inheritance
+
+*** If we do not find a run method we provide a default method.
 eq
   bindMtd(O, O', Lab, "run", EL, noInh)
   = 
-  boundMtd(O,(("caller" |-> O', "label" |-> Lab), return(emp)))
+  boundMtd(O,(("caller" |-> O', "_label" |-> Lab), return(emp)))
+  .
+
+*** Same for init.
+eq
+  bindMtd(O, O', Lab, "init", EL, noInh)
+  = 
+  boundMtd(O,(("caller" |-> O', "_label" |-> Lab), return(emp)))
   .
 
 
 eq
-  bindMtd(O, O', Lab, M, EL, (C < EL' >) {|#|}{|#|} I')
+  bindMtd(O, O', Lab, M, EL, (C < EL' >) {|##|} I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
   if (M in MS) then
-    boundMtd(O,get(M,MS,O', Lab, EL)) 
+    boundMtd(O,get(M, MS, O', Lab, EL))
   else
-    bindMtd(O,O',Lab,M,EL, I {|##|} I')
+    bindMtd(O, O', Lab, M, EL, I {|##|} I')
   fi 
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   .
 
-STEP({|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM + invoc(O', Lab, Q @ C, DL) >|},
+STEP({|< O : Qu | Size: Sz, Dealloc: LS,
+                  Ev: MM + invoc(O', Lab, Q @ C, DL) >|},
 {|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
     bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
@@ -846,7 +861,7 @@ rl
   < O : C | Att: S, Pr: (L, (cont(Lab); SL)),
 	    PrQ: W ++ (L',((Lab)?(AL); SL')), Lcnt: F >
   =>
-  < O : C | Att: S, Pr: (L', ((Lab)?(AL); SL')), PrQ: W, Lcnt: F >
+  < O : C | Att: S, Pr: (L', ((Lab)?(AL); SL')), PrQ: W ++ (L, SL), Lcnt: F >
   [label continue]
   .
 
@@ -888,7 +903,7 @@ ifdef({|MODELCHECK|},dnl
   < O : C | Att: S, Pr: (L, ( A ! Q @ C'(EL)); SL), PrQ: W, Lcnt: N >
   =>
   < O : C | Att: S, Pr: (insert (A, label(O, N), L), SL), PrQ: W,
-    Lcnt: (N + 1) >
+    Lcnt: N + 1 >
   invoc(O, label(O, N), Q @ C', evalList(EL, (S # L))) from O to O
 |})dnl
   [label local-async-qualified-req]
@@ -924,7 +939,7 @@ ifdef({|MODELCHECK|},dnl
 *** emit reply message ***
 STEP({|< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >|},
 {|< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  comp(L["label"], evalList(EL, (S # L))) from O to caller(L["label"])|},
+  comp(L["_label"], evalList(EL, (S # L))) from O to caller(L["_label"])|},
 {|[label return]|})
 
 *** Optimization: reduce label to value only once

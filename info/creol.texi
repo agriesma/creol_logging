@@ -43,7 +43,7 @@ section.  The equality symbol
 
 @subsection Literals
 
-The boolean literals of creol are @code{true} and @code{false}.
+The boolean literals of Creol are @code{true} and @code{false}.
 
 The integer literals match the regular expression @code{[0-9]+}.
 
@@ -58,7 +58,10 @@ The empty list is represented by the literal @code{nil}.
 
 The null-reference is represented by the literal @code{null}.
 
-The self-reference is represented by the literal @code{this}.
+The self-reference is represented by the keyword @code{this}.
+
+In method bodys, the identity of the caller is represented by the
+keyword @code{caller}.
 
 
 @subsection Variables
@@ -115,14 +118,14 @@ Single-letter strings are considered to be characters.
 
 @subsection Tuples
 
-The operatopns on tuples are
+The operations on tuples are
 
 @code{( @var{expression} , )} for tuple construction.
 
 
 @subsection Sequences
 
-The operatons on sequences are:
+The operations on sequences are:
 
 @code{@var{expression} |- @var{expression}} for appending to the right.
 
@@ -163,8 +166,17 @@ Object expressions and literals are expressions whose value is a
 reference to an object.  The only literal is @code{null}, representing
 the null-pointer.
 
+The keyword @code{this} represents the self-reference and is an
+expression.
+
+The keyword @code{caller} represents the identity of the caller within
+a method body.  The type of @code{caller} is the method's
+co-interface.
+
 The expression @code{@var{expression} as @var{type}} represents
-re-typing.  This usually involves a run-time check.
+re-typing of the value of @var{expression} to the type (interface)
+@var{type}.  If the value of @var{expression} cannot be determined
+statically, type conformance is tested during runtime.
 
 
 @subsection Function Application
@@ -256,9 +268,9 @@ A @emph{asynchronous} method call is written as
 of a label, @var{m} is the name of a method, @var{ins} is a possibly
 empty list of expressions describing the actual arguments to the call.
 
-Results are received by the statement @code{?(@var{outs})}, where
-@var{l} is a label name used for invoking the method, and @var{outs}
-is a list of variable names used to store the result.
+Results are received by the statement @code{@var{l}?(@var{outs})},
+where @var{l} is a label name used for invoking the method, and
+@var{outs} is a list of variable names used to store the result.
 
 
 @subsection Blocks
