@@ -1,0 +1,13 @@
+in AsyncSieveBuggy .
+
+red init main("Generator", emp) .
+
+rew[100] init main("Generator", emp) .
+
+set trace on .
+set trace select on .
+trace select local-call continue return receive-reply suspend PrQ-ready .
+
+rew[100] init main("Generator", emp) .
+
+quit .

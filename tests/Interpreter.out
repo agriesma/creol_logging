@@ -20,9 +20,9 @@ search in TEST-TAILCALL : init =>+ conf:Configuration
   PrQ: W:MProc, Lcnt: N:Nat > .
 
 Solution 1 (state 32)
-conf:Configuration --> boundMtd(ob("Tailcall0"),("caller" |-> ob("Tailcall0"),
-    "label" |-> tag(label(ob("Tailcall0"),2))), if "<"(int(0) # "x") th "x" ::=
-    "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi)
+conf:Configuration --> boundMtd(ob("Tailcall0"),("_label" |-> tag(label(ob(
+    "Tailcall0"),2)), "caller" |-> ob("Tailcall0")), if "<"(int(0) # "x") th
+    "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi)
 
 
 < ob("Tailcall0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
@@ -41,8 +41,8 @@ conf:Configuration --> boundMtd(ob("Tailcall0"),("caller" |-> ob("Tailcall0"),
 A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
 L:Subst --> noSubst
 SL:StmList --> noStm
-W:MProc --> ("label init" |-> label(ob("Tailcall0"),1), "label run" |-> label(
-    ob("Tailcall0"),2)), label(ob("Tailcall0"),2) ?(noAid)
+W:MProc --> ("_init" |-> label(ob("Tailcall0"),1), "_run" |-> label(ob(
+    "Tailcall0"),2)), label(ob("Tailcall0"),2) ?(noAid)
 N:Nat --> 3
 ==========================================
 rewrite in TEST-TAILCALL : init .

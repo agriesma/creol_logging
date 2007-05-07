@@ -856,12 +856,11 @@ STEP({|boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >|},
 {|< O : C | Att: S, Pr: P, PrQ: W ++ P', Lcnt: N >|},
 {|[label receive-call-bound]|})
 
-*** May be we should do something smarter here?
 rl
   < O : C | Att: S, Pr: (L, (cont(Lab); SL)),
 	    PrQ: W ++ (L',((Lab)?(AL); SL')), Lcnt: F >
   =>
-  < O : C | Att: S, Pr: (L', ((Lab)?(AL); SL')), PrQ: W ++ (L, SL), Lcnt: F >
+  < O : C | Att: S, Pr: (L', ((Lab)?(AL); SL')), PrQ: W, Lcnt: F >
   [label continue]
   .
 

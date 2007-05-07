@@ -314,9 +314,6 @@ subtype of the type of @var{variable}.
 
 @subsection Loop Statements
 
-Loops should be avoided in Creol programs.  Creol provides to variants
-of loops:
-
 The @code{for}-loop is guaranteed to terminate.  Its syntax is @code{for
 @var{i} := @var{lower} to @var{upper} by @var{stride} do
 @var{statement} od}.  First, the expressions denoted by @var{lower}
@@ -325,33 +322,12 @@ is greater or equal to @var{lower} until it is greater or equal to
 @var{upper}.  Furthermore, the variable @var{i} is @emph{read-only} in
 @var{statement}.
 
-Essentially, a for-statement can be transformed to the following
-pseudo-program using a while loop:
-@example
-let l = lower in
-  let u = upper in
-    let st = stride in
-      i := l;
-      while i <= u do s; i := i + st done
-@end example
-
-Analogously, Creol programs may contain while loops.  Use of while
-loops is @emph{strongly} discouraged, because they may make
-class-updates impossible.  The syntax is @code{while @var{c} do
-@var{s} od}.
-
-Both variants of loops may be annotated by a @emph{loop invariant}.
+A loop may be annotated by a @emph{loop invariant}.
 The invariant is a proof obligation which must hoold at the beginning
 of a loop, the end of a loop, @emph{and} every processor release-point
 within the loop body.  It is therefore advisable, that the loop
 invariant restricted to instance variables is @emph{implied} by the
 class invariant.
-
-The statement @code{while true inv @var{i} do s; await wait od} is an
-infinite loop which allows class updates.  The invariant @var{i}
-should be implied by the class invariant, because during the release
-in @code{await wait}, only the class invariant is guaranteed to hold
-(and, of course, the local state of the method remains invariant).
 
 
 @subsection Sequential Composition
@@ -550,7 +526,7 @@ forall      fun         history     if          implements  inherits
 interface   inv         in          new         nil         null
 not         of          op          out         raise       requires
 skip        some        then        this        to          true
-try         var         wait        when        while       with
+try         var         wait        when        with
 @end example
 
 The following symbols are used as operator symbols.  They are listed
@@ -665,7 +641,6 @@ basic-statement ::=
   | @code{try} statement @code{with} @{ catch-stmt @code{|} @} @code{end}
   | @code{for} id @code{:=} expression @code{to} expression
       [ @code{by} expression ] [ @code{inv} assertion ] @code{do} statement @code{end}
-  | @code{while} expression [ @code{inv} assertion ] @code{do} statement @code{end}
   | @code{assert} assertion
 
 case-stmt ::=

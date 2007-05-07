@@ -7,7 +7,7 @@
 %token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
 %token IF THEN ELSE SKIP AWAIT WAIT NEW
-%token FOR TO BY DO WHILE OF CASE AS
+%token FOR TO BY DO OF CASE AS
 %token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token RBRACK LBRACK
@@ -295,9 +295,6 @@ basic_statement:
 	inv = ioption(preceded(INV, assertion))
 	DO s = statement END
 	{ For (Note.make $startpos, i, f, l, b, inv, s) }
-    | WHILE b = expression i = ioption(preceded(INV, assertion))
-      DO s = statement END
-	{ While (Note.make $startpos, b, i, s) }
     | ASSERT a = assertion
 	{ Assert (Note.make $startpos, a) }
     | error ELSE | error OP | error WITH | error END | error EOF
