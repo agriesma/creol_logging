@@ -54,7 +54,17 @@ dnl Configure the subdirectories.
 AC_CONFIG_SUBDIRS([xml])
 
 dnl Check for the programs needed by the test-suite.
-AC_CHECK_PROG([MAUDE], [maude], [maude], [:])
+AC_ARG_WITH([maude],
+    AS_HELP_STRING([--with-maude=name],
+       [Whether to use maude and which binary to use.]),
+    [if test "x$with_maude" = "xyes" ; then 
+       AC_CHECK_PROG([MAUDE], [maude], [maude], [:])
+     elif test "x$with_maude" = "x$no" ; then
+       MAUDE=false
+     else
+       MAUDE=$with_maude
+     fi],
+[AC_CHECK_PROG([MAUDE], [maude], [maude], [:])])
 
 AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])

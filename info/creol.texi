@@ -189,31 +189,12 @@ representing the actual arguments.
 
 @subsection Field Access
 
-While the fields of objects are considered to be private to the
+While the attributes of objects are considered to be private to the
 object, the functional sub-language generates automatic projections
-for structures.
+for the fields of structures.  If @var{e} is an expression denoting a
+structure and @var{n} is the name of one of its fields, the expression
+@code{@var{e}`@var{n}} represents the value of @var{n} in @var{e}.
 
-Structures may arise, e.g., from data type definitions (see below).
-
-@example
-datatype Note
-begin
-  var file: String
-  var line: Integer
-end
-@end example
-
-In this example, an exception e is of type @code{ParseError}, which is
-a structure with the two fields @code{file} and @code{line}.  If
-·@code{n} is a variable of type @code{Note}, then @code{n`file} is the
-value of the file component.
-
-@itemize @bullet
-@item
-Field access expressions should only be valid within the data type
-module?  Otherwise we do not adhere to the principles of encapsulation
-for abstract data types.
-@end itemize
 
 
 @node Statements

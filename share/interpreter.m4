@@ -481,6 +481,7 @@ fmod CREOL-AUX-FUNCTIONS is
   vars  ST ST' : Stm . 
   vars SL SL' : StmList . 
   var NeSL : NeStmList .
+  var AL : AidList .
 
   eq enabled(SL [] SL',  S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
   eq enabled(SL ||| SL', S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
@@ -490,8 +491,8 @@ fmod CREOL-AUX-FUNCTIONS is
 
   eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
   eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-  eq ready(A ?(E),     S, MM) = inqueue(S[A], MM) . 
-  eq ready(L ?(E),     S, MM) = inqueue(L, MM) . 
+  *** eq ready(A ?(AL),    S, MM) = inqueue(S[A], MM) . 
+  eq ready(L ?(AL),    S, MM) = inqueue(L, MM) . 
   eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
   eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise] .
 
@@ -729,11 +730,13 @@ CSTEP(dnl
 
 *** Evaluate guards in suspended processes ***
 
+*** Select a new process, if it is ready.
+***
 *** Must be a rule, also in the interpreter.
 crl
   < O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  => 
+  =>
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   if ready(SL, (S {|#|} L), MM) 

@@ -2,12 +2,15 @@ in AsyncSieveBuggy .
 
 red init main("Generator", emp) .
 
-rew[100] init main("Generator", emp) .
+rew[21] init main("Generator", emp) .
+rew[22] init main("Generator", emp) .
+rew[23] init main("Generator", emp) .
+rew[24] init main("Generator", emp) .
 
 set trace on .
 set trace select on .
-trace select local-call continue return receive-reply suspend PrQ-ready .
+trace select PrQ-ready ready inqueue enabled .
 
-rew[100] init main("Generator", emp) .
+rew[24] init main("Generator", emp) .
 
-quit .
+*** quit .

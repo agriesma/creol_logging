@@ -132,7 +132,7 @@ TEST_CREOLC([AsyncSieveBuggy], [dnl
 red init .
 
 *** Shows the bug.  This is disabled, since it requires tons of resources.
-*** search [[1]] in PROGRAM : init main("Generator", emp) =>+
+*** search [[1, 1000]] in PROGRAM : init main("Generator", emp) =>+
 ***   < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
 ***                       L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
 ***   conf:Configuration .
