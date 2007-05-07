@@ -489,10 +489,13 @@ fmod CREOL-AUX-FUNCTIONS is
   eq enabled((ST ; ST' ; SL),S, MM) = enabled(ST, S, MM) . 
   eq enabled(ST,    S, MM) = true [owise] . 
 
+  *** The ready predicate holds, if a statement is ready for execution,
+  *** i.e., the corresponding process may be waken up.
   eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
   eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
   *** eq ready(A ?(AL),    S, MM) = inqueue(S[A], MM) . 
   eq ready(L ?(AL),    S, MM) = inqueue(L, MM) . 
+  eq ready(await wait, S, MM) = true .
   eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
   eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise] .
 
@@ -742,35 +745,6 @@ crl
   if ready(SL, (S {|#|} L), MM) 
   [label PrQ-ready]
   .
-
-
-*** Handle await wait in different contexts.  I might change this
-*** to the version of the spin paper.
-eq
-  < O : C | Att: S, Pr: idle, PrQ: (L, await wait ; SL) ++ W, Lcnt: N >  
-  =
-  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
-  [label wait]
-  .
-
-eq
-  < O : C | Att: S, Pr: idle, PrQ: (L, ((await wait ; SL)[] SL'); SL'')++ W,  
-    Lcnt: N >  
-  =
-  < O : C | Att: S, Pr: idle, PrQ: (L, (SL [] SL'); SL'') ++ W, Lcnt: N >
-  [label wait-nondet]
-  .
-
-eq
-  < O : C | Att: S, Pr: idle, PrQ: (L,((await wait ; SL)||| SL'); SL'')++ W,  
-    Lcnt: N >  
-  =
-  < O : C | Att: S, Pr: idle, PrQ: (L, (SL ||| SL'); SL'') ++ W, Lcnt: N >
-  [label wait-merge]
-  .
-
-
-
 
 
 *** Optimization to avoid muiltiple lookups in the message queue for

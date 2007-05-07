@@ -1,15 +1,21 @@
 
-creoltools 0.0c (2007-MM-DD): alpha release.
+creoltools 0.0c (2007-05-07): alpha release.
 
-The grammar has been changed:  A semicolon is now terminating a statement,
-except for if statements and blocks.  Instead of braces, blocks are formed
-by begin ... end in statements.  Functions use parenthesis instead of
-brackets.  The operator precedence for expressions has been rewritten.
-A pretty printer is provided, which can be called with the -p option.
-Output for the model checker can be generated with the -mc switch.
+In the compiler:  
+Functions use parenthesis instead of brackets.
+The operator precedence for expressions has been rewritten.
+A pretty printer is provided, which can be called with the `-target creol'
+option.
+Output for the model checker can be generated with the `-target maydemc'
+switch.
 The script `creolshell' compiles a file and launches maude with the
 compiler output.
 Errors have been corrected.
+
+In the interpreter:
+Some mistakes have been corrected.  await wait is now treated like an ordinary
+statement, which is never enabled and always ready.  This simplifies its
+treatment.
 
 
 creoltools 0.0b (2007-03-16): alpha release.
