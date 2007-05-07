@@ -25,7 +25,7 @@ creoltools_TEXINFOS	= introduction.texi invocation.texi creol.texi \
 			  bibliography.texi \
 			  fdl.texi gpl.texi
 
-EXTRA_DIST		= sorts.dot
+EXTRA_DIST		= sorts.dot creoltools.pdf
 BUILT_SOURCES		=
 
 MOSTLYCLEANFILES	= *~ *.cps
