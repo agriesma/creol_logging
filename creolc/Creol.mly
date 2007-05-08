@@ -6,7 +6,7 @@
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
 %token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
-%token IF THEN ELSE SKIP AWAIT WAIT NEW
+%token IF THEN ELSE SKIP RELEASE AWAIT WAIT NEW
 %token FOR TO BY DO OF CASE AS
 %token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
@@ -253,6 +253,8 @@ statement_sequence:
 basic_statement:
       SKIP
 	{ Skip (Note.make $startpos) }
+    | RELEASE
+	{ Release (Note.make $startpos) }
     | t = separated_nonempty_list(COMMA, ID) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((Note.make $startpos), t, e) }

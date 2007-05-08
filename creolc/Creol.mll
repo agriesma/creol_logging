@@ -157,6 +157,7 @@ rule token = parse
     | "op" { OP }
     | "out" { OUT }
     | "raise" { RAISE }
+    | "release" { RELEASE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }
     | "some" { SOME }

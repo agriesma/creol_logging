@@ -174,6 +174,8 @@ module Statement: sig
 	  refers to the type of possible annotations. *)
       Skip of 'a
 	(** A skip statement *)
+      | Release of 'a
+	(** A release statement *)
       | Assert of 'a * 'b Expression.t
 	(** Check a condition at runtime. *)
       | Assign of 'a * string list * 'b Expression.t list

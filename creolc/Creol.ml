@@ -272,6 +272,7 @@ module Statement =
   struct
     type ('a, 'b) t =
 	Skip of 'a
+	| Release of 'a
 	| Assert of 'a * 'b Expression.t
 	| Assign of 'a * string list * 'b Expression.t list
 	| Await of 'a * 'b Expression.t

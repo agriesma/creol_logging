@@ -211,6 +211,7 @@ fmod CREOL-STATEMENT is
   op _@_   : Aid  Cid -> Mid [ctor prec 33] .
 
   op skip : -> Stm [ctor] .
+  op release : -> Stm [ctor] .
   op _::=_ : AidList ExprList -> Stm [ctor prec 39] .
   op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 {|format|} (d b d o d d d d)] .
   op _(_;_) : Mid ExprList AidList -> Stm [ctor prec 39] .
@@ -446,13 +447,6 @@ fmod CREOL-AUX-FUNCTIONS is
   protecting CREOL-CONFIG .
   protecting CONVERSION .
 
-  *** Check if a message is in the queue.
-  op inqueue  : Label MMsg -> Bool .
-
-  op enabledGuard : Guard   Subst MMsg -> Bool .
-  op enabled      : StmList Subst MMsg -> Bool . *** eval guard 
-  op ready        : StmList Subst MMsg -> Bool . *** eval guard 
-
   vars N N' : Nat .
   vars L L' : Label .
   vars E E' : Expr .
@@ -468,21 +462,25 @@ fmod CREOL-AUX-FUNCTIONS is
   op newId : Cid Nat -> Oid .
   eq newId(C, N)  = ob(C + string(N,10)) .
 
+  *** Check if a message is in the queue.
+  op inqueue  : Label MMsg -> Bool .
   eq inqueue(L, noMsg) = false .
   eq inqueue(L, comp(L', EL) + MM) = 
      if L == L' then true else inqueue(L, MM) fi .
 
-  eq enabledGuard(noGuard, S, MM)   = true .
-  eq enabledGuard(wait, S, MM)      = false .       *** Note: no wait in PrQ!
-  eq enabledGuard(E, S, MM)         = {|eval|}(E, S) asBool .
-  eq enabledGuard((A ??), S, MM)     = inqueue(S[A], MM) .
-  eq enabledGuard((L ??), S, MM)     = inqueue(L, MM) .
+  op enabledGuard : Guard   Subst MMsg -> Bool .
+  eq enabledGuard(noGuard, S, MM) = true .
+  eq enabledGuard(wait, S, MM) = false .       *** Note: no wait in PrQ!
+  eq enabledGuard(E, S, MM) = {|eval|}(E, S) asBool .
+  eq enabledGuard((A ??), S, MM) = inqueue(S[A], MM) .
+  eq enabledGuard((L ??), S, MM) = inqueue(L, MM) .
 
   vars  ST ST' : Stm . 
   vars SL SL' : StmList . 
   var NeSL : NeStmList .
   var AL : AidList .
 
+  op enabled : StmList Subst MMsg -> Bool . *** eval guard 
   eq enabled(SL [] SL',  S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
   eq enabled(SL ||| SL', S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
   eq enabled(await G1,   S, MM) = enabledGuard(G1,S,MM) .
@@ -491,13 +489,30 @@ fmod CREOL-AUX-FUNCTIONS is
 
   *** The ready predicate holds, if a statement is ready for execution,
   *** i.e., the corresponding process may be waken up.
-  eq ready(SL [] SL',  S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
+  op ready : StmList Subst MMsg -> Bool . *** eval guard 
+  eq ready(SL [] SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
   eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-  *** eq ready(A ?(AL),    S, MM) = inqueue(S[A], MM) . 
-  eq ready(L ?(AL),    S, MM) = inqueue(L, MM) . 
-  eq ready(await wait, S, MM) = true .
+  eq ready(A ?(AL), S, MM) = inqueue(S[A], MM) . 
+  eq ready(L ?(AL), S, MM) = inqueue(L, MM) . 
+  *** eq ready(await wait, S, MM) = true .
   eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
-  eq ready(ST,         S, MM) = enabled(ST, S, MM) [owise] .
+  eq ready(ST, S, MM) = enabled(ST, S, MM) [owise] .
+
+  *** Clear await statements from statements.
+  var PG : PureGuard .
+  op clear : Guard -> Guard .
+  eq clear(noGuard) = noGuard .
+  eq clear(wait) = noGuard .
+  eq clear(PG) = PG .
+
+  var G : Guard .
+  op clear : StmList -> StmList .
+  eq clear(await G) = await(clear(G)) .
+  eq clear(SL [] SL') = clear(SL) [] clear(SL') .
+  eq clear(SL ||| SL') = clear(SL) ||| clear(SL') .
+  eq clear(SL MERGER SL') = clear(SL) MERGER clear(SL') .
+  eq clear(ST ; NeSL) = clear(ST) ; NeSL .
+  eq clear(ST) = ST [owise] .
 
 endfm
 
@@ -712,10 +727,19 @@ ceq
 
 *** Suspension ***
 
+*** The release statement is an unconditional processor release point.
+*** It should eventually replace await wait.
+STEP(dnl
+{|< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
+{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > *** clear(SL)
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
+{|[label release]|})
+
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > *** clear(SL)
+{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, clear(SL)), Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|not enabled(SL, (S # L), MM)|},
 {|[label suspend]|})
