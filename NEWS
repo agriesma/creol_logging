@@ -1,4 +1,8 @@
 
+`await wait' has been replaced by `release'.  `release' will always suspend
+control, even in merge statements.
+
+
 creoltools 0.0c (2007-05-07): alpha release.
 
 In the compiler:  

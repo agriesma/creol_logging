@@ -176,7 +176,6 @@ module Expression =
 	| Case of 'a * ('a t, unit, 'a t, 'a t) Case.t
 	| Typecase of 'a * ('a t, Type.t, 'a t, 'a t) Case.t
 	| FuncCall of 'a * string * 'a t list
-	| Wait of 'a
 	| Label of 'a * string
 	| New of 'a * Type.t * 'a t list
     and unaryop =
@@ -214,6 +213,8 @@ module Expression =
 	| Minus -> "-"
 	| Times -> "*"
 	| Div -> "/"
+	| Modulo -> "%"
+	| Exponent -> "**"
 	| Eq -> "="
 	| Ne -> "/="
 	| Le -> "<="
@@ -223,12 +224,14 @@ module Expression =
 	| And -> "&&"
 	| Or -> "||"
 	| Xor -> "^"
+	| Implies -> "=>"
 	| Iff -> "<=>"
 	| LAppend -> "|-"
 	| RAppend -> "-|"
 	| Concat -> "|-|"
 	| Project -> "\\"
 	| GuardAnd -> "&"
+	| In -> "in"
 
     let prec_of_binaryop =
       function
@@ -236,16 +239,20 @@ module Expression =
 	| Minus -> (33, 33)
 	| Times -> (31, 31)
 	| Div -> (31, 31)
+	| Modulo -> (31, 31)
+	| Exponent -> (29, 29)
 	| Eq -> (51, 51)
 	| Ne -> (51, 51)
 	| Le -> (37, 37)
 	| Lt -> (37, 37)
 	| Ge -> (37, 37)
 	| Gt -> (37, 37)
+	| In -> (53, 53)
 	| And -> (55, 55)
 	| Or -> (59, 59)
 	| Xor -> (57, 57)
-	| Iff -> (51, 51)
+	| Implies -> (61, 61)
+	| Iff -> (61, 61)
 	| LAppend -> (33, 33)
 	| RAppend -> (33, 33)
 	| Concat -> (33, 33)
@@ -313,6 +320,7 @@ module Statement =
 	  Skip a -> a
 	| Assert (a, _) -> a
 	| Assign (a, _, _) -> a
+	| Release a -> a
 	| Await (a, _) -> a
 	| AsyncCall (a, _, _, _, _) -> a
 	| Reply (a, _, _) -> a
@@ -452,6 +460,7 @@ and simplify_statement =
     | Assert (a, e) -> Assert (a, simplify_expression e)
     | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_expression g)
+    | Release a -> Release a
     | AsyncCall (a, l, e, n, p) ->
 	AsyncCall (a, l, simplify_expression e, n,
 		  List.map simplify_expression p)
@@ -602,6 +611,8 @@ and definitions_in_statement note stm =
 		note.Note.env lhs}, lhs, rhs) (* XXX *)
       | Await (n, g) ->
 	  Await ({ n with Note.env = note.Note.env }, g)
+      | Release a ->
+	  Release { a with Note.env = note.Note.env }
       | AsyncCall (n, None, c, m, a) ->
 	  (* XXX: This should not happen, but if we resolve this, we need to
 	     rerun this for updating the chain... *)
@@ -713,6 +724,7 @@ and uses_in_statement =
     | Assert (_, _) as s -> s
     | Assign (a, l, r) -> assert false
     | Await (a, g) -> assert false
+    | Release a -> assert false
     | AsyncCall (a, None, c, m, ins) -> assert false
     | AsyncCall (a, Some l, c, m, ins) -> assert false
     | Reply (a, l, outs) -> assert false (* use l and clear p *)
@@ -988,6 +1000,7 @@ and pretty_print_statement out lvl statement =
       | Await (_, e) -> 
 	  output_string out "await ";
 	  pretty_print_expression out e;
+      | Release _ -> output_string out "release";
       | AsyncCall (_, l, c, m, a) ->
 	  (match l with
 	      None -> ()
@@ -1118,7 +1131,6 @@ and pretty_print_expression out_channel exp =
 	  pretty_print_expression_list out_channel a;
 	  output_string out_channel ")";
       | FieldAccess(_, e, f) -> print 15 e; output_string out_channel ("`" ^ f)
-      | Wait _ -> output_string out_channel "wait"
       | Label (_, l) -> output_string out_channel (l ^ "?")
       | New (_, t, a) ->
           output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
@@ -1174,7 +1186,6 @@ struct
 	  output_string out " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
       | FieldAccess(_, e, f) -> assert false (* XXX *)
-      | Wait _ -> output_string out "wait"
       | Label(_, l) -> output_string out ("( \"" ^ l ^ "\" ?? )")
       | New (_, c, a) ->
 	  output_string out ("new \"" ^ (match c with Type.Basic s -> s | Type.Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
@@ -1208,6 +1219,8 @@ struct
 	| Await (_, e) -> output_string out "( await ";
 	    of_creol_expression out e;
 	    output_string out " )"
+	| Release _ ->
+	    output_string out "( await wait )"
 	| Assign (_, i, e) ->
 	    of_creol_identifier_list out i;
 	    output_string out " ::= " ;

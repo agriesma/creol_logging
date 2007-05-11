@@ -195,6 +195,10 @@ and creol_statement_to_xml writer stmt_handler expr_handler =
 	creol_expression_to_xml writer expr_handler g ;
 	stmt_handler writer a;
         XmlTextWriter.end_element writer
+    | Release a -> 
+	XmlTextWriter.start_element writer "release" ;
+	stmt_handler writer a;
+        XmlTextWriter.end_element writer
     | AsyncCall (a, l, c, m, es) ->
 	XmlTextWriter.start_element writer "asynccall" ;
 	(match l with
@@ -444,10 +448,6 @@ and creol_expression_to_xml writer expr_handler =
     | Expression.Label (a, l) ->
 	XmlTextWriter.start_element writer "label" ;
 	XmlTextWriter.write_attribute writer "name" l;
-	expr_handler writer a ;
-	XmlTextWriter.end_element writer
-    | Expression.Wait (a) ->
-	XmlTextWriter.start_element writer "wait" ;
 	expr_handler writer a ;
 	XmlTextWriter.end_element writer
     | Expression.New (a, c, es) ->

@@ -22,15 +22,15 @@ begin
  
   op run == !think() ||| !eat() ||| !digest()
 
-  op digest == await wait ; hungry := true; hist := plus(hist, "d");
-    await wait; !digest()
+  op digest == release ; hungry := true; hist := plus(hist, "d");
+    release; !digest()
 
   op eat == await hungry; l!neighbor.borrowStick(); await l?; await chopstick;
     hist := plus(hist, "e"); hungry := false; !neighbor.returnStick();
-    await wait; !eat()
+    release; !eat()
 
   op think == await ~ hungry; hist := plus(hist, "t");
-    await wait; !think()
+    release; !think()
 
   with Phil 
     op borrowStick == await chopstick; chopstick := false

@@ -123,8 +123,6 @@ sig
 	  (** Type case expression *)
       | FuncCall of 'a * string * 'a t list
 	  (** A call of a primitive function *)
-      | Wait of 'a
-	  (** The wait expression, permitted only in guards *)
       | Label of 'a * string
 	  (** The label expression, permitted only in guards *)
       | New of 'a * Type.t * 'a t list

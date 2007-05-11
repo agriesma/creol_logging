@@ -1,6 +1,6 @@
 class Deadlock
 begin
   op init == skip
-  op run == l!this.n(); await wait; skip; l?()
-  op n == await wait
+  op run == l!this.n(); release; skip; l?()
+  op n == release
 end

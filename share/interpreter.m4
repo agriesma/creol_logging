@@ -81,7 +81,7 @@ ifdef({|MODELCHECK|},dnl
 ifdef({|MODELCHECK|},{|in model-checker|})
 
 *** Data types are in their own module.
-load datatypes
+in datatypes .
 
 
 ***************************************************************************
@@ -697,19 +697,26 @@ crl
   if ready(SL1,(S {|#|} L), MM)
   [label merge] .
 
+*** MERGER
+***
+*** If we release, we want to suspend SL' ||| SL2 and not SL' MERGER SL2,
+*** therefore, we treat the case ST == release differently.  Note that
+*** release is always enabled and always ready.  If it would not be enabled,
+*** we would not release but continue with the other branch!
 rl
   < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER SL2); SL), PrQ: W, Lcnt: N >   
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =>
-  if enabled(ST,(S {|#|} L), MM) then
-    < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER SL2)); SL)), PrQ: W, Lcnt: N >   
+  if ST == release then
+    < O : C | Att: S, Pr: (L, ((ST ; (SL' ||| SL2)); SL)), PrQ: W, Lcnt: N >
+  else if enabled(ST,(S {|#|} L), MM) then
+    < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER SL2)); SL)), PrQ: W, Lcnt: N >
   else
     < O : C | Att: S, Pr: (L, ((ST ; SL') ||| SL2); SL), PrQ: W, Lcnt: N >   
-  fi
+  fi fi
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  [label merge-aux] .
-
-
+  [label merge-aux]
+  .
 
 
 

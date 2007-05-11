@@ -507,7 +507,7 @@ forall      fun         history     if          implements  inherits
 interface   inv         in          new         nil         null
 not         of          op          out         raise       requires
 skip        some        then        this        to          true
-try         var         wait        when        with
+try         var         when        with
 @end example
 
 The following symbols are used as operator symbols.  They are listed
@@ -634,7 +634,7 @@ catch-stmt ::=
     ( ( cid [ @code{(} @{ id @code{,} @} @code{)} ] ) | @code{_} ) @code{->} statement
 
 guard ::=
-    @code{wait} | id @code{?} [ @code{&} guard ] | expression
+    id @code{?} [ @code{&} guard ] | expression
 
 expr-or-new ::=
     @code{new} cid @code{(} @{ expr @code{,} @} @code{)}

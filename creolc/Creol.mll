@@ -167,7 +167,6 @@ rule token = parse
     | "true" { BOOL(true) }
     | "try" { TRY }
     | "var" { VAR }
-    | "wait" { WAIT }
     | "when" { WHEN }
     | "with" { WITH }
     | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
