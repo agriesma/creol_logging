@@ -341,7 +341,8 @@ expression:
 	{ (* let n = Note.make $startpos in *)
 	    match l with
 		[] -> Nil (Note.make $startpos) (* XXX: Should be unit *)
-	      | [e] -> e }
+	      | [e] -> e
+	      | _ -> Tuple (Note.make $startpos, l) }
     | LBRACK separated_list(COMMA, expression) RBRACK
 	{ Null (Note.make $startpos) }
     | LBRACE separated_list(COMMA, expression) RBRACE

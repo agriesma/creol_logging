@@ -167,6 +167,7 @@ module Expression =
 	| Float of 'a * float
 	| String of 'a * string
 	| Id of 'a * string
+	| Tuple of 'a * 'a t list
 	| Cast of 'a * 'a t * Type.t
 	| Index of 'a * 'a t * 'a t
         | FieldAccess of 'a * 'a t * string
@@ -1116,6 +1117,10 @@ and pretty_print_expression out_channel exp =
       | Bool (_, b) -> output_string out_channel (string_of_bool b)
       | String (_, s) -> output_string out_channel ("\"" ^ s ^ "\"")
       | Id (_, i) -> output_string out_channel i
+      | Tuple (_, a) ->
+	  output_string out_channel "(";
+	  pretty_print_expression_list out_channel a;
+	  output_string out_channel ")";
       | Unary (_, o, e) ->
 	  output_string out_channel (string_of_unaryop o ^ " ");
 	  print (prec_of_unaryop o) e

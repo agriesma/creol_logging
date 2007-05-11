@@ -105,6 +105,8 @@ sig
 	  (** A string literal. *)
       | Id of 'a * string
 	  (** An identifier, usually an attribute or a local variable name *)
+      | Tuple of 'a * 'a t list
+	  (** Tuple literal. *)
       | Cast of 'a * 'a t * Type.t
 	  (** Re-type an expression.  Involves a run-time check *)
       | Index of 'a * 'a t * 'a t
