@@ -25,15 +25,6 @@ reduce in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1",
     bool(false), noSubst))) .
 result Bool: true
 ==========================================
-reduce in CREOL-GUARDS : wait .
-result Wait: wait
-==========================================
-reduce in CREOL-GUARDS : upTerm(wait) .
-result Constant: 'wait.Wait
-==========================================
-reduce in CREOL-GUARDS : downTerm(upTerm(wait), noGuard) .
-result Wait: wait
-==========================================
 reduce in CREOL-GUARDS : bool(true) .
 result Data: bool(true)
 ==========================================
@@ -53,16 +44,6 @@ result GroundTerm: '_`(_`)['"&&".String,'_#_['int`(_`)['s_^4['0.Zero]],
 reduce in CREOL-GUARDS : downTerm(upTerm(int(4) & int(5)), noGuard) .
 result Data: "&&"(int(4) # int(5))
 ==========================================
-reduce in CREOL-GUARDS : int(4) & wait & int(5) .
-result Guard: wait & "&&"(int(4) # int(5))
-==========================================
-reduce in CREOL-GUARDS : upTerm(int(4) & wait & int(5)) .
-result GroundTerm: '_&_['wait.Wait,'_`(_`)['"&&".String,'_#_['int`(_`)['s_^4[
-    '0.Zero]],'int`(_`)['s_^5['0.Zero]]]]]
-==========================================
-reduce in CREOL-GUARDS : downTerm(upTerm(int(4) & wait & int(5)), noGuard) .
-result Guard: wait & "&&"(int(4) # int(5))
-==========================================
 reduce in CREOL-GUARDS : "test" ?? .
 result Return: "test" ??
 ==========================================
@@ -80,19 +61,6 @@ result GroundTerm: '_&_['"pest".String,'_??['"test".String]]
 ==========================================
 reduce in CREOL-GUARDS : downTerm(upTerm("pest" & "test" ??), noGuard) .
 result PureGuard: "pest" & "test" ??
-==========================================
-reduce in CREOL-GUARDS : "+"(int(4) # int(5)) & "label" ?? & wait & wait &
-    bool(true) .
-result Guard: wait & int(9) & "label" ??
-==========================================
-reduce in CREOL-GUARDS : upTerm("+"(int(4) # int(5)) & "label" ?? & wait & wait
-    & bool(true)) .
-result GroundTerm: '_&_['wait.Wait,'int`(_`)['s_^9['0.Zero]],'_??[
-    '"label".String]]
-==========================================
-reduce in CREOL-GUARDS : downTerm(upTerm("+"(int(4) # int(5)) & "label" ?? &
-    wait & wait & bool(true)), noGuard) .
-result Guard: wait & int(9) & "label" ??
 ==========================================
 reduce in CREOL-STATEMENT : "a" . "a" .
 result Mid: "a" . "a"
@@ -244,24 +212,6 @@ result GroundTerm: 'await_['_??['"test".String]]
 ==========================================
 reduce in CREOL-STATEMENT : downTerm(upTerm(await ("test" ??)), skip) .
 result Stm: await ("test" ??)
-==========================================
-reduce in CREOL-STATEMENT : await (wait & "test" ??) .
-result Stm: await (wait & "test" ??)
-==========================================
-reduce in CREOL-STATEMENT : upTerm(await (wait & "test" ??)) .
-result GroundTerm: 'await_['_&_['wait.Wait,'_??['"test".String]]]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(await (wait & "test" ??)), skip) .
-result Stm: await (wait & "test" ??)
-==========================================
-reduce in CREOL-STATEMENT : await (wait & "test" ??) .
-result Stm: await (wait & "test" ??)
-==========================================
-reduce in CREOL-STATEMENT : upTerm(await (wait & "test" ??)) .
-result GroundTerm: 'await_['_&_['wait.Wait,'_??['"test".String]]]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(await (wait & "test" ??)), skip) .
-result Stm: await (wait & "test" ??)
 ==========================================
 reduce in CREOL-STATEMENT : return(emp) .
 result Stm: return(emp)

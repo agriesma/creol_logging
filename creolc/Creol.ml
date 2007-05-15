@@ -1225,7 +1225,7 @@ struct
 	    of_creol_expression out e;
 	    output_string out " )"
 	| Release _ ->
-	    output_string out "( await wait )"
+	    output_string out "release"
 	| Assign (_, i, e) ->
 	    of_creol_identifier_list out i;
 	    output_string out " ::= " ;

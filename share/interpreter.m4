@@ -180,21 +180,19 @@ endfm
 fmod CREOL-GUARDS is
   protecting CREOL-EVAL .
 
-  sorts NoGuard Guard Wait Return PureGuard . 
+  sorts NoGuard Guard Return PureGuard . 
   subsorts Return Expr < PureGuard .
-  subsorts NoGuard Wait PureGuard < Guard .
+  subsorts NoGuard PureGuard < Guard .
 
   vars E E' : Expr .
   var PG : PureGuard .
 
   op noGuard : -> NoGuard [ctor {|format|} (b o)] .
-  op wait :    -> Wait [ctor {|format|} (b o)] .
   op _??  : Aid -> Return [ctor] .
   op _??  : Label -> Return [ctor] .
   op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
   op _&_ : PureGuard PureGuard -> PureGuard [ctor ditto] .
 
-  eq wait & wait = wait .
   eq PG & PG = PG .
   eq E & E' = "&&" (E # E') .
 
@@ -276,7 +274,6 @@ fmod CREOL-STM-LIST is
   eq (noAid assign emp) = noStm .
   eq (noAid ::= emp) = noStm .
 
-  eq await (wait & PG) = await wait ; await PG .
   *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
 
   sort Process .
@@ -470,7 +467,6 @@ fmod CREOL-AUX-FUNCTIONS is
 
   op enabledGuard : Guard   Subst MMsg -> Bool .
   eq enabledGuard(noGuard, S, MM) = true .
-  eq enabledGuard(wait, S, MM) = false .       *** Note: no wait in PrQ!
   eq enabledGuard(E, S, MM) = {|eval|}(E, S) asBool .
   eq enabledGuard((A ??), S, MM) = inqueue(S[A], MM) .
   eq enabledGuard((L ??), S, MM) = inqueue(L, MM) .
@@ -494,25 +490,8 @@ fmod CREOL-AUX-FUNCTIONS is
   eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
   eq ready(A ?(AL), S, MM) = inqueue(S[A], MM) . 
   eq ready(L ?(AL), S, MM) = inqueue(L, MM) . 
-  *** eq ready(await wait, S, MM) = true .
   eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
   eq ready(ST, S, MM) = enabled(ST, S, MM) [owise] .
-
-  *** Clear await statements from statements.
-  var PG : PureGuard .
-  op clear : Guard -> Guard .
-  eq clear(noGuard) = noGuard .
-  eq clear(wait) = noGuard .
-  eq clear(PG) = PG .
-
-  var G : Guard .
-  op clear : StmList -> StmList .
-  eq clear(await G) = await(clear(G)) .
-  eq clear(SL [] SL') = clear(SL) [] clear(SL') .
-  eq clear(SL ||| SL') = clear(SL) ||| clear(SL') .
-  eq clear(SL MERGER SL') = clear(SL) MERGER clear(SL') .
-  eq clear(ST ; NeSL) = clear(ST) ; NeSL .
-  eq clear(ST) = ST [owise] .
 
 endfm
 
@@ -726,18 +705,17 @@ ceq
 *** Suspension ***
 
 *** The release statement is an unconditional processor release point.
-*** It should eventually replace await wait.
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > *** clear(SL)
+{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|[label release]|})
 
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, clear(SL)), Lcnt: N >
+{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|not enabled(SL, (S # L), MM)|},
 {|[label suspend]|})

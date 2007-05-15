@@ -5,8 +5,8 @@ op init : -> Configuration [ctor] .
 eq init =
 < "Deadlock" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds: 
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "l" ! "this" . "n" ( emp ) ; ( await wait ) ; skip ; ( "l" ? ( noAid ) )  ; return ( emp ) > *
-  < "n" : Mtdname | Param: noAid, Latt: noSubst, Code: ( await wait ) ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "l" ! "this" . "n" ( emp ) ; release ; skip ; ( "l" ? ( noAid ) )  ; return ( emp ) > *
+  < "n" : Mtdname | Param: noAid, Latt: noSubst, Code: release ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

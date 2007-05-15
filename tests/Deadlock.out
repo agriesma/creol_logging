@@ -4,9 +4,9 @@ result Class:
 < "Deadlock" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noAid, Latt: noSubst, Code: await wait ; return(emp)
-    > *
+  < "n" : Mtdname | Param: noAid, Latt: noSubst, Code: release ; return(emp) >
+    *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "l" ! "this" . "n"(
-    emp) ; await wait ; skip ; "l" ?(noAid) ; return(emp) >,
+    emp) ; release ; skip ; "l" ?(noAid) ; return(emp) >,
   Ocnt: 0 >
 Bye.

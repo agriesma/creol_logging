@@ -43,13 +43,10 @@ red in CREOL-SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),noSub
 red in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", bool(false), noSubst)) ["var1"]), null) .
 red in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1", bool(false), noSubst))) .
 
-GRAMMAR_TEST(GUARDS, wait, noGuard)
 GRAMMAR_TEST(GUARDS, bool(true), noGuard)
 GRAMMAR_TEST(GUARDS, int(4) & int(5), noGuard)
-GRAMMAR_TEST(GUARDS, int(4) & int(5) & wait, noGuard)
 GRAMMAR_TEST(GUARDS, "test" ??, noGuard)
 GRAMMAR_TEST(GUARDS, "test" ?? & "pest", noGuard)
-GRAMMAR_TEST(GUARDS, {| "+" (int(4) # int(5)) & "label" ?? & wait & bool(true) & wait |}, noGuard)
 
 GRAMMAR_TEST(STATEMENT, "a" . "a", "a")
 GRAMMAR_TEST(STATEMENT, "a" @ "a", "a")
@@ -67,8 +64,6 @@ GRAMMAR_TEST(STATEMENT, {| "l" ! "o" . "m" (null # "a") |}, skip)
 GRAMMAR_TEST(STATEMENT, {| (("l")?(noAid)) |}, skip)
 GRAMMAR_TEST(STATEMENT, (("l")?("l")), skip)
 GRAMMAR_TEST(STATEMENT, await ("test" ??) , skip)
-GRAMMAR_TEST(STATEMENT, await (("test" ??) & wait), skip)
-GRAMMAR_TEST(STATEMENT, await (("test" ??) & wait), skip)
 GRAMMAR_TEST(STATEMENT, return (emp), skip)
 GRAMMAR_TEST(STATEMENT, {| return ("a" # null # "c") |}, skip)
 GRAMMAR_TEST(STATEMENT, free (noAid), skip)

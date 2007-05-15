@@ -21,13 +21,13 @@ result Configuration:
     null, Mtds:
   < "borrowStick" : Mtdname | Param: noAid, Latt: noSubst, Code: await
     "chopstick" ; ("chopstick" assign bool(false)) ; return(emp) > *
-  < "digest" : Mtdname | Param: noAid, Latt: noSubst, Code: await wait ; (
-    "hungry" assign bool(true)) ; "hist" ::= "plus"("hist" # str("d")) ; await
-    wait ; "Dummy" ! "this" . "digest"(emp) ; return(emp) > *
+  < "digest" : Mtdname | Param: noAid, Latt: noSubst, Code: release ; ("hungry"
+    assign bool(true)) ; "hist" ::= "plus"("hist" # str("d")) ; release ;
+    "Dummy" ! "this" . "digest"(emp) ; return(emp) > *
   < "eat" : Mtdname | Param: noAid, Latt: noSubst, Code: await "hungry" ; "l" !
     "neighbor" . "borrowStick"(emp) ; await ("l" ??) ; await "chopstick" ;
     "hist" ::= "plus"("hist" # str("e")) ; ("hungry" assign bool(false)) ;
-    "Dummy" ! "neighbor" . "returnStick"(emp) ; await wait ; "Dummy" ! "this" .
+    "Dummy" ! "neighbor" . "returnStick"(emp) ; release ; "Dummy" ! "this" .
     "eat"(emp) ; return(emp) > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("hist" assign str(
     "")) ; ("chopstick" assign bool(true)) ; ("hungry" assign bool(false)) ;
@@ -38,7 +38,7 @@ result Configuration:
     "digest"(emp) ||| "Dummy" ! "this" . "eat"(emp) ||| "Dummy" ! "this" .
     "think"(emp)) ; return(emp) > *
   < "think" : Mtdname | Param: noAid, Latt: noSubst, Code: await "~"("hungry")
-    ; "hist" ::= "plus"("hist" # str("t")) ; await wait ; "Dummy" ! "this" .
+    ; "hist" ::= "plus"("hist" # str("t")) ; release ; "Dummy" ! "this" .
     "think"(emp) ; return(emp) >,
   Ocnt: 0 >
 Bye.

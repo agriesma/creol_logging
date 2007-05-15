@@ -6,8 +6,8 @@ result Configuration:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "next" ::= new
     "Sieve"(int(2)) ; ("n" assign int(3)) ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "l" ! "next" .
-    "send"("n") ; "n" ::= "+"("n" # int(1)) ; "m" ! "this" . "run"(emp) ; await
-    wait ; "l" ?("r") ; "m" ?(noAid) ; return(emp) >,
+    "send"("n") ; "n" ::= "+"("n" # int(1)) ; "m" ! "this" . "run"(emp) ;
+    release ; "l" ?("r") ; "m" ?(noAid) ; return(emp) >,
   Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "next" |-> null, "p" |-> null,
@@ -17,8 +17,8 @@ result Configuration:
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) > *
   < "send" : Mtdname | Param: "n", Latt: "d" |-> null, "n" |-> null, "r" |->
     null, "res" |-> null, Code: if "="("r" # int(0)) th "res" assign bool(
-    false) el if "/="("next" # null) th "l" ! "next" . "send"("n") ; await wait
-    ; "l" ?("res") el "next" ::= new "Sieve"("n") ; "res" assign bool(true) fi
-    fi ; return("res") >,
+    false) el if "/="("next" # null) th "l" ! "next" . "send"("n") ; release ;
+    "l" ?("res") el "next" ::= new "Sieve"("n") ; "res" assign bool(true) fi fi
+    ; return("res") >,
   Ocnt: 0 >
 Bye.
