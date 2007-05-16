@@ -5,12 +5,12 @@ op init : -> Configuration [ctor] .
 eq init =
 < "Generator" : Cl | Inh: noInh, Par: noAid, Att: "n" |-> null , "next" |-> null, Mtds: 
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "next" ::= new "Sieve" ( int(2) ) ; "n" ::= int(3) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "next" . "send" ( "n" ; "r" ) ; "n" ::= "+" ( "n" # int(1) ) ; "Dummy" ! "this" . "run" ( emp ) ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "sync.0" ! "next" . "send" ( "n" ) ; ( "sync.0" ? ( "r" ) )  ; "n" ::= "+" ( "n" # int(1) ) ; ( "Dummy" ! "this" . "run" ( emp ) )  ; return ( emp ) >, Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "p" |-> null , "next" |-> null, Mtds: 
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "send" : Mtdname | Param: "n", Latt: "n" |-> null , "res" |-> null , "d" |-> null , "r" |-> null, Code: if "=" ( "r" # int(0) ) th "res" ::= bool(false) el if "/=" ( "next" # null ) th "next" . "send" ( "n" ; "res" ) el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
+  < "send" : Mtdname | Param: "n", Latt: "n" |-> null , "res" |-> null , "d" |-> null , "r" |-> null, Code: if "=" ( "r" # int(0) ) th "res" ::= bool(false) el if "/=" ( "next" # null ) th "sync.1" ! "next" . "send" ( "n" ) ; ( "sync.1" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
 
 .
 endm

@@ -212,7 +212,6 @@ fmod CREOL-STATEMENT is
   op release : -> Stm [ctor] .
   op _::=_ : AidList ExprList -> Stm [ctor prec 39] .
   op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 {|format|} (d b d o d d d d)] .
-  op _(_;_) : Mid ExprList AidList -> Stm [ctor prec 39] .
   op _!_(_) : Aid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Aid AidList -> Stm [ctor prec 39] .
   op _?(_)  : Label AidList -> Stm [ctor prec 39] .
@@ -900,16 +899,6 @@ ifdef({|MODELCHECK|},
   invoc(O, label(O, N), Q , evalList(EL, (S # L))) from O to eval(E, (S # L))
 |})dnl
   [label remote-async-reply]
-  .
-
-*** Reduce sync. call  to async. call with reply 
-*** XXX: This rule will eventually go away once the compiler does this
-*** expansion.
-eq < O : C | Att: S, Pr: (L, (M(EL ; AL)); SL), PrQ: W, Lcnt: N >
-  =
-ifdef({|MODELCHECK|},dnl
-{|  < O : C | Att: S, Pr: (L, ("Dummy" ! M(EL)); ("Dummy" ?(AL)); SL), PrQ: W,  Lcnt: N >|},
-{|  < O : C | Att: S, Pr: (L, ("Dummy" ! M(EL)); ("Dummy" ?(AL)); SL), PrQ: W,  Lcnt: N >|})
   .
 
 *** emit reply message ***

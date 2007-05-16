@@ -109,54 +109,6 @@ reduce in CREOL-STATEMENT : downTerm(upTerm("var" ::= new "C"(int(5) # bool(
     true))), skip) .
 result Stm: "var" ::= new "C"(int(5) # bool(true))
 ==========================================
-reduce in CREOL-STATEMENT : "m"(emp ; noAid) .
-result Stm: "m"(emp ; noAid)
-==========================================
-reduce in CREOL-STATEMENT : upTerm("m"(emp ; noAid)) .
-result GroundTerm: '_`(_;_`)['"m".Char,'emp.DataList,'noAid.AidList]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm("m"(emp ; noAid)), skip) .
-result Stm: "m"(emp ; noAid)
-==========================================
-reduce in CREOL-STATEMENT : "o" . "m"(emp ; noAid) .
-result Stm: "o" . "m"(emp ; noAid)
-==========================================
-reduce in CREOL-STATEMENT : upTerm("o" . "m"(emp ; noAid)) .
-result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'emp.DataList,
-    'noAid.AidList]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm("o" . "m"(emp ; noAid)), skip) .
-result Stm: "o" . "m"(emp ; noAid)
-==========================================
-reduce in CREOL-STATEMENT : "o" . "m"(bool(false) ; noAid) .
-result Stm: "o" . "m"(bool(false) ; noAid)
-==========================================
-reduce in CREOL-STATEMENT : upTerm("o" . "m"(bool(false) ; noAid)) .
-result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'bool`(_`)['false.Bool],
-    'noAid.AidList]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm("o" . "m"(bool(false) ; noAid)),
-    skip) .
-result Stm: "o" . "m"(bool(false) ; noAid)
-==========================================
-reduce in CREOL-STATEMENT : "o" . "m"(emp ; "r") .
-result Stm: "o" . "m"(emp ; "r")
-==========================================
-reduce in CREOL-STATEMENT : upTerm("o" . "m"(emp ; "r")) .
-result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'emp.DataList,'"r".Char]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm("o" . "m"(emp ; "r")), skip) .
-result Stm: "o" . "m"(emp ; "r")
-==========================================
-reduce in CREOL-STATEMENT : "o" . "m"(null ; "r") .
-result Stm: "o" . "m"(null ; "r")
-==========================================
-reduce in CREOL-STATEMENT : upTerm("o" . "m"(null ; "r")) .
-result GroundTerm: '_`(_;_`)['_._['"o".Char,'"m".Char],'null.Data,'"r".Char]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm("o" . "m"(null ; "r")), skip) .
-result Stm: "o" . "m"(null ; "r")
-==========================================
 reduce in CREOL-STATEMENT : "l" ! "m"(emp) .
 result Stm: "l" ! "m"(emp)
 ==========================================

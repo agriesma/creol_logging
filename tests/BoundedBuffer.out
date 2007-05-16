@@ -11,16 +11,18 @@ result Configuration:
   Ocnt: 0 >
 
 < "Cons" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
-  < "loop" : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "b" . "remove"(
-    emp ; "y") ; "Dummy" ! "this" . "loop"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+  < "loop" : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "sync.4" ! "b" .
+    "remove"(emp) ; "sync.4" ?("y") ; "anon.5" ! "this" . "loop"(emp) ; return(
+    emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.3" ! "this" .
     "loop"(emp) ; return(emp) >,
   Ocnt: 0 >
 
 < "Prod" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
-  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "b" . "append"("i"
-    ; noAid) ; "Dummy" ! "this" . "loop"("+"("i" # int(1))) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
+  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "sync.1" ! "b" .
+    "append"("i") ; "sync.1" ?(noAid) ; "anon.2" ! "this" . "loop"("+"("i" #
+    int(1))) ; return(emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.0" ! "this" .
     "loop"(int(0)) ; return(emp) >,
   Ocnt: 0 >
 

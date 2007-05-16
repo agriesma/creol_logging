@@ -4,15 +4,15 @@ result Class:
 < "Buffer" : Cl | Inh: noInh, Par: noAid, Att: "cell" |-> null, "ctr" |-> null,
     "next" |-> null, Mtds:
   < "get" : Mtdname | Param: noAid, Latt: "x" |-> null, Code: await ">"("ctr" #
-    int(0)) ; if "/="("cell" # null) th "x" ::= "cell" el "next" . "get"(emp ;
-    "x") fi ; "ctr" ::= "-"("ctr" # int(1)) ; ("cell" assign null) ; return(
-    "x") > *
+    int(0)) ; if "/="("cell" # null) th "x" ::= "cell" el "sync.1" ! "next" .
+    "get"(emp) ; "sync.1" ?("x") fi ; "ctr" ::= "-"("ctr" # int(1)) ; ("cell"
+    assign null) ; return("x") > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("ctr" assign int(0))
     ; return(emp) > *
   < "put" : Mtdname | Param: "x", Latt: "x" |-> null, Code: if "="("ctr" # int(
     0)) th "cell" ::= "x" el if "="("next" # null) th "next" ::= new "Buffer"(
-    emp) el skip fi ; "next" . "put"("x" ; noAid) fi ; "ctr" ::= "+"("ctr" #
-    int(1)) ; return(emp) > *
+    emp) el skip fi ; "sync.0" ! "next" . "put"("x") ; "sync.0" ?(noAid) fi ;
+    "ctr" ::= "+"("ctr" # int(1)) ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 Bye.

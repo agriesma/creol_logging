@@ -466,7 +466,7 @@ and simplify_statement =
     | Release a -> Release a
     | AsyncCall (a, None, e, n, p) ->
 	(* If a label name is not given, we assign a new one. *)
-	let label = "_anon" ^ (string_of_int !next_fresh_label) in
+	let label = "anon." ^ (string_of_int !next_fresh_label) in
 	  next_fresh_label := !next_fresh_label + 1 ;
 	  AsyncCall (a, Some label, simplify_expression e, n,
 		     List.map simplify_expression p)
@@ -484,7 +484,7 @@ and simplify_statement =
 	   sequences which avoids this nesting? *)
         let ne = simplify_expression e
 	and np = List.map simplify_expression p
-        and fresh_label = "_sync" ^ (string_of_int !next_fresh_label)
+        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
         in
 	  next_fresh_label := !next_fresh_label + 1 ;
 	  Sequence (a, [ AsyncCall (a, Some fresh_label, ne, n, np) ;
@@ -492,7 +492,18 @@ and simplify_statement =
     | LocalAsyncCall (a, l, m, lb, ub, i) ->
 	LocalAsyncCall (a, l, m, lb, ub, List.map simplify_expression i)
     | LocalSyncCall (a, m, l, u, i, o) ->
-	LocalSyncCall (a, m, l, u, List.map simplify_expression i, o)
+	(* Replace the synchronous call by the sequence of an asynchronous
+	   call followed by a reply.  This generates a fresh label name.
+
+	   XXX: Usually, we nest a sequence into a sequence here, which is
+	   not very nice.  May be we want to have something smarter for
+	   sequences which avoids this nesting? *)
+	let ni = List.map simplify_expression i
+        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+        in
+	  next_fresh_label := !next_fresh_label + 1 ;
+	  Sequence (a, [ LocalAsyncCall (a, Some fresh_label, m, l, u, ni) ;
+			 Reply (a, fresh_label, o) ] )
     | Tailcall (a, m, l, u, i) ->
 	Tailcall (a, m, l, u, List.map simplify_expression i)
     | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
@@ -1251,10 +1262,10 @@ struct
 	    of_creol_identifier_list out i;
 	    output_string out " ::= " ;
 	    of_creol_expression_list out e
-	| AsyncCall (_, l, c, m, a) ->
-	    output_string out (match l with
-		None -> "\"Dummy\""
-	      | Some l ->  "\"" ^ l ^ "\"") ;
+	| AsyncCall (_, None, _, _, _) as s ->
+	    print prec (simplify_statement s)
+	| AsyncCall (_, Some l, c, m, a) ->
+	    output_string out ("\"" ^ l ^ "\"") ;
 	    output_string out " ! ";
 	    of_creol_expression out c ;
 	    output_string out (" . \"" ^ m ^ "\" ( ") ;
@@ -1265,31 +1276,21 @@ struct
 	    of_creol_identifier_list out o;
 	    output_string out " ) ) "
 	| Free (_, l) -> output_string out ("free( \"" ^ l ^ "\" )")
-	| SyncCall (_, c, m, a, r) ->
-	    of_creol_expression out c ;
-	    output_string out (" . \"" ^ m ^ "\" ( ");
-	    of_creol_expression_list out a;
-	    output_string out " ; " ;
-	    of_creol_identifier_list out r;
-	    output_string out " )"
+	| SyncCall (_, _, _, _, _) as s ->
+	    print prec (simplify_statement s)
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
-	    output_string out
-	      (match l with None -> "\"Dummy\" !" | Some n -> ("\"" ^ n ^ "\" !"));
+	    output_string out ( "( " ^
+	      (match l with
+		None -> "\"Dummy\" !"
+	      | Some n -> ("\"" ^ n ^ "\" !"))) ;
 	    output_string out ( " \"this\" . \"" ^ m ^ "\"");
 	    (match lb with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
 	    (match ub with None -> () | Some n -> output_string out (" << \"" ^ n ^ "\""));
 	    output_string out " ( " ;
 	    of_creol_expression_list out i;
-	    output_string out " )"
-	| LocalSyncCall (_, m, l, u, i, o) ->
-	    output_string out ( "\"" ^ m ^ "\"");
-	    (match l with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
-	    (match u with None -> () | Some n -> output_string out (" << \"" ^ n ^ "\""));
-	    output_string out " ( " ;
-	    of_creol_expression_list out i;
-	    output_string out " ; " ;
-	    of_creol_identifier_list out o;
-	    output_string out " )"
+	    output_string out " ) ) "
+	| LocalSyncCall (_, _, _, _, _, _) as s ->
+	    print prec (simplify_statement s)
 	| Tailcall (_, m, l, u, i) ->
 	    output_string out ( "\"" ^ m ^ "\"");
 	    (match l with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));

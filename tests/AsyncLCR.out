@@ -14,10 +14,10 @@ result Configuration:
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
-    0)) ; "i" . "getNeighbor"(emp ; "neighbor") ; "Dummy" ! "neighbor" .
-    "receive"("u") ; return(emp) > *
+    0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
+    "anon.1" ! "neighbor" . "receive"("u") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th "Dummy" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
+    "u") th "anon.2" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
     "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
@@ -52,10 +52,10 @@ result Configuration:
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
-    0)) ; "i" . "getNeighbor"(emp ; "neighbor") ; "Dummy" ! "neighbor" .
-    "receive"("u") ; return(emp) > *
+    0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
+    "anon.1" ! "neighbor" . "receive"("u") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th "Dummy" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
+    "u") th "anon.2" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
     "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >
