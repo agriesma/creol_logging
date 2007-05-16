@@ -442,6 +442,8 @@ open Declaration
 
 
 
+(** A counter used to generate the next fresh label *)
+let next_fresh_label = ref 0
 
 
 (** Normalise an abstract syntax tree by replacing all derived concepts
@@ -462,13 +464,31 @@ and simplify_statement =
     | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
     | Await (a, g) -> Await (a, simplify_expression g)
     | Release a -> Release a
-    | AsyncCall (a, l, e, n, p) ->
-	AsyncCall (a, l, simplify_expression e, n,
+    | AsyncCall (a, None, e, n, p) ->
+	(* If a label name is not given, we assign a new one. *)
+	let label = "_anon" ^ (string_of_int !next_fresh_label) in
+	  next_fresh_label := !next_fresh_label + 1 ;
+	  AsyncCall (a, Some label, simplify_expression e, n,
+		     List.map simplify_expression p)
+    | AsyncCall (a, Some l, e, n, p) ->
+	AsyncCall (a, Some l, simplify_expression e, n,
 		  List.map simplify_expression p)
     | Free (a, l) -> Free (a, l)
-    | Reply (a, l, v) -> Reply (a, l, v)
+    | Reply (a, l, r) -> Reply (a, l, r)
     | SyncCall (a, e, n, p, r) ->
-	SyncCall (a, simplify_expression e, n, List.map simplify_expression p, r)
+	(* Replace the synchronous call by the sequence of an asynchronous
+	   call followed by a reply.  This generates a fresh label name.
+
+	   XXX: Usually, we nest a sequence into a sequence here, which is
+	   not very nice.  May be we want to have something smarter for
+	   sequences which avoids this nesting? *)
+        let ne = simplify_expression e
+	and np = List.map simplify_expression p
+        and fresh_label = "_sync" ^ (string_of_int !next_fresh_label)
+        in
+	  next_fresh_label := !next_fresh_label + 1 ;
+	  Sequence (a, [ AsyncCall (a, Some fresh_label, ne, n, np) ;
+			 Reply (a, fresh_label, r) ] )
     | LocalAsyncCall (a, l, m, lb, ub, i) ->
 	LocalAsyncCall (a, l, m, lb, ub, List.map simplify_expression i)
     | LocalSyncCall (a, m, l, u, i, o) ->
@@ -501,6 +521,7 @@ and simplify_method_variables note =
 	  ({ v with var_init = None}::(fst r), a::(snd r))
 and simplify_method m =
   (** Simplify a method definition. *)
+  next_fresh_label := 0 ; (* labels need to be unique in this method only. *)
   match m.meth_body with
     None -> m
   | Some mb  ->
