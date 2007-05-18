@@ -202,11 +202,12 @@ fmod CREOL-STATEMENT is
   pr CREOL-GUARDS .
 
   sorts Mid Cid Stm .
-  subsort String < Mid Cid .
+  subsort String < Cid .
+  subsort String < Mid .
 
-  op _._   : Expr Mid -> Mid [ctor prec 33] .
-  op _@_   : Mid  Cid -> Mid [ctor prec 33] .
-  op _@_   : Aid  Cid -> Mid [ctor prec 33] .
+  op _._   : Expr String -> Mid [ctor prec 33] .
+  op _@_   : String  Cid -> Mid [ctor prec 33] .
+  *** op _@_   : Aid  Cid -> Mid [ctor prec 33] .
 
   op skip : -> Stm [ctor] .
   op release : -> Stm [ctor] .
@@ -258,22 +259,19 @@ fmod CREOL-STM-LIST is
   var PG : PureGuard .
 
   *** Some simplifications:
-  eq await noGuard ; NeSL = NeSL . *** could be SL
-  eq noAid ::= emp = skip [nonexec] .
-  ***  eq skip ; SL = SL . *** may affect ||| order 
-  eq (noStm []  SL)  = SL . 
-  eq (noStm ||| SL)  = SL . 
-  eq (noStm MERGER SL)      = SL .
-  eq (SL MERGER noStm)      = SL .
+  eq noStm [] SL = SL .
+  eq noStm ||| SL = SL .
+  eq noStm MERGER SL = SL .
+  eq SL MERGER noStm = SL .
+  eq await noGuard ; NeSL = NeSL .
+  *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
 
   *** Optimize assignments.  This way we save reducing a skip.  Also note
-  *** That the empty assignment is /not/ programmer syntax, it is inserted
+  *** that the empty assignment is /not/ programmer syntax, it is inserted
   *** during run-time.
   eq (AL ::= DL) = (AL assign DL) .
   eq (noAid assign emp) = noStm .
   eq (noAid ::= emp) = noStm .
-
-  *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
 
   sort Process .
   op idle : -> Process [{|format|} (!b o)] .  

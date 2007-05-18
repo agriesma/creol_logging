@@ -65,6 +65,8 @@ GRAMMAR_TEST(STATEMENT, free (noAid), skip)
 GRAMMAR_TEST(STATEMENT, free ("a" , "b" , "c"), skip)
 GRAMMAR_TEST(STATEMENT, tailcall "m" (emp), skip)
 GRAMMAR_TEST(STATEMENT, {| tailcall "m" (null # "a") |}, skip)
+dnl Should not be accepted, but is with an ambigous parse!
+dnl GRAMMAR_TEST(STATEMENT, "l" ! "this" . "m" @ "C" ( emp ) , skip)
 
 GRAMMAR_TEST(STM-LIST, noStm, skip)
 GRAMMAR_TEST(STM-LIST, skip, noStm)

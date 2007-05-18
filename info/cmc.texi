@@ -485,11 +485,6 @@ An asynchronous call statement.
 @item _?(_)
 Receiving a reply.
 
-@item _(_;_)
-A synchronous call statement.  This statement will be removed once the
-compiler is able to replace the statement by asynchronous
-call-/receive-sequences.
-
 @item await _
 Awaiting a condition.
 
