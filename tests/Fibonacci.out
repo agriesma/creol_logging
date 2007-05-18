@@ -12,14 +12,14 @@ result Configuration:
 < "Fibonacci" : Cl | Inh: noInh, Par: "n", Att: "n" |-> null, Mtds:
   < "fib" : Mtdname | Param: "n", Latt: "a" |-> null, "b" |-> null, "f" |->
     null, "n" |-> null, Code: if "="("n" # int(0)) th "f" assign int(1) el if
-    "="("n" # int(1)) th "f" assign int(1) el "s" ! "this" . "fib"("-"("n" #
-    int(1))) ; "s" ?("a") ; "t" ! "this" . "fib"("-"("n" # int(2))) ; "t" ?(
-    "b") ; "f" ::= "+"("a" # "b") fi fi ; return("f") > *
+    "="("n" # int(1)) th "f" assign int(1) el "s" ! "fib" @ "Fibonacci"("-"("n"
+    # int(1))) ; "s" ?("a") ; "t" ! "fib" @ "Fibonacci"("-"("n" # int(2))) ;
+    "t" ?("b") ; "f" ::= "+"("a" # "b") fi fi ; return("f") > *
   < "fibonacci" : Mtdname | Param: "n", Latt: "f" |-> null, "n" |-> null, Code:
-    "t" ! "this" . "fib"("n") ; "t" ?("f") ; return("f") > *
+    "t" ! "fib" @ "Fibonacci"("n") ; "t" ?("f") ; return("f") > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: "res" |-> null, Code: "t" ! "this" .
-    "fib"("n") ; await ("t" ??) ; "t" ?("res") ; return(emp) >,
+  < "run" : Mtdname | Param: noAid, Latt: "res" |-> null, Code: "t" ! "fib" @
+    "Fibonacci"("n") ; await ("t" ??) ; "t" ?("res") ; return(emp) >,
   Ocnt: 0 >
 Bye.

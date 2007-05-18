@@ -6,7 +6,7 @@ result Configuration:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "next" ::= new
     "Sieve"(int(2)) ; ("n" assign int(3)) ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "l" ! "next" .
-    "send"("n") ; "n" ::= "+"("n" # int(1)) ; "m" ! "this" . "run"(emp) ;
+    "send"("n") ; "n" ::= "+"("n" # int(1)) ; "m" ! "run" @ "Generator"(emp) ;
     release ; "l" ?("r") ; "m" ?(noAid) ; return(emp) >,
   Ocnt: 0 >
 

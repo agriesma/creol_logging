@@ -12,12 +12,12 @@ result Configuration:
   Ocnt: 0 >
 
 < "ElfC" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    "work"(emp) ; return(emp) > *
-  < "showIn" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    "talkToSanta"(emp) ; return(emp) > *
-  < "showOut" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    "work"(emp) ; return(emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" ! "work" @
+    "ElfC"(emp) ; return(emp) > *
+  < "showIn" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" !
+    "talkToSanta" @ "ElfC"(emp) ; return(emp) > *
+  < "showOut" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" !
+    "work" @ "ElfC"(emp) ; return(emp) > *
   < "talkToSanta" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
     emp) > *
   < "work" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.5" ! "sc" .
@@ -26,8 +26,8 @@ result Configuration:
 
 < "LeaderElfC" : Cl | Inh: "ElfC" < emp >, Par: "sc", "elves", Att: "elves" |->
     null, "sc" |-> null, Mtds:
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.6" ! "this" . (
-    "run" @ "ElfC")(emp) ; "sync.6" ?(noAid) ; return(emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.6" ! "run" @
+    "ElfC"(emp) ; "sync.6" ?(noAid) ; return(emp) > *
   < "work" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.7" ! "sc" .
     "haveProblem"(emp) ; return(emp) >,
   Ocnt: 0 >
@@ -35,14 +35,14 @@ result Configuration:
 < "ReindeerC" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
   < "deliverToys" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
     emp) > *
-  < "harness" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    "deliverToys"(emp) ; return(emp) > *
+  < "harness" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" !
+    "deliverToys" @ "ReindeerC"(emp) ; return(emp) > *
   < "holiday" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.4" ! "sc" .
     "backFromHoliday"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    "holiday"(emp) ; return(emp) > *
-  < "unharness" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this"
-    . "holiday"(emp) ; return(emp) >,
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" ! "holiday"
+    @ "ReindeerC"(emp) ; return(emp) > *
+  < "unharness" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" !
+    "holiday" @ "ReindeerC"(emp) ; return(emp) >,
   Ocnt: 0 >
 
 < "SantaClausC" : Cl | Inh: noInh, Par: noAid, Att: "ctElves" |-> null,
@@ -66,12 +66,13 @@ result Configuration:
     "+"("ctElves" # int(1)) ; "waitElves" ::= "plus"("waitElves" # "caller") ;
     return(emp) > *
   < "loop" : Mtdname | Param: noAid, Latt: noSubst, Code: (await "&&"("<="(int(
-    3) # "ctElves") # "~"("="("ctReindeers" # int(9)))) ; "sync.1" ! "this" .
-    "talkToElves"(emp) ; "sync.1" ?(noAid)[]await "="("ctReindeers" # int(5)) ;
-    "sync.0" ! "this" . "deliverToys"(emp) ; "sync.0" ?(noAid)) ; "Dummy" !
-    "this" . "loop"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "Dummy" ! "this" .
-    "loop"(emp) ; return(emp) > *
+    3) # "ctElves") # "~"("="("ctReindeers" # int(9)))) ; "sync.1" !
+    "talkToElves" @ "SantaClausC"(emp) ; "sync.1" ?(noAid)[]await "="(
+    "ctReindeers" # int(5)) ; "sync.0" ! "deliverToys" @ "SantaClausC"(emp) ;
+    "sync.0" ?(noAid)) ; "anon.???" ! "loop" @ "SantaClausC"(emp) ; return(emp)
+    > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" ! "loop" @
+    "SantaClausC"(emp) ; return(emp) > *
   < "talkToelves" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
     "-"("ctElves" # int(3)) ; "t1" ! "first"("waitElves") . "showIn"(emp) ;
     "inofficeElves" ::= "plus"("inofficeElves" # "first"("waitElves")) ;

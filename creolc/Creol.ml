@@ -1244,7 +1244,7 @@ struct
       | i::l -> output_string out_channel ("\"" ^ i ^ "\", ");
 	  of_creol_identifier_list out_channel l
 
-  let of_creol_statement out stmt =
+  let of_creol_statement out cls stmt =
     let open_paren prec op_prec =
       if prec < op_prec then output_string out "( " ;
     and close_paren prec op_prec =
@@ -1281,11 +1281,15 @@ struct
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
 	    output_string out ( "( " ^
 	      (match l with
-		None -> "\"Dummy\" !"
-	      | Some n -> ("\"" ^ n ^ "\" !"))) ;
-	    output_string out ( " \"this\" . \"" ^ m ^ "\"");
-	    (match lb with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
-	    (match ub with None -> () | Some n -> output_string out (" << \"" ^ n ^ "\""));
+		None -> "\"anon.???\""
+	      | Some n -> ("\"" ^ n ^ "\""))) ;
+	    output_string out ( " ! \"" ^ m ^ "\"");
+	    (match lb with
+		None -> output_string out (" @ \"" ^ cls ^ "\"")
+	      | Some n -> output_string out (" @ \"" ^ n ^ "\""));
+	    (match ub with
+		None -> ()
+	      | Some n -> output_string out (" << \"" ^ n ^ "\""));
 	    output_string out " ( " ;
 	    of_creol_expression_list out i;
 	    output_string out " ) ) "
@@ -1381,7 +1385,7 @@ struct
       | n::l -> output_string out ("\"" ^ n.var_name ^ "\" # ");
           of_creol_method_return out l
 
-  let of_creol_method out m =
+  let of_creol_method out cls m =
     output_string out ("\n  < \"" ^ m.meth_name ^ "\" : Mtdname | Param: ");
     of_creol_parameter_list out m.meth_inpars;
     output_string out ", Latt: " ;
@@ -1390,23 +1394,23 @@ struct
     output_string out ", Code: " ;
     ( match m.meth_body with
 	None -> output_string out "skip"
-      | Some s -> of_creol_statement out s ;
+      | Some s -> of_creol_statement out cls s ;
 	  output_string out " ; return ( ";
 	  of_creol_method_return out m.meth_outpars;
 	  output_string out " )" ) ;
     output_string out " >"
 
-  let rec of_creol_method_list out =
+  let rec of_creol_method_list out cls =
     function
 	[] -> output_string out "noMtd" 
-      | [m] -> of_creol_method out m
-      | m::r -> of_creol_method out m;
-	  output_string out " *";
-	  of_creol_method_list out r
+      | [m] -> of_creol_method out cls m
+      | m::r -> of_creol_method out cls m ;
+	  output_string out " *" ;
+	  of_creol_method_list out cls r
 
-  let of_creol_with_defs out ws =
+  let of_creol_with_defs out cls ws =
     let methods = List.flatten (List.map (function w -> w.With.methods) ws) in
-      of_creol_method_list out methods
+      of_creol_method_list out cls methods
 
   let of_creol_class out c =
     output_string out ("< \"" ^ c.Class.name ^ "\" : Cl | Inh: ");
@@ -1417,7 +1421,7 @@ struct
     of_creol_class_attribute_list out
       (c.Class.parameters @ c.Class.attributes);
     output_string out ", Mtds: ";
-    of_creol_with_defs out c.Class.with_defs;
+    of_creol_with_defs out c.Class.name c.Class.with_defs;
     output_string out ", Ocnt: 0 >\n\n"
 
   let of_creol_interface out i = ()
