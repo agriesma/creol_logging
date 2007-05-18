@@ -1278,6 +1278,16 @@ struct
 	| Free (_, l) -> output_string out ("free( \"" ^ l ^ "\" )")
 	| SyncCall (_, _, _, _, _) as s ->
 	    print prec (simplify_statement s)
+	| LocalAsyncCall (_, l, m, None, None, i) ->
+	    (* An unqualified local synchronous call should use this in
+	       order to get late binding correct. *)
+	    output_string out ( "( " ^
+	      (match l with
+		None -> "\"anon.???\""
+	      | Some n -> ("\"" ^ n ^ "\""))) ;
+	    output_string out ( " ! \"this\" . \"" ^ m ^ "\" (");
+	    of_creol_expression_list out i;
+	    output_string out " ) ) "
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
 	    output_string out ( "( " ^
 	      (match l with

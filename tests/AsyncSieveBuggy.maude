@@ -5,7 +5,7 @@ op init : -> Configuration [ctor] .
 eq init =
 < "Generator" : Cl | Inh: noInh, Par: noAid, Att: "n" |-> null , "next" |-> null, Mtds: 
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "next" ::= new "Sieve" ( int(2) ) ; "n" ::= int(3) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "l" ! "next" . "send" ( "n" ) ; "n" ::= "+" ( "n" # int(1) ) ; ( "m" ! "run" @ "Generator" ( emp ) )  ; release ; ( "l" ? ( "r" ) )  ; ( "m" ? ( noAid ) )  ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "l" ! "next" . "send" ( "n" ) ; "n" ::= "+" ( "n" # int(1) ) ; ( "m" ! "this" . "run" (emp ) )  ; release ; ( "l" ? ( "r" ) )  ; ( "m" ? ( noAid ) )  ; return ( emp ) >, Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "p" |-> null , "next" |-> null, Mtds: 
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *

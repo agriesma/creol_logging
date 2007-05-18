@@ -20,7 +20,7 @@ eq init =
 
 < "D" : Cl | Inh: "B" < int(1) >  ## "C" < int(2) > , Par: noAid, Att: "x" |-> null , "y" |-> null, Mtds: 
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ( "sync.0" ! "m" @ "D" ( emp ) )  ; ( "sync.0" ? ( "x" ) )  ; ( "sync.1" ! "n" @ "D" ( emp ) )  ; ( "sync.1" ? ( "y" ) )  ; skip ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ( "sync.0" ! "this" . "m" (emp ) )  ; ( "sync.0" ? ( "x" ) )  ; ( "sync.1" ! "this" . "n" (emp ) )  ; ( "sync.1" ? ( "y" ) )  ; skip ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

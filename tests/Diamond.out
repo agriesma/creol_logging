@@ -29,9 +29,9 @@ result Configuration:
     null, "y" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "m" @ "D"(
-    emp) ; "sync.0" ?("x") ; "sync.1" ! "n" @ "D"(emp) ; "sync.1" ?("y") ; skip
-    ; return(emp) >,
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "this" .
+    "m"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "n"(emp) ; "sync.1" ?("y")
+    ; skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
 rewrite in PROGRAM : init
@@ -69,9 +69,9 @@ result Configuration:
     null, "y" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "m" @ "D"(
-    emp) ; "sync.0" ?("x") ; "sync.1" ! "n" @ "D"(emp) ; "sync.1" ?("y") ; skip
-    ; return(emp) >,
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "this" .
+    "m"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "n"(emp) ; "sync.1" ?("y")
+    ; skip ; return(emp) >,
   Ocnt: 1 >
 
 < ob("D0") : "D" | Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this"
