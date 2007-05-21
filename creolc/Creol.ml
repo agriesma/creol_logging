@@ -465,11 +465,12 @@ and simplify_statement =
     | Await (a, g) -> Await (a, simplify_expression g)
     | Release a -> Release a
     | AsyncCall (a, None, e, n, p) ->
-	(* If a label name is not given, we assign a new one. *)
-	let label = "anon." ^ (string_of_int !next_fresh_label) in
-	  next_fresh_label := !next_fresh_label + 1 ;
-	  AsyncCall (a, Some label, simplify_expression e, n,
-		     List.map simplify_expression p)
+	(* If a label name is not given, we assign a new one and free it
+	   afterwards.  It may be better to insert free later, but for this
+	   we need smarter semantic analysis. *)
+	Sequence (a, [ AsyncCall (a, Some "_anon", simplify_expression e, n,
+				 List.map simplify_expression p) ;
+		       Free (a, "_anon") ])
     | AsyncCall (a, Some l, e, n, p) ->
 	AsyncCall (a, Some l, simplify_expression e, n,
 		  List.map simplify_expression p)

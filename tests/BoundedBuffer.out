@@ -11,19 +11,19 @@ result Configuration:
   Ocnt: 0 >
 
 < "Cons" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
-  < "loop" : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "sync.4" ! "b" .
-    "remove"(emp) ; "sync.4" ?("y") ; "anon.5" ! "this" . "loop"(emp) ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.3" ! "this" .
-    "loop"(emp) ; return(emp) >,
+  < "loop" : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "sync.1" ! "b" .
+    "remove"(emp) ; "sync.1" ?("y") ; "_anon" ! "this" . "loop"(emp) ; free(
+    "_anon") ; return(emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "_anon" ! "this" .
+    "loop"(emp) ; free("_anon") ; return(emp) >,
   Ocnt: 0 >
 
 < "Prod" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
-  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "sync.1" ! "b" .
-    "append"("i") ; "sync.1" ?(noAid) ; "anon.2" ! "this" . "loop"("+"("i" #
-    int(1))) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.0" ! "this" .
-    "loop"(int(0)) ; return(emp) >,
+  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "sync.0" ! "b" .
+    "append"("i") ; "sync.0" ?(noAid) ; "_anon" ! "this" . "loop"("+"("i" #
+    int(1))) ; free("_anon") ; return(emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "_anon" ! "this" .
+    "loop"(int(0)) ; free("_anon") ; return(emp) >,
   Ocnt: 0 >
 
 < "Starter" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds:

@@ -15,10 +15,10 @@ result Configuration:
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
     0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
-    "anon.1" ! "neighbor" . "receive"("u") ; return(emp) > *
+    "_anon" ! "neighbor" . "receive"("u") ; free("_anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th "anon.2" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
-    "status" assign int(1) el skip fi fi ; return(emp) > *
+    "u") th "_anon" ! "neighbor" . "receive"("v") ; free("_anon") el if "="("v"
+    # "u") th "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
@@ -27,15 +27,11 @@ main("Init", emp) .
 result Configuration: 
 < ob("Init0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
 
-< ob("Process0") : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
-    "Process0"),3),emp) + comp(label(ob("Process0"),5),emp) + comp(label(ob(
-    "Process0"),6),emp) >
+< ob("Process0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
 
-< ob("Process1") : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
-    "Process1"),3),emp) + comp(label(ob("Process1"),5),emp) >
+< ob("Process1") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
 
-< ob("Process2") : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
-    "Process2"),3),emp) >
+< ob("Process2") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
 
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
@@ -53,10 +49,10 @@ result Configuration:
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
     0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
-    "anon.1" ! "neighbor" . "receive"("u") ; return(emp) > *
+    "_anon" ! "neighbor" . "receive"("u") ; free("_anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th "anon.2" ! "neighbor" . "receive"("v") el if "="("v" # "u") th
-    "status" assign int(1) el skip fi fi ; return(emp) > *
+    "u") th "_anon" ! "neighbor" . "receive"("v") ; free("_anon") el if "="("v"
+    # "u") th "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >
 
