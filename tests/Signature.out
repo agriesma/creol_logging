@@ -34,16 +34,6 @@ result GroundTerm: 'bool`(_`)['true.Bool]
 reduce in CREOL-GUARDS : downTerm(upTerm(bool(true)), noGuard) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-GUARDS : int(4) & int(5) .
-result Data: "&&"(int(4) # int(5))
-==========================================
-reduce in CREOL-GUARDS : upTerm(int(4) & int(5)) .
-result GroundTerm: '_`(_`)['"&&".String,'_#_['int`(_`)['s_^4['0.Zero]],
-    'int`(_`)['s_^5['0.Zero]]]]
-==========================================
-reduce in CREOL-GUARDS : downTerm(upTerm(int(4) & int(5)), noGuard) .
-result Data: "&&"(int(4) # int(5))
-==========================================
 reduce in CREOL-GUARDS : "test" ?? .
 result Return: "test" ??
 ==========================================
@@ -52,15 +42,6 @@ result GroundTerm: '_??['"test".String]
 ==========================================
 reduce in CREOL-GUARDS : downTerm(upTerm("test" ??), noGuard) .
 result Return: "test" ??
-==========================================
-reduce in CREOL-GUARDS : "pest" & "test" ?? .
-result PureGuard: "pest" & "test" ??
-==========================================
-reduce in CREOL-GUARDS : upTerm("pest" & "test" ??) .
-result GroundTerm: '_&_['"pest".String,'_??['"test".String]]
-==========================================
-reduce in CREOL-GUARDS : downTerm(upTerm("pest" & "test" ??), noGuard) .
-result PureGuard: "pest" & "test" ??
 ==========================================
 reduce in CREOL-STATEMENT : "a" . "a" .
 result Mid: "a" . "a"

@@ -44,9 +44,7 @@ red in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", b
 red in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1", bool(false), noSubst))) .
 
 GRAMMAR_TEST(GUARDS, bool(true), noGuard)
-GRAMMAR_TEST(GUARDS, int(4) & int(5), noGuard)
 GRAMMAR_TEST(GUARDS, "test" ??, noGuard)
-GRAMMAR_TEST(GUARDS, "test" ?? & "pest", noGuard)
 
 GRAMMAR_TEST(STATEMENT, "a" . "a", "a")
 GRAMMAR_TEST(STATEMENT, "a" @ "a", "a")

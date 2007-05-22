@@ -190,11 +190,6 @@ fmod CREOL-GUARDS is
   op noGuard : -> NoGuard [ctor {|format|} (b o)] .
   op _??  : Aid -> Return [ctor] .
   op _??  : Label -> Return [ctor] .
-  op _&_ : Guard Guard -> Guard [ctor id: noGuard assoc comm prec 55] .
-  op _&_ : PureGuard PureGuard -> PureGuard [ctor ditto] .
-
-  eq PG & PG = PG .
-  eq E & E' = "&&" (E # E') .
 
 endfm
 
@@ -264,7 +259,6 @@ fmod CREOL-STM-LIST is
   eq noStm MERGER SL = SL .
   eq SL MERGER noStm = SL .
   eq await noGuard ; NeSL = NeSL .
-  *** eq await (R & PG)= await R ; await PG . --- could be rule for confluence!
 
   *** Optimize assignments.  This way we save reducing a skip.  Also note
   *** that the empty assignment is /not/ programmer syntax, it is inserted
@@ -744,17 +738,6 @@ crl
   .
 
 
-*** Optimization to avoid muiltiple lookups in the message queue for
-*** the same guard
-eq 
-  < O : C | Att: S, Pr: P, PrQ: (L, await (Lab ?? & G); SL) ++ W, Lcnt: F > 
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >  
-  =
-  < O : C | Att: S,  Pr: P, PrQ: (L, await G ; SL) ++ W, Lcnt: F >    
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
-  .
-
-
 ***
 *** Tail calls.
 ***
@@ -924,7 +907,7 @@ eq
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
   = 
   < O : C |  Att: S,
-    Pr: ((ifdef({|MODELCHECKER|}, {|A |-> null, L|}, L)),
+    Pr: ((ifdef({|MODELCHECKER|}, {|A |-> noLabel, L|}, L)),
          (AL assign DL); SL), PrQ: W, Lcnt: F > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label receive-reply]
@@ -935,11 +918,12 @@ STEP({|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM > (MsgBody from O' to O)|},
   {|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM + MsgBody >|},
   {|[label invoc-msg]|})
 
-*** Free a label.
-STEP({|< O : C | Att: S, Pr: (L, free(A) ; SL), PrQ: W, Lcnt: N >
+*** Free a label.  Make sure that the use of labels is linear.
+STEP({|< O : C | Att: S, Pr: ((A |-> Lab, L), free(A) ; SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-  {|< O : C | Att: S, Pr: (L,SL), PrQ: W, Lcnt: N > 
-  < O : Qu | Size: Sz, Dealloc: ({|eval|}(A, (S # L)) ^ LS), Ev: MM >|},
+  {|< O : C | Att: S, Pr: ((A |-> ifdef({|MODELCHECKER|}, noLabel, Lab), L), SL),
+              PrQ: W, Lcnt: N > 
+  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: MM >|},
   {|[label free]|})
 
 *** Deallocate

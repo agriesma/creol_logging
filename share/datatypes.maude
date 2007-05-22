@@ -42,6 +42,7 @@ fmod CREOL-DATA-SIG is
   *** op label : Nat -> Label [ctor] .
   sort Label .
   subsort Label < Data .
+  op noLabel : -> Label [ctor] .
 
   op caller : Label -> Oid .
 

@@ -57,18 +57,19 @@ result Configuration:
     "waitReindeers")) ; "waitReindeers" ::= "rest"("waitReindeers") ; "t5" !
     "first"("waitReindeers") . "harness"(emp) ; "harnessedReindeers" ::=
     "plus"("harnessedReindeers" # "first"("waitReindeers")) ; "waitReindeers"
-    ::= "rest"("waitReindeers") ; await ("t1" ?? & "t2" ?? & "t3" ?? & "t4" ??
-    & "t5" ??) ; "_anon" ! "first"("harnessedReindeers") . "unharness"(emp) ;
-    free("_anon") ; "harnessedReindeers" ::= "rest"("harnessedReindeers") ;
-    "_anon" ! "first"("harnessedReindeers") . "unharness"(emp) ; free("_anon")
-    ; "harnessedReindeers" ::= "rest"("harnessedReindeers") ; return(emp) > *
+    ::= "rest"("waitReindeers") ; await ("t1" ??) ; await ("t2" ??) ; await (
+    "t3" ??) ; await ("t4" ??) ; await ("t5" ??) ; "_anon" ! "first"(
+    "harnessedReindeers") . "unharness"(emp) ; free("_anon") ;
+    "harnessedReindeers" ::= "rest"("harnessedReindeers") ; "_anon" ! "first"(
+    "harnessedReindeers") . "unharness"(emp) ; free("_anon") ;
+    "harnessedReindeers" ::= "rest"("harnessedReindeers") ; return(emp) > *
   < "haveProblem" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
     "+"("ctElves" # int(1)) ; "waitElves" ::= "plus"("waitElves" # "caller") ;
     return(emp) > *
   < "loop" : Mtdname | Param: noAid, Latt: noSubst, Code: (await "&&"("<="(int(
-    3) # "ctElves") # "~"("="("ctReindeers" # int(9)))) ; "sync.1" ! "this" .
-    "talkToElves"(emp) ; "sync.1" ?(noAid)[]await "="("ctReindeers" # int(5)) ;
-    "sync.0" ! "this" . "deliverToys"(emp) ; "sync.0" ?(noAid)) ; "anon.???" !
+    3) # "ctElves") # "~"("="("ctReindeers" # int(9)))) ; "sync.0" ! "this" .
+    "talkToElves"(emp) ; "sync.0" ?(noAid)[]await "="("ctReindeers" # int(5)) ;
+    "sync.1" ! "this" . "deliverToys"(emp) ; "sync.1" ?(noAid)) ; "anon.???" !
     "this" . "loop"(emp) ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "anon.???" ! "this" .
     "loop"(emp) ; return(emp) > *
@@ -80,11 +81,11 @@ result Configuration:
     "waitElves")) ; "waitElves" ::= "rest"("waitElves") ; "t3" ! "first"(
     "waitElves") . "showIn"(emp) ; "inofficeElves" ::= "plus"("inofficeElves" #
     "first"("waitElves")) ; "waitElves" ::= "rest"("waitElves") ; await ("t1"
-    ?? & "t2" ?? & "t3" ??) ; "t1" ! "first"("inoffcieElves") . "showOut"(emp)
-    ; "inofficeElves" ::= "rest"("inofficeElves") ; "t2" ! "first"(
-    "inoffcieElves") . "showOut"(emp) ; "inofficeElves" ::= "rest"(
+    ??) ; await ("t2" ??) ; await ("t3" ??) ; "t1" ! "first"("inoffcieElves") .
+    "showOut"(emp) ; "inofficeElves" ::= "rest"("inofficeElves") ; "t2" !
+    "first"("inoffcieElves") . "showOut"(emp) ; "inofficeElves" ::= "rest"(
     "inofficeElves") ; "t3" ! "first"("inoffcieElves") . "showOut"(emp) ;
-    "inofficeElves" ::= "rest"("inofficeElves") ; await ("t1" ?? & "t2" ?? &
-    "t3" ??) ; return(emp) >,
+    "inofficeElves" ::= "rest"("inofficeElves") ; await ("t1" ??) ; await ("t2"
+    ??) ; await ("t3" ??) ; return(emp) >,
   Ocnt: 0 >
 Bye.

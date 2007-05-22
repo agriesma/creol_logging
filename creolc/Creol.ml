@@ -457,12 +457,28 @@ let rec simplify_expression =
     | FuncCall(a, f, args) -> FuncCall(a, f, List.map simplify_expression args)
     | New (a, t, p) -> New (a, t, List.map simplify_expression p)
     | t -> t
+and simplify_guard note guard =
+  let rec sort_guard =
+    function
+      Binary(_, _, Label(_, _), Label (_, _)) as g -> g
+    | Binary(a, o, left, Label (b, l)) ->
+	Binary (a, o, Label (b, l), sort_guard left)
+    | t -> t
+  and split_guard note =
+    function
+      Binary(a, (GuardAnd | And), Label(ll, l), e) ->
+        Sequence(note, [Await (note, Label (ll, l)) ; split_guard note e])
+    | Binary(a, Or, Label(ll, l), e) ->
+        Choice(note, Await (note, Label (ll, l)), split_guard note e)
+    | e -> Await (note, simplify_expression e)
+  in
+    split_guard note (sort_guard guard)
 and simplify_statement =
   function
       Skip a -> Skip a
     | Assert (a, e) -> Assert (a, simplify_expression e)
     | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
-    | Await (a, g) -> Await (a, simplify_expression g)
+    | Await (note, g) -> simplify_guard note g
     | Release a -> Release a
     | AsyncCall (a, None, e, n, p) ->
 	(* If a label name is not given, we assign a new one and free it
@@ -1207,23 +1223,18 @@ struct
 	Nil _ -> output_string out "list(emp)"
       | Null _ -> output_string out "null"
       | Int (_, i) -> output_string out ("int(" ^ (string_of_int i) ^ ")")
-      | Float (_, f) -> ()
+      | Float (_, f) -> assert false
       | Bool (_, false) -> output_string out "bool(false)"
       | Bool (_, true) -> output_string out "bool(true)"
       | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
       | Id (_, i) -> output_string out ("\"" ^ i ^ "\"")
-      | Unary (_, _, _) as e ->
-	of_creol_expression out (simplify_expression e)
-      | Binary (_, GuardAnd, l, r) -> output_string out "( " ;
-	of_creol_expression out l ; output_string out " & " ;
-	of_creol_expression out r ; output_string out " )"
-      | Binary (_, _, _, _) as e ->
-	of_creol_expression out (simplify_expression e)
       | FuncCall(_, f, a) -> output_string out ("\"" ^ f ^ "\" ( " );
 	  of_creol_expression_list out a;
 	  output_string out " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
       | FieldAccess(_, e, f) -> assert false (* XXX *)
+      | Unary (_, _, _) -> assert false
+      | Binary (_, _, _, _) -> assert false
       | Label(_, l) -> output_string out ("( \"" ^ l ^ "\" ?? )")
       | New (_, c, a) ->
 	  output_string out ("new \"" ^ (match c with Type.Basic s -> s | Type.Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
@@ -1254,7 +1265,7 @@ struct
       function
 	  Skip _ -> output_string out "skip"
 	| Assert (_, _) -> output_string out "skip"
-	| Await (_, e) -> output_string out "( await ";
+	| Await (note, e) -> output_string out "( await ";
 	    of_creol_expression out e;
 	    output_string out " )"
 	| Release _ ->
@@ -1263,8 +1274,6 @@ struct
 	    of_creol_identifier_list out i;
 	    output_string out " ::= " ;
 	    of_creol_expression_list out e
-	| AsyncCall (_, None, _, _, _) as s ->
-	    print prec (simplify_statement s)
 	| AsyncCall (_, Some l, c, m, a) ->
 	    output_string out ("\"" ^ l ^ "\"") ;
 	    output_string out " ! ";
@@ -1277,8 +1286,6 @@ struct
 	    of_creol_identifier_list out o;
 	    output_string out " ) ) "
 	| Free (_, l) -> output_string out ("free( \"" ^ l ^ "\" )")
-	| SyncCall (_, _, _, _, _) as s ->
-	    print prec (simplify_statement s)
 	| LocalAsyncCall (_, l, m, None, None, i) ->
 	    (* An unqualified local synchronous call should use this in
 	       order to get late binding correct. *)
@@ -1304,8 +1311,6 @@ struct
 	    output_string out " ( " ;
 	    of_creol_expression_list out i;
 	    output_string out " ) ) "
-	| LocalSyncCall (_, _, _, _, _, _) as s ->
-	    print prec (simplify_statement s)
 	| Tailcall (_, m, l, u, i) ->
 	    output_string out ( "\"" ^ m ^ "\"");
 	    (match l with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
@@ -1405,7 +1410,7 @@ struct
     output_string out ", Code: " ;
     ( match m.meth_body with
 	None -> output_string out "skip"
-      | Some s -> of_creol_statement out cls s ;
+      | Some s -> of_creol_statement out cls (simplify_statement s) ;
 	  output_string out " ; return ( ";
 	  of_creol_method_return out m.meth_outpars;
 	  output_string out " )" ) ;
