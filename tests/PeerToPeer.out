@@ -1,0 +1,26 @@
+==========================================
+reduce in PROGRAM : init .
+result Class: 
+< "Node" : Cl | Inh: noInh, Par: "db", Att: "db" |-> null, Mtds:
+  < "availFiles" : Mtdname | Param: "sList", Latt: "files" |-> null, "sList"
+    |-> null, Code: if "="("sList" # list(emp)) th "files" assign list(emp) el
+    "l1" ! "hd"("sList") . "enquire"(emp) ; "l2" ! "self" . "availFiles"(
+    "tail"("sList")) ; await "&&"("l1" # "l2") ; "l1" ?("fList") ; "l2" ?(
+    "files") fi ; return("files") > *
+  < "enquire" : Mtdname | Param: noAid, Latt: "files" |-> null, Code: "sync.0"
+    ! "db" . "listFiles"(emp) ; await ("sync.0" ??) ; "sync.0" ?("files") ;
+    return("files") > *
+  < "getLength" : Mtdname | Param: "fId", Latt: "fId" |-> null, "lth" |-> null,
+    Code: "sync.1" ! "db" . "length"("fId") ; await ("sync.1" ??) ; "sync.1" ?(
+    "lth") ; return("lth") > *
+  < "getPack" : Mtdname | Param: "fId", "pNbr", Latt: "f" |-> null, "fId" |->
+    null, "pNbr" |-> null, "pack" |-> null, Code: "sync.2" ! "db" . "getFile"(
+    "fId") ; await ("sync.2" ??) ; "sync.2" ?("f") ; "pack" ::= "f"("pNbr") ;
+    return("pack") > *
+  < "reqFile" : Mtdname | Param: "sId", "fId", Latt: "fId" |-> null, "file" |->
+    null, "lth" |-> null, "pack" |-> null, "sId" |-> null, Code: "sync.3" !
+    "sId" . "getLength"("fId" # "lth") ; await ("sync.3" ??) ; "sync.3" ?(
+    "pack") ; "_anon" ! "db" . "storeFile"("fId" # "file") ; free("_anon") ;
+    return(emp) >,
+  Ocnt: 0 >
+Bye.

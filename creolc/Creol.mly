@@ -196,6 +196,8 @@ method_def:
 interfacedecl:
       INTERFACE n = CID i = iface_inherits_opt BEGIN w = ioption(with_decl) END
     { { Interface.name = n; Interface.inherits = i; Interface.with_decl = w } }
+    | INTERFACE error
+	{ signal_error $startpos "syntax error in interface declaration" }
 
 iface_inherits_opt:
       (* empty *) { [] }
@@ -203,7 +205,10 @@ iface_inherits_opt:
 
 with_decl:
       WITH m = CID l = nonempty_list(method_decl) i = list(invariant)
-    { { With.co_interface = Some m; With.methods = l; With.invariants = i } }
+     { { With.co_interface = Some m; With.methods = l; With.invariants = i } }
+    | WITH error
+    | WITH CID error
+	{ signal_error $startpos "syntax error in with block declaration" }
 
 
 (* Exception declaration *)
@@ -277,6 +282,14 @@ basic_statement:
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, ID) RPAREN
 	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
+    | AWAIT c = expression DOT; m = ID;
+	LPAREN i = separated_list(COMMA, expression) SEMI
+	       o = separated_list(COMMA, ID) RPAREN
+	{ AwaitSyncCall ((Note.make $startpos), c, m, i, o) }
+    | AWAIT m = ID lb = ioption(preceded(AT, CID)) ub = ioption(preceded(LTLT, CID))
+	LPAREN i = separated_list(COMMA, expression) SEMI
+	       o = separated_list(COMMA, ID) RPAREN
+	{ AwaitLocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement END
@@ -448,6 +461,8 @@ creol_type:
 	{ Type.Application(t, p) } 
     | DOLLAR v = CID
 	{ Type.Variable v }
+    | l = creol_type TIMES r = creol_type
+	{ l (* XXX: Tuple *) }
     | error RBRACK
 	{ signal_error $startpos "Error in type" }
 

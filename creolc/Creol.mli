@@ -166,6 +166,8 @@ sig
   val string_of_binaryop : binaryop -> string
 
   val string_of_unaryop : unaryop -> string
+
+  val note : 'a t -> 'a
 end
 
 module Statement: sig
@@ -194,10 +196,16 @@ module Statement: sig
       | SyncCall of 'a * 'b Expression.t * string *
 	  'b Expression.t list * string list
 	  (** Call a (remote) method synchronously. *)
+      | AwaitSyncCall of 'a * 'b Expression.t * string *
+	  'b Expression.t list * string list
+	  (** Call a (remote) method synchronously. *)
       | LocalAsyncCall of 'a * string option * string * string option *
 	  string option * 'b Expression.t list
 	  (** Call a local method synchronously. *)
       | LocalSyncCall of 'a * string * string option * string option *
+	  'b Expression.t list * string list
+	  (** Call a local method synchronously. *)
+      | AwaitLocalSyncCall of 'a * string * string option * string option *
 	  'b Expression.t list * string list
 	  (** Call a local method synchronously. *)
       | Tailcall of 'a * string * string option * string option *

@@ -168,3 +168,9 @@ red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Christmas", emp)), 0, 1) .
 ])
+
+TEST_CREOLC([PeerToPeer], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Christmas", emp)), 0, 1) .
+])

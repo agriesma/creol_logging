@@ -272,6 +272,28 @@ module Expression =
 	| UMinus -> 15
 	| Length -> 15
 
+    let note =
+      function
+	  Null a -> a
+	| Nil a -> a
+	| Bool (a, _) -> a
+	| Int (a, _) -> a
+	| Float (a, _) -> a
+	| String (a, _) -> a
+	| Id (a, _) -> a
+	| Tuple (a, _) -> a
+	| Cast (a, _, _) -> a
+	| Index (a, _, _) -> a
+	| FieldAccess (a, _, _) -> a
+	| Unary (a, _, _) -> a
+	| Binary (a, _, _, _) -> a
+	| If (a, _, _, _) -> a
+	| Case (a, _) -> a
+	| Typecase (a, _) -> a
+	| FuncCall (a, _, _) -> a
+	| Label (a, _) -> a
+	| New (a, _, _) -> a
+
   end
 
 open Expression
@@ -290,9 +312,13 @@ module Statement =
 	| Free of 'a * string
 	| SyncCall of 'a * 'b Expression.t * string *
 	    'b Expression.t list * string list
+	| AwaitSyncCall of 'a * 'b Expression.t * string *
+	    'b Expression.t list * string list
 	| LocalAsyncCall of 'a * string option * string * string option *
 	    string option * 'b Expression.t list
 	| LocalSyncCall of 'a * string * string option * string option *
+            'b Expression.t list * string list
+	| AwaitLocalSyncCall of 'a * string * string option * string option *
             'b Expression.t list * string list
 	| Tailcall of 'a * string * string option * string option *
 	    'b Expression.t list
@@ -327,8 +353,10 @@ module Statement =
 	| Reply (a, _, _) -> a
 	| Free (a, _) -> a
 	| SyncCall (a, _, _, _, _) -> a
+	| AwaitSyncCall (a, _, _, _, _) -> a
 	| LocalAsyncCall (a, _, _, _, _, _) -> a
 	| LocalSyncCall (a, _, _, _, _, _) -> a
+	| AwaitLocalSyncCall (a, _, _, _, _, _) -> a
 	| Tailcall (a, _, _, _, _) -> a
 	| If (a, _, _, _) -> a
 	| While (a, _, _, _) -> a
@@ -506,6 +534,21 @@ and simplify_statement =
 	  next_fresh_label := !next_fresh_label + 1 ;
 	  Sequence (a, [ AsyncCall (a, Some fresh_label, ne, n, np) ;
 			 Reply (a, fresh_label, r) ] )
+    | AwaitSyncCall (a, e, n, p, r) ->
+	(* Replace the synchronous call by the sequence of an asynchronous
+	   call followed by a reply.  This generates a fresh label name.
+
+	   XXX: Usually, we nest a sequence into a sequence here, which is
+	   not very nice.  May be we want to have something smarter for
+	   sequences which avoids this nesting? *)
+        let ne = simplify_expression e
+	and np = List.map simplify_expression p
+        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+        in
+	  next_fresh_label := !next_fresh_label + 1 ;
+	  Sequence (a, [ AsyncCall (a, Some fresh_label, ne, n, np) ;
+			 Await (a, Label(Expression.note ne, fresh_label)) ;
+			 Reply (a, fresh_label, r) ] )
     | LocalAsyncCall (a, l, m, lb, ub, i) ->
 	LocalAsyncCall (a, l, m, lb, ub, List.map simplify_expression i)
     | LocalSyncCall (a, m, l, u, i, o) ->
@@ -520,6 +563,20 @@ and simplify_statement =
         in
 	  next_fresh_label := !next_fresh_label + 1 ;
 	  Sequence (a, [ LocalAsyncCall (a, Some fresh_label, m, l, u, ni) ;
+			 Reply (a, fresh_label, o) ] )
+    | AwaitLocalSyncCall (a, m, l, u, i, o) ->
+	(* Replace the synchronous call by the sequence of an asynchronous
+	   call followed by a reply.  This generates a fresh label name.
+
+	   XXX: Usually, we nest a sequence into a sequence here, which is
+	   not very nice.  May be we want to have something smarter for
+	   sequences which avoids this nesting? *)
+	let ni = List.map simplify_expression i
+        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+        in
+	  next_fresh_label := !next_fresh_label + 1 ;
+	  Sequence (a, [ LocalAsyncCall (a, Some fresh_label, m, l, u, ni) ;
+			 Await (a, Label(Expression.note (List.hd ni), fresh_label)) ;
 			 Reply (a, fresh_label, o) ] )
     | Tailcall (a, m, l, u, i) ->
 	Tailcall (a, m, l, u, List.map simplify_expression i)
@@ -676,6 +733,8 @@ and definitions_in_statement note stm =
 | Free (n, v) -> assert false
 | SyncCall (n, c, m, ins, outs) ->
     SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
+| AwaitSyncCall (n, c, m, ins, outs) ->
+    AwaitSyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
 | LocalAsyncCall (n, None, m, ub, lb, i) ->
     (* XXX: This should not happen, but if we resolve this, we need to
        rerun this for updating the chain... *)
@@ -687,6 +746,9 @@ and definitions_in_statement note stm =
 | LocalSyncCall (n, m, u, l, a, r) ->
     LocalSyncCall ({ n with Note.env = note.Note.env },
 		  m, u, l, a, r) (* XXX *)
+| AwaitLocalSyncCall (n, m, u, l, a, r) ->
+    AwaitLocalSyncCall ({ n with Note.env = note.Note.env },
+		        m, u, l, a, r) (* XXX *)
 | Tailcall (n, m, u, l, a) -> assert false
 | If (n, c, l, r) ->
     (* Beware, that the new note essentially contains the union
