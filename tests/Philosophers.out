@@ -23,23 +23,24 @@ result Configuration:
     "chopstick" ; ("chopstick" assign bool(false)) ; return(emp) > *
   < "digest" : Mtdname | Param: noAid, Latt: noSubst, Code: release ; ("hungry"
     assign bool(true)) ; "hist" ::= "plus"("hist" # str("d")) ; release ;
-    "anon.???" ! "this" . "digest"(emp) ; return(emp) > *
+    ".anon" ! "this" . "digest"(emp) ; free(".anon") ; return(emp) > *
   < "eat" : Mtdname | Param: noAid, Latt: noSubst, Code: await "hungry" ; "l" !
     "neighbor" . "borrowStick"(emp) ; await ("l" ??) ; await "chopstick" ;
     "hist" ::= "plus"("hist" # str("e")) ; ("hungry" assign bool(false)) ;
-    "_anon" ! "neighbor" . "returnStick"(emp) ; free("_anon") ; release ;
-    "anon.???" ! "this" . "eat"(emp) ; return(emp) > *
+    ".anon" ! "neighbor" . "returnStick"(emp) ; free(".anon") ; release ;
+    ".anon" ! "this" . "eat"(emp) ; free(".anon") ; return(emp) > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("hist" assign str(
     "")) ; ("chopstick" assign bool(true)) ; ("hungry" assign bool(false)) ;
     "sync.0" ! "butler" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ; return(
     emp) > *
   < "returnStick" : Mtdname | Param: noAid, Latt: noSubst, Code: ("chopstick"
     assign bool(true)) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ("anon.???" ! "this" .
-    "digest"(emp) ||| "anon.???" ! "this" . "eat"(emp) ||| "anon.???" ! "this"
-    . "think"(emp)) ; return(emp) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: (".anon" ! "this" .
+    "digest"(emp) ; free(".anon") ||| ".anon" ! "this" . "eat"(emp) ; free(
+    ".anon") ||| ".anon" ! "this" . "think"(emp) ; free(".anon")) ; return(emp)
+    > *
   < "think" : Mtdname | Param: noAid, Latt: noSubst, Code: await "~"("hungry")
-    ; "hist" ::= "plus"("hist" # str("t")) ; release ; "anon.???" ! "this" .
-    "think"(emp) ; return(emp) >,
+    ; "hist" ::= "plus"("hist" # str("t")) ; release ; ".anon" ! "this" .
+    "think"(emp) ; free(".anon") ; return(emp) >,
   Ocnt: 0 >
 Bye.

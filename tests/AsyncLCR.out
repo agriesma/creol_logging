@@ -15,9 +15,9 @@ result Configuration:
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
     0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
-    "_anon" ! "neighbor" . "receive"("u") ; free("_anon") ; return(emp) > *
+    ".anon" ! "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th "_anon" ! "neighbor" . "receive"("v") ; free("_anon") el if "="("v"
+    "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
     # "u") th "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
@@ -49,9 +49,9 @@ result Configuration:
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
     0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
-    "_anon" ! "neighbor" . "receive"("u") ; free("_anon") ; return(emp) > *
+    ".anon" ! "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th "_anon" ! "neighbor" . "receive"("v") ; free("_anon") el if "="("v"
+    "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
     # "u") th "status" assign int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >

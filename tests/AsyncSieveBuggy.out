@@ -16,9 +16,10 @@ result Configuration:
     *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) > *
   < "send" : Mtdname | Param: "n", Latt: "d" |-> null, "n" |-> null, "r" |->
-    null, "res" |-> null, Code: if "="("r" # int(0)) th "res" assign bool(
-    false) el if "/="("next" # null) th "l" ! "next" . "send"("n") ; release ;
-    "l" ?("res") el "next" ::= new "Sieve"("n") ; "res" assign bool(true) fi fi
-    ; return("res") >,
+    null, "res" |-> null, Code: "d" ::= "/"("n" # "p") ; "r" ::= "-"("n" # "*"(
+    "d" # "p")) ; if "="("r" # int(0)) th "res" assign bool(false) el if "/="(
+    "next" # null) th "l" ! "next" . "send"("n") ; release ; "l" ?("res") el
+    "next" ::= new "Sieve"("n") ; "res" assign bool(true) fi fi ; return("res")
+    >,
   Ocnt: 0 >
 Bye.

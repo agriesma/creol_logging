@@ -474,173 +474,201 @@ open Declaration
 let next_fresh_label = ref 0
 
 
-(** Normalise an abstract syntax tree by replacing all derived concepts
-    with there basic equivalents *)
-let rec simplify_expression =
-  function
-      Unary(a, o, e) -> FuncCall(a, string_of_unaryop o, [simplify_expression e])
-    | Binary(a, GuardAnd, l, r) -> Binary(a, GuardAnd, simplify_expression l,
-	simplify_expression r)
-    | Binary(a, o, l, r) -> FuncCall(a, string_of_binaryop o, [simplify_expression l; simplify_expression r])
-    | FuncCall(a, f, args) -> FuncCall(a, f, List.map simplify_expression args)
-    | New (a, t, p) -> New (a, t, List.map simplify_expression p)
-    | t -> t
-and simplify_guard note guard =
-  let rec sort_guard =
+let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
+  (** Normalise an abstract syntax tree by replacing all derived concepts
+      with there basic equivalents *)
+  let rec lower_expression =
     function
-      Binary(_, _, Label(_, _), Label (_, _)) as g -> g
-    | Binary(a, o, left, Label (b, l)) ->
-	Binary (a, o, Label (b, l), sort_guard left)
-    | t -> t
-  and split_guard note =
+	Unary(a, o, e) ->
+	  (* Do not copy the note, since the content should be invariant. *)
+	  FuncCall(a, string_of_unaryop o, [lower_expression e])
+      | Binary(a, o, l, r) ->
+	  (* Do not copy the note, since the content should be invariant. *)
+	  FuncCall(a, string_of_binaryop o, [lower_expression l;
+					     lower_expression r])
+      | FuncCall(a, f, args) -> FuncCall(a, f, List.map lower_expression args)
+      | New (a, t, p) -> New (a, t, List.map lower_expression p)
+      | t -> t
+  and lower_expression_option =
     function
-      Binary(a, (GuardAnd | And), Label(ll, l), e) ->
-        Sequence(note, [Await (note, Label (ll, l)) ; split_guard note e])
-    | Binary(a, Or, Label(ll, l), e) ->
-        Choice(note, Await (note, Label (ll, l)), split_guard note e)
-    | e -> Await (note, simplify_expression e)
+	None -> None
+      | Some expr -> Some (lower_expression expr)
+  and lower_guard note guard =
+    let rec sort_guard =
+      function
+	  Binary(_, _, Label(_, _), Label (_, _)) as g -> g
+	| Binary(a, o, left, Label (b, l)) ->
+	    Binary (a, o, Label (b, l), sort_guard left)
+	| g -> g
+    and split_guard note =
+      function
+	  Binary(a, (GuardAnd | And), Label(ll, l), e) ->
+            Sequence(note, [Await (note, Label (ll, l)) ; split_guard note e])
+	| Binary(a, Or, Label(ll, l), e) ->
+            Choice(note, Await (note, Label (ll, l)), split_guard note e)
+	| e -> Await (note, lower_expression e)
+    in
+      split_guard note (sort_guard guard)
+  and lower_statement =
+    function
+	Skip _ as s -> s
+      | Release _ as s -> s
+      | Assert (a, e) -> Assert (a, lower_expression e)
+      | Assign (a, s, e) -> Assign (a, s, List.map lower_expression e)
+      | Await (note, g) -> lower_guard note g
+      | AsyncCall (a, None, e, n, p) ->
+	  (* If a label name is not given, we assign a new one and free it
+	     afterwards.  It may be better to insert free later, but for this
+	     we need smarter semantic analysis. *)
+	  Sequence (a, [ AsyncCall (copy_stmt_note a,
+				   Some ".anon", lower_expression e, n,
+				   List.map lower_expression p) ;
+			 Free (copy_stmt_note a, ".anon") ])
+      | AsyncCall (a, Some l, e, n, p) ->
+	  AsyncCall (a, Some l, lower_expression e, n,
+		    List.map lower_expression p)
+      | Free _ as s -> s
+      | Reply _ as s -> s
+      | SyncCall (a, e, n, p, r) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.
+	     
+	     XXX: Usually, we nest a sequence into a sequence here, which is
+	     not very nice.  May be we want to have something smarter for
+	     sequences which avoids this nesting? *)
+          let ne = lower_expression e
+	  and np = List.map lower_expression p
+          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+          in
+	    next_fresh_label := !next_fresh_label + 1 ;
+	    Sequence (a, [ AsyncCall (copy_stmt_note a,
+				     Some fresh_label, ne, n, np) ;
+			   Reply (copy_stmt_note a, fresh_label, r) ] )
+      | AwaitSyncCall (a, e, n, p, r) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.
+	     
+	     XXX: Usually, we nest a sequence into a sequence here, which is
+	     not very nice.  May be we want to have something smarter for
+	     sequences which avoids this nesting? *)
+          let ne = lower_expression e
+	  and np = List.map lower_expression p
+          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+          in
+	    next_fresh_label := !next_fresh_label + 1 ;
+	    Sequence (a, [ AsyncCall (copy_stmt_note a, Some fresh_label, ne, n, np) ;
+			   Await (copy_stmt_note a, Label(Expression.note ne, fresh_label)) ;
+			   Reply (copy_stmt_note a, fresh_label, r) ] )
+      | LocalAsyncCall (a, None, m, lb, ub, i) ->
+	  (* If a label name is not given, we assign a new one and free it
+	     afterwards.  It may be better to insert free later, but for this
+	     we need smarter semantic analysis. *)
+	  Sequence (a, [ LocalAsyncCall (copy_stmt_note a, Some ".anon", m, lb, ub,
+					List.map lower_expression i) ;
+			 Free (copy_stmt_note a, ".anon") ])
+      | LocalAsyncCall (a, Some l, m, lb, ub, i) ->
+	  LocalAsyncCall (a, Some l, m, lb, ub, List.map lower_expression i)
+      | LocalSyncCall (a, m, l, u, i, o) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.
+	     
+	     XXX: Usually, we nest a sequence into a sequence here, which is
+	     not very nice.  May be we want to have something smarter for
+	     sequences which avoids this nesting? *)
+	  let ni = List.map lower_expression i
+          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+          in
+	    next_fresh_label := !next_fresh_label + 1 ;
+	    Sequence (a, [ LocalAsyncCall (copy_stmt_note a, Some fresh_label, m, l, u, ni) ;
+			   Reply (copy_stmt_note a, fresh_label, o) ] )
+      | AwaitLocalSyncCall (a, m, l, u, i, o) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.
+	     
+	     XXX: Usually, we nest a sequence into a sequence here, which is
+	     not very nice.  May be we want to have something smarter for
+	     sequences which avoids this nesting? *)
+	  let ni = List.map lower_expression i
+          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+          in
+	    next_fresh_label := !next_fresh_label + 1 ;
+	    Sequence (a, [ LocalAsyncCall (copy_stmt_note a, Some fresh_label, m, l, u, ni) ;
+			   Await (copy_stmt_note a,
+				 Label(expr_note_of_stmt_note a, fresh_label));
+			   Reply (copy_stmt_note a, fresh_label, o) ] )
+      | Tailcall (a, m, l, u, i) ->
+	  Tailcall (a, m, l, u, List.map lower_expression i)
+      | If (a, c, t, f) -> If(a, lower_expression c, lower_statement t,
+			     lower_statement f)
+      | While (a, c, None, b) ->
+	  While (a, lower_expression c, None, lower_statement b)
+      | While (a, c, Some i, b) ->
+	  While (a, lower_expression c, Some (lower_expression i),
+		lower_statement b)
+      | For (a, i, first, last, stride, inv, body) ->
+	  For (a, i, lower_expression first, lower_expression last,
+	      lower_expression_option stride,
+	      lower_expression_option inv,
+	      lower_statement body)
+      | Raise _ -> assert false
+      | Try _ -> assert false
+      | Case _ -> assert false
+      | Typecase _ -> assert false
+      | Sequence (a, s1) -> Sequence (a, List.map lower_statement s1)
+      | Merge (a, s1, s2) -> Merge (a, lower_statement s1,
+				   lower_statement s2)
+      | Choice (a, s1, s2) -> Choice (a, lower_statement s1,
+				     lower_statement s2)
+  and lower_method_variables note =
+    (** Compute a pair of a new list of local variable declarations
+	and a list of assignments used for initialisation. *)
+    function
+	[] -> ([], [])
+      | ({ var_name = _ ; var_type = _ ; var_init = None } as v)::l ->
+	  let r = lower_method_variables note l in
+	    (v::(fst r), snd r)
+      | ({ var_name = n; var_type = _ ; var_init = Some i } as v)::l ->
+	  let r = lower_method_variables note l in
+	  let a = Assign(note, [n], [lower_expression i]) in
+	    ({ v with var_init = None}::(fst r), a::(snd r))
+  and lower_method m =
+    (** Simplify a method definition. *)
+    next_fresh_label := 0 ; (* labels need to be unique in this method only. *)
+    match m.meth_body with
+	None -> m
+      | Some mb  ->
+	  let mv = m.meth_vars in
+	  let note = Statement.note mb in
+	  let smv = lower_method_variables note mv in
+	  let smb = lower_statement mb in
+	    { m with meth_vars = fst smv ; meth_body =
+		Some (begin
+		  match smb with
+		      Sequence (n, sl) -> Sequence (n, (snd smv)@ sl)
+		    | s -> Sequence (note, (snd smv)@[s])
+		end) }
+  and lower_with w =
+    { w with With.methods = List.map lower_method w.With.methods }
+  and lower_inherits =
+    function
+	(n, e) -> (n, List.map lower_expression e)
+  and lower_inherits_list =
+    function
+	[] -> []
+      | i::l -> (lower_inherits i)::(lower_inherits_list l)
+  and lower_class c =
+    { c with Class.inherits = lower_inherits_list c.Class.inherits;
+      Class.with_defs = List.map lower_with c.Class.with_defs }
+  and lower_interface i =
+    i
+  and lower_declaration =
+    function
+	Class c -> Class (lower_class c)
+      | Interface i -> Interface (lower_interface i)
+      | Exception e -> Exception e
+      | Datatype d -> Datatype d
   in
-    split_guard note (sort_guard guard)
-and simplify_statement =
-  function
-      Skip a -> Skip a
-    | Assert (a, e) -> Assert (a, simplify_expression e)
-    | Assign (a, s, e) -> Assign (a, s, List.map simplify_expression e)
-    | Await (note, g) -> simplify_guard note g
-    | Release a -> Release a
-    | AsyncCall (a, None, e, n, p) ->
-	(* If a label name is not given, we assign a new one and free it
-	   afterwards.  It may be better to insert free later, but for this
-	   we need smarter semantic analysis. *)
-	Sequence (a, [ AsyncCall (a, Some "_anon", simplify_expression e, n,
-				 List.map simplify_expression p) ;
-		       Free (a, "_anon") ])
-    | AsyncCall (a, Some l, e, n, p) ->
-	AsyncCall (a, Some l, simplify_expression e, n,
-		  List.map simplify_expression p)
-    | Free (a, l) -> Free (a, l)
-    | Reply (a, l, r) -> Reply (a, l, r)
-    | SyncCall (a, e, n, p, r) ->
-	(* Replace the synchronous call by the sequence of an asynchronous
-	   call followed by a reply.  This generates a fresh label name.
-
-	   XXX: Usually, we nest a sequence into a sequence here, which is
-	   not very nice.  May be we want to have something smarter for
-	   sequences which avoids this nesting? *)
-        let ne = simplify_expression e
-	and np = List.map simplify_expression p
-        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
-        in
-	  next_fresh_label := !next_fresh_label + 1 ;
-	  Sequence (a, [ AsyncCall (a, Some fresh_label, ne, n, np) ;
-			 Reply (a, fresh_label, r) ] )
-    | AwaitSyncCall (a, e, n, p, r) ->
-	(* Replace the synchronous call by the sequence of an asynchronous
-	   call followed by a reply.  This generates a fresh label name.
-
-	   XXX: Usually, we nest a sequence into a sequence here, which is
-	   not very nice.  May be we want to have something smarter for
-	   sequences which avoids this nesting? *)
-        let ne = simplify_expression e
-	and np = List.map simplify_expression p
-        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
-        in
-	  next_fresh_label := !next_fresh_label + 1 ;
-	  Sequence (a, [ AsyncCall (a, Some fresh_label, ne, n, np) ;
-			 Await (a, Label(Expression.note ne, fresh_label)) ;
-			 Reply (a, fresh_label, r) ] )
-    | LocalAsyncCall (a, l, m, lb, ub, i) ->
-	LocalAsyncCall (a, l, m, lb, ub, List.map simplify_expression i)
-    | LocalSyncCall (a, m, l, u, i, o) ->
-	(* Replace the synchronous call by the sequence of an asynchronous
-	   call followed by a reply.  This generates a fresh label name.
-
-	   XXX: Usually, we nest a sequence into a sequence here, which is
-	   not very nice.  May be we want to have something smarter for
-	   sequences which avoids this nesting? *)
-	let ni = List.map simplify_expression i
-        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
-        in
-	  next_fresh_label := !next_fresh_label + 1 ;
-	  Sequence (a, [ LocalAsyncCall (a, Some fresh_label, m, l, u, ni) ;
-			 Reply (a, fresh_label, o) ] )
-    | AwaitLocalSyncCall (a, m, l, u, i, o) ->
-	(* Replace the synchronous call by the sequence of an asynchronous
-	   call followed by a reply.  This generates a fresh label name.
-
-	   XXX: Usually, we nest a sequence into a sequence here, which is
-	   not very nice.  May be we want to have something smarter for
-	   sequences which avoids this nesting? *)
-	let ni = List.map simplify_expression i
-        and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
-        in
-	  next_fresh_label := !next_fresh_label + 1 ;
-	  Sequence (a, [ LocalAsyncCall (a, Some fresh_label, m, l, u, ni) ;
-			 Await (a, Label(Expression.note (List.hd ni), fresh_label)) ;
-			 Reply (a, fresh_label, o) ] )
-    | Tailcall (a, m, l, u, i) ->
-	Tailcall (a, m, l, u, List.map simplify_expression i)
-    | If (a, c, t, f) -> If(a, simplify_expression c, simplify_statement t,
-			   simplify_statement f)
-    | While (a, c, None, b) ->
-	While (a, simplify_expression c, None, simplify_statement b)
-    | While (a, c, Some i, b) ->
-	While (a, simplify_expression c, Some (simplify_expression i),
-	       simplify_statement b)
-    | Sequence (a, s1) -> Sequence (a, List.map simplify_statement s1)
-    | Merge (a, s1, s2) -> Merge (a, simplify_statement s1,
-				 simplify_statement s2)
-    | Choice (a, s1, s2) -> Choice (a, simplify_statement s1,
-				   simplify_statement s2)
-and simplify_method_variables note =
-  (** Compute a pair of a new list of local variable declarations
-      and a list of assignments used for initialisation. *)
-  function
-      [] -> ([], [])
-    | ({ var_name = _ ; var_type = _ ; var_init = None } as v)::l ->
-	let r = simplify_method_variables note l in
-	  (v::(fst r), snd r)
-    | ({ var_name = n; var_type = _ ; var_init = Some i } as v)::l ->
-	let r = simplify_method_variables note l in
-	let a = Assign(note, [n], [simplify_expression i]) in
-	  ({ v with var_init = None}::(fst r), a::(snd r))
-and simplify_method m =
-  (** Simplify a method definition. *)
-  next_fresh_label := 0 ; (* labels need to be unique in this method only. *)
-  match m.meth_body with
-    None -> m
-  | Some mb  ->
-	let mv = m.meth_vars in
-	let note = Statement.note mb in
-	let smv = simplify_method_variables note mv in
-	let smb = simplify_statement mb in
-	{ m with meth_vars = fst smv ; meth_body =
-	  Some (begin
-	    match smb with
-	      Sequence (n, sl) -> Sequence (n, (snd smv)@ sl)
-	    | s -> Sequence (note, (snd smv)@[s])
-	  end) }
-and simplify_with w =
-  { w with With.methods = List.map simplify_method w.With.methods }
-and simplify_inherits =
-  function
-      (n, e) -> (n, List.map simplify_expression e)
-and simplify_inherits_list =
-  function
-      [] -> []
-    | i::l -> (simplify_inherits i)::(simplify_inherits_list l)
-and simplify_class c =
-  { c with Class.inherits = simplify_inherits_list c.Class.inherits;
-    Class.with_defs = List.map simplify_with c.Class.with_defs }
-and simplify_interface i =
-  i
-and simplify =
-  function
-      [] -> []
-    | Class c::l -> (Class (simplify_class c))::(simplify l)
-    | Interface i::l -> (Interface (simplify_interface i))::(simplify l)
-    | Exception e::l -> (Exception e)::(simplify l)
-    | Datatype d::l -> (Datatype d)::(simplify l)
+    List.map lower_declaration input
 
 let collect_declarations attribute =
     List.fold_left
@@ -730,67 +758,72 @@ and definitions_in_statement note stm =
       | Reply (n, l, p) ->
 	  Reply ({ n with Note.env = List.fold_left
 	      (fun e n -> define e n false) note.Note.env p } , l, p)
-| Free (n, v) -> assert false
-| SyncCall (n, c, m, ins, outs) ->
-    SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
-| AwaitSyncCall (n, c, m, ins, outs) ->
-    AwaitSyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
-| LocalAsyncCall (n, None, m, ub, lb, i) ->
-    (* XXX: This should not happen, but if we resolve this, we need to
-       rerun this for updating the chain... *)
-    LocalAsyncCall ({ n with Note.env = note.Note.env}, None, m, ub, lb,
-		   i)
-| LocalAsyncCall (n, Some l, m, ub, lb, i) ->
-    LocalAsyncCall ({ n with Note.env = (define note.Note.env l true)},
-		   Some l, m, ub, lb, i)
-| LocalSyncCall (n, m, u, l, a, r) ->
-    LocalSyncCall ({ n with Note.env = note.Note.env },
-		  m, u, l, a, r) (* XXX *)
-| AwaitLocalSyncCall (n, m, u, l, a, r) ->
-    AwaitLocalSyncCall ({ n with Note.env = note.Note.env },
-		        m, u, l, a, r) (* XXX *)
-| Tailcall (n, m, u, l, a) -> assert false
-| If (n, c, l, r) ->
-    (* Beware, that the new note essentially contains the union
-       of the definitions of both its branches, whereas the first
-       statement of each branch contains the updated note of the
-       preceding statement. *)
-    let nl = (definitions_in_statement note l)
-    and nr = (definitions_in_statement note r) in
-      If ({n with Note.env = Note.join (Statement.note nl).Note.env
-	  (Statement.note nr).Note.env},
-	 c, nl, nr)
-| While (n, c, i, b) ->
-    While ({ n with Note.env = note.Note.env }, c, i,
-	  definitions_in_statement n b)
-| Sequence (n, l) ->
-    let rec definitions_in_sequence np =
-      function
-	  [] -> assert false;
-	| [s] -> [definitions_in_statement np s]
-	| s::r -> let ns = definitions_in_statement np s in
-	  let nr = definitions_in_sequence (Statement.note ns) r in
-	    ns::nr
-    in
-    let nl = definitions_in_sequence note l in
-      Sequence({ n with Note.env =
-	  (Statement.note (List.nth nl ((List.length nl) - 1))).Note.env},
-	      nl)
-	(* For merge and choice we do not enforce sequencing of the
-	   computation of the parts, but we allow the compiler to
-	   choose some order *)
-| Merge (n, l, r) -> 
-    let nl = (definitions_in_statement note l)
-    and nr = (definitions_in_statement note r) in
-      Merge ({n with Note.env = Note.join (Statement.note nl).Note.env
-	  (Statement.note nr).Note.env},
-	    nl, nr)
-| Choice (n, l, r) -> 
-    let nl = (definitions_in_statement note l)
-    and nr = (definitions_in_statement note r) in
-      Choice ({n with Note.env = Note.join (Statement.note nl).Note.env
-	  (Statement.note nr).Note.env},
-	     nl, nr)
+      | Free (n, v) -> assert false
+      | SyncCall (n, c, m, ins, outs) ->
+	  SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
+      | AwaitSyncCall (n, c, m, ins, outs) ->
+	  AwaitSyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
+      | LocalAsyncCall (n, None, m, ub, lb, i) ->
+	  (* XXX: This should not happen, but if we resolve this, we need to
+	     rerun this for updating the chain... *)
+	  LocalAsyncCall ({ n with Note.env = note.Note.env}, None, m, ub, lb,
+			 i)
+      | LocalAsyncCall (n, Some l, m, ub, lb, i) ->
+	  LocalAsyncCall ({ n with Note.env = (define note.Note.env l true)},
+			 Some l, m, ub, lb, i)
+      | LocalSyncCall (n, m, u, l, a, r) ->
+	  LocalSyncCall ({ n with Note.env = note.Note.env },
+			m, u, l, a, r) (* XXX *)
+      | AwaitLocalSyncCall (n, m, u, l, a, r) ->
+	  AwaitLocalSyncCall ({ n with Note.env = note.Note.env },
+		             m, u, l, a, r) (* XXX *)
+      | Tailcall (n, m, u, l, a) -> assert false
+      | If (n, c, l, r) ->
+	  (* Beware, that the new note essentially contains the union
+	     of the definitions of both its branches, whereas the first
+	     statement of each branch contains the updated note of the
+	     preceding statement. *)
+	  let nl = (definitions_in_statement note l)
+	  and nr = (definitions_in_statement note r) in
+	    If ({n with Note.env = Note.join (Statement.note nl).Note.env
+		(Statement.note nr).Note.env},
+	       c, nl, nr)
+      | While (n, c, i, b) ->
+	  While ({ n with Note.env = note.Note.env }, c, i,
+		definitions_in_statement n b)
+      | For _ -> assert false
+      | Raise _ -> assert false
+      | Try _ -> assert false
+      | Case _ -> assert false
+      | Typecase _ -> assert false
+      | Sequence (n, l) ->
+	  let rec definitions_in_sequence np =
+	    function
+		[] -> assert false;
+	      | [s] -> [definitions_in_statement np s]
+	      | s::r -> let ns = definitions_in_statement np s in
+		let nr = definitions_in_sequence (Statement.note ns) r in
+		  ns::nr
+	  in
+	  let nl = definitions_in_sequence note l in
+	    Sequence({ n with Note.env =
+		(Statement.note (List.nth nl ((List.length nl) - 1))).Note.env},
+		    nl)
+	      (* For merge and choice we do not enforce sequencing of the
+		 computation of the parts, but we allow the compiler to
+		 choose some order *)
+      | Merge (n, l, r) -> 
+	  let nl = (definitions_in_statement note l)
+	  and nr = (definitions_in_statement note r) in
+	    Merge ({n with Note.env = Note.join (Statement.note nl).Note.env
+		(Statement.note nr).Note.env},
+		  nl, nr)
+      | Choice (n, l, r) -> 
+	  let nl = (definitions_in_statement note l)
+	  and nr = (definitions_in_statement note r) in
+	    Choice ({n with Note.env = Note.join (Statement.note nl).Note.env
+		(Statement.note nr).Note.env},
+		   nl, nr)
 
 let rec life_variables tree =
   (** Compute whether a variable is still in use at a position in the
@@ -816,10 +849,10 @@ let rec life_variables tree =
   List.map uses_in_declaration tree
 and uses_in_declaration =
   function
-    Class c -> Class (uses_in_class c)
-  | Interface i -> Interface (uses_in_interface i)
-  | Exception e -> Exception e
-  | Datatype d -> Datatype d (* XXX *)
+      Class c -> Class (uses_in_class c)
+    | Interface i -> Interface (uses_in_interface i)
+    | Exception e -> Exception e
+    | Datatype d -> Datatype d (* XXX *)
 and uses_in_class c =
   { c with Class.with_defs = List.map uses_in_with c.Class.with_defs }
 and uses_in_interface i =
@@ -855,6 +888,11 @@ and uses_in_statement =
 	      (Statement.note ns2).Note.env },
 	     nc, ns1, ns2)
     | While (a, c, i, b) -> assert false
+    | For _ -> assert false
+    | Raise _ -> assert false
+    | Try _ -> assert false
+    | Case _ -> assert false
+    | Typecase _ -> assert false
     | Sequence (a, sl) ->
 	let nsl = uses_in_sequence a sl in
 	  Sequence ({ a with Note.env =
@@ -977,18 +1015,18 @@ and pretty_print_iface out_channel i =
 and pretty_print_class out_channel c =
   output_string out_channel ("class " ^ c.Class.name ^ " ") ;
   ( match c.Class.parameters with
-	[] -> ()
-      | l -> output_string out_channel "(";
-	  pretty_print_vardecls out_channel 0 "" ", " "" l;
-	  output_string out_channel ")" ) ;
+      [] -> ()
+    | l -> output_string out_channel "(";
+	pretty_print_vardecls out_channel 0 "" ", " "" l;
+	output_string out_channel ")" ) ;
   ( match c.Class.inherits with
-	[] -> ()
-      | l -> output_string out_channel "\ninherits ";
-	  separated_list (pretty_print_inherits out_channel)
-	    (function () -> output_string out_channel ", ") l) ;
+      [] -> ()
+    | l -> output_string out_channel "\ninherits ";
+	separated_list (pretty_print_inherits out_channel)
+	  (function () -> output_string out_channel ", ") l) ;
   ( match c.Class.contracts with
-	[] -> ()
-      | l -> output_string out_channel "\ncontracts " );
+      [] -> ()
+    | l -> output_string out_channel "\ncontracts " );
   if [] <> c.Class.implements then
     begin
       output_string out_channel "\nimplements " ;
@@ -1043,18 +1081,18 @@ and pretty_print_method out_channel indent m =
     output_string out_channel "(";
   begin
     match (m.meth_inpars, m.meth_outpars) with
-      ([], []) -> ()
-    | (i, []) ->
-	output_string out_channel "in ";
-	pretty_print_vardecls out_channel 0 "" ", " "" i
-    | ([], o) ->
-	output_string out_channel "out ";
-	pretty_print_vardecls out_channel 0 "" ", " "" o
-    | (i, o) -> 
-	output_string out_channel "in ";
-	pretty_print_vardecls out_channel 0 "" ", " "" i;
-	output_string out_channel "; out ";
-	pretty_print_vardecls out_channel 0 "" ", " "" o
+	([], []) -> ()
+      | (i, []) ->
+	  output_string out_channel "in ";
+	  pretty_print_vardecls out_channel 0 "" ", " "" i
+      | ([], o) ->
+	  output_string out_channel "out ";
+	  pretty_print_vardecls out_channel 0 "" ", " "" o
+      | (i, o) -> 
+	  output_string out_channel "in ";
+	  pretty_print_vardecls out_channel 0 "" ", " "" i;
+	  output_string out_channel "; out ";
+	  pretty_print_vardecls out_channel 0 "" ", " "" o
   end;
   if m.meth_inpars <> [] || m.meth_outpars <> [] then
     output_string out_channel ")";
@@ -1104,7 +1142,7 @@ and pretty_print_statement out lvl statement =
     function
 	Skip _ -> output_string out "skip";
       | Assert (_, e) ->
-	output_string out "assert " ; pretty_print_expression out e
+	  output_string out "assert " ; pretty_print_expression out e
       | Assign (_, i, e) ->
 	  pretty_print_identifier_list out i;
 	  output_string out " := ";
@@ -1186,6 +1224,11 @@ and pretty_print_statement out lvl statement =
 	  print (lvl + 1) 25 b;
 	  output_string out " od";
 	  do_indent out lvl
+      | For _ -> assert false
+      | Raise _ -> assert false
+      | Try _ -> assert false
+      | Case _ -> assert false
+      | Typecase _ -> assert false
       | Sequence (_, sl) -> 
 	  let op_prec = 25 in
 	  let nl = lvl + if prec < op_prec then 1 else 0 in
@@ -1280,271 +1323,253 @@ struct
      but not semantically correct, this function will only produce
      garbage. *)
 
-  let rec of_creol_expression out =
-    function
-	Nil _ -> output_string out "list(emp)"
-      | Null _ -> output_string out "null"
-      | Int (_, i) -> output_string out ("int(" ^ (string_of_int i) ^ ")")
-      | Float (_, f) -> assert false
-      | Bool (_, false) -> output_string out "bool(false)"
-      | Bool (_, true) -> output_string out "bool(true)"
-      | String (_, s) -> output_string out ("str(\"" ^ s ^ "\")")
-      | Id (_, i) -> output_string out ("\"" ^ i ^ "\"")
-      | FuncCall(_, f, a) -> output_string out ("\"" ^ f ^ "\" ( " );
-	  of_creol_expression_list out a;
-	  output_string out " )"
-	    (* Queer, but parens are required for parsing Appl in ExprList. *)
-      | FieldAccess(_, e, f) -> assert false (* XXX *)
-      | Unary (_, _, _) -> assert false
-      | Binary (_, _, _, _) -> assert false
-      | Label(_, l) -> output_string out ("( \"" ^ l ^ "\" ?? )")
-      | New (_, c, a) ->
-	  output_string out ("new \"" ^ (match c with Type.Basic s -> s | Type.Application (s, _) -> s | _ -> assert false) ^ "\" ( ") ;
-	  of_creol_expression_list out a ;
-	  output_string out " )"
-  and of_creol_expression_list out_channel =
-    (** Compile a list of expressions into the Creol Maude Machine. *)
-    function
-	[] -> output_string out_channel "emp"
-      | [e] -> of_creol_expression out_channel e
-      | e::l -> of_creol_expression out_channel e;
-	  output_string out_channel " # ";
-	  of_creol_expression_list out_channel l
-  and of_creol_identifier_list out_channel =
-    (** Convert a list of identifiers into a list of Attribute identifiers. *)
-    function
-	[] -> output_string out_channel "noAid"
-      | [i] -> output_string out_channel ("\"" ^ i ^ "\"")
-      | i::l -> output_string out_channel ("\"" ^ i ^ "\", ");
-	  of_creol_identifier_list out_channel l
-
-  let of_creol_statement out cls stmt =
-    let open_paren prec op_prec =
-      if prec < op_prec then output_string out "( " ;
-    and close_paren prec op_prec =
-      if prec < op_prec then output_string out " )" ;
-    in let rec print prec =
+  let of_creol ~options ~out_channel ~input =
+    let rec of_expression =
       function
-	  Skip _ -> output_string out "skip"
-	| Assert (_, _) -> output_string out "skip"
-	| Await (note, e) -> output_string out "( await ";
-	    of_creol_expression out e;
-	    output_string out " )"
-	| Release _ ->
-	    output_string out "release"
-	| Assign (_, i, e) ->
-	    of_creol_identifier_list out i;
-	    output_string out " ::= " ;
-	    of_creol_expression_list out e
-	| AsyncCall (_, Some l, c, m, a) ->
-	    output_string out ("\"" ^ l ^ "\"") ;
-	    output_string out " ! ";
-	    of_creol_expression out c ;
-	    output_string out (" . \"" ^ m ^ "\" ( ") ;
-	    of_creol_expression_list out a;
-	    output_string out " )"
-	| Reply (_, l, o) ->
-	    output_string out ("( \"" ^ l ^ "\" ? ( ") ;
-	    of_creol_identifier_list out o;
-	    output_string out " ) ) "
-	| Free (_, l) -> output_string out ("free( \"" ^ l ^ "\" )")
-	| LocalAsyncCall (_, l, m, None, None, i) ->
-	    (* An unqualified local synchronous call should use this in
-	       order to get late binding correct. *)
-	    output_string out ( "( " ^
-	      (match l with
-		None -> "\"anon.???\""
-	      | Some n -> ("\"" ^ n ^ "\""))) ;
-	    output_string out ( " ! \"this\" . \"" ^ m ^ "\" (");
-	    of_creol_expression_list out i;
-	    output_string out " ) ) "
-	| LocalAsyncCall (_, l, m, lb, ub, i) ->
-	    output_string out ( "( " ^
-	      (match l with
-		None -> "\"anon.???\""
-	      | Some n -> ("\"" ^ n ^ "\""))) ;
-	    output_string out ( " ! \"" ^ m ^ "\"");
-	    (match lb with
-		None -> output_string out (" @ \"" ^ cls ^ "\"")
-	      | Some n -> output_string out (" @ \"" ^ n ^ "\""));
-	    (match ub with
-		None -> ()
-	      | Some n -> output_string out (" << \"" ^ n ^ "\""));
-	    output_string out " ( " ;
-	    of_creol_expression_list out i;
-	    output_string out " ) ) "
-	| Tailcall (_, m, l, u, i) ->
-	    output_string out ( "\"" ^ m ^ "\"");
-	    (match l with None -> () | Some n -> output_string out (" @ \"" ^ n ^ "\""));
-	    (match u with None -> () | Some n -> output_string out (" << \"" ^ n ^ "\""));
-	    output_string out " ( " ;
-	    of_creol_expression_list out i;
-	    output_string out " )"
-	| If (_, c, t, f) ->
-	    output_string out "if "; of_creol_expression out c;
-	    output_string out " th "; print 25 t;
-	    output_string out " el "; print 25 f;
-	    output_string out " fi"
-	| While (_, c, _, b) ->
-	    output_string out "while " ;
-	    of_creol_expression out c;
-	    output_string out " do ";
-	    print 25 b;
-	    output_string out " od "
-	| Sequence (_, sl) ->
-	    let op_prec = 25 in
-	      open_paren prec op_prec ;
-	      separated_list (function s -> print op_prec s)
-		(function () -> output_string out " ; ") sl;
-	      close_paren prec op_prec
-	| Merge (_, l, r) ->
-	    let op_prec = 29 in
-	      open_paren prec op_prec ;
-	      print op_prec l; 
-	      output_string out " ||| ";
-	      print op_prec r; 
-	      close_paren prec op_prec
-	| Choice (_, l, r) ->
-	    let op_prec = 27 in
-	      open_paren prec op_prec ;
-	      print op_prec l; 
-	      output_string out " [] ";
-	      print op_prec r; 
-	      close_paren prec op_prec
-    in print 25 stmt
-
-
-  let of_creol_attribute out a =
-    output_string out ("(" ^ a.var_name ^ ": ");
-    (match a.var_init with
-	None -> output_string out "null"
-      | Some e -> of_creol_expression out e);
-    output_string out ")"
-
-  let rec of_creol_attribute_list out =
-    function
-	[] ->  output_string out "none"
-      | [a] -> of_creol_attribute out a
-      | a::l -> of_creol_attribute out a; output_string out ", ";
-	  of_creol_attribute_list out l
-
-  let of_creol_inherits out =
-    function
-	(i, l) -> output_string out ("\"" ^ i ^ "\" < ");
-	  of_creol_expression_list out l;
-	  output_string out " > "
-
-  let rec of_creol_inherits_list out =
-    function
-	[] -> output_string out "noInh"
-      | [i] -> of_creol_inherits out i
-      | i::r -> of_creol_inherits out i;
-	  output_string out " ## ";
-	  of_creol_inherits_list out r
-
-  let rec of_creol_parameter_list out =
-    function
-	[] -> output_string out "noAid"
-      | [v] -> output_string out ("\"" ^ v.var_name ^ "\"")
-      | v::r -> output_string out ("\"" ^ v.var_name ^ "\" , ");
-	  of_creol_parameter_list out r
-
-  let rec of_creol_class_attribute_list out =
-    function
-	[] -> output_string out "noSubst" 
-      | [v] -> output_string out ("\"" ^ v.var_name ^ "\" |-> null")
-      | v::r -> output_string out ("\"" ^ v.var_name ^ "\" |-> null , ");
-	  of_creol_class_attribute_list out r
-
-  let rec of_creol_method_return out =
-    function
-	[] -> output_string out "emp" 
-      | [n] -> output_string out ("\"" ^ n.var_name ^ "\"")
-      | n::l -> output_string out ("\"" ^ n.var_name ^ "\" # ");
-          of_creol_method_return out l
-
-  let of_creol_method out cls m =
-    output_string out ("\n  < \"" ^ m.meth_name ^ "\" : Mtdname | Param: ");
-    of_creol_parameter_list out m.meth_inpars;
-    output_string out ", Latt: " ;
-    of_creol_class_attribute_list out
-      (m.meth_inpars @ m.meth_outpars @ m.meth_vars);
-    output_string out ", Code: " ;
-    ( match m.meth_body with
-	None -> output_string out "skip"
-      | Some s -> of_creol_statement out cls (simplify_statement s) ;
-	  output_string out " ; return ( ";
-	  of_creol_method_return out m.meth_outpars;
-	  output_string out " )" ) ;
-    output_string out " >"
-
-  let rec of_creol_method_list out cls =
-    function
-	[] -> output_string out "noMtd" 
-      | [m] -> of_creol_method out cls m
-      | m::r -> of_creol_method out cls m ;
-	  output_string out " *" ;
-	  of_creol_method_list out cls r
-
-  let of_creol_with_defs out cls ws =
-    let methods = List.flatten (List.map (function w -> w.With.methods) ws) in
-      of_creol_method_list out cls methods
-
-  let of_creol_class out c =
-    output_string out ("< \"" ^ c.Class.name ^ "\" : Cl | Inh: ");
-    of_creol_inherits_list out c.Class.inherits;
-    output_string out ", Par: ";
-    of_creol_parameter_list out c.Class.parameters;
-    output_string out ", Att: ";
-    of_creol_class_attribute_list out
-      (c.Class.parameters @ c.Class.attributes);
-    output_string out ", Mtds: ";
-    of_creol_with_defs out c.Class.name c.Class.with_defs;
-    output_string out ", Ocnt: 0 >\n\n"
-
-  let of_creol_interface out i = ()
-
-  let of_exception out e = ()
-
-  let of_datatype out d = ()
-
-  let of_creol_declaration out =
-    function
-	Class c -> of_creol_class out c
-      | Interface i -> of_creol_interface out i
-      | Exception e -> of_exception out e
-      | Datatype d -> of_datatype out d
-
-  let rec of_creol_decl_list out =
-    function
-	[] -> output_string out "noConf\n"
-      | [d] -> of_creol_declaration out d
-      | d::l -> of_creol_declaration out d; of_creol_decl_list out l
-
-  let of_creol options out l =
-    (** Convert an abstract syntax tree l of a creol program to a
-	representation for the Maude CMC and write the result to the
-	output channel out. *)
-    if options.modelchecker then
-      output_string out "load modelchecker\n"
-    else
-      output_string out "load interpreter\n";
-    output_string out
-      ("mod PROGRAM is\npr " ^ (if options.modelchecker then
-	"CREOL-MODEL-CHECKER" else "CREOL-INTERPRETER") ^
-	  " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
-    of_creol_decl_list out l ;
-    begin
-      match options.main with
-	  None -> ()
-	| Some m -> output_string out ("main( \"" ^ m ^ "\" , emp )\n")
-    end ;
-    output_string out ".\nendm\n" ;
-    if options.modelchecker then
-      begin
-	output_string out "\n\nmod PROGRAM-CHECKER is\n  protecting MODEL-CHECKER .\n  protecting PROGRAM .\n  protecting CREOL-PREDICATES .\nendm\n"
-      end;
-    if options.red_init then output_string out "\nred init .\n" ;
-    flush out
+	  Nil _ -> output_string out_channel "list(emp)"
+	| Null _ -> output_string out_channel "null"
+	| Int (_, i) -> output_string out_channel ("int(" ^ (string_of_int i) ^ ")")
+	| Float (_, f) -> assert false
+	| Bool (_, false) -> output_string out_channel "bool(false)"
+	| Bool (_, true) -> output_string out_channel "bool(true)"
+	| String (_, s) -> output_string out_channel ("str(\"" ^ s ^ "\")")
+	| Id (_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
+	| FuncCall(_, f, a) -> output_string out_channel ("\"" ^ f ^ "\" ( " );
+	    of_expression_list a;
+	    output_string out_channel " )"
+	      (* Queer, but parens are required for parsing Appl in ExprList. *)
+	| FieldAccess(_, e, f) -> assert false (* XXX *)
+	| Unary _ -> assert false
+	| Binary _ -> assert false
+	| Label(_, l) -> output_string out_channel ("( \"" ^ l ^ "\" ?? )")
+	| New (_, c, a) ->
+	    output_string out_channel ("new \"" ^ (match c with
+		Type.Basic s -> s
+	      | Type.Application (s, _) -> s
+	      | _ -> assert false) ^ "\" ( ") ;
+	    of_expression_list a ;
+	    output_string out_channel " )"
+    and of_expression_list =
+      (** Compile a list of expressions into the Creol Maude Machine. *)
+      function
+	  [] -> output_string out_channel "emp"
+	| [e] -> of_expression e
+	| e::l -> of_expression e;
+	    output_string out_channel " # ";
+	    of_expression_list l
+    and of_identifier_list =
+      (** Convert a list of identifiers into a list of Attribute identifiers. *)
+      function
+	  [] -> output_string out_channel "noAid"
+	| [i] -> output_string out_channel ("\"" ^ i ^ "\"")
+	| i::l -> output_string out_channel ("\"" ^ i ^ "\", ");
+	    of_identifier_list l
+    and of_statement cls stmt =
+      let open_paren prec op_prec =
+	if prec < op_prec then output_string out_channel "( " ;
+      and close_paren prec op_prec =
+	if prec < op_prec then output_string out_channel " )" ;
+      in let rec print prec =
+	function
+	    Skip _ -> output_string out_channel "skip"
+	  | Assert (_, _) -> output_string out_channel "skip"
+	  | Await (note, e) -> output_string out_channel "( await ";
+	      of_expression e;
+	      output_string out_channel " )"
+	  | Release _ -> output_string out_channel "release"
+	  | Assign (_, i, e) ->
+	      of_identifier_list i;
+	      output_string out_channel " ::= " ;
+	      of_expression_list e
+	  | SyncCall _ -> assert false
+	  | AwaitSyncCall _ -> assert false
+	  | AsyncCall (_, None, _, _, _) -> assert false
+	  | AsyncCall (_, Some l, c, m, a) ->
+	      output_string out_channel ("\"" ^ l ^ "\"") ;
+	      output_string out_channel " ! ";
+	      of_expression c ;
+	      output_string out_channel (" . \"" ^ m ^ "\" ( ") ;
+	      of_expression_list a;
+	      output_string out_channel " )"
+	  | Reply (_, l, o) ->
+	      output_string out_channel ("( \"" ^ l ^ "\" ? ( ") ;
+	      of_identifier_list o;
+	      output_string out_channel " ) ) "
+	  | Free (_, l) -> output_string out_channel ("free( \"" ^ l ^ "\" )")
+	  | LocalSyncCall _ -> assert false
+	  | AwaitLocalSyncCall _ -> assert false
+	  | LocalAsyncCall (_, None, _, _, _, _) -> assert false
+	  | LocalAsyncCall (_, Some l, m, None, None, i) ->
+	      (* An unqualified local synchronous call should use this in
+		 order to get late binding correct. *)
+	      output_string out_channel ("( \"" ^ l ^ "\" ! \"this\" . \"" ^ m ^ "\" (");
+	      of_expression_list i;
+	      output_string out_channel " ) ) "
+	  | LocalAsyncCall (_, Some l, m, lb, ub, i) ->
+	      output_string out_channel ("( \"" ^ l ^ "\" ! \"" ^ m ^ "\" ") ;
+	      (match lb with
+		  None -> output_string out_channel ("@ \"" ^ cls ^ "\" ")
+		| Some n -> output_string out_channel ("@ \"" ^ n ^ "\" "));
+	      (match ub with
+		  None -> ()
+		| Some n -> output_string out_channel ("<< \"" ^ n ^ "\" "));
+	      output_string out_channel "( " ;
+	      of_expression_list i;
+	      output_string out_channel " ) ) "
+	  | Tailcall (_, m, l, u, i) ->
+	      output_string out_channel ( "\"" ^ m ^ "\"");
+	      (match l with None -> () | Some n -> output_string out_channel (" @ \"" ^ n ^ "\""));
+	      (match u with None -> () | Some n -> output_string out_channel (" << \"" ^ n ^ "\""));
+	      output_string out_channel " ( " ;
+	      of_expression_list i;
+	      output_string out_channel " )"
+	  | If (_, c, t, f) ->
+	      output_string out_channel "if "; of_expression c;
+	      output_string out_channel " th "; print 25 t;
+	      output_string out_channel " el "; print 25 f;
+	      output_string out_channel " fi"
+	  | While (_, c, _, b) ->
+	      output_string out_channel "while " ;
+	      of_expression c;
+	      output_string out_channel " do ";
+	      print 25 b;
+	      output_string out_channel " od "
+	  | Sequence (_, sl) ->
+	      let op_prec = 25 in
+		open_paren prec op_prec ;
+		separated_list (function s -> print op_prec s)
+		  (function () -> output_string out_channel " ; ") sl;
+		close_paren prec op_prec
+	  | Merge (_, l, r) ->
+	      let op_prec = 29 in
+		open_paren prec op_prec ;
+		print op_prec l; 
+		output_string out_channel " ||| ";
+		print op_prec r; 
+		close_paren prec op_prec
+	  | Choice (_, l, r) ->
+	      let op_prec = 27 in
+		open_paren prec op_prec ;
+		print op_prec l; 
+		output_string out_channel " [] ";
+		print op_prec r; 
+		close_paren prec op_prec
+      in print 25 stmt
+    and of_attribute a =
+      output_string out_channel ("(" ^ a.var_name ^ ": ");
+      (match a.var_init with
+	  None -> output_string out_channel "null"
+	| Some e -> of_expression e);
+      output_string out_channel ")"
+    and of_attribute_list =
+      function
+	  [] ->  output_string out_channel "none"
+	| [a] -> of_attribute a
+	| a::l -> of_attribute a; output_string out_channel ", ";
+	    of_attribute_list l
+    and of_inherits =
+      function
+	  (i, l) -> output_string out_channel ("\"" ^ i ^ "\" < ");
+	    of_expression_list l;
+	    output_string out_channel " > "
+    and of_inherits_list =
+      function
+	  [] -> output_string out_channel "noInh"
+	| [i] -> of_inherits i
+	| i::r -> of_inherits i;
+	    output_string out_channel " ## ";
+	    of_inherits_list r
+    and of_parameter_list =
+      function
+	  [] -> output_string out_channel "noAid"
+	| [v] -> output_string out_channel ("\"" ^ v.var_name ^ "\"")
+	| v::r -> output_string out_channel ("\"" ^ v.var_name ^ "\" , ");
+	    of_parameter_list r
+    and of_class_attribute_list =
+      function
+	  [] -> output_string out_channel "noSubst" 
+	| [v] -> output_string out_channel ("\"" ^ v.var_name ^ "\" |-> null")
+	| v::r -> output_string out_channel ("\"" ^ v.var_name ^ "\" |-> null , ");
+	    of_class_attribute_list r
+    and of_method_return =
+      function
+	  [] -> output_string out_channel "emp" 
+	| [n] -> output_string out_channel ("\"" ^ n.var_name ^ "\"")
+	| n::l -> output_string out_channel ("\"" ^ n.var_name ^ "\" # ");
+            of_method_return l
+    and of_method cls m =
+      output_string out_channel ("\n  < \"" ^ m.meth_name ^ "\" : Mtdname | Param: ");
+      of_parameter_list m.meth_inpars;
+      output_string out_channel ", Latt: " ;
+      of_class_attribute_list (m.meth_inpars @ m.meth_outpars @ m.meth_vars);
+      output_string out_channel ", Code: " ;
+      ( match m.meth_body with
+	  None -> output_string out_channel "skip"
+	| Some s -> of_statement cls s ;
+	    output_string out_channel " ; return ( ";
+	    of_method_return m.meth_outpars;
+	    output_string out_channel " )" ) ;
+      output_string out_channel " >"
+    and of_method_list cls =
+      function
+	  [] -> output_string out_channel "noMtd" 
+	| [m] -> of_method cls m
+	| m::r -> of_method cls m ;
+	    output_string out_channel " *" ;
+	    of_method_list cls r
+    and of_with_defs cls ws =
+      let methods = List.flatten (List.map (function w -> w.With.methods) ws)
+      in
+	of_method_list cls methods
+    and of_class c =
+      output_string out_channel ("< \"" ^ c.Class.name ^ "\" : Cl | Inh: ");
+      of_inherits_list c.Class.inherits;
+      output_string out_channel ", Par: ";
+      of_parameter_list c.Class.parameters;
+      output_string out_channel ", Att: ";
+      of_class_attribute_list (c.Class.parameters @ c.Class.attributes);
+      output_string out_channel ", Mtds: ";
+      of_with_defs c.Class.name c.Class.with_defs;
+      output_string out_channel ", Ocnt: 0 >\n\n"
+    and of_interface i = ()
+    and of_exception e = ()
+    and of_datatype d = ()
+    and of_declaration =
+      function
+	  Class c -> of_class c
+	| Interface i -> of_interface i
+	| Exception e -> of_exception e
+	| Datatype d -> of_datatype d
+    and of_decl_list =
+      function
+	  [] -> output_string out_channel "noConf\n"
+	| [d] -> of_declaration d
+	| d::l -> of_declaration d; of_decl_list l
+    in
+      (** Convert an abstract syntax tree l of a creol program to a
+	  representation for the Maude CMC and write the result to the
+	  output channel out. *)
+      if options.modelchecker then
+	output_string out_channel "load modelchecker\n"
+      else
+	output_string out_channel "load interpreter\n";
+      output_string out_channel
+	("mod PROGRAM is\npr " ^ (if options.modelchecker then
+	  "CREOL-MODEL-CHECKER" else "CREOL-INTERPRETER") ^
+	    " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
+      of_decl_list input ;
+	begin
+	  match options.main with
+	      None -> ()
+	    | Some m ->
+		output_string out_channel ("main( \"" ^ m ^ "\" , emp )\n")
+	end ;
+	output_string out_channel ".\nendm\n" ;
+	if options.modelchecker then
+	  begin
+	    output_string out_channel "\n\nmod PROGRAM-CHECKER is\n  protecting MODEL-CHECKER .\n  protecting PROGRAM .\n  protecting CREOL-PREDICATES .\nendm\n"
+	  end ;
+	if options.red_init then output_string out_channel "\nred init .\n" ;
+	flush out_channel
 
 end

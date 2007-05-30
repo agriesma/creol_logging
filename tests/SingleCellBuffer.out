@@ -4,8 +4,8 @@ result Class:
 < "Buffer" : Cl | Inh: noInh, Par: noAid, Att: "cell" |-> null, "ctr" |-> null,
     "next" |-> null, Mtds:
   < "get" : Mtdname | Param: noAid, Latt: "x" |-> null, Code: await ">"("ctr" #
-    int(0)) ; if "/="("cell" # null) th "x" ::= "cell" el "sync.1" ! "next" .
-    "get"(emp) ; "sync.1" ?("x") fi ; "ctr" ::= "-"("ctr" # int(1)) ; ("cell"
+    int(0)) ; if "/="("cell" # null) th "x" ::= "cell" el "sync.0" ! "next" .
+    "get"(emp) ; "sync.0" ?("x") fi ; "ctr" ::= "-"("ctr" # int(1)) ; ("cell"
     assign null) ; return("x") > *
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("ctr" assign int(0))
     ; return(emp) > *

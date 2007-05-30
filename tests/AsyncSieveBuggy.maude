@@ -10,7 +10,7 @@ eq init =
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "p" |-> null , "next" |-> null, Mtds: 
   < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "send" : Mtdname | Param: "n", Latt: "n" |-> null , "res" |-> null , "d" |-> null , "r" |-> null, Code: if "=" ( "r" # int(0) ) th "res" ::= bool(false) el if "/=" ( "next" # null ) th "l" ! "next" . "send" ( "n" ) ; release ; ( "l" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
+  < "send" : Mtdname | Param: "n", Latt: "n" |-> null , "res" |-> null , "d" |-> null , "r" |-> null, Code: "d" ::= "/" ( "n" # "p" ) ; "r" ::= "-" ( "n" # "*" ( "d" # "p" ) ) ; if "=" ( "r" # int(0) ) th "res" ::= bool(false) el if "/=" ( "next" # null ) th "l" ! "next" . "send" ( "n" ) ; release ; ( "l" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
 
 .
 endm

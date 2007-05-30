@@ -11,16 +11,16 @@ result Class:
     ! "db" . "listFiles"(emp) ; await ("sync.0" ??) ; "sync.0" ?("files") ;
     return("files") > *
   < "getLength" : Mtdname | Param: "fId", Latt: "fId" |-> null, "lth" |-> null,
-    Code: "sync.1" ! "db" . "length"("fId") ; await ("sync.1" ??) ; "sync.1" ?(
+    Code: "sync.0" ! "db" . "length"("fId") ; await ("sync.0" ??) ; "sync.0" ?(
     "lth") ; return("lth") > *
   < "getPack" : Mtdname | Param: "fId", "pNbr", Latt: "f" |-> null, "fId" |->
-    null, "pNbr" |-> null, "pack" |-> null, Code: "sync.2" ! "db" . "getFile"(
-    "fId") ; await ("sync.2" ??) ; "sync.2" ?("f") ; "pack" ::= "f"("pNbr") ;
+    null, "pNbr" |-> null, "pack" |-> null, Code: "sync.0" ! "db" . "getFile"(
+    "fId") ; await ("sync.0" ??) ; "sync.0" ?("f") ; "pack" ::= "f"("pNbr") ;
     return("pack") > *
   < "reqFile" : Mtdname | Param: "sId", "fId", Latt: "fId" |-> null, "file" |->
-    null, "lth" |-> null, "pack" |-> null, "sId" |-> null, Code: "sync.3" !
-    "sId" . "getLength"("fId" # "lth") ; await ("sync.3" ??) ; "sync.3" ?(
-    "pack") ; "_anon" ! "db" . "storeFile"("fId" # "file") ; free("_anon") ;
+    null, "lth" |-> null, "pack" |-> null, "sId" |-> null, Code: "sync.0" !
+    "sId" . "getLength"("fId" # "lth") ; await ("sync.0" ??) ; "sync.0" ?(
+    "pack") ; ".anon" ! "db" . "storeFile"("fId" # "file") ; free(".anon") ;
     return(emp) >,
   Ocnt: 0 >
 Bye.

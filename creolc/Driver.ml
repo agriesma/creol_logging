@@ -60,15 +60,17 @@ module Target =
 
     let output tree =
       let out =
-	  match !file with
+	match !file with
           | "-" -> stdout
           | s -> open_out s
-	in
+      in
 	match !target with
-	  No -> ()
-	| Creol -> pretty_print out tree
-	| Maude | MaudeMC -> Maude.of_creol options out tree
-	| XML -> CreolIO.creol_to_xml !file Note.to_xml (fun a b -> ()) tree
+	    No -> ()
+	  | Creol -> pretty_print out tree
+	  | Maude | MaudeMC ->
+	      let id x = x in
+		Maude.of_creol options out (lower tree id id id)
+	  | XML -> CreolIO.creol_to_xml !file Note.to_xml (fun a b -> ()) tree
   end
 
 (* Pass management *)

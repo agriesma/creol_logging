@@ -8,12 +8,12 @@ eq init =
   < "remove" : Mtdname | Param: noAid, Latt: "d" |-> null, Code: ( await ">" ( "n" # int(0) ) ) ; "d" ::= "first" ( "buffer" ) ; "buffer" ::= "rest" ( "buffer" ) ; return ( "d" ) >, Ocnt: 0 >
 
 < "Prod" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "_anon" ! "this" . "loop" ( int(0) ) ; free( "_anon" ) ; return ( emp ) > *
-  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "sync.0" ! "b" . "append" ( "i" ) ; ( "sync.0" ? ( noAid ) )  ; "_anon" ! "this" . "loop" ( "+" ( "i" # int(1) ) ) ; free( "_anon" ) ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" . "loop" ( int(0) ) ; free( ".anon" ) ; return ( emp ) > *
+  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "sync.0" ! "b" . "append" ( "i" ) ; ( "sync.0" ? ( noAid ) )  ; ".anon" ! "this" . "loop" ( "+" ( "i" # int(1) ) ) ; free( ".anon" ) ; return ( emp ) >, Ocnt: 0 >
 
 < "Cons" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "_anon" ! "this" . "loop" ( emp ) ; free( "_anon" ) ; return ( emp ) > *
-  < "loop" : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "sync.1" ! "b" . "remove" ( emp ) ; ( "sync.1" ? ( "y" ) )  ; "_anon" ! "this" . "loop" ( emp ) ; free( "_anon" ) ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" . "loop" ( emp ) ; free( ".anon" ) ; return ( emp ) > *
+  < "loop" : Mtdname | Param: noAid, Latt: "y" |-> null, Code: "sync.0" ! "b" . "remove" ( emp ) ; ( "sync.0" ? ( "y" ) )  ; ".anon" ! "this" . "loop" ( emp ) ; free( ".anon" ) ; return ( emp ) >, Ocnt: 0 >
 
 < "Starter" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds: 
   < "run" : Mtdname | Param: noAid, Latt: "b" |-> null , "p" |-> null , "c" |-> null, Code: "b" ::= new "BoundedBuffer" ( emp ) ; "p" ::= new "Producer" ( "b" ) ; "c" ::= new "Consumer" ( "b" ) ; return ( emp ) >, Ocnt: 0 >

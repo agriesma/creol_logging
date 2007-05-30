@@ -360,25 +360,49 @@ end
 
 
 module Maude :
-  sig
-    type options = {
-	mutable modelchecker: bool;
-	mutable red_init: bool;
-	mutable main: string option;
-    }
+sig
+  type options = {
+    mutable modelchecker: bool;
+    mutable red_init: bool;
+    mutable main: string option;
+  }
 
-    val of_creol: options -> out_channel -> ('a, 'b) Declaration.t list -> unit
-  end
+  val of_creol: options: options -> out_channel: out_channel ->
+    input: ('a, 'b) Declaration.t list -> unit
+end
 
 
 
 
-val pretty_print: out_channel -> ('a, 'b) Declaration.t list -> unit
+val lower: input: ('a, 'b) Declaration.t list -> copy_stmt_note: ('a -> 'a) ->
+  expr_note_of_stmt_note: ('a -> 'b) -> copy_expr_note: ('b -> 'b) ->
+  ('a, 'b) Declaration.t list
+  (** Lower a Creol program to the "Core Creol" language.
 
-val simplify: ('a, 'b) Declaration.t list -> ('a, 'b) Declaration.t list
+      This function will destroy some statement and expression
+      annotations.  Therefore, all semantic analysis performed before
+      this function should be repeated after calling this function.
+
+      This should only concern type inference, because all other
+      analysis should be performed after this function.
+
+      The following two invariant holds for this function:
+
+      * A type correct program remains type correct and the
+      annotations of unchanged statements are the same after
+      reconstruction.
+
+      * lower (lower tree) == lower tree *)
 
 val tailcall_successes : unit -> int
 
 val optimise_tailcalls: ('a, 'b) Declaration.t list -> ('a, 'b) Declaration.t list
 
 val find_definitions: (Note.t, 'a) Declaration.t list -> (Note.t, 'a) Declaration.t list
+
+val pretty_print: out_channel -> ('a, 'b) Declaration.t list -> unit
+  (** Write a pretty-printed tree to [out_channel].
+
+      The result of [lower] cannot be printed to a valid creol
+      program.  The pretty-printed result can, however, be used for
+      debugging. *)
