@@ -44,7 +44,8 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  SingleCellBuffer.out \
 		  Fibonacci.creol Fibonacci.maude Fibonacci.out \
 		  SantaClaus.creol SantaClaus.maude SantaClaus.out \
-		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.out
+		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.out \
+		  PeerToPeer.creol PeerToPeer.maude PeerToPeer.out
 
 TESTPARTS	= 
 
