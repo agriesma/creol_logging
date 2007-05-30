@@ -58,6 +58,7 @@ Software Foundation raise funds for GNU development.''
 * creolc::              How to use the @command{creolc} compiler.
 * creolshell::          How to use the @command{creolshell}.
 * Licenses::            Your rights and freedoms.
+* Reporting Bugs::      How to write a good bug report.
 * Bibliography::        Further reading.
 * Index::               Index of concepts.
 @end menu
@@ -86,6 +87,7 @@ the GNU Free Documentation License.
 @include fdl.texi
 
 @include bibliography.texi
+@include bugs.texi
 
 @node Index
 @unnumbered Index

@@ -29,11 +29,13 @@ SUBDIRS			= xml creolc share emacs doc info tests
 
 MOSTLYCLEANFILES	= *~
 CLEANFILES		=
-DISTCLEANFILES		= $(bin_SCRIPTS)
+DISTCLEANFILES		= $(bin_SCRIPTS) creolbug
 MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
 			  depcomp elisp-comp missing install-sh \
 			  creoltools.spec
 
-EXTRA_DIST		=
+EXTRA_DIST		= creolbug.in
 
 bin_SCRIPTS		= creolshell
+
+all-local: creolbug

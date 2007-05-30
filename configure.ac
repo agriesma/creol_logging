@@ -73,6 +73,7 @@ AC_SUBST([OCAMLFIND_FLAGS])
 
 AC_CONFIG_TESTDIR(tests, creolc)
 
+AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
 AC_CONFIG_FILES([creolc/Version.ml])
 AC_CONFIG_FILES([Makefile

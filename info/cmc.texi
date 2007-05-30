@@ -3,7 +3,10 @@
 @chapter Creol Machine Code
 
 In this chapter we describe the general structure of the machine in
-Maude.  The contents of this chapter assumes familarity with Maude.
+Maude.  The machine is interpreting the Core Creol language, which is
+mimicked by Maude terms.
+
+This chapter assumes familarity with Maude.
 
 @menu
 * Datatypes::          Explanation of datatypes.
@@ -454,13 +457,8 @@ The operation @code{evalList} maps eval on expression lists (of sort
 The module @code{CREOL-GUARD} defines the syntax of guard
 expressions on the machine level.
 
-Guards can be arbitrary boolean expressions or thet can test for the
-arrival of a reply with the syntax @code{@var{label} ??}.
-
-More complex guards may be constructed by conjunction, represented by
-the binary operator @code{&}.  This ability will be removed once the
-compiler can split conjunctions of guards into individual await
-statements.
+Guards can be arbitrary boolean expressions or they can test for the
+arrival of a single reply with the syntax @code{@var{label} ??}.
 
 
 @node Statement
@@ -486,7 +484,7 @@ An asynchronous call statement.
 Receiving a reply.
 
 @item await _
-Awaiting a condition.
+Awaiting a guard.
 
 @item release
 Unconditionally release the processor and allow another process to be

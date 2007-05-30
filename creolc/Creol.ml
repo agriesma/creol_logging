@@ -982,329 +982,338 @@ let rec separated_list elt_fun sep_fun =
 	sep_fun ();
 	separated_list elt_fun sep_fun r
 
-let rec pretty_print out list =
-  separated_list (pretty_print_declaration out)
-    (function () -> output_string out "\n\n") list;
-  output_string out "\n";
-  flush out
-and pretty_print_declaration out_channel =
-  function
-      Class c -> pretty_print_class out_channel c
-    | Interface i -> pretty_print_iface out_channel i
-    | Exception e -> pretty_print_exception out_channel e
-    | Datatype d -> pretty_print_datatype out_channel d
-and pretty_print_datatype out_channel d =
-  output_string out_channel ("datatype " ^ d.Datatype.name ^ "\n");
-  output_string out_channel "begin\n" ;
-  output_string out_channel "end\n"
-and pretty_print_exception out_channel e =
-  output_string out_channel ("exception " ^ e.Exception.name) ;
-  begin
-    match e.Exception.parameters with
-        [] -> ()
+let pretty_print out_channel input =
+  let rec pretty_print_declaration =
+    function
+	Class c -> pretty_print_class c
+      | Interface i -> pretty_print_iface i
+      | Exception e -> pretty_print_exception e
+      | Datatype d -> pretty_print_datatype d
+  and pretty_print_datatype d =
+    output_string out_channel ("datatype " ^ d.Datatype.name ^ "\n");
+    output_string out_channel "begin\n" ;
+    output_string out_channel "end\n"
+  and pretty_print_exception e =
+    output_string out_channel ("exception " ^ e.Exception.name) ;
+    begin
+      match e.Exception.parameters with
+          [] -> ()
+	| l -> output_string out_channel "(";
+	    pretty_print_vardecls 0 "" ", " "" l;
+	    output_string out_channel ")" 
+    end ;
+    output_string out_channel "\n"
+  and pretty_print_iface i =
+    output_string out_channel "interface ";
+    output_string out_channel i.Interface.name;
+    output_string out_channel "\nbegin\n";  
+    output_string out_channel "end"
+  and pretty_print_class c =
+    output_string out_channel ("class " ^ c.Class.name ^ " ") ;
+    ( match c.Class.parameters with
+	[] -> ()
       | l -> output_string out_channel "(";
-	  pretty_print_vardecls out_channel 0 "" ", " "" l;
-	  output_string out_channel ")" 
-  end ;
-  output_string out_channel "\n"
-and pretty_print_iface out_channel i =
-  output_string out_channel "interface ";
-  output_string out_channel i.Interface.name;
-  output_string out_channel "\nbegin\n";  
-  output_string out_channel "end"
-and pretty_print_class out_channel c =
-  output_string out_channel ("class " ^ c.Class.name ^ " ") ;
-  ( match c.Class.parameters with
-      [] -> ()
-    | l -> output_string out_channel "(";
-	pretty_print_vardecls out_channel 0 "" ", " "" l;
-	output_string out_channel ")" ) ;
-  ( match c.Class.inherits with
-      [] -> ()
-    | l -> output_string out_channel "\ninherits ";
-	separated_list (pretty_print_inherits out_channel)
-	  (function () -> output_string out_channel ", ") l) ;
-  ( match c.Class.contracts with
-      [] -> ()
-    | l -> output_string out_channel "\ncontracts " );
-  if [] <> c.Class.implements then
-    begin
-      output_string out_channel "\nimplements " ;
-      separated_list (output_string out_channel)
-	(function () -> output_string out_channel ", ") c.Class.implements;
-    end;
-  do_indent out_channel 0;
-  output_string out_channel "begin";
-  if [] <> c.Class.attributes then
-    begin
-      do_indent out_channel 1 ;
-      pretty_print_vardecls out_channel 1 "var " "" "\n" c.Class.attributes;
+	  pretty_print_vardecls 0 "" ", " "" l;
+	  output_string out_channel ")" ) ;
+    ( match c.Class.inherits with
+	[] -> ()
+      | l -> output_string out_channel "\ninherits ";
+	  separated_list pretty_print_inherits
+	    (function () -> output_string out_channel ", ") l) ;
+    ( match c.Class.contracts with
+	[] -> ()
+      | l -> output_string out_channel "\ncontracts " );
+    if [] <> c.Class.implements then
+      begin
+	output_string out_channel "\nimplements " ;
+	separated_list (output_string out_channel)
+	  (function () -> output_string out_channel ", ") c.Class.implements;
+      end;
+    do_indent 0;
+    output_string out_channel "begin";
+    if [] <> c.Class.attributes then
+      begin
+	do_indent 1 ;
+	pretty_print_vardecls 1 "var " "" "\n" c.Class.attributes;
+	output_string out_channel "\n";
+      end;
+    if [] <> c.Class.with_defs then
+      begin
+	List.iter (pretty_print_with) c.Class.with_defs ;
+      end ;
+    if [] = c.Class.attributes && [] = c.Class.with_defs then
       output_string out_channel "\n";
-    end;
-  if [] <> c.Class.with_defs then
-    begin
-      List.iter (pretty_print_with out_channel) c.Class.with_defs ;
-    end ;
-  if [] = c.Class.attributes && [] = c.Class.with_defs then
-    output_string out_channel "\n";
-  output_string out_channel "end"
-and pretty_print_inherits out_channel (inh, args) =
-  output_string out_channel inh;
-  if args <> [] then
-    begin
+    output_string out_channel "end"
+  and pretty_print_inherits (inh, args) =
+    output_string out_channel inh;
+    if args <> [] then
+      begin
+	output_string out_channel "(";
+	separated_list pretty_print_expression
+	  (function () -> output_string out_channel ", ") args;
+	output_string out_channel ")"
+      end
+  and pretty_print_with w =
+    let indent = if w.With.co_interface = None then 1 else 2
+    in
+      begin
+	match w.With.co_interface with
+	    None -> ()
+	  | Some c ->
+	      do_indent 1;
+	      output_string out_channel ("with " ^ c);
+      end ;
+      do_indent indent;
+      pretty_print_methods indent w.With.methods
+	(* XXX: Take care of invariants later *)
+  and pretty_print_methods indent list =
+    separated_list
+      (pretty_print_method (indent + 1))
+      (function () -> do_indent indent)
+      list
+  and pretty_print_method indent m =
+    output_string out_channel ("op " ^ m.meth_name);
+    if m.meth_inpars <> [] || m.meth_outpars <> [] then
       output_string out_channel "(";
-      separated_list (pretty_print_expression out_channel)
-	(function () -> output_string out_channel ", ") args;
-      output_string out_channel ")"
-    end
-and pretty_print_with out_channel w =
-  let indent = if w.With.co_interface = None then 1 else 2
-  in
     begin
-      match w.With.co_interface with
-	  None -> ()
-	| Some c ->
-	    do_indent out_channel 1;
-	    output_string out_channel ("with " ^ c);
-    end ;
-    do_indent out_channel indent;
-    pretty_print_methods out_channel indent w.With.methods
-      (* XXX: Take care of invariants later *)
-and pretty_print_methods out_channel indent list =
-  separated_list
-    (pretty_print_method out_channel (indent + 1))
-    (function () -> do_indent out_channel indent)
-    list
-and pretty_print_method out_channel indent m =
-  output_string out_channel ("op " ^ m.meth_name);
-  if m.meth_inpars <> [] || m.meth_outpars <> [] then
-    output_string out_channel "(";
-  begin
-    match (m.meth_inpars, m.meth_outpars) with
-	([], []) -> ()
-      | (i, []) ->
-	  output_string out_channel "in ";
-	  pretty_print_vardecls out_channel 0 "" ", " "" i
-      | ([], o) ->
-	  output_string out_channel "out ";
-	  pretty_print_vardecls out_channel 0 "" ", " "" o
-      | (i, o) -> 
-	  output_string out_channel "in ";
-	  pretty_print_vardecls out_channel 0 "" ", " "" i;
-	  output_string out_channel "; out ";
-	  pretty_print_vardecls out_channel 0 "" ", " "" o
-  end;
-  if m.meth_inpars <> [] || m.meth_outpars <> [] then
-    output_string out_channel ")";
-  (match m.meth_body with
-      None -> ()
-    | Some s ->
-	output_string out_channel " == " ;
-	do_indent out_channel indent;
-	separated_list
-	  (function v ->
-	    output_string out_channel "var " ;
-	    pretty_print_vardecl out_channel v)
-	  (function () ->
-	    output_string out_channel ";" ;
-	    do_indent out_channel indent)
-	  m.meth_vars;
-	if [] <> m.meth_vars then
-	  begin
-	    output_string out_channel ";" ;
-	    do_indent out_channel indent
-	  end ;
-	pretty_print_statement out_channel indent s);
-  output_string out_channel "\n"
-and pretty_print_vardecls out_channel lvl p d s list =
-  separated_list
-    (function v ->
-      output_string out_channel p;
-      pretty_print_vardecl out_channel v)
-    (function () ->
-      output_string out_channel d;
-      if lvl > 0 then do_indent out_channel lvl)
-    list
-and pretty_print_vardecl out_channel v =
-  output_string out_channel (v.var_name ^ ": " ^ (Type.as_string v.var_type ));
-  ( match v.var_init with
-      Some e -> output_string out_channel " := " ;
-	pretty_print_expression out_channel e
-    | None -> () )
-and pretty_print_statement out lvl statement =
-  (** Pretty-print statements and write the code to out. *)
-  let open_block prec op_prec =
-    if prec < op_prec then output_string out "begin "
-  and close_block prec op_prec =
-    if prec < op_prec then output_string out " end"
+      match (m.meth_inpars, m.meth_outpars) with
+	  ([], []) -> ()
+	| (i, []) ->
+	    output_string out_channel "in ";
+	    pretty_print_vardecls 0 "" ", " "" i
+	| ([], o) ->
+	    output_string out_channel "out ";
+	    pretty_print_vardecls 0 "" ", " "" o
+	| (i, o) -> 
+	    output_string out_channel "in ";
+	    pretty_print_vardecls 0 "" ", " "" i;
+	    output_string out_channel "; out ";
+	    pretty_print_vardecls 0 "" ", " "" o
+    end;
+    if m.meth_inpars <> [] || m.meth_outpars <> [] then
+      output_string out_channel ")";
+    (match m.meth_body with
+	None -> ()
+      | Some s ->
+	  output_string out_channel " == " ;
+	  do_indent indent;
+	  separated_list
+	    (function v ->
+	      output_string out_channel "var " ;
+	      pretty_print_vardecl v)
+	    (function () ->
+	      output_string out_channel ";" ;
+	      do_indent indent)
+	    m.meth_vars;
+	  if [] <> m.meth_vars then
+	    begin
+	      output_string out_channel ";" ;
+	      do_indent indent
+	    end ;
+	  pretty_print_statement indent s);
+    output_string out_channel "\n"
+  and pretty_print_vardecls lvl p d s list =
+    separated_list
+      (function v ->
+	output_string out_channel p;
+	pretty_print_vardecl v)
+      (function () ->
+	output_string out_channel d;
+	if lvl > 0 then do_indent lvl)
+      list
+  and pretty_print_vardecl v =
+    output_string out_channel (v.var_name ^ ": " ^ (Type.as_string v.var_type ));
+    ( match v.var_init with
+	Some e -> output_string out_channel " := " ;
+	  pretty_print_expression e
+      | None -> () )
+  and pretty_print_statement lvl statement =
+    (** Pretty-print statements and write the code to out. *)
+    let open_block prec op_prec =
+      if prec < op_prec then output_string out_channel "begin "
+    and close_block prec op_prec =
+      if prec < op_prec then output_string out_channel " end"
+    in
+    let rec print lvl prec =
+      function
+	  Skip _ -> output_string out_channel "skip";
+	| Assert (_, e) ->
+	    output_string out_channel "assert " ; pretty_print_expression e
+	| Assign (_, i, e) ->
+	    pretty_print_identifier_list i;
+	    output_string out_channel " := ";
+	    pretty_print_expression_list e
+	| Await (_, e) -> 
+	    output_string out_channel "await ";
+	    pretty_print_expression e;
+	| Release _ -> output_string out_channel "release";
+	| AsyncCall (_, l, c, m, a) ->
+	    (match l with
+		None -> ()
+	      | Some l -> output_string out_channel l ) ;
+	    output_string out_channel "!";
+	    pretty_print_expression c ;
+	    output_string out_channel ("." ^ m ^ "(");
+	    pretty_print_expression_list a;
+	    output_string out_channel ")"
+	| Reply (_, l, o) ->
+	    output_string out_channel (l ^ "?(");
+	    pretty_print_identifier_list o;
+	    output_string out_channel ")";
+	| Free(_, l) -> output_string out_channel ("/* free(" ^ l ^ ") */")
+	| SyncCall (_, c, m, a, r) ->
+	    pretty_print_expression c ;
+	    output_string out_channel ("." ^ m ^ "(");
+	    pretty_print_expression_list a;
+	    output_string out_channel "; " ;
+	    pretty_print_identifier_list r;
+	    output_string out_channel ")"
+	| LocalAsyncCall (_, l, m, lb, ub, i) ->
+	    output_string out_channel
+	      (match l with
+		  None -> "!"
+		| Some n -> (n ^ "!"));
+	    output_string out_channel m;
+	    (match lb with
+		None -> ()
+	      | Some n -> output_string out_channel ("@" ^ n));
+	    (match ub with
+		None -> ()
+	      | Some n -> output_string out_channel ("<<" ^ n));
+	    output_string out_channel "(" ;
+	    pretty_print_expression_list i;
+	    output_string out_channel ")"
+	| LocalSyncCall (_, m, l, u, i, o) ->
+	    output_string out_channel m;
+	    (match l with
+		None -> ()
+	      | Some n -> output_string out_channel ("@" ^ n));
+	    (match u with
+		None -> ()
+	      | Some n -> output_string out_channel ("<<" ^ n));
+	    output_string out_channel "(" ;
+	    pretty_print_expression_list i;
+	    output_string out_channel "; " ;
+	    pretty_print_identifier_list o;
+	    output_string out_channel ")"
+	| Tailcall (_, m, l, u, i) -> assert false
+	| If (_, c, t, f) ->
+	    output_string out_channel "if ";
+	    pretty_print_expression c;
+	    output_string out_channel " then";
+	    do_indent (lvl + 1);
+	    print (lvl + 1) 25 t;
+	    do_indent lvl;
+	    output_string out_channel "else";
+	    do_indent (lvl + 1);
+	    print (lvl + 1) 25 f;
+	    do_indent lvl;
+	    output_string out_channel "end"
+	| While (_, c, i, b) ->
+	    (* The text generated in this branch does not parse in standard
+	       Creol.  This should not be changed.  Consult the manual for
+	       the reasons. *)
+	    output_string out_channel "while ";
+	    pretty_print_expression c;
+	    (match i with
+		None -> ()
+	      | Some inv -> 
+		  do_indent lvl;
+		  output_string out_channel "inv ";
+		  pretty_print_expression inv ;
+		  do_indent lvl) ;
+	    output_string out_channel " do ";
+	    do_indent (lvl + 1);
+	    print (lvl + 1) 25 b;
+	    output_string out_channel " od";
+	    do_indent lvl
+	| For _ -> assert false
+	| Raise _ -> assert false
+	| Try _ -> assert false
+	| Case _ -> assert false
+	| Typecase _ -> assert false
+	| Sequence (_, sl) -> 
+	    let op_prec = 25 in
+	    let nl = lvl + if prec < op_prec then 1 else 0 in
+	      open_block prec op_prec;
+	      separated_list (function s -> print nl op_prec s)
+		(function () -> output_string out_channel ";" ; do_indent nl)
+		sl ;
+	      close_block prec op_prec
+	| Merge (_, l, r) ->
+	    let op_prec = 29 in
+	    let nl = lvl + if prec < op_prec then 1 else 0 in
+	      open_block prec op_prec;
+	      print nl op_prec l;
+	      output_string out_channel " |||";
+	      do_indent nl;
+	      print nl op_prec r;
+	      close_block prec op_prec
+	| Choice (_, l, r) -> 
+	    let op_prec = 27 in
+	    let nl = lvl + if prec < op_prec then 1 else 0 in
+	      open_block prec op_prec;
+	      print nl op_prec l;
+	      output_string out_channel " [] ";
+	      do_indent nl;
+	      print nl op_prec r;
+	      close_block prec op_prec
+    in
+      print lvl 25 statement
+  and pretty_print_expression exp =
+    let open_paren prec op_prec =
+      if prec < op_prec then output_string out_channel "("
+    and close_paren prec op_prec =
+      if prec < op_prec then output_string out_channel ")"
+    in
+    let rec print prec =
+      function
+	  Nil _ -> output_string out_channel "nil"
+	| Null _ -> output_string out_channel "null"
+	| Int (_, i) -> output_string out_channel (string_of_int i)
+	| Float (_, f) -> output_string out_channel (string_of_float f)
+	| Bool (_, b) -> output_string out_channel (string_of_bool b)
+	| String (_, s) -> output_string out_channel ("\"" ^ s ^ "\"")
+	| Id (_, i) -> output_string out_channel i
+	| Tuple (_, a) ->
+	    output_string out_channel "(";
+	    pretty_print_expression_list a;
+	    output_string out_channel ")";
+	| Unary (_, o, e) ->
+	    output_string out_channel (string_of_unaryop o ^ " ");
+	    print (prec_of_unaryop o) e
+	| Binary(_, o, l, r) ->
+	    let lp = fst (prec_of_binaryop o)
+	    and rp = snd (prec_of_binaryop o)
+	    in
+      	      open_paren prec lp; print lp l;
+	      output_string out_channel (" " ^ (string_of_binaryop o) ^ " ");
+	      print rp r; close_paren prec rp
+	| FuncCall (_, i, a) ->
+	    output_string out_channel (i ^ "(");
+	    pretty_print_expression_list a;
+	    output_string out_channel ")";
+	| FieldAccess(_, e, f) -> print 15 e; output_string out_channel ("`" ^ f)
+	| Label (_, l) -> output_string out_channel (l ^ "?")
+	| New (_, t, a) ->
+            output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
+	    pretty_print_expression_list a ;
+	    output_string out_channel ")"
+    in
+      print 121 exp
+  and pretty_print_expression_list l =
+    separated_list pretty_print_expression
+      (function () -> output_string out_channel ", ") l
+  and pretty_print_identifier_list l =
+    separated_list (output_string out_channel)
+      (function () -> output_string out_channel ". ") l
+  and do_indent lvl =
+    output_string out_channel ("\n" ^ (String.make (lvl * 2) ' '))
   in
-  let rec print lvl prec =
-    function
-	Skip _ -> output_string out "skip";
-      | Assert (_, e) ->
-	  output_string out "assert " ; pretty_print_expression out e
-      | Assign (_, i, e) ->
-	  pretty_print_identifier_list out i;
-	  output_string out " := ";
-	  pretty_print_expression_list out e;
-      | Await (_, e) -> 
-	  output_string out "await ";
-	  pretty_print_expression out e;
-      | Release _ -> output_string out "release";
-      | AsyncCall (_, l, c, m, a) ->
-	  (match l with
-	      None -> ()
-	    | Some l -> output_string out l ) ;
-	  output_string out "!";
-	  pretty_print_expression out c ;
-	  output_string out ("." ^ m);
-	  output_string out "(" ;
-	  pretty_print_expression_list out a;
-	  output_string out ")"
-      | Reply (_, l, o) ->
-	  output_string out (l ^ "?(");
-	  pretty_print_identifier_list out o;
-	  output_string out ")";
-      | Free(_, l) -> output_string out ("/* free(" ^ l ^ ") */")
-      | SyncCall (_, c, m, a, r) ->
-	  pretty_print_expression out c ;
-	  output_string out ("." ^ m);
-	  output_string out "(" ;
-	  pretty_print_expression_list out a;
-	  output_string out "; " ;
-	  pretty_print_identifier_list out r;
-	  output_string out ")"
-      | LocalAsyncCall (_, l, m, lb, ub, i) ->
-	  output_string out (match l with None -> "!" | Some n -> (n ^ "!"));
-	  output_string out m;
-	  (match lb with None -> () | Some n -> output_string out ("@" ^ n));
-	  (match ub with None -> () | Some n -> output_string out ("<<" ^ n));
-	  output_string out "(" ;
-	  pretty_print_expression_list out i;
-	  output_string out ")"
-      | LocalSyncCall (_, m, l, u, i, o) ->
-	  output_string out m;
-	  (match l with None -> () | Some n -> output_string out ("@" ^ n));
-	  (match u with None -> () | Some n -> output_string out ("<<" ^ n));
-	  output_string out "(" ;
-	  pretty_print_expression_list out i;
-	  output_string out "; " ;
-	  pretty_print_identifier_list out o;
-	  output_string out ")"
-      | Tailcall (_, m, l, u, i) -> assert false
-      | If (_, c, t, f) ->
-	  output_string out "if ";
-	  pretty_print_expression out c;
-	  output_string out " then";
-	  do_indent out (lvl + 1);
-	  print (lvl + 1) 25 t;
-	  do_indent out lvl;
-	  output_string out "else";
-	  do_indent out (lvl + 1);
-	  print (lvl + 1) 25 f;
-	  do_indent out lvl;
-	  output_string out "end"
-      | While (_, c, None, b) ->
-	  output_string out "while ";
-	  pretty_print_expression out c;
-	  output_string out " do ";
-	  do_indent out (lvl + 1);
-	  print (lvl + 1) 25 b;
-	  output_string out " od";
-	  do_indent out lvl
-      | While (_, c, Some i, b) ->
-	  output_string out "while ";
-	  pretty_print_expression out c;
-	  do_indent out lvl;
-	  output_string out "inv ";
-	  pretty_print_expression out i;
-	  do_indent out lvl;
-	  output_string out "do ";
-	  do_indent out (lvl + 1);
-	  print (lvl + 1) 25 b;
-	  output_string out " od";
-	  do_indent out lvl
-      | For _ -> assert false
-      | Raise _ -> assert false
-      | Try _ -> assert false
-      | Case _ -> assert false
-      | Typecase _ -> assert false
-      | Sequence (_, sl) -> 
-	  let op_prec = 25 in
-	  let nl = lvl + if prec < op_prec then 1 else 0 in
-	    open_block prec op_prec;
-	    separated_list (function s -> print nl op_prec s)
-	      (function () -> output_string out ";" ; do_indent out nl) sl ;
-	    close_block prec op_prec
-      | Merge (_, l, r) ->
-	  let op_prec = 29 in
-	  let nl = lvl + if prec < op_prec then 1 else 0 in
-	    open_block prec op_prec;
-	    print nl op_prec l;
-	    output_string out " |||";
-	    do_indent out nl;
-	    print nl op_prec r;
-	    close_block prec op_prec
-      | Choice (_, l, r) -> 
-	  let op_prec = 27 in
-	  let nl = lvl + if prec < op_prec then 1 else 0 in
-	    open_block prec op_prec;
-	    print nl op_prec l;
-	    output_string out " [] ";
-	    do_indent out nl;
-	    print nl op_prec r;
-	    close_block prec op_prec
-  in
-    print lvl 25 statement
-and pretty_print_expression out_channel exp =
-  let open_paren prec op_prec =
-    if prec < op_prec then output_string out_channel "("
-  and close_paren prec op_prec =
-    if prec < op_prec then output_string out_channel ")"
-  in
-  let rec print prec =
-    function
-	Nil _ -> output_string out_channel "nil"
-      | Null _ -> output_string out_channel "null"
-      | Int (_, i) -> output_string out_channel (string_of_int i)
-      | Float (_, f) -> output_string out_channel (string_of_float f)
-      | Bool (_, b) -> output_string out_channel (string_of_bool b)
-      | String (_, s) -> output_string out_channel ("\"" ^ s ^ "\"")
-      | Id (_, i) -> output_string out_channel i
-      | Tuple (_, a) ->
-	  output_string out_channel "(";
-	  pretty_print_expression_list out_channel a;
-	  output_string out_channel ")";
-      | Unary (_, o, e) ->
-	  output_string out_channel (string_of_unaryop o ^ " ");
-	  print (prec_of_unaryop o) e
-      | Binary(_, o, l, r) ->
-	  let lp = fst (prec_of_binaryop o)
-	  and rp = snd (prec_of_binaryop o)
-	  in
-      	    open_paren prec lp; print lp l;
-	    output_string out_channel (" " ^ (string_of_binaryop o) ^ " ");
-	    print rp r; close_paren prec rp
-      | FuncCall (_, i, a) ->
-	  output_string out_channel (i ^ "(");
-	  pretty_print_expression_list out_channel a;
-	  output_string out_channel ")";
-      | FieldAccess(_, e, f) -> print 15 e; output_string out_channel ("`" ^ f)
-      | Label (_, l) -> output_string out_channel (l ^ "?")
-      | New (_, t, a) ->
-          output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
-	  pretty_print_expression_list out_channel a ;
-	  output_string out_channel ")"
-  in
-    print 121 exp
-and pretty_print_expression_list out_channel l =
-  separated_list (pretty_print_expression out_channel)
-    (function () -> output_string out_channel ", ") l
-and pretty_print_identifier_list out_channel l =
-  separated_list (output_string out_channel)
-    (function () -> output_string out_channel ". ") l
-and do_indent out lvl =
-  output_string out ("\n" ^ (String.make (lvl * 2) ' '))
+    separated_list pretty_print_declaration
+      (function () -> output_string out_channel "\n\n") input ;
+    output_string out_channel "\n";
+    flush out_channel
 
 
 
