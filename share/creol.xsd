@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8">
+
+<!--
+
+creol.xsd
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+      An XML schema for Creol Programs
+
+      Written by Marcel Kyas
+
+      This program is free software; you can redistribute it and/or
+      modify it under the terms of the GNU General Public License as
+      published by the Free Software Foundation; either version 2 of the
+      License, or (at your option) any later version.
+
+      This program is distributed in the hope that it will be useful, but
+      WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with this program; if not, write to the Free Software
+      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+      USA.
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <xsd:element name="creol" type="CreolType" />
+
+  <xsd:complexType name="CreolType">
+    <xsd:sequence>
+      <xsd:element name="class" type="CreolClassType">
+      <xsd:element name="interface" type="CreolInterfaceType">
+    </xsd:sequence>
+    <xsd:attribute name="version" type="xsd:NMTOKEN" fixed="0.0" />
+    <xsd:attribute name="date" type="xsd:date" />
+  </xsd:complexType>
+
+  <xsd:complexType name="CreolClassType">
+    <xsd:sequence>
+      <xsd:element name="" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" />
+  </xsd:complexType>
+
+</xsd:schema>
