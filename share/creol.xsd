@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8">
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 
@@ -34,8 +34,8 @@ creol.xsd
 
   <xsd:complexType name="CreolType">
     <xsd:sequence>
-      <xsd:element name="class" type="CreolClassType">
-      <xsd:element name="interface" type="CreolInterfaceType">
+      <xsd:element name="class" type="CreolClassType" />
+      <xsd:element name="interface" type="CreolInterfaceType" />
     </xsd:sequence>
     <xsd:attribute name="version" type="xsd:NMTOKEN" fixed="0.0" />
     <xsd:attribute name="date" type="xsd:date" />
