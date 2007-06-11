@@ -528,33 +528,35 @@ ifdef({|MODELCHECK|},dnl
 {| op label(_,_) : Oid Nat -> Label [ctor {|format|} (d d ! d d o d)] .
    eq caller(label(O, N)) = O . |})
 
-eq
-  < O : C | Att: S, Pr: (L, AL ::= EL ; SL),
-	    PrQ: W, Lcnt: N >
-  =
-  < O : C | Att: S, Pr: (L,((AL assign evalList(EL, (S {|#|} L))); SL)), 
-	    PrQ: W, Lcnt: N > .
-
 STEP(dnl
-{|< O : C | Att: S, Pr: (L,( (A , NeAL assign D # NeDL) ; SL)), PrQ: W,
-    Lcnt: N >|},
-{|if dom(A,S) then
+{|< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
+	    PrQ: W, Lcnt: N >|},
+{|< O : C | Att: S, Pr: (L,((AL assign evalList(EL, (S {|#|} L))); SL)), 
+	    PrQ: W, Lcnt: N >|},
+{|[label assign]|})
+
+eq
+  < O : C | Att: S, Pr: (L,( (A , NeAL assign D # NeDL) ; SL)), PrQ: W,
+    Lcnt: N >
+  =
+  if dom(A,S) then
     < O : C | Att: insert(A, D, S), Pr: (L, (NeAL assign NeDL) ; SL), PrQ: W,
       Lcnt: N > 
   else
     < O : C | Att: S, Pr: (insert(A, D, L), (NeAL assign NeDL) ; SL), PrQ: W,
       Lcnt: N > 
-  fi|},
-{|[label assign]|})
+  fi
+  [label do-assign] .
 
-STEP(dnl
-{|< O : C | Att: S, Pr: (L,( (A assign D) ; SL)), PrQ: W, Lcnt: N >|},
-{|if dom(A,S) then
+eq
+  < O : C | Att: S, Pr: (L,( (A assign D) ; SL)), PrQ: W, Lcnt: N >
+  =
+  if dom(A,S) then
     < O : C | Att: insert(A, D, S), Pr: (L, SL), PrQ: W, Lcnt: N > 
   else
     < O : C | Att: S, Pr: (insert(A, D, L), SL), PrQ: W, Lcnt: N > 
-  fi|},
-{|[label assign]|})
+  fi
+  [label do-assign] .
 
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >|},
@@ -809,9 +811,12 @@ STEP({|< O : Qu | Size: Sz, Dealloc: LS,
     bindMtd(O, O', Lab, Q, DL, C < emp >)|},
 {|[label receive-call-req]|})
 
-STEP({|boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: P, PrQ: W ++ P', Lcnt: N >|},
-{|[label receive-call-bound]|})
+eq
+  boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: P, PrQ: W ++ P', Lcnt: N >
+  [label receive-call-bound]
+  .
 
 rl
   < O : C | Att: S, Pr: (L, (cont(Lab); SL)),
