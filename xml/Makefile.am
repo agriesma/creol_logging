@@ -50,7 +50,7 @@ libxml_stubs_a_SOURCES	= xml_helpers.c xml_helpers.h xmld_stubs.c \
 			  Xslt.ml
 AM_CPPFLAGS		= $(XML_CPPFLAGS) $(XSLT_CPPFLAGS) -I`ocamlc -where` \
 			  -DCAML_NAME_SPACE
-AM_CFLAGS		= -Wall -Wno-unused -Werror -fPIC
+AM_CFLAGS		= -fpic -Wall -Wno-unused -Werror
 
 XML_DESTDIR		= `pwd`
 OCAMLC_FLAGS		= -I . -I ${srcdir} -g -w y

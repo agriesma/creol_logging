@@ -536,27 +536,19 @@ STEP(dnl
 {|[label assign]|})
 
 eq
-  < O : C | Att: S, Pr: (L,( (A , NeAL assign D # NeDL) ; SL)), PrQ: W,
+  < O : C | Att: S, Pr: (L,( (A , AL assign D # DL) ; SL)), PrQ: W,
     Lcnt: N >
   =
   if dom(A,S) then
-    < O : C | Att: insert(A, D, S), Pr: (L, (NeAL assign NeDL) ; SL), PrQ: W,
+    < O : C | Att: insert(A, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
   else
-    < O : C | Att: S, Pr: (insert(A, D, L), (NeAL assign NeDL) ; SL), PrQ: W,
+    < O : C | Att: S, Pr: (insert(A, D, L), (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
   fi
   [label do-assign] .
 
-eq
-  < O : C | Att: S, Pr: (L,( (A assign D) ; SL)), PrQ: W, Lcnt: N >
-  =
-  if dom(A,S) then
-    < O : C | Att: insert(A, D, S), Pr: (L, SL), PrQ: W, Lcnt: N > 
-  else
-    < O : C | Att: S, Pr: (insert(A, D, L), SL), PrQ: W, Lcnt: N > 
-  fi
-  [label do-assign] .
+*** noAid assign emp reduces to noStm
 
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >|},
@@ -619,7 +611,7 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 *** name of the variable used to call the init routine.
 ***
 *** The initialisation of the attributes is ordered from class to
-*** super-class, *** because we want to pass on the class parameters to
+*** super-class, because we want to pass on the class parameters to
 *** the super-class.  The initialisation, i.e., calling the init method,
 *** is done from the super classes to the sub-classes, making sure that
 *** the state of the object at the beginning of the init call is in a
@@ -647,13 +639,15 @@ eq
 
 *** Non-deterministic choice ***
 *** Choice is comm, so [nondet] considers both SL1 and SL2.
-CSTEP(dnl
-{|< O : C | Att: S, Pr: (L, (SL1 [] SL2); SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: (L, (SL1 ; SL)), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{| ready(SL1, (S # L), MM)|},
-{|[label nondet]|})
+crl
+  < O : C | Att: S, Pr: (L, (SL1 [] SL2); SL), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  =>
+  < O : C | Att: S, Pr: (L, (SL1 ; SL)), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  if ready(SL1, (S # L), MM)
+  [label nondet]
+  .
 
 
 
@@ -667,21 +661,24 @@ crl
   < O : C | Att: S, Pr: (L, (SL1 MERGER SL2); SL), PrQ: W, Lcnt: N >  
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   if ready(SL1,(S {|#|} L), MM)
-  [label merge] .
+  [label merge]
+  .
 
 *** MERGER
 ***
-STEP(dnl
-{|< O : C | Att: S,  Pr:  (L, ((ST ; SL1) MERGER SL2); SL), PrQ: W, Lcnt: N >   
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|if enabled(ST, (S {|#|} L), MM) then
+
+eq
+  < O : C | Att: S,  Pr:  (L, ((ST ; SL1) MERGER SL2); SL), PrQ: W, Lcnt: N >   
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  =
+  if enabled(ST, (S {|#|} L), MM) then
     < O : C | Att: S, Pr: (L, ((ST ; (SL1 MERGER SL2)); SL)), PrQ: W, Lcnt: N >
   else
     < O : C | Att: S, Pr: (L, ((ST ; SL1) ||| SL2); SL), PrQ: W, Lcnt: N >   
   fi
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-  {|[label merge-aux]|})
-
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  [label merge-aux]
+  .
 
 *** local call
 ceq
@@ -919,9 +916,12 @@ eq
   .
 
 *** Transport rule: include new message in queue
-STEP({|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM > (MsgBody from O' to O)|},
-  {|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM + MsgBody >|},
-  {|[label invoc-msg]|})
+eq
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > (MsgBody from O' to O)
+  =
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + MsgBody >
+  [label transport]
+  .
 
 *** Free a label.  Make sure that the use of labels is linear.
 STEP({|< O : C | Att: S, Pr: ((A |-> Lab, L), free(A) ; SL), PrQ: W, Lcnt: N >

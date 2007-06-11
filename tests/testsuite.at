@@ -133,12 +133,12 @@ red init .
 
 *** Shows the bug.
 ***
-*** This test needs about 30 minutes and more than 1.7 GiB Memory.
+*** This test needs about 70 seconds and about 410 MiB memory.
 *** Therefore, it is disabled at the user installation.
 ***
 *** The model checker will find the bug in a second.
 ***
-*** search [[1, 100]] in PROGRAM : init main("Generator", emp) =>+
+*** search [[1, 62]] in PROGRAM : init main("Generator", emp) =>+
 ***  < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
 ***                      L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
 ***  conf:Configuration .
