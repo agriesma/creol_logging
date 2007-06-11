@@ -139,6 +139,7 @@ rule token = parse
     | "ensures" { ENSURES }
     | "exception" { EXCEPTION }
     | "exists" { EXISTS }
+    | "extern" { EXTERN }
     | "false" { BOOL(false) }
     | "forall" { FORALL }
     | "for" { FOR }

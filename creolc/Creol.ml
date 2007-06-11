@@ -335,6 +335,7 @@ module Statement =
 	| Sequence of 'a * ('a, 'b) t list
 	| Merge of 'a * ('a, 'b) t * ('a, 'b) t
 	| Choice of 'a * ('a, 'b) t * ('a, 'b)t
+        | Extern of 'a * string
     and ('a, 'b) catcher =
 	{ catch: string option;
 	  catch_parameters: string list;

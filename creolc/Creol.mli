@@ -232,6 +232,9 @@ module Statement: sig
 	  (** Merge of statements *)
       | Choice of 'a * ('a, 'b) t * ('a, 'b) t
 	  (** Choice between statements *)
+      | Extern of 'a * string
+	  (** The method body or function bopy is defined externally.
+	      This statement is not allowed to be composed. **)
   and  ('a, 'b) catcher =
       { catch: string option;
 	catch_parameters: string list;

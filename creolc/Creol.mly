@@ -4,7 +4,7 @@
 
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
-%token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION
+%token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION EXTERN
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
 %token IF THEN ELSE SKIP RELEASE AWAIT NEW
 %token FOR TO BY DO OF CASE AS
@@ -190,6 +190,10 @@ method_def:
 	s = statement (* ioption(SEMI) *)
     { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
 	meth_outpars = d.meth_outpars; meth_vars = a; meth_body = Some s} }
+  |   d = method_decl; EQEQ EXTERN s = STRING
+    { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
+	meth_outpars = d.meth_outpars; meth_vars = [];
+        meth_body = Some (Extern (Note.make $startpos, s)) } }
 
 (* Interface Declaration *)
 
