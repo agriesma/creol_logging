@@ -28,7 +28,7 @@
 
 (defvar creol-mode-hook nil)
 
-(defconst creol-keywords
+(defvar creol-keywords
   (eval-when-compile
     (regexp-opt
      '("assert" "await" "begin" "by" "case" "class" "contracts"
@@ -39,7 +39,7 @@
        "with") 'words))
   "List of creol keywords.")
 
-(defconst creol-constants
+(defvar creol-constants
   (eval-when-compile
     (regexp-opt
      '("true" "false" "null" "nil" "caller" "this" "history")
@@ -47,15 +47,16 @@
   "List of creol special words")
 
 (defvar creol-font-lock-keywords
-    '(("\\(//.*\\)\n" . font-lock-comment-face)
-      (list creol-keywords 0 font-lock-keyword-face)
-      (list creol-constants 0 font-lock-constant-face)
-      ("\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" . font-lock-builtin-face)
-      ("op \\(\\sw+\\)" (1 font-lock-function-name-face))
-      ("\\.\\(\\sw+\\)" (1 font-lock-function-name-face))
-      ("\\(\\b[[:lower:]][[:alnum:]]*\\)" . font-lock-variable-name-face)
-      ("\\(\\b[[:upper:]][[:alpha:]]*\\)" . font-lock-type-face)
-      ("\\<\\(# \w+\\)\\>" 1 font-lock-warning-face t))
+    (list
+     (cons "\\(//.*\\)\n" 'font-lock-comment-face)
+     (cons creol-keywords 'font-lock-keyword-face)
+     (cons creol-constants 'font-lock-constant-face)
+     (cons "\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" 'font-lock-builtin-face)
+     (list "op \\(\\sw+\\)" 1 'font-lock-function-name-face)
+     (list "\\.\\(\\sw+\\)" 1 'font-lock-function-name-face)
+     (cons "\\(\\b[[:lower:]][[:alnum:]]*\\)" 'font-lock-variable-name-face)
+     (cons "\\(\\b[[:upper:]][[:alpha:]]*\\)" 'font-lock-type-face)
+     (list "\\<\\(# \w+\\)\\>" 1 'font-lock-warning-face t))
     "Creol keywords")
 
 (define-derived-mode creol-mode fundamental-mode "Creol"
