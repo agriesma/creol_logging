@@ -28,7 +28,7 @@
 
 (defvar creol-mode-hook nil)
 
-(defvar creol-keywords
+(defconst creol-keywords
   (eval-when-compile
     (regexp-opt
      '("assert" "await" "begin" "by" "case" "class" "contracts"
@@ -39,19 +39,26 @@
        "with") 'words))
   "List of creol keywords.")
 
-(defvar creol-constants
+(defconst creol-constants
   (eval-when-compile
     (regexp-opt
      '("true" "false" "null" "nil" "caller" "this" "history")
      'words))
   "List of creol special words")
 
+(defconst creol-builtins
+  (eval-when-compile
+    (regexp-opt
+     '("fst" "snd" "head" "tail")
+     'words))
+  "List of creol builtin functions")
+
 (defvar creol-font-lock-keywords
     (list
      (cons "\\(//.*\\)\n" 'font-lock-comment-face)
      (cons creol-keywords 'font-lock-keyword-face)
      (cons creol-constants 'font-lock-constant-face)
-     (cons "\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" 'font-lock-builtin-face)
+     (cons creol-builtins 'font-lock-builtin-face)
      (list "op \\(\\sw+\\)" 1 'font-lock-function-name-face)
      (list "\\.\\(\\sw+\\)" 1 'font-lock-function-name-face)
      (cons "\\(\\b[[:lower:]][[:alnum:]]*\\)" 'font-lock-variable-name-face)
