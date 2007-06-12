@@ -17,6 +17,8 @@
 ;; Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 ;; MA 02111-1307 USA
 
+(eval-when-compile
+  (require 'regexp-opt))
 
 (defvar creol-mode-map
   (let ((map (make-sparse-keymap)))
@@ -45,16 +47,16 @@
   "List of creol special words")
 
 (defvar creol-font-lock-keywords
-  '(("\\(//.*\\)\n" . font-lock-comment-face)
-    ((symbol-value creol-keywords) . font-lock-keyword-face)
-    ((symbol-value creol-constants) . font-lock-constant-face)
-    ("\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" . font-lock-builtin-face)
-    ("op \\(\\sw+\\)" (1 font-lock-function-name-face))
-    ("\\.\\(\\sw+\\)" (1 font-lock-function-name-face))
-    ("\\(\\b[[:lower:]][[:alnum:]]*\\)" . font-lock-variable-name-face)
-    ("\\(\\b[[:upper:]][[:alpha:]]*\\)" . font-lock-type-face)
-    ("\\<\\(# \w+\\)\\>" 1 font-lock-warning-face t))
-  "Creol keywords")
+    '(("\\(//.*\\)\n" . font-lock-comment-face)
+      (list creol-keywords 0 font-lock-keyword-face)
+      (list creol-constants 0 font-lock-constant-face)
+      ("\\<\\(fst\\|scd\\|head\\|tail\\|length\\)\\>" . font-lock-builtin-face)
+      ("op \\(\\sw+\\)" (1 font-lock-function-name-face))
+      ("\\.\\(\\sw+\\)" (1 font-lock-function-name-face))
+      ("\\(\\b[[:lower:]][[:alnum:]]*\\)" . font-lock-variable-name-face)
+      ("\\(\\b[[:upper:]][[:alpha:]]*\\)" . font-lock-type-face)
+      ("\\<\\(# \w+\\)\\>" 1 font-lock-warning-face t))
+    "Creol keywords")
 
 (define-derived-mode creol-mode fundamental-mode "Creol"
   "Major mode for editing Creol files"
