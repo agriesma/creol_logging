@@ -19,7 +19,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_INIT([Creol Tools], 0.0c, kyas@ifi.uio.no, [creoltools])
+AC_INIT([Creol Tools], 0.0d, kyas@ifi.uio.no, [creoltools])
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.ml])
