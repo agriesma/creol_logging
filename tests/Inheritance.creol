@@ -1,4 +1,12 @@
-
+/*
+ * Inheritance.creol
+ *
+ * Test the initialisation order.
+ *
+ * Execute the test with creating one instance of B(1), i.e.:
+ *
+ * main("B", int(1))
+ */
 class A(a: Integer)
 begin
   op init == skip

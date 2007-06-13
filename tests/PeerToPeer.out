@@ -20,7 +20,9 @@ result Class:
   < "reqFile" : Mtdname | Param: "sId", "fId", Latt: "fId" |-> null, "file" |->
     null, "lth" |-> null, "pack" |-> null, "sId" |-> null, Code: "sync.0" !
     "sId" . "getLength"("fId" # "lth") ; await ("sync.0" ??) ; "sync.0" ?(
-    "pack") ; ".anon" ! "db" . "storeFile"("fId" # "file") ; free(".anon") ;
-    return(emp) >,
+    "pack") ; while ">"("lth" # int(0)) do "sync.1" ! "sId" . "getPack"("fId" #
+    "lth") ; await ("sync.1" ??) ; "sync.1" ?("pack") ; "file" ::= "append"(
+    "pack" # "file") ; "lth" ::= "-"("lth" # int(1)) od ; ".anon" ! "db" .
+    "storeFile"("fId" # "file") ; free(".anon") ; return(emp) >,
   Ocnt: 0 >
 Bye.

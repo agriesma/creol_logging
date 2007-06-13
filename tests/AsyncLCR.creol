@@ -1,4 +1,8 @@
-
+/*
+ * AsyncLCR.creol
+ *
+ * Simple solution to the asynchronous leader-election protocol.
+ */
 class Process(i: Init, u: Nat)
 begin
   // unknown = 0 || null

@@ -43,7 +43,7 @@
        "ctor" "datatype" "do" "else" "end" "ensures" "exception"
        "exists" "extern" "forall" "for" "fun" "if" "implements"
        "inherits" "interface" "inv" "in" "new" "not" "of" "op"
-       "out" "skip" "some" "then" "to" "try" "var" "when"
+       "out" "skip" "some" "then" "to" "try" "var" "when" "while"
        "with") 'words))
   "List of creol keywords.")
 
@@ -68,7 +68,7 @@
      (cons creol-constants 'font-lock-constant-face)
      (cons creol-builtins 'font-lock-builtin-face)
      (list "op \\(\\sw+\\)" 1 'font-lock-function-name-face)
-     (list "\\.\\(\\sw+\\)" 1 'font-lock-function-name-face)
+     (list "\\(\\sw+\\)[[:space:]]*(" 1 'font-lock-function-name-face)
      (cons "\\(\\b[[:lower:]][[:alnum:]]*\\)" 'font-lock-variable-name-face)
      (cons "\\(\\b[[:upper:]][[:alpha:]]*\\)" 'font-lock-type-face)
      (list "\\<\\(# \w+\\)\\>" 1 'font-lock-warning-face t))

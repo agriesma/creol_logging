@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 interface ToClient
 begin
   with Any
@@ -56,11 +59,11 @@ begin
       var pack: List[Data];
       var lth: Nat;
       await sId.getLength(fId, lth; pack);
-      /* while (lth > 0) do
+      while (lth > 0) do
 	await sId.getPack(fId, lth; pack);
 	file := append(pack, file);
 	lth := lth - 1
-      end; */
+      end;
       !db.storeFile(fId, file)
 end
 

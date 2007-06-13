@@ -1,3 +1,10 @@
+/*
+ * Deadlock.creol
+ *
+ * Instances of this class may display a deadlock.
+ *
+ * main("Deadlock", emp)
+ */
 class Deadlock
 begin
   op init == skip

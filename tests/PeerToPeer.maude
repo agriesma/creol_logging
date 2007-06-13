@@ -8,7 +8,7 @@ eq init =
   < "getLength" : Mtdname | Param: "fId", Latt: "fId" |-> null , "lth" |-> null, Code: "sync.0" ! "db" . "length" ( "fId" ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( "lth" ) )  ; return ( "lth" ) > *
   < "getPack" : Mtdname | Param: "fId" , "pNbr", Latt: "fId" |-> null , "pNbr" |-> null , "pack" |-> null , "f" |-> null, Code: "sync.0" ! "db" . "getFile" ( "fId" ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( "f" ) )  ; "pack" ::= "f" ( "pNbr" ) ; return ( "pack" ) > *
   < "availFiles" : Mtdname | Param: "sList", Latt: "sList" |-> null , "files" |-> null, Code: if "=" ( "sList" # list(emp) ) th "files" ::= list(emp) el "l1" ! "hd" ( "sList" ) . "enquire" ( emp ) ; "l2" ! "self" . "availFiles" ( "tail" ( "sList" ) ) ; ( await "&&" ( "l1" # "l2" ) ) ; ( "l1" ? ( "fList" ) )  ; ( "l2" ? ( "files" ) )  fi ; return ( "files" ) > *
-  < "reqFile" : Mtdname | Param: "sId" , "fId", Latt: "sId" |-> null , "fId" |-> null , "file" |-> null , "pack" |-> null , "lth" |-> null, Code: "sync.0" ! "sId" . "getLength" ( "fId" # "lth" ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( "pack" ) )  ; ".anon" ! "db" . "storeFile" ( "fId" # "file" ) ; free( ".anon" ) ; return ( emp ) >, Ocnt: 0 >
+  < "reqFile" : Mtdname | Param: "sId" , "fId", Latt: "sId" |-> null , "fId" |-> null , "file" |-> null , "pack" |-> null , "lth" |-> null, Code: "sync.0" ! "sId" . "getLength" ( "fId" # "lth" ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( "pack" ) )  ; while ">" ( "lth" # int(0) ) do "sync.1" ! "sId" . "getPack" ( "fId" # "lth" ) ; ( await ( "sync.1" ?? ) ) ; ( "sync.1" ? ( "pack" ) )  ; "file" ::= "append" ( "pack" # "file" ) ; "lth" ::= "-" ( "lth" # int(1) ) od  ; ".anon" ! "db" . "storeFile" ( "fId" # "file" ) ; free( ".anon" ) ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

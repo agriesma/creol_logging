@@ -1,4 +1,9 @@
-
+/*
+ * Diamond.creol
+ *
+ * This test case is used to analyze how Diamond-shaped inheritance is going
+ * to be executed in Creol.
+ */
 class A(a: Integer)
 begin
   op init == skip

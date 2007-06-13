@@ -1,6 +1,26 @@
 
+creoltools 0.0d (2007-06-13): alpha release.
+
+In the compiler:
+Renamed await wait to release and corrected the semantics of this statement.
 `await wait' has been replaced by `release'.  `release' will always suspend
 control, even in merge statements.
+
+WARNING: The semantic may still change in merge statements.
+The expression language has been extended to include tuples.
+Perform the lowering of Creol to the interpreted Core Creol in the
+compiler.  The equations doing this have been removed from the interpreter.
+
+In the interpreter:
+Accepts Creol but only the Core language.
+Smaller changes and corrections to make "search" do something useful and to
+optimize method binding.
+
+A script for collecting some information needed for error reporting has
+been added.
+
+The emacs editing mode for creol programs has been improved a little
+bit.
 
 
 creoltools 0.0c (2007-05-07): alpha release.

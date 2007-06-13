@@ -169,6 +169,7 @@ rule token = parse
     | "try" { TRY }
     | "var" { VAR }
     | "when" { WHEN }
+    | "while" { WHILE }
     | "with" { WITH }
     | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
     | ['0'-'9']+ { INT(int_of_string (Lexing.lexeme lexbuf)) }

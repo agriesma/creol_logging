@@ -4,7 +4,7 @@
 
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
-%token VAR WITH OP IN OUT CONSTRUCTOR FUNCTION EXTERN
+%token WHILE VAR WITH OP IN OUT CONSTRUCTOR FUNCTION EXTERN
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
 %token IF THEN ELSE SKIP RELEASE AWAIT NEW
 %token FOR TO BY DO OF CASE AS
@@ -314,6 +314,9 @@ basic_statement:
 	inv = ioption(preceded(INV, assertion))
 	DO s = statement END
 	{ For (Note.make $startpos, i, f, l, b, inv, s) }
+    | WHILE c = expression inv = ioption(preceded(INV, assertion)) DO
+	s = statement END
+	{ While (Note.make $startpos, c, inv, s) }
     | ASSERT a = assertion
 	{ Assert (Note.make $startpos, a) }
     | error ELSE | error OP | error WITH | error END | error EOF
