@@ -20,14 +20,22 @@
 (eval-when-compile
   (require 'regexp-opt))
 
-(defvar creol-mode-map
-  (let ((map (make-sparse-keymap)))
-    nil
-    map)
-  "Keymap for Creol major mode")
+(require 'custom)
+
+(defgroup creol-mode nil
+  "Support for the Creol language."
+  :group 'languages)
+
+(defcustom creol-command
+  "creolc.opt"
+  "Command used to invoke Creol."
+  :type '(string)
+  :group 'creol-mode)
 
 (defvar creol-mode-hook nil)
 
+;; Font-lock for Creol.
+;;
 (defconst creol-keywords
   (eval-when-compile
     (regexp-opt
@@ -66,6 +74,32 @@
      (list "\\<\\(# \w+\\)\\>" 1 'font-lock-warning-face t))
     "Creol keywords")
 
+;; Compiling the current buffer.
+;;
+(require 'compile)
+
+;; Put the regular expression for finding error messages here.
+;;
+(defconst creol-error-regexp
+  "^[^\0-@]+ \"\\(^\"\n]+\\)\", [^\0-@]+ \\([0-9]+\\)[-,:]"
+  "Regular expression matching the error messages produced by creolc.")
+
+(if (boundp 'compilation-error-regexp-alist)
+    (or (assoc creol-error-regexp compilation-error-regexp-alist)
+        (setq compilation-error-regexp-alist
+              (cons (list creol-error-regexp 1 2)
+		    compilation-error-regexp-alist))))
+
+;; Creol mode keymap.
+;;
+(defvar creol-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\C-c\C-c" 'compile)
+    map)
+  "Keymap for Creol major mode")
+
+;; Putting it all together.
+;;
 (define-derived-mode creol-mode fundamental-mode "Creol"
   "Major mode for editing Creol files"
   ;; :syntax-table creol-mode-syntax-table
