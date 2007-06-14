@@ -28,7 +28,7 @@ AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
 dnl Record the date of release
-RELEASE_DATE='2007-05-07'
+RELEASE_DATE='2007-06-13'
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.
