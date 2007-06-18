@@ -78,6 +78,11 @@ AT_CHECK([creolc -target creol -o $1-pp2.creol $1-pp1.creol])
 AT_CHECK([diff $1-pp1.creol $1-pp2.creol])
 ])
 
+dnl test the xml export.
+m4_define([TEST_CREOLC_XML],[dnl
+AT_CHECK([creolc -target xml -o $1-pass1.xml ${abs_srcdir}/$1.creol])
+])
+
 AT_INIT([creolc])
 AT_TESTED([creolc creolc.opt])
 
@@ -102,12 +107,10 @@ TEST_MAUDE([ModelChecker], ${abs_srcdir}/ModelChecker.maude)
 AT_CLEANUP
 
 AT_SETUP([PrettyPrinter])
-dnl Synthetic tests.
 TEST_CREOLC_PP([Inheritance])
 TEST_CREOLC_PP([Diamond])
 TEST_CREOLC_PP([MutRec])
 TEST_CREOLC_PP([MutRec2])
-dnl Examples.
 TEST_CREOLC_PP([Alarmclock])
 TEST_CREOLC_PP([AsyncLCR])
 TEST_CREOLC_PP([BoundedBuffer])
@@ -115,10 +118,26 @@ TEST_CREOLC_PP([Fibonacci])
 TEST_CREOLC_PP([Philosophers])
 TEST_CREOLC_PP([SantaClaus])
 TEST_CREOLC_PP([SingleCellBuffer])
-dnl Model checking
 TEST_CREOLC_PP([MC3Phil])
 TEST_CREOLC_PP([MC4Phil])
 TEST_CREOLC_PP([MC5Phil])
+AT_CLEANUP
+
+AT_SETUP([XML-output])
+TEST_CREOLC_XML([Inheritance])
+TEST_CREOLC_XML([Diamond])
+TEST_CREOLC_XML([MutRec])
+TEST_CREOLC_XML([MutRec2])
+TEST_CREOLC_XML([Alarmclock])
+TEST_CREOLC_XML([AsyncLCR])
+TEST_CREOLC_XML([BoundedBuffer])
+TEST_CREOLC_XML([Fibonacci])
+TEST_CREOLC_XML([Philosophers])
+TEST_CREOLC_XML([SantaClaus])
+TEST_CREOLC_XML([SingleCellBuffer])
+TEST_CREOLC_XML([MC3Phil])
+TEST_CREOLC_XML([MC4Phil])
+TEST_CREOLC_XML([MC5Phil])
 AT_CLEANUP
 
 TEST_CREOLC([Inheritance], [dnl

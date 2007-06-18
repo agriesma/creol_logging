@@ -1,7 +1,7 @@
 *** Shows the bug.
 ***
 *** This test needs about
-***  70 sec, 410 MiB memory on my home
+***  60 sec, 410 MiB memory on my home
 *** 135 sec, 220 MiB memory on my laptop.
 *** Therefore, it is disabled at the user installation.
 ***
@@ -11,7 +11,3 @@ search [1] in PROGRAM : init main("Generator", emp) =>+
   < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
                       L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
   conf:Configuration .
-
-show path 1 .
-
-show path labels 1 .
