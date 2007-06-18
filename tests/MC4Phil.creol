@@ -1,0 +1,70 @@
+interface Phil
+begin
+  with Phil
+  op borrowStick
+  op returnStick
+end
+
+interface Butler
+begin
+  with Phil op getNeighbor(out neighbor: Phil)
+end
+
+class Philosopher(butler: Butler) implements Phil 
+begin 
+  var hungry: Bool
+  var chopstick: Bool
+  var neighbor: Phil
+ 
+  op init == chopstick := true; hungry := false;
+    butler.getNeighbor(; neighbor)
+ 
+  op run == !think() ||| !eat()
+
+  op digest == hungry := true; !digest()
+
+  op eat == await hungry; await neighbor.borrowStick(;); await chopstick;
+    hungry := false; !neighbor.returnStick(); !eat()
+
+  op think == await ~ hungry; release; !think()
+
+  with Phil 
+    op borrowStick == await chopstick; chopstick := false
+    op returnStick requires ~ chopstick == chopstick := true
+ 
+end
+
+class Butler implements Butler
+begin
+  var p1: Phil
+  var p2: Phil
+  var p3: Phil
+  var p4: Phil
+
+  op init ==
+    skip
+
+  op run ==
+    p1 := new Philosopher(this);
+    p2 := new Philosopher(this);
+    p3 := new Philosopher(this);
+    p4 := new Philosopher(this)
+
+  with Phil
+    op getNeighbor(out neighbor: Phil) ==
+      if caller = p1 then
+        neighbor := p2
+      else
+        if caller = p2 then
+          neighbor := p3
+        else
+          if caller = p3 then
+            neighbor := p4
+          else
+            neighbor := p1
+          end
+        end
+      end
+
+end
+

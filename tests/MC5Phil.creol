@@ -15,27 +15,21 @@ begin
   var hungry: Bool
   var chopstick: Bool
   var neighbor: Phil
-  var hist: String
  
-  op init == hist := ""; chopstick := true; hungry := false;
+  op init == chopstick := true; hungry := false;
     butler.getNeighbor(; neighbor)
  
-  op run == !think() ||| !eat() ||| !digest()
+  op run == !think() ||| !eat()
 
-  op digest == release ; hungry := true; hist := hist |- "d";
-    release; !digest()
+  op eat == await hungry; await neighbor.borrowStick(;); await chopstick;
+    hungry := false; !neighbor.returnStick(); !eat()
 
-  op eat == await hungry; l!neighbor.borrowStick(); await l?; await chopstick;
-    hist := hist |- "e"; hungry := false; !neighbor.returnStick();
-    release; !eat()
-
-  op think == await ~ hungry; hist := hist |- "t";
-    release; !think()
+  op think == await ~ hungry; release; hungry := true; !think()
 
   with Phil 
     op borrowStick == await chopstick; chopstick := false
-    op returnStick == chopstick := true
- 
+    op returnStick requires ~ chopstick == chopstick := true
+
 end
 
 class Butler implements Butler
@@ -58,10 +52,23 @@ begin
 
   with Phil
     op getNeighbor(out neighbor: Phil) ==
-      if caller = p1 then neighbor := p2 else
-      if caller = p2 then neighbor := p3 else
-      if caller = p3 then neighbor := p4 else
-      if caller = p4 then neighbor := p5 else neighbor := p1 end end end end
+      if caller = p1 then
+        neighbor := p2
+      else
+        if caller = p2 then
+          neighbor := p3
+        else
+          if caller = p3 then
+            neighbor := p4
+          else
+            if caller = p4 then
+              neighbor := p5
+            else
+              neighbor := p1
+            end
+          end
+        end
+      end
 
 end
 

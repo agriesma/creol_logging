@@ -1,21 +1,24 @@
-;;; creol-mode.el -- Emacs mode for the programming language Creol
-
+;; creol-mode.el -- Emacs mode for the programming language Creol
+;;
 ;; Copyright (C) 2007 Marcel Kyas <kyas@ifi.uio.no>
-
+;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 2 of
 ;; the License, or (at your option) any later version.
-
+;;
 ;; This program is distributed in the hope that it will be
 ;; useful, but WITHOUT ANY WARRANTY; without even the implied
 ;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;; PURPOSE.  See the GNU General Public License for more details.
-
+;;
 ;; You should have received a copy of the GNU General Public
 ;; License along with this program; if not, write to the Free
 ;; Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 ;; MA 02111-1307 USA
+
+;; To do:
+;; - Make multiline comments work.
 
 (eval-when-compile
   (require 'regexp-opt))
@@ -43,8 +46,8 @@
        "ctor" "datatype" "do" "else" "end" "ensures" "exception"
        "exists" "extern" "forall" "for" "fun" "if" "implements"
        "inherits" "interface" "inv" "in" "new" "not" "of" "op"
-       "out" "skip" "some" "then" "to" "try" "var" "when" "while"
-       "with") 'words))
+       "out" "requires" "skip" "some" "then" "to" "try" "var" "when"
+       "while" "with") 'words))
   "List of creol keywords.")
 
 (defconst creol-constants
@@ -90,6 +93,8 @@
               (cons (list creol-error-regexp 1 2)
 		    compilation-error-regexp-alist))))
 
+;; XXX: A more direct compilation function may be nice.
+
 ;; Creol mode keymap.
 ;;
 (defvar creol-mode-map
@@ -104,8 +109,8 @@
   "Major mode for editing Creol files"
   ;; :syntax-table creol-mode-syntax-table
   (set (make-local-variable 'comment-start) "/*")
-  (set (make-local-variable 'comment-start-skip) "//+\\s-*")
   (set (make-local-variable 'comment-end) "*/")
+  (set (make-local-variable 'comment-start-skip) "//+\\s-*")
   (use-local-map creol-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(creol-font-lock-keywords))
   ;; (set (make-local-variable 'indent-line-function) 'creol-indent-line)

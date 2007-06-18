@@ -13,12 +13,12 @@ result Configuration:
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
-    0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
-    ".anon" ! "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "status" ::= int(0) ;
+    "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ; ".anon" !
+    "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
     "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
-    # "u") th "status" assign int(1) el skip fi fi ; return(emp) > *
+    # "u") th "status" ::= int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
@@ -47,12 +47,12 @@ result Configuration:
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: ("status" assign int(
-    0)) ; "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ;
-    ".anon" ! "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "status" ::= int(0) ;
+    "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ; ".anon" !
+    "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
     "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
-    # "u") th "status" assign int(1) el skip fi fi ; return(emp) > *
+    # "u") th "status" ::= int(1) el skip fi fi ; return(emp) > *
   < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >
 

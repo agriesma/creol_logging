@@ -37,8 +37,8 @@ conf:Configuration -->
 A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
 L:Subst --> noSubst
 SL:StmList --> noStm
-W:MProc --> (("_init" |-> label(ob("Tailcall0"),1), "_run" |-> label(ob(
-    "Tailcall0"),2)), label(ob("Tailcall0"),2) ?(noAid)) ++ ("_label" |-> tag(
+W:MProc --> ((".init" |-> label(ob("Tailcall0"),1), ".run" |-> label(ob(
+    "Tailcall0"),2)), label(ob("Tailcall0"),2) ?(noAid)) ++ (".label" |-> tag(
     label(ob("Tailcall0"),2)), "caller" |-> ob("Tailcall0")), if "<"(int(0) #
     "x") th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi
 N:Nat --> 3

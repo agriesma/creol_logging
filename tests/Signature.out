@@ -228,40 +228,41 @@ reduce in CREOL-STM-LIST : downTerm(upTerm(skip), noStm) .
 result Stm: skip
 ==========================================
 reduce in CREOL-STM-LIST : "var" ::= int(4)[]"var" ::= new "C"(null) .
-result Stm: "var" assign int(4)[]"var" ::= new "C"(null)
+result Stm: "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new "C"(null)) .
-result GroundTerm: '_`[`]_['_assign_['"var".String,'int`(_`)['s_^4['0.Zero]]],
+result GroundTerm: '_`[`]_['_::=_['"var".String,'int`(_`)['s_^4['0.Zero]]],
     '_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new "C"(
     null)), noStm) .
-result Stm: "var" assign int(4)[]"var" ::= new "C"(null)
+result Stm: "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : skip ||| "var" ::= int(4)[]"var" ::= new "C"(null) .
-result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
+result Stm: skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : upTerm(skip ||| "var" ::= int(4)[]"var" ::= new "C"(
     null)) .
-result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)[
+result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)[
     's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm(skip ||| "var" ::= int(4)[]"var" ::=
     new "C"(null)), noStm) .
-result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
+result Stm: skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : "var" ::= int(4)[]"var" ::= new "C"(null) ||| skip
-    ||| noStm .
-result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
+    ||| skip .
+result Stm: skip ||| skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new "C"(null) |||
-    skip ||| noStm) .
-result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)[
-    's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]
+    skip ||| skip) .
+result GroundTerm: '_|||_['skip.Stm,'skip.Stm,'_`[`]_['_::=_['"var".String,
+    'int`(_`)['s_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,
+    'null.Data]]]
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new "C"(
-    null) ||| skip ||| noStm), noStm) .
-result Stm: skip ||| "var" assign int(4)[]"var" ::= new "C"(null)
+    null) ||| skip ||| skip), noStm) .
+result Stm: skip ||| skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : idle .
 result Process: idle
@@ -275,20 +276,20 @@ result Process: idle
 reduce in CREOL-STM-LIST : insert("var2", int(4), insert("var1", str("test"),
     noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)) .
 result Process: ("var1" |-> str("test"), "var2" |-> int(4)), (skip ||| "var"
-    assign int(4)[]"var" ::= new "C"(null))
+    ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in CREOL-STM-LIST : upTerm(insert("var2", int(4), insert("var1", str(
     "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null))) .
 result GroundTerm: '_`,_['_`,_['_|->_['"var1".String,'str`(_`)[
     '"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4['0.Zero]]]],'_|||_[
-    'skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)['s_^4['0.Zero]]],
+    'skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)['s_^4['0.Zero]]],
     '_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]]
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm(insert("var2", int(4), insert(
     "var1", str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new
     "C"(null))), noProc) .
 result Process: ("var1" |-> str("test"), "var2" |-> int(4)), (skip ||| "var"
-    assign int(4)[]"var" ::= new "C"(null))
+    ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in CREOL-STM-LIST : noProc .
 result MProc: noProc
@@ -311,21 +312,21 @@ result Process: idle
 reduce in CREOL-STM-LIST : idle ++ insert("var2", int(4), insert("var1", str(
     "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)) .
 result NeMProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
-    "var" assign int(4)[]"var" ::= new "C"(null))
+    "var" ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in CREOL-STM-LIST : upTerm(idle ++ insert("var2", int(4), insert("var1",
     str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(
     null))) .
 result GroundTerm: '_++_['idle.Process,'_`,_['_`,_['_|->_['"var1".String,
     'str`(_`)['"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4[
-    '0.Zero]]]],'_|||_['skip.Stm,'_`[`]_['_assign_['"var".String,'int`(_`)[
-    's_^4['0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]]]
+    '0.Zero]]]],'_|||_['skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)['s_^4[
+    '0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]]]
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm(idle ++ insert("var2", int(4),
     insert("var1", str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var"
     ::= new "C"(null))), noProc) .
 result NeMProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
-    "var" assign int(4)[]"var" ::= new "C"(null))
+    "var" ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in CREOL-CLASS : noInh .
 result InhList: noInh

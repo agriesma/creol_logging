@@ -1,0 +1,14 @@
+
+interface Test
+begin
+  with Test op m
+end
+
+class Test
+implements Test
+begin
+  op init == var a: A; a := new A; a.m(;)
+  op run == skip
+  with Test
+    op m == caller.m(;)
+end

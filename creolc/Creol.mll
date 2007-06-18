@@ -73,7 +73,7 @@ rule token = parse
     | '+' { PLUS }
     | ',' { COMMA }
     | "->" { ARROW }
-    | "-|" { LAPPEND }
+    | "-|" { PREPEND }
     | "--" { MINUSMINUS }
     | '-' { MINUS }
     | ".." { DOTDOT }
@@ -117,7 +117,7 @@ rule token = parse
     | '{' { LBRACE }
     | "|||" { MERGE }
     | "|-|" { CONCAT }
-    | "|-" { RAPPEND }
+    | "|-" { APPEND }
     | "|=" { MODELS }
     | "||" { BARBAR }
     | "|" { BAR }

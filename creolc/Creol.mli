@@ -156,8 +156,8 @@ sig
       | Xor
       | Implies
       | Iff
-      | LAppend
-      | RAppend
+      | Prepend
+      | Append
       | Concat
       | Project
       | In

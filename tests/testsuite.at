@@ -45,6 +45,33 @@ dnl TEST_MAUDE([meta-$1], metatest.maude) dnl Don't exec this, it takes ages.
 AT_CLEANUP
 ])
 
+m4_define([TEST_CREOLMC], [dnl
+AT_SETUP([$1])
+AT_CHECK([creolc -target maudemc ${abs_srcdir}/$1.creol -o $1.maude])
+AT_CHECK([diff -adNu ${abs_srcdir}/$1.maude $1.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+load $1 .
+$2
+quit .
+])
+TEST_MAUDE([$1], test.maude)
+AT_DATA([metatest.maude],
+[
+set show timing off .
+set show advise off .
+in interpreter .
+in $1 .
+in metaexec .
+$3
+quit .
+])
+dnl TEST_MAUDE([meta-$1], metatest.maude) dnl Don't exec this, it takes ages.
+AT_CLEANUP
+])
+
 m4_define([TEST_CREOLC_PP],[dnl
 AT_CHECK([creolc -target creol -o $1-pp1.creol ${abs_srcdir}/$1.creol])
 AT_CHECK([creolc -target creol -o $1-pp2.creol $1-pp1.creol])
@@ -75,15 +102,23 @@ TEST_MAUDE([ModelChecker], ${abs_srcdir}/ModelChecker.maude)
 AT_CLEANUP
 
 AT_SETUP([PrettyPrinter])
+dnl Synthetic tests.
+TEST_CREOLC_PP([Inheritance])
+TEST_CREOLC_PP([Diamond])
+TEST_CREOLC_PP([MutRec])
+TEST_CREOLC_PP([MutRec2])
+dnl Examples.
 TEST_CREOLC_PP([Alarmclock])
 TEST_CREOLC_PP([AsyncLCR])
 TEST_CREOLC_PP([BoundedBuffer])
-TEST_CREOLC_PP([Diamond])
 TEST_CREOLC_PP([Fibonacci])
-TEST_CREOLC_PP([Inheritance])
 TEST_CREOLC_PP([Philosophers])
 TEST_CREOLC_PP([SantaClaus])
 TEST_CREOLC_PP([SingleCellBuffer])
+dnl Model checking
+TEST_CREOLC_PP([MC3Phil])
+TEST_CREOLC_PP([MC4Phil])
+TEST_CREOLC_PP([MC5Phil])
 AT_CLEANUP
 
 TEST_CREOLC([Inheritance], [dnl
@@ -104,6 +139,18 @@ TEST_CREOLC([Deadlock], [dnl
 red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
+])
+
+TEST_CREOLC([MutRec], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
+])
+
+TEST_CREOLC([MutRec2], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
 ])
 
 dnl This set of tests is testing our existing programs.
@@ -180,3 +227,10 @@ red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Christmas", emp)), 0, 1) .
 ])
+
+TEST_CREOLMC([MC3Phil], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
+])
+

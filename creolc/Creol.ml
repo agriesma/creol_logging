@@ -201,8 +201,8 @@ module Expression =
 	| Xor
 	| Implies
 	| Iff
-	| LAppend
-	| RAppend
+	| Prepend
+	| Append
 	| Concat
 	| Project
 	| In
@@ -227,8 +227,8 @@ module Expression =
 	| Xor -> "^"
 	| Implies -> "=>"
 	| Iff -> "<=>"
-	| LAppend -> "|-"
-	| RAppend -> "-|"
+	| Prepend -> "-|"
+	| Append -> "|-"
 	| Concat -> "|-|"
 	| Project -> "\\"
 	| GuardAnd -> "&"
@@ -254,8 +254,8 @@ module Expression =
 	| Xor -> (57, 57)
 	| Implies -> (61, 61)
 	| Iff -> (61, 61)
-	| LAppend -> (33, 33)
-	| RAppend -> (33, 33)
+	| Prepend -> (33, 33)
+	| Append -> (33, 33)
 	| Concat -> (33, 33)
 	| Project -> (35, 35)
 	| GuardAnd -> (61, 61)
@@ -1169,6 +1169,14 @@ let pretty_print out_channel input =
 	    output_string out_channel "; " ;
 	    pretty_print_identifier_list r;
 	    output_string out_channel ")"
+	| AwaitSyncCall (_, c, m, a, r) ->
+	    output_string out_channel "await " ;
+	    pretty_print_expression c ;
+	    output_string out_channel ("." ^ m ^ "(");
+	    pretty_print_expression_list a;
+	    output_string out_channel "; " ;
+	    pretty_print_identifier_list r;
+	    output_string out_channel ")"
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
 	    output_string out_channel
 	      (match l with
@@ -1186,6 +1194,19 @@ let pretty_print out_channel input =
 	    output_string out_channel ")"
 	| LocalSyncCall (_, m, l, u, i, o) ->
 	    output_string out_channel m;
+	    (match l with
+		None -> ()
+	      | Some n -> output_string out_channel ("@" ^ n));
+	    (match u with
+		None -> ()
+	      | Some n -> output_string out_channel ("<<" ^ n));
+	    output_string out_channel "(" ;
+	    pretty_print_expression_list i;
+	    output_string out_channel "; " ;
+	    pretty_print_identifier_list o;
+	    output_string out_channel ")"
+	| AwaitLocalSyncCall (_, m, l, u, i, o) ->
+	    output_string out_channel ("await " ^ m) ;
 	    (match l with
 		None -> ()
 	      | Some n -> output_string out_channel ("@" ^ n));

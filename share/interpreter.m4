@@ -237,12 +237,12 @@ fmod CREOL-STM-LIST is
   protecting LIST{Stm} * (sort List{Stm} to StmList,
                           sort NeList{Stm} to NeStmList,
 			  op nil : -> List{Stm} to noStm,
-			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_) .
+			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_ [{|format|} (d r o d)]) .
 
-  op if_th_el_fi : Expr StmList StmList -> Stm [ctor] . 
-  op while_do_od : Expr StmList -> Stm [ctor] .
-  op _[]_  : StmList StmList -> Stm [ctor comm assoc prec 45] .
-  op _|||_ : StmList StmList -> Stm [ctor comm assoc prec 47] .
+  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor] . 
+  op while_do_od : Expr NeStmList -> Stm [ctor] .
+  op _[]_  : NeStmList NeStmList -> Stm [ctor comm assoc prec 45 {|format|} (d r d o d)] .
+  op _|||_ : NeStmList NeStmList -> Stm [ctor comm assoc prec 47 {|format|} (d r o d)] .
   op _MERGER_  : StmList StmList -> Stm [assoc] .
 
   var SL : StmList .
@@ -254,8 +254,6 @@ fmod CREOL-STM-LIST is
   var PG : PureGuard .
 
   *** Some simplifications:
-  eq noStm [] SL = SL .
-  eq noStm ||| SL = SL .
   eq noStm MERGER SL = SL .
   eq SL MERGER noStm = SL .
   eq await noGuard ; NeSL = NeSL .
@@ -263,7 +261,6 @@ fmod CREOL-STM-LIST is
   *** Optimize assignments.  This way we save reducing a skip.  Also note
   *** that the empty assignment is /not/ programmer syntax, it is inserted
   *** during run-time.
-  eq (AL ::= DL) = (AL assign DL) .
   eq (noAid assign emp) = noStm .
   eq (noAid ::= emp) = noStm .
 
@@ -271,7 +268,7 @@ fmod CREOL-STM-LIST is
   op idle : -> Process [{|format|} (!b o)] .  
   op _,_ : Subst StmList -> Process [ctor {|format|} (o r sbu o)] . 
   var L : Subst .
-  eq (L, noStm) = idle . *** if "_label" is needed this is dangerous!
+  eq (L, noStm) = idle . *** if ".label" is needed this is dangerous!
   eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
 
 
@@ -280,6 +277,7 @@ fmod CREOL-STM-LIST is
   op noProc : -> MProc [ctor] .
   op _++_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 {|format|} (d r os d)] .
   op _++_ : NeMProc MProc -> NeMProc [ctor ditto] .
+  op _++_ : MProc NeMProc -> NeMProc [ctor ditto] .
 
 endfm
 
@@ -342,7 +340,7 @@ fmod CREOL-CLASS is
   eq get(Q, noMtd, O, Lab, EL) = noProc . 
   eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, Lab, EL) = 
     if Q == Q' 
-    then (insert("caller", O, insert("_label", Lab, S)), (AL ::= EL) ; SL)
+    then (insert("caller", O, insert(".label", Lab, S)), (AL ::= EL) ; SL)
     else get(Q, MM, O, Lab, EL) fi .
 
 endfm
@@ -456,7 +454,7 @@ fmod CREOL-AUX-FUNCTIONS is
   eq inqueue(L, comp(L', EL) + MM) = 
      if L == L' then true else inqueue(L, MM) fi .
 
-  op enabledGuard : Guard   Subst MMsg -> Bool .
+  op enabledGuard : Guard Subst MMsg -> Bool .
   eq enabledGuard(noGuard, S, MM) = true .
   eq enabledGuard(E, S, MM) = {|eval|}(E, S) asBool .
   eq enabledGuard((A ??), S, MM) = inqueue(S[A], MM) .
@@ -467,18 +465,20 @@ fmod CREOL-AUX-FUNCTIONS is
   var NeSL : NeStmList .
   var AL : AidList .
 
-  op enabled : StmList Subst MMsg -> Bool . *** eval guard 
+  op enabled : NeStmList Subst MMsg -> Bool . *** eval guard 
   eq enabled(SL [] SL',  S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
   eq enabled(SL ||| SL', S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
-  eq enabled(await G1,   S, MM) = enabledGuard(G1,S,MM) .
+  eq enabled(SL MERGER SL', S, MM) = enabled(SL, S, MM) .
+  eq enabled(await G1, S, MM) = enabledGuard(G1,S,MM) .
   eq enabled((ST ; ST' ; SL),S, MM) = enabled(ST, S, MM) . 
-  eq enabled(ST,    S, MM) = true [owise] . 
+  eq enabled(ST, S, MM) = true [owise] . 
 
   *** The ready predicate holds, if a statement is ready for execution,
   *** i.e., the corresponding process may be waken up.
-  op ready : StmList Subst MMsg -> Bool . *** eval guard 
+  op ready : NeStmList Subst MMsg -> Bool . *** eval guard 
   eq ready(SL [] SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
   eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
+  eq ready(SL MERGER SL', S, MM) = ready(SL, S, MM) .
   eq ready(A ?(AL), S, MM) = inqueue(S[A], MM) . 
   eq ready(L ?(AL), S, MM) = inqueue(L, MM) . 
   eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
@@ -506,7 +506,7 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
   vars NeEL NeEL' : NeExprList .
   var ST : Stm .
   vars SL SL' SL'' : StmList .
-  vars SL1 SL2 : NeStmList .
+  vars NeSL NeSL' : NeStmList .
   vars P P' : Process .
   var W : MProc .
   vars S S' L L' : Subst .
@@ -570,10 +570,10 @@ STEP(dnl
 *** During model checking we want to be able to observe infinite loops.
 *** Therefore, this has to be a rule.
 rl
-  < O : C | Att: S, Pr: (L, while E do SL1 od ; SL2), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, while E do SL od ; SL'), PrQ: W, Lcnt: N >
   =>
   < O : C | Att: S,
-            Pr: (L, (if E th (SL1 ; while E do SL1 od) el skip fi); SL2),
+            Pr: (L, (if E th (SL ; while E do SL od) el skip fi); SL'),
             PrQ: W, Lcnt: N >
   [label while]
   .
@@ -592,7 +592,7 @@ STEP(dnl
   < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, compose(S,  L))),
-    ((noSubst, ("_init" ! "init" (emp)) ; ("_init" ?(noAid)) ; ("_run" ! "run" (emp)) ; ("_run" ?(noAid)))))|},
+    ((noSubst, (".init" ! "init" (emp)) ; (".init" ?(noAid)) ; (".run" ! "run" (emp)) ; (".run" ?(noAid)))))|},
 {|[label new-object]|})
 
 
@@ -622,9 +622,10 @@ eq
   =
   findAttr(O, I {|#|}{|#|} I', compose(S', S),
            SL ; (AL ::= EL), 
-           (L', ("_init" ! "init" @ C(emp)) ; ("_init" ?( noAid)) ; SL'))
+           (L', (".init" ! "init" @ C(emp)) ; (".init" ?( noAid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
-  [label find-attr] .
+  [label find-attr]
+  .
 
 eq
   foundAttr(O, S', SL, (L', SL'))
@@ -638,14 +639,14 @@ eq
 
 
 *** Non-deterministic choice ***
-*** Choice is comm, so [nondet] considers both SL1 and SL2.
+*** Choice is comm, so [nondet] considers both NeSL and NeSL'.
 crl
-  < O : C | Att: S, Pr: (L, (SL1 [] SL2); SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, (NeSL [] NeSL'); SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =>
-  < O : C | Att: S, Pr: (L, (SL1 ; SL)), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, (NeSL ; SL)), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  if ready(SL1, (S # L), MM)
+  if ready(NeSL', (S # L), MM)
   [label nondet]
   .
 
@@ -653,41 +654,43 @@ crl
 
 
 *** Merge ***
-*** Merge is comm, so [merge] considers both SL1 and SL2.
+*** Merge is comm, so [merge] considers both NeSL and NeSL'.
 crl
-  < O : C | Att: S, Pr: (L, (SL1 ||| SL2); SL), PrQ: W, Lcnt: N >  
+  < O : C | Att: S, Pr: (L, (NeSL ||| NeSL'); SL), PrQ: W, Lcnt: N >  
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =>
-  < O : C | Att: S, Pr: (L, (SL1 MERGER SL2); SL), PrQ: W, Lcnt: N >  
+  < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL'); SL), PrQ: W, Lcnt: N >  
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  if ready(SL1,(S {|#|} L), MM)
+  if ready(NeSL,(S {|#|} L), MM)
   [label merge]
   .
 
 *** MERGER
 ***
-
 eq
-  < O : C | Att: S,  Pr:  (L, ((ST ; SL1) MERGER SL2); SL), PrQ: W, Lcnt: N >   
+  < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER NeSL'); SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =
   if enabled(ST, (S {|#|} L), MM) then
-    < O : C | Att: S, Pr: (L, ((ST ; (SL1 MERGER SL2)); SL)), PrQ: W, Lcnt: N >
+    < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER NeSL')); SL)), PrQ: W,
+      Lcnt: N >
   else
-    < O : C | Att: S, Pr: (L, ((ST ; SL1) ||| SL2); SL), PrQ: W, Lcnt: N >   
+    < O : C | Att: S, Pr: (L, ((ST ; SL') ||| NeSL'); SL), PrQ: W, Lcnt: N >   
   fi
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label merge-aux]
   .
 
+
+
 *** local call
 ceq
   < O : C | Att: S, Pr: (L, ((Lab ?(AL)); SL)),
-            PrQ: W ++ (L', SL'), Lcnt: F >
+            PrQ: (L', SL') ++ W, Lcnt: F >
   = 
   < O : C | Att: S, Pr: (L', (SL' ; cont(Lab))),
-            PrQ: W ++ (L, ((Lab ?(AL)); SL)), Lcnt: F >
-  if L'["_label"] == Lab
+            PrQ: (L, ((Lab ?(AL)); SL)) ++ W, Lcnt: F >
+  if L'[".label"] == Lab
   [label local-call]
   .
 
@@ -698,20 +701,27 @@ ceq
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N >
+{|< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|[label release]|})
 
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N >
+{|< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|not enabled(SL, (S # L), MM)|},
 {|[label suspend]|})
 
 
 *** Guards ***
+
+*** Optimze label access in await statements.
+*** eq
+***   < O : C | Att: S, Pr: (L, await (A ??) ; SL), PrQ: W, Lcnt: N >
+***   =
+***   < O : C | Att: S, Pr: (L, await ((L[A]) ??) ; SL), PrQ: W, Lcnt: N >
+***   .
 
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
@@ -721,18 +731,21 @@ CSTEP(dnl
 {|enabledGuard(G, (S # L), MM)|},
 {|[label guard]|})
 
-*** Evaluate guards in suspended processes ***
+
+
+
+*** Schedule a new process for execution
 
 *** Select a new process, if it is ready.
 ***
 *** Must be a rule, also in the interpreter.
 crl
-  < O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Lcnt: N > 
+  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =>
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  if ready(SL, (S {|#|} L), MM) 
+  if ready(SL, (S {|#|} L), MM)
   [label PrQ-ready]
   .
 
@@ -743,8 +756,8 @@ crl
 *** Fake the caller and the label and tag the label.  Since we do not
 *** want to interleave, this can also be an equation.
 STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (noSubst, accept(tag(L["_label"]))), PrQ: W, Lcnt: N >
- bindMtd(O, O, tag(L["_label"]), M, evalList(EL, (S # L)), C < emp >)
+{|< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Lcnt: N >
+ bindMtd(O, O, tag(L[".label"]), M, evalList(EL, (S # L)), C < emp >)
 |},
 {|[label tailcall]|})
 
@@ -753,8 +766,8 @@ crl
   < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
          Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (insert("_label", tag(Lab), L), SL), PrQ: W, Lcnt: N >
-  if L["_label"] = Lab
+  < O : C | Att: S, Pr: (insert(".label", tag(Lab), L), SL), PrQ: W, Lcnt: N >
+  if L[".label"] = Lab
   [label tailcall-accept]
   .
 
@@ -779,14 +792,14 @@ STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
 eq
   bindMtd(O, O', Lab, "run", EL, noInh)
   = 
-  boundMtd(O,(("caller" |-> O', "_label" |-> Lab), return(emp)))
+  boundMtd(O,(("caller" |-> O', ".label" |-> Lab), return(emp)))
   .
 
 *** Same for init.
 eq
   bindMtd(O, O', Lab, "init", EL, noInh)
   = 
-  boundMtd(O,(("caller" |-> O', "_label" |-> Lab), return(emp)))
+  boundMtd(O,(("caller" |-> O', ".label" |-> Lab), return(emp)))
   .
 
 
@@ -809,15 +822,16 @@ STEP({|< O : Qu | Size: Sz, Dealloc: LS,
 {|[label receive-call-req]|})
 
 eq
-  boundMtd(O, P') < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
+  boundMtd(O, P')
+  < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
   =
-  < O : C | Att: S, Pr: P, PrQ: W ++ P', Lcnt: N >
+  < O : C | Att: S, Pr: P, PrQ: P' ++ W, Lcnt: N >
   [label receive-call-bound]
   .
 
 rl
   < O : C | Att: S, Pr: (L, (cont(Lab); SL)),
-	    PrQ: W ++ (L',((Lab)?(AL); SL')), Lcnt: F >
+	    PrQ: (L',((Lab)?(AL); SL')) ++ W, Lcnt: F >
   =>
   < O : C | Att: S, Pr: (L', ((Lab)?(AL); SL')), PrQ: W, Lcnt: F >
   [label continue]
@@ -887,7 +901,7 @@ ifdef({|MODELCHECK|},
 *** emit reply message ***
 STEP({|< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >|},
 {|< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  comp(L["_label"], evalList(EL, (S # L))) from O to caller(L["_label"])|},
+  comp(L[".label"], evalList(EL, (S # L))) from O to caller(L[".label"])|},
 {|[label return]|})
 
 *** Optimization: reduce label to value only once

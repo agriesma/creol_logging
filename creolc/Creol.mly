@@ -21,7 +21,7 @@
 %token TIMESTIMES TIMES ARROW DARROW DIV EQ NE LT LE GT GE
 %token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE MODELS UNDERSCORE
 %token HAT HATHAT BACKSLASH ASSERT PROVE
-%token LAPPEND CONCAT RAPPEND
+%token PREPEND CONCAT APPEND
 %token <string> CID ID STRING
 %token <int>  INT
 %token <bool> BOOL
@@ -43,8 +43,8 @@
 %left LE LT GT GE
 %left BACKSLASH
 %left CONCAT
-%right LAPPEND
-%left  RAPPEND
+%right PREPEND
+%left  APPEND
 %left PLUS MINUS
 %left TIMES DIV PERCENT
 %left TIMESTIMES
@@ -104,6 +104,8 @@ let signal_error s m =
 
 main:
       d = loption(declarations) EOF { d }
+    | d = error EOF
+	{ signal_error $startpos "syntax error at end of program." }
 
 declarations:
       d = declaration { [d] }
@@ -339,8 +341,11 @@ guard:
 expression_or_new:
       e = expression
 	{ e }
-    | NEW t = creol_type LPAREN a = separated_list(COMMA, expression) RPAREN
+    | NEW t = creol_type
+      a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
 	{ New (Note.make $startpos, t, a) }
+    | NEW error
+	{ signal_error $startpos "syntax error in new statement" }
 
 expression:
       b = BOOL
@@ -415,8 +420,8 @@ expression:
     | DIV { Div }
     | PERCENT { Modulo }
     | TIMESTIMES { Exponent }
-    | LAPPEND { LAppend }
-    | RAPPEND { RAppend }
+    | PREPEND { Prepend }
+    | APPEND { Append }
     | CONCAT { Concat }
     | BACKSLASH { Project }
     | IN { In }
@@ -455,9 +460,9 @@ pattern:
 	{ () }
     | pattern COMMA pattern
 	{ () }
-    | pattern LAPPEND pattern
+    | pattern PREPEND pattern
 	{ () }
-    | pattern RAPPEND pattern
+    | pattern APPEND pattern
 	{ () }
 
 (* Poor mans types and type parameters *)

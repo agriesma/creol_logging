@@ -1,87 +1,28 @@
-load modelchecker .
-
+load modelchecker
 mod PROGRAM is
-  pr CREOL-MODEL-CHECKER .
-
-op init : -> Configuration .
-
+pr CREOL-MODEL-CHECKER .
+op init : -> Configuration [ctor] .
 eq init =
+< "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "sync.0" ! "butler" . "getNeighbor" ( emp ) ; ( "sync.0" ? ( "neighbor" ) )  ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ( ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ||| ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ) ; return ( emp ) > *
+  < "digest" : Mtdname | Param: noAid, Latt: noSubst, Code: "hungry" ::= bool(true) ; ( ".anon" ! "this" . "digest" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
+  < "eat" : Mtdname | Param: noAid, Latt: noSubst, Code: ( await "hungry" ) ; "sync.0" ! "neighbor" . "borrowStick" ( emp ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( noAid ) )  ; ( await "chopstick" ) ; "hungry" ::= bool(false) ; ".anon" ! "neighbor" . "returnStick" ( emp ) ; free( ".anon" ) ; ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
+  < "think" : Mtdname | Param: noAid, Latt: noSubst, Code: ( await "~" ( "hungry" ) ) ; release ; ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
+  < "borrowStick" : Mtdname | Param: noAid, Latt: noSubst, Code: ( await "chopstick" ) ; "chopstick" ::= bool(false) ; return ( emp ) > *
+  < "returnStick" : Mtdname | Param: noAid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; return ( emp ) >, Ocnt: 0 >
 
-< "Butler" : Cl | Inh: noInh, Par: noAid,
-  Att: ("p1" |-> null), ("p2" |-> null), ("p3" |-> null), ("p4" |-> null),
-  Mtds:
-    < "init" : Mtdname | Param: noAid, Latt: noSubst,
-		Code: ("p1" ::= new "Philosopher"("this")) ;
-		      ("p2" ::= new "Philosopher"("this")) ;
-		      ("p3" ::= new "Philosopher"("this")) ;
-		      ("p4" ::= new "Philosopher"("this")) ; return (emp) > *
+< "Butler" : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null , "p4" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new "Philosopher" ( "this" ) ; "p2" ::= new "Philosopher" ( "this" ) ; "p3" ::= new "Philosopher" ( "this" ) ; "p4" ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
+  < "getNeighbor" : Mtdname | Param: noAid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" # "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" # "p2" ) th "neighbor" ::= "p3" el if "=" ( "caller" # "p3" ) th "neighbor" ::= "p4" el "neighbor" ::= "p1" fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
 
-    < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: return (emp) > *
-
-    < "getNeighbor" : Mtdname | Param: noAid,
-      Latt: ("label" |-> null), ("caller" |-> null), ("n" |-> null),
-      Code:
-       (if ("equal"( "caller" # "p1" )) th ("n" ::= "p2")
-        el (if ("equal"( "caller" # "p2" )) th ("n" ::= "p3")
-        el (if ("equal"( "caller" # "p3" )) th ("n" ::= "p4")
-        el (if ("equal"( "caller" # "p4" )) th ("n" ::= "p1") el skip
-        fi) fi) fi) fi); (return ( "n" )) >, Ocnt: 0 >
-
-< "Philosopher" : Cl | Inh: noInh, Par: "butler",
-   Att: ("butler" |-> null), ("hungry" |-> null), 
-        ("chopstick" |-> null), ("neighbor" |-> null),
-   Mtds:
-   < "init" : Mtdname | Param: noAid, Latt: ("s" |-> null), Code:
-		   ("chopstick" ::= bool(true)) ; ("hungry" ::= bool(false)) ; 
-         	   ("s" ! "butler" . "getNeighbor"(emp)) ;
-		   ("s" ? ( "neighbor" ) ) ;
-         	   return (emp) > *
-
-     < "think" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), ("l" |-> null), Code:
-            (await ("not" ( "hungry" ))) ; ("hungry" ::= bool(true));
-		  (tailcall "think"(emp)) > *
-
-     < "eat" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), ("l" |-> null), Code:
-            (await "hungry") ; ("l" ! "neighbor" . "borrowStick"(emp)) ; 
-                  ("l" ? (noAid)) ; (await "chopstick") ;
-                  ("hungry" ::= bool(false)) ;
-                  ("l" ! "neighbor" . "returnStick"(emp)) ; ("l" ? (noAid)) ;
-		  (tailcall "eat"(emp)) > *
-
-     < "borrowStick" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), Code:
-            (await "chopstick") ; ("chopstick" ::= bool(false)) ; 
-                   return(emp) > *
-
-     < "returnStick" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null), ("l" |-> null ), Code:
-            ("chopstick" ::= bool(true)); return (emp) > *
-
-     < "run" : Mtdname | Param: noAid, Latt: ("label" |-> null), ("caller" |-> null),
-	    ("l" |-> null), ("m" |-> null), Code:
-            (("l" ! "this" . "think"(emp)) ; free("l")) |||
-		  (("m" ! "this" . "eat"(emp)) ; free("m")) ; return (emp) >,
-      Ocnt: 0 >
-
-    main("Butler", emp)
-    .
-
+.
 endm
 
-mod CREOL-PHIL-CHECK is
-  pr MODEL-CHECKER .
-  pr PROGRAM .
-  pr CREOL-PREDICATES .
+
+mod PROGRAM-CHECKER is
+  protecting MODEL-CHECKER .
+  protecting PROGRAM .
+  protecting CREOL-PREDICATES .
 endm
-
-set show breakdown on .
-
-red modelCheck(init, <> objcnt("Butler", 1)) .
-
-*** red modelCheck(init, [] objcnt("Butler", 1)) .
-
-red modelCheck(init, [] maxobjcnt("Philosopher", 6)) .
-
-*** red modelCheck(init, <> [] objcnt("Butler", 2)) .
-
-*** red modelCheck(init, [] (hasvalue(ob("Philosopher1"), "hungry", bool(true)) => <> hasvalue(ob("Philosopher1"), "hungry", bool(false)))) .
-
-quit .

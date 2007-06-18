@@ -71,7 +71,7 @@ GRAMMAR_TEST(STM-LIST, skip, noStm)
 GRAMMAR_TEST(STM-LIST, skip ; noStm, noStm)
 GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new "C" (null), noStm)
 GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new "C" (null) ||| skip, noStm)
-GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new "C" (null) ||| noStm ||| skip, noStm)
+GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new "C" (null) ||| skip ||| skip, noStm)
 
 GRAMMAR_TEST(STM-LIST, idle, idle)
 GRAMMAR_TEST(STM-LIST, {| (insert("var2", int(4), insert("var1", str("test"), noSubst)), ((("var" ::= int(4)) [] ("var" ::= new "C" (null))) ||| skip)) |}, noProc)

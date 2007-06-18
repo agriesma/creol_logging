@@ -35,6 +35,8 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  Inheritance.creol Inheritance.maude Inheritance.out \
 		  Diamond.creol Diamond.maude Diamond.out \
 		  Deadlock.creol Deadlock.maude Deadlock.out \
+		  MutRec.creol MutRec.maude MutRec.out \
+		  MutRec2.creol MutRec2.maude MutRec2.out \
 		  Alarmclock.creol Alarmclock.maude Alarmclock.out \
 		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.out \
 		  Philosophers.creol Philosophers.maude Philosophers.out \
@@ -45,7 +47,10 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  Fibonacci.creol Fibonacci.maude Fibonacci.out \
 		  SantaClaus.creol SantaClaus.maude SantaClaus.out \
 		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.out \
-		  PeerToPeer.creol PeerToPeer.maude PeerToPeer.out
+		  PeerToPeer.creol PeerToPeer.maude PeerToPeer.out \
+		  MC3Phil.creol MC3Phil.maude MC3Phil.out MC3PhilTest.maude \
+		  MC4Phil.creol MC4Phil.maude MC4PhilTest.maude \
+		  MC5Phil.creol MC5Phil.maude MC5PhilTest.maude
 
 TESTPARTS	= 
 

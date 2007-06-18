@@ -1,0 +1,20 @@
+load Philosophers .
+
+red  init main("Butler", emp) .
+
+*** set trace on .
+*** set trace select on .
+*** trace select enabled ready .
+
+frew[750] init main("Butler", emp) .
+
+*** search [1,30] in PROGRAM : init main("Butler", emp) =>+
+*** < ob("Philosopher1") : "Philosopher" | Att: A:Subst, "hist" |-> str("d"),
+*** Pr: L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
+*** conf:Configuration .
+
+in metaexec .
+
+red simulate('PROGRAM, upTerm(init main("Butler", emp)), 070676, 750) .
+
+quit .

@@ -1,5 +1,11 @@
 /*
  * An example displaying a common dead-lock situation
+ *
+ * Marcel Kyas, 2007.
+ *
+ * The contents of this file is hereby placed into the public domain.
+ *
+ * This file is part of creoltools.
  */
 class MutRec
 implements MutRec
