@@ -70,7 +70,7 @@ module Target =
 	  | Maude | MaudeMC ->
 	      let id x = x in
 		Maude.of_creol options out (lower tree id id id)
-	  | XML -> CreolIO.creol_to_xml !file Note.to_xml (fun a b -> ()) tree
+	  | XML -> CreolIO.creol_to_xml !file Note.to_xml (fun a b -> ()) (fun a b -> ()) tree
   end
 
 (* Pass management *)

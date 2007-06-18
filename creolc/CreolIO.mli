@@ -38,6 +38,4 @@ val from_file : string -> ('a, 'b) Declaration.t list
 
 val from_files : string list -> ('a, 'b) Declaration.t list
 
-val creol_to_xml : string -> (XmlTextWriter.xmlwriter -> 'a -> unit) ->
-	(XmlTextWriter.xmlwriter -> 'b -> unit) ->
-		('a, 'b) Declaration.t list -> unit
+val creol_to_xml : string -> (XmlTextWriter.xmlwriter -> 'a -> unit) -> (XmlTextWriter.xmlwriter -> 'b -> unit) -> (XmlTextWriter.xmlwriter -> 'c -> unit) -> ('a, 'b) Declaration.t list -> unit
