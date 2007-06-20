@@ -50,9 +50,6 @@ AC_CHECK_PROG([DOT], [dot], [dot], [missing])
 dnl Configure for building the creol mode.
 AM_PATH_LISPDIR
 
-dnl Configure the subdirectories.
-AC_CONFIG_SUBDIRS([maude-mode xml])
-
 dnl Check for the programs needed by the test-suite.
 AC_ARG_WITH([maude],
     AS_HELP_STRING([--with-maude=name],
@@ -60,11 +57,26 @@ AC_ARG_WITH([maude],
     [if test "x$with_maude" = "xyes" ; then 
        AC_CHECK_PROG([MAUDE], [maude], [maude], [:])
      elif test "x$with_maude" = "x$no" ; then
-       MAUDE=false
+       MAUDE="${top_srcdir}/missing maude"
      else
        MAUDE=$with_maude
      fi],
-[AC_CHECK_PROG([MAUDE], [maude], [maude], [:])])
+[AC_CHECK_PROGS([MAUDE], [maude maude.linux maude.darwin],
+		[${top_srcdir}/missing maude])])
+
+# Check whether the maude we found is usable.
+if (${MAUDE} --version >/dev/null 2>&1 || exit)
+then
+(exit)
+else
+AC_MSG_WARN([Failed to execute maude (${MAUDE})
+
+No usable maude has been found.  The test suite will fail during all execution
+tests.  Please install maude (as described in README).  If you are sure that
+you have maude installed, rerun $as_me with
+--with-maude=/path/to/your/maude
+])
+fi
 
 dnl Check for the programs needed by the test-suite.
 AC_ARG_WITH([included-maude-mode],
@@ -84,6 +96,9 @@ AC_SUBST([OCAMLOPT_FLAGS])
 AC_SUBST([OCAMLFIND_FLAGS])
 
 AC_CONFIG_TESTDIR(tests, creolc)
+
+dnl Configure the subdirectories.
+AC_CONFIG_SUBDIRS([maude-mode xml])
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
