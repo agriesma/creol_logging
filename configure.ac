@@ -51,7 +51,7 @@ dnl Configure for building the creol mode.
 AM_PATH_LISPDIR
 
 dnl Configure the subdirectories.
-AC_CONFIG_SUBDIRS([xml])
+AC_CONFIG_SUBDIRS([maude-mode xml])
 
 dnl Check for the programs needed by the test-suite.
 AC_ARG_WITH([maude],
@@ -65,6 +65,18 @@ AC_ARG_WITH([maude],
        MAUDE=$with_maude
      fi],
 [AC_CHECK_PROG([MAUDE], [maude], [maude], [:])])
+
+dnl Check for the programs needed by the test-suite.
+AC_ARG_WITH([included-maude-mode],
+    AS_HELP_STRING([--with-included-maude-mode],
+       [Whether to use the included maude mode for emacs]),
+    [if test "x$with_included_maude_mode" = "xyes" ; then 
+       MAUDE_MODE=maude-mode
+     else
+       MAUDE_MODE=
+     fi],
+[MAUDE_MODE=maude-mode])
+AC_SUBST([MAUDE_MODE])
 
 AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])

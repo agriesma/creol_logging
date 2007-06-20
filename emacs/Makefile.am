@@ -26,4 +26,4 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		=
 
-dist_lisp_LISP		= creol-mode.el maude-mode.el
+dist_lisp_LISP		= creol-mode.el

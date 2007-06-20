@@ -1,3 +1,16 @@
+creoltools 0.0e (2007-XX-YY): alpha release.
+
+In the compiler:
+
+In the interpreter:
+
+Editing mode:
+Pulled the maude mode maintained by Rudi and drop the older version from
+the dirstribution.
+
+Dropped the PDF from the distributed tar ball to keep the size of the
+distribution reasonable.
+
 
 creoltools 0.0d (2007-06-13): alpha release.
 
