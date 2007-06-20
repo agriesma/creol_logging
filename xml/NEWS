@@ -1,5 +1,9 @@
 OCaml-bindings to libxml2 and libxslt
 
+* ocaml-xml 0.0b (2007-06-20)
+
+Simplifications and building PIC.
+
 * ocaml-xml 0.0a (2007-03-05)
 
 Prerelease with creolcomp 0.0a with some error corrections.

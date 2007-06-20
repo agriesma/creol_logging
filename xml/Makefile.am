@@ -50,7 +50,18 @@ libxml_stubs_a_SOURCES	= xml_helpers.c xml_helpers.h xmld_stubs.c \
 			  Xslt.ml
 AM_CPPFLAGS		= $(XML_CPPFLAGS) $(XSLT_CPPFLAGS) -I`ocamlc -where` \
 			  -DCAML_NAME_SPACE
-AM_CFLAGS		= -fpic -Wall -Wno-unused -Werror
+
+
+# This probably works only with gcc.  It is not clear how we should handle
+# position independend code (PIC) in a portable manner.
+#
+# i386 does not seem to have the stubs compiled as PIC.
+# x86_64 insists on having PIC and accepts both -fpic and -fPIC
+# Darwin wants us to use -fPIC only and wanrs about -fpic
+# Solaris, HP-UX and others accept -fpic and -fPIC, but will use a
+# small table with -fpic, which they prefer.
+
+AM_CFLAGS		= -fPIC -DPIC
 
 XML_DESTDIR		= `pwd`
 OCAMLC_FLAGS		= -I . -I ${srcdir} -g -w y

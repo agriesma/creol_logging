@@ -19,12 +19,10 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_INIT([xml], 0.0a, kyas@ifi.uio.no)
+AC_INIT([xml], 0.0b, kyas@ifi.uio.no)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([XmlTextWriter.ml])
-AM_INIT_AUTOMAKE([1.9 dist-bzip2 dist-zip readme-alpha check-news])
-AC_PROG_MAKE_SET
-AC_PROG_LN_S
+AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 
 dnl Check for the tools needed to build the text-reader and text-writer
 dnl libraries
@@ -33,18 +31,10 @@ AC_PROG_RANLIB
 AM_PATH_XML2(2.6.0)
 AM_PATH_XSLT(1.1.0)
 
-dnl Check for the tools needed to run the tests.
-AC_PATH_PROG([M4], m4)
-AC_PATH_PROG([AUTOM4TE], autom4te)
-AC_PATH_PROG([DIFF], diff)
-AC_PATH_PROG([XMLLINT], xmllint)
-AC_PATH_PROG([XMLCATALOG], xmlcatalog)
-AC_PATH_PROG([XSLTPROC], xsltproc)
-
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
 AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [false])
-AC_CHECK_PROG([OCAMLWEB], [ocamlweb], [ocamlweb], [echo])
+AC_PATH_PROG([OCAMLDOC], ocamldoc)
 
 dnl figure out the site-lib directory. The following is bogus...
 OCAML_LIBDIR='${libdir}/ocaml'
@@ -52,11 +42,7 @@ OCAML_SITELIB='${OCAML_LIBDIR}/site-lib'
 AC_SUBST([OCAML_LIBDIR], [$OCAML_LIBDIR])
 AC_SUBST([OCAML_SITELIB], [$OCAML_SITELIB])
 
-dnl Check for the tools needed to build the documentation.
-AC_PATH_PROG([OCAMLDOC], ocamldoc)
-
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
 
-dnl AC_CONFIG_TESTDIR(tests, source)
 AC_OUTPUT([Makefile])
