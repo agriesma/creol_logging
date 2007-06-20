@@ -24,16 +24,13 @@ OCAMLPATH		= $(top_builddir)
 export OCAMLPATH
 
 # Subdirs
-DIST_SUBDIRS		= xml creolc share maude-mode emacs doc info tests
-SUBDIRS			= xml creolc share ${MAUDE_MODE} emacs doc info tests
+DIST_SUBDIRS		= maude-mode creol-mode share info xml creolc tests
+SUBDIRS			= ${MAUDE_MODE} ${CREOL_MODE} share info xml creolc \
+			  tests
 
 MOSTLYCLEANFILES	= *~
-CLEANFILES		=
-DISTCLEANFILES		=
 MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
 			  depcomp elisp-comp missing install-sh \
 			  creoltools.spec
-
-EXTRA_DIST		=
 
 bin_SCRIPTS		= creolshell creolbug

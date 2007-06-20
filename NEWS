@@ -1,4 +1,4 @@
-creoltools 0.0e (2007-XX-YY): alpha release.
+creoltools 0.0d (2007-XX-YY): alpha release.
 
 In the compiler:
 
@@ -16,6 +16,9 @@ distribution reasonable.
 An error in compiling the tool on MacOS has been corrected.
 
 The configure scripts will warn about a missing maude.
+
+The creol editing mode has been modularised into its own independently
+distributable subpackage.
 
 
 creoltools 0.0d (2007-06-13): alpha release.

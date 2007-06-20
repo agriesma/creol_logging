@@ -47,10 +47,6 @@ AC_CHECK_PROG([MENHIR], [menhir], [menhir], [missing])
 dnl For documentation.
 AC_CHECK_PROG([DOT], [dot], [dot], [missing])
 
-dnl Configure for building the creol mode.
-AM_PATH_LISPDIR
-
-dnl Check for the programs needed by the test-suite.
 AC_ARG_WITH([maude],
     AS_HELP_STRING([--with-maude=name],
        [Whether to use maude and which binary to use.]),
@@ -71,9 +67,12 @@ then
 else
 AC_MSG_WARN([Failed to execute maude (${MAUDE})
 
-No usable maude has been found.  The test suite will fail during all execution
-tests.  Please install maude (as described in README).  If you are sure that
-you have maude installed, rerun $as_me with
+Maude has not been found or could not be executed.  Therefore, the test
+suite will fail for all test cases during their execution in maude.  You
+still can compile the compiler, however.  To rectify this problem, please
+install Maude from <http://maude.cs.uiuc.edu/>.
+
+If you are sure that you have maude installed, rerun $as_me with
 --with-maude=/path/to/your/maude
 ])
 fi
@@ -90,6 +89,17 @@ AC_ARG_WITH([included-maude-mode],
 [MAUDE_MODE=maude-mode])
 AC_SUBST([MAUDE_MODE])
 
+AC_ARG_WITH([included-creol-mode],
+    AS_HELP_STRING([--with-included-creol-mode],
+       [Whether to use the included creol mode for emacs]),
+    [if test "x$with_included_maude_mode" = "xyes" ; then 
+       CREOL_MODE=creol-mode
+     else
+       CREOL_MODE=
+     fi],
+[CREOL_MODE=creol-mode])
+AC_SUBST([CREOL_MODE])
+
 AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
@@ -98,15 +108,13 @@ AC_SUBST([OCAMLFIND_FLAGS])
 AC_CONFIG_TESTDIR(tests, creolc)
 
 dnl Configure the subdirectories.
-AC_CONFIG_SUBDIRS([maude-mode xml])
+AC_CONFIG_SUBDIRS([creol-mode maude-mode xml])
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
 AC_CONFIG_FILES([creolc/Version.ml])
 AC_CONFIG_FILES([Makefile
 		 creolc/Makefile
-		 doc/Makefile
-		 emacs/Makefile
 		 info/Makefile
 		 share/Makefile
 		 tests/atlocal
