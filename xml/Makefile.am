@@ -67,9 +67,9 @@ XML_DESTDIR		= `pwd`
 OCAMLC_FLAGS		= -I . -I ${srcdir} -g -w y
 OCAMLOPT_FLAGS		= -I . -I ${srcdir} -w a
 
-all-local: xml.cma xml.cmxa
+all-local: xml.cma xml.cmxa dllxml.so libxml.a xml.a
 
-.PRECIOUS: *.cmo *.cmi *.cmx *.cma *.cmxa xml-stamp
+.PRECIOUS: *.cmo *.cmi *.cmx *.cma *.cmxa
 .ml.cmo:
 	$(OCAMLC) $(OCAMLC_FLAGS) -o $@ -c $<
 
@@ -79,21 +79,14 @@ all-local: xml.cma xml.cmxa
 .ml.cmx:
 	$(OCAMLOPT) $(OCAMLOPT_FLAGS) -o $@ -c $<
 
-dllxml.so: xml-stamp
-
-libxml.a: xml-stamp
-
-xml.a: xml-stamp
-
-xml.cma: xml-stamp
-
-xml.cmxa: xml-stamp
-
-xml-stamp: $(filter %.cmo, $(patsubst %.ml, %.cmo, $(libxml_stubs_a_SOURCES)))\
-	$(filter %.cmx, $(patsubst %.ml, %.cmx, $(libxml_stubs_a_SOURCES))) \
-	$(filter %.o, $(patsubst %.c, %.o, $(libxml_stubs_a_SOURCES)))
+dllxml.so libxml.a xml.a: $(filter %.o, $(patsubst %.c, %.o, $(libxml_stubs_a_SOURCES)))
 	$(OCAMLMKLIB) -o xml $^ $(XML_LIBS) $(XSLT_LIBS)
-	echo $@ > $@
+
+xml.cma: $(filter %.cmo, $(patsubst %.ml, %.cmo, $(libxml_stubs_a_SOURCES)))
+	$(OCAMLMKLIB) -o xml $^ $(XML_LIBS) $(XSLT_LIBS)
+
+xml.cmxa: $(filter %.cmx, $(patsubst %.ml, %.cmx, $(libxml_stubs_a_SOURCES)))
+	$(OCAMLMKLIB) -o xml $^ $(XML_LIBS) $(XSLT_LIBS)
 
 META: $(srcdir)/META.in $(top_srcdir)/configure.ac
 	rm -f META && sed -e s/@VERSION\@/$(VERSION)/g < $< > $@
