@@ -3,6 +3,8 @@ creoltools 0.0e (2007-XX-YY): alpha release.
 In the compiler:
 
 In the interpreter:
+To avoid errors on HFS+ file systems the runtime files of the interpreter
+have been prefixed with creol-
 
 Editing mode:
 Pulled the maude mode maintained by Rudi and drop the older version from
@@ -10,6 +12,10 @@ the dirstribution.
 
 Dropped the PDF from the distributed tar ball to keep the size of the
 distribution reasonable.
+
+An error in compiling the tool on MacOS has been corrected.
+
+The configure scripts will warn about a missing maude.
 
 
 creoltools 0.0d (2007-06-13): alpha release.

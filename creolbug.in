@@ -7,7 +7,7 @@ echo
 echo ----- tool chain
 gcc -v
 ocamlc -version
-maude --version
+@MAUDE@ --version
 
 echo
 echo ----- config.log
@@ -19,7 +19,12 @@ cat `dirname $0`/xml/config.log
 
 echo
 echo ----- cpuinfo
-cat /proc/cpuinfo
+if [ -f /proc/cpuinfo ]
+then
+    cat /proc/cpuinfo
+else
+    echo No cpuinfo
+fi
 
 echo
 echo ----- testsuite

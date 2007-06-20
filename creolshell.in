@@ -42,7 +42,7 @@ do
 done
 
 # Assume that maude is installed, except indicated otherwise.
-MAUDE=maude
+MAUDE=@MAUDE@
 
 # Choose a default creol compiler.  User may override on the CLI.
 creolc=creolc.opt
