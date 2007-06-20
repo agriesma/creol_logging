@@ -1,6 +1,6 @@
 Summary:	Environment for the Creol Language
 Name:		creoltools
-Version:	@VERSION@
+Version:	0.0d
 Release:	0%{?dist}
 Vendor:		Universitetet i Oslo
 URL:		http://creol.berlios.de/
@@ -32,7 +32,8 @@ in Maude.
 %setup -q
 
 %build
-%configure OCAMLOPT_FLAGS="-inline 5"
+# We have no need to hurry.
+%configure OCAMLOPT_FLAGS="-inline 2" --without-included-creol-mode --without-included-maude-mode
 make
 
 # Build the pdf, because most people seem to prefer hard copy stuff.
@@ -88,7 +89,7 @@ fi
 %{_bindir}/creolbug
 %{_bindir}/creolshell
 %dir %{_datadir}/%{name}
-%{_datadir}/%{name}/*.maude
+%{_datadir}/%{name}/*
 %{_infodir}/*.info*
 %config(noreplace) %{_sysconfdir}/profile.d/creol.sh
 

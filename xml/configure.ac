@@ -28,8 +28,8 @@ dnl Check for the tools needed to build the text-reader and text-writer
 dnl libraries
 AC_PROG_CC
 AC_PROG_RANLIB
-AM_PATH_XML2(2.6.0)
-AM_PATH_XSLT(1.1.0)
+AM_PATH_XML2(2.6.16)
+AM_PATH_XSLT(1.1.11)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])

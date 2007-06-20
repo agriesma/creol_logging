@@ -1,5 +1,5 @@
 Name:		creol-mode
-Version:	0.0
+Version:	0.0a
 Release:	0%{?dist}
 Summary:	Emacs editing mode for Maude
 Source:		creol-mode-%version.tar.bz2
