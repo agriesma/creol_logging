@@ -9,24 +9,16 @@ Group:		Development/Languages
 BuildRoot:	%{_tmppath}/%{name}-root
 Source0:	%{name}-%{version}.tar.bz2
 
-%if ! %{?atuio}0
 BuildRequires: ocaml >= 3.09
 BuildRequires: ocaml-findlib
-%endif
 BuildRequires: /usr/bin/texi2pdf
 BuildRequires: libxml2-devel >= 2.6.16
 BuildRequires: libxslt-devel >= 1.1.11
 Requires: libxml2 >= 2.6.16
 Requires: libxslt >= 1.1.11
-Requires: maude >= 2.2
-Requires: %{_datadir}/emacs/site-lisp
-Requires: %{_sysconfdir}/profile.d
-Requires: %{_sysconfdir}/profile.d/maude.sh
+Requires: maude >= 2.3
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
-Provides: creolshell = %{version}
-Provides: creolc = %{version}
-Provides: creol-mode = %{version}
 
 %define ocamllib %(ocamlc -where)
 %define sitelib %{ocamllib}/site-lib
@@ -40,11 +32,7 @@ in Maude.
 %setup -q
 
 %build
-%if %{?atuio}0
-CC=/usr/bin/gcc
-export CC
-%endif
-%configure OCAMLOPT_FLAGS='-cc $CC -ccopt "%{optflags}" -inline 5'
+%configure OCAMLOPT_FLAGS="-inline 5"
 make
 
 # Build the pdf, because most people seem to prefer hard copy stuff.
@@ -72,24 +60,15 @@ rm -f %{buildroot}%{_infodir}/dir
 # We do not want the xml stuff
 rm -rf %{buildroot}%{ocamllib}
 
-# And we do not want to have the maude mode or the emacs source files.
-rm -f %{buildroot}%{_datadir}/emacs/site-lisp/creol-mode.el
-rm -f %{buildroot}%{_datadir}/emacs/site-lisp/maude-mode.el
-rm -f %{buildroot}%{_datadir}/emacs/site-lisp/maude-mode.elc
-
 # Now generate the fedora specific configuration.
 mkdir -p %{buildroot}%{_sysconfdir}/profile.d
 cat > %{buildroot}%{_sysconfdir}/profile.d/creol.sh << EOF
 test -f %{_sysconfdir}/profile.d/maude.sh && \
   source %{_sysconfdir}/profile.d/maude.sh
-MAUDE_LIB=\${MAUDE_LIB}\${MAUDE_LIB:+:}%{_datadir}/%{name}
+MAUDE_LIB=\${MAUDE_LIB:+\${MAUDE_LIB}:}%{_datadir}/%{name}
 export MAUDE_LIB
 EOF
-
-mkdir -p %{buildroot}%{_datadir}/emacs/site-lisp/site-start.d
-cat > %{buildroot}%{_datadir}/emacs/site-lisp/site-start.d/creol-mode-init.el <<EOF
-(require 'creol-mode)
-EOF
+chmod 0644 %{buildroot}%{_sysconfdir}/profile.d/creol.sh
 
 %clean
 rm -rf %{buildroot}
@@ -106,12 +85,10 @@ fi
 %defattr(-,root,root)
 %doc AUTHORS COPYING NEWS README README-alpha info/creoltools.pdf
 %{_bindir}/creolc
+%{_bindir}/creolbug
 %{_bindir}/creolshell
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/*.maude
-%{_datadir}/%{name}/*.creol
-%{_datadir}/emacs/site-lisp/creol-mode.elc
-%{_datadir}/emacs/site-lisp/site-start.d/creol-mode-init.el
 %{_infodir}/*.info*
 %config(noreplace) %{_sysconfdir}/profile.d/creol.sh
 
