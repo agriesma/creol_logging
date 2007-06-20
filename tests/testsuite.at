@@ -111,6 +111,7 @@ TEST_CREOLC_PP([Inheritance])
 TEST_CREOLC_PP([Diamond])
 TEST_CREOLC_PP([MutRec])
 TEST_CREOLC_PP([MutRec2])
+TEST_CREOLC_PP([Interleave])
 TEST_CREOLC_PP([Alarmclock])
 TEST_CREOLC_PP([AsyncLCR])
 TEST_CREOLC_PP([BoundedBuffer])
@@ -128,6 +129,7 @@ TEST_CREOLC_XML([Inheritance])
 TEST_CREOLC_XML([Diamond])
 TEST_CREOLC_XML([MutRec])
 TEST_CREOLC_XML([MutRec2])
+TEST_CREOLC_XML([Interleave])
 TEST_CREOLC_XML([Alarmclock])
 TEST_CREOLC_XML([AsyncLCR])
 TEST_CREOLC_XML([BoundedBuffer])
@@ -167,6 +169,12 @@ red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([MutRec2], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
+])
+
+TEST_CREOLC([Interleave], [dnl
 red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .

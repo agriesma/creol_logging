@@ -7,7 +7,7 @@
 ***
 in AsyncSieveBuggy .
 
-search [1] in PROGRAM : init main("Generator", emp) =>+
+search [1,75] in PROGRAM : init main("Generator", emp) =>+
   < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
                       L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
   conf:Configuration .

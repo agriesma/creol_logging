@@ -37,6 +37,7 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  Deadlock.creol Deadlock.maude Deadlock.out \
 		  MutRec.creol MutRec.maude MutRec.out \
 		  MutRec2.creol MutRec2.maude MutRec2.out \
+		  Interleave.creol Interleave.maude Interleave.out \
 		  Alarmclock.creol Alarmclock.maude Alarmclock.out \
 		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.out \
 		  Philosophers.creol Philosophers.maude Philosophers.out \
