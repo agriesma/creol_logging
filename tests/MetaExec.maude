@@ -21,7 +21,7 @@
 
 set show timing off .
 set show advise off .
-in interpreter .
+load creol-interpreter .
 
 mod PROGRAM is
   protecting CREOL-INTERPRETER .
@@ -29,6 +29,6 @@ mod PROGRAM is
   eq init = noConf .
 endm
 
-in metaexec .
+load creol-metaexec .
 
 quit

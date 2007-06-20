@@ -1581,9 +1581,9 @@ struct
 	  representation for the Maude CMC and write the result to the
 	  output channel out. *)
       if options.modelchecker then
-	output_string out_channel "load modelchecker\n"
+	output_string out_channel "load creol-modelchecker\n"
       else
-	output_string out_channel "load interpreter\n";
+	output_string out_channel "load creol-interpreter\n";
       output_string out_channel
 	("mod PROGRAM is\npr " ^ (if options.modelchecker then
 	  "CREOL-MODEL-CHECKER" else "CREOL-INTERPRETER") ^

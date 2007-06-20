@@ -21,7 +21,7 @@
 
 set show timing off .
 set show advise off .
-load modelchecker .
+load creol-modelchecker .
 
 mod TEST-TAILCALL is
   pr CREOL-MODEL-CHECKER .

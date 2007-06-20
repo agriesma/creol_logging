@@ -1,4 +1,4 @@
-load interpreter
+load creol-interpreter
 mod PROGRAM is
 pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .

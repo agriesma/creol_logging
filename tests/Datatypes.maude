@@ -25,7 +25,7 @@
 
 set show timing off .
 set show advise off .
-load datatypes
+load creol-datatypes
 
 red in CREOL-DATA-SIG : emp .
 red in CREOL-DATA-SIG : emp # emp .

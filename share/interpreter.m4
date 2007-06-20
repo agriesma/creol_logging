@@ -81,7 +81,7 @@ ifdef({|MODELCHECK|},dnl
 ifdef({|MODELCHECK|},{|in model-checker|})
 
 *** Data types are in their own module.
-in datatypes .
+in creol-datatypes .
 
 
 ***************************************************************************

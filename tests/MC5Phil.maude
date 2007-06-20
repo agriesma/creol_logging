@@ -1,4 +1,4 @@
-load modelchecker
+load creol-modelchecker
 mod PROGRAM is
 pr CREOL-MODEL-CHECKER .
 op init : -> Configuration [ctor] .

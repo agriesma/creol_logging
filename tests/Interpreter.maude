@@ -23,7 +23,7 @@ set show stats off .
 set show timing off .
 set show advise off .
 
-load interpreter .
+load creol-interpreter .
 
 mod TEST-TAILCALL is
   pr CREOL-INTERPRETER .

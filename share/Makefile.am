@@ -22,21 +22,17 @@
 MOSTLYCLEANFILES	= *~
 CLEANFILES		= 
 DISTCLEANFILES		=
-MAINTAINERCLEANFILES	= prelude.creol modelcheck.creol Makefile.in
+MAINTAINERCLEANFILES	= Makefile.in
 
-EXTRA_DIST		= README interpreter.m4 prelude.m4
-dist_pkgdata_DATA	= creol.xsd datatypes.maude \
-			  interpreter.maude metaexec.maude modelchecker.maude \
-			  prelude.creol modelcheck.creol
+EXTRA_DIST		= README interpreter.m4
+dist_pkgdata_DATA	= creol.xsd \
+			  creol-datatypes.maude \
+			  creol-interpreter.maude \
+			  creol-metaexec.maude \
+			  creol-modelchecker.maude
 
-prelude.creol: $(srcdir)/prelude.m4
-	$(M4) -DCREOL $^ > $@
-
-modelcheck.creol: $(srcdir)/prelude.m4
-	$(M4) -DMODELCHECK $^ > $@
-
-interpreter.maude: ${srcdir}/interpreter.m4
+creol-interpreter.maude: ${srcdir}/interpreter.m4
 	$(M4) $^ > $@
 
-modelchecker.maude: ${srcdir}/interpreter.m4
+creol-modelchecker.maude: ${srcdir}/interpreter.m4
 	$(M4) -DMODELCHECK $^ > $@

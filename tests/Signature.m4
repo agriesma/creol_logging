@@ -31,8 +31,8 @@ red in CREOL-$1 : downTerm(upTerm($2), $3) .
 
 set show timing off .
 set show advise off .
-in datatypes
-in interpreter
+load creol-datatypes
+load creol-interpreter
 
 
 red in CREOL-SUBST : insert("var1", bool(true), noSubst) .
