@@ -25,7 +25,6 @@ AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.ml])
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_PROG_MAKE_SET
-AC_PROG_LN_S
 
 dnl Record the date of release
 RELEASE_DATE='2007-06-13'
@@ -36,13 +35,38 @@ AC_PATH_PROG([M4], m4)
 AC_PATH_PROG([AUTOM4TE], autom4te)
 AC_PATH_PROG([DIFF], diff)
 
-dnl See whether we have chcon in order to fix tests with selinux.
-AC_PATH_PROG([CHCON], chcon)
-
 dnl Check for the tools needed to compile ocaml code.
-AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
-AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [missing])
-AC_CHECK_PROG([MENHIR], [menhir], [menhir], [missing])
+AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [])
+if [ -z "$OCAMLFIND" ]
+then
+    AC_MSG_ERROR([ocamlfind is not installed.
+
+You have to install findlib from <http://www.ocaml-programming.de/>
+to compile the creoltools.  Alternatively, you can install the
+godi distribution from <http://godi.ocaml-programming.de/> to satisfy
+this dependency.
+])
+fi
+AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [])
+if [ -z "$OCAMLLEX" ]
+then
+    AC_MSG_ERROR([ocamllex cannot be found.
+
+You have to install the ocaml from <http://caml.inria.fr/> or
+<http://godi.ocaml-programming.de/> to compile the creoltools.  If you have
+godi installed, then ocamllex should be installed, too.
+])
+fi
+AC_CHECK_PROG([MENHIR], [menhir], [menhir], [])
+if [ -z "$MENHIR" ]
+then
+    AC_MSG_ERROR([menhir cannot be found.
+
+You have to install menhir from <http://cristal.inria.fr/~fpottier/menhir/>
+or from <http://godi.ocaml-programming.de/> to compile the creoltools.  If
+you use godi, the godi_console can help you in installing menhir.
+])
+fi
 
 dnl For documentation.
 AC_CHECK_PROG([DOT], [dot], [dot], [missing])
