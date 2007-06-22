@@ -19,7 +19,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_INIT([Creol Tools], 0.0d, kyas@ifi.uio.no, [creoltools])
+AC_INIT([Creol Tools], 0.0e, kyas@ifi.uio.no, [creoltools])
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.ml])
@@ -27,7 +27,7 @@ AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_PROG_MAKE_SET
 
 dnl Record the date of release
-RELEASE_DATE='2007-06-13'
+RELEASE_DATE='2007-06-22'
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.

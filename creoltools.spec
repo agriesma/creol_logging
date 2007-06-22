@@ -1,6 +1,6 @@
 Summary:	Environment for the Creol Language
 Name:		creoltools
-Version:	0.0d
+Version:	0.0e
 Release:	0%{?dist}
 Vendor:		Universitetet i Oslo
 URL:		http://creol.berlios.de/

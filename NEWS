@@ -1,6 +1,10 @@
-creoltools 0.0d (2007-XX-YY): alpha release.
+creoltools 0.0e (2007-06-22): alpha release.
 
 In the compiler:
+An infinite loop in parsing erroneous object creation statements has been
+corrected.
+
+The XML output has been improved.
 
 In the interpreter:
 To avoid errors on HFS+ file systems the runtime files of the interpreter
@@ -19,6 +23,8 @@ The configure scripts will warn about a missing maude.
 
 The creol editing mode has been modularised into its own independently
 distributable subpackage.
+
+The spec file has been cleaned up.
 
 
 creoltools 0.0d (2007-06-13): alpha release.

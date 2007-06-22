@@ -33,8 +33,27 @@ AM_PATH_XSLT(1.1.11)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
-AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [false])
-AC_PATH_PROG([OCAMLDOC], ocamldoc)
+if [ -z "$OCAMLFIND" ]
+then
+    AC_MSG_ERROR([ocamlfind is not installed.
+
+You have to install findlib from <http://www.ocaml-programming.de/>
+to compile the ocaml xml bindings.  Alternatively, you can install the
+godi distribution from <http://godi.ocaml-programming.de/> to satisfy
+this dependency.
+])
+fi
+AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [])
+if [ -z "$OCAMLMKLIB" ]
+then
+    AC_MSG_ERROR([ocamlmklib is not installed.
+
+You have to install ocaml from <http://caml.inria.fr/>
+to compile the ocaml xml bindings.  Alternatively, you can install the
+godi distribution from <http://godi.ocaml-programming.de/> to satisfy
+this dependency.
+])
+fi
 
 dnl figure out the site-lib directory. The following is bogus...
 OCAML_LIBDIR='${libdir}/ocaml'
