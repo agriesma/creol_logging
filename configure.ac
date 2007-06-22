@@ -37,7 +37,7 @@ AC_PATH_PROG([DIFF], diff)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [])
-if [ -z "$OCAMLFIND" ]
+if test -z "$OCAMLFIND"
 then
     AC_MSG_ERROR([ocamlfind is not installed.
 
@@ -48,7 +48,7 @@ this dependency.
 ])
 fi
 AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [])
-if [ -z "$OCAMLLEX" ]
+if test -z "$OCAMLLEX"
 then
     AC_MSG_ERROR([ocamllex cannot be found.
 
@@ -58,7 +58,7 @@ godi installed, then ocamllex should be installed, too.
 ])
 fi
 AC_CHECK_PROG([MENHIR], [menhir], [menhir], [])
-if [ -z "$MENHIR" ]
+if test -z "$MENHIR"
 then
     AC_MSG_ERROR([menhir cannot be found.
 

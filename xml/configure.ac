@@ -33,7 +33,7 @@ AM_PATH_XSLT(1.1.11)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [false])
-if [ -z "$OCAMLFIND" ]
+if test -z "$OCAMLFIND"
 then
     AC_MSG_ERROR([ocamlfind is not installed.
 
@@ -44,7 +44,7 @@ this dependency.
 ])
 fi
 AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [])
-if [ -z "$OCAMLMKLIB" ]
+if test -z "$OCAMLMKLIB"
 then
     AC_MSG_ERROR([ocamlmklib is not installed.
 
