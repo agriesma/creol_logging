@@ -26,8 +26,8 @@ open Creol
 type pass = {
   name: string;
   dependencies: string list;
-  pass: (Note.t, Note.t) Declaration.t list ->
-			     (Note.t, Note.t) Declaration.t list;
+  pass: (Note.t, Note.t, Note.t) Declaration.t list ->
+			     (Note.t, Note.t, Note.t) Declaration.t list;
   mutable elapsed: float;
   mutable needed: bool;
   mutable dump: bool

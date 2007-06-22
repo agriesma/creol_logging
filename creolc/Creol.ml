@@ -115,21 +115,21 @@ module Note =
 
 module Type =
   struct
-    type t =
-	Basic of string
-	| Application of string * t list
-	| Variable of string
-	| Label
+    type 'c t =
+	Basic of 'c * string
+	| Application of 'c * string * 'c t list
+	| Variable of 'c * string
+	| Label of 'c
 
     (* These are the support functions for the abstract syntax tree. *)
 
     let rec as_string =
       function
-	  Basic s -> s
-	| Application (s, p) ->
+	  Basic (_, s) -> s
+	| Application (_, s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Variable s -> "$" ^ s
-	| Label -> "/* Label */"
+	| Variable (_, s) -> "$" ^ s
+	| Label _ -> "/* Label */"
     and string_of_creol_type_list =
       function
 	  [t] -> as_string t
@@ -159,26 +159,26 @@ end
 module Expression =
   struct
     
-    type 'a t =
-	Null of 'a
-	| Nil of 'a
-	| Bool of 'a * bool
-	| Int of 'a * int
-	| Float of 'a * float
-	| String of 'a * string
-	| Id of 'a * string
-	| Tuple of 'a * 'a t list
-	| Cast of 'a * 'a t * Type.t
-	| Index of 'a * 'a t * 'a t
-        | FieldAccess of 'a * 'a t * string
-	| Unary of 'a * unaryop * 'a t
-	| Binary of 'a * binaryop * 'a t * 'a t
-	| If of 'a * 'a t * 'a t * 'a t
-	| Case of 'a * ('a t, unit, 'a t, 'a t) Case.t
-	| Typecase of 'a * ('a t, Type.t, 'a t, 'a t) Case.t
-	| FuncCall of 'a * string * 'a t list
-	| Label of 'a * string
-	| New of 'a * Type.t * 'a t list
+    type ('b, 'c) t =
+	Null of 'b
+	| Nil of 'b
+	| Bool of 'b * bool
+	| Int of 'b * int
+	| Float of 'b * float
+	| String of 'b * string
+	| Id of 'b * string
+	| Tuple of 'b * ('b, 'c) t list
+	| Cast of 'b * ('b, 'c) t * 'c Type.t
+	| Index of 'b * ('b, 'c) t * ('b, 'c) t
+        | FieldAccess of 'b * ('b, 'c) t * string
+	| Unary of 'b * unaryop * ('b, 'c) t
+	| Binary of 'b * binaryop * ('b, 'c) t * ('b, 'c) t
+	| If of 'b * ('b, 'c) t * ('b, 'c) t * ('b, 'c) t
+	| Case of 'b * (('b, 'c) t, unit, ('b, 'c) t, ('b, 'c) t) Case.t
+	| Typecase of 'b * (('b, 'c) t, 'c Type.t, ('b, 'c) t, ('b, 'c) t) Case.t
+	| FuncCall of 'b * string * ('b, 'c) t list
+	| Label of 'b * string
+	| New of 'b * 'c Type.t * ('b, 'c) t list
     and unaryop =
 	Not
 	| UMinus
@@ -300,48 +300,48 @@ open Expression
 
 module Statement =
   struct
-    type ('a, 'b) t =
+    type ('a, 'b, 'c) t =
 	Skip of 'a
 	| Release of 'a
-	| Assert of 'a * 'b Expression.t
-	| Assign of 'a * string list * 'b Expression.t list
-	| Await of 'a * 'b Expression.t
-	| AsyncCall of 'a * string option * 'b Expression.t * string *
-	    'b Expression.t list
+	| Assert of 'a * ('b, 'c) Expression.t
+	| Assign of 'a * string list * ('b, 'c) Expression.t list
+	| Await of 'a * ('b, 'c) Expression.t
+	| AsyncCall of 'a * string option * ('b, 'c) Expression.t * string *
+	    ('b, 'c) Expression.t list
 	| Reply of 'a * string * string list
 	| Free of 'a * string
-	| SyncCall of 'a * 'b Expression.t * string *
-	    'b Expression.t list * string list
-	| AwaitSyncCall of 'a * 'b Expression.t * string *
-	    'b Expression.t list * string list
+	| SyncCall of 'a * ('b, 'c) Expression.t * string *
+	    ('b, 'c) Expression.t list * string list
+	| AwaitSyncCall of 'a * ('b, 'c) Expression.t * string *
+	    ('b, 'c) Expression.t list * string list
 	| LocalAsyncCall of 'a * string option * string * string option *
-	    string option * 'b Expression.t list
+	    string option * ('b, 'c) Expression.t list
 	| LocalSyncCall of 'a * string * string option * string option *
-            'b Expression.t list * string list
+            ('b, 'c) Expression.t list * string list
 	| AwaitLocalSyncCall of 'a * string * string option * string option *
-            'b Expression.t list * string list
+            ('b, 'c) Expression.t list * string list
 	| Tailcall of 'a * string * string option * string option *
-	    'b Expression.t list
-	| If of 'a * 'b Expression.t * ('a, 'b) t * ('a, 'b)t
-	| While of 'a * 'b Expression.t * 'b Expression.t option * ('a, 'b) t
-	| For of 'a * string * 'b Expression.t * 'b Expression.t *
-	    'b Expression.t option * 'b Expression.t option * ('a, 'b) t
-	| Raise of 'a * string * 'b Expression.t list
-	| Try of 'a * ('a, 'b) t * ('a, 'b) catcher list
+	    ('b, 'c) Expression.t list
+	| If of 'a * ('b, 'c) Expression.t * ('a, 'b, 'c) t * ('a, 'b, 'c) t
+	| While of 'a * ('b, 'c) Expression.t * ('b, 'c) Expression.t option * ('a, 'b, 'c) t
+	| For of 'a * string * ('b, 'c) Expression.t * ('b, 'c) Expression.t *
+	    ('b, 'c) Expression.t option * ('b, 'c) Expression.t option * ('a, 'b, 'c) t
+	| Raise of 'a * string * ('b, 'c) Expression.t list
+	| Try of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) catcher list
         | Case of 'a *
-	    ('b Expression.t, unit, 'b Expression.t, ('a, 'b) t) Case.t
+	    (('b, 'c) Expression.t, unit, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
 	| Typecase of 'a *
-	    ('b Expression.t, Type.t, 'b Expression.t, ('a, 'b) t) Case.t
-	| Sequence of 'a * ('a, 'b) t list
-	| Merge of 'a * ('a, 'b) t * ('a, 'b) t
-	| Choice of 'a * ('a, 'b) t * ('a, 'b)t
+	    (('b, 'c) Expression.t, 'c Type.t, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
+	| Sequence of 'a * ('a, 'b, 'c) t list
+	| Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
+	| Choice of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
         | Extern of 'a * string
-    and ('a, 'b) catcher =
+    and ('a, 'b, 'c) catcher =
 	{ catch: string option;
 	  catch_parameters: string list;
-	  catch_statement: ('a, 'b) t }
-    and ('a, 'b) typecase =
-	{ with_type: Type.t option; with_statement: ('a, 'b) t }
+	  catch_statement: ('a, 'b, 'c) t }
+    and ('a, 'b, 'c) typecase =
+	{ with_type: 'c Type.t option; with_statement: ('a, 'b, 'c) t }
 
     let note =
       function
@@ -369,21 +369,22 @@ module Statement =
 	| Sequence(a, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a
+	| Extern(a, _) -> a
 
   end
 
 open Statement
 
 (** The abstract syntax of Creol *)
-type 'a creol_vardecl =
-    { var_name: string; var_type: Type.t; var_init: 'a Expression.t option }
+type ('b, 'c) creol_vardecl =
+    { var_name: string; var_type: 'c Type.t; var_init: ('b, 'c) Expression.t option }
 
-type ('a, 'b) creolmethod =
+type ('a, 'b, 'c) creolmethod =
     { meth_name: string;
-      meth_inpars: 'b creol_vardecl list;
-      meth_outpars: 'b creol_vardecl list;
-      meth_vars: 'b creol_vardecl list;
-      meth_body: ('a, 'b) Statement.t option }
+      meth_inpars: ('b, 'c) creol_vardecl list;
+      meth_outpars: ('b, 'c) creol_vardecl list;
+      meth_vars: ('b, 'c) creol_vardecl list;
+      meth_body: ('a, 'b, 'c) Statement.t option }
 
 
 
@@ -391,10 +392,10 @@ type ('a, 'b) creolmethod =
 
 module With = struct
 
-  type ('a, 'b) t = {
+  type ('a, 'b, 'c) t = {
     co_interface: string option;
-    methods: ('a, 'b) creolmethod list;
-    invariants: 'b Expression.t list
+    methods: ('a, 'b, 'c) creolmethod list;
+    invariants: ('b, 'c) Expression.t list
   }
 
 end
@@ -406,16 +407,16 @@ end
 module Class =
 struct
 
-  type 'a inherits = string * ('a Expression.t list)
+  type ('b, 'c) inherits = string * (('b, 'c) Expression.t list)
 
-  type ('a, 'b) t =
+  type ('a, 'b, 'c) t =
       { name: string;
-	parameters: 'b creol_vardecl list;
-	inherits: 'b inherits list;
+	parameters: ('b, 'c) creol_vardecl list;
+	inherits: ('b, 'c) inherits list;
 	contracts: string list;
 	implements: string list;
-	attributes: 'b creol_vardecl list;
-	with_defs: ('a, 'b) With.t list }
+	attributes: ('b, 'c) creol_vardecl list;
+	with_defs: ('a, 'b, 'c) With.t list }
 
 end
 
@@ -426,16 +427,16 @@ end
 module Interface =
 struct
 
-  type  ('a, 'b) t =
+  type  ('a, 'b, 'c) t =
       { name: string;
 	inherits: string list;
-	with_decl: ('a, 'b) With.t option }
+	with_decl: ('a, 'b, 'c) With.t option }
 
 end
 
 module Exception =
 struct
-  type 'b t = { name: string; parameters: 'b creol_vardecl list }
+  type ('b, 'c) t = { name: string; parameters: ('b, 'c) creol_vardecl list }
 end
 
 
@@ -445,7 +446,7 @@ end
 module Datatype =
 struct
 
-  type ('a, 'b) t = {
+  type ('a, 'b, 'c) t = {
     name: string
   }
 
@@ -458,11 +459,11 @@ end
 module Declaration =
 struct
 
-  type ('a, 'b) t =
-      Class of ('a, 'b) Class.t
-      | Interface of ('a, 'b) Interface.t
-      | Datatype of ('a, 'b) Datatype.t
-      | Exception of 'b Exception.t
+  type ('a, 'b, 'c) t =
+      Class of ('a, 'b, 'c) Class.t
+      | Interface of ('a, 'b, 'c) Interface.t
+      | Datatype of ('a, 'b, 'c) Datatype.t
+      | Exception of ('b, 'c) Exception.t
 
 end
 
@@ -620,6 +621,7 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 				   lower_statement s2)
       | Choice (a, s1, s2) -> Choice (a, lower_statement s1,
 				     lower_statement s2)
+      | Extern _ as s -> s
   and lower_method_variables note =
     (** Compute a pair of a new list of local variable declarations
 	and a list of assignments used for initialisation. *)
@@ -825,6 +827,7 @@ and definitions_in_statement note stm =
 	    Choice ({n with Note.env = Note.join (Statement.note nl).Note.env
 		(Statement.note nr).Note.env},
 		   nl, nr)
+      | Extern (n, s) -> Extern (n, s)
 
 let rec life_variables tree =
   (** Compute whether a variable is still in use at a position in the
@@ -913,6 +916,7 @@ and uses_in_statement =
 	    Note.env = Note.meet (Statement.note ns1).Note.env
 	      (Statement.note ns2).Note.env },
 		 ns1, ns2)
+      | Extern (n, s) -> Extern (n, s)
 and uses_in_sequence note =
   function
       [] -> assert false
@@ -1374,10 +1378,8 @@ struct
 	| Binary _ -> assert false
 	| Label(_, l) -> output_string out_channel ("( \"" ^ l ^ "\" ?? )")
 	| New (_, c, a) ->
-	    output_string out_channel ("new \"" ^ (match c with
-		Type.Basic s -> s
-	      | Type.Application (s, _) -> s
-	      | _ -> assert false) ^ "\" ( ") ;
+	    output_string out_channel
+	      ("new \"" ^ (Type.as_string c) ^ "\" ( ") ;
 	    of_expression_list a ;
 	    output_string out_channel " )"
     and of_expression_list =

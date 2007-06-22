@@ -468,11 +468,11 @@ pattern:
 (* Poor mans types and type parameters *)
 creol_type:
       t = CID
-	{ Type.Basic t }
+	{ Type.Basic (Note.make $startpos, t) }
     | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
-	{ Type.Application(t, p) } 
+	{ Type.Application(Note.make $startpos, t, p) } 
     | DOLLAR v = CID
-	{ Type.Variable v }
+	{ Type.Variable (Note.make $startpos, v) }
     | l = creol_type TIMES r = creol_type
 	{ l (* XXX: Tuple *) }
     | error RBRACK

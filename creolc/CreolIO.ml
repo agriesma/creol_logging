@@ -511,21 +511,25 @@ let creol_to_xml name stmt_handler expr_handler type_handler tree =
           XmlTextWriter.end_element writer
   and creol_type_to_xml =
     function
-	Type.Basic s ->
+	Type.Basic (a, s) ->
 	  XmlTextWriter.start_element writer "creol:type" ; 
           XmlTextWriter.write_attribute writer "name" s ;
+	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Application (s, l) ->
+      | Type.Application (a, s, l) ->
 	  XmlTextWriter.start_element writer "creol:typeapplication" ; 
           XmlTextWriter.write_attribute writer "name" s ;
 	  List.iter creol_type_to_xml l;
+	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Variable s ->
+      | Type.Variable (a, s) ->
 	  XmlTextWriter.start_element writer "creol:typevariable" ; 
           XmlTextWriter.write_attribute writer "name" s ;
+	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Label ->
+      | Type.Label a ->
 	  XmlTextWriter.start_element writer "creol:label" ; 
+	  type_handler writer a ;
           XmlTextWriter.end_element writer
   in
     XmlTextWriter.set_indent writer true;
