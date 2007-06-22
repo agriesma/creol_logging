@@ -67,22 +67,7 @@ let from_channel channel =
 
 
 
-let creol_to_xml name stmt_handler expr_handler type_handler tree =
-  (** Write a creol parse tree to XML.
-
-      [name] is the name for the target file, where "-" is standard
-      output.
-
-      [stmt_handler] is a function for processing the notes associated to
-      statements.
-
-      [expr_handler] is a function for writing out the notes associated to
-      expressions.
-
-      [type_handler] is a function for writing out the notes associated to
-      types.
-
-      [tree] is the actual parse tree to write. *)
+let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
   let writer = XmlTextWriter.to_file name 0 in
   let rec creol_declaration_to_xml =
     function
@@ -172,12 +157,12 @@ let creol_to_xml name stmt_handler expr_handler type_handler tree =
     function
 	Skip a ->
 	  XmlTextWriter.start_element writer "creol:skip" ; 
-	  stmt_handler writer a;
+	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
       | Assert (a, e) ->
 	  XmlTextWriter.start_element writer "creol:assert" ; 
 	  creol_expression_to_xml e ;
-	  stmt_handler writer a;
+	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
       | Assign (a, vs, es) ->
 	  XmlTextWriter.start_element writer "creol:assign" ;
@@ -193,16 +178,16 @@ let creol_to_xml name stmt_handler expr_handler type_handler tree =
 	    creol_expression_to_xml e ;
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
-	  stmt_handler writer a;
+	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
       | Await (a, g) -> 
 	  XmlTextWriter.start_element writer "creol:await" ;
 	  creol_expression_to_xml g ;
-	  stmt_handler writer a;
+	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
       | Release a -> 
 	  XmlTextWriter.start_element writer "creol:release" ;
-	  stmt_handler writer a;
+	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
       | AsyncCall (a, l, c, m, es) ->
 	  XmlTextWriter.start_element writer "creol:asynccall" ;
@@ -219,7 +204,7 @@ let creol_to_xml name stmt_handler expr_handler type_handler tree =
 	    creol_expression_to_xml e ;
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
-	  stmt_handler writer a ;
+	  stmt_handler writer a  ;
           XmlTextWriter.end_element writer
       | Reply (a, l, is) ->
 	  XmlTextWriter.start_element writer "creol:reply" ;

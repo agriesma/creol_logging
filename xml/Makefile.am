@@ -108,6 +108,14 @@ uninstall-local:
 			    -ldconf $(DESTDIR)$(OCAML_LIBDIR)/ld.conf \
 		xml
 
+html-local: ${srcdir}/Makefile.am $(libxml_stubs_a_SOURCES)
+	test ! -d html || rm -rf html
+	mkdir html
+	$(OCAMLDOC) $(OCAMLFIND_FLAGS) -html -d html -m A *.ml*
+	date > $@
+
+
+
 XmlTextReader.cmi XmlTextWriter.cmi: META
 
 -include ${srcdir}/.depend

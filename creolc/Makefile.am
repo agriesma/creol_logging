@@ -45,6 +45,13 @@ creolc_SOURCES		= Version.ml Messages.ml \
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
+# This is the subset for which we want to generate documentation.
+creolc_DOCSOURCES	= Version.ml Messages.ml \
+			  Creol.mli Creol.ml \
+			  CreolIO.mli CreolIO.ml \
+			  Passes.ml \
+			  Driver.ml
+
 OCAMLC_FLAGS		+=
 OCAMLOPT_FLAGS		+= -w a
 OCAMLFIND_FLAGS		+= -package unix,xml
@@ -91,19 +98,15 @@ CreolLex.ml: Creol.mll
 distclean-local:
 	test ! -d html || rm -rf html
 
-.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
+.depend: ${srcdir}/Makefile.am $(creolc_SOURCES) $(BUILT_SOURCES)
 	( cd ${top_builddir}/xml && make )
 	$(OCAMLFIND) ocamldep $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
 
-html-local: html-stamp
-
-.PHONY: libxml
-libxml:
-
-
-html-stamp: ${srcdir}/Makefile.am $(creolc_SOURCES)
-	test -d html || mkdir html
-	$(OCAMLFIND) ocamldoc $(OCAMLFIND_FLAGS) -html -d html $(creolc_SOURCES)
+html-local: ${srcdir}/Makefile.am $(creolc_DOCSOURCES)
+	test ! -d html || rm -rf html
+	mkdir html
+	$(OCAMLFIND) ocamldoc $(OCAMLFIND_FLAGS) -html -d html -m A $(creolc_DOCSOURCES)
+	date > $@
 
 CreolLex.cmo: CreolParser.cmi
-include ${srcdir}/.depend
+-include ${srcdir}/.depend

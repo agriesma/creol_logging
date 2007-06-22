@@ -38,4 +38,23 @@ val from_file : string -> ('a, 'b, 'c) Declaration.t list
 
 val from_files : string list -> ('a, 'b, 'c) Declaration.t list
 
-val creol_to_xml : string -> (XmlTextWriter.xmlwriter -> 'a -> unit) -> (XmlTextWriter.xmlwriter -> 'b -> unit) -> (XmlTextWriter.xmlwriter -> 'c -> unit) -> ('a, 'b, 'c) Declaration.t list -> unit
+val creol_to_xml : name: string ->
+  stmt_handler: (XmlTextWriter.xmlwriter -> 'a -> unit) ->
+  expr_handler: (XmlTextWriter.xmlwriter -> 'b -> unit) ->
+  type_handler: (XmlTextWriter.xmlwriter -> 'c -> unit) ->
+  tree: ('a, 'b, 'c) Declaration.t list -> unit
+  (** Write a creol parse tree to XML.
+
+      [name] is the name for the target file, where "-" is standard
+      output.
+
+      [stmt_handler] is a function for processing the notes associated to
+      statements.
+
+      [expr_handler] is a function for writing out the notes associated to
+      expressions.
+
+      [type_handler] is a function for writing out the notes associated to
+      types.
+
+      [tree] is the actual parse tree to write. *)
