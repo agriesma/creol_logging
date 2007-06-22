@@ -19,7 +19,7 @@ begin
   var n: Int := 0
 
   with Producer
-    op append(in d:Data) == await n < max; buffer := plus(buffer, d)
+    op append(in d:Data) == await n < max; buffer := buffer |- d
   with Consumer
     op remove(out d:Data) ==
       await n > 0; d := first(buffer); buffer := rest(buffer)

@@ -4,7 +4,7 @@ pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
 < "BoundedBuffer" : Cl | Inh: noInh, Par: noAid, Att: "buffer" |-> null , "max" |-> null , "n" |-> null, Mtds: 
-  < "append" : Mtdname | Param: "d", Latt: "d" |-> null, Code: ( await "<" ( "n" # "max" ) ) ; "buffer" ::= "plus" ( "buffer" # "d" ) ; return ( emp ) > *
+  < "append" : Mtdname | Param: "d", Latt: "d" |-> null, Code: ( await "<" ( "n" # "max" ) ) ; "buffer" ::= "|-" ( "buffer" # "d" ) ; return ( emp ) > *
   < "remove" : Mtdname | Param: noAid, Latt: "d" |-> null, Code: ( await ">" ( "n" # int(0) ) ) ; "d" ::= "first" ( "buffer" ) ; "buffer" ::= "rest" ( "buffer" ) ; return ( "d" ) >, Ocnt: 0 >
 
 < "Prod" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 

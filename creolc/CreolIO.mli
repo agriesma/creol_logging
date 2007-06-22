@@ -37,6 +37,7 @@ val from_channel : in_channel -> ('a, 'b, 'c) Declaration.t list
 val from_file : string -> ('a, 'b, 'c) Declaration.t list
 
 val from_files : string list -> ('a, 'b, 'c) Declaration.t list
+  (** *)
 
 val creol_to_xml : name: string ->
   stmt_handler: (XmlTextWriter.xmlwriter -> 'a -> unit) ->

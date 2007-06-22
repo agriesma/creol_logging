@@ -44,11 +44,11 @@ begin
   op deliverToys ==
 	ctReindeers := 0;
 	t1!first(waitReindeers).harness(); 
-	harnessedReindeers := plus(harnessedReindeers, first(waitReindeers)); 
+	harnessedReindeers := harnessedReindeers |- first(waitReindeers); 
 	waitReindeers := rest(waitReindeers);
 	// ....;
 	t5!first(waitReindeers).harness(); 
-	harnessedReindeers := plus(harnessedReindeers, first(waitReindeers)); 
+	harnessedReindeers := harnessedReindeers |- first(waitReindeers); 
 	waitReindeers := rest(waitReindeers);
 	await t1? & t2? & t3? & t4? & t5?;
 	// <Deliver Toys>;
@@ -62,13 +62,13 @@ begin
   op talkToelves ==
 	ctElves := ctElves - 3; 
 	t1!first(waitElves).showIn();
-	inofficeElves := plus(inofficeElves, first(waitElves));
+	inofficeElves := inofficeElves |- first(waitElves);
 	waitElves := rest(waitElves);
 	t2!first(waitElves).showIn();
-	inofficeElves := plus(inofficeElves, first(waitElves));
+	inofficeElves := inofficeElves |- first(waitElves);
 	waitElves := rest(waitElves);
 	t3!first(waitElves).showIn();
-	inofficeElves := plus(inofficeElves, first(waitElves));
+	inofficeElves := inofficeElves |- first(waitElves);
 	waitElves := rest(waitElves);
 	await t1? & t2? & t3?;
 	// <Talk to elves>;
@@ -83,12 +83,12 @@ begin
 with Reindeer
   op backFromHoliday ==
 	ctReindeers := ctReindeers + 1; 
-	waitReindeers := plus(waitReindeers, caller)
+	waitReindeers := waitReindeers |- caller
 
 with Elf
   op haveProblem ==
 	ctElves := ctElves + 1; 
-	waitElves := plus(waitElves, caller)
+	waitElves := waitElves |- caller
 end
 
 
