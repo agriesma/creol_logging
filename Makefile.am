@@ -30,7 +30,6 @@ SUBDIRS			= ${MAUDE_MODE} ${CREOL_MODE} share info xml creolc \
 
 MOSTLYCLEANFILES	= *~
 MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
-			  depcomp elisp-comp missing install-sh \
-			  creoltools.spec
+			  depcomp elisp-comp missing install-sh
 
 bin_SCRIPTS		= creolshell creolbug
