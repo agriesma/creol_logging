@@ -228,7 +228,7 @@ module Statement: sig
 	  (** Case statement *)
       | Typecase of 'a * (('b, 'c) Expression.t, 'c Type.t, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
 	  (** Type case statement *)
-      | Sequence of 'a * ('a, 'b, 'c) t list
+      | Sequence of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	  (** Sequential composition *)
       | Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	  (** Merge of statements *)

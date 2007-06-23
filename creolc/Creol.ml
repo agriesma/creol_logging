@@ -332,7 +332,7 @@ module Statement =
 	    (('b, 'c) Expression.t, unit, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
 	| Typecase of 'a *
 	    (('b, 'c) Expression.t, 'c Type.t, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
-	| Sequence of 'a * ('a, 'b, 'c) t list
+	| Sequence of 'a * ('a, 'b, 'c) t  * ('a, 'b, 'c) t
 	| Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	| Choice of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
         | Extern of 'a * string
@@ -366,10 +366,16 @@ module Statement =
 	| Try (a, _, _) -> a
 	| Case (a, _) -> a
 	| Typecase (a, _) -> a
-	| Sequence(a, _) -> a
+	| Sequence(a, _, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a
 	| Extern(a, _) -> a
+
+    let is_skip =
+      (** Test, whether the statement is a skip statement. *)
+      function
+	Skip _ -> true
+	| _ -> false
 
   end
 
@@ -475,6 +481,11 @@ open Declaration
 (** A counter used to generate the next fresh label *)
 let next_fresh_label = ref 0
 
+let fresh_label () =
+  (* make a fresh label *)
+  let res = "sync." ^ (string_of_int !next_fresh_label) in
+    next_fresh_label := !next_fresh_label + 1 ; res
+
 
 let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
   (** Normalise an abstract syntax tree by replacing all derived concepts
@@ -505,7 +516,7 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
     and split_guard note =
       function
 	  Binary(a, (GuardAnd | And), Label(ll, l), e) ->
-            Sequence(note, [Await (note, Label (ll, l)) ; split_guard note e])
+            Sequence(note, Await (note, Label (ll, l)), split_guard note e)
 	| Binary(a, Or, Label(ll, l), e) ->
             Choice(note, Await (note, Label (ll, l)), split_guard note e)
 	| e -> Await (note, lower_expression e)
@@ -522,10 +533,10 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
-	  Sequence (a, [ AsyncCall (copy_stmt_note a,
-				   Some ".anon", lower_expression e, n,
-				   List.map lower_expression p) ;
-			 Free (copy_stmt_note a, ".anon") ])
+	  Sequence (a, AsyncCall (copy_stmt_note a,
+				 Some ".anon", lower_expression e, n,
+				 List.map lower_expression p),
+		   Free (copy_stmt_note a, ".anon"))
       | AsyncCall (a, Some l, e, n, p) ->
 	  AsyncCall (a, Some l, lower_expression e, n,
 		    List.map lower_expression p)
@@ -540,12 +551,11 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 	     sequences which avoids this nesting? *)
           let ne = lower_expression e
 	  and np = List.map lower_expression p
-          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+	  and l = fresh_label ()
           in
-	    next_fresh_label := !next_fresh_label + 1 ;
-	    Sequence (a, [ AsyncCall (copy_stmt_note a,
-				     Some fresh_label, ne, n, np) ;
-			   Reply (copy_stmt_note a, fresh_label, r) ] )
+	    Sequence (a, AsyncCall (copy_stmt_note a,
+				   Some l, ne, n, np),
+		     Reply (copy_stmt_note a, l, r))
       | AwaitSyncCall (a, e, n, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
@@ -555,19 +565,19 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 	     sequences which avoids this nesting? *)
           let ne = lower_expression e
 	  and np = List.map lower_expression p
-          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+	  and l = fresh_label ()
           in
-	    next_fresh_label := !next_fresh_label + 1 ;
-	    Sequence (a, [ AsyncCall (copy_stmt_note a, Some fresh_label, ne, n, np) ;
-			   Await (copy_stmt_note a, Label(Expression.note ne, fresh_label)) ;
-			   Reply (copy_stmt_note a, fresh_label, r) ] )
+	    Sequence (a, AsyncCall (copy_stmt_note a, Some l, ne, n, np),
+		     Sequence(copy_stmt_note a,
+			     Await (copy_stmt_note a, Label(Expression.note ne, l)),
+			     Reply (copy_stmt_note a, l, r)))
       | LocalAsyncCall (a, None, m, lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
-	  Sequence (a, [ LocalAsyncCall (copy_stmt_note a, Some ".anon", m, lb, ub,
-					List.map lower_expression i) ;
-			 Free (copy_stmt_note a, ".anon") ])
+	  Sequence (a, LocalAsyncCall(copy_stmt_note a, Some ".anon", m, lb, ub,
+				     List.map lower_expression i),
+		   Free (copy_stmt_note a, ".anon"))
       | LocalAsyncCall (a, Some l, m, lb, ub, i) ->
 	  LocalAsyncCall (a, Some l, m, lb, ub, List.map lower_expression i)
       | LocalSyncCall (a, m, l, u, i, o) ->
@@ -578,11 +588,10 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 	     not very nice.  May be we want to have something smarter for
 	     sequences which avoids this nesting? *)
 	  let ni = List.map lower_expression i
-          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+	  and lab = fresh_label ()
           in
-	    next_fresh_label := !next_fresh_label + 1 ;
-	    Sequence (a, [ LocalAsyncCall (copy_stmt_note a, Some fresh_label, m, l, u, ni) ;
-			   Reply (copy_stmt_note a, fresh_label, o) ] )
+	    Sequence (a, LocalAsyncCall (copy_stmt_note a, Some lab, m, l, u, ni),
+		     Reply (copy_stmt_note a, lab, o))
       | AwaitLocalSyncCall (a, m, l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
@@ -591,13 +600,12 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 	     not very nice.  May be we want to have something smarter for
 	     sequences which avoids this nesting? *)
 	  let ni = List.map lower_expression i
-          and fresh_label = "sync." ^ (string_of_int !next_fresh_label)
+	  and lab = fresh_label ()
           in
-	    next_fresh_label := !next_fresh_label + 1 ;
-	    Sequence (a, [ LocalAsyncCall (copy_stmt_note a, Some fresh_label, m, l, u, ni) ;
-			   Await (copy_stmt_note a,
-				 Label(expr_note_of_stmt_note a, fresh_label));
-			   Reply (copy_stmt_note a, fresh_label, o) ] )
+	    Sequence (a, LocalAsyncCall (copy_stmt_note a, Some lab, m, l, u, ni),
+		     Sequence (copy_stmt_note a, Await (copy_stmt_note a,
+						       Label(expr_note_of_stmt_note a, lab)),
+			      Reply (copy_stmt_note a, lab, o)))
       | Tailcall (a, m, l, u, i) ->
 	  Tailcall (a, m, l, u, List.map lower_expression i)
       | If (a, c, t, f) -> If(a, lower_expression c, lower_statement t,
@@ -616,40 +624,57 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
       | Try _ -> assert false
       | Case _ -> assert false
       | Typecase _ -> assert false
-      | Sequence (a, s1) -> Sequence (a, List.map lower_statement s1)
+      | Sequence (a, s1, s2) ->
+	  let ls1 = lower_statement s1
+	  and ls2 = lower_statement s2 in
+	    Sequence (a, ls1, ls2)
       | Merge (a, s1, s2) -> Merge (a, lower_statement s1,
 				   lower_statement s2)
       | Choice (a, s1, s2) -> Choice (a, lower_statement s1,
 				     lower_statement s2)
       | Extern _ as s -> s
-  and lower_method_variables note =
+  and lower_method_variables note vars =
     (** Compute a pair of a new list of local variable declarations
-	and a list of assignments used for initialisation. *)
-    function
-	[] -> ([], [])
-      | ({ var_name = _ ; var_type = _ ; var_init = None } as v)::l ->
-	  let r = lower_method_variables note l in
-	    (v::(fst r), snd r)
-      | ({ var_name = n; var_type = _ ; var_init = Some i } as v)::l ->
-	  let r = lower_method_variables note l in
-	  let a = Assign(note, [n], [lower_expression i]) in
-	    ({ v with var_init = None}::(fst r), a::(snd r))
+	and a list of assignments used for initialisation.
+
+	if the variable list is empty or no variable in the list has an
+	initializer, this function will produce a skip statement as the
+	method-call's initialization.  The caller of this function should
+	check for this and discard the initalization block.
+
+	The initialisation component of variable declarations will be
+	removed. *)
+    let lower_method_variable =
+      function 
+          ({ var_name = n ; var_type = _ ; var_init = Some i } as v) ->
+	    ([{ v with var_init = None }],
+	    Assign(note, [n], [lower_expression i]))
+        | v -> ([v], Skip note)
+    in
+      match vars with
+	  [] -> ([], Skip note)
+	| [v] -> (lower_method_variable v)
+	| v::l ->
+	    let vl = lower_method_variable v
+	    and ll = lower_method_variables note l in
+	      match vl with
+		  (vll, Assign _) -> (vll@(fst ll), Sequence(note, (snd vl), (snd ll)))
+		| (vll, Skip _) -> (vll@(fst ll), (snd ll))
+		| _ -> assert false
   and lower_method m =
     (** Simplify a method definition. *)
-    next_fresh_label := 0 ; (* labels need to be unique in this method only. *)
+    let _ = next_fresh_label := 0 (* Labels must only be unique per method. *)
+    in
     match m.meth_body with
 	None -> m
       | Some mb  ->
-	  let mv = m.meth_vars in
-	  let note = Statement.note mb in
-	  let smv = lower_method_variables note mv in
-	  let smb = lower_statement mb in
-	    { m with meth_vars = fst smv ; meth_body =
-		Some (begin
-		  match smb with
-		      Sequence (n, sl) -> Sequence (n, (snd smv)@ sl)
-		    | s -> Sequence (note, (snd smv)@[s])
-		end) }
+	  let smv = lower_method_variables (Statement.note mb) m.meth_vars in
+	    { m with meth_vars = fst smv ;
+	      meth_body = Some( if Statement.is_skip (snd smv) then
+		lower_statement mb
+		else
+		  Sequence(Statement.note mb, snd smv,
+			  lower_statement mb)) }
   and lower_with w =
     { w with With.methods = List.map lower_method w.With.methods }
   and lower_inherits =
@@ -799,19 +824,12 @@ and definitions_in_statement note stm =
       | Try _ -> assert false
       | Case _ -> assert false
       | Typecase _ -> assert false
-      | Sequence (n, l) ->
-	  let rec definitions_in_sequence np =
-	    function
-		[] -> assert false;
-	      | [s] -> [definitions_in_statement np s]
-	      | s::r -> let ns = definitions_in_statement np s in
-		let nr = definitions_in_sequence (Statement.note ns) r in
-		  ns::nr
-	  in
-	  let nl = definitions_in_sequence note l in
-	    Sequence({ n with Note.env =
-		(Statement.note (List.nth nl ((List.length nl) - 1))).Note.env},
-		    nl)
+      | Sequence (n, s1, s2) ->
+	  let ns1 = (definitions_in_statement note s1) in
+	  let ns2 = (definitions_in_statement note s2) in
+	    Sequence ({n with Note.env = Note.join (Statement.note ns1).Note.env
+		(Statement.note ns2).Note.env},
+		  ns1, ns2)
 	      (* For merge and choice we do not enforce sequencing of the
 		 computation of the parts, but we allow the compiler to
 		 choose some order *)
@@ -897,11 +915,13 @@ and uses_in_statement =
     | Try _ -> assert false
     | Case _ -> assert false
     | Typecase _ -> assert false
-    | Sequence (a, sl) ->
-	let nsl = uses_in_sequence a sl in
-	  Sequence ({ a with Note.env =
-	      (Statement.note (List.nth nsl
-				  ((List.length nsl) - 1))).Note.env}, nsl)
+    | Sequence (a, s1, s2) ->
+	let ns1 = uses_in_statement s1
+	and ns2 = uses_in_statement s2 in
+	  Sequence ({ a with
+	    Note.env = Note.meet (Statement.note ns1).Note.env
+	      (Statement.note ns2).Note.env },
+		ns1, ns2)
     | Merge (a, s1, s2) ->
 	let ns1 = uses_in_statement s1
 	and ns2 = uses_in_statement s2 in
@@ -954,19 +974,7 @@ let optimise_tailcalls prg =
 	      Some ((optimise_in_statement
 			(List.map (function v -> v.var_name) m.meth_outpars))
 		       body) } 
-  and optimise_in_statement outs =
-    function
-	Sequence (a, sl) ->
-	  Sequence (a, optimise_in_statement_inner outs sl)
-      | s -> s
-  and optimise_in_statement_inner outs =
-    function
-	[] -> assert false
-      | [LocalSyncCall(ia, m, lb, ub, i, o)] when o = outs ->
-	  tailcall_counter := !tailcall_counter + 1;
-	  [LocalSyncCall(ia, m, lb, ub, i, o)]
-      | [s] -> [s]
-      | s::l -> s::(optimise_in_statement_inner outs l)
+  and optimise_in_statement outs s = s
   in
     tailcall_counter := 0;
     List.map optimise_declaration prg
@@ -1258,20 +1266,21 @@ let pretty_print out_channel input =
 	| Try _ -> assert false
 	| Case _ -> assert false
 	| Typecase _ -> assert false
-	| Sequence (_, sl) -> 
+	| Sequence (_, s1, s2) -> 
 	    let op_prec = 25 in
 	    let nl = lvl + if prec < op_prec then 1 else 0 in
 	      open_block prec op_prec;
-	      separated_list (function s -> print nl op_prec s)
-		(function () -> output_string out_channel ";" ; do_indent nl)
-		sl ;
+	      print nl op_prec s1;
+	      output_string out_channel "; ";
+	      do_indent nl;
+	      print nl op_prec s2;
 	      close_block prec op_prec
 	| Merge (_, l, r) ->
 	    let op_prec = 29 in
 	    let nl = lvl + if prec < op_prec then 1 else 0 in
 	      open_block prec op_prec;
 	      print nl op_prec l;
-	      output_string out_channel " |||";
+	      output_string out_channel " ||| ";
 	      do_indent nl;
 	      print nl op_prec r;
 	      close_block prec op_prec
@@ -1467,11 +1476,12 @@ struct
 	      output_string out_channel " do ";
 	      print 25 b;
 	      output_string out_channel " od "
-	  | Sequence (_, sl) ->
+	  | Sequence (_, s1, s2) ->
 	      let op_prec = 25 in
 		open_paren prec op_prec ;
-		separated_list (function s -> print op_prec s)
-		  (function () -> output_string out_channel " ; ") sl;
+		print op_prec s1; 
+		output_string out_channel " ; ";
+		print op_prec s2; 
 		close_paren prec op_prec
 	  | Merge (_, l, r) ->
 	      let op_prec = 29 in

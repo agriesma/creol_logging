@@ -376,9 +376,10 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Sequence (a, sl) ->
+      | Sequence (a, s1, s2) ->
 	  XmlTextWriter.start_element writer "creol:sequence" ;
-	  List.iter (creol_statement_to_xml) sl;
+	  creol_statement_to_xml s1;
+	  creol_statement_to_xml s2;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
       | Merge (a, f, n) ->

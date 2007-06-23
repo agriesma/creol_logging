@@ -256,8 +256,10 @@ choice_statement:
 	    | Some s -> Choice((Note.make $startpos), l, s) }
 
 statement_sequence:
-      l = separated_nonempty_list(SEMI, basic_statement)
-	{ Sequence((Note.make $startpos), l) }
+      l = basic_statement r = ioption(preceded(SEMI, statement_sequence))
+	{ match r with
+	      None -> l
+	    | Some s -> Sequence((Note.make $startpos), l, s) }
     | error SEMI
 	{ signal_error $startpos "syntax error in statement" }
 
