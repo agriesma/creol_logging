@@ -1,3 +1,11 @@
+creoltools 0.0e (2007-XX-XX): alpha release.
+
+In the compiler:
+* Sequence is represented as a binary operator, like merge and choice.
+* normalize_sequences will convert all sequences into a right-threaded
+  format.
+
+
 creoltools 0.0e (2007-06-22): alpha release.
 
 In the compiler:

@@ -358,24 +358,61 @@ module Statement =
 	| LocalAsyncCall (a, _, _, _, _, _) -> a
 	| LocalSyncCall (a, _, _, _, _, _) -> a
 	| AwaitLocalSyncCall (a, _, _, _, _, _) -> a
+	| Raise (a, _, _) -> a
+	| Extern(a, _) -> a
 	| Tailcall (a, _, _, _, _) -> a
 	| If (a, _, _, _) -> a
 	| While (a, _, _, _) -> a
 	| For (a, _, _, _, _, _, _) -> a
-	| Raise (a, _, _) -> a
 	| Try (a, _, _) -> a
 	| Case (a, _) -> a
 	| Typecase (a, _) -> a
 	| Sequence(a, _, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a
-	| Extern(a, _) -> a
 
     let is_skip =
       (** Test, whether the statement is a skip statement. *)
       function
 	Skip _ -> true
 	| _ -> false
+
+    let rec normalize_sequences stmt =
+      (** Transform an arbitrary statement [stmt] into a statement in
+	  which all sequences are right-threaded, i.e., the first (or
+	  left) part of a sequence statement is always a non-sequence
+	  statement. *)
+      let rec append_to_sequence stm1 stm2 =
+	(** Append the sequence of statement [stm2] to the sequence
+	    [stm1].  Assumes that both statement sequences are
+	    right-threaded. *)
+	match stm1 with
+	    Sequence(a, s1, s2) ->
+	      Sequence(a, s1, append_to_sequence s2  stm2)
+	  | _ -> Sequence (note stm1, stm1, stm2)
+      in
+	match stmt with
+	    If (a, c, s1, s2) ->
+	      If (a, c, normalize_sequences s1, normalize_sequences s2)
+	  | While (a, c, i, s) -> 
+	      While (a, c, i, normalize_sequences s)
+	  | For (a, v, st, en, sr, i, s) ->
+	      For (a, v, st, en, sr, i, normalize_sequences s)
+	  | Try (a, _, _) -> assert false (* XXX *)
+	  | Case _ -> assert false (* XXX *)
+	  | Typecase _ -> assert false (* XXX *)
+	  | Sequence (a, (Sequence _ as s1), (Sequence _ as s2)) ->
+	      append_to_sequence (normalize_sequences s1)
+		(normalize_sequences s2)
+	  | Sequence (a, Sequence (a1, s11, s12), s2) ->
+	      Sequence (a, s11, normalize_sequences (Sequence (a1, s12, s2)))
+	  | Sequence (a, s1, (Sequence _ as s2)) ->
+	      Sequence (a, s1, normalize_sequences s2)
+	  | Merge (a, s1, s2) ->
+	      Merge (a, normalize_sequences s1, normalize_sequences s2)
+	  | Choice (a, s1, s2) ->
+	      Choice (a, normalize_sequences s1, normalize_sequences s2)
+	  | _ -> stmt
 
   end
 
