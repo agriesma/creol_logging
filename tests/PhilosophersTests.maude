@@ -13,7 +13,7 @@ frew[750] init main("Butler", emp) .
 *** Pr: L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
 *** conf:Configuration .
 
-in metaexec .
+load creol-metaexec .
 
 red simulate('PROGRAM, upTerm(init main("Butler", emp)), 070676, 750) .
 

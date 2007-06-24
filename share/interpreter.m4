@@ -78,7 +78,7 @@ ifdef({|MODELCHECK|},dnl
 *** 02111-1307, USA.
 ***
 
-ifdef({|MODELCHECK|},{|in model-checker|})
+ifdef({|MODELCHECK|},{|load model-checker|})
 
 *** Data types are in their own module.
 in creol-datatypes .

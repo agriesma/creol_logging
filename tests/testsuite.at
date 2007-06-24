@@ -35,9 +35,9 @@ AT_DATA([metatest.maude],
 [
 set show timing off .
 set show advise off .
-in interpreter .
-in $1 .
-in metaexec .
+load creol-interpreter .
+load $1 .
+load creol-metaexec .
 $3
 quit .
 ])
@@ -62,9 +62,9 @@ AT_DATA([metatest.maude],
 [
 set show timing off .
 set show advise off .
-in interpreter .
-in $1 .
-in metaexec .
+load creol-interpreter .
+load $1 .
+load creol-metaexec .
 $3
 quit .
 ])

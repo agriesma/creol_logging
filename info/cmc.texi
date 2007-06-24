@@ -837,7 +837,7 @@ For larger systems, random execution, as described in the next section
 Because the simulation done by maude often give not the desired results,
 a strategy for more random executions is provided.  You can load and use
 this strategy from the maude session in which the program is to be
-interpreted with @command{load metaexec}.
+interpreted with @command{load creol-metaexec}.
 
 This provides one additional term @command{simulate}.  It accepts a
 @code{Qid} designating the module on the meta-level, usually
