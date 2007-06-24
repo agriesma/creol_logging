@@ -646,7 +646,7 @@ crl
   =>
   < O : C | Att: S, Pr: (L, (NeSL ; SL)), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  if ready(NeSL', (S # L), MM)
+  if ready(NeSL, (S # L), MM)
   [label nondet]
   .
 

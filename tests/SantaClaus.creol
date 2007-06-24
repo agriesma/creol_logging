@@ -43,41 +43,41 @@ begin
 
   op deliverToys ==
 	ctReindeers := 0;
-	t1!first(waitReindeers).harness(); 
-	harnessedReindeers := harnessedReindeers |- first(waitReindeers); 
-	waitReindeers := rest(waitReindeers);
+	t1!head(waitReindeers).harness(); 
+	harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
+	waitReindeers := tail(waitReindeers);
 	// ....;
-	t5!first(waitReindeers).harness(); 
-	harnessedReindeers := harnessedReindeers |- first(waitReindeers); 
-	waitReindeers := rest(waitReindeers);
+	t5!head(waitReindeers).harness(); 
+	harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
+	waitReindeers := tail(waitReindeers);
 	await t1? & t2? & t3? & t4? & t5?;
 	// <Deliver Toys>;
-	!first(harnessedReindeers).unharness();
-	harnessedReindeers := rest(harnessedReindeers);
+	!head(harnessedReindeers).unharness();
+	harnessedReindeers := tail(harnessedReindeers);
 	// ....;
-	!first(harnessedReindeers).unharness();
-	harnessedReindeers := rest(harnessedReindeers)
+	!head(harnessedReindeers).unharness();
+	harnessedReindeers := tail(harnessedReindeers)
 
 
   op talkToelves ==
 	ctElves := ctElves - 3; 
-	t1!first(waitElves).showIn();
-	inofficeElves := inofficeElves |- first(waitElves);
-	waitElves := rest(waitElves);
-	t2!first(waitElves).showIn();
-	inofficeElves := inofficeElves |- first(waitElves);
-	waitElves := rest(waitElves);
-	t3!first(waitElves).showIn();
-	inofficeElves := inofficeElves |- first(waitElves);
-	waitElves := rest(waitElves);
+	t1!head(waitElves).showIn();
+	inofficeElves := inofficeElves |- head(waitElves);
+	waitElves := tail(waitElves);
+	t2!head(waitElves).showIn();
+	inofficeElves := inofficeElves |- head(waitElves);
+	waitElves := tail(waitElves);
+	t3!head(waitElves).showIn();
+	inofficeElves := inofficeElves |- head(waitElves);
+	waitElves := tail(waitElves);
 	await t1? & t2? & t3?;
 	// <Talk to elves>;
-	t1!first(inoffcieElves).showOut();
-	inofficeElves := rest(inofficeElves);
-	t2!first(inoffcieElves).showOut();
-	inofficeElves := rest(inofficeElves);
-	t3!first(inoffcieElves).showOut();
-	inofficeElves := rest(inofficeElves);
+	t1!head(inoffcieElves).showOut();
+	inofficeElves := tail(inofficeElves);
+	t2!head(inoffcieElves).showOut();
+	inofficeElves := tail(inofficeElves);
+	t3!head(inoffcieElves).showOut();
+	inofficeElves := tail(inofficeElves);
 	await t1? & t2? & t3?
 
 with Reindeer

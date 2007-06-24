@@ -22,7 +22,7 @@ begin
     op append(in d:Data) == await n < max; buffer := buffer |- d
   with Consumer
     op remove(out d:Data) ==
-      await n > 0; d := first(buffer); buffer := rest(buffer)
+      await n > 0; d := head(buffer); buffer := tail(buffer)
 end
 
 

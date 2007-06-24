@@ -6,7 +6,7 @@ result Configuration:
   < "append" : Mtdname | Param: "d", Latt: "d" |-> null, Code: await "<"("n" #
     "max") ; "buffer" ::= "|-"("buffer" # "d") ; return(emp) > *
   < "remove" : Mtdname | Param: noAid, Latt: "d" |-> null, Code: await ">"("n"
-    # int(0)) ; "d" ::= "first"("buffer") ; "buffer" ::= "rest"("buffer") ;
+    # int(0)) ; "d" ::= "head"("buffer") ; "buffer" ::= "tail"("buffer") ;
     return("d") >,
   Ocnt: 0 >
 
