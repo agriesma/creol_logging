@@ -639,10 +639,11 @@ XXX
 @section Creol Interpreter
 
 The interpreter defines the semantics of Creol in terms of rewriting
-rules.  We refer the reader to the module @code{INTERPRETER} for the
-exact definition of the rules.  Here, we give an overview of the rules
-and equations.  The names given below can be used for tracing the
-rules using Maudes trace facility.
+rules.  We refer the reader to the module @code{INTERPRETER} in the file
+@code{creol-interpreter.maude} (@pxref{Setting CMC Up}) for the exact
+definition of the rules.  Here, we give an overview of the rules and
+equations.  The names given below can be used for tracing the rules
+using Maudes trace facility.
 
 @table @code
 @item assign
@@ -739,6 +740,14 @@ Bury a variable, i.e., remove it from the local bindings.
 @node Model Checker
 @section Creol Model Checker
 
+The model checker is a version of the interpreter that is specifically
+tuned towards model checking.  It has the same structure as the
+interpreter, and has almost the same definitions.  In this section we
+point out the most important differences.
+
+The model checker is defined in the file @file{creol-modelchecker.maude}
+(@pxref{Setting CMC Up}).
+
 XXX
 
 
@@ -752,10 +761,40 @@ XXX
 @section Using the CMC
 
 @menu
+* Setting CMC Up::
 * Simulation::
 * Meta Execution::
 * Model Checking::
 @end menu
+
+
+@node Setting CMC Up
+@subsection Setting the CMC Up
+
+The Creol Machine described in this chapter runs on top of the Maude
+rewriting system, which can be obtained at @url{maude.cs.uiuc.edu}.  The
+CMC itself is defined in the files @file{creol-datatypes.maude} and
+@file{creol-interpreter.maude}, whereas the meta execution strategy
+(@pxref{Meta Execution}) is defined in @file{creol-metaexec.maude}.
+
+These data files are distributed in the subdirectory @file{share} of the
+distrbution.  They will be installed into
+@file{@var{$datadir}/creoltools}, usually
+@file{/usr/local/share/creoltools}.  To use the CMC we have to tell
+Maude where it can find these support files.  Maude searches in
+the environment variable @env{MAUDE_LIB} for its support files.  We
+suggest that you append the directory of the CMC files to this variable,
+for example, using these commands in @command{bash}:
+@example
+export CREOL_LIB=@var{/path/to/support/files}
+export MAUDE_LIB=$@{MAUDE_LIB:+"$MAUDE_LIB:"@}$CREOL_LIB
+@end example
+
+You can append these two lines to your @file{~/.bashrc} to have these
+variables set for each login.
+
+Please ask your system administrator for setting up the CMC in different
+environments.
 
 
 @node Simulation
@@ -812,6 +851,8 @@ selection of the successor state.  Different seeds will result in
 different runs and configurations, whereas one seed will always produce
 the same result.
 
+We encourage you to use @file{creol-metaexec.maude} as a model for
+writing your own execution strategies for the CMC.
 
 
 @node Model Checking
