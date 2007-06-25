@@ -34,6 +34,10 @@ type pass = {
 }
 
 let passes = [
+  { name = "typecheck";
+    dependencies = [];
+    pass = CreolTyping.typecheck;
+    elapsed = 0.0; needed = true; dump = false };
   { name = "liveness";
     dependencies = [];
     pass = find_definitions;
