@@ -22,24 +22,26 @@ begin
   op run == !think() ||| !eat()
 
   op eat ==
-    await hungry;
-    await neighbor.borrowStick(;);
-    await chopstick;
-    hungry := false;
-    !neighbor.returnStick();
+    await hungry@Philosopher;
+    await neighbor@Philosopher.borrowStick(;);
+    await chopstick@Philosopher;
+    hungry@Philosopher := false;
+    !neighbor@Philosopher.returnStick();
     !eat()
 
   op think ==
-    await ~ hungry;
-    release; hungry := true;
+    await ~ hungry@Philosopher;
+    release;
+    hungry@Philosopher := true;
     !think()
 
   with Phil 
     op borrowStick ==
-      await chopstick;
-      chopstick := false
+      await chopstick@Philosopher;
+      chopstick@Philosopher := false
+
     op returnStick ==
-      chopstick := true
+      chopstick@Philosopher := true
 
 end
 

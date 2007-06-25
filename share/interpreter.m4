@@ -568,14 +568,14 @@ eq
   [label do-static-assign] .
 
 eq
-  < O : C | Att: S, Pr: (L,( (A , AL assign D # DL) ; SL)), PrQ: W,
+  < O : C | Att: S, Pr: (L,( (a , AL assign D # DL) ; SL)), PrQ: W,
     Lcnt: N >
   =
-  if dom(A,S) then
-    < O : C | Att: insert(A, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
+  if dom(a,S) then
+    < O : C | Att: insert(a, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
   else
-    < O : C | Att: S, Pr: (insert(A, D, L), (AL assign DL) ; SL), PrQ: W,
+    < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
   fi
   [label do-assign] .
