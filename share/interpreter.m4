@@ -513,6 +513,7 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
   vars O O' : Oid .
   vars C C' : Cid .
   vars A A' : Vid .
+  var a : String .
   var AL : VidList .
   var NeAL : NeVidList .
   var D : Data .
@@ -546,12 +547,25 @@ ifdef({|MODELCHECK|},dnl
 {| op label(_,_) : Oid Nat -> Label [ctor {|format|} (d d ! d d o d)] .
    eq caller(label(O, N)) = O . |})
 
+*** Evaluate all arguments.
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
 	    PrQ: W, Lcnt: N >|},
 {|< O : C | Att: S, Pr: (L,((AL assign evalList(EL, (S {|#|} L))); SL)), 
 	    PrQ: W, Lcnt: N >|},
 {|[label assign]|})
+
+*** XXX: This equation is currently broken (matches any class, etc.)
+*** The correct implementation depends on the type inference.
+*** But we know that if we refer to A statically, then it should be
+*** an attribute.
+eq
+  < O : C | Att: S, Pr: (L,( ((a @@ C'), AL assign D # DL) ; SL)),
+    PrQ: W, Lcnt: N >
+  =
+    < O : C | Att: insert(a, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
+      Lcnt: N > 
+  [label do-static-assign] .
 
 eq
   < O : C | Att: S, Pr: (L,( (A , AL assign D # DL) ; SL)), PrQ: W,
@@ -568,6 +582,8 @@ eq
 
 *** noVid assign emp reduces to noStm
 
+
+*** Skip
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >|},
 {|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >|},
