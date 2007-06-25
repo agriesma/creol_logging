@@ -3,10 +3,10 @@ mod PROGRAM is
 pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
-< "Deadlock" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "l" ! "this" . "n" ( emp ) ; release ; skip ; ( "l" ? ( noAid ) )  ; return ( emp ) > *
-  < "n" : Mtdname | Param: noAid, Latt: noSubst, Code: release ; return ( emp ) >, Ocnt: 0 >
+< "Deadlock" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "l" ! "this" . "n" ( emp ) ; release ; skip ; ( "l" ? ( noVid ) )  ; return ( emp ) > *
+  < "n" : Mtdname | Param: noVid, Latt: noSubst, Code: release ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

@@ -104,8 +104,6 @@ let signal_error s m =
 
 main:
       d = loption(declarations) EOF { d }
-    | d = error EOF
-	{ signal_error $startpos "syntax error at end of program." }
 
 declarations:
       d = declaration { [d] }
@@ -150,6 +148,10 @@ vardecl:
 
 %inline vardecl_no_init:
       i = ID COLON t = creol_type { { var_name = i; var_type = t; var_init = None } }
+    | ID error
+    | ID COLON error
+	{ signal_error $startpos "syntax error in variable declaration" }
+	
 
 method_decl:
       OP i = ID p = parameters_opt
@@ -171,13 +173,9 @@ parameters_opt:
 
 inputs:
       ioption(IN) l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
-    | error SEMI | error OUT
-	{ signal_error $startpos "syntax error in method declaration" }
 
 outputs:
       OUT l = separated_nonempty_list(COMMA, vardecl_no_init) { l }
-    | error COMMA | error RPAREN
-	{ signal_error $startpos "syntax error in method declaration" }
 
 anon_with_def:
     l = nonempty_list(method_def) i = list(invariant)
@@ -189,7 +187,7 @@ with_def:
 
 method_def:
       d = method_decl; EQEQ; a = loption(terminated(attributes, SEMI));
-	s = statement (* ioption(SEMI) *)
+	s = statement
     { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
 	meth_outpars = d.meth_outpars; meth_vars = a; meth_body = Some s} }
   |   d = method_decl; EQEQ EXTERN s = STRING
@@ -203,6 +201,7 @@ interfacedecl:
       INTERFACE n = CID i = iface_inherits_opt BEGIN w = ioption(with_decl) END
     { { Interface.name = n; Interface.inherits = i; Interface.with_decl = w } }
     | INTERFACE error
+    | INTERFACE CID error
 	{ signal_error $startpos "syntax error in interface declaration" }
 
 iface_inherits_opt:
@@ -260,15 +259,13 @@ statement_sequence:
 	{ match r with
 	      None -> l
 	    | Some s -> Sequence((Note.make $startpos), l, s) }
-    | error SEMI
-	{ signal_error $startpos "syntax error in statement" }
 
 basic_statement:
       SKIP
 	{ Skip (Note.make $startpos) }
     | RELEASE
 	{ Release (Note.make $startpos) }
-    | t = separated_nonempty_list(COMMA, ID) ASSIGN
+    | t = separated_nonempty_list(COMMA, lhs) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((Note.make $startpos), t, e) }
     | AWAIT g = guard
@@ -277,26 +274,31 @@ basic_statement:
       LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ AsyncCall ((Note.make $startpos), l, callee, m, i) }
     | l = ioption(ID) BANG m = ID
-      lb = ioption(preceded(AT, CID)) ub = ioption(preceded(LTLT, CID))
+	lb = ioption(preceded(SUPERTYPE, CID)) 
+	ub = ioption(preceded(SUBTYPE, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ LocalAsyncCall ((Note.make $startpos), l, m, lb, ub, i) }
-    | l = ID QUESTION LPAREN o = separated_list(COMMA, ID) RPAREN
+    | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
 	{ Reply ((Note.make $startpos), l, o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN
+	       o = separated_list(COMMA, lhs) RPAREN
 	{ SyncCall ((Note.make $startpos), c, m, i, o) }
-    | m = ID lb = ioption(preceded(AT, CID)) ub = ioption(preceded(LTLT, CID))
+    | m = ID
+	lb = ioption(preceded(SUPERTYPE, CID))
+	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN
+	       o = separated_list(COMMA, lhs) RPAREN
 	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN
+	       o = separated_list(COMMA, lhs) RPAREN
 	{ AwaitSyncCall ((Note.make $startpos), c, m, i, o) }
-    | AWAIT m = ID lb = ioption(preceded(AT, CID)) ub = ioption(preceded(LTLT, CID))
+    | AWAIT m = ID
+	lb = ioption(preceded(SUPERTYPE, CID))
+	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
-	       o = separated_list(COMMA, ID) RPAREN
+	       o = separated_list(COMMA, lhs) RPAREN
 	{ AwaitLocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }
@@ -323,7 +325,7 @@ basic_statement:
 	{ While (Note.make $startpos, c, inv, s) }
     | ASSERT a = assertion
 	{ Assert (Note.make $startpos, a) }
-    | error ELSE | error OP | error WITH | error END | error EOF
+    | expression error
 	{ signal_error $startpos "syntax error in statement" }
 
 catcher:
@@ -339,6 +341,13 @@ guard:
         { Binary ((Note.make $startpos), GuardAnd,
 		  Label((Note.make $startpos), l), g) }
     | e = expression { e }
+
+(* These expressions may occur on the left hand side of an assignment. *)
+lhs:
+      id = ID c = ioption(preceded(AT, creol_type))
+	{ match c with
+	      None -> LhsVar ((Note.make $startpos), id)
+	    | Some cl -> LhsAttr ((Note.make $startpos), id, cl) }
 
 expression_or_new:
       e = expression
@@ -362,8 +371,10 @@ expression:
 	{ Nil (Note.make $startpos) }
     | NULL
 	{ Null (Note.make $startpos) }
-    | id = ID
-	{ Id ((Note.make $startpos), id) }
+    | id = ID c = ioption(preceded(AT, creol_type))
+	{ match c with
+	      None -> Id ((Note.make $startpos), id)
+	    | Some cl -> StaticAttr ((Note.make $startpos), id, cl) }
     | LPAREN l = separated_list(COMMA, expression) RPAREN 
 	{ (* let n = Note.make $startpos in *)
 	    match l with
@@ -421,7 +432,6 @@ expression:
     | TIMES { Times }
     | DIV { Div }
     | PERCENT { Modulo }
-    | TIMESTIMES { Exponent }
     | PREPEND { Prepend }
     | APPEND { Append }
     | CONCAT { Concat }
@@ -475,10 +485,8 @@ creol_type:
 	{ Type.Application(Note.make $startpos, t, p) } 
     | DOLLAR v = CID
 	{ Type.Variable (Note.make $startpos, v) }
-    | l = creol_type TIMES r = creol_type
+    | l = creol_type TIMESTIMES r = creol_type
 	{ l (* XXX: Tuple *) }
-    | error RBRACK
-	{ signal_error $startpos "Error in type" }
 
 (* Assertions. *)
 

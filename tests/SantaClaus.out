@@ -1,8 +1,8 @@
 ==========================================
 reduce in PROGRAM : init .
 result Configuration: 
-< "Christmas" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds:
-  < "run" : Mtdname | Param: noAid, Latt: "e" |-> null, "r" |-> null, "sc" |->
+< "Christmas" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
+  < "run" : Mtdname | Param: noVid, Latt: "e" |-> null, "r" |-> null, "sc" |->
     null, Code: "sc" ::= new "SantaClausClass"(emp) ; "r" ::= new "Reindeer"(
     "sc") ; "r" ::= new "Reindeer"("sc") ; "r" ::= new "Reindeer"("sc") ; "r"
     ::= new "Reindeer"("sc") ; "r" ::= new "Reindeer"("sc") ; "e" ::= new
@@ -12,46 +12,46 @@ result Configuration:
   Ocnt: 0 >
 
 < "ElfC" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" .
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this" .
     "work"(emp) ; free(".anon") ; return(emp) > *
-  < "showIn" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" .
+  < "showIn" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this" .
     "talkToSanta"(emp) ; free(".anon") ; return(emp) > *
-  < "showOut" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" .
+  < "showOut" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this" .
     "work"(emp) ; free(".anon") ; return(emp) > *
-  < "talkToSanta" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
+  < "talkToSanta" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(
     emp) > *
-  < "work" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "sc" .
+  < "work" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "sc" .
     "haveProblem"(emp) ; free(".anon") ; return(emp) >,
   Ocnt: 0 >
 
 < "LeaderElfC" : Cl | Inh: "ElfC" < emp >, Par: "sc", "elves", Att: "elves" |->
     null, "sc" |-> null, Mtds:
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "run" @
-    "ElfC"(emp) ; "sync.0" ?(noAid) ; return(emp) > *
-  < "work" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "sc" .
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "run" @
+    "ElfC"(emp) ; "sync.0" ?(noVid) ; return(emp) > *
+  < "work" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "sc" .
     "haveProblem"(emp) ; free(".anon") ; return(emp) >,
   Ocnt: 0 >
 
 < "ReindeerC" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
-  < "deliverToys" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(
+  < "deliverToys" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(
     emp) > *
-  < "harness" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" .
+  < "harness" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this" .
     "deliverToys"(emp) ; free(".anon") ; return(emp) > *
-  < "holiday" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "sc" .
+  < "holiday" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "sc" .
     "backFromHoliday"(emp) ; free(".anon") ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" .
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this" .
     "holiday"(emp) ; free(".anon") ; return(emp) > *
-  < "unharness" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this"
+  < "unharness" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this"
     . "holiday"(emp) ; free(".anon") ; return(emp) >,
   Ocnt: 0 >
 
-< "SantaClausC" : Cl | Inh: noInh, Par: noAid, Att: "ctElves" |-> null,
+< "SantaClausC" : Cl | Inh: noInh, Par: noVid, Att: "ctElves" |-> null,
     "ctRreindeers" |-> null, "harnessedReindeers" |-> null, "inofficeElves" |->
     null, "waitElves" |-> null, "waitRreindeers" |-> null, Mtds:
-  < "backFromHoliday" : Mtdname | Param: noAid, Latt: noSubst, Code:
+  < "backFromHoliday" : Mtdname | Param: noVid, Latt: noSubst, Code:
     "ctReindeers" ::= "+"("ctReindeers" # int(1)) ; "waitReindeers" ::= "|-"(
     "waitReindeers" # "caller") ; return(emp) > *
-  < "deliverToys" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctReindeers"
+  < "deliverToys" : Mtdname | Param: noVid, Latt: noSubst, Code: "ctReindeers"
     ::= int(0) ; "t1" ! "head"("waitReindeers") . "harness"(emp) ;
     "harnessedReindeers" ::= "|-"("harnessedReindeers" # "head"(
     "waitReindeers")) ; "waitReindeers" ::= "tail"("waitReindeers") ; "t5" !
@@ -63,17 +63,17 @@ result Configuration:
     "harnessedReindeers" ::= "tail"("harnessedReindeers") ; ".anon" ! "head"(
     "harnessedReindeers") . "unharness"(emp) ; free(".anon") ;
     "harnessedReindeers" ::= "tail"("harnessedReindeers") ; return(emp) > *
-  < "haveProblem" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
+  < "haveProblem" : Mtdname | Param: noVid, Latt: noSubst, Code: "ctElves" ::=
     "+"("ctElves" # int(1)) ; "waitElves" ::= "|-"("waitElves" # "caller") ;
     return(emp) > *
-  < "loop" : Mtdname | Param: noAid, Latt: noSubst, Code: (await "&&"("<="(int(
+  < "loop" : Mtdname | Param: noVid, Latt: noSubst, Code: (await "&&"("<="(int(
     3) # "ctElves") # "~"("="("ctReindeers" # int(9)))) ; "sync.0" ! "this" .
-    "talkToElves"(emp) ; "sync.0" ?(noAid)[]await "="("ctReindeers" # int(5)) ;
-    "sync.1" ! "this" . "deliverToys"(emp) ; "sync.1" ?(noAid)) ; ".anon" !
+    "talkToElves"(emp) ; "sync.0" ?(noVid)[]await "="("ctReindeers" # int(5)) ;
+    "sync.1" ! "this" . "deliverToys"(emp) ; "sync.1" ?(noVid)) ; ".anon" !
     "this" . "loop"(emp) ; free(".anon") ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "this" .
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this" .
     "loop"(emp) ; free(".anon") ; return(emp) > *
-  < "talkToelves" : Mtdname | Param: noAid, Latt: noSubst, Code: "ctElves" ::=
+  < "talkToelves" : Mtdname | Param: noVid, Latt: noSubst, Code: "ctElves" ::=
     "-"("ctElves" # int(3)) ; "t1" ! "head"("waitElves") . "showIn"(emp) ;
     "inofficeElves" ::= "|-"("inofficeElves" # "head"("waitElves")) ;
     "waitElves" ::= "tail"("waitElves") ; "t2" ! "head"("waitElves") .

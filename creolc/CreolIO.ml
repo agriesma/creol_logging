@@ -167,10 +167,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
       | Assign (a, vs, es) ->
 	  XmlTextWriter.start_element writer "creol:assign" ;
 	  XmlTextWriter.start_element writer "creol:targets" ;
-	  List.iter (function v -> 
-	    XmlTextWriter.start_element writer "creol:variable" ;
-	    XmlTextWriter.write_attribute writer "name" v ;
-            XmlTextWriter.end_element writer ) vs ;
+	  List.iter creol_lhs_to_xml vs ;
           XmlTextWriter.end_element writer ;
 	  XmlTextWriter.start_element writer "creol:expressions" ;
 	  List.iter (function e -> 
@@ -210,10 +207,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  XmlTextWriter.start_element writer "creol:reply" ;
 	  XmlTextWriter.write_attribute writer "label" l ;
 	  XmlTextWriter.start_element writer "creol:results" ;
-	  List.iter (function i -> 
-	    XmlTextWriter.start_element writer "creol:variable" ;
-	    XmlTextWriter.write_attribute writer "name" i ;
-            XmlTextWriter.end_element writer ) is ;
+	  List.iter creol_lhs_to_xml is ;
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
@@ -235,10 +229,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
 	  XmlTextWriter.start_element writer "creol:results" ;
-	  List.iter (function i -> 
-	    XmlTextWriter.start_element writer "creol:variable" ;
-	    XmlTextWriter.write_attribute writer "name" i ;
-            XmlTextWriter.end_element writer ) is ;
+	  List.iter creol_lhs_to_xml is ;
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
@@ -255,10 +246,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
 	  XmlTextWriter.start_element writer "creol:results" ;
-	  List.iter (function i -> 
-	    XmlTextWriter.start_element writer "creol:variable" ;
-	    XmlTextWriter.write_attribute writer "name" i ;
-            XmlTextWriter.end_element writer ) is ;
+	  List.iter creol_lhs_to_xml is ;
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
@@ -298,10 +286,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
 	  XmlTextWriter.start_element writer "creol:results" ;
-	  List.iter (function i -> 
-	    XmlTextWriter.start_element writer "creol:variable" ;
-	    XmlTextWriter.write_attribute writer "name" i ;
-            XmlTextWriter.end_element writer ) is ;
+	  List.iter creol_lhs_to_xml is ;
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
@@ -321,10 +306,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
 	  XmlTextWriter.start_element writer "creol:results" ;
-	  List.iter (function i -> 
-	    XmlTextWriter.start_element writer "creol:variable" ;
-	    XmlTextWriter.write_attribute writer "name" i ;
-            XmlTextWriter.end_element writer ) is ;
+	  List.iter creol_lhs_to_xml is ;
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
@@ -406,6 +388,16 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
     XmlTextWriter.start_element writer "creol:argument" ; 
     creol_expression_to_xml e;
     XmlTextWriter.end_element writer
+  and creol_lhs_to_xml =
+    function
+        Expression.LhsVar (_, v) -> 
+        XmlTextWriter.start_element writer "creol:variable" ;
+        XmlTextWriter.write_attribute writer "name" v ;
+        XmlTextWriter.end_element writer
+      | Expression.LhsAttr (_, n, c) ->
+        XmlTextWriter.start_element writer "creol:attribute" ;
+        XmlTextWriter.write_attribute writer "name" n ;
+        XmlTextWriter.end_element writer
   and creol_expression_to_xml =
     function
 	Expression.Null a -> 
@@ -438,7 +430,13 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer
       | Expression.Id (a, v) -> 
 	  XmlTextWriter.start_element writer "creol:identifier" ; 
-	  XmlTextWriter.write_attribute writer "value" v ;
+	  XmlTextWriter.write_attribute writer "name" v ;
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.StaticAttr (a, n, c) ->
+	  XmlTextWriter.start_element writer "creol:staticattr" ; 
+	  XmlTextWriter.write_attribute writer "name" n ;
+	  creol_type_to_xml c ;
 	  expr_handler writer a ;
           XmlTextWriter.end_element writer
       | Expression.Unary (a, o, f) -> 

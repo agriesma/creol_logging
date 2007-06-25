@@ -73,7 +73,7 @@ let disable_passes passes =
 let dump_passes passes =
   ()
 
-let execute_passes tree =
+let execute_passes verbose tree =
   let rec execute tree =
     function 
 	[] -> tree
@@ -82,6 +82,7 @@ let execute_passes tree =
     if p.needed then
       begin
 	let now = ref (Unix.gettimeofday ()) in
+	let _ = if verbose then print_string ("executing " ^ p.name ^ "\n") in
 	let result =  (p.pass tree) in
 	let elapsed =
 	  (floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0

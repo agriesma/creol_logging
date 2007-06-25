@@ -122,7 +122,7 @@ class LeaderElfC(sc:SantaClaus, elves: List)
 	inherits ElfC
 	implements Elf
 begin
-  op run == run@ElfC(;)
+  op run == run:>ElfC(;)
   op work ==
 	// (<Lead elves> ||| <Make toys>);
 	!sc.haveProblem()

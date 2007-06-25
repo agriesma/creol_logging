@@ -141,7 +141,7 @@ let main () =
 	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
 	| ["-"] -> CreolIO.from_channel stdin
 	| _ ->  CreolIO.from_files !inputs in
-      Target.output (Passes.execute_passes tree) ;
+      Target.output (Passes.execute_passes !verbose tree) ;
       if !times then Passes.report_timings();
       exit 0 ;;
 

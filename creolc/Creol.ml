@@ -167,6 +167,7 @@ module Expression =
 	| Float of 'b * float
 	| String of 'b * string
 	| Id of 'b * string
+        | StaticAttr of 'b * string * 'c Type.t
 	| Tuple of 'b * ('b, 'c) t list
 	| Cast of 'b * ('b, 'c) t * 'c Type.t
 	| Index of 'b * ('b, 'c) t * ('b, 'c) t
@@ -179,6 +180,9 @@ module Expression =
 	| FuncCall of 'b * string * ('b, 'c) t list
 	| Label of 'b * string
 	| New of 'b * 'c Type.t * ('b, 'c) t list
+  and ('b, 'c) lhs =
+      LhsVar of 'b * string
+    | LhsAttr of 'b * string * 'c Type.t
     and unaryop =
 	Not
 	| UMinus
@@ -189,7 +193,6 @@ module Expression =
 	| Times
 	| Div
 	| Modulo
-	| Exponent
 	| Eq
 	| Ne
 	| Le
@@ -215,7 +218,6 @@ module Expression =
 	| Times -> "*"
 	| Div -> "/"
 	| Modulo -> "%"
-	| Exponent -> "**"
 	| Eq -> "="
 	| Ne -> "/="
 	| Le -> "<="
@@ -241,7 +243,6 @@ module Expression =
 	| Times -> (31, 31)
 	| Div -> (31, 31)
 	| Modulo -> (31, 31)
-	| Exponent -> (29, 29)
 	| Eq -> (51, 51)
 	| Ne -> (51, 51)
 	| Le -> (37, 37)
@@ -281,6 +282,7 @@ module Expression =
 	| Float (a, _) -> a
 	| String (a, _) -> a
 	| Id (a, _) -> a
+	| StaticAttr(a, _, _) -> a
 	| Tuple (a, _) -> a
 	| Cast (a, _, _) -> a
 	| Index (a, _, _) -> a
@@ -294,6 +296,10 @@ module Expression =
 	| Label (a, _) -> a
 	| New (a, _, _) -> a
 
+    let name =
+      function
+	  LhsVar(_, n) -> n
+	| LhsAttr(_, n, _) -> n
   end
 
 open Expression
@@ -304,22 +310,22 @@ module Statement =
 	Skip of 'a
 	| Release of 'a
 	| Assert of 'a * ('b, 'c) Expression.t
-	| Assign of 'a * string list * ('b, 'c) Expression.t list
+	| Assign of 'a * ('b, 'c) Expression.lhs list * ('b, 'c) Expression.t list
 	| Await of 'a * ('b, 'c) Expression.t
 	| AsyncCall of 'a * string option * ('b, 'c) Expression.t * string *
 	    ('b, 'c) Expression.t list
-	| Reply of 'a * string * string list
+	| Reply of 'a * string * ('b, 'c) Expression.lhs list
 	| Free of 'a * string
 	| SyncCall of 'a * ('b, 'c) Expression.t * string *
-	    ('b, 'c) Expression.t list * string list
+	    ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	| AwaitSyncCall of 'a * ('b, 'c) Expression.t * string *
-	    ('b, 'c) Expression.t list * string list
+	    ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	| LocalAsyncCall of 'a * string option * string * string option *
 	    string option * ('b, 'c) Expression.t list
 	| LocalSyncCall of 'a * string * string option * string option *
-            ('b, 'c) Expression.t list * string list
+            ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	| AwaitLocalSyncCall of 'a * string * string option * string option *
-            ('b, 'c) Expression.t list * string list
+            ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	| Tailcall of 'a * string * string option * string option *
 	    ('b, 'c) Expression.t list
 	| If of 'a * ('b, 'c) Expression.t * ('a, 'b, 'c) t * ('a, 'b, 'c) t
@@ -685,7 +691,7 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
       function 
           ({ var_name = n ; var_type = _ ; var_init = Some i } as v) ->
 	    ([{ v with var_init = None }],
-	    Assign(note, [n], [lower_expression i]))
+	    Assign(note, [LhsVar(Expression.note i, n)], [lower_expression i]))
         | v -> ([v], Skip note)
     in
       match vars with
@@ -806,9 +812,11 @@ and definitions_in_statement note stm =
       | Assert (n, e) ->
 	  Assert ({ n with Note.env = note.Note.env }, e)
       | Assign (n, lhs, rhs) ->
+	  Assign ({n with Note.env = note.Note.env }, lhs, rhs)
+	(* XXX: Completely broken...
 	  Assign ({ n with Note.env = 
 	      List.fold_left (fun e n -> define e n false)
-		note.Note.env lhs}, lhs, rhs) (* XXX *)
+		note.Note.env (name lhs)}, lhs, rhs) *)
       | Await (n, g) ->
 	  Await ({ n with Note.env = note.Note.env }, g)
       | Release a ->
@@ -821,8 +829,7 @@ and definitions_in_statement note stm =
 	  AsyncCall ({ n with Note.env = (define note.Note.env l true) },
 		    Some l, c, m, a)
       | Reply (n, l, p) ->
-	  Reply ({ n with Note.env = List.fold_left
-	      (fun e n -> define e n false) note.Note.env p } , l, p)
+	  Reply ({ n with Note.env = note.Note.env } , l, p)
       | Free (n, v) -> assert false
       | SyncCall (n, c, m, ins, outs) ->
 	  SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
@@ -1190,7 +1197,7 @@ let pretty_print out_channel input =
 	| Assert (_, e) ->
 	    output_string out_channel "assert " ; pretty_print_expression e
 	| Assign (_, i, e) ->
-	    pretty_print_identifier_list i;
+	    pretty_print_lhs_list i;
 	    output_string out_channel " := ";
 	    pretty_print_expression_list e
 	| Await (_, e) -> 
@@ -1208,7 +1215,7 @@ let pretty_print out_channel input =
 	    output_string out_channel ")"
 	| Reply (_, l, o) ->
 	    output_string out_channel (l ^ "?(");
-	    pretty_print_identifier_list o;
+	    pretty_print_lhs_list o;
 	    output_string out_channel ")";
 	| Free(_, l) -> output_string out_channel ("/* free(" ^ l ^ ") */")
 	| SyncCall (_, c, m, a, r) ->
@@ -1216,7 +1223,7 @@ let pretty_print out_channel input =
 	    output_string out_channel ("." ^ m ^ "(");
 	    pretty_print_expression_list a;
 	    output_string out_channel "; " ;
-	    pretty_print_identifier_list r;
+	    pretty_print_lhs_list r;
 	    output_string out_channel ")"
 	| AwaitSyncCall (_, c, m, a, r) ->
 	    output_string out_channel "await " ;
@@ -1224,7 +1231,7 @@ let pretty_print out_channel input =
 	    output_string out_channel ("." ^ m ^ "(");
 	    pretty_print_expression_list a;
 	    output_string out_channel "; " ;
-	    pretty_print_identifier_list r;
+	    pretty_print_lhs_list r;
 	    output_string out_channel ")"
 	| LocalAsyncCall (_, l, m, lb, ub, i) ->
 	    output_string out_channel
@@ -1234,38 +1241,38 @@ let pretty_print out_channel input =
 	    output_string out_channel m;
 	    (match lb with
 		None -> ()
-	      | Some n -> output_string out_channel ("@" ^ n));
+	      | Some n -> output_string out_channel (":>" ^ n));
 	    (match ub with
 		None -> ()
-	      | Some n -> output_string out_channel ("<<" ^ n));
+	      | Some n -> output_string out_channel ("<:" ^ n));
 	    output_string out_channel "(" ;
 	    pretty_print_expression_list i;
 	    output_string out_channel ")"
-	| LocalSyncCall (_, m, l, u, i, o) ->
+	| LocalSyncCall (_, m, lb, ub, i, o) ->
 	    output_string out_channel m;
-	    (match l with
+	    (match lb with
 		None -> ()
-	      | Some n -> output_string out_channel ("@" ^ n));
-	    (match u with
+	      | Some n -> output_string out_channel (":>" ^ n));
+	    (match ub with
 		None -> ()
-	      | Some n -> output_string out_channel ("<<" ^ n));
+	      | Some n -> output_string out_channel ("<:" ^ n));
 	    output_string out_channel "(" ;
 	    pretty_print_expression_list i;
 	    output_string out_channel "; " ;
-	    pretty_print_identifier_list o;
+	    pretty_print_lhs_list o;
 	    output_string out_channel ")"
-	| AwaitLocalSyncCall (_, m, l, u, i, o) ->
+	| AwaitLocalSyncCall (_, m, lb, ub, i, o) ->
 	    output_string out_channel ("await " ^ m) ;
-	    (match l with
+	    (match lb with
 		None -> ()
-	      | Some n -> output_string out_channel ("@" ^ n));
-	    (match u with
+	      | Some n -> output_string out_channel (":>" ^ n));
+	    (match ub with
 		None -> ()
-	      | Some n -> output_string out_channel ("<<" ^ n));
+	      | Some n -> output_string out_channel ("<:" ^ n));
 	    output_string out_channel "(" ;
 	    pretty_print_expression_list i;
 	    output_string out_channel "; " ;
-	    pretty_print_identifier_list o;
+	    pretty_print_lhs_list o;
 	    output_string out_channel ")"
 	| Tailcall (_, m, l, u, i) -> assert false
 	| If (_, c, t, f) ->
@@ -1347,6 +1354,8 @@ let pretty_print out_channel input =
 	| Bool (_, b) -> output_string out_channel (string_of_bool b)
 	| String (_, s) -> output_string out_channel ("\"" ^ s ^ "\"")
 	| Id (_, i) -> output_string out_channel i
+	| StaticAttr (_, a, c) ->
+	    output_string out_channel (a ^ "@" ^ (Type.as_string c))
 	| Tuple (_, a) ->
 	    output_string out_channel "(";
 	    pretty_print_expression_list a;
@@ -1376,9 +1385,15 @@ let pretty_print out_channel input =
   and pretty_print_expression_list l =
     separated_list pretty_print_expression
       (function () -> output_string out_channel ", ") l
+  and pretty_print_lhs_list l =
+    separated_list
+      (function LhsVar (_, n) -> output_string out_channel n
+	| LhsAttr(_, n, c) -> output_string out_channel
+	    (n ^ "@" ^ (Type.as_string c)))
+      (function () -> output_string out_channel ", ") l
   and pretty_print_identifier_list l =
     separated_list (output_string out_channel)
-      (function () -> output_string out_channel ". ") l
+      (function () -> output_string out_channel ", ") l
   and do_indent lvl =
     output_string out_channel ("\n" ^ (String.make (lvl * 2) ' '))
   in
@@ -1405,7 +1420,12 @@ struct
      garbage. *)
 
   let of_creol ~options ~out_channel ~input =
-    let rec of_expression =
+    let rec of_type =
+      function
+	  Type.Basic (_, n) -> output_string out_channel n
+	| Type.Application (_, n, _) -> output_string out_channel n
+	| _ -> assert false
+    and of_expression =
       function
 	  Nil _ -> output_string out_channel "list(emp)"
 	| Null _ -> output_string out_channel "null"
@@ -1415,6 +1435,10 @@ struct
 	| Bool (_, true) -> output_string out_channel "bool(true)"
 	| String (_, s) -> output_string out_channel ("str(\"" ^ s ^ "\")")
 	| Id (_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
+	| StaticAttr(_, a, c) ->
+	    output_string out_channel ("( \"" ^ a ^ "\" @@ \"");
+	    of_type c ;
+	    output_string out_channel "\" )"
 	| FuncCall(_, f, a) -> output_string out_channel ("\"" ^ f ^ "\" ( " );
 	    of_expression_list a;
 	    output_string out_channel " )"
@@ -1439,10 +1463,30 @@ struct
     and of_identifier_list =
       (** Convert a list of identifiers into a list of Attribute identifiers. *)
       function
-	  [] -> output_string out_channel "noAid"
+	  [] -> output_string out_channel "noVid"
 	| [i] -> output_string out_channel ("\"" ^ i ^ "\"")
 	| i::l -> output_string out_channel ("\"" ^ i ^ "\", ");
 	    of_identifier_list l
+    and of_lhs_list =
+      (** Translate a list of left hand side expressions a list of
+	  Attribute identifiers. *)
+      function
+	  [] ->
+	    output_string out_channel "noVid"
+	| [LhsVar(_, i)] ->
+	    output_string out_channel ("\"" ^ i ^ "\"")
+	| [LhsAttr(_, i, c)] ->
+	    output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
+	    of_type c ;
+	    output_string out_channel "\" )"
+	| LhsVar(_, i)::l ->
+	    output_string out_channel ("\"" ^ i ^ "\"") ;
+	    of_lhs_list l
+	| LhsAttr(_, i, c)::l ->
+	    output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
+	    of_type c ;
+	    output_string out_channel "\" )" ;
+	    of_lhs_list l
     and of_statement cls stmt =
       let open_paren prec op_prec =
 	if prec < op_prec then output_string out_channel "( " ;
@@ -1457,7 +1501,7 @@ struct
 	      output_string out_channel " )"
 	  | Release _ -> output_string out_channel "release"
 	  | Assign (_, i, e) ->
-	      of_identifier_list i;
+	      of_lhs_list i;
 	      output_string out_channel " ::= " ;
 	      of_expression_list e
 	  | SyncCall _ -> assert false
@@ -1472,7 +1516,7 @@ struct
 	      output_string out_channel " )"
 	  | Reply (_, l, o) ->
 	      output_string out_channel ("( \"" ^ l ^ "\" ? ( ") ;
-	      of_identifier_list o;
+	      of_lhs_list o;
 	      output_string out_channel " ) ) "
 	  | Free (_, l) -> output_string out_channel ("free( \"" ^ l ^ "\" )")
 	  | LocalSyncCall _ -> assert false
@@ -1561,7 +1605,7 @@ struct
 	    of_inherits_list r
     and of_parameter_list =
       function
-	  [] -> output_string out_channel "noAid"
+	  [] -> output_string out_channel "noVid"
 	| [v] -> output_string out_channel ("\"" ^ v.var_name ^ "\"")
 	| v::r -> output_string out_channel ("\"" ^ v.var_name ^ "\" , ");
 	    of_parameter_list r
@@ -1638,18 +1682,18 @@ struct
 	  "CREOL-MODEL-CHECKER" else "CREOL-INTERPRETER") ^
 	    " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
       of_decl_list input ;
+      begin
+	match options.main with
+	    None -> ()
+	  | Some m ->
+	      output_string out_channel ("main( \"" ^ m ^ "\" , emp )\n")
+      end ;
+      output_string out_channel ".\nendm\n" ;
+      if options.modelchecker then
 	begin
-	  match options.main with
-	      None -> ()
-	    | Some m ->
-		output_string out_channel ("main( \"" ^ m ^ "\" , emp )\n")
+	  output_string out_channel "\n\nmod PROGRAM-CHECKER is\n  protecting MODEL-CHECKER .\n  protecting PROGRAM .\n  protecting CREOL-PREDICATES .\nendm\n"
 	end ;
-	output_string out_channel ".\nendm\n" ;
-	if options.modelchecker then
-	  begin
-	    output_string out_channel "\n\nmod PROGRAM-CHECKER is\n  protecting MODEL-CHECKER .\n  protecting PROGRAM .\n  protecting CREOL-PREDICATES .\nendm\n"
-	  end ;
-	if options.red_init then output_string out_channel "\nred init .\n" ;
-	flush out_channel
+      if options.red_init then output_string out_channel "\nred init .\n" ;
+      flush out_channel
 
 end

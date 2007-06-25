@@ -2,34 +2,34 @@
 reduce in PROGRAM : init .
 result Configuration: 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "m" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "a" ;
+  < "m" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "a" ;
     return("r") > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "b" ;
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "b" ;
     return("r") > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" >, Par: "c", Att: "c" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "c" ;
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "c" ;
     return("r") > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
-< "D" : Cl | Inh: "B" < int(1) > ## "C" < int(2) >, Par: noAid, Att: "x" |->
+< "D" : Cl | Inh: "B" < int(1) > ## "C" < int(2) >, Par: noVid, Att: "x" |->
     null, "y" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "this" .
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "this" .
     "m"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "n"(emp) ; "sync.1" ?("y")
     ; skip ; return(emp) >,
   Ocnt: 0 >
@@ -42,34 +42,34 @@ result Configuration:
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "m" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "a" ;
+  < "m" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "a" ;
     return("r") > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "b" ;
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "b" ;
     return("r") > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" >, Par: "c", Att: "c" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "r" ::= "c" ;
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "c" ;
     return("r") > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
-< "D" : Cl | Inh: "B" < int(1) > ## "C" < int(2) >, Par: noAid, Att: "x" |->
+< "D" : Cl | Inh: "B" < int(1) > ## "C" < int(2) >, Par: noVid, Att: "x" |->
     null, "y" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "this" .
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "this" .
     "m"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "n"(emp) ; "sync.1" ?("y")
     ; skip ; return(emp) >,
   Ocnt: 1 >

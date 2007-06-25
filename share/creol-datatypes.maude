@@ -29,10 +29,10 @@ fmod CREOL-DATA-SIG is
   *** of the form "string" ( datalist ) are not constructors, but they should
   *** be reduced to data (see below).  If we do not include this test, then
   *** the theory is not pre-regular.
-  sorts   Expr Data Aid Oid Appl .
+  sorts   Expr Data Vid Oid Appl .
   subsort Oid < Data < Expr .
   subsort Data < Appl < Expr .
-  subsort String < Aid < Expr .
+  subsort String < Vid < Expr .
 
   op null : -> Data [ctor format (! o)] .
 
@@ -67,15 +67,15 @@ fmod CREOL-DATA-SIG is
   op _#_ : NeDataList DataList  -> NeDataList [ctor ditto] .
   op _#_ : DataList NeDataList  -> NeDataList [ctor ditto] .
 
-  sorts NeAidList AidList .
-  subsort Aid < NeAidList < AidList .
+  sorts NeVidList VidList .
+  subsort Vid < NeVidList < VidList .
 
-  op noAid : -> AidList [ctor] .
+  op noVid : -> VidList [ctor] .
 
-  op _,_ : AidList AidList -> AidList
-	[ctor assoc id: noAid format (d r os d)] .
-  op _,_ : NeAidList AidList -> NeAidList [ctor ditto] .
-  op _,_ : AidList NeAidList -> NeAidList [ctor ditto] .
+  op _,_ : VidList VidList -> VidList
+	[ctor assoc id: noVid format (d r os d)] .
+  op _,_ : NeVidList VidList -> NeVidList [ctor ditto] .
+  op _,_ : VidList NeVidList -> NeVidList [ctor ditto] .
 
   op _(_) : String DataList -> Data [format (! o d d d) prec 12] .
   op _(_) : String ExprList -> Appl [ctor ditto] .
@@ -108,8 +108,8 @@ fmod CREOL-DATA-SIG is
   eq "<=>" (bool(B) # bool(B')) = bool(B == B') .
 endfm
 
-view Aid from TRIV to CREOL-DATA-SIG is
-  sort Elt to Aid .
+view Vid from TRIV to CREOL-DATA-SIG is
+  sort Elt to Vid .
 endv
 
 view Data from TRIV to CREOL-DATA-SIG is

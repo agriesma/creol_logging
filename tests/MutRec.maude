@@ -3,14 +3,14 @@ mod PROGRAM is
 pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
-< "MutRec" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "doit" : Mtdname | Param: "other", Latt: "other" |-> null, Code: "sync.0" ! "other" . "doit" ( "this" ) ; ( "sync.0" ? ( noAid ) )  ; return ( emp ) >, Ocnt: 0 >
+< "MutRec" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "doit" : Mtdname | Param: "other", Latt: "other" |-> null, Code: "sync.0" ! "other" . "doit" ( "this" ) ; ( "sync.0" ? ( noVid ) )  ; return ( emp ) >, Ocnt: 0 >
 
-< "Test" : Cl | Inh: noInh, Par: noAid, Att: "m1" |-> null , "m2" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "m1" ::= new "MutRec" ( emp ) ; "m2" ::= new "MutRec" ( emp ) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ".anon" ! "m1" . "doit" ( "m2" ) ; free( ".anon" ) ; return ( emp ) >, Ocnt: 0 >
+< "Test" : Cl | Inh: noInh, Par: noVid, Att: "m1" |-> null , "m2" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "m1" ::= new "MutRec" ( emp ) ; "m2" ::= new "MutRec" ( emp ) ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "m1" . "doit" ( "m2" ) ; free( ".anon" ) ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

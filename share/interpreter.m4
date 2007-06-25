@@ -96,10 +96,10 @@ in creol-datatypes .
 fmod CREOL-SUBST is
   protecting EXT-BOOL .
   protecting CREOL-DATA-SIG .
-  extending MAP{Aid, Data} * (sort Map{Aid, Data} to Subst,
-                              op empty : -> Map{Aid, Data} to noSubst ) .
+  extending MAP{Vid, Data} * (sort Map{Vid, Data} to Subst,
+                              op empty : -> Map{Vid, Data} to noSubst ) .
 
-  vars A A' : Aid .
+  vars A A' : Vid .
   vars D D' : Data .
   vars S1 S2  : Subst .
 
@@ -116,7 +116,7 @@ fmod CREOL-SUBST is
   eq compose(S1, (S2, (A |-> D))) = compose(insert(A, D, S1), S2) .
   
 
-  op dom : Aid Subst -> Bool .
+  op dom : Vid Subst -> Bool .
   eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
   eq dom(A, (S1, A |-> D)) = true .
   eq dom(A, S1) = false [owise] .
@@ -132,18 +132,29 @@ fmod CREOL-EVAL is
   vars E E' E'' : Expr .
   var EL : ExprList .
   var NeEL : NeExprList .
-  var A : Aid .
-  var S : Subst .
+  var v : Vid .
+  vars a c : String . *** XXX: Actually we want a : Aid, but we drop the class.
+  var x : Lid .
+  vars A L S : Subst .
   var F : String .
   var I : Int .
   var B : Bool .
+
+  sorts Aid Lid .
+  subsort Aid < Vid .
+  subsorts String < Lid < Vid .
+  op _@@_ : String String -> Aid [ctor prec 31] .
+
+
 
   op eval : Data Subst -> Data .
   eq {|eval|}(D, S) = D .
 
   *** standard evaluation of expression
   op eval : Expr Subst -> Data .
-  eq {|eval|}(A, S) =  S [A] .
+  eq {|eval|}((a @@ c), (A # L)) =  A [a] .
+  eq {|eval|}(x, (A # L)) =  L [x] [nonexec] . *** XXX: Later
+  eq {|eval|}(v, S) =  S [v] .
   eq {|eval|}(F (EL), S) = F ( evalList(EL, S) ) .
   eq {|eval|}(list(EL), S) = list(evalList(EL, S)) .
   eq {|eval|}(pair(E,E'),S) = pair({|eval|}(E,S),{|eval|}(E',S)) .
@@ -190,7 +201,7 @@ fmod CREOL-GUARDS is
   var PG : PureGuard .
 
   op noGuard : -> NoGuard [ctor {|format|} (b o)] .
-  op _??  : Aid -> Return [ctor] .
+  op _??  : Vid -> Return [ctor] .
   op _??  : Label -> Return [ctor] .
 
 endfm
@@ -205,21 +216,20 @@ fmod CREOL-STATEMENT is
   subsort String < Cid .
   subsort String < Mid .
 
-  op _._   : Expr String -> Mid [ctor prec 33] .
-  op _@_   : String  Cid -> Mid [ctor prec 33] .
-  *** op _@_   : Aid  Cid -> Mid [ctor prec 33] .
+  op _._ : Expr String -> Mid [ctor prec 33] .
+  op _@_ : String Cid -> Mid [ctor prec 33] .
 
   op skip : -> Stm [ctor] .
   op release : -> Stm [ctor] .
-  op _::=_ : AidList ExprList -> Stm [ctor prec 39] .
-  op _::= new_(_) : Aid Cid ExprList -> Stm [ctor prec 37 {|format|} (d b d o d d d d)] .
-  op _!_(_) : Aid Mid ExprList -> Stm [ctor prec 39] .
-  op _?(_)  : Aid AidList -> Stm [ctor prec 39] .
-  op _?(_)  : Label AidList -> Stm [ctor prec 39] .
+  op _::=_ : VidList ExprList -> Stm [ctor prec 39] .
+  op _::= new_(_) : Vid Cid ExprList -> Stm [ctor prec 37 {|format|} (d b d o d d d d)] .
+  op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
+  op _?(_)  : Vid VidList -> Stm [ctor prec 39] .
+  op _?(_)  : Label VidList -> Stm [ctor prec 39] .
   op await_ : Guard    -> SuspStm [ctor] .
   op return : ExprList -> Stm [ctor {|format|} (c o)] .
-  op bury : AidList -> Stm [ctor {|format|} (c o)] .
-  op free : AidList -> Stm [ctor {|format|} (c o)] .
+  op bury : VidList -> Stm [ctor {|format|} (c o)] .
+  op free : VidList -> Stm [ctor {|format|} (c o)] .
   op cont : Label -> Stm [ctor {|format|} (c o)] .
   op tailcall_(_) : Mid ExprList -> Stm [ctor {|format|} (c o c o c o)] .
   op accept : Label -> Stm [ctor {|format|} (c o)] .
@@ -229,7 +239,7 @@ fmod CREOL-STATEMENT is
   *** For the model checker the following will be evaluated as an
   *** equation and the old rule is not confluent.
 
-  op _assign_ : AidList DataList -> Stm [ctor {|format|} (d c o d)] .
+  op _assign_ : VidList DataList -> Stm [ctor {|format|} (d c o d)] .
 
 endfm
 
@@ -252,7 +262,7 @@ fmod CREOL-STM-LIST is
 
   var SL : StmList .
   var NeSL : NeStmList .
-  var AL : AidList .
+  var AL : VidList .
   var DL : DataList .
   var EL : ExprList .
   var B : Expr .
@@ -266,8 +276,8 @@ fmod CREOL-STM-LIST is
   *** Optimize assignments.  This way we save reducing a skip.  Also note
   *** that the empty assignment is /not/ programmer syntax, it is inserted
   *** during run-time.
-  eq (noAid assign emp) = noStm .
-  eq (noAid ::= emp) = noStm .
+  eq (noVid assign emp) = noStm .
+  eq (noVid ::= emp) = noStm .
 
   sort Process .
   op idle : -> Process [{|format|} (!b o)] .  
@@ -305,7 +315,7 @@ fmod CREOL-CLASS is
   var EL : ExprList .
   var O : Oid .
   var N : Nat .
-  var AL : AidList .
+  var AL : VidList .
   vars Q Q' : String .
 
   *** XXX: This looks dangerous or confusing for programmers.
@@ -314,7 +324,7 @@ fmod CREOL-CLASS is
   eq  Ih ## IL ## Ih = Ih ## IL .
 
   op <_: Mtdname | Param:_, Latt:_, Code:_> : 
-    String AidList Subst StmList -> Mtd [ctor
+    String VidList Subst StmList -> Mtd [ctor
       {|format|} (b d o d d sb o d sb o d sb o b o)] .
 
   subsort Mtd < MMtd .    *** Multiset of methods
@@ -323,12 +333,12 @@ fmod CREOL-CLASS is
   op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd {|format|} (d d ni d)] .
 
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
-    Cid InhList AidList Subst MMtd Nat -> Class 
+    Cid InhList VidList Subst MMtd Nat -> Class 
      [{|format|} (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
 
   op emptyClass : -> Class .
   eq emptyClass =
-    < "NoClass" : Cl | Inh: noInh , Par: noAid, Att: noSubst, Mtds: noMtd ,
+    < "NoClass" : Cl | Inh: noInh , Par: noVid, Att: noSubst, Mtds: noMtd ,
       Ocnt: 0 > .
 
   *** Class/method functions ***
@@ -442,7 +452,7 @@ fmod CREOL-AUX-FUNCTIONS is
   vars L L' : Label .
   vars E E' : Expr .
   var EL : ExprList .
-  var A : Aid .
+  var A : Vid .
   var Q : String .
   vars G1 G2 : Guard .
   var S : Subst .
@@ -468,7 +478,7 @@ fmod CREOL-AUX-FUNCTIONS is
   vars  ST ST' : Stm . 
   vars SL SL' SL'' : StmList . 
   vars NeSL NeSL' NeSL'' : NeStmList .
-  var AL : AidList .
+  var AL : VidList .
 
   op enabled : NeStmList Subst MMsg -> Bool .
   eq enabled((NeSL [] NeSL') ; SL'',  S, MM) =
@@ -502,9 +512,9 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
 
   vars O O' : Oid .
   vars C C' : Cid .
-  vars A A' : Aid .
-  var AL : AidList .
-  var NeAL : NeAidList .
+  vars A A' : Vid .
+  var AL : VidList .
+  var NeAL : NeVidList .
   var D : Data .
   var DL : DataList .
   var NeDL : NeDataList .
@@ -556,7 +566,7 @@ eq
   fi
   [label do-assign] .
 
-*** noAid assign emp reduces to noStm
+*** noVid assign emp reduces to noStm
 
 STEP(dnl
 {|< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >|},
@@ -589,7 +599,7 @@ rl
 *** OBJECT CREATION
 ***
 *** Using synchronous calls does not work for the model checker.
-*** Expanding "init" (emp ; noAid) needs a label value, which we do
+*** Expanding "init" (emp ; noVid) needs a label value, which we do
 *** not have.  We reserve a label for our purposes.
 STEP(dnl
 {|< O : C | Att: S,Pr: (L, (A ::= new C' (EL)); SL),PrQ: W, Lcnt: N > 
@@ -600,7 +610,7 @@ STEP(dnl
   < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
   findAttr(newId(C',F), I, S', 
     (AL assign evalList(EL, compose(S,  L))),
-    ((noSubst, (".init" ! "init" (emp)) ; (".init" ?(noAid)) ; (".run" ! "run" (emp)) ; (".run" ?(noAid)))))|},
+    ((noSubst, (".init" ! "init" (emp)) ; (".init" ?(noVid)) ; (".run" ! "run" (emp)) ; (".run" ?(noVid)))))|},
 {|[label new-object]|})
 
 
@@ -630,7 +640,7 @@ eq
   =
   findAttr(O, I {|#|}{|#|} I', compose(S', S),
            SL ; (AL ::= EL), 
-           (L', (".init" ! "init" @ C(emp)) ; (".init" ?( noAid)) ; SL'))
+           (L', (".init" ! "init" @ C(emp)) ; (".init" ?( noVid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
   [label find-attr]
   .
@@ -985,8 +995,8 @@ mod CREOL-PREDICATES is
   including MODEL-CHECKER .
   subsort Configuration < State .
   ops objcnt maxobjcnt minobjcnt : Cid Nat -> Prop .
-  op hasvalue : Oid Aid Data -> Prop .
-  var A : Aid .
+  op hasvalue : Oid Vid Data -> Prop .
+  var A : Vid .
   var D : Data .
   var C : Cid .
   var O : Oid .
@@ -996,9 +1006,9 @@ mod CREOL-PREDICATES is
   vars N N' : Nat .
   var c : Configuration .
 
-  eq c < C : Cl | Inh: I:InhList, Par: AL:AidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= objcnt(C, N') = N == N' .
-  eq c < C : Cl | Inh: I:InhList, Par: AL:AidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= maxobjcnt(C, N') = N <= N' .
-  eq c < C : Cl | Inh: I:InhList, Par: AL:AidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= minobjcnt(C, N') = N >= N' .
+  eq c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= objcnt(C, N') = N == N' .
+  eq c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= maxobjcnt(C, N') = N <= N' .
+  eq c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= minobjcnt(C, N') = N >= N' .
   eq c < O : C | Att: S, Pr: P, PrQ: Q, Lcnt: N > c |= hasvalue(O, A, D) = D == S[A] .
 
 endm

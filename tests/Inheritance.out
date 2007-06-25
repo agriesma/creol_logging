@@ -2,15 +2,15 @@
 reduce in PROGRAM : init .
 result Configuration: 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
 rewrite in PROGRAM : init
@@ -21,15 +21,15 @@ result Configuration:
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 1 >
 
 < ob("B0") : "B" | Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),

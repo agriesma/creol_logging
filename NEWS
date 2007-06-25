@@ -1,9 +1,31 @@
 creoltools 0.0e (2007-XX-XX): alpha release.
 
+In the language:
+* In order to avoid some mess with parsing static attribute access
+  expressions, the syntax has been changed.  The upper and lower
+  bould constraints on method calls are given with the <: and :>
+  operators.  A static access to an attribute is written as
+  a@C.  The conflict arises after the sequence m@C{.,(}
+* The exponentiation operatore has been removed, because ** is used for
+  tuple type construction now.
+* a@C is a left hand side operator now.
+
 In the compiler:
 * Sequence is represented as a binary operator, like merge and choice.
+* Proper left hand side constructors are now defined.
 * normalize_sequences will convert all sequences into a right-threaded
   format.
+
+In the interpreter and model checker:
+* The interpreter and the model checker have been optimized.  They run
+  up to 15% faster now.
+* Aid has been renamed to Vid and AidList to VidList.  Aid is the sort
+  of 'String @@ Cid' now.
+* An error in choosing the disabled branch in nondet has been corrected.
+
+Other:
+* The documentation has been updated.
+
 
 
 creoltools 0.0e (2007-06-22): alpha release.

@@ -7,8 +7,8 @@ result Configuration:
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "<"(int(0) # "x")
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) # "x")
     th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
 
@@ -18,8 +18,8 @@ result Configuration:
     "caller" |-> ob("Tailcall0")), cont(label(ob("Tailcall0"), ob("Tailcall0"),
     "init", emp)),
   PrQ: ".init" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), label(
-    ob("Tailcall0"), ob("Tailcall0"), "init", emp) ?(noAid) ; ".run" ! "run"(
-    emp) ; ".run" ?(noAid), Lcnt: 1 >
+    ob("Tailcall0"), ob("Tailcall0"), "init", emp) ?(noVid) ; ".run" ! "run"(
+    emp) ; ".run" ?(noVid), Lcnt: 1 >
 
 < ob("main") : "NoClass" | Att: noSubst,
   Pr: idle,
@@ -32,8 +32,8 @@ result Configuration:
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "<"(int(0) # "x")
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) # "x")
     th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
 
@@ -42,7 +42,7 @@ result Configuration:
   Pr: noSubst, accept(tag(label(ob("Tailcall0"), ob("Tailcall0"), "run",
     emp))),
   PrQ: (".run" |-> label(ob("Tailcall0"), ob("Tailcall0"), "run", emp), label(
-    ob("Tailcall0"), ob("Tailcall0"), "run", emp) ?(noAid)) ++ (".label" |->
+    ob("Tailcall0"), ob("Tailcall0"), "run", emp) ?(noVid)) ++ (".label" |->
     tag(label(ob("Tailcall0"), ob("Tailcall0"), "run", emp)), "caller" |-> ob(
     "Tailcall0")), if "<"(int(0) # "x") th "x" ::= "-"("x" # int(1)) ; tailcall
     "run"(emp) el return(emp) fi, Lcnt: 1 >
@@ -58,8 +58,8 @@ result Configuration:
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: if "<"(int(0) # "x")
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) # "x")
     th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
 

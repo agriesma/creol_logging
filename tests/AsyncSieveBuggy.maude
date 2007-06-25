@@ -3,13 +3,13 @@ mod PROGRAM is
 pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
-< "Generator" : Cl | Inh: noInh, Par: noAid, Att: "n" |-> null , "next" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "next" ::= new "Sieve" ( int(2) ) ; "n" ::= int(3) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "l" ! "next" . "send" ( "n" ) ; "n" ::= "+" ( "n" # int(1) ) ; ( ".anon" ! "this" . "run" (emp ) )  ; free( ".anon" ) ; ( await ( "l" ?? ) ) ; ( "l" ? ( "r" ) )  ; return ( emp ) >, Ocnt: 0 >
+< "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null , "next" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "next" ::= new "Sieve" ( int(2) ) ; "n" ::= int(3) ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "l" ! "next" . "send" ( "n" ) ; "n" ::= "+" ( "n" # int(1) ) ; ( ".anon" ! "this" . "run" (emp ) )  ; free( ".anon" ) ; ( await ( "l" ?? ) ) ; ( "l" ? ( "r" ) )  ; return ( emp ) >, Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "p" |-> null , "next" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "send" : Mtdname | Param: "n", Latt: "n" |-> null , "res" |-> null , "d" |-> null , "r" |-> null, Code: "d" ::= "/" ( "n" # "p" ) ; "r" ::= "-" ( "n" # "*" ( "d" # "p" ) ) ; if "=" ( "r" # int(0) ) th "res" ::= bool(false) el if "/=" ( "next" # null ) th "sync.0" ! "next" . "send" ( "n" ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
 
 .

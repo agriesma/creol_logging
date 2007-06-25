@@ -1,11 +1,11 @@
 ==========================================
 reduce in PROGRAM : init .
 result Class: 
-< "Test" : Cl | Inh: noInh, Par: noAid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: "a" |-> null, Code: "a" ::= new "A"(
-    emp) ; "sync.0" ! "a" . "m"(emp) ; "sync.0" ?(noAid) ; return(emp) > *
-  < "m" : Mtdname | Param: noAid, Latt: noSubst, Code: "sync.0" ! "caller" .
-    "m"(emp) ; "sync.0" ?(noAid) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+< "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
+  < "init" : Mtdname | Param: noVid, Latt: "a" |-> null, Code: "a" ::= new "A"(
+    emp) ; "sync.0" ! "a" . "m"(emp) ; "sync.0" ?(noVid) ; return(emp) > *
+  < "m" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "caller" .
+    "m"(emp) ; "sync.0" ?(noVid) ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 Bye.

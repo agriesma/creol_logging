@@ -1,10 +1,10 @@
 ==========================================
 reduce in PROGRAM : init .
 result Class: 
-< "Test" : Cl | Inh: noInh, Par: noAid, Att: "x" |-> null, "y" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "x" ::= int(0) ; "y"
+< "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, "y" |-> null, Mtds:
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "x" ::= int(0) ; "y"
     ::= int(0) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: ("x" ::= int(1) ; "y"
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ("x" ::= int(1) ; "y"
     ::= int(2) ||| "y" ::= int(1) ; "x" ::= int(2)) ; return(emp) >,
   Ocnt: 0 >
 Bye.

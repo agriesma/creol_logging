@@ -1,10 +1,10 @@
 ==========================================
 reduce in PROGRAM : init .
 result Class: 
-< "Alarmclock" : Cl | Inh: noInh, Par: noAid, Att: "now" |-> null, Mtds:
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: "now" ::= int(0) ;
+< "Alarmclock" : Cl | Inh: noInh, Par: noVid, Att: "now" |-> null, Mtds:
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "now" ::= int(0) ;
     return(emp) > *
-  < "tick" : Mtdname | Param: noAid, Latt: noSubst, Code: "now" ::= "+"("now" #
+  < "tick" : Mtdname | Param: noVid, Latt: noSubst, Code: "now" ::= "+"("now" #
     int(1)) ; return(emp) > *
   < "wakeme" : Mtdname | Param: "n", Latt: "alarmsetting" |-> null, "n" |->
     null, Code: "alarmsetting" ::= "+"("now" # "n") ; await ">="("now" #

@@ -1,6 +1,6 @@
 ==========================================
 reduce in CREOL-SUBST : insert("var1", bool(true), noSubst) .
-result Entry{Aid,Data}: "var1" |-> bool(true)
+result Entry{Vid,Data}: "var1" |-> bool(true)
 ==========================================
 reduce in CREOL-SUBST : insert("var2", bool(false), insert("var1", bool(true),
     noSubst)) .
@@ -15,7 +15,7 @@ result GroundTerm: '_|->_['"var1".String,'bool`(_`)['false.Bool]]
 ==========================================
 reduce in CREOL-SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),
     noSubst) .
-result Entry{Aid,Data}: "var1" |-> bool(false)
+result Entry{Vid,Data}: "var1" |-> bool(false)
 ==========================================
 reduce in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert(
     "var1", bool(false), noSubst))["var1"]), null) .
@@ -119,14 +119,14 @@ reduce in CREOL-STATEMENT : downTerm(upTerm("l" ! "o" . "m"(null # "a")), skip)
     .
 result Stm: "l" ! "o" . "m"(null # "a")
 ==========================================
-reduce in CREOL-STATEMENT : "l" ?(noAid) .
-result Stm: "l" ?(noAid)
+reduce in CREOL-STATEMENT : "l" ?(noVid) .
+result Stm: "l" ?(noVid)
 ==========================================
-reduce in CREOL-STATEMENT : upTerm("l" ?(noAid)) .
-result GroundTerm: '_?`(_`)['"l".Char,'noAid.AidList]
+reduce in CREOL-STATEMENT : upTerm("l" ?(noVid)) .
+result GroundTerm: '_?`(_`)['"l".Char,'noVid.VidList]
 ==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm("l" ?(noAid)), skip) .
-result Stm: "l" ?(noAid)
+reduce in CREOL-STATEMENT : downTerm(upTerm("l" ?(noVid)), skip) .
+result Stm: "l" ?(noVid)
 ==========================================
 reduce in CREOL-STATEMENT : "l" ?("l") .
 result Stm: "l" ?("l")
@@ -164,14 +164,14 @@ result GroundTerm: 'return['_#_['"a".Char,'null.Data,'"c".Char]]
 reduce in CREOL-STATEMENT : downTerm(upTerm(return("a" # null # "c")), skip) .
 result Stm: return("a" # null # "c")
 ==========================================
-reduce in CREOL-STATEMENT : free(noAid) .
-result Stm: free(noAid)
+reduce in CREOL-STATEMENT : free(noVid) .
+result Stm: free(noVid)
 ==========================================
-reduce in CREOL-STATEMENT : upTerm(free(noAid)) .
-result GroundTerm: 'free['noAid.AidList]
+reduce in CREOL-STATEMENT : upTerm(free(noVid)) .
+result GroundTerm: 'free['noVid.VidList]
 ==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(free(noAid)), skip) .
-result Stm: free(noAid)
+reduce in CREOL-STATEMENT : downTerm(upTerm(free(noVid)), skip) .
+result Stm: free(noVid)
 ==========================================
 reduce in CREOL-STATEMENT : free("a", "b", "c") .
 result Stm: free("a", "b", "c")

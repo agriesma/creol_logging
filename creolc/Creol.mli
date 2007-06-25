@@ -86,49 +86,55 @@ end
 
 module Expression :
 sig
-  type ('a, 'c) t =
+  type ('b, 'c) t =
       (** Definition of the abstract syntax of Creol-expressions.
 	  
-          The parameter 'a refers to a possible annotation of the
+          The parameter 'b refers to a possible annotation of the
           element. *)
-      Null of 'a
+      Null of 'b
 	(** Literal of the null pointer. *)
-      | Nil of 'a
+      | Nil of 'b
 	  (** Literal for an empty list. *)
-      | Bool of 'a * bool
+      | Bool of 'b * bool
 	  (** A boolean literal. *)
-      | Int of 'a * int
+      | Int of 'b * int
 	  (** An integer literal. *)
-      | Float of 'a * float
+      | Float of 'b * float
 	  (** A floating point literal. *)
-      | String of 'a * string
+      | String of 'b * string
 	  (** A string literal. *)
-      | Id of 'a * string
+      | Id of 'b * string
 	  (** An identifier, usually an attribute or a local variable name *)
-      | Tuple of 'a * ('a, 'c) t list
+      | StaticAttr of 'b * string * 'c Type.t
+	  (** Class-qualified access to an attribute value. *)
+      | Tuple of 'b * ('b, 'c) t list
 	  (** Tuple expression. *)
-      | Cast of 'a * ('a, 'c) t * 'c Type.t
+      | Cast of 'b * ('b, 'c) t * 'c Type.t
 	  (** Re-type an expression.  Involves a run-time check *)
-      | Index of 'a * ('a, 'c) t * ('a, 'c) t
+      | Index of 'b * ('b, 'c) t * ('b, 'c) t
 	  (** Convenience for indexing a sequence/vector/array *)
-      | FieldAccess of 'a * ('a, 'c) t * string
+      | FieldAccess of 'b * ('b, 'c) t * string
 	  (** Access the field of a structure. *)
-      | Unary of 'a * unaryop * ('a, 'c) t
+      | Unary of 'b * unaryop * ('b, 'c) t
 	  (** A unary expression *)
-      | Binary of 'a * binaryop * ('a, 'c) t * ('a, 'c) t
+      | Binary of 'b * binaryop * ('b, 'c) t * ('b, 'c) t
 	  (** A binary expression *)
-      | If of 'a * ('a, 'c) t * ('a, 'c) t * ('a, 'c) t
+      | If of 'b * ('b, 'c) t * ('b, 'c) t * ('b, 'c) t
 	  (** Conditional expression *)
-      | Case of 'a * (('a, 'c) t, unit, ('a, 'c) t, ('a, 'c) t) Case.t
+      | Case of 'b * (('b, 'c) t, unit, ('b, 'c) t, ('b, 'c) t) Case.t
 	  (** Case expression *)
-      | Typecase of 'a * (('a, 'c) t, 'c Type.t, ('a, 'c) t, ('a, 'c) t) Case.t
+      | Typecase of 'b * (('b, 'c) t, 'c Type.t, ('b, 'c) t, ('b, 'c) t) Case.t
 	  (** Type case expression *)
-      | FuncCall of 'a * string * ('a, 'c) t list
+      | FuncCall of 'b * string * ('b, 'c) t list
 	  (** A call of a primitive function *)
-      | Label of 'a * string
+      | Label of 'b * string
 	  (** The label expression, permitted only in guards *)
-      | New of 'a * 'c Type.t * ('a, 'c) t list
+      | New of 'b * 'c Type.t * ('b, 'c) t list
 	  (** Object creation expression, permitted only as top nodes *)
+  and ('b, 'c) lhs =
+      (** These forms may occur on the left hand side of assignments *)
+      LhsVar of 'b * string
+    | LhsAttr of 'b * string * 'c Type.t
   and unaryop =
       (** Definition of the different unary operator symbols *)
       Not
@@ -144,7 +150,6 @@ sig
       | Times
       | Div
       | Modulo
-      | Exponent
       | Eq
       | Ne
       | Le
@@ -167,7 +172,7 @@ sig
 
   val string_of_unaryop : unaryop -> string
 
-  val note : ('a, 'c) t -> 'a
+  val note : ('b, 'c) t -> 'b
 end
 
 module Statement: sig
@@ -180,7 +185,7 @@ module Statement: sig
 	(** A release statement *)
       | Assert of 'a * ('b, 'c) Expression.t
 	(** Check a condition at runtime. *)
-      | Assign of 'a * string list * ('b, 'c) Expression.t list
+      | Assign of 'a * ('b, 'c) Expression.lhs list * ('b, 'c) Expression.t list
 	  (** A multiple assignment statement.  Requires that the two lists
 	      are of the same length. *)
       | Await of 'a * ('b, 'c) Expression.t
@@ -188,25 +193,25 @@ module Statement: sig
       | AsyncCall of 'a * string option * ('b, 'c) Expression.t * string *
 	  ('b, 'c) Expression.t list
 	  (** Call a method asynchronously. *)
-      | Reply of 'a * string * string list
+      | Reply of 'a * string * ('b, 'c) Expression.lhs list
 	  (** Receive the reply to an asynchronous call. *)
       | Free of 'a * string
 	  (** Release a label.  It is not usable after executing this statement
 	      anymore. *)
       | SyncCall of 'a * ('b, 'c) Expression.t * string *
-	  ('b, 'c) Expression.t list * string list
+	  ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	  (** Call a (remote) method synchronously. *)
       | AwaitSyncCall of 'a * ('b, 'c) Expression.t * string *
-	  ('b, 'c) Expression.t list * string list
+	  ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	  (** Call a (remote) method synchronously. *)
       | LocalAsyncCall of 'a * string option * string * string option *
 	  string option * ('b, 'c) Expression.t list
 	  (** Call a local method synchronously. *)
       | LocalSyncCall of 'a * string * string option * string option *
-	  ('b, 'c) Expression.t list * string list
+	  ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	  (** Call a local method synchronously. *)
       | AwaitLocalSyncCall of 'a * string * string option * string option *
-	  ('b, 'c) Expression.t list * string list
+	  ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
 	  (** Call a local method synchronously. *)
       | Tailcall of 'a * string * string option * string option *
 	  ('b, 'c) Expression.t list

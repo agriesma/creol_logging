@@ -16,19 +16,30 @@ begin
   var chopstick: Bool
   var neighbor: Phil
  
-  op init == chopstick := true; hungry := false;
-    butler.getNeighbor(; neighbor)
+  op init ==
+    chopstick := true; hungry := false; butler.getNeighbor(; neighbor)
  
   op run == !think() ||| !eat()
 
-  op eat == await hungry; await neighbor.borrowStick(;); await chopstick;
-    hungry := false; !neighbor.returnStick(); !eat()
+  op eat ==
+    await hungry;
+    await neighbor.borrowStick(;);
+    await chopstick;
+    hungry := false;
+    !neighbor.returnStick();
+    !eat()
 
-  op think == await ~ hungry; release; hungry := true; !think()
+  op think ==
+    await ~ hungry;
+    release; hungry := true;
+    !think()
 
   with Phil 
-    op borrowStick == await chopstick; chopstick := false
-    op returnStick requires ~ chopstick == chopstick := true
+    op borrowStick ==
+      await chopstick;
+      chopstick := false
+    op returnStick ==
+      chopstick := true
 
 end
 

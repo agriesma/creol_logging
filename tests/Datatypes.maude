@@ -29,8 +29,8 @@ load creol-datatypes
 
 red in CREOL-DATA-SIG : emp .
 red in CREOL-DATA-SIG : emp # emp .
-red in CREOL-DATA-SIG : noAid .
-red in CREOL-DATA-SIG : noAid , noAid .
+red in CREOL-DATA-SIG : noVid .
+red in CREOL-DATA-SIG : noVid , noVid .
 red in CREOL-DATA-SIG : "a" .
 red in CREOL-DATA-SIG : "a" # "a" .
 red in CREOL-DATA-SIG : "a" , "a" .

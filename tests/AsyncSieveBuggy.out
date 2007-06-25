@@ -1,20 +1,20 @@
 ==========================================
 reduce in PROGRAM : init .
 result Configuration: 
-< "Generator" : Cl | Inh: noInh, Par: noAid, Att: "n" |-> null, "next" |->
+< "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null, "next" |->
     null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "next" ::= new
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "next" ::= new
     "Sieve"(int(2)) ; "n" ::= int(3) ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: "r" |-> null, Code: "l" ! "next" .
+  < "run" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "l" ! "next" .
     "send"("n") ; "n" ::= "+"("n" # int(1)) ; ".anon" ! "this" . "run"(emp) ;
     free(".anon") ; await ("l" ??) ; "l" ?("r") ; return(emp) >,
   Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "next" |-> null, "p" |-> null,
     Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) > *
   < "send" : Mtdname | Param: "n", Latt: "d" |-> null, "n" |-> null, "r" |->
     null, "res" |-> null, Code: "d" ::= "/"("n" # "p") ; "r" ::= "-"("n" # "*"(
     "d" # "p")) ; if "="("r" # int(0)) th "res" ::= bool(false) el if "/="(

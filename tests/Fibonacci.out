@@ -3,9 +3,9 @@ reduce in PROGRAM : init .
 result Configuration: 
 < "FibTester" : Cl | Inh: noInh, Par: "f", "n", Att: "f" |-> null, "n" |->
     null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: "res" |-> null, Code: "sync.0" ! "f"
+  < "run" : Mtdname | Param: noVid, Latt: "res" |-> null, Code: "sync.0" ! "f"
     . "fibonacci"("n") ; "sync.0" ?("res") ; return(emp) >,
   Ocnt: 0 >
 
@@ -17,9 +17,9 @@ result Configuration:
     ::= "+"("a" # "b") fi fi ; return("f") > *
   < "fibonacci" : Mtdname | Param: "n", Latt: "f" |-> null, "n" |-> null, Code:
     "t" ! "this" . "fib"("n") ; "t" ?("f") ; return("f") > *
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noAid, Latt: "res" |-> null, Code: "t" ! "this" .
+  < "run" : Mtdname | Param: noVid, Latt: "res" |-> null, Code: "t" ! "this" .
     "fib"("n") ; await ("t" ??) ; "t" ?("res") ; return(emp) >,
   Ocnt: 0 >
 Bye.

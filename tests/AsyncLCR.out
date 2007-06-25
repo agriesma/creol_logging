@@ -1,25 +1,25 @@
 ==========================================
 reduce in PROGRAM : init .
 result Configuration: 
-< "Init" : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null, "p3"
+< "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
-  < "getNeighbor" : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if "="(
+  < "getNeighbor" : Mtdname | Param: noVid, Latt: "p" |-> null, Code: if "="(
     "caller" # "p1") th "p" ::= "p3" el if "="("caller" # "p2") th "p" ::= "p1"
     el "p" ::= "p2" fi fi ; return("p") > *
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new
     "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
     ::= new "Process"("this" # int(3)) ; return(emp) >,
   Ocnt: 0 >
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "status" ::= int(0) ;
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "status" ::= int(0) ;
     "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ; ".anon" !
     "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
     "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
     # "u") th "status" ::= int(1) el skip fi fi ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
 rewrite in PROGRAM : init
@@ -35,25 +35,25 @@ result Configuration:
 
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
-< "Init" : Cl | Inh: noInh, Par: noAid, Att: "p1" |-> null, "p2" |-> null, "p3"
+< "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
-  < "getNeighbor" : Mtdname | Param: noAid, Latt: "p" |-> null, Code: if "="(
+  < "getNeighbor" : Mtdname | Param: noVid, Latt: "p" |-> null, Code: if "="(
     "caller" # "p1") th "p" ::= "p3" el if "="("caller" # "p2") th "p" ::= "p1"
     el "p" ::= "p2" fi fi ; return("p") > *
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "p1" ::= new
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new
     "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
     ::= new "Process"("this" # int(3)) ; return(emp) >,
   Ocnt: 1 >
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Mtdname | Param: noAid, Latt: noSubst, Code: "status" ::= int(0) ;
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "status" ::= int(0) ;
     "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ; ".anon" !
     "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
     "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
     # "u") th "status" ::= int(1) el skip fi fi ; return(emp) > *
-  < "run" : Mtdname | Param: noAid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >
 
 < ob("Init0") : "Init" | Att: "p1" |-> ob("Process0"), "p2" |-> ob("Process1"),

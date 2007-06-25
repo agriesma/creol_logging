@@ -5,11 +5,11 @@ result DataList: emp
 reduce in CREOL-DATA-SIG : emp .
 result DataList: emp
 ==========================================
-reduce in CREOL-DATA-SIG : noAid .
-result AidList: noAid
+reduce in CREOL-DATA-SIG : noVid .
+result VidList: noVid
 ==========================================
-reduce in CREOL-DATA-SIG : noAid .
-result AidList: noAid
+reduce in CREOL-DATA-SIG : noVid .
+result VidList: noVid
 ==========================================
 reduce in CREOL-DATA-SIG : "a" .
 result Char: "a"
@@ -18,7 +18,7 @@ reduce in CREOL-DATA-SIG : "a" # "a" .
 result NeExprList: "a" # "a"
 ==========================================
 reduce in CREOL-DATA-SIG : "a", "a" .
-result NeAidList: "a", "a"
+result NeVidList: "a", "a"
 ==========================================
 reduce in CREOL-DATA-SIG : "a"("a") .
 result Appl: "a"("a")
@@ -39,7 +39,7 @@ reduce in CREOL-DATA-SIG : "a"("a") # null .
 result NeExprList: "a"("a") # null
 ==========================================
 reduce in CREOL-DATA-SIG : null, "a" .
-result [ExprList,AidList]: null, "a"
+result [ExprList,VidList]: null, "a"
 ==========================================
 reduce in CREOL-DATA-SIG : ob("a") .
 result Oid: ob("a")
