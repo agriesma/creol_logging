@@ -745,10 +745,28 @@ tuned towards model checking.  It has the same structure as the
 interpreter, and has almost the same definitions.  In this section we
 point out the most important differences.
 
-The model checker is defined in the file @file{creol-modelchecker.maude}
-(@pxref{Setting CMC Up}).
+The model checker is defined in the file
+@file{creol-modelchecker.maude} (@pxref{Setting CMC Up}).
 
 XXX
+
+@menu
+* Differences::         Differences to the Interpreter.
+* LTL Specifications::  Writing properties for the interpreter.
+@end menu
+
+
+@node Differences
+@subsection Differences to the Interpreter
+
+XXX
+
+
+@node LTL Specifications
+@subsection LTL Specifications
+
+XXX
+
 
 
 @node Sort Hierarchy
@@ -759,6 +777,18 @@ XXX
 
 @node Using CMC
 @section Using the CMC
+
+In this section we describe the necessary steps for setting up the
+interpreter and the model checker and to simulate and analyze the
+Creol model.
+
+The compiler targets an interpreter which has been formalised in
+rewriting logic and which is executable in Maude.  The
+@command{creoltools} provide the interpreter and the model checker,
+but they do not provide Maude.  Maude has to be obtained and installed
+seperately, e.g., from @url{http://maude.cs.uiuc.edu}.  Maude then
+needs to be configured for use with the semantics of Creol, as
+described in @ref{Setting CMC Up}.
 
 @menu
 * Setting CMC Up::
@@ -772,10 +802,11 @@ XXX
 @subsection Setting the CMC Up
 
 The Creol Machine described in this chapter runs on top of the Maude
-rewriting system, which can be obtained at @url{maude.cs.uiuc.edu}.  The
-CMC itself is defined in the files @file{creol-datatypes.maude} and
-@file{creol-interpreter.maude}, whereas the meta execution strategy
-(@pxref{Meta Execution}) is defined in @file{creol-metaexec.maude}.
+rewriting system, which can be obtained at
+@url{http://maude.cs.uiuc.edu}.  The CMC itself is defined in the
+files @file{creol-datatypes.maude} and @file{creol-interpreter.maude},
+whereas the meta execution strategy (@pxref{Meta Execution}) is
+defined in @file{creol-metaexec.maude}.
 
 These data files are distributed in the subdirectory @file{share} of the
 distrbution.  They will be installed into

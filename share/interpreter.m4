@@ -1,11 +1,13 @@
 dnl
 dnl interpreter.m4 -- Source for modelchecker.maude and interpreter.maude
 dnl
-dnl Copyright (c) 2007 Marcel Kyas
+dnl Copyright (c) 2007
 dnl
 dnl The purpose of this file is to create the files `interpreter.maude'
 dnl and `modelchecker.maude'.  These files have to be processed with
 dnl m4, with either one of `CREOL' or `MODELCHECK' defined.
+dnl
+dnl See the lines below for its license
 dnl
 changequote({|,|})dnl
 dnl
@@ -196,7 +198,10 @@ endfm
 fmod CREOL-STATEMENT is
   pr CREOL-GUARDS .
 
-  sorts Mid Cid Stm .
+  *** SuspStm is a statement which can be suspended.  It includes
+  *** await, [] and ||| (the later two defined in CREOL-STM-LIST.
+  sorts Mid Cid Stm SuspStm .
+  subsort SuspStm < Stm .
   subsort String < Cid .
   subsort String < Mid .
 
@@ -211,7 +216,7 @@ fmod CREOL-STATEMENT is
   op _!_(_) : Aid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Aid AidList -> Stm [ctor prec 39] .
   op _?(_)  : Label AidList -> Stm [ctor prec 39] .
-  op await_ : Guard    -> Stm [ctor] .
+  op await_ : Guard    -> SuspStm [ctor] .
   op return : ExprList -> Stm [ctor {|format|} (c o)] .
   op bury : AidList -> Stm [ctor {|format|} (c o)] .
   op free : AidList -> Stm [ctor {|format|} (c o)] .
@@ -241,8 +246,8 @@ fmod CREOL-STM-LIST is
 
   op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor] . 
   op while_do_od : Expr NeStmList -> Stm [ctor] .
-  op _[]_  : NeStmList NeStmList -> Stm [ctor comm assoc prec 45 {|format|} (d r d o d)] .
-  op _|||_ : NeStmList NeStmList -> Stm [ctor comm assoc prec 47 {|format|} (d r o d)] .
+  op _[]_  : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 45 {|format|} (d r d o d)] .
+  op _|||_ : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 47 {|format|} (d r o d)] .
   op _MERGER_  : StmList StmList -> Stm [assoc] .
 
   var SL : StmList .
@@ -451,8 +456,8 @@ fmod CREOL-AUX-FUNCTIONS is
   *** Check if a message is in the queue.
   op inqueue  : Label MMsg -> Bool .
   eq inqueue(L, noMsg) = false .
-  eq inqueue(L, comp(L', EL) + MM) = 
-     if L == L' then true else inqueue(L, MM) fi .
+  eq inqueue(L, MM + comp(L', EL)) =
+	if L == L' then true else inqueue(L, MM) fi .
 
   op enabledGuard : Guard Subst MMsg -> Bool .
   eq enabledGuard(noGuard, S, MM) = true .
@@ -461,28 +466,30 @@ fmod CREOL-AUX-FUNCTIONS is
   eq enabledGuard((L ??), S, MM) = inqueue(L, MM) .
 
   vars  ST ST' : Stm . 
-  vars SL SL' : StmList . 
-  var NeSL : NeStmList .
+  vars SL SL' SL'' : StmList . 
+  vars NeSL NeSL' NeSL'' : NeStmList .
   var AL : AidList .
 
-  op enabled : NeStmList Subst MMsg -> Bool . *** eval guard 
-  eq enabled(SL [] SL',  S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
-  eq enabled(SL ||| SL', S, MM) = enabled(SL, S, MM) or enabled(SL', S, MM) .
-  eq enabled(SL MERGER SL', S, MM) = enabled(SL, S, MM) .
-  eq enabled(await G1, S, MM) = enabledGuard(G1,S,MM) .
-  eq enabled((ST ; ST' ; SL),S, MM) = enabled(ST, S, MM) . 
-  eq enabled(ST, S, MM) = true [owise] . 
+  op enabled : NeStmList Subst MMsg -> Bool .
+  eq enabled((NeSL [] NeSL') ; SL'',  S, MM) =
+       enabled(NeSL, S, MM) or enabled(NeSL', S, MM) .
+  eq enabled((NeSL ||| NeSL') ; SL'', S, MM) =
+       enabled(NeSL, S, MM) or enabled(NeSL', S, MM) .
+  eq enabled((NeSL MERGER SL') ; SL'', S, MM) = enabled(NeSL, S, MM) .
+  eq enabled(await G1 ; SL'', S, MM) = enabledGuard(G1,S,MM) .
+  eq enabled(NeSL, S, MM) = true [owise] .
 
   *** The ready predicate holds, if a statement is ready for execution,
   *** i.e., the corresponding process may be waken up.
   op ready : NeStmList Subst MMsg -> Bool . *** eval guard 
-  eq ready(SL [] SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-  eq ready(SL ||| SL', S, MM) = ready(SL, S, MM) or ready(SL', S, MM) .
-  eq ready(SL MERGER SL', S, MM) = ready(SL, S, MM) .
-  eq ready(A ?(AL), S, MM) = inqueue(S[A], MM) . 
-  eq ready(L ?(AL), S, MM) = inqueue(L, MM) . 
-  eq ready((ST ; ST' ; SL), S, MM) = ready(ST, S, MM) . 
-  eq ready(ST, S, MM) = enabled(ST, S, MM) [owise] .
+  eq ready((NeSL [] NeSL') ; SL'', S, MM) =
+        ready(NeSL, S, MM) or ready(NeSL', S, MM) .
+  eq ready((NeSL ||| NeSL') ; SL'', S, MM) =
+	ready(NeSL, S, MM) or ready(NeSL', S, MM) .
+  eq ready((NeSL MERGER SL') ; SL'', S, MM) = ready(NeSL, S, MM) .
+  eq ready((A ?(AL)) ; SL'' , S, MM) = inqueue(S[A], MM) . 
+  eq ready((L ?(AL)) ; SL'' , S, MM) = inqueue(L, MM) . 
+  eq ready(NeSL, S, MM) = enabled(NeSL, S, MM) [owise] .
 
 endfm
 
@@ -505,6 +512,7 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
   vars EL EL' : ExprList .
   vars NeEL NeEL' : NeExprList .
   var ST : Stm .
+  var SuS : SuspStm .
   vars SL SL' SL'' : StmList .
   vars NeSL NeSL' : NeStmList .
   vars P P' : Process .
@@ -705,23 +713,25 @@ STEP(dnl
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
 {|[label release]|})
 
+
+*** Suspend a process.
 CSTEP(dnl
-{|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+{|< O : C | Att: S, Pr: (L, SuS ; SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
+{|< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|not enabled(SL, (S # L), MM)|},
+{|not enabled(SuS, (S # L), MM)|},
 {|[label suspend]|})
 
 
 *** Guards ***
 
 *** Optimze label access in await statements.
-*** eq
-***   < O : C | Att: S, Pr: (L, await (A ??) ; SL), PrQ: W, Lcnt: N >
-***   =
-***   < O : C | Att: S, Pr: (L, await ((L[A]) ??) ; SL), PrQ: W, Lcnt: N >
-***   .
+eq
+  < O : C | Att: S, Pr: (L, await (A ??) ; SL), PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: S, Pr: (L, await ((L[A]) ??) ; SL), PrQ: W, Lcnt: N >
+  .
 
 CSTEP(dnl
 {|< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
@@ -844,7 +854,7 @@ ifdef({|MODELCHECK|},
     therefore check whether there is room for the message in the queue,
     before sending.
   )***
-  ceq
+  eq
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: F >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =
@@ -852,7 +862,7 @@ ifdef({|MODELCHECK|},
   *** XXX: QUEUE
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM +
     invoc(O, label(O, O, Q, evalList(EL, (S # L))), Q, evalList(EL, (S # L))) >
-  if size(MM) < Sz
+  *** if size(MM) < Sz
 |},dnl
 {|rl
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N >

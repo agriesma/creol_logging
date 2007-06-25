@@ -138,13 +138,13 @@ reduce in CREOL-STATEMENT : downTerm(upTerm("l" ?("l")), skip) .
 result Stm: "l" ?("l")
 ==========================================
 reduce in CREOL-STATEMENT : await ("test" ??) .
-result Stm: await ("test" ??)
+result SuspStm: await ("test" ??)
 ==========================================
 reduce in CREOL-STATEMENT : upTerm(await ("test" ??)) .
 result GroundTerm: 'await_['_??['"test".String]]
 ==========================================
 reduce in CREOL-STATEMENT : downTerm(upTerm(await ("test" ??)), skip) .
-result Stm: await ("test" ??)
+result SuspStm: await ("test" ??)
 ==========================================
 reduce in CREOL-STATEMENT : return(emp) .
 result Stm: return(emp)
@@ -228,7 +228,7 @@ reduce in CREOL-STM-LIST : downTerm(upTerm(skip), noStm) .
 result Stm: skip
 ==========================================
 reduce in CREOL-STM-LIST : "var" ::= int(4)[]"var" ::= new "C"(null) .
-result Stm: "var" ::= int(4)[]"var" ::= new "C"(null)
+result SuspStm: "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new "C"(null)) .
 result GroundTerm: '_`[`]_['_::=_['"var".String,'int`(_`)['s_^4['0.Zero]]],
@@ -236,10 +236,10 @@ result GroundTerm: '_`[`]_['_::=_['"var".String,'int`(_`)['s_^4['0.Zero]]],
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new "C"(
     null)), noStm) .
-result Stm: "var" ::= int(4)[]"var" ::= new "C"(null)
+result SuspStm: "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : skip ||| "var" ::= int(4)[]"var" ::= new "C"(null) .
-result Stm: skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
+result SuspStm: skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : upTerm(skip ||| "var" ::= int(4)[]"var" ::= new "C"(
     null)) .
@@ -248,11 +248,11 @@ result GroundTerm: '_|||_['skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)[
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm(skip ||| "var" ::= int(4)[]"var" ::=
     new "C"(null)), noStm) .
-result Stm: skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
+result SuspStm: skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : "var" ::= int(4)[]"var" ::= new "C"(null) ||| skip
     ||| skip .
-result Stm: skip ||| skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
+result SuspStm: skip ||| skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : upTerm("var" ::= int(4)[]"var" ::= new "C"(null) |||
     skip ||| skip) .
@@ -262,7 +262,7 @@ result GroundTerm: '_|||_['skip.Stm,'skip.Stm,'_`[`]_['_::=_['"var".String,
 ==========================================
 reduce in CREOL-STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new "C"(
     null) ||| skip ||| skip), noStm) .
-result Stm: skip ||| skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
+result SuspStm: skip ||| skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
 reduce in CREOL-STM-LIST : idle .
 result Process: idle

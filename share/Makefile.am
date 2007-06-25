@@ -32,7 +32,7 @@ dist_pkgdata_DATA	= creol.xsd \
 			  creol-modelchecker.maude
 
 creol-interpreter.maude: ${srcdir}/interpreter.m4
-	$(M4) $^ > $@
+	$(M4) ${CREOL_VARIANTS} $^ > $@
 
 creol-modelchecker.maude: ${srcdir}/interpreter.m4
-	$(M4) -DMODELCHECK $^ > $@
+	$(M4) -DMODELCHECK ${CREOL_VARIANTS} $^ > $@
