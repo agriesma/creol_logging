@@ -59,6 +59,7 @@ rule token = parse
     | '!' { BANG }
 	(* '"' *)
     | "##" { HASHHASH }
+    | "#]" { RBRACKS }
     | '#' { HASH }
     | '$' { DOLLAR }
     | '%' { PERCENT }
@@ -70,6 +71,7 @@ rule token = parse
     | "**" { TIMESTIMES }
     | '*' { TIMES }
     | "++" { PLUSPLUS }
+    | "+]" { RBRACKV }
     | '+' { PLUS }
     | ',' { COMMA }
     | "->" { ARROW }
@@ -105,6 +107,8 @@ rule token = parse
     | '@' { AT }
 	(* Upper case letters *)
     | "[]" { BOX }
+    | "[#" { LBRACKS }
+    | "[+" { LBRACKV }
     | '[' { LBRACK }
     | "\\/" { VEE }
     | '\\' { BACKSLASH }

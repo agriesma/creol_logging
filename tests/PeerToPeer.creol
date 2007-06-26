@@ -44,7 +44,7 @@ begin
       pack := f(pNbr)
   with Any
     op availFiles (in sList: List[ToServer];
-		   out files: List[ToServer ** List[Str]]) ==
+		   out files: List[[ToServer , List[Str]]]) ==
       if (sList = nil) then files := nil
       else
         l1!hd(sList).enquire();

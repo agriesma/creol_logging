@@ -681,6 +681,13 @@ pattern ::=
   | pattern @code{|-} pattern
   | pattern @code{-|} pattern
 
+type ::=
+    cid [ @code{[} @{ type , @} @code{]} ]
+  | @code{`} id
+  | @code{[} @{ type , @} [ @code{->} type ] @code{]}
+  | @code{[#} @{ id @code{:} type @code{,} @} @code{#]}
+  | @code{[|} @{ id @code{:} type @code{|} @} @code{|]}
+
 assertion ::=
     expr
   | @code{forall} var-decl-no-init @code{:} assertion

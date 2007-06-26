@@ -21,6 +21,18 @@
  * 02111-1307, USA.
  *)
 
+let rec separated_list elt_fun sep_fun =
+  (** Helper function for outputting a separated list.
+      It will call [elt_fun] for each element of the list and
+      [sep_fun] between each element, *)
+  function
+      [] -> ()
+    | [s] -> elt_fun s
+    | s::r ->
+	elt_fun s;
+	sep_fun ();
+	separated_list elt_fun sep_fun r
+
 module Note =
   struct
 
@@ -117,18 +129,32 @@ module Type =
   struct
     type 'c t =
 	Basic of 'c * string
-	| Application of 'c * string * 'c t list
 	| Variable of 'c * string
+	| Application of 'c * string * 'c t list
+	| Tuple of 'c * 'c t list
+	| Function of 'c * 'c t list * 'c t
+	| Structure of 'c * 'c field list
+	| Variant of 'c * 'c field list
 	| Label of 'c
+	| Intersection of 'c * 'c t list
+	| Union of 'c * 'c t list
+    and 'c field =
+	{ field_note: 'c;
+	  field_name: string;
+	  field_type: 'c t
+	}
+
 
     (* These are the support functions for the abstract syntax tree. *)
 
     let rec as_string =
       function
 	  Basic (_, s) -> s
+	| Variable (_, s) -> "$" ^ s
 	| Application (_, s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Variable (_, s) -> "$" ^ s
+	| Tuple (_, p) ->
+	    "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Label _ -> "/* Label */"
     and string_of_creol_type_list =
       function
@@ -193,6 +219,7 @@ module Expression =
 	| Times
 	| Div
 	| Modulo
+	| Power
 	| Eq
 	| Ne
 	| Le
@@ -218,6 +245,7 @@ module Expression =
 	| Times -> "*"
 	| Div -> "/"
 	| Modulo -> "%"
+	| Power -> "**"
 	| Eq -> "="
 	| Ne -> "/="
 	| Le -> "<="
@@ -243,6 +271,7 @@ module Expression =
 	| Times -> (31, 31)
 	| Div -> (31, 31)
 	| Modulo -> (31, 31)
+	| Power -> (29, 29)
 	| Eq -> (51, 51)
 	| Ne -> (51, 51)
 	| Le -> (37, 37)
@@ -1025,20 +1054,6 @@ let optimise_tailcalls prg =
 
 
 
-
-
-let rec separated_list elt_fun sep_fun =
-  (** Helper function for outputting a separated list.
-      It will call [elt_fun] for each element of the list and
-      [sep_fun] between each element, *)
-  function
-      [] -> ()
-    | [s] -> elt_fun s
-    | s::r ->
-	elt_fun s;
-	sep_fun ();
-	separated_list elt_fun sep_fun r
-
 let pretty_print out_channel input =
   let rec pretty_print_declaration =
     function
@@ -1303,7 +1318,7 @@ let pretty_print out_channel input =
 	    output_string out_channel " do ";
 	    do_indent (lvl + 1);
 	    print (lvl + 1) 25 b;
-	    output_string out_channel " od";
+	    output_string out_channel " end";
 	    do_indent lvl
 	| For _ -> assert false
 	| Raise _ -> assert false

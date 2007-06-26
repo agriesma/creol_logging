@@ -10,7 +10,9 @@
 %token FOR TO BY DO OF CASE AS
 %token EXCEPTION RAISE TRY
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
-%token RBRACK LBRACK
+%token LBRACK RBRACK
+%token LBRACKS RBRACKS
+%token LBRACKV RBRACKV
 %token LPAREN RPAREN
 %token LBRACE RBRACE
 %token HASHHASH HASH QQUESTION QUESTION BANGBANG BANG DOTDOT DOT ATAT AT
@@ -430,6 +432,7 @@ expression:
     | PLUS { Plus }
     | MINUS { Minus }
     | TIMES { Times }
+    | TIMESTIMES { Power }
     | DIV { Div }
     | PERCENT { Modulo }
     | PREPEND { Prepend }
@@ -477,7 +480,9 @@ pattern:
     | pattern APPEND pattern
 	{ () }
 
-(* Poor mans types and type parameters *)
+
+(* Types *)
+
 creol_type:
       t = CID
 	{ Type.Basic (Note.make $startpos, t) }
@@ -485,8 +490,22 @@ creol_type:
 	{ Type.Application(Note.make $startpos, t, p) } 
     | DOLLAR v = CID
 	{ Type.Variable (Note.make $startpos, v) }
-    | l = creol_type TIMESTIMES r = creol_type
-	{ l (* XXX: Tuple *) }
+    | LBRACK d = separated_nonempty_list(COMMA, creol_type)
+      r = ioption(preceded(ARROW, creol_type)) RBRACK
+	{ match r with
+	    None -> Type.Tuple (Note.make $startpos, d)
+	  | Some rt -> Type.Function (Note.make $startpos, d, rt) }
+    | LBRACK ARROW r = creol_type RBRACK
+	{ Type.Function (Note.make $startpos, [], r) }
+    | LBRACKS f = separated_nonempty_list(COMMA, field_decl) RBRACKS
+        { Type.Structure (Note.make $startpos, f) }
+    | LBRACKV f = separated_nonempty_list(BAR, field_decl) RBRACKV
+        { Type.Variant (Note.make $startpos, f) }
+
+field_decl:
+      i = ID COLON t = creol_type
+        { { Type.field_note = Note.make $startpos;
+	    Type.field_name = i; Type.field_type = t } }
 
 (* Assertions. *)
 

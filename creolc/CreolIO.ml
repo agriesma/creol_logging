@@ -500,15 +500,20 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.write_attribute writer "name" s ;
 	  type_handler writer a ;
           XmlTextWriter.end_element writer
+      | Type.Variable (a, s) ->
+	  XmlTextWriter.start_element writer "creol:typevariable" ; 
+          XmlTextWriter.write_attribute writer "name" s ;
+	  type_handler writer a ;
+          XmlTextWriter.end_element writer
       | Type.Application (a, s, l) ->
 	  XmlTextWriter.start_element writer "creol:typeapplication" ; 
           XmlTextWriter.write_attribute writer "name" s ;
 	  List.iter creol_type_to_xml l;
 	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Variable (a, s) ->
-	  XmlTextWriter.start_element writer "creol:typevariable" ; 
-          XmlTextWriter.write_attribute writer "name" s ;
+      | Type.Tuple(a, l) ->
+	  XmlTextWriter.start_element writer "creol:tuple" ; 
+	  List.iter creol_type_to_xml l;
 	  type_handler writer a ;
           XmlTextWriter.end_element writer
       | Type.Label a ->

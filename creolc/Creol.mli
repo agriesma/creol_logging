@@ -50,14 +50,41 @@ module Note :
 module Type :
   sig
     type 'c t = 
-	(** A type as defined in Creol. *)
+	(** The abstract syntax of types in Creol. *)
 	Basic of 'c * string
 	  (** A basic type. *)
-	| Application of 'c * string * 'c t list
-	    (** A type application. *)
 	| Variable of 'c * string
 	    (** A type variable. *)
+	| Application of 'c * string * 'c t list
+	    (** A type application, e.g., [List[Int]]. *)
+	| Tuple of 'c * 'c t list
+	    (** The type of a tuple. *)
+	| Function of 'c * 'c t list * 'c t
+	    (** The type of a function.  The first component refers to
+		the annotation of the function tupe, the second
+		component is a tuple describing the domain and the
+		last component is the (unique) type of the function's
+		range. *)
+	| Structure of 'c * 'c field list
+	    (** The type of a structure. *)
+	| Variant of 'c * 'c field list
+	    (** The type of a variant. *)
 	| Label of 'c
+	    (** The type of a label.
+
+		This needs to be refined for type inference. *)
+	| Intersection of 'c * 'c t list
+	    (** The type is an intersection type.  Intersection types
+		do not have concrete syntax. *)
+	| Union of 'c * 'c t list
+	    (** The type is a union type.  Union types do not have
+		concrete syntax. *)
+    and 'c field =
+	(** The declaration of a field of a structure or a variant. *)
+	{ field_note: 'c;     (** Type annotation of this field. *)
+	  field_name: string; (** Name of this field. *)
+	  field_type: 'c t    (** Type of this field *)
+	}
 
     val as_string : 'a t -> string
   end
@@ -150,6 +177,7 @@ sig
       | Times
       | Div
       | Modulo
+      | Power
       | Eq
       | Ne
       | Le
