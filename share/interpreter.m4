@@ -433,9 +433,24 @@ fmod CREOL-CONFIG is
   op noConf : -> Configuration [ctor] .
   op __ : Configuration Configuration -> Configuration
 	[ctor assoc comm id: noConf {|format|} (d n d)] .
-  op main : Cid ExprList -> Configuration .
 
-  var C : Cid . var E : ExprList .
+  *** Useful for real-time maude and some other tricks.
+ifdef({|MODELCHECK|},{|dnl
+  *** Maude's model checker asks us to provide State.
+  including SATISFACTION .
+  including MODEL-CHECKER .
+
+|}, {|dnl
+  *** In the interpreter we define our own sort state.
+  sort State .
+|})dnl
+
+  op {_} : Configuration -> State [ctor] .
+
+  *** System initialisation
+  var C : Cid .
+  var E : ExprList .
+  op main : Cid ExprList -> Configuration .
   eq main(C,E) = < ob("main") : "NoClass" | Att: noSubst, 
                  Pr: (noSubst, ("var" ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
                < ob("main") : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
@@ -539,6 +554,7 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
   var M : Mid .
   var Q : String .
   var MsgBody : Body .
+  var cnf : Configuration .
 
 ifdef({|MODELCHECK|},dnl
 {|  op label : Oid Oid Mid DataList -> Label [ctor] .
@@ -567,6 +583,14 @@ eq
       Lcnt: N > 
   [label do-static-assign] .
 
+
+*** Assign the value.
+***
+*** Testing for a of sort string is necessary for confluence, because
+*** 'A == a @ C' is neither in S nor in L.
+***
+*** The "buggy" version seems to do the right thing and is slightly faster.
+
 eq
   < O : C | Att: S, Pr: (L,( (a , AL assign D # DL) ; SL)), PrQ: W,
     Lcnt: N >
@@ -580,7 +604,6 @@ eq
   fi
   [label do-assign] .
 
-*** noVid assign emp reduces to noStm
 
 
 *** Skip
@@ -1007,9 +1030,6 @@ ifdef({|MODELCHECK|},{|dnl
 *** The predicates we can define on configurations.
 mod CREOL-PREDICATES is
   protecting CREOL-MODEL-CHECKER .
-  including SATISFACTION .
-  including MODEL-CHECKER .
-  subsort Configuration < State .
   ops objcnt maxobjcnt minobjcnt : Cid Nat -> Prop .
   op hasvalue : Oid Vid Data -> Prop .
   var A : Vid .
@@ -1022,10 +1042,10 @@ mod CREOL-PREDICATES is
   vars N N' : Nat .
   var c : Configuration .
 
-  eq c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= objcnt(C, N') = N == N' .
-  eq c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= maxobjcnt(C, N') = N <= N' .
-  eq c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > |= minobjcnt(C, N') = N >= N' .
-  eq c < O : C | Att: S, Pr: P, PrQ: Q, Lcnt: N > c |= hasvalue(O, A, D) = D == S[A] .
+  eq { c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > } |= objcnt(C, N') = N == N' .
+  eq { c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > } |= maxobjcnt(C, N') = N <= N' .
+  eq { c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > } |= minobjcnt(C, N') = N >= N' .
+  eq { c < O : C | Att: S, Pr: P, PrQ: Q, Lcnt: N > } |= hasvalue(O, A, D) = D == S[A] .
 
 endm
 |})dnl

@@ -2,14 +2,14 @@ in MC4Phil .
 
 set show breakdown on .
 
-red modelCheck(init main("Butler", emp), <> objcnt("Philosopher", 4)) .
+red modelCheck({ init main("Butler", emp) }, <> objcnt("Philosopher", 4)) .
 
-red modelCheck(init main("Butler", emp), <> [] objcnt("Philosopher", 4)) .
+red modelCheck({ init main("Butler", emp) }, <> [] objcnt("Philosopher", 4)) .
 
-red modelCheck(init, [] (hasvalue(ob("Philosopher0"), "hungry", bool(true)) => <> hasvalue(ob("Philosopher0"), "hungry", bool(false)))) .
+red modelCheck({ init main("Butler", emp) }, [] (hasvalue(ob("Philosopher0"), "hungry", bool(true)) => <> hasvalue(ob("Philosopher0"), "hungry", bool(false)))) .
 
-red modelCheck(init, [] (hasvalue(ob("Philosopher1"), "hungry", bool(true)) => <> hasvalue(ob("Philosopher1"), "chopstick", bool(true)))) .
+red modelCheck({ init main("Butler", emp) }, [] (hasvalue(ob("Philosopher1"), "hungry", bool(true)) => <> hasvalue(ob("Philosopher1"), "chopstick", bool(true)))) .
 
-red modelCheck(init, [] (hasvalue(ob("Philosopher0"), "chopstick", bool(true)) /\ hasvalue(ob("Philosopher1"), "chopstick", bool(true)) => hasvalue(ob("Philosopher2"), "chopstick", bool(false)))) .
+red modelCheck({ init main("Butler", emp) }, [] (hasvalue(ob("Philosopher0"), "chopstick", bool(true)) /\ hasvalue(ob("Philosopher1"), "chopstick", bool(true)) => hasvalue(ob("Philosopher2"), "chopstick", bool(false)))) .
 
 quit .
