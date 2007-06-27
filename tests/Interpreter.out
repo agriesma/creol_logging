@@ -19,9 +19,10 @@ search in TEST-TAILCALL : init =>+ conf:Configuration
   Pr: L:Subst, accept(tag(label(ob("Tailcall0"),2))) ; SL:StmList,
   PrQ: W:MProc, Lcnt: N:Nat > .
 
-Solution 1 (state 10)
+Solution 1 (state 13)
 conf:Configuration --> 
-< ob("Tailcall0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
+< ob("Tailcall0") : Qu | Size: 10, Dealloc: label(ob("Tailcall0"),2), Ev: noMsg
+    >
 
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
@@ -37,10 +38,9 @@ conf:Configuration -->
 A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
 L:Subst --> noSubst
 SL:StmList --> noStm
-W:MProc --> ((".init" |-> label(ob("Tailcall0"),1), ".run" |-> label(ob(
-    "Tailcall0"),2)), label(ob("Tailcall0"),2) ?(noVid)) ++ (".label" |-> tag(
-    label(ob("Tailcall0"),2)), "caller" |-> ob("Tailcall0")), if "<"(int(0) #
-    "x") th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi
+W:MProc --> (".label" |-> tag(label(ob("Tailcall0"),2)), "caller" |-> ob(
+    "Tailcall0")), if "<"(int(0) # "x") th "x" ::= "-"("x" # int(1)) ; tailcall
+    "run"(emp) el return(emp) fi
 N:Nat --> 3
 ==========================================
 rewrite in TEST-TAILCALL : init .
