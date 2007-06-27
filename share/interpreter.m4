@@ -707,7 +707,8 @@ STEP(dnl
   findAttr(newId(C'`,'F)`,' I`,' S'`,' 
     (AL assign EVALLIST(EL, compose(S`,'  L), T))`,'
     ((noSubst`,' (".anon" ! "init" (emp)) ; (".anon" ?(noVid)) ;
-    (".anon" ! "run" (emp)) ; free(".anon"))))
+    (".anon" ! "run" (emp)) ;
+    ifdef(`MODELCHECK', (".anon" ?(noVid)), free(".anon")))))
   CLOCK ,
 `[label new-object]')
 
