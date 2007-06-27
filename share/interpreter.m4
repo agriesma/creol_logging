@@ -9,7 +9,7 @@ dnl m4, with either one of `CREOL' or `MODELCHECK' defined.
 dnl
 dnl See the lines below for its license
 dnl
-changequote({|,|})dnl
+changecom
 dnl
 dnl The macro STEP is used to indicate that the specified transition
 dnl may be both an equation (this is the case for model checking,
@@ -18,18 +18,18 @@ dnl $1 is the pre-condition of the rule.
 dnl $2 is the post-condition of the rule.
 dnl $3 is an annotation.  It must not be empty, and usually contains at
 dnl    least the label.
-define({|STEP|},dnl
-ifdef({|MODELCHECK|},
-{|eq
+define(`STEP',dnl
+ifdef(`MODELCHECK',
+`eq
   $1
   =
   $2
-  $3 .|},
-{|rl
+  $3 .',
+`rl
   $1
   =>
   $2
-  $3 .|}))dnl
+  $3 .'))dnl
 dnl
 dnl The macro CSTEP is used to indicate that the specified transition
 dnl may be both a conditional equation (this is the case for model checking),
@@ -39,25 +39,25 @@ dnl $2 is the post-condition of the rule.
 dnl $3 is the condition.
 dnl $4 is an annotation.  It must not be empty, and usually contains at
 dnl    least the label.
-define({|CSTEP|},dnl
-ifdef({|MODELCHECK|},
-{|ceq
+define(`CSTEP',dnl
+ifdef(`MODELCHECK',
+`ceq
   $1
   =
   $2
   if $3
-  $4 .|},
-{|crl
+  $4 .',
+`crl
   $1
   =>
   $2
   if $3
-  $4 .|}))dnl
+  $4 .'))dnl
 dnl The usual header.
 ***
-ifdef({|MODELCHECK|},dnl
-{|*** Modelchecker for Creol.|},dnl
-{|*** Reimplementation of the CREOL interpreter, 2007|})
+ifdef(`MODELCHECK',dnl
+`*** Modelchecker for Creol.',dnl
+`*** Reimplementation of the CREOL interpreter, 2007')
 ***
 *** Copyright (c) 2007
 ***
@@ -80,7 +80,7 @@ ifdef({|MODELCHECK|},dnl
 *** 02111-1307, USA.
 ***
 
-ifdef({|MODELCHECK|},{|load model-checker|})
+ifdef(`MODELCHECK',`load model-checker')
 
 *** Data types are in their own module.
 in creol-datatypes .
@@ -107,7 +107,7 @@ fmod CREOL-SUBST is
   op _#_ : Subst Subst -> Subst .
   eq S1 # noSubst = S1 .
   eq noSubst # S2 = S2 .
-  eq (S1 {|#|} S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
+  eq (S1 # S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
 
   *** Composition operater for substitutions
   op compose : Subst Subst -> Subst .
@@ -122,12 +122,12 @@ fmod CREOL-SUBST is
   eq dom(A, S1) = false [owise] .
 endfm
 
-fmod CREOL-EVAL is
+fmod `CREOL-EVAL' is
 
   protecting DATATYPES .
   protecting CREOL-SUBST .
 
-  var D : Data .
+  var D NOW : Data .
   var DL : DataList .
   vars E E' E'' : Expr .
   var EL : ExprList .
@@ -147,31 +147,50 @@ fmod CREOL-EVAL is
 
 
 
+ifdef(`TIME', `dnl
+define(EVAL, ``eval' ($1, $2, $3)')dnl
+define(EVALLIST, `evalList ($1, $2, $3)')dnl
+
+  *** Third component is the value of now.
+  op eval : Data Subst Data -> Data .
+  op eval : Expr Subst Data -> Data .
+  op evalList : DataList Subst Data -> DataList .
+  op evalList : ExprList Subst Data -> DataList .
+
+  *** Substitute the expression now by its value.
+  eq `eval' (now, S, NOW) = NOW .
+',`dnl
+dnl This upper case eval and evalList macros map to the binary version
+dnl (untimed) .
+define(EVAL, `eval ($1, $2)')dnl
+define(EVALLIST, `evalList ($1, $2)')dnl
   op eval : Data Subst -> Data .
-  eq {|eval|}(D, S) = D .
+  op eval : Expr Subst -> Data .
+  op evalList : DataList Subst -> DataList .
+  op evalList : ExprList Subst -> DataList .
+')
+  eq EVAL(D, S, NOW) = D .
 
   *** standard evaluation of expression
-  op eval : Expr Subst -> Data .
-  eq {|eval|}((a @@ c), (A # L)) =  A [a] .
-  eq {|eval|}(x, (A # L)) =  L [x] [nonexec] . *** XXX: Later
-  eq {|eval|}(v, S) =  S [v] .
-  eq {|eval|}(F (EL), S) = F ( evalList(EL, S) ) .
-  eq {|eval|}(list(EL), S) = list(evalList(EL, S)) .
-  eq {|eval|}(pair(E,E'),S) = pair({|eval|}(E,S),{|eval|}(E',S)) .
-  eq {|eval|}(setl(EL), S) = setl(evalList(EL, S)) .
+  eq EVAL((a @@ c), (A # L), NOW) =  A [a] .
+  eq EVAL(x, (A # L), NOW) =  L [x] [nonexec] . *** XXX: Later
+  eq EVAL(v, S, NOW) =  S [v] .
+  eq EVAL(F (EL), S, NOW) = F ( evalList(EL, S) ) .
+  eq EVAL(list(EL), S, NOW) = list(evalList(EL, S)) .
+  eq EVAL(pair(E,E'),S, NOW) = pair(`eval'(E,S),`eval'(E',S)) .
+  eq EVAL(setl(EL), S, NOW) = setl(evalList(EL, S)) .
 
-  op evalList : DataList Subst -> DataList .
-  eq evalList(emp, S) = emp .
-  eq evalList(DL, S)= DL .
+  eq EVALLIST(emp, S, NOW) = emp .
+  eq EVALLIST(DL, S, NOW)= DL .
 
-  op evalList : ExprList Subst -> DataList .
-  eq evalList(E , S) = {|eval|}(E, S) .
-  eq evalList(E {|#|} NeEL, S) = {|eval|}(E, S) {|#|} evalList(NeEL, S) .
+  eq EVALLIST(E , S, NOW) = EVAL(E, S, NOW) .
+  eq EVALLIST(E # NeEL, S, NOW) =
+    EVAL(E, S, NOW) # EVALLIST(NeEL, S, NOW) .
 
   *** multi-way conditional expression
   sorts Case NeCases Cases .
   subsorts Case < NeCases < Cases .
-  op of_wh_do_ : Expr Expr Expr -> Case [ctor {|format|} (b o b o b o d)] .
+  op of_wh_do_ : Expr Expr Expr -> Case [ctor `format' (b o b o b o d)] .
   op noCase : -> Cases [ctor] .
   op _|_ : Case Case -> NeCases [ctor assoc id: noCase] .
   op case__ : Expr Cases -> Expr [ctor] .
@@ -179,19 +198,19 @@ fmod CREOL-EVAL is
 
   var C : Cases .
 
-  eq {|eval|}(case E noCase, S) = null .
-  eq {|eval|}(case D ((of E wh E' do E'') | C), S) =
-    if {|eval|}(E, S) == D then
-      {|eval|}(E'', S)
+  eq EVAL(case E noCase, S, NOW) = null .
+  eq EVAL(case D ((of E wh E' do E'') | C), S, NOW) =
+    if EVAL(E, S, NOW) == D then
+      EVAL(E'', S, NOW)
     else
-      {|eval|}(case D C, S)
+      EVAL(case D C, S, NOW)
     fi .
-  eq {|eval|}(case E C, S) = case {|eval|}(E, S) C [owise] .
+  eq EVAL(case E C, S, NOW) = case EVAL(E, S, NOW) C [owise] .
 endfm
 
 
 fmod CREOL-GUARDS is
-  protecting CREOL-EVAL .
+  protecting `CREOL-EVAL' .
 
   sorts NoGuard Guard Return PureGuard . 
   subsorts Return Expr < PureGuard .
@@ -200,7 +219,7 @@ fmod CREOL-GUARDS is
   vars E E' : Expr .
   var PG : PureGuard .
 
-  op noGuard : -> NoGuard [ctor {|format|} (b o)] .
+  op noGuard : -> NoGuard [ctor `format' (b o)] .
   op _??  : Vid -> Return [ctor] .
   op _??  : Label -> Return [ctor] .
 
@@ -222,24 +241,24 @@ fmod CREOL-STATEMENT is
   op skip : -> Stm [ctor] .
   op release : -> Stm [ctor] .
   op _::=_ : VidList ExprList -> Stm [ctor prec 39] .
-  op _::= new_(_) : Vid Cid ExprList -> Stm [ctor prec 37 {|format|} (d b d o d d d d)] .
+  op _::= new_(_) : Vid Cid ExprList -> Stm [ctor prec 37 `format' (d b d o d d d d)] .
   op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Vid VidList -> Stm [ctor prec 39] .
   op _?(_)  : Label VidList -> Stm [ctor prec 39] .
   op await_ : Guard    -> SuspStm [ctor] .
-  op return : ExprList -> Stm [ctor {|format|} (c o)] .
-  op bury : VidList -> Stm [ctor {|format|} (c o)] .
-  op free : VidList -> Stm [ctor {|format|} (c o)] .
-  op cont : Label -> Stm [ctor {|format|} (c o)] .
-  op tailcall_(_) : Mid ExprList -> Stm [ctor {|format|} (c o c o c o)] .
-  op accept : Label -> Stm [ctor {|format|} (c o)] .
+  op return : ExprList -> Stm [ctor `format' (c o)] .
+  op bury : VidList -> Stm [ctor `format' (c o)] .
+  op free : VidList -> Stm [ctor `format' (c o)] .
+  op cont : Label -> Stm [ctor `format' (c o)] .
+  op tailcall_(_) : Mid ExprList -> Stm [ctor `format' (c o c o c o)] .
+  op accept : Label -> Stm [ctor `format' (c o)] .
 
   *** multiple assignment
   ***
   *** For the model checker the following will be evaluated as an
   *** equation and the old rule is not confluent.
 
-  op _assign_ : VidList DataList -> Stm [ctor {|format|} (d c o d)] .
+  op _assign_ : VidList DataList -> Stm [ctor `format' (d c o d)] .
 
 endfm
 
@@ -252,12 +271,12 @@ fmod CREOL-STM-LIST is
   protecting LIST{Stm} * (sort List{Stm} to StmList,
                           sort NeList{Stm} to NeStmList,
 			  op nil : -> List{Stm} to noStm,
-			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_ [{|format|} (d r o d)]) .
+			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_ [`format' (d r o d)]) .
 
   op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor] . 
   op while_do_od : Expr NeStmList -> Stm [ctor] .
-  op _[]_  : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 45 {|format|} (d r d o d)] .
-  op _|||_ : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 47 {|format|} (d r o d)] .
+  op _[]_  : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 45 `format' (d r d o d)] .
+  op _|||_ : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 47 `format' (d r o d)] .
   op _MERGER_  : StmList StmList -> Stm [assoc] .
 
   var SL : StmList .
@@ -280,8 +299,8 @@ fmod CREOL-STM-LIST is
   eq (noVid ::= emp) = noStm .
 
   sort Process .
-  op idle : -> Process [{|format|} (!b o)] .  
-  op _,_ : Subst StmList -> Process [ctor {|format|} (o r sbu o)] . 
+  op idle : -> Process [`format' (!b o)] .  
+  op _,_ : Subst StmList -> Process [ctor `format' (o r sbu o)] . 
   var L : Subst .
   eq (L, noStm) = idle . *** if ".label" is needed this is dangerous!
   eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
@@ -290,7 +309,7 @@ fmod CREOL-STM-LIST is
   sorts NeMProc MProc .
   subsort Process < NeMProc < MProc .    *** Multiset of Processes
   op noProc : -> MProc [ctor] .
-  op _++_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 {|format|} (d r os d)] .
+  op _++_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 `format' (d r os d)] .
   op _++_ : NeMProc MProc -> NeMProc [ctor ditto] .
   op _++_ : MProc NeMProc -> NeMProc [ctor ditto] .
 
@@ -325,16 +344,16 @@ fmod CREOL-CLASS is
 
   op <_: Mtdname | Param:_, Latt:_, Code:_> : 
     String VidList Subst StmList -> Mtd [ctor
-      {|format|} (b d o d d sb o d sb o d sb o b o)] .
+      `format' (b d o d d sb o d sb o d sb o b o)] .
 
   subsort Mtd < MMtd .    *** Multiset of methods
 
   op noMtd : -> Mtd [ctor] .
-  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd {|format|} (d d ni d)] .
+  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd `format' (d d ni d)] .
 
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
     Cid InhList VidList Subst MMtd Nat -> Class 
-     [{|format|} (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
+     [`format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
 
   op emptyClass : -> Class .
   eq emptyClass =
@@ -368,7 +387,7 @@ fmod CREOL-OBJECT is
 
   op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
        Oid Cid Subst Process MProc Nat -> Object 
-         [ctor {|format|} (nr d d g r d o  r++ ni o  r ni o  r s o--  r o)] .
+         [ctor `format' (nr d d g r d o  r++ ni o  r ni o  r s o--  r o)] .
 
   op noObj : -> Object [ctor] .
 
@@ -395,19 +414,19 @@ fmod CREOL-COMMUNICATION is
 
   *** INVOCATION and REPLY
   op invoc(_,_,_,_) : *** Nat Oid 
-  Oid Label Mid DataList -> Body [ctor {|format|} (! o o o o o o o o o o)] .  
-  op comp(_,_) : Label DataList -> Body [ctor {|format|} (! o o o o o o)] .  
+  Oid Label Mid DataList -> Body [ctor `format' (! o o o o o o o o o o)] .  
+  op comp(_,_) : Label DataList -> Body [ctor `format' (! o o o o o o)] .  
 
-  op _from_to_ : Body Oid Oid -> Msg [ctor {|format|} (o ! o ! o on)] .
-  op error(_) : String -> [Msg] [ctor {|format|} (nnr r o! or onn)] .     *** error 
-  op warning(_) : String -> [Msg] [ctor {|format|} (nnr! r! r! or onn)] .   *** warning 
+  op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
+  op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .     *** error 
+  op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .   *** warning 
 
   *** Method binding messages
   op bindMtd : Oid Oid Label String ExprList InhList -> Msg [ctor] . 
   ***Bind method request
   *** Given: caller callee method params (list of classes to look in)
   op boundMtd(_,_) : Oid Process -> Msg 
-    [ctor {|format|} (!r r o o o !r on)] . *** binding result
+    [ctor `format' (!r r o o o !r on)] . *** binding result
   *** CONSIDER the call O.Q(I). bindMtd(O,Q,I,C S) trie to find Q in
   *** class C or superclasses, then in S. boundMtd(O,Mt) is the result.
 
@@ -418,7 +437,7 @@ fmod CREOL-COMMUNICATION is
 
   op noQu : -> Queue [ctor] .
   op <_: Qu | Size:_, Dealloc:_, Ev:_ > : Oid Nat Labels MMsg -> Queue 
-                          [{|format|} (nm r o d d sm o d sm o d sm o m o)] .
+                          [`format' (nm r o d d sm o d sm o d sm o m o)] .
 
 endfm
 
@@ -432,18 +451,17 @@ fmod CREOL-CONFIG is
 
   op noConf : -> Configuration [ctor] .
   op __ : Configuration Configuration -> Configuration
-	[ctor assoc comm id: noConf {|format|} (d n d)] .
+	[ctor assoc comm id: noConf `format' (d n d)] .
 
   *** Useful for real-time maude and some other tricks.
-ifdef({|MODELCHECK|},{|dnl
+ifdef(`MODELCHECK',dnl
   *** Maude's model checker asks us to provide State.
   including SATISFACTION .
   including MODEL-CHECKER .
-
-|}, {|dnl
+,dnl
   *** In the interpreter we define our own sort state.
   sort State .
-|})dnl
+)dnl
 
   op {_} : Configuration -> State [ctor] .
 
@@ -486,7 +504,7 @@ fmod CREOL-AUX-FUNCTIONS is
 
   op enabledGuard : Guard Subst MMsg -> Bool .
   eq enabledGuard(noGuard, S, MM) = true .
-  eq enabledGuard(E, S, MM) = {|eval|}(E, S) asBool .
+  eq enabledGuard(E, S, MM) = EVAL(E, S, NOW) asBool .
   eq enabledGuard((A ??), S, MM) = inqueue(S[A], MM) .
   eq enabledGuard((L ??), S, MM) = inqueue(L, MM) .
 
@@ -519,7 +537,7 @@ fmod CREOL-AUX-FUNCTIONS is
 endfm
 
 *** THE MACHINE ***
-mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
+mod ifdef(`MODELCHECK',CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
 
   extending CREOL-DATA-SIG .
 
@@ -556,20 +574,21 @@ mod ifdef({|MODELCHECK|},CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
   var MsgBody : Body .
   var cnf : Configuration .
 
-ifdef({|MODELCHECK|},dnl
-{|  op label : Oid Oid Mid DataList -> Label [ctor] .
-    eq caller(label(O, O', M, DL)) = O . |}
+ifdef(`MODELCHECK',dnl
+  op label : Oid Oid Mid DataList -> Label [ctor] .
+  eq caller(label(O, O', M, DL)) = O . 
 ,dnl
-{| op label(_,_) : Oid Nat -> Label [ctor {|format|} (d d ! d d o d)] .
-   eq caller(label(O, N)) = O . |})
+ op label(_,_) : Oid Nat -> Label [ctor ``format'' (d d ! d d o d)] .
+ eq caller(label(O, N)) = O .
+)dnl
 
 *** Evaluate all arguments.
 STEP(dnl
-{|< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
-	    PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (L,((AL assign evalList(EL, (S {|#|} L))); SL)), 
-	    PrQ: W, Lcnt: N >|},
-{|[label assign]|})
+`< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
+	    PrQ: W, Lcnt: N >',
+`< O : C | Att: S, Pr: (L,((AL assign EVALLIST(EL, (S # L), NOW)); SL)), 
+	    PrQ: W, Lcnt: N >',
+`[label assign]')
 
 *** XXX: This equation is currently broken (matches any class, etc.)
 *** The correct implementation depends on the type inference.
@@ -608,20 +627,20 @@ eq
 
 *** Skip
 STEP(dnl
-{|< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >|},
-{|[label skip]|})
+`< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >',
+`< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >',
+`[label skip]')
 
 
 *** if_then_else ***
 STEP(dnl
-{|< O : C | Att: S, Pr: (L, if E th SL' el SL'' fi ; SL), PrQ: W, Lcnt: N >|},
-{|if {|eval|}(E, (S {|#|} L)) asBool then
-    < O : C | Att: S, Pr: (L, SL' ; SL), PrQ: W, Lcnt: N >
+< O : C | Att: S`,' Pr: (L`,' if E th SL' el SL'' fi ; SL)`,' PrQ: W`,' Lcnt: N >,
+if EVAL(E, (S # L), NOW) asBool then
+    < O : C | Att: S`,' Pr: (L`,' SL' ; SL)`,' PrQ: W`,' Lcnt: N >
   else
-    < O : C | Att: S, Pr: (L, SL'' ; SL), PrQ: W, Lcnt: N >
-  fi|},
-{|[label if-th]|})
+    < O : C | Att: S`,' Pr: (L`,' SL'' ; SL)`,' PrQ: W`,' Lcnt: N >
+  fi,
+`[label if-th]')
 
 *** while ***
 *** During model checking we want to be able to observe infinite loops.
@@ -641,16 +660,16 @@ rl
 *** Expanding "init" (emp ; noVid) needs a label value, which we do
 *** not have.  We reserve a label for our purposes.
 STEP(dnl
-{|< O : C | Att: S,Pr: (L, (A ::= new C' (EL)); SL),PrQ: W, Lcnt: N > 
-  < C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: F >|},
-{|< O : C | Att: S, Pr: (L, (A assign newId(C', F)); SL), PrQ: W, Lcnt: N >
-  < C' : Cl | Inh: I , Par: AL, Att: S' , Mtds: MS , Ocnt: (F + 1) >
-  < newId(C',F) : C' | Att: S, Pr: idle, PrQ: noProc, Lcnt: 1 >
-  < newId(C',F) : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg > *** XXX: Currently hard-coded.
-  findAttr(newId(C',F), I, S', 
-    (AL assign evalList(EL, compose(S,  L))),
-    ((noSubst, (".init" ! "init" (emp)) ; (".init" ?(noVid)) ; (".run" ! "run" (emp)) ; (".run" ?(noVid)))))|},
-{|[label new-object]|})
+< O : C | Att: S`,'Pr: (L`,' (A ::= new C' (EL)); SL)`,'PrQ: W`,' Lcnt: N > 
+  < C' : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: F >,
+< O : C | Att: S`,' Pr: (L`,' (A assign newId(C'`,' F)); SL)`,' PrQ: W`,' Lcnt: N >
+  < C' : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: (F + 1) >
+  < newId(C'`,'F) : C' | Att: S`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 1 >
+  < newId(C'`,'F) : Qu | Size: 10`,' Dealloc: noDealloc`,' Ev: noMsg > *** XXX: Currently hard-coded.
+  findAttr(newId(C'`,'F)`,' I`,' S'`,' 
+    (AL assign EVALLIST(EL, compose(S`,'  L), NOW))`,'
+    ((noSubst`,' (".init" ! "init" (emp)) ; (".init" ?(noVid)) ; (".run" ! "run" (emp)) ; (".run" ?(noVid))))),
+`[label new-object]')
 
 
 *** ATTRIBUTE inheritance with multiple inheritance
@@ -658,8 +677,8 @@ STEP(dnl
 *** For the purpose of the CMC the class parameters are treated as
 *** attributes!
 
-op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor {|format|} (n d)] .
-op foundAttr : Oid Subst  StmList Process -> Msg [ctor {|format|} (n d)] .
+op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor `format' (n d)] .
+op foundAttr : Oid Subst  StmList Process -> Msg [ctor `format' (n d)] .
 
 eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 
@@ -674,10 +693,10 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 *** the state of the object at the beginning of the init call is in a
 *** consistent state.
 eq
-  findAttr(O,(C < EL > {|##|} I), S, SL, (L', SL')) 
+  findAttr(O,(C < EL > `##' I), S, SL, (L', SL')) 
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
   =
-  findAttr(O, I {|#|}{|#|} I', compose(S', S),
+  findAttr(O, I ## I', compose(S', S),
            SL ; (AL ::= EL), 
            (L', (".init" ! "init" @ C(emp)) ; (".init" ?( noVid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
@@ -718,7 +737,7 @@ crl
   =>
   < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL'); SL), PrQ: W, Lcnt: N >  
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  if ready(NeSL,(S {|#|} L), MM)
+  if ready(NeSL,(S # L), MM)
   [label merge]
   .
 
@@ -728,7 +747,7 @@ eq
   < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER NeSL'); SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =
-  if enabled(ST, (S {|#|} L), MM) then
+  if enabled(ST, (S # L), MM) then
     < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER NeSL')); SL)), PrQ: W,
       Lcnt: N >
   else
@@ -756,21 +775,21 @@ ceq
 
 *** The release statement is an unconditional processor release point.
 STEP(dnl
-{|< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|[label release]|})
+`< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+`< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+`[label release]')
 
 
 *** Suspend a process.
 CSTEP(dnl
-{|< O : C | Att: S, Pr: (L, SuS ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|not enabled(SuS, (S # L), MM)|},
-{|[label suspend]|})
+`< O : C | Att: S, Pr: (L, SuS ; SL), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+`< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+`not enabled(SuS, (S # L), MM)',
+`[label suspend]')
 
 
 *** Guards ***
@@ -783,12 +802,12 @@ eq
   .
 
 CSTEP(dnl
-{|< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-{|< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > |},
-{|enabledGuard(G, (S # L), MM)|},
-{|[label guard]|})
+`< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > ',
+`enabledGuard(G, (S # L), MM)',
+`[label guard]')
 
 
 
@@ -804,7 +823,7 @@ crl
   =>
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  if ready(SL, (S {|#|} L), MM)
+  if ready(SL, (S # L), MM)
   [label PrQ-ready]
   .
 
@@ -814,11 +833,11 @@ crl
 ***
 *** Fake the caller and the label and tag the label.  Since we do not
 *** want to interleave, this can also be an equation.
-STEP({|< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >|},
-{|< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Lcnt: N >
- bindMtd(O, O, tag(L[".label"]), M, evalList(EL, (S # L)), C < emp >)
-|},
-{|[label tailcall]|})
+STEP(`< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >',
+`< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Lcnt: N >
+ bindMtd(O, O, tag(L[".label"]), M, EVALLIST(EL, (S # L), NOW), C < emp >)
+',
+`[label tailcall]')
 
 *** If we receive the method body, the call is accepted and the label untagged.
 crl
@@ -837,12 +856,13 @@ crl
 *** METHOD CALLS ***
 
 *** receive invocation message ***
-STEP({|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + invoc(O', Lab, Q, DL) >|},
-{|< O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-	 bindMtd(O, O', Lab, Q, DL, C < emp >)|},
-{|[label receive-call-req]|})
+STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >
+  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM + invoc(O'`,' Lab`,' Q`,' DL) >
+,
+< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >
+  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >
+	 bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
+`[label receive-call-req]')
 
 
 *** Method binding with multiple inheritance
@@ -863,22 +883,22 @@ eq
 
 
 eq
-  bindMtd(O, O', Lab, M, EL, (C < EL' >) {|##|} I')
+  bindMtd(O, O', Lab, M, EL, (C < EL' >) `##' I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
   if (M in MS) then
     boundMtd(O,get(M, MS, O', Lab, EL))
   else
-    bindMtd(O, O', Lab, M, EL, I {|##|} I')
+    bindMtd(O, O', Lab, M, EL, I `##' I')
   fi 
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   .
 
-STEP({|< O : Qu | Size: Sz, Dealloc: LS,
-                  Ev: MM + invoc(O', Lab, Q @ C, DL) >|},
-{|< O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-    bindMtd(O, O', Lab, Q, DL, C < emp >)|},
-{|[label receive-call-req]|})
+STEP(< O : Qu | Size: Sz`,' Dealloc: LS`,'
+                  Ev: MM + invoc(O'`,' Lab`,' Q @ C`,' DL) >,
+< O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >
+    bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
+`[label receive-call-req]')
 
 eq
   boundMtd(O, P')
@@ -897,8 +917,8 @@ rl
   .
 
 
-ifdef({|MODELCHECK|},
-{|***(
+ifdef(`MODELCHECK',
+`***(
     The size of the queue is limited in the model checker, and we will
     therefore check whether there is room for the message in the queue,
     before sending.
@@ -907,61 +927,61 @@ ifdef({|MODELCHECK|},
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: F >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: F >
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), NOW)), L), SL), PrQ: W, Lcnt: F >
   *** XXX: QUEUE
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM +
-    invoc(O, label(O, O, Q, evalList(EL, (S # L))), Q, evalList(EL, (S # L))) >
+    invoc(O, label(O, O, Q, EVALLIST(EL, (S # L), NOW)), Q, EVALLIST(EL, (S # L), NOW)) >
   *** if size(MM) < Sz
-|},dnl
-{|rl
+',dnl
+`rl
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N >
   =>
   < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q, evalList(EL, (S # L))) from O to O
-|})dnl
+  invoc(O, label(O, N), Q, EVALLIST(EL, (S # L), NOW)) from O to O
+')dnl
   [label local-async-reply]
   .
 
-ifdef({|MODELCHECK|},dnl
-{|eq
-  < O : C | Att: S, Pr: (L, ( A ! Q @ C'(EL)); SL),PrQ: W, Lcnt: N >
+ifdef(`MODELCHECK',dnl
+eq
+  < O : C | Att: S`,' Pr: (L`,' ( A ! Q @ C'(EL)); SL)`,' PrQ: W`,' Lcnt: N >
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: N >
-  invoc(O, label(O,O,Q @ C', evalList(EL, (S # L))), Q @ C',
-        evalList(EL, (S # L))) from O to O
-|},dnl
-{|rl
-  < O : C | Att: S, Pr: (L, ( A ! Q @ C'(EL)); SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S`,' Pr: (insert(A`,' label(O`,' O`,' Q`,' EVALLIST(EL, (S # L), NOW))`,' L)`,' SL)`,' PrQ: W`,' Lcnt: N >
+  invoc(O`,' label(O`,'O`,'Q @ C'`,' EVALLIST(EL, (S # L), NOW))`,' Q @ C'`,'
+        EVALLIST(EL, (S # L), NOW)) from O to O
+,dnl
+rl
+  < O : C | Att: S`,' Pr: (L`,' ( A ! Q @ C'(EL)); SL)`,' PrQ: W`,' Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (insert (A, label(O, N), L), SL), PrQ: W,
+  < O : C | Att: S`,' Pr: (insert (A`,' label(O`,' N)`,' L)`,' SL)`,' PrQ: W`,'
     Lcnt: N + 1 >
-  invoc(O, label(O, N), Q @ C', evalList(EL, (S # L))) from O to O
-|})dnl
+  invoc(O`,' label(O`,' N)`,' Q @ C'`,' EVALLIST(EL, (S # L), NOW)) from O to O
+)dnl
   [label local-async-qualified-req]
   .
 
-ifdef({|MODELCHECK|},
-{|eq
+ifdef(`MODELCHECK',
+`eq
   < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Lcnt: N >
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, {|eval|}(E, (S # L)), Q, evalList(EL, (S # L))), L), SL), PrQ: W, Lcnt: N >
-  invoc(O, label(O, {|eval|}(E, (S # L)), Q, evalList(EL, (S # L))), Q, evalList(EL, (S # L)))
-    from O to {|eval|}(E, (S # L))
-|},dnl
-{|rl
+  < O : C | Att: S, Pr: (insert(A, label(O, EVAL(E, (S # L), NOW), Q, EVALLIST(EL, (S # L), NOW)), L), SL), PrQ: W, Lcnt: N >
+  invoc(O, label(O, EVAL(E, (S # L), NOW), Q, EVALLIST(EL, (S # L), NOW)), Q, EVALLIST(EL, (S # L), NOW))
+    from O to EVAL(E, (S # L), NOW)
+',dnl
+`rl
   < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Lcnt: N >
   =>
   < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q , evalList(EL, (S # L))) from O to eval(E, (S # L))
-|})dnl
+  invoc(O, label(O, N), Q , EVALLIST(EL, (S # L), NOW)) from O to EVAL(E, (S # L), NOW)
+')dnl
   [label remote-async-reply]
   .
 
 *** emit reply message ***
-STEP({|< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >|},
-{|< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  comp(L[".label"], evalList(EL, (S # L))) from O to caller(L[".label"])|},
-{|[label return]|})
+STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >',
+`< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+  comp(L[".label"], EVALLIST(EL, (S # L), NOW)) from O to caller(L[".label"])',
+`[label return]')
 
 *** Optimization: reduce label to value only once
 eq
@@ -977,12 +997,12 @@ eq
 *** label value,
 eq
   < O : C |  Att: S,
-    Pr: ((ifdef({|MODELCHECK|}, {|A |-> Lab, L|}, L)),
+    Pr: ((ifdef(`MODELCHECK', `A |-> Lab, L', L)),
          (Lab ? (AL)); SL), PrQ: W, Lcnt: F > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
   = 
   < O : C |  Att: S,
-    Pr: ((ifdef({|MODELCHECKER|}, {|A |-> noLabel, L|}, L)),
+    Pr: ((ifdef(`MODELCHECKER', `A |-> noLabel, L', L)),
          (AL assign DL); SL), PrQ: W, Lcnt: F > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label receive-reply]
@@ -997,12 +1017,12 @@ eq
   .
 
 *** Free a label.  Make sure that the use of labels is linear.
-STEP({|< O : C | Att: S, Pr: ((A |-> Lab, L), free(A) ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >|},
-  {|< O : C | Att: S, Pr: ((A |-> ifdef({|MODELCHECKER|}, noLabel, Lab), L), SL),
+STEP(`< O : C | Att: S, Pr: ((A |-> Lab, L), free(A) ; SL), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+  `< O : C | Att: S, Pr: ((A |-> ifdef(`MODELCHECKER', noLabel, Lab), L), SL),
               PrQ: W, Lcnt: N > 
-  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: MM >|},
-  {|[label free]|})
+  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: MM >',
+  `[label free]')
 
 *** Deallocate
 eq
@@ -1026,7 +1046,7 @@ eq
 
 endm
 
-ifdef({|MODELCHECK|},{|dnl
+ifdef(`MODELCHECK',dnl
 *** The predicates we can define on configurations.
 mod CREOL-PREDICATES is
   protecting CREOL-MODEL-CHECKER .
@@ -1042,12 +1062,12 @@ mod CREOL-PREDICATES is
   vars N N' : Nat .
   var c : Configuration .
 
-  eq { c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > } |= objcnt(C, N') = N == N' .
-  eq { c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > } |= maxobjcnt(C, N') = N <= N' .
-  eq { c < C : Cl | Inh: I:InhList, Par: AL:VidList, Att: S, Mtds: M:MMtd, Ocnt: N > } |= minobjcnt(C, N') = N >= N' .
-  eq { c < O : C | Att: S, Pr: P, PrQ: Q, Lcnt: N > } |= hasvalue(O, A, D) = D == S[A] .
+  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= objcnt(C`,' N') = N == N' .
+  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= maxobjcnt(C`,' N') = N <= N' .
+  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= minobjcnt(C`,' N') = N >= N' .
+  eq { c < O : C | Att: S`,' Pr: P`,' PrQ: Q`,' Lcnt: N > } |= hasvalue(O`,' A`,' D) = D == S[A] .
 
 endm
-|})dnl
+)dnl
 
 eof

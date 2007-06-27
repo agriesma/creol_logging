@@ -287,10 +287,8 @@ endfm
 
 fmod CREOL-DATA-PAIR is
   extending CREOL-DATA-SIG .
-  sort Pair .
-  subsort Pair < Data .
 
-  op pair : Data Data -> Pair [ctor] .
+  op pair : Data Data -> Data [ctor] .
 
   vars D D'     : Data .
 
@@ -298,6 +296,44 @@ fmod CREOL-DATA-PAIR is
   eq "fst" (pair(D, D')) = D . 
   eq "snd" (pair(D, D')) = D' .
 endfm
+
+fmod CREOL-DATA-TIME is
+  extending CREOL-DATA-SIG .
+  --- extending CREOL-DATA-INT .
+  extending CREOL-DATA-FLOAT .
+
+  *** The central problem will be to evaluate this "expression", since the
+  *** clock is floating around in the global state.  This problem will be
+  *** solved later.
+  op now : -> Expr [ctor] .
+
+  op time : Float -> Data . 
+  op duration : Float -> Data .
+
+  vars T T' S : Float .
+
+  *** Define the usual predicates on time.
+  eq "<" ( time(T) # time(T') ) = bool(T < T') .
+  eq "<=" ( time(T) # time(T') ) = bool(T <= T') .
+  eq ">" ( time(T) # time(T') ) = bool(T > T') .
+  eq ">=" ( time(T) # time(T') ) = bool(T >= T') .
+
+  eq "<" ( duration(T) # duration(T') ) = bool(T < T') .
+  eq "<=" ( duration(T) # duration(T') ) = bool(T <= T') .
+  eq ">" ( duration(T) # duration(T') ) = bool(T > T') .
+  eq ">=" ( duration(T) # duration(T') ) = bool(T >= T') .
+
+  *** Arithmetic on time
+  eq "+" ( time(T) # duration(T') ) = time(T + T') .
+  eq "-" ( time(T) # time(T') ) = duration(T - T') .
+
+  *** We can always multiply by a scalar.
+  eq "*" ( float(S) # duration(T') ) = duration(S * T') .
+  eq "*" ( float(S) # time(T') ) = time(S * T') .
+
+  *** Division et al. does not make any sense in this domain.
+endfm
+
 
 fmod DATA is 
 
