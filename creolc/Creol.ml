@@ -135,7 +135,7 @@ module Type =
 	| Function of 'c * 'c t list * 'c t
 	| Structure of 'c * 'c field list
 	| Variant of 'c * 'c field list
-	| Label of 'c
+	| Label of 'c * 'c t * 'c t list * 'c t list
 	| Intersection of 'c * 'c t list
 	| Union of 'c * 'c t list
     and 'c field =
@@ -544,6 +544,8 @@ struct
       | Exception of ('b, 'c) Exception.t
 
 end
+
+type ('a, 'b, 'c) program = ('a, 'b, 'c) Declaration.t list
 
 open Declaration
 
