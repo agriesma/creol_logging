@@ -93,15 +93,14 @@ fmod CREOL-DATA-SIG is
   eq "=" (D # D') = bool(D == D') .
   eq "/=" (D # D') = bool(D =/= D') .
 
-  eq "~" (bool(false)) = bool(true) .  
-  eq "~" (bool(true)) = bool(false) . 
-
   var E : Expr . *** For short circuiting ||, &&, and =>
 
-  eq "||" (bool(true) # E) = bool(true) .
-  eq "||" (bool(false) # D) = D .
+  eq "~" (bool(false)) = bool(true) .  
+  eq "~" (bool(true)) = bool(false) . 
   eq "&&" (bool(false) # E) = bool(false) .
   eq "&&" (bool(true) #  D) = D .
+  eq "||" (bool(true) # E) = bool(true) .
+  eq "||" (bool(false) # D) = D .
   eq "=>" (bool(true) # D) = D .
   eq "=>" (bool(false) # E) = bool(true) .
   eq "^" (bool(B) # bool(B')) = bool(B xor B') .
@@ -137,16 +136,17 @@ fmod CREOL-DATA-INT is
   eq int(N)  asNat      = N .
 
   eq "-" (int(I)) = int(-(I)) .
-  eq "<"  (int(I) # int(I')) = bool(I < I') .
-  eq "<=" (int(I) # int(I')) = bool(I <= I') .
-  eq ">"  (int(I) # int(I')) = bool(I > I') .
-  eq ">=" (int(I) # int(I')) = bool(I >= I') .
   eq "+" (int(I) # int(I')) = int(I + I') .
   eq "-" (int(I) # int(I')) = int( _-_(I, I')) .
   eq "*" (int(I) # int(I')) = int(I * I') .
   eq "/" (int(I) # int(I')) = int(I quo I') .
   eq "%" (int(I) # int(I')) = int(I rem I') .
   eq "**" (int(I) # int(I')) = int(I ^ I') .
+
+  eq "<"  (int(I) # int(I')) = bool(I < I') .
+  eq "<=" (int(I) # int(I')) = bool(I <= I') .
+  eq ">"  (int(I) # int(I')) = bool(I > I') .
+  eq ">=" (int(I) # int(I')) = bool(I >= I') .
 endfm
 
 fmod CREOL-DATA-FLOAT is
@@ -185,13 +185,14 @@ fmod CREOL-DATA-STRING is
   op _asString : Data -> String .
   eq str(S) asString = S .
 
+  eq "-|" (str(S) # str(S')) = str(S + S') .
+  eq "|-|" (str(S) # str(S')) = str(S + S') .
+  eq "|-" (str(S) # str(S')) = str(S + S') .
+
   eq "<" (str(S)# str(S')) = bool(S < S') .
   eq "<=" (str(S)# str(S')) = bool(S <= S') .
   eq ">" (str(S)# str(S')) = bool(S > S') .
   eq ">=" (str(S)# str(S')) = bool(S >= S') .
-  eq "-|" (str(S) # str(S')) = str(S + S') .
-  eq "|-|" (str(S) # str(S')) = str(S + S') .
-  eq "|-" (str(S) # str(S')) = str(S + S') .
 endfm
 
 fmod CREOL-DATA-LIST is

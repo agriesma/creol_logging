@@ -1,0 +1,116 @@
+/*
+ * prelude.creol
+ *
+ * Copyright (c) 2007
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ */
+
+datatype Data
+begin
+  op = : [Data, Data -> Bool] == external "="
+  op /= : [Data, Data -> Bool] == external "/="
+end
+
+datatype Bool of Data
+begin
+  op "~" : [Bool -> Bool] == extern "~"
+  op "&&" : [Bool, Bool -> Bool] == extern "&&"
+  op "||" : [Bool, Bool -> Bool] == extern "||"
+  op "=>" : [Bool, Bool -> Bool] == extern "=>"
+  op "^" : [Bool, Bool -> Bool] == extern "^"
+  op "<=>" : [Bool, Bool -> Bool] == extern "<=>"
+end
+
+datatype Real of Data
+begin
+  op - (a: Real): Real == extern "-"
+  op - (a: Real): Real == extern "-"
+  op + (a: Real, b: Real): Real == extern "+"
+  op - (a: Real, b: Real): Real == extern "-"
+  op * (a: Real, b: Real): Real == extern "*"
+  op / (a: Real, b: Real): Real == extern "/"
+  op % (a: Real, b: Real): Real == extern "%"
+  op ** (a: Real, b: Real): Real == extern "**"
+
+  op < (a: Real, b: Real): Bool = extern "<"
+  op <= (a: Real, b: Real): Bool = extern "<="
+  op > (a: Real, b: Real): Bool = extern ">"
+  op >= (a: Real, b: Real): Bool = extern ">="
+end
+
+datatype Int of Real
+begin
+  op - (a: Int): Int == extern "-"
+  op - (a: Int): Int == extern "-"
+  op + (a: Int, b: Int): Int == extern "+"
+  op - (a: Int, b: Int): Int == extern "-"
+  op * (a: Int, b: Int): Int == extern "*"
+  op / (a: Int, b: Int): Int == extern "/"
+  op % (a: Int, b: Int): Int == extern "%"
+  op ** (a: Int, b: Int): Int == extern "**"
+
+  op < (a: Int, b: Int): Bool = extern "<"
+  op <= (a: Int, b: Int): Bool = extern "<="
+  op > (a: Int, b: Int): Bool = extern ">"
+  op >= (a: Int, b: Int): Bool = extern ">="
+end
+
+datatype String of Data
+begin
+  op |- (a: String, b: String): String == extern "|-"
+  op -| (a: String, b: String): String == extern "-|"
+  op |-| (a: String, b: String): String == extern "|-|"
+  op # (a: String): Int == extern "#"
+
+  op < (a: String, b: String): Bool = extern "<"
+  op <= (a: String, b: String): Bool = extern "<="
+  op > (a: String, b: String): Bool = extern ">"
+  op >= (a: String, b: String): Bool = extern ">="
+end
+
+datatype List['a]
+begin
+
+  op head(l: List['a]): 'a == extern "head"
+  op tail(l: List['a]): List['a] == extern "tail"
+  op last(l: List['a]): 'a == extern "last"
+  op rest(l: List['a]): List['a] == extern "rest"
+  op remove(l: List['a], e: 'a): List['a] == extern "remove"
+  op -|(e: 'a, l: List['a]): List['a] == extern "-|"
+  op |-(l: List['a], e: 'a): List['a] == extern "|-"
+  op |-|(l: List['a], m: List['a]): List['a] == extern "|-|"
+  op #(l: List['a]): Int == extern "length"
+  op length(l: List['a]): Int == extern "length"
+  op isempty(l: List['a]): Bool == extern "isempty"
+
+  // More to come.
+
+end
+
+datatype Set['a]
+begin
+
+  // More to come.
+
+end
+
+datatype Pair
+begin
+  op pair(a: 'a, b: 'b): ['a, 'b] == extern "pair"
+  op fst (a: ['a, 'b]): 'a == extern "fst"
+  op snd (a: ['a, 'b]): 'b == extern "snd"
+end
