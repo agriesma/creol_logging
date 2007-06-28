@@ -20,7 +20,7 @@ dnl model and the output of maude is again compared to some expected
 dnl results.
 m4_define([TEST_CREOLC], [dnl
 AT_SETUP([$1])
-AT_CHECK([creolc ${abs_srcdir}/$1.creol -o $1.maude])
+AT_CHECK([creolc -target maude ${abs_srcdir}/$1.creol -o $1.maude])
 AT_CHECK([diff -adNu ${abs_srcdir}/$1.maude $1.maude])
 AT_DATA([test.maude],
 [
@@ -149,6 +149,7 @@ AT_SETUP([Prelude])
 AT_CHECK([creolc -target creol -o prelude-pp1.creol ${top_srcdir}/share/prelude.creol])
 AT_CHECK([creolc -target creol -o prelude-pp2.creol prelude-pp1.creol])
 AT_CHECK([diff prelude-pp1.creol prelude-pp2.creol])
+AT_CHECK([creolc -target xml -o prelude-pass1.xml ${top_srcdir}/share/prelude.creol])
 AT_CLEANUP
 
 TEST_CREOLC([Inheritance], [dnl
