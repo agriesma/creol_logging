@@ -456,9 +456,15 @@ fmod CREOL-CONFIG is
   protecting CREOL-COMMUNICATION .
 
   sort Configuration .
+ifdef(`TIME', `  sort Clock .')
 
   subsorts Object Msg Queue Class < Configuration .
+ifdef(`TIME', `  subsort Clock < Configuration .')
 
+ifdef(`TIME',
+  *** Definition of a global clock in the system
+  op clock : Float Float -> Clock [ctor ``format'' (b o)] .
+)dnl
   op noConf : -> Configuration [ctor] .
   op __ : Configuration Configuration -> Configuration
 	[ctor assoc comm id: noConf `format' (d n d)] .
@@ -606,8 +612,8 @@ dnl
 dnl If TIME is not defined, CLOCK will be defined to empty.
 ifdef(`TIME',
   vars delta T : Float .
-define(`CLOCK', `clock(delta, T)'),dnl
-define(`CLOCK', `'))dnl
+`define(`CLOCK', `clock(delta, T)')',dnl
+`define(`CLOCK', `')')dnl
 
 ifdef(`MODELCHECK',dnl
   op label : Oid Oid Mid DataList -> Label [ctor] .
@@ -763,10 +769,10 @@ eq
 *** Choice is comm, so [nondet] considers both NeSL and NeSL'.
 crl
   < O : C | Att: S, Pr: (L, (NeSL [] NeSL'); SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   =>
   < O : C | Att: S, Pr: (L, (NeSL ; SL)), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   if READY(NeSL, (S # L), MM, T)
   [label nondet]
   .
@@ -778,10 +784,10 @@ crl
 *** Merge is comm, so [merge] considers both NeSL and NeSL'.
 crl
   < O : C | Att: S, Pr: (L, (NeSL ||| NeSL'); SL), PrQ: W, Lcnt: N >  
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   =>
   < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL'); SL), PrQ: W, Lcnt: N >  
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   if READY(NeSL,(S # L), MM, T)
   [label merge]
   .
@@ -790,7 +796,7 @@ crl
 ***
 eq
   < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER NeSL'); SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   =
   if ENABLED(ST, (S # L), MM, T) then
     < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER NeSL')); SL)), PrQ: W,
@@ -798,7 +804,7 @@ eq
   else
     < O : C | Att: S, Pr: (L, ((ST ; SL') ||| NeSL'); SL), PrQ: W, Lcnt: N >   
   fi
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   [label merge-aux]
   .
 
@@ -830,9 +836,9 @@ STEP(dnl
 *** Suspend a process.
 CSTEP(dnl
 `< O : C | Att: S, Pr: (L, SuS ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
 `< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
 not ENABLED(SuS, (S # L), MM, T),
 `[label suspend]')
 
@@ -848,9 +854,9 @@ eq
 
 CSTEP(dnl
 `< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
 `< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > ',
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
 ENABLEDGUARD(G, (S # L), MM, T),
 `[label guard]')
 
@@ -864,10 +870,10 @@ ENABLEDGUARD(G, (S # L), MM, T),
 *** Must be a rule, also in the interpreter.
 crl
   < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   =>
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
   if READY(SL, (S # L), MM, T)
   [label PrQ-ready]
   .
@@ -973,10 +979,10 @@ ifdef(`MODELCHECK',
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >' CLOCK
   =
   `< O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Lcnt: F >
+  CLOCK
   *** XXX: QUEUE
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM +
     invoc(O, label(O, O, Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T)) >'
-  CLOCK
   *** if size(MM) < Sz
 ,dnl
 `rl
@@ -984,8 +990,8 @@ ifdef(`MODELCHECK',
   CLOCK
   =>
   `< O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q, EVALLIST(EL, (S # L), T)) from O to O'
   CLOCK
+  invoc(O, label(O, N), Q, EVALLIST(EL, (S # L), T)) from O to O'
 )dnl
   [label local-async-reply]
   .
@@ -996,9 +1002,9 @@ eq
   CLOCK
   =
   < O : C | Att: S`,' Pr: (insert(A`,' label(O`,' O`,' Q`,' EVALLIST(EL, (S # L), T))`,' L)`,' SL)`,' PrQ: W`,' Lcnt: N >
+  CLOCK
   invoc(O`,' label(O`,'O`,'Q @ C'`,' EVALLIST(EL, (S # L), T))`,' Q @ C'`,'
         EVALLIST(EL, (S # L), T)) from O to O
-  CLOCK
 ,dnl
 rl
   < O : C | Att: S`,' Pr: (L`,' ( A ! Q @ C'(EL)); SL)`,' PrQ: W`,' Lcnt: N >
@@ -1006,8 +1012,8 @@ rl
   =>
   < O : C | Att: S`,' Pr: (insert (A`,' label(O`,' N)`,' L)`,' SL)`,' PrQ: W`,'
     Lcnt: N + 1 >
-  invoc(O`,' label(O`,' N)`,' Q @ C'`,' EVALLIST(EL, (S # L), T)) from O to O
   CLOCK
+  invoc(O`,' label(O`,' N)`,' Q @ C'`,' EVALLIST(EL, (S # L), T)) from O to O
 )dnl
   [label local-async-qualified-req]
   .
@@ -1018,17 +1024,17 @@ ifdef(`MODELCHECK',
   CLOCK
   =
   `< O : C | Att: S, Pr: (insert(A, label(O, EVAL(E, (S # L), T), Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Lcnt: N >
+  CLOCK
   invoc(O, label(O, EVAL(E, (S # L), T), Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T))
     from O to EVAL(E, (S # L), T)'
-  CLOCK
 ,dnl
 `rl
   < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Lcnt: N >'
   CLOCK
   =>
+  CLOCK
   `< O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
   invoc(O, label(O, N), Q , EVALLIST(EL, (S # L), T)) from O to EVAL(E, (S # L), T)'
-  CLOCK
 )dnl
   [label remote-async-reply]
   .
@@ -1036,8 +1042,8 @@ ifdef(`MODELCHECK',
 *** emit reply message ***
 STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >' CLOCK,
 `< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  comp(L[".label"], EVALLIST(EL, (S # L), T)) from O to caller(L[".label"])',
   CLOCK
+  comp(L[".label"], EVALLIST(EL, (S # L), T)) from O to caller(L[".label"])',
 `[label return]')
 
 *** Optimization: reduce label to value only once
@@ -1102,9 +1108,11 @@ eq
   .
 
 ifdef(`TIME',dnl
-`rl
-  { cnf clock(s, T) } => { cnf clock(s, T + s) }'
-)
+*** A very simple discrete time clock.
+rl
+  { cnf clock(delta, T) } => { cnf clock(delta, T + delta) }
+  [label tick]
+  .)
 
 endm
 
