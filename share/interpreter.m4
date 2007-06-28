@@ -125,9 +125,10 @@ endfm
 fmod `CREOL-EVAL' is
 
   protecting DATATYPES .
+ifdef(`TIME', ``  protecting CREOL-DATA-TIME .'')
   protecting CREOL-SUBST .
 
-  var D T : Data .
+  var D : Data .
   var DL : DataList .
   vars E E' E'' : Expr .
   var EL : ExprList .
@@ -139,6 +140,7 @@ fmod `CREOL-EVAL' is
   var F : String .
   var I : Int .
   var B : Bool .
+ifdef(`TIME', `  var T : Float .   *** The value of now.')
 
   sorts Aid Lid .
   subsort Aid < Vid .
@@ -148,9 +150,8 @@ fmod `CREOL-EVAL' is
 
 
 ifdef(`TIME', `dnl
-define(EVAL, ``eval' ($1, $2, $3)')dnl
-define(EVALLIST, `evalList ($1, $2, $3)')dnl
-
+define(`EVAL', `eval ($1, $2, $3)')dnl
+define(`EVALLIST', `evalList ($1, $2, $3)')dnl
   *** Third component is the value of now.
   op eval : Data Subst Float -> Data .
   op eval : Expr Subst Float -> Data .
@@ -162,8 +163,8 @@ define(EVALLIST, `evalList ($1, $2, $3)')dnl
 ',`dnl
 dnl This upper case eval and evalList macros map to the binary version
 dnl (untimed) .
-define(EVAL, `eval ($1, $2)')dnl
-define(EVALLIST, `evalList ($1, $2)')dnl
+define(`EVAL', `eval ($1, $2)')dnl
+define(`EVALLIST', `evalList ($1, $2)')dnl
   op eval : Data Subst -> Data .
   op eval : Expr Subst -> Data .
   op evalList : DataList Subst -> DataList .
@@ -173,8 +174,11 @@ define(EVALLIST, `evalList ($1, $2)')dnl
   *** value. This is done to simulate timed models in an untimed setting.
   *** This may cause all kinds of dead-locks, however, since timed models
   *** often insist on progress of time.
-  *** eq `eval' (now, S) = float(0) .
-')
+  *** eq `eval'(now, S) = float(0) .
+')dnl
+
+  *** Avoid recursing into the structure of data.  We assume that no term
+  *** of sort data contains any subterms of sort Expr.
   eq EVAL(D, S, T) = D .
 
   *** standard evaluation of expression
@@ -517,17 +521,17 @@ dnl Macros for dealing with enabledness and readyness in the timed and
 dnl untimed cases.
 dnl
 ifdef(`TIME',dnl
-  var T : Data .
-define(`ENABLEDGUARD', enabledGuard($1, $2, $3, $4))dnl
+  var T : Float .
+`define(`ENABLEDGUARD', enabledGuard($1, $2, $3, $4))dnl
 define(`ENABLED', enabled($1, $2, $3, $4))dnl
-define(`READY', ready($1, $2, $3, $4))
-  op enabledGuard : Guard Subst MMsg Data -> Bool .
-  op enabled : NeStmList Subst MMsg Data -> Bool .
-  op ready : NeStmList Subst MMsg Data -> Bool .
+define(`READY', ready($1, $2, $3, $4))'
+  op enabledGuard : Guard Subst MMsg Float -> Bool .
+  op enabled : NeStmList Subst MMsg Float -> Bool .
+  op ready : NeStmList Subst MMsg Float -> Bool .
 ,dnl Untimed:
-define(`ENABLEDGUARD', enabledGuard($1, $2, $3))dnl
+`define(`ENABLEDGUARD', enabledGuard($1, $2, $3))dnl
 define(`ENABLED', enabled($1, $2, $3))dnl
-define(`READY', ready($1, $2, $3))
+define(`READY', ready($1, $2, $3))'
   op enabledGuard : Guard Subst MMsg -> Bool .
   op enabled : NeStmList Subst MMsg -> Bool .
   op ready : NeStmList Subst MMsg -> Bool .

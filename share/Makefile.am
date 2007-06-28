@@ -29,10 +29,14 @@ dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-interpreter.maude \
 			  creol-metaexec.maude \
-			  creol-modelchecker.maude
+			  creol-modelchecker.maude \
+			  creol-realtime.maude
 
 creol-interpreter.maude: ${srcdir}/interpreter.m4
 	$(M4) ${CREOL_VARIANTS} $^ > $@
 
 creol-modelchecker.maude: ${srcdir}/interpreter.m4
 	$(M4) -DMODELCHECK ${CREOL_VARIANTS} $^ > $@
+
+creol-realtime.maude: ${srcdir}/interpreter.m4
+	$(M4) -DTIME ${CREOL_VARIANTS} $^ > $@
