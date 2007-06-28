@@ -57,6 +57,7 @@ Software Foundation raise funds for GNU development.''
 * CMC::                 Creol Machine Code.
 * creolc::              How to use the @command{creolc} compiler.
 * creolshell::          How to use the @command{creolshell}.
+* FAQ::                 Frequently asked questions.
 * Licenses::            Your rights and freedoms.
 * Reporting Bugs::      How to write a good bug report.
 * Bibliography::        Further reading.
@@ -68,6 +69,7 @@ Software Foundation raise funds for GNU development.''
 @include cmc.texi
 @include creolc.texi
 @include creolshell.texi
+@include faq.texi
 
 @node Licenses
 @appendix Licenses

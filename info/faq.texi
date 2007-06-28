@@ -1,0 +1,35 @@
+@node FAQ
+@chapter Frequently Asked Questions
+
+
+In this chapter we collect the frequently asked questions and their
+answers,
+
+
+@section The Compilers @command{creolc} and @command{creolc.opt}
+
+Q: What is @command{creolc} and what is @command{creolc.opt}
+
+A: OCaml can compile a program both to @emph{bytecode} and to
+@emph{native code}.  The bytecode version is called @command{creolc}.
+The native version is called @command{creolc.opt}.  It is common to use
+the suffix @code{.opt} for natively built OCaml binaries.  We compile
+and install both versions.  If you want to debug an OCaml program you
+have to use the bytecode binary.
+
+Notice, that the RPM will only install the native version under the name
+@command{creolc}.
+
+
+Q: When I run @command{creolc}, I get the error message ``Fatal error:
+cannot load shared library dllxml Reason: dllxml.so: cannot open shared
+object file: No such file or directory''
+
+A: This means that you try to execute a bytecode version which is linked
+against uninstalled libxml2 bindings.  We can offer two solutions to
+this problem: Install the xml bindings by changing into the directory
+@file{xml} and executing make install as root, and then recompile the
+compiler.
+
+Under Linux you can also set the variable @env{LD_LIBRARY_PATH} to
+include the absolut path of the directory @file{xml}.
