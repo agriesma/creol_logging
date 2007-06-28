@@ -25,4 +25,8 @@ open Creol
 
 exception TypeError
 
-let typecheck tree = tree
+let typecheck tree: ('a, 'b, 'c) Declaration.t list =
+  let real_type_checker gamma tree =
+    ()
+  in
+    tree

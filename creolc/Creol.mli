@@ -36,12 +36,16 @@
 module Note :
   sig
     type t
+
     val make : Lexing.position -> t
       (** Create a new note *)
+
     val line : t -> int
       (** Get the line of a note *)
+
     val file : t -> string
       (** Get the file of a note *)
+
     val to_xml : XmlTextWriter.xmlwriter -> t -> unit
       (** Write a note to an XML file. *)
   end
@@ -69,7 +73,7 @@ module Type :
 	    (** The type of a structure. *)
 	| Variant of 'c * 'c field list
 	    (** The type of a variant. *)
-	| Label of 'c
+	| Label of 'c * 'c t * 'c t list * 'c t list
 	    (** The type of a label.
 
 		This needs to be refined for type inference. *)
@@ -86,7 +90,7 @@ module Type :
 	  field_type: 'c t    (** Type of this field *)
 	}
 
-    val as_string : 'a t -> string
+    val as_string : 'c t -> string
   end
 
 module Pattern :
@@ -94,7 +98,7 @@ sig
   type ('a, 'b, 'c) t =
     { pattern: 'a; when_clause: 'b option; match_clause: 'c }
 end
- 
+
 
 module Case :
 sig
@@ -268,7 +272,7 @@ module Statement: sig
       | Choice of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	  (** Choice between statements *)
       | Extern of 'a * string
-	  (** The method body or function bopy is defined externally.
+	  (** The method body or function body is defined externally.
 	      This statement is not allowed to be composed. **)
   and  ('a, 'b, 'c) catcher =
       { catch: string option;
@@ -394,6 +398,8 @@ module Declaration : sig
 end
 
 
+
+type ('a, 'b, 'c) program = ('a, 'b, 'c) Declaration.t list
 
 
 
