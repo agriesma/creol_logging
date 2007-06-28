@@ -7,22 +7,23 @@
 %token WHILE VAR WITH OP IN OUT CONSTRUCTOR FUNCTION EXTERN
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
 %token IF THEN ELSE SKIP RELEASE AWAIT NEW
-%token FOR TO BY DO OF CASE AS
-%token EXCEPTION RAISE TRY
+%token FOR TO BY DO
+%token OF AS
+%token EXCEPTION
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token LBRACK RBRACK
 %token LBRACKS RBRACKS
 %token LBRACKV RBRACKV
 %token LPAREN RPAREN
 %token LBRACE RBRACE
-%token HASHHASH HASH QQUESTION QUESTION BANGBANG BANG DOTDOT DOT ATAT AT
-%token LTLT GTGT SUBTYPE SUPERTYPE DLRARROW
-%token DOLLAR PERCENT TICK BACKTICK
+%token HASH QUESTION BANG DOTDOT DOT AT
+%token SUBTYPE SUPERTYPE DLRARROW
+%token DOLLAR PERCENT TICK
 %token BOX DIAMOND MERGE
-%token PLUSPLUS PLUS MINUSMINUS MINUS
+%token PLUS MINUS
 %token TIMESTIMES TIMES ARROW DARROW DIV EQ NE LT LE GT GE
-%token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE MODELS UNDERSCORE
-%token HAT HATHAT BACKSLASH ASSERT PROVE
+%token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE UNDERSCORE
+%token HAT BACKSLASH ASSERT PROVE
 %token PREPEND CONCAT APPEND
 %token <string> CID ID STRING
 %token <int>  INT
@@ -30,8 +31,8 @@
 %token <float> FLOAT
 %token NIL NULL
 
-%left COMMA
-%left BAR
+(* %left COMMA *)
+(* %left BAR *)
 %left IN
 %left AS
 %left DLRARROW
@@ -51,8 +52,8 @@
 %left TIMES DIV PERCENT
 %left TIMESTIMES
 %right UMINUS HASH
-%left BACKTICK
-%right CID
+%left TICK
+(* %right CID *)
 
 %start <'a list> main
 
@@ -308,15 +309,6 @@ basic_statement:
         { If((Note.make $startpos), e, t, f) }
     | IF e = expression THEN t = statement END
         { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
-    | c = case(OF, pattern, statement)
-	{ Statement.Case (Note.make $startpos, c) }
-    | c = case(WHEN, creol_type, statement)
-        { Typecase (Note.make $startpos, c) }
-    | RAISE e = CID
-      a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
-	{ Raise (Note.make $startpos, e, a) }
-    | TRY s = statement WITH c = separated_nonempty_list(BAR, catcher) END
-	{ Try (Note.make $startpos, s, c) }
     | FOR i = ID ASSIGN f = expression TO l = expression
 	b = ioption(preceded(BY,expression))
 	inv = ioption(preceded(INV, assertion))
@@ -329,13 +321,6 @@ basic_statement:
 	{ Assert (Note.make $startpos, a) }
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
-
-catcher:
-      c = CID p = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
-      ARROW s = statement
-    { { catch = Some c; catch_parameters = p; catch_statement = s } }
-    | UNDERSCORE ARROW s = statement
-    { { catch = None; catch_parameters = []; catch_statement = s } }
 
 guard:
       l = ID QUESTION { Label ((Note.make $startpos), l) }
@@ -401,19 +386,13 @@ expression:
 	{ Cast (Note.make $startpos, e, t) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall((Note.make $startpos), f, l) }
-    | e = expression BACKTICK i = ID
+    | e = expression TICK i = ID
 	{ FieldAccess ((Note.make $startpos), e, i) }
 (* XXX: Might be nice to have but does not work.
     | e = expression LBRACK i = expression RBRACK
         { let n = Note.make $startpos in Index (n, e, i) } *)
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (Note.make $startpos, c, t, f) }
-    | e = case(OF, pattern, expression)
-	{ Expression.Case (Note.make $startpos, e) }
-    | e = case(WHEN, creol_type, expression)
-	{ Expression.Typecase (Note.make $startpos, e) }
-    | TRY e = expression WITH c = separated_nonempty_list(BAR, catch_expr) END
-	{  Null (Note.make $startpos) }
 
 %inline binop:
       AMPAMP { And (* XXX *) }
@@ -443,43 +422,6 @@ expression:
 
 %inline function_name:
       f = ID { f }
-
-%inline catch_expr:
-      c = CID p = loption(delimited(LPAREN, separated_list(COMMA, ID), RPAREN))
-      ARROW s = statement
-    { () }
-    | UNDERSCORE ARROW s = statement
-    { () }
-
-%inline case(S, P, T):
-      CASE e = expression S
-      c = separated_nonempty_list(BAR, case_decl(P, T)) END
-	{ { Case.what = e; Case.cases = c } }
-
-%inline case_decl(P, T):
-      p = P w = ioption(preceded(WHEN, expression)) ARROW t = T
-	{ { Pattern.pattern = p; when_clause = w; match_clause = t } }
-
-pattern:
-      ID
-	{ () }
-    | UNDERSCORE
-	{ () }
-    | pattern AS ID
-	{ () }
-    | LPAREN pattern RPAREN
-	{ () }
-    | CID pattern
-	{ () }
-    | pattern BAR pattern
-	{ () }
-    | pattern COMMA pattern
-	{ () }
-    | pattern PREPEND pattern
-	{ () }
-    | pattern APPEND pattern
-	{ () }
-
 
 (* Types *)
 

@@ -55,10 +55,8 @@ rule token = parse
     | COMMENT { token lexbuf }
     | "/*" { c_style_comment lexbuf }
     | '\n' { update_loc lexbuf; token lexbuf }
-    | "!!" { BANGBANG }
     | '!' { BANG }
 	(* '"' *)
-    | "##" { HASHHASH }
     | "#]" { RBRACKS }
     | '#' { HASH }
     | '$' { DOLLAR }
@@ -70,13 +68,11 @@ rule token = parse
     | ')' { RPAREN }
     | "**" { TIMESTIMES }
     | '*' { TIMES }
-    | "++" { PLUSPLUS }
     | "+]" { RBRACKV }
     | '+' { PLUS }
     | ',' { COMMA }
     | "->" { ARROW }
     | "-|" { PREPEND }
-    | "--" { MINUSMINUS }
     | '-' { MINUS }
     | ".." { DOTDOT }
     | '.' { DOT }
@@ -93,17 +89,13 @@ rule token = parse
     | "<=" { LE }
     | "<:" { SUBTYPE }
     | "<>" { DIAMOND }
-    | "<<" { LTLT }
     | '<' { LT }
     | "=>" { DARROW }
     | "==" { EQEQ }
     | '=' { EQ }
     | ">=" { GE }
-    | ">>" { GTGT }
     | ">" { GT }
-    | "??" { QQUESTION }
     | '?' { QUESTION }
-    | "@@" { ATAT }
     | '@' { AT }
 	(* Upper case letters *)
     | "[]" { BOX }
@@ -113,16 +105,14 @@ rule token = parse
     | "\\/" { VEE }
     | '\\' { BACKSLASH }
     | ']' { RBRACK }
-    | "^^" { HATHAT }
     | '^' { HAT }
     | '_' { UNDERSCORE }
-    | '`' { BACKTICK }
+	(* '`' { BACKTICK } *)
 	(* lower case letters *)
     | '{' { LBRACE }
     | "|||" { MERGE }
     | "|-|" { CONCAT }
     | "|-" { APPEND }
-    | "|=" { MODELS }
     | "||" { BARBAR }
     | "|" { BAR }
     | '}' { RBRACE }
@@ -132,7 +122,7 @@ rule token = parse
     | "begin" { BEGIN }
     | "by" { BY }
     | "caller" { ID("caller") (* XXX: Should be special *) }
-    | "case" { CASE }
+    | "case" { reserved lexbuf }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
     | "ctor" { CONSTRUCTOR }
@@ -161,7 +151,7 @@ rule token = parse
     | "of" { OF }
     | "op" { OP }
     | "out" { OUT }
-    | "raise" { RAISE }
+    | "raise" { reserved lexbuf }
     | "release" { RELEASE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }
@@ -170,7 +160,7 @@ rule token = parse
     | "this" { ID("this") (* XXX: Should be special, too. *) }
     | "to" { TO }
     | "true" { BOOL(true) }
-    | "try" { TRY }
+    | "try" { reserved lexbuf }
     | "var" { VAR }
     | "when" { WHEN }
     | "while" { WHILE }

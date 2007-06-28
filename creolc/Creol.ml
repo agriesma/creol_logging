@@ -164,24 +164,6 @@ module Type =
 	| [] -> assert false (* Silence a compiler warning. *)
   end
 
-module Pattern =
-struct
-  type ('a, 'b, 'c) t =
-    { pattern: 'a; when_clause: 'b option; match_clause: 'c }
-end
-
-module Case =
-struct
-  type ('a, 'b, 'c, 'd) t =
-    { what: 'a; cases: ('b, 'c, 'd) Pattern.t list }
-end
-
-module Try =
-struct
-  type ('a, 'b, 'c, 'd) t =
-    { what: 'a; catches: ('b, 'c, 'd) Pattern.t list }
-end
-
 module Expression =
   struct
     
@@ -201,11 +183,10 @@ module Expression =
 	| Unary of 'b * unaryop * ('b, 'c) t
 	| Binary of 'b * binaryop * ('b, 'c) t * ('b, 'c) t
 	| If of 'b * ('b, 'c) t * ('b, 'c) t * ('b, 'c) t
-	| Case of 'b * (('b, 'c) t, unit, ('b, 'c) t, ('b, 'c) t) Case.t
-	| Typecase of 'b * (('b, 'c) t, 'c Type.t, ('b, 'c) t, ('b, 'c) t) Case.t
 	| FuncCall of 'b * string * ('b, 'c) t list
 	| Label of 'b * string
 	| New of 'b * 'c Type.t * ('b, 'c) t list
+	| Extern of 'b * string
   and ('b, 'c) lhs =
       LhsVar of 'b * string
     | LhsAttr of 'b * string * 'c Type.t
@@ -319,11 +300,10 @@ module Expression =
 	| Unary (a, _, _) -> a
 	| Binary (a, _, _, _) -> a
 	| If (a, _, _, _) -> a
-	| Case (a, _) -> a
-	| Typecase (a, _) -> a
 	| FuncCall (a, _, _) -> a
 	| Label (a, _) -> a
 	| New (a, _, _) -> a
+	| Extern(a, _) -> a
 
     let name =
       function
@@ -358,25 +338,15 @@ module Statement =
 	| Tailcall of 'a * string * string option * string option *
 	    ('b, 'c) Expression.t list
 	| If of 'a * ('b, 'c) Expression.t * ('a, 'b, 'c) t * ('a, 'b, 'c) t
-	| While of 'a * ('b, 'c) Expression.t * ('b, 'c) Expression.t option * ('a, 'b, 'c) t
+	| While of 'a * ('b, 'c) Expression.t * ('b, 'c) Expression.t option *
+	    ('a, 'b, 'c) t
 	| For of 'a * string * ('b, 'c) Expression.t * ('b, 'c) Expression.t *
-	    ('b, 'c) Expression.t option * ('b, 'c) Expression.t option * ('a, 'b, 'c) t
-	| Raise of 'a * string * ('b, 'c) Expression.t list
-	| Try of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) catcher list
-        | Case of 'a *
-	    (('b, 'c) Expression.t, unit, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
-	| Typecase of 'a *
-	    (('b, 'c) Expression.t, 'c Type.t, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
+	    ('b, 'c) Expression.t option * ('b, 'c) Expression.t option *
+	    ('a, 'b, 'c) t
 	| Sequence of 'a * ('a, 'b, 'c) t  * ('a, 'b, 'c) t
 	| Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	| Choice of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
         | Extern of 'a * string
-    and ('a, 'b, 'c) catcher =
-	{ catch: string option;
-	  catch_parameters: string list;
-	  catch_statement: ('a, 'b, 'c) t }
-    and ('a, 'b, 'c) typecase =
-	{ with_type: 'c Type.t option; with_statement: ('a, 'b, 'c) t }
 
     let note =
       function
@@ -393,18 +363,15 @@ module Statement =
 	| LocalAsyncCall (a, _, _, _, _, _) -> a
 	| LocalSyncCall (a, _, _, _, _, _) -> a
 	| AwaitLocalSyncCall (a, _, _, _, _, _) -> a
-	| Raise (a, _, _) -> a
 	| Extern(a, _) -> a
 	| Tailcall (a, _, _, _, _) -> a
 	| If (a, _, _, _) -> a
 	| While (a, _, _, _) -> a
 	| For (a, _, _, _, _, _, _) -> a
-	| Try (a, _, _) -> a
-	| Case (a, _) -> a
-	| Typecase (a, _) -> a
 	| Sequence(a, _, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a
+	| Extern(a, _) -> a
 
     let is_skip =
       (** Test, whether the statement is a skip statement. *)
@@ -433,9 +400,6 @@ module Statement =
 	      While (a, c, i, normalize_sequences s)
 	  | For (a, v, st, en, sr, i, s) ->
 	      For (a, v, st, en, sr, i, normalize_sequences s)
-	  | Try (a, _, _) -> assert false (* XXX *)
-	  | Case _ -> assert false (* XXX *)
-	  | Typecase _ -> assert false (* XXX *)
 	  | Sequence (a, (Sequence _ as s1), (Sequence _ as s2)) ->
 	      append_to_sequence (normalize_sequences s1)
 		(normalize_sequences s2)
@@ -694,10 +658,6 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 	      lower_expression_option stride,
 	      lower_expression_option inv,
 	      lower_statement body)
-      | Raise _ -> assert false
-      | Try _ -> assert false
-      | Case _ -> assert false
-      | Typecase _ -> assert false
       | Sequence (a, s1, s2) ->
 	  let ls1 = lower_statement s1
 	  and ls2 = lower_statement s2 in
@@ -895,10 +855,6 @@ and definitions_in_statement note stm =
 	  While ({ n with Note.env = note.Note.env }, c, i,
 		definitions_in_statement n b)
       | For _ -> assert false
-      | Raise _ -> assert false
-      | Try _ -> assert false
-      | Case _ -> assert false
-      | Typecase _ -> assert false
       | Sequence (n, s1, s2) ->
 	  let ns1 = (definitions_in_statement note s1) in
 	  let ns2 = (definitions_in_statement note s2) in
@@ -986,10 +942,6 @@ and uses_in_statement =
 	     nc, ns1, ns2)
     | While (a, c, i, b) -> assert false
     | For _ -> assert false
-    | Raise _ -> assert false
-    | Try _ -> assert false
-    | Case _ -> assert false
-    | Typecase _ -> assert false
     | Sequence (a, s1, s2) ->
 	let ns1 = uses_in_statement s1
 	and ns2 = uses_in_statement s2 in
@@ -1323,10 +1275,6 @@ let pretty_print out_channel input =
 	    output_string out_channel " end";
 	    do_indent lvl
 	| For _ -> assert false
-	| Raise _ -> assert false
-	| Try _ -> assert false
-	| Case _ -> assert false
-	| Typecase _ -> assert false
 	| Sequence (_, s1, s2) -> 
 	    let op_prec = 25 in
 	    let nl = lvl + if prec < op_prec then 1 else 0 in

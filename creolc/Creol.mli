@@ -93,28 +93,6 @@ module Type :
     val as_string : 'c t -> string
   end
 
-module Pattern :
-sig
-  type ('a, 'b, 'c) t =
-    { pattern: 'a; when_clause: 'b option; match_clause: 'c }
-end
-
-
-module Case :
-sig
-
-  type ('a, 'b, 'c, 'd) t =
-    { what: 'a; cases: ('b, 'c, 'd) Pattern.t list }
-end
-
-module Try :
-sig
-  type ('a, 'b, 'c, 'd) t =
-    { what: 'a; catches: ('b, 'c, 'd) Pattern.t list }
-end
-
-
-
 module Expression :
 sig
   type ('b, 'c) t =
@@ -152,16 +130,15 @@ sig
 	  (** A binary expression *)
       | If of 'b * ('b, 'c) t * ('b, 'c) t * ('b, 'c) t
 	  (** Conditional expression *)
-      | Case of 'b * (('b, 'c) t, unit, ('b, 'c) t, ('b, 'c) t) Case.t
-	  (** Case expression *)
-      | Typecase of 'b * (('b, 'c) t, 'c Type.t, ('b, 'c) t, ('b, 'c) t) Case.t
-	  (** Type case expression *)
       | FuncCall of 'b * string * ('b, 'c) t list
 	  (** A call of a primitive function *)
       | Label of 'b * string
 	  (** The label expression, permitted only in guards *)
       | New of 'b * 'c Type.t * ('b, 'c) t list
 	  (** Object creation expression, permitted only as top nodes *)
+      | Extern of 'b * string
+	  (** The body of a function which is defined externally, for
+	      example, in Maude or C *)
   and ('b, 'c) lhs =
       (** These forms may occur on the left hand side of assignments *)
       LhsVar of 'b * string
@@ -257,14 +234,6 @@ module Statement: sig
 	  ('b, 'c) Expression.t option * ('b, 'c) Expression.t option *
 	  ('a, 'b, 'c) t
 	  (** For loop *)
-      | Raise of 'a * string * ('b, 'c) Expression.t list
-	  (** Raising an exception *)
-      | Try of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) catcher list
-	  (** Try and catch exception *)
-      | Case of 'a * (('b, 'c) Expression.t, unit, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
-	  (** Case statement *)
-      | Typecase of 'a * (('b, 'c) Expression.t, 'c Type.t, ('b, 'c) Expression.t, ('a, 'b, 'c) t) Case.t
-	  (** Type case statement *)
       | Sequence of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	  (** Sequential composition *)
       | Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
@@ -274,13 +243,6 @@ module Statement: sig
       | Extern of 'a * string
 	  (** The method body or function body is defined externally.
 	      This statement is not allowed to be composed. **)
-  and  ('a, 'b, 'c) catcher =
-      { catch: string option;
-	catch_parameters: string list;
-	catch_statement: ('a, 'b, 'c) t}
-  and ('a, 'b, 'c) typecase =
-      { with_type: 'c Type.t option; with_statement: ('a, 'b, 'c) t }
-
 
   val note: ('a, 'b, 'c) t -> 'a
 end
