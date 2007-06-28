@@ -1,3 +1,0 @@
-* Come up with a suitable design.
-* Maybe the dragon parser generator <http://www.lemke-it.com> can provide
-  parsing.  It can produce parsers for Java and accepts LR(1) grammars.
