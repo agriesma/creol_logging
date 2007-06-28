@@ -89,6 +89,23 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
   and creol_datatype_to_xml d =
     XmlTextWriter.start_element writer "creol:datatype";
     creol_type_to_xml d.Datatype.name;
+    XmlTextWriter.start_element writer "creol:supertypes";
+    List.iter creol_type_to_xml d.Datatype.supers;
+    XmlTextWriter.end_element writer ;
+    List.iter creol_operation_to_xml d.Datatype.operations;
+    XmlTextWriter.end_element writer
+  and creol_operation_to_xml o =
+    XmlTextWriter.start_element writer "creol:operation";
+    XmlTextWriter.write_attribute writer "name" o.Operation.name;
+    XmlTextWriter.start_element writer "creol:parameters";
+    List.iter (creol_vardecl_to_xml) o.Operation.parameters;
+    XmlTextWriter.end_element writer;
+    XmlTextWriter.start_element writer "creol:resulttype";
+    creol_type_to_xml o.Operation.result_type ;
+    XmlTextWriter.end_element writer;
+    XmlTextWriter.start_element writer "creol:body";
+    creol_expression_to_xml o.Operation.body ;
+    XmlTextWriter.end_element writer;
     XmlTextWriter.end_element writer
   and creol_class_to_xml c =
     XmlTextWriter.start_element writer "creol:class";
@@ -491,6 +508,11 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	    creol_expression_to_xml e ;
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.Extern (a, s) ->
+	  XmlTextWriter.start_element writer "creol:extern" ; 
+          XmlTextWriter.write_attribute writer "name" s ;
 	  expr_handler writer a ;
           XmlTextWriter.end_element writer
   and creol_type_to_xml =
