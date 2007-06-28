@@ -230,18 +230,66 @@ exceptiondecl:
 (* Data type declaration *)
 
 datatypedecl:
-    DATATYPE n = CID loption(preceded(BY, separated_list(COMMA, CID))) BEGIN
-      list(constructordecl) list(functiondecl) list(invariant) END
-    { { Datatype.name = n } }
+    DATATYPE t = creol_type
+      loption(preceded(BY, separated_list(COMMA, CID)))
+    BEGIN
+      list(constructordecl) list(functiondecl) list(invariant)
+    END
+    { { Datatype.name = t } }
 
 constructordecl:
-    CONSTRUCTOR CID COLON loption(delimited(LPAREN, separated_nonempty_list(COMMA, creol_type), RPAREN))
+    CONSTRUCTOR CID COLON
+    loption(delimited(LPAREN, separated_nonempty_list(COMMA, creol_type), RPAREN))
     { () }
 
 functiondecl:
-    FUNCTION ID LPAREN separated_list(COMMA, vardecl_no_init) RPAREN
-    COLON CID EQEQ expression
+    OP id_or_op
+    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
+    COLON creol_type EQEQ expression
     { () }
+  | OP id_or_op
+    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
+    COLON creol_type EQEQ EXTERN s = STRING
+        { (* Expression.Extern (Note.make $startpos, s) *) }
+  | OP error
+  | OP id_or_op
+  | OP id_or_op error
+  | OP id_or_op
+    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
+    COLON error
+  | OP id_or_op
+    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
+    COLON creol_type EQEQ error
+    { signal_error $startpos "Syntax error in function declaration" }
+
+id_or_op:
+      i = ID { i }
+    | TILDE	{ "~" }
+    | MINUS	{ "-" }
+    | HASH	{ "#" }
+    | AMPAMP	{ "&&" }
+    | WEDGE	{ "/\\" }
+    | BARBAR	{ "||" }
+    | VEE	{ "\\/" }
+    | HAT	{ "^" }
+    | DLRARROW	{ "<=>" }
+    | DARROW	{ "=>" }
+    | EQ	{ "=" }
+    | NE	{ "/=" }
+    | LE	{ "<=" }
+    | GE	{ ">=" }
+    | LT	{ "<" }
+    | GT	{ ">" }
+    | PLUS	{ "+" }
+    | TIMES	{ "*" }
+    | TIMESTIMES { "**" }
+    | DIV	{ "/" }
+    | PERCENT   { "%" }
+    | PREPEND	{ "-|" }
+    | APPEND	{ "|-" }
+    | CONCAT	{ "|-|" }
+    | BACKSLASH { "\\" }
+    | IN	{ "in" }
 
 (* Statements *)
 
@@ -430,7 +478,7 @@ creol_type:
 	{ Type.Basic (Note.make $startpos, t) }
     | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Application(Note.make $startpos, t, p) } 
-    | DOLLAR v = CID
+    | TICK v = ID
 	{ Type.Variable (Note.make $startpos, v) }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type)
       r = ioption(preceded(ARROW, creol_type)) RBRACK

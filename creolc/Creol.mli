@@ -331,7 +331,7 @@ end
 module Datatype : sig
 
   type ('a, 'b, 'c) t = {
-    name: string
+    name: 'c Type.t
   }
 
 end

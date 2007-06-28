@@ -88,7 +88,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
     XmlTextWriter.end_element writer
   and creol_datatype_to_xml d =
     XmlTextWriter.start_element writer "creol:datatype";
-    XmlTextWriter.write_attribute writer "name" d.Datatype.name;
+    creol_type_to_xml d.Datatype.name;
     XmlTextWriter.end_element writer
   and creol_class_to_xml c =
     XmlTextWriter.start_element writer "creol:class";

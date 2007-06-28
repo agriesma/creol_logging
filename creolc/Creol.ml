@@ -489,7 +489,7 @@ module Datatype =
 struct
 
   type ('a, 'b, 'c) t = {
-    name: string
+    name: 'c Type.t
   }
 
 end
@@ -1016,7 +1016,8 @@ let pretty_print out_channel input =
       | Exception e -> pretty_print_exception e
       | Datatype d -> pretty_print_datatype d
   and pretty_print_datatype d =
-    output_string out_channel ("datatype " ^ d.Datatype.name ^ "\n");
+    output_string out_channel
+	("datatype " ^ (Type.as_string d.Datatype.name) ^ "\n");
     output_string out_channel "begin\n" ;
     output_string out_channel "end\n"
   and pretty_print_exception e =

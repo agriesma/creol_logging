@@ -21,21 +21,21 @@
 
 datatype Data
 begin
-  op = : [Data, Data -> Bool] == external "="
-  op /= : [Data, Data -> Bool] == external "/="
+  op = (a: Data, b: Data): Bool == extern "="
+  op /= (a: Data, b: Data): Bool == extern "/="
 end
 
-datatype Bool of Data
+datatype Bool by Data
 begin
-  op "~" : [Bool -> Bool] == extern "~"
-  op "&&" : [Bool, Bool -> Bool] == extern "&&"
-  op "||" : [Bool, Bool -> Bool] == extern "||"
-  op "=>" : [Bool, Bool -> Bool] == extern "=>"
-  op "^" : [Bool, Bool -> Bool] == extern "^"
-  op "<=>" : [Bool, Bool -> Bool] == extern "<=>"
+  op ~ (a: Bool) : Bool == extern "~"
+  op && (a: Bool, b: Bool): Bool == extern "&&"
+  op || (a: Bool, b: Bool): Bool == extern "||"
+  op => (a: Bool, b: Bool): Bool == extern "=>"
+  op ^ (a: Bool, b: Bool): Bool == extern "^"
+  op <=> (a: Bool, b: Bool): Bool == extern "<=>"
 end
 
-datatype Real of Data
+datatype Real by Data
 begin
   op - (a: Real): Real == extern "-"
   op - (a: Real): Real == extern "-"
@@ -46,13 +46,13 @@ begin
   op % (a: Real, b: Real): Real == extern "%"
   op ** (a: Real, b: Real): Real == extern "**"
 
-  op < (a: Real, b: Real): Bool = extern "<"
-  op <= (a: Real, b: Real): Bool = extern "<="
-  op > (a: Real, b: Real): Bool = extern ">"
-  op >= (a: Real, b: Real): Bool = extern ">="
+  op < (a: Real, b: Real): Bool == extern "<"
+  op <= (a: Real, b: Real): Bool == extern "<="
+  op > (a: Real, b: Real): Bool == extern ">"
+  op >= (a: Real, b: Real): Bool == extern ">="
 end
 
-datatype Int of Real
+datatype Int by Real
 begin
   op - (a: Int): Int == extern "-"
   op - (a: Int): Int == extern "-"
@@ -63,23 +63,23 @@ begin
   op % (a: Int, b: Int): Int == extern "%"
   op ** (a: Int, b: Int): Int == extern "**"
 
-  op < (a: Int, b: Int): Bool = extern "<"
-  op <= (a: Int, b: Int): Bool = extern "<="
-  op > (a: Int, b: Int): Bool = extern ">"
-  op >= (a: Int, b: Int): Bool = extern ">="
+  op < (a: Int, b: Int): Bool == extern "<"
+  op <= (a: Int, b: Int): Bool == extern "<="
+  op > (a: Int, b: Int): Bool == extern ">"
+  op >= (a: Int, b: Int): Bool == extern ">="
 end
 
-datatype String of Data
+datatype String by Data
 begin
   op |- (a: String, b: String): String == extern "|-"
   op -| (a: String, b: String): String == extern "-|"
   op |-| (a: String, b: String): String == extern "|-|"
   op # (a: String): Int == extern "#"
 
-  op < (a: String, b: String): Bool = extern "<"
-  op <= (a: String, b: String): Bool = extern "<="
-  op > (a: String, b: String): Bool = extern ">"
-  op >= (a: String, b: String): Bool = extern ">="
+  op < (a: String, b: String): Bool == extern "<"
+  op <= (a: String, b: String): Bool == extern "<="
+  op > (a: String, b: String): Bool == extern ">"
+  op >= (a: String, b: String): Bool == extern ">="
 end
 
 datatype List['a]
