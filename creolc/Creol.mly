@@ -231,11 +231,11 @@ exceptiondecl:
 
 datatypedecl:
     DATATYPE t = creol_type
-      loption(preceded(BY, separated_list(COMMA, CID)))
+      s = loption(preceded(BY, separated_list(COMMA, creol_type)))
     BEGIN
-      list(constructordecl) list(functiondecl) list(invariant)
+      list(constructordecl) o = list(functiondecl) list(invariant)
     END
-    { { Datatype.name = t } }
+    { { Datatype.name = t; supers = s; operations = o } }
 
 constructordecl:
     CONSTRUCTOR CID COLON
@@ -243,14 +243,15 @@ constructordecl:
     { () }
 
 functiondecl:
-    OP id_or_op
-    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-    COLON creol_type EQEQ expression
-    { () }
-  | OP id_or_op
-    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-    COLON creol_type EQEQ EXTERN s = STRING
-        { (* Expression.Extern (Note.make $startpos, s) *) }
+    OP n = id_or_op
+    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
+    COLON t = creol_type EQEQ e = expression
+    { { Operation.name = n; parameters = p; result_type = t; body = e } }
+  | OP n = id_or_op
+    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
+    COLON t = creol_type EQEQ EXTERN s = STRING
+    { { Operation.name = n; parameters = p; result_type = t;
+	body = Expression.Extern (Note.make $startpos, s) } }
   | OP error
   | OP id_or_op
   | OP id_or_op error

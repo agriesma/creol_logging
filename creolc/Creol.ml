@@ -150,7 +150,7 @@ module Type =
     let rec as_string =
       function
 	  Basic (_, s) -> s
-	| Variable (_, s) -> "$" ^ s
+	| Variable (_, s) -> "'" ^ s
 	| Application (_, s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Tuple (_, p) ->
@@ -363,7 +363,6 @@ module Statement =
 	| LocalAsyncCall (a, _, _, _, _, _) -> a
 	| LocalSyncCall (a, _, _, _, _, _) -> a
 	| AwaitLocalSyncCall (a, _, _, _, _, _) -> a
-	| Extern(a, _) -> a
 	| Tailcall (a, _, _, _, _) -> a
 	| If (a, _, _, _) -> a
 	| While (a, _, _, _) -> a
@@ -485,11 +484,26 @@ end
 
 
 
+module Operation =
+  struct
+
+    type ('b, 'c) t = {
+      name: string;
+      parameters: ('b, 'c) creol_vardecl list;
+      result_type: 'c Type.t;
+      body: ('b, 'c) Expression.t
+    }
+
+  end
+
+
 module Datatype =
 struct
 
-  type ('a, 'b, 'c) t = {
-    name: 'c Type.t
+  type ('b, 'c) t = {
+    name: 'c Type.t;
+    supers: 'c Type.t list;
+    operations: ('b, 'c) Operation.t list
   }
 
 end
@@ -504,7 +518,7 @@ struct
   type ('a, 'b, 'c) t =
       Class of ('a, 'b, 'c) Class.t
       | Interface of ('a, 'b, 'c) Interface.t
-      | Datatype of ('a, 'b, 'c) Datatype.t
+      | Datatype of ('b, 'c) Datatype.t
       | Exception of ('b, 'c) Exception.t
 
 end
@@ -1016,10 +1030,29 @@ let pretty_print out_channel input =
       | Exception e -> pretty_print_exception e
       | Datatype d -> pretty_print_datatype d
   and pretty_print_datatype d =
-    output_string out_channel
-	("datatype " ^ (Type.as_string d.Datatype.name) ^ "\n");
-    output_string out_channel "begin\n" ;
+    output_string out_channel ("datatype " ^ (Type.as_string d.Datatype.name));
+    if d.Datatype.supers <> [] then
+      begin
+        output_string out_channel " by " ;
+	separated_list (function t -> output_string out_channel
+			  (Type.as_string t))
+	  (function () -> output_string out_channel ", ") d.Datatype.supers
+      end ;
+    output_string out_channel "\nbegin\n" ;
+    List.iter pretty_print_operation d.Datatype.operations ;
     output_string out_channel "end\n"
+  and pretty_print_operation o =
+    output_string out_channel ("  op " ^ o.Operation.name) ;
+    if o.Operation.parameters <> [] then
+      begin
+        output_string out_channel " (" ;
+	pretty_print_vardecls 0 "" ", " "" o.Operation.parameters ;
+        output_string out_channel ")"
+      end ;
+      output_string out_channel
+	(" : " ^ (Type.as_string o.Operation.result_type) ^ " == ") ;
+      pretty_print_expression o.Operation.body ;
+      output_string out_channel "\n"
   and pretty_print_exception e =
     output_string out_channel ("exception " ^ e.Exception.name) ;
     begin
@@ -1346,6 +1379,8 @@ let pretty_print out_channel input =
             output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
 	    pretty_print_expression_list a ;
 	    output_string out_channel ")"
+        | Expression.Extern (_, s) ->
+            output_string out_channel ("extern \"" ^ s ^ "\"");
     in
       print 121 exp
   and pretty_print_expression_list l =

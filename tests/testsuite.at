@@ -146,9 +146,9 @@ AT_CLEANUP
 
 dnl Test the prelude.  Currently, we only try to parse and pretty-print it.
 AT_SETUP([Prelude])
-AT_CHECK([creolc -target creol -o $1-pp1.creol ${top_srcdir}/share/prelude.creol])
-AT_CHECK([creolc -target creol -o $1-pp2.creol $1-pp1.creol])
-AT_CHECK([diff $1-pp1.creol $1-pp2.creol])
+AT_CHECK([creolc -target creol -o prelude-pp1.creol ${top_srcdir}/share/prelude.creol])
+AT_CHECK([creolc -target creol -o prelude-pp2.creol prelude-pp1.creol])
+AT_CHECK([diff prelude-pp1.creol prelude-pp2.creol])
 AT_CLEANUP
 
 TEST_CREOLC([Inheritance], [dnl

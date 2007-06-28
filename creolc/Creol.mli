@@ -328,10 +328,24 @@ end
 
 
 
+module Operation : sig
+
+  type ('b, 'c) t = {
+    name: string;
+    parameters: ('b, 'c) creol_vardecl list;
+    result_type: 'c Type.t;
+    body: ('b, 'c) Expression.t
+  }
+
+end
+
+(** Signature of a data type declaration. *)
 module Datatype : sig
 
-  type ('a, 'b, 'c) t = {
-    name: 'c Type.t
+  type ('b, 'c) t = {
+    name: 'c Type.t;
+    supers: 'c Type.t list;
+    operations: ('b, 'c) Operation.t list
   }
 
 end
@@ -354,7 +368,7 @@ module Declaration : sig
   type ('a, 'b, 'c) t =
       Class of ('a, 'b, 'c) Class.t
       | Interface of ('a, 'b, 'c) Interface.t
-      | Datatype of ('a, 'b, 'c) Datatype.t
+      | Datatype of ('b, 'c) Datatype.t
       | Exception of ('b, 'c) Exception.t
 
 end
