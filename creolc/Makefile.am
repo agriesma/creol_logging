@@ -86,7 +86,7 @@ creolc.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolc_SOURCES)))
 # CreolParser.ml.  Messy, uhm?
 #
 CreolParser.ml CreolParser.mli: Creol.mly
-	( test -z "$OCAML_XML" || { cd ${top_builddir}/xml && make } )
+	( test -z ${OCAML_XML} || { cd ${top_builddir}/${OCAML_XML} && make } )
 	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
 	rm -f CreolParser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
