@@ -124,6 +124,36 @@ AC_ARG_WITH([included-creol-mode],
 [CREOL_MODE=creol-mode])
 AC_SUBST([CREOL_MODE])
 
+AC_MSG_CHECKING([for ocaml-libxml2 bindings])
+AC_ARG_WITH([included-xml],
+    AS_HELP_STRING([--with_included_xml],
+       [Whether to use the included bindings to xml]),
+  [if test "x$with_included_xml" = "xyes" ; then 
+     AC_MSG_RESULT([using included])
+   else
+     ocamlxml=`$OCAMLFIND query xml`
+     if test "$?" = 0
+     then
+       AC_MSG_RESULT([yes])
+       AC_MSG_NOTICE([Found an installed xml library at $ocamlxml])
+       with_included_xml="no"
+     else
+       AC_MSG_RESULT([no])
+       AC_MSG_NOTICE([Failed to find an installed xml library, using included])
+       with_included_xml="yes"
+     fi
+   fi
+])
+
+if test "$with_included_xml" = "yes" 
+then
+  OCAML_XML=xml
+  OCAMLPATH=$(top_builddir)
+fi
+AC_SUBST([OCAML_XML])
+AC_SUBST([OCAMLPATH])
+
+AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])

@@ -19,14 +19,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-# Findlib related
-OCAMLPATH		= $(top_builddir)
-export OCAMLPATH
-
 # Subdirs
 DIST_SUBDIRS		= maude-mode creol-mode share info xml creolc tests
-SUBDIRS			= ${MAUDE_MODE} ${CREOL_MODE} share info xml creolc \
-			  tests
+SUBDIRS			= ${MAUDE_MODE} ${CREOL_MODE} ${OCAML_XML} \
+			  share info creolc tests
 
 MOSTLYCLEANFILES	= *~
 MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \

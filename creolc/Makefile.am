@@ -19,8 +19,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-# Findlib related
-OCAMLPATH		= $(top_builddir)
 export OCAMLPATH
 
 # Subdirs
@@ -55,7 +53,7 @@ creolc_DOCSOURCES	= Version.ml Messages.ml \
 
 OCAMLC_FLAGS		+=
 OCAMLOPT_FLAGS		+= -w a
-OCAMLFIND_FLAGS		+= -package unix,xml
+OCAMLFIND_FLAGS		+= -package "unix xml"
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
 
@@ -88,7 +86,7 @@ creolc.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolc_SOURCES)))
 # CreolParser.ml.  Messy, uhm?
 #
 CreolParser.ml CreolParser.mli: Creol.mly
-	( cd ${top_builddir}/xml && make )
+	( test -z "$OCAML_XML" || { cd ${top_builddir}/xml && make } )
 	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
 	rm -f CreolParser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
