@@ -20,7 +20,6 @@
 # 02111-1307, USA.
 
 # Findlib related
-OCAMLPATH		= .
 export OCAMLPATH
 
 # OCaml compilers.
@@ -98,15 +97,17 @@ distclean-local:
 	test ! -d html || rm -rf html
 
 install-exec-local: META xml.cma xml.cmxa libxml.a dllxml.so xml.a \
-	$(filter %.ml, $(libxml_stubs_a_SOURCES)) \
-	$(filter %.mli, $(libxml_stubs_a_SOURCES))
-	mkdir -p $(DESTDIR)$(OCAML_SITELIB)
-	$(OCAMLFIND) install -destdir $(DESTDIR)$(OCAML_SITELIB) -ldconf $(DESTDIR)$(OCAML_LIBDIR)/ld.conf xml $^
+		Xml.cmi XmlTextReader.cmi XmlTextWriter.cmi Xslt.cmi
+	test -d $(DESTDIR)$$(ocamlfind printconf path) || \
+		mkdir -p $(DESTDIR)$$(ocamlfind printconf path)
+	test -d $(DESTDIR)$$(dirname $$(ocamlfind printconf ldconf)) || \
+		mkdir -p $(DESTDIR)$$(dirname $$(ocamlfind printconf ldocnf))
+	$(OCAMLFIND) install -destdir $(DESTDIR)$$(ocamlfind printconf path) \
+		-ldconf $(DESTDIR)$$(ocamlfind printconf ldconf) \
+		xml $^
 
 uninstall-local:
-	$(OCAMLFIND) remove -destdir $(DESTDIR)$(OCAML_SITELIB) \
-			    -ldconf $(DESTDIR)$(OCAML_LIBDIR)/ld.conf \
-		xml
+	$(OCAMLFIND) remove xml
 
 html-local: ${srcdir}/Makefile.am $(libxml_stubs_a_SOURCES)
 	test ! -d html || rm -rf html
