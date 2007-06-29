@@ -18,6 +18,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
+#
+DISTCHECK_CONFIGURE_FLAGS = --disable-make-install
 
 # Subdirs
 DIST_SUBDIRS		= maude-mode creol-mode share info xml creolc tests
