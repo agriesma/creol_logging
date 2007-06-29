@@ -1,4 +1,35 @@
-write me!
+0. The golden repository rule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To safe us the pain of incomplete build, mysterious errors, and the like,
+any file that can be built from other source files *must* *not* be
+checked into the repository.  This is especially true for pdf files,
+because subversion is especially bad in handling different versions of
+such content (and pdftex/dvips insist on embedding the compilation
+time into the file, causing new and different versions to be created).
+If you do not observe this rule, we also have to expect check-in and
+check-out times in the area of hours.
+
+1. Installing the dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building the creol tools from a subversion check-out requires more tools
+in your development environment than just building the tools from a
+source distribution.  Some generated files are included in the tar file
+which are (in accordance with the golden rule) not checked into the
+repository.  Make sure that you have the following programs installed.
+
+  1.  Autoconf
+
+
+2. Installing missing files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This also means that after checking out the creoltools, and installing
+or making sure that all dependencies are met, these generated files
+are recreated.  Fortunately, this is a very simple procedure.
+
+  1. After checking out the project from the repository, execute the
+     command `autoreconf -i -s'.  This will create the configure
+     script and the templates for the `Makefiles.in'.
+
 
 * share/interpreter.m4:
 ~~~~~~~~~~~~~~~~~~~~~~~
