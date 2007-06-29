@@ -43,6 +43,7 @@ godi distribution from <http://godi.ocaml-programming.de/> to satisfy
 this dependency.
 ])
 fi
+
 AC_CHECK_PROG([OCAMLMKLIB], [ocamlmklib], [ocamlmklib], [])
 if test -z "$OCAMLMKLIB"
 then
@@ -56,9 +57,19 @@ this dependency.
 fi
 
 dnl figure out the site-lib directory. The following is bogus...
-OCAML_LIBDIR='${libdir}/ocaml'
-OCAML_SITELIB='${OCAML_LIBDIR}/site-lib'
-AC_SUBST([OCAML_LIBDIR], [$OCAML_LIBDIR])
+OCAML_SITELIB=`ocamlfind printconf path`
+OCAML_LDCONF=`ocamlfind printconf ldconf`
+
+# This mess needs to be done to have ocamlfind cooperate with ocamlfind
+# I think that this suck...
+AC_ARG_ENABLE([make-install], [Do not use it, it may break make install!],
+[if test "$enableval" = "no"
+then
+  OCAML_SITELIB='${libdir}'
+  OCAML_LDCONF='${libdir}/ld.conf'
+fi])
+
+AC_SUBST([OCAML_LDCONF], [$OCAML_LDCONF])
 AC_SUBST([OCAML_SITELIB], [$OCAML_SITELIB])
 
 AC_SUBST([OCAMLC_FLAGS])

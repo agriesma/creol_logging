@@ -22,6 +22,8 @@
 # Findlib related
 export OCAMLPATH
 
+DISTCHECK_CONFIGURE_FLAGS=--disable-make-install
+
 # OCaml compilers.
 OCAMLC			= $(OCAMLFIND) ocamlc
 OCAMLCP			= $(OCAMLFIND) ocamlcp
@@ -96,18 +98,24 @@ META: $(srcdir)/META.in $(top_srcdir)/configure.ac
 distclean-local:
 	test ! -d html || rm -rf html
 
-install-exec-local: META xml.cma xml.cmxa libxml.a dllxml.so xml.a \
+# We try hard to install the library, but this solution will fail with
+# make distcheck.
+install-exec-hook: META xml.cma xml.cmxa libxml.a dllxml.so xml.a \
 		Xml.cmi XmlTextReader.cmi XmlTextWriter.cmi Xslt.cmi
-	test -d $(DESTDIR)$$(ocamlfind printconf path) || \
-		mkdir -p $(DESTDIR)$$(ocamlfind printconf path)
-	test -d $(DESTDIR)$$(dirname $$(ocamlfind printconf ldconf)) || \
-		mkdir -p $(DESTDIR)$$(dirname $$(ocamlfind printconf ldocnf))
-	$(OCAMLFIND) install -destdir $(DESTDIR)$$(ocamlfind printconf path) \
-		-ldconf $(DESTDIR)$$(ocamlfind printconf ldconf) \
+	test -d $(DESTDIR)${OCAML_SITELIB} || \
+		mkdir -p $(DESTDIR)${OCAML_SITELIB}
+	test -d $(DESTDIR)$$(dirname ${OCAML_LDCONF})
+		mkdir -p $(DESTDIR)$$(dirname ${OCAML_LDCONF})
+	$(OCAMLFIND) install \
+		-destdir $(DESTDIR)${OCAML_SITELIB} \
+		-ldconf $(DESTDIR)${OCAML_LDCONF} \
 		xml $^
 
 uninstall-local:
-	$(OCAMLFIND) remove xml
+	$(OCAMLFIND) remove \
+		-destdir $(DESTDIR)${OCAML_SITELIB} \
+		-ldconf $(DESTDIR)${OCAML_LDCONF} \
+		 xml
 
 html-local: ${srcdir}/Makefile.am $(libxml_stubs_a_SOURCES)
 	test ! -d html || rm -rf html
