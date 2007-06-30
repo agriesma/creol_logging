@@ -124,38 +124,38 @@ AC_ARG_WITH([included-creol-mode],
 [CREOL_MODE=creol-mode])
 AC_SUBST([CREOL_MODE])
 
-AC_ARG_WITH([included-xml],
-    AS_HELP_STRING([--with_included_xml],
-       [Whether to use the included bindings to xml]),
-  [if test "x$with_included_xml" = "xyes" ; then 
-     AC_MSG_NOTICE([using included xml library])
+AC_ARG_WITH([included-libxml2],
+    AS_HELP_STRING([--with_included_libxml2],
+       [Whether to use the included OCaml bindings to libxml2]),
+  [if test "x$with_included_libxml2" = "xyes" ; then 
+     AC_MSG_NOTICE([using included libxml2 library])
    else
-     ocamlxml=`$OCAMLFIND query xml 2>/dev/null`
+     ocamllibxml2=`$OCAMLFIND query libxml2 2>/dev/null`
      if test "$?" != "0"
      then
        AC_MSG_ERROR([XML library not found and must not used included one!])
      fi
    fi
 ], [])
-if test "x$with_included_xml" != "xyes"
+if test "x$with_included_libxml2" != "xyes"
 then
   AC_MSG_CHECKING([for ocaml-libxml2 bindings])
-  ocamlxml=`$OCAMLFIND query xml 2>/dev/null`
+  ocamllibxml2=`$OCAMLFIND query libxml2 2>/dev/null`
   if test "$?" = "0"
   then
     AC_MSG_RESULT([yes])
-    AC_MSG_NOTICE([Found XML library at $ocamlxml])
-    with_included_xml="no"
+    AC_MSG_NOTICE([Found XML library at $ocamllibxml2])
+    with_included_libxml2="no"
   else
     AC_MSG_RESULT([no])
     AC_MSG_NOTICE([Will use included XML library])
-    with_included_xml="yes"
+    with_included_libxml2="yes"
   fi
 fi
 
-if test "$with_included_xml" = "yes" 
+if test "$with_included_libxml2" = "yes" 
 then
-  OCAML_XML=xml
+  OCAML_XML=libxml2
   OCAMLPATH='$(top_builddir)'
 fi
 AC_SUBST([OCAML_XML])
@@ -171,7 +171,7 @@ AC_SUBST([CREOL_VARIANTS])
 AC_CONFIG_TESTDIR(tests, creolc)
 
 dnl Configure the subdirectories.
-AC_CONFIG_SUBDIRS([creol-mode maude-mode xml])
+AC_CONFIG_SUBDIRS([creol-mode maude-mode libxml2])
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])

@@ -53,7 +53,7 @@ creolc_DOCSOURCES	= Version.ml Messages.ml \
 
 OCAMLC_FLAGS		+=
 OCAMLOPT_FLAGS		+= -w a
-OCAMLFIND_FLAGS		+= -package "unix xml"
+OCAMLFIND_FLAGS		+= -package "unix libxml2"
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
 
@@ -78,15 +78,7 @@ creolc.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolc_SOURCES)))
 # end user needs to have menhir installed in order to rebuild the parser
 # sources.  We build Creol.cmi by hand here.
 #
-# The interface in Creol.mli depends on the xml sub-package.  Unfortunately,
-# Makefile depends on .depend, which depends on CreolParser.ml, which
-# depends on Creol.mli, and therefore, Creol.cmi cannot be built.
-# With this rule we make sure that the libxml2 subpackage is built before
-# we generate the version of Creol.cmi needed by menhir to type-check
-# CreolParser.ml.  Messy, uhm?
-#
 CreolParser.ml CreolParser.mli: Creol.mly
-	( test -z "${OCAML_XML}" || ( cd ${top_builddir}/${OCAML_XML} && make ) )
 	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
 	rm -f CreolParser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
@@ -98,7 +90,6 @@ distclean-local:
 	test ! -d html || rm -rf html
 
 .depend: ${srcdir}/Makefile.am $(creolc_SOURCES) $(BUILT_SOURCES)
-	( test -z "${OCAML_XML}" || ( cd ${top_builddir}/${OCAML_XML} && make ) )
 	$(OCAMLFIND) ocamldep $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
 
 html-local: ${srcdir}/Makefile.am $(creolc_DOCSOURCES)
