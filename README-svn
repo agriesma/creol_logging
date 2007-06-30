@@ -15,9 +15,31 @@ Building the creol tools from a subversion check-out requires more tools
 in your development environment than just building the tools from a
 source distribution.  Some generated files are included in the tar file
 which are (in accordance with the golden rule) not checked into the
-repository.  Make sure that you have the following programs installed.
+repository.  Make sure that you have the following programs installed:
 
-  1.  Autoconf
+  0. Subversion
+
+  1. Autoconf 2.59 or later
+
+  2. Automake 1.9 or later
+
+  3. Texinfo 4.8 or later
+
+  4. ocaml 3.08 or later
+
+  5. findlib 1.0 or later
+
+  6. menhir
+
+  7. ocaml-libxml2 (see <http://heim.ifi.uio.no/~kyas/creoltools>)
+
+     a. gcc
+
+     b. libxml 2.6.16 or later
+
+     c. libxslt 1.1.11 or later
+
+and what ever these tools will require in addition.
 
 
 2. Installing missing files
