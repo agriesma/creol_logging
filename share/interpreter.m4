@@ -655,13 +655,17 @@ eq
   < O : C | Att: S, Pr: (L,( (a , AL assign D # DL) ; SL)), PrQ: W,
     Lcnt: N >
   =
+ifdef(`DEVIRT', `dnl
+  < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
+    Lcnt: N >'
+, `dnl
   if dom(a,S) then
     < O : C | Att: insert(a, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
   else
     < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
-  fi
+  fi')
   [label do-assign] .
 
 
