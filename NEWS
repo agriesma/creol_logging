@@ -25,6 +25,10 @@ In the interpreter and model checker:
 
 Other:
 * The documentation has been updated.
+* The libxml2 bindings have been removed from the repository, since to
+  many linux distributions come with broken prerequisites and we want
+  to avoid the maintenance nightmare.  The bindings are available as
+  a separate package from <http://heim.ifi.uio.no/~kyas/creoltools/>
 
 
 

@@ -5,9 +5,11 @@ Compiles creol programs to the Maude machine.
 [ If you do not understand what this means, then this compiler is not
   (yet) for you. ]
 
-Usage:  creolcomp bla.creol > bla.maude
+Usage:  creolc bla.creol -o bla.maude
 
-the Result is sent to stdout.
+To send the result to standard output, use - as a filename, i.e.,
+
+creolc bla.creol -o -
 
 Initial documentation is provided in info.  It may be build using the
 rule `make pdf'.  Since this is a very early release it may contain

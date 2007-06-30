@@ -101,6 +101,21 @@ If you are sure that you have maude installed, rerun $as_me with
 ])
 fi
 
+AC_MSG_CHECKING([for ocaml-libxml2 bindings])
+ocamllibxml2=`$OCAMLFIND query libxml2 2>/dev/null`
+if test "$?" = "0"
+then
+  AC_MSG_RESULT([yes])
+  AC_MSG_NOTICE([Found XML library at $ocamllibxml2])
+else
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([ocaml-libxml2 cannot be found.
+
+You have to install ocaml-libxml2 from
+<http://heim.ifi.uio.no/~kyas/creoltools/> to compile the creoltools.
+])
+fi
+
 dnl Check for the programs needed by the test-suite.
 AC_ARG_WITH([included-maude-mode],
     AS_HELP_STRING([--with-included-maude-mode],
@@ -124,44 +139,6 @@ AC_ARG_WITH([included-creol-mode],
 [CREOL_MODE=creol-mode])
 AC_SUBST([CREOL_MODE])
 
-AC_ARG_WITH([included-libxml2],
-    AS_HELP_STRING([--with_included_libxml2],
-       [Whether to use the included OCaml bindings to libxml2]),
-  [if test "x$with_included_libxml2" = "xyes" ; then 
-     AC_MSG_NOTICE([using included libxml2 library])
-   else
-     ocamllibxml2=`$OCAMLFIND query libxml2 2>/dev/null`
-     if test "$?" != "0"
-     then
-       AC_MSG_ERROR([XML library not found and must not used included one!])
-     fi
-   fi
-], [])
-if test "x$with_included_libxml2" != "xyes"
-then
-  AC_MSG_CHECKING([for ocaml-libxml2 bindings])
-  ocamllibxml2=`$OCAMLFIND query libxml2 2>/dev/null`
-  if test "$?" = "0"
-  then
-    AC_MSG_RESULT([yes])
-    AC_MSG_NOTICE([Found XML library at $ocamllibxml2])
-    with_included_libxml2="no"
-  else
-    AC_MSG_RESULT([no])
-    AC_MSG_NOTICE([Will use included XML library])
-    with_included_libxml2="yes"
-  fi
-fi
-
-if test "$with_included_libxml2" = "yes" 
-then
-  OCAML_XML=libxml2
-  OCAMLPATH='$(top_builddir)'
-fi
-AC_SUBST([OCAML_XML])
-AC_SUBST([OCAMLPATH])
-
-AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
@@ -171,7 +148,7 @@ AC_SUBST([CREOL_VARIANTS])
 AC_CONFIG_TESTDIR(tests, creolc)
 
 dnl Configure the subdirectories.
-AC_CONFIG_SUBDIRS([creol-mode maude-mode libxml2])
+AC_CONFIG_SUBDIRS([creol-mode maude-mode])
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
