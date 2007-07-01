@@ -217,8 +217,8 @@ module Expression =
 	| Concat
 	| Project
 	| In
-	| GuardAnd
 
+    (** Get the textual representation of a binary operator. *)
     let string_of_binaryop =
       function
 	  Plus -> "+"
@@ -242,9 +242,9 @@ module Expression =
 	| Append -> "|-"
 	| Concat -> "|-|"
 	| Project -> "\\"
-	| GuardAnd -> "&"
 	| In -> "in"
 
+    (** Precedence of binary operators. *)
     let prec_of_binaryop =
       function
 	  Plus -> (33, 33)
@@ -269,20 +269,23 @@ module Expression =
 	| Append -> (33, 33)
 	| Concat -> (33, 33)
 	| Project -> (35, 35)
-	| GuardAnd -> (61, 61)
 
+    (** Get the textual representation of a unary operator *)
     let string_of_unaryop =
       function
 	  Not -> "~"
 	| UMinus -> "-"
 	| Length -> "#"
 
+    (** Return the precedence of a unary operator.  Only needed for pretty
+	printing. *)
     let prec_of_unaryop =
       function
 	  Not -> 53
 	| UMinus -> 15
 	| Length -> 15
 
+    (** Extract the annotation of an expression *)
     let note =
       function
 	  Null a -> a
@@ -309,6 +312,126 @@ module Expression =
       function
 	  LhsVar(_, n) -> n
 	| LhsAttr(_, n, _) -> n
+
+    (** Whether an expression contains a label *)
+    let rec contains_label_p =
+	function
+	  Label _ -> true
+	| Unary (_, _, e) -> contains_label_p e
+	| Binary (_, _, e, f) -> (contains_label_p e) || (contains_label_p f)
+	| If (_, c, t, f) -> (contains_label_p c) || (contains_label_p t) ||
+	    (contains_label_p f)
+	| FuncCall(_, _, args) ->
+	    List.fold_left (fun a b -> a || (contains_label_p b)) false args
+	| New (_, _, args) ->
+	    List.fold_left (fun a b -> a || (contains_label_p b)) false args
+	| _ -> false
+
+    (** Whether an expression is a binary expression with a specific
+        operator *)
+    let binary_op_p op =
+	function
+	    Binary(_, o, _, _) when o = op -> true
+	  | _ -> false
+
+    (** Determines, whether a term is a boolean atom.
+
+        An atom is either an atomic proposition or the negation of an
+        atom.  Strictly speaking, only a and ~a are atoms, and not
+	~~a or ~~~a, but we need not make this distinction. *)
+    let rec atom_p =
+        function
+	    Unary(_, Not, e) -> atom_p e
+          | Binary(_, (And|Or|Implies|Xor|Iff), _, _) -> false
+	  | _ -> true
+
+    (** Determines, whether a term is already in DNF *)
+    let rec dnf_p =
+	function
+	    Unary(_, Not, e) -> not (dnf_p e)
+	  | Binary(_, Or, e, f) -> 
+		(dnf_p e) && (dnf_p f)
+	  | Binary(_, (And|Implies|Xor|Iff), e, f) ->
+		if not (dnf_p e) || not (dnf_p f) then false
+		else not (binary_op_p Or e) && not (binary_op_p Or f)
+	  | _ -> true
+
+    (** Negate a boolean formula. *)
+    let rec negate =
+      function
+	  Bool(b, v) -> Bool(b, not v)
+	| Unary (b, Not, e) -> e
+	| Binary(b, Eq, l, r) -> Binary(b, Ne, l, r)
+	| Binary(b, Ne, l, r) -> Binary(b, Eq, l, r)
+	| Binary (b, And, e, f) -> Binary (b, Or, negate e, negate f)
+	| Binary (b, Or, e, f) -> Binary (b, And, negate e, negate f)
+	| Binary (b, Implies, e, f) -> Binary (b, And, e, negate f)
+	| Binary (b, Xor, e, f) -> Binary (b, Iff, e, f)
+	| Binary (b, Iff, e, f) -> Binary (b, Xor, e, f)
+	| e -> Unary (note e, Not, e)
+
+
+
+    (** Rewrite a boolean expression to negation normal form (NNF).
+
+	A formula is called in negation normal form, if and only if
+	all negation operators are applied to atoms, and the only
+	occuring binary connectives are [&&] and [||].  *)
+    let rec to_nnf =
+      function
+	  Unary (b, Not, e) -> negate (to_nnf e)
+        | Binary (b, And, e, f) -> Binary (b, And, to_nnf e, to_nnf f)
+        | Binary (b, Or, e, f) -> Binary (b, Or, to_nnf e, to_nnf f)
+        | Binary (b, Implies, e, f) ->
+	    Binary (b, Or, negate (to_nnf e), to_nnf f)
+        | Binary (b, Xor, e, f) ->
+	    let ae = to_nnf e and af = to_nnf f in
+	      Binary (b, Or, Binary (b, And, ae, negate af),
+                     Binary (b, And, negate ae, af))
+        | Binary (b, Iff, e, f) ->
+	    let ae = to_nnf e and af = to_nnf f in
+	      Binary (b, Or, Binary (b, And, ae, af),
+                     Binary (b, And, negate ae, negate af))
+	| e -> e
+
+    (** Convert a boolean expression into {i conjunctive normal form}.
+
+	The resulting formula may be exponentially longer.
+
+        Assumes, that the expression is well-typed, that all operators
+	have their standard meaning, and that the expression is {i
+	not} lowered to Core Creol. *)
+    let to_cnf f =
+      let rec to_cnf_from_nnf =
+	function
+	    Binary(b, And, f, g) ->
+	      Binary(b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
+	  | Binary(b, Or, f, g) ->
+	      (* Push or inside of and using distributive laws *)
+	      let rec to_cnf_or left right =
+		match (left, right) with
+		    (Binary(lb, And, lf, lg), _) ->
+		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
+		  | (_, Binary(rb, And, rf, rg)) ->
+		      Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
+		  | _ ->
+		      (* neither subformula contains and *)
+		      Binary(b, Or, f, g)
+	      in
+		to_cnf_or f g
+	  | Binary(_, (Implies|Xor|Iff), f, g) ->
+	      assert false (* Input was assumed to be in NNF *)
+	  | e -> e
+      in
+	to_cnf_from_nnf (to_nnf f)
+
+    (** Convert a boolean expression into {i disjunctive normal form}.
+
+        Assumes, that the expression is well-typed, that all operators have
+	their standard meaning, and that the expression is not lowered to
+	Core Creol. *)
+    let to_dnf exp =
+      to_nnf (negate (to_cnf (to_nnf (negate exp))))
   end
 
 open Expression
@@ -411,6 +534,39 @@ module Statement =
 	  | Choice (a, s1, s2) ->
 	      Choice (a, normalize_sequences s1, normalize_sequences s2)
 	  | _ -> stmt
+
+
+    (** Lower an await statement to core Creol.
+
+	Assume that function calls to [&&] and [||] with two arguments are
+	{i lowered} forms of binary and and binary or. *)
+    let lower_await (Await (a, g)) =
+      let rec split_sequence =
+	function
+	    Binary (b, And, (Label _ as l), right) ->
+	      Sequence (a, Await (a, l), split_sequence right)
+	  | Binary (b, And, left, (Label _ as l)) ->
+	      Sequence (a, Await (a, l), split_sequence left)
+	  | FuncCall (b, "&&", [(Label _ as l) ; right]) ->
+	      Sequence (a, Await (a, l), split_sequence right)
+	  | FuncCall (b, "&&", [left; (Label _ as l)]) ->
+	      Sequence (a, Await (a, l), split_sequence left)
+	  | Binary (_, Or, _, _) -> assert false (* DNF! *)
+	  | FuncCall (_, "||", [_; _]) -> assert false (* DNF! *)
+	  | e -> Await(a, e)
+      in
+      let rec split_choice =
+	function
+	    Binary (b, Or, left, right) ->
+	      Choice(a, split_choice left, split_choice right)
+	  | FuncCall (b, "||", [left; right]) ->
+	      Choice (a, split_choice left, split_choice right)
+	  | g -> split_sequence g
+      in
+	if contains_label_p g then
+	  split_choice (Expression.to_dnf g)
+	else
+	  Await (a, g)
 
   end
 
@@ -558,29 +714,13 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
     function
 	None -> None
       | Some expr -> Some (lower_expression expr)
-  and lower_guard note guard =
-    let rec sort_guard =
-      function
-	  Binary(_, _, Label(_, _), Label (_, _)) as g -> g
-	| Binary(a, o, left, Label (b, l)) ->
-	    Binary (a, o, Label (b, l), sort_guard left)
-	| g -> g
-    and split_guard note =
-      function
-	  Binary(a, (GuardAnd | And), Label(ll, l), e) ->
-            Sequence(note, Await (note, Label (ll, l)), split_guard note e)
-	| Binary(a, Or, Label(ll, l), e) ->
-            Choice(note, Await (note, Label (ll, l)), split_guard note e)
-	| e -> Await (note, lower_expression e)
-    in
-      split_guard note (sort_guard guard)
   and lower_statement =
     function
 	Skip _ as s -> s
       | Release _ as s -> s
       | Assert (a, e) -> Assert (a, lower_expression e)
       | Assign (a, s, e) -> Assign (a, s, List.map lower_expression e)
-      | Await (note, g) -> lower_guard note g
+      | Await (a, g) -> Statement.lower_await (Await (a, lower_expression g))
       | AsyncCall (a, None, e, n, p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
@@ -1391,9 +1531,6 @@ let pretty_print out_channel input =
       (function LhsVar (_, n) -> output_string out_channel n
 	| LhsAttr(_, n, c) -> output_string out_channel
 	    (n ^ "@" ^ (Type.as_string c)))
-      (function () -> output_string out_channel ", ") l
-  and pretty_print_identifier_list l =
-    separated_list (output_string out_channel)
       (function () -> output_string out_channel ", ") l
   and do_indent lvl =
     output_string out_channel ("\n" ^ (String.make (lvl * 2) ' '))

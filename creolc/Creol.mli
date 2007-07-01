@@ -175,7 +175,6 @@ sig
       | Concat
       | Project
       | In
-      | GuardAnd
 
   val string_of_binaryop : binaryop -> string
 

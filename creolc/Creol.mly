@@ -373,8 +373,8 @@ basic_statement:
 
 guard:
       l = ID QUESTION { Label ((Note.make $startpos), l) }
-    | l = ID QUESTION AMP g = guard
-        { Binary ((Note.make $startpos), GuardAnd,
+    | l = ID QUESTION AMPAMP g = guard
+        { Binary ((Note.make $startpos), And,
 		  Label((Note.make $startpos), l), g) }
     | e = expression { e }
 
