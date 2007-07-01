@@ -577,8 +577,7 @@ module Statement =
 		  | (labels, term) ->
 		      Binary (Expression.note expr, And, rebuild_clause labels,
 			     rebuild_clause term)
-		  | _ -> assert false
-	    in
+		    in
 	    let rec split_sequence =
 	      function
 		  Binary (b, And, (Label _ as l), right) ->
@@ -1515,6 +1514,8 @@ let pretty_print out_channel input =
 	      do_indent nl;
 	      print nl op_prec r;
 	      close_block prec op_prec
+	| Extern (_, s) ->
+	    output_string out_channel ("extern \"" ^ s ^ "\"")
     in
       print lvl 25 statement
   and pretty_print_expression exp =
@@ -1552,8 +1553,18 @@ let pretty_print out_channel input =
 	    output_string out_channel (i ^ "(");
 	    pretty_print_expression_list a;
 	    output_string out_channel ")";
-	| FieldAccess(_, e, f) -> print 15 e; output_string out_channel ("`" ^ f)
+	| Cast (_, e, c) ->
+	    open_paren prec 15; print 15 e ;
+	    output_string out_channel (" as " ^ (Type.as_string c)) ;
+	    close_paren prec 15
+	| FieldAccess(_, e, f) ->
+	    print 15 e; output_string out_channel ("`" ^ f)
 	| Label (_, l) -> output_string out_channel (l ^ "?")
+	| Expression.If (_, c, t, f) ->
+	    output_string out_channel "if "; print 121 c ;
+	    output_string out_channel " then "; print 121 t ;
+	    output_string out_channel " else "; print 121 f ;
+	    output_string out_channel " end";
 	| New (_, t, a) ->
             output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
 	    pretty_print_expression_list a ;
@@ -1620,6 +1631,8 @@ struct
 	    of_expression_list a;
 	    output_string out_channel " )"
 	      (* Queer, but parens are required for parsing Appl in ExprList. *)
+	| Cast _ -> assert false
+	| Index _ -> assert false
 	| FieldAccess(_, e, f) -> assert false (* XXX *)
 	| Unary _ -> assert false
 	| Binary _ -> assert false
@@ -1629,6 +1642,7 @@ struct
 	      ("new \"" ^ (Type.as_string c) ^ "\" ( ") ;
 	    of_expression_list a ;
 	    output_string out_channel " )"
+	| Expression.Extern _ -> assert false
     and of_expression_list =
       (** Compile a list of expressions into the Creol Maude Machine. *)
       function
@@ -1728,6 +1742,7 @@ struct
 	      output_string out_channel " th "; print 25 t;
 	      output_string out_channel " el "; print 25 f;
 	      output_string out_channel " fi"
+	  | For _ -> assert false (* Should have been expanded to while *)
 	  | While (_, c, _, b) ->
 	      output_string out_channel "while " ;
 	      of_expression c;
@@ -1755,6 +1770,10 @@ struct
 		output_string out_channel " [] ";
 		print op_prec r; 
 		close_paren prec op_prec
+	  | Statement.Extern _ ->
+	       (* Should have been replaced by an assignment with
+		  a (special) function call. *)
+	      assert false
       in print 25 stmt
     and of_attribute a =
       output_string out_channel ("(" ^ a.var_name ^ ": ");
