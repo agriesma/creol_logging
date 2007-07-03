@@ -322,6 +322,8 @@ basic_statement:
 	{ Assign((Note.make $startpos), t, e) }
     | AWAIT g = guard
 	{ Await ((Note.make $startpos), g) }
+    | AWAIT error
+	{ signal_error $startpos "Syntax error in await condition" }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ AsyncCall ((Note.make $startpos), l, callee, m, i) }

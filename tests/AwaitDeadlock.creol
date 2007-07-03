@@ -1,0 +1,35 @@
+/*
+ * This file shows a situation in which the optimisation of wait
+ * introduces additional deadlocks.  It is inspired by an untimed
+ * version of the MARS case study.
+ */
+
+interface Sensor
+begin
+  with Any
+    op read(out data: Data)
+end
+
+class Controller(left: Sensor, right: Sensor)
+begin
+
+  var clock: Int
+
+  op init == clock := 0
+
+  op run == !tick() ||| !sense()
+
+  op tick == x := x + 1; !tick(); release
+
+  op sense ==
+	var ld: Data; var rd: Data;
+	await (clock % 10 = 0);  // Assume period of 10
+	begin l!left.read() ||| r!right.read() end ;
+	begin
+	  await l? && r? && clock < 2 // do something
+	[]
+	  await clock >= 3 // error
+	end;
+	!sense(); release
+
+end
