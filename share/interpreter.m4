@@ -200,18 +200,14 @@ endfm
 
 
 fmod CREOL-GUARDS is
-  protecting `CREOL-EVAL' .
+  extending `CREOL-EVAL' .
 
-  sorts NoGuard Guard Return PureGuard . 
-  subsorts Return Expr < PureGuard .
-  subsorts NoGuard PureGuard < Guard .
-
-  vars E E' : Expr .
-  var PG : PureGuard .
+  sort NoGuard . 
+  subsorts Expr < NoGuard .
 
   op noGuard : -> NoGuard [ctor `format' (b o)] .
-  op _??  : Vid -> Return [ctor] .
-  op _??  : Label -> Return [ctor] .
+  op _??  : Vid -> Expr [ctor] .
+  op _??  : Label -> Expr [ctor] .
 
 endfm
 
@@ -235,7 +231,7 @@ fmod CREOL-STATEMENT is
   op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Vid VidList -> Stm [ctor prec 39] .
   op _?(_)  : Label VidList -> Stm [ctor prec 39] .
-  op await_ : Guard    -> SuspStm [ctor] .
+  op await_ : Expr -> SuspStm [ctor] .
   op return : ExprList -> Stm [ctor `format' (c o)] .
   op bury : VidList -> Stm [ctor `format' (c o)] .
   op free : VidList -> Stm [ctor `format' (c o)] .
@@ -275,12 +271,11 @@ fmod CREOL-STM-LIST is
   var DL : DataList .
   var EL : ExprList .
   var B : Expr .
-  var PG : PureGuard .
 
   *** Some simplifications:
   eq noStm MERGER SL = SL .
   eq SL MERGER noStm = SL .
-  eq await noGuard ; NeSL = NeSL .
+  *** eq await noGuard ; NeSL = NeSL .
 
   *** Optimize assignments.  This way we save reducing a skip.  Also note
   *** that the empty assignment is /not/ programmer syntax, it is inserted
@@ -480,11 +475,14 @@ fmod CREOL-AUX-FUNCTIONS is
   vars N N' : Nat .
   vars L L' : Label .
   vars E E' : Expr .
+  vars D D' : Data .
   var EL : ExprList .
+  var NeEL : NeExprList .
+  var DL : DataList .
+  var NeDL : NeDataList .
   var A : Vid .
   var Q : String .
-  vars G1 G2 : Guard .
-  var S : Subst .
+  var S S' : Subst .
   var MM : MMsg .
   var C : Cid .
 
@@ -508,32 +506,54 @@ dnl untimed cases.
 dnl
 ifdef(`TIME',dnl
   var T : Float .
-`define(`ENABLEDGUARD', enabledGuard($1, $2, $3, $4))dnl
+`define(`EVALGUARD', evalGuard($1, $2, $3, $4))dnl
+define(`EVALGUARDLIST', evalGuardList($1, $2, $3, $4))dnl
 define(`ENABLED', enabled($1, $2, $3, $4))dnl
 define(`READY', ready($1, $2, $3, $4))'
-  op enabledGuard : Guard Subst MMsg Float -> Bool .
+  op evalGuard : Expr Subst MMsg Float -> Bool .
+  op evalGuardList : ExprList Subst MMsg Float -> Bool .
   op enabled : NeStmList Subst MMsg Float -> Bool .
   op ready : NeStmList Subst MMsg Float -> Bool .
 ,dnl Untimed:
-`define(`ENABLEDGUARD', enabledGuard($1, $2, $3))dnl
+`define(`EVALGUARD', evalGuard($1, $2, $3))dnl
+define(`EVALGUARDLIST', evalGuardList($1, $2, $3))dnl
 define(`ENABLED', enabled($1, $2, $3))dnl
 define(`READY', ready($1, $2, $3))'
-  op enabledGuard : Guard Subst MMsg -> Bool .
+  op evalGuard : Expr Subst MMsg -> Data .
+  op evalGuardList : ExprList Subst MMsg -> DataList .
   op enabled : NeStmList Subst MMsg -> Bool .
   op ready : NeStmList Subst MMsg -> Bool .
 )dnl
 
-  eq ENABLEDGUARD(noGuard, S, MM, T) = true .
-  eq ENABLEDGUARD(E, S, MM, T) = EVAL(E, S, T) asBool .
-  eq ENABLEDGUARD((A ??), S, MM, T) = inqueue(S[A], MM) .
-  eq ENABLEDGUARD((L ??), S, MM, T) = inqueue(L, MM) .
+  *** I want to err here.
+  *** eq EVALGUARD(noGuard, S, MM, T) = bool(true) .
+  eq EVALGUARD(D, S, MM, T) = D .
+  eq EVALGUARD((Q @@ C), (S # S'), MM, T) =  S [Q] .
+  eq EVALGUARD(Q, (S # S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
+  eq EVALGUARD(A, S, MM, T) =  S [A] .
+  eq EVALGUARD(Q (EL), S, MM, T) = Q ( EVALGUARDLIST(EL, S, MM, T) ) .
+  eq EVALGUARD((A ??), S, MM, T) = bool(inqueue(S[A], MM)) .
+  eq EVALGUARD((L ??), S, MM, T) = bool(inqueue(L, MM)) .
+  eq EVALGUARD(list(EL), S, MM, T) = list(EVALGUARDLIST(EL, S, MM, T)) .
+  eq EVALGUARD(pair(E,E'),S, MM, T) =
+    pair(EVALGUARD(E, S, MM, T), EVALGUARD(E', S, MM, T)) .
+  eq EVALGUARD(setl(EL), S, MM, T) = setl(EVALGUARDLIST(EL, S, MM, T)) .
+
+  *** Evaluate guard lists.  This is almost the same as evalList, but we
+  *** had to adapt this to guards.
+  eq EVALGUARDLIST(emp, S, MM, T) = emp . *** Short circuit evaluation.
+  eq EVALGUARDLIST(DL, S, MM, T) = DL .   *** Short circuit evaluation.
+  eq EVALGUARDLIST(E, S, MM, T) = EVALGUARD(E, S, MM, T) .
+  --- XXX: May be right-to-left is faster?
+  eq EVALGUARDLIST(E # NeEL, S, MM, T) =
+    EVALGUARD(E, S, MM, T) # EVALGUARDLIST(NeEL, S, MM, T) .
 
   eq ENABLED((NeSL [] NeSL') ; SL'',  S, MM, T) =
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
   eq ENABLED((NeSL ||| NeSL') ; SL'', S, MM, T) =
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
   eq ENABLED((NeSL MERGER SL') ; SL'', S, MM, T) = ENABLED(NeSL, S, MM, T) .
-  eq ENABLED(await G1 ; SL'', S, MM, T) = ENABLEDGUARD(G1,S,MM, T) .
+  eq ENABLED(await E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
   eq ENABLED(NeSL, S, MM, T) = true [owise] .
 
   *** The ready predicate holds, if a statement is ready for execution,
@@ -581,7 +601,7 @@ mod ifdef(`MODELCHECK',CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
   vars Lab Lab' : Label .
   var LS : Labels .
   var MM : MMsg .
-  var G : Guard .
+  var G : Expr .
   var M : Mid .
   var Q : String .
   var MsgBody : Body .
@@ -841,7 +861,7 @@ CSTEP(dnl
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
 `< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
-ENABLEDGUARD(G, (S # L), MM, T),
+EVALGUARD(G, (S # L), MM, T) asBool,
 `[label guard]')
 
 

@@ -35,13 +35,13 @@ reduce in CREOL-GUARDS : downTerm(upTerm(bool(true)), noGuard) .
 result Data: bool(true)
 ==========================================
 reduce in CREOL-GUARDS : "test" ?? .
-result Return: "test" ??
+result Expr: "test" ??
 ==========================================
 reduce in CREOL-GUARDS : upTerm("test" ??) .
 result GroundTerm: '_??['"test".String]
 ==========================================
 reduce in CREOL-GUARDS : downTerm(upTerm("test" ??), noGuard) .
-result Return: "test" ??
+result Expr: "test" ??
 ==========================================
 reduce in CREOL-STATEMENT : "a" . "a" .
 result Mid: "a" . "a"
