@@ -194,28 +194,8 @@ define(`EVALLIST', `evalList ($1, $2)')dnl
   eq EVALLIST(DL, S, T) = DL .
 
   eq EVALLIST(E , S, T) = EVAL(E, S, T) .
-  eq EVALLIST(E # NeEL, S, T) =
-    EVAL(E, S, T) # EVALLIST(NeEL, S, T) .
+  eq EVALLIST(E # NeEL, S, T) = EVAL(E, S, T) # EVALLIST(NeEL, S, T) .
 
-  *** multi-way conditional expression
-  sorts Case NeCases Cases .
-  subsorts Case < NeCases < Cases .
-  op of_wh_do_ : Expr Expr Expr -> Case [ctor `format' (b o b o b o d)] .
-  op noCase : -> Cases [ctor] .
-  op _|_ : Case Case -> NeCases [ctor assoc id: noCase] .
-  op case__ : Expr Cases -> Expr [ctor] .
-  op case__ : Data Cases -> Data [ditto] .
-
-  var C : Cases .
-
-  eq EVAL(case E noCase, S, T) = null .
-  eq EVAL(case D ((of E wh E' do E'') | C), S, T) =
-    if EVAL(E, S, T) == D then
-      EVAL(E'', S, T)
-    else
-      EVAL(case D C, S, T)
-    fi .
-  eq EVAL(case E C, S, T) = case EVAL(E, S, T) C [owise] .
 endfm
 
 
