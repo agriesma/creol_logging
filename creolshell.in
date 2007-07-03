@@ -97,8 +97,12 @@ do
   esac
 done
 
-# prefer native over bytecode.
-for creolc in $creolc creolc.opt ./creolc.opt ../creolc.opt creolc ./creolc ../creolc ; do
+# Figure out where we are installed.
+dir=`dirname $0`
+
+# prefer native over bytecode.  Try some natural locations to look for the binary.
+for creolc in $creolc creolc.opt ./creolc.opt ../creolc.opt $dir/creolc/creolc.opt creolc ./creolc ../creolc $dir/creolc/creolc
+do
     if ( ($creolc --version > /dev/null 2>&1) || exit) ; then
 	creolc=$creolc
 	break
