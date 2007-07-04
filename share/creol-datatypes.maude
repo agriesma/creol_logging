@@ -79,6 +79,9 @@ fmod CREOL-DATA-SIG is
 
   op _(_) : String DataList -> Data [format (! o d d d) prec 12] .
   op _(_) : String ExprList -> Appl [ctor ditto] .
+  op _??  : Vid -> Expr [ctor] .
+  op _??  : Label -> Expr [ctor] .
+  op _@@_ : String String -> Vid [ctor] .
 
   op ob(_) : String -> Oid [ctor] .
 
@@ -345,7 +348,7 @@ fmod DATA is
 
 endfm  
 
-fmod DATATYPES is
+fmod CREOL-DATATYPES is
   *** may easily keep various data types on separate file(s), 
   *** and plug in upon need.
   protecting DATA .

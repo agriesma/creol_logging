@@ -25,22 +25,22 @@ reduce in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1",
     bool(false), noSubst))) .
 result Bool: true
 ==========================================
-reduce in CREOL-GUARDS : bool(true) .
+reduce in CREOL-DATA-SIG : bool(true) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-GUARDS : upTerm(bool(true)) .
+reduce in CREOL-DATA-SIG : upTerm(bool(true)) .
 result GroundTerm: 'bool`(_`)['true.Bool]
 ==========================================
-reduce in CREOL-GUARDS : downTerm(upTerm(bool(true)), noGuard) .
+reduce in CREOL-DATA-SIG : downTerm(upTerm(bool(true)), null) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-GUARDS : "test" ?? .
+reduce in CREOL-DATA-SIG : "test" ?? .
 result Expr: "test" ??
 ==========================================
-reduce in CREOL-GUARDS : upTerm("test" ??) .
+reduce in CREOL-DATA-SIG : upTerm("test" ??) .
 result GroundTerm: '_??['"test".String]
 ==========================================
-reduce in CREOL-GUARDS : downTerm(upTerm("test" ??), noGuard) .
+reduce in CREOL-DATA-SIG : downTerm(upTerm("test" ??), null) .
 result Expr: "test" ??
 ==========================================
 reduce in CREOL-STATEMENT : "a" . "a" .

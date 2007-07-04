@@ -1,0 +1,4 @@
+
+OO is great for problems where an interface applies naturally to a wide range of types, not so good for managing polymorphism (the machinations to get collections into OO languages are astounding to watch and can be hellish to work with), and remarkably ill-suited for network computing. That's why I reserve the right to match the language to the problem, and even - often - to coordinate software written in several languages towards solving a single problem.
+
+	Rob Pike, Slashdot interview, 2004-10-18

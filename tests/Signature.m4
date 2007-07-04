@@ -43,8 +43,8 @@ red in CREOL-SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),noSub
 red in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", bool(false), noSubst)) ["var1"]), null) .
 red in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1", bool(false), noSubst))) .
 
-GRAMMAR_TEST(GUARDS, bool(true), noGuard)
-GRAMMAR_TEST(GUARDS, "test" ??, noGuard)
+GRAMMAR_TEST(DATA-SIG, bool(true), null)
+GRAMMAR_TEST(DATA-SIG, "test" ??, null)
 
 GRAMMAR_TEST(STATEMENT, "a" . "a", "a")
 GRAMMAR_TEST(STATEMENT, "a" @ "a", "a")

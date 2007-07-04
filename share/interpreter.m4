@@ -95,7 +95,7 @@ in creol-datatypes .
 *** Bound variables ***
 fmod CREOL-SUBST is
   protecting EXT-BOOL .
-  protecting CREOL-DATA-SIG .
+  protecting CREOL-DATATYPES .
   extending MAP{Vid, Data} * (sort Map{Vid, Data} to Subst,
                               op empty : -> Map{Vid, Data} to noSubst ) .
 
@@ -122,97 +122,10 @@ fmod CREOL-SUBST is
   eq dom(A, S1) = false [owise] .
 endfm
 
-fmod `CREOL-EVAL' is
-
-  protecting DATATYPES .
-ifdef(`TIME', ``  protecting CREOL-DATA-TIME .'')
-  protecting CREOL-SUBST .
-
-  var D : Data .
-  var DL : DataList .
-  vars E E' E'' : Expr .
-  var EL : ExprList .
-  var NeEL : NeExprList .
-  var v : Vid .
-  vars a c : String . *** XXX: Actually we want a : Aid, but we drop the class.
-  var x : Lid .
-  vars A L S : Subst .
-  var F : String .
-  var I : Int .
-  var B : Bool .
-ifdef(`TIME', `  var T : Float .   *** The value of now.')
-
-  sorts Aid Lid .
-  subsort Aid < Vid .
-  subsorts String < Lid < Vid .
-  op _@@_ : String String -> Aid [ctor prec 31] .
-
-
-
-ifdef(`TIME', `dnl
-define(`EVAL', `eval ($1, $2, $3)')dnl
-define(`EVALLIST', `evalList ($1, $2, $3)')dnl
-  *** Third component is the value of now.
-  op eval : Data Subst Float -> Data .
-  op eval : Expr Subst Float -> Data .
-  op evalList : DataList Subst Float -> DataList .
-  op evalList : ExprList Subst Float -> DataList .
-
-  *** Substitute the expression now by its value.
-  eq `eval' (now, S, T) = time(T) .
-',`dnl
-dnl This upper case eval and evalList macros map to the binary version
-dnl (untimed) .
-define(`EVAL', `eval ($1, $2)')dnl
-define(`EVALLIST', `evalList ($1, $2)')dnl
-  op eval : Data Subst -> Data .
-  op eval : Expr Subst -> Data .
-  op evalList : DataList Subst -> DataList .
-  op evalList : ExprList Subst -> DataList .
-
-  *** We define the expression now to the float(0) and never change its
-  *** value. This is done to simulate timed models in an untimed setting.
-  *** This may cause all kinds of dead-locks, however, since timed models
-  *** often insist on progress of time.
-  *** eq `eval'(now, S) = float(0) .
-')dnl
-
-  *** Avoid recursing into the structure of data.  We assume that no term
-  *** of sort data contains any subterms of sort Expr.
-  eq EVAL(D, S, T) = D .
-
-  *** standard evaluation of expression
-  eq EVAL((a @@ c), (A # L), T) =  A [a] .
-  eq EVAL(x, (A # L), T) =  L [x] [nonexec] . *** XXX: Later
-  eq EVAL(v, S, T) =  S [v] .
-  eq EVAL(F (EL), S, T) = F ( EVALLIST(EL, S, T) ) .
-  eq EVAL(list(EL), S, T) = list(EVALLIST(EL, S, T)) .
-  eq EVAL(pair(E,E'),S, T) = pair(EVAL(E, S, T), EVAL(E', S, T)) .
-  eq EVAL(setl(EL), S, T) = setl(EVALLIST(EL, S, T)) .
-
-  eq EVALLIST(emp, S, T) = emp .
-  eq EVALLIST(DL, S, T) = DL .
-
-  eq EVALLIST(E , S, T) = EVAL(E, S, T) .
-  eq EVALLIST(E # NeEL, S, T) = EVAL(E, S, T) # EVALLIST(NeEL, S, T) .
-
-endfm
-
-
-fmod CREOL-GUARDS is
-  extending `CREOL-EVAL' .
-
-  sort NoGuard . 
-  subsorts Expr < NoGuard .
-
-  op noGuard : -> NoGuard [ctor `format' (b o)] .
-  op _??  : Vid -> Expr [ctor] .
-  op _??  : Label -> Expr [ctor] .
-
-endfm
 
 fmod CREOL-STATEMENT is
-  pr CREOL-GUARDS .
+  protecting CREOL-DATATYPES .
+  protecting CREOL-SUBST .
 
   *** SuspStm is a statement which can be suspended.  It includes
   *** await, [] and ||| (the later two defined in CREOL-STM-LIST.
@@ -275,7 +188,6 @@ fmod CREOL-STM-LIST is
   *** Some simplifications:
   eq noStm MERGER SL = SL .
   eq SL MERGER noStm = SL .
-  *** eq await noGuard ; NeSL = NeSL .
 
   *** Optimize assignments.  This way we save reducing a skip.  Also note
   *** that the empty assignment is /not/ programmer syntax, it is inserted
@@ -466,9 +378,10 @@ ifdef(`MODELCHECK',dnl
 
 endfm
 
-*** AUXILIARY FUNCTIONS ***
-fmod CREOL-AUX-FUNCTIONS is
+fmod `CREOL-EVAL' is
 
+  protecting CREOL-DATA-SIG .
+  protecting CREOL-SUBST .
   protecting CREOL-CONFIG .
   protecting CONVERSION .
 
@@ -504,6 +417,8 @@ dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
 dnl untimed cases.
 dnl
+define(`EVAL', `EVALGUARD($1, $2, noMsg, $3)')dnl
+define(`EVALLIST', `EVALGUARDLIST($1, $2, noMsg, $3)')dnl
 ifdef(`TIME',dnl
   var T : Float .
 `define(`EVALGUARD', evalGuard($1, $2, $3, $4))dnl
@@ -526,7 +441,6 @@ define(`READY', ready($1, $2, $3))'
 )dnl
 
   *** I want to err here.
-  *** eq EVALGUARD(noGuard, S, MM, T) = bool(true) .
   eq EVALGUARD(D, S, MM, T) = D .
   eq EVALGUARD((Q @@ C), (S # S'), MM, T) =  S [Q] .
   eq EVALGUARD(Q, (S # S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
@@ -573,8 +487,7 @@ endfm
 mod ifdef(`MODELCHECK',CREOL-MODEL-CHECKER,CREOL-INTERPRETER) is
 
   extending CREOL-DATA-SIG .
-
-  protecting CREOL-AUX-FUNCTIONS .
+  protecting `CREOL-EVAL' .
 
   vars O O' : Oid .
   vars C C' : Cid .
