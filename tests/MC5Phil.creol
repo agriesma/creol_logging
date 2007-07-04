@@ -17,7 +17,9 @@ begin
   var neighbor: Phil
  
   op init ==
-    chopstick := true; hungry := false; butler.getNeighbor(; neighbor)
+    chopstick@Philosopher := true;
+    hungry@Philosopher := false;
+    butler@Philosopher.getNeighbor(; neighbor@Philosopher)
  
   op run == !think() ||| !eat()
 
@@ -57,27 +59,27 @@ begin
     skip
 
   op run ==
-    p1 := new Philosopher(this);
-    p2 := new Philosopher(this);
-    p3 := new Philosopher(this);
-    p4 := new Philosopher(this);
-    p5 := new Philosopher(this)
+    p1@Butler := new Philosopher(this);
+    p2@Butler := new Philosopher(this);
+    p3@Butler := new Philosopher(this);
+    p4@Butler := new Philosopher(this);
+    p5@Butler := new Philosopher(this)
 
   with Phil
     op getNeighbor(out neighbor: Phil) ==
-      if caller = p1 then
-        neighbor := p2
+      if caller = p1@Butler then
+        neighbor := p2@Butler
       else
-        if caller = p2 then
-          neighbor := p3
+        if caller = p2@Butler then
+          neighbor := p3@Butler
         else
-          if caller = p3 then
-            neighbor := p4
+          if caller = p3@Butler then
+            neighbor := p4@Butler
           else
-            if caller = p4 then
-              neighbor := p5
+            if caller = p4@Butler then
+              neighbor := p5@Butler
             else
-              neighbor := p1
+              neighbor := p1@Butler
             end
           end
         end

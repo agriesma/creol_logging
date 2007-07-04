@@ -4,7 +4,7 @@ pr CREOL-MODEL-CHECKER .
 op init : -> Configuration [ctor] .
 eq init =
 < "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "sync.0" ! "butler" . "getNeighbor" ( emp ) ; ( "sync.0" ? ( "neighbor" ) )  ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: ( "chopstick" @@ "Philosopher" ) ::= bool(true) ; ( "hungry" @@ "Philosopher" ) ::= bool(false) ; "sync.0" ! ( "butler" @@ "Philosopher" ) . "getNeighbor" ( emp ) ; ( "sync.0" ? ( ( "neighbor" @@ "Philosopher" ) ) )  ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ( ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ||| ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ) ; return ( emp ) > *
   < "eat" : Mtdname | Param: noVid, Latt: noSubst, Code: ( await ( "hungry" @@ "Philosopher" ) ) ; "sync.0" ! ( "neighbor" @@ "Philosopher" ) . "borrowStick" ( emp ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( noVid ) )  ; ( await ( "chopstick" @@ "Philosopher" ) ) ; ( "hungry" @@ "Philosopher" ) ::= bool(false) ; ".anon" ! ( "neighbor" @@ "Philosopher" ) . "returnStick" ( emp ) ; free( ".anon" ) ; ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
   < "think" : Mtdname | Param: noVid, Latt: noSubst, Code: ( await "~" ( ( "hungry" @@ "Philosopher" ) ) ) ; release ; ( "hungry" @@ "Philosopher" ) ::= bool(true) ; ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
@@ -13,8 +13,8 @@ eq init =
 
 < "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null , "p4" |-> null , "p5" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new "Philosopher" ( "this" ) ; "p2" ::= new "Philosopher" ( "this" ) ; "p3" ::= new "Philosopher" ( "this" ) ; "p4" ::= new "Philosopher" ( "this" ) ; "p5" ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
-  < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" # "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" # "p2" ) th "neighbor" ::= "p3" el if "=" ( "caller" # "p3" ) th "neighbor" ::= "p4" el if "=" ( "caller" # "p4" ) th "neighbor" ::= "p5" el "neighbor" ::= "p1" fi fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ( "p1" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p2" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p3" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p4" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p5" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; return ( emp ) > *
+  < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" # ( "p1" @@ "Butler" ) ) th "neighbor" ::= ( "p2" @@ "Butler" ) el if "=" ( "caller" # ( "p2" @@ "Butler" ) ) th "neighbor" ::= ( "p3" @@ "Butler" ) el if "=" ( "caller" # ( "p3" @@ "Butler" ) ) th "neighbor" ::= ( "p4" @@ "Butler" ) el if "=" ( "caller" # ( "p4" @@ "Butler" ) ) th "neighbor" ::= ( "p5" @@ "Butler" ) el "neighbor" ::= ( "p1" @@ "Butler" ) fi fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
 
 .
 endm
