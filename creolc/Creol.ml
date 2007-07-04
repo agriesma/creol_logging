@@ -665,7 +665,7 @@ struct
   type  ('a, 'b, 'c) t =
       { name: string;
 	inherits: string list;
-	with_decl: ('a, 'b, 'c) With.t option }
+	with_decl: ('a, 'b, 'c) With.t list }
 
 end
 

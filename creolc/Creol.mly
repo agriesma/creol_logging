@@ -201,7 +201,7 @@ method_def:
 (* Interface Declaration *)
 
 interfacedecl:
-      INTERFACE n = CID i = iface_inherits_opt BEGIN w = ioption(with_decl) END
+      INTERFACE n = CID i = iface_inherits_opt BEGIN w = list(with_decl) END
     { { Interface.name = n; Interface.inherits = i; Interface.with_decl = w } }
     | INTERFACE error
     | INTERFACE CID error
