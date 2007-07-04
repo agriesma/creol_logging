@@ -51,7 +51,7 @@ creolc_DOCSOURCES	= Version.ml Messages.ml \
 			  Passes.ml \
 			  Driver.ml
 
-OCAMLC_FLAGS		+=
+OCAMLC_FLAGS		+= -g
 OCAMLOPT_FLAGS		+= -w a
 OCAMLFIND_FLAGS		+= -package "unix libxml2"
 

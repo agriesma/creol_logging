@@ -30,7 +30,7 @@ begin
 
   op advancePhase ==
     await mode && uid3 /= null && (uid1 < uid2 && uid3 < uid2);
-    [uid1, uid2, uid3]:= [uid2, null, null];
+    uid1, uid2, uid3:= uid2, null, null;
     !neighbor.get(uid1)
 
 end

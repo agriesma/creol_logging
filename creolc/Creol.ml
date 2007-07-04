@@ -758,7 +758,7 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
       | Release _ as s -> s
       | Assert (a, e) -> Assert (a, lower_expression e)
       | Assign (a, s, e) -> Assign (a, s, List.map lower_expression e)
-      | Await (a, g) -> Statement.lower_await (Await (a, lower_expression g))
+      | Await (a, g) -> Await (a, lower_expression g)
       | AsyncCall (a, None, e, n, p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this

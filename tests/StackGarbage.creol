@@ -2,5 +2,5 @@ class Test
 begin
   op init == skip
   op run == var r: Int; m(; r)
-  op m(out r: Int) == { m(; r); r := r + 1 } [] r := 1
+  op m(out r: Int) == begin m(; r); r := r + 1 end [] r := 1
 end
