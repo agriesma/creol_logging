@@ -13,7 +13,7 @@ eq init =
 
 < "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null , "p4" |-> null , "p5" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ( "p1" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p2" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p3" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p4" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; ( "p5" @@ "Butler" ) ::= new "Philosopher" ( ( "this" @@ "Butler" ) ) ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ( "p1" @@ "Butler" ) ::= new "Philosopher" ( "this" ) ; ( "p2" @@ "Butler" ) ::= new "Philosopher" ( "this" ) ; ( "p3" @@ "Butler" ) ::= new "Philosopher" ( "this" ) ; ( "p4" @@ "Butler" ) ::= new "Philosopher" ( "this" ) ; ( "p5" @@ "Butler" ) ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
   < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" # ( "p1" @@ "Butler" ) ) th "neighbor" ::= ( "p2" @@ "Butler" ) el if "=" ( "caller" # ( "p2" @@ "Butler" ) ) th "neighbor" ::= ( "p3" @@ "Butler" ) el if "=" ( "caller" # ( "p3" @@ "Butler" ) ) th "neighbor" ::= ( "p4" @@ "Butler" ) el if "=" ( "caller" # ( "p4" @@ "Butler" ) ) th "neighbor" ::= ( "p5" @@ "Butler" ) el "neighbor" ::= ( "p1" @@ "Butler" ) fi fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
 
 .
