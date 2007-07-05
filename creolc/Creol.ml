@@ -177,6 +177,8 @@ module Expression =
 	| Id of 'b * string
         | StaticAttr of 'b * string * 'c Type.t
 	| Tuple of 'b * ('b, 'c) t list
+	| ListLit of 'b * ('b, 'c) t list
+	| SetLit of 'b * ('b, 'c) t list
 	| Cast of 'b * ('b, 'c) t * 'c Type.t
 	| Index of 'b * ('b, 'c) t * ('b, 'c) t
         | FieldAccess of 'b * ('b, 'c) t * string
@@ -188,8 +190,9 @@ module Expression =
 	| New of 'b * 'c Type.t * ('b, 'c) t list
 	| Extern of 'b * string
   and ('b, 'c) lhs =
-      LhsVar of 'b * string
-    | LhsAttr of 'b * string * 'c Type.t
+          LhsVar of 'b * string
+        | LhsAttr of 'b * string * 'c Type.t
+        | LhsWildcard of 'b * 'c Type.t option
     and unaryop =
 	Not
 	| UMinus

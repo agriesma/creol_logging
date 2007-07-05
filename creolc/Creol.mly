@@ -4,7 +4,7 @@
 
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
-%token WHILE VAR WITH OP IN OUT CONSTRUCTOR FUNCTION EXTERN
+%token WHILE VAR WITH OP IN OUT CONSTRUCTOR EXTERN
 %token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
 %token IF THEN ELSE SKIP RELEASE AWAIT NEW
 %token FOR TO BY DO
@@ -189,11 +189,11 @@ with_def:
     { { With.co_interface = Some m; With.methods = l; With.invariants = i } }
 
 method_def:
-      d = method_decl; EQEQ; a = loption(terminated(attributes, SEMI));
+      d = method_decl EQEQ a = loption(terminated(attributes, SEMI))
 	s = statement
     { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
 	meth_outpars = d.meth_outpars; meth_vars = a; meth_body = Some s} }
-  |   d = method_decl; EQEQ EXTERN s = STRING
+  |   d = method_decl EQEQ EXTERN s = STRING
     { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
 	meth_outpars = d.meth_outpars; meth_vars = [];
         meth_body = Some (Extern (Note.make $startpos, s)) } }
@@ -386,6 +386,8 @@ lhs:
 	{ match c with
 	      None -> LhsVar ((Note.make $startpos), id)
 	    | Some cl -> LhsAttr ((Note.make $startpos), id, cl) }
+    | UNDERSCORE t = ioption(preceded(COLON, creol_type))
+	{ LhsWildcard (Note.make $startpos, t) }
 
 expression_or_new:
       e = expression
@@ -419,10 +421,10 @@ expression:
 		[] -> Nil (Note.make $startpos) (* XXX: Should be unit *)
 	      | [e] -> e
 	      | _ -> Tuple (Note.make $startpos, l) }
-    | LBRACK separated_list(COMMA, expression) RBRACK
-	{ Null (Note.make $startpos) }
-    | LBRACE separated_list(COMMA, expression) RBRACE
-	{ Null (Note.make $startpos) }
+    | LBRACK l = separated_list(COMMA, expression) RBRACK
+	{ ListLit (Note.make $startpos, l) }
+    | LBRACE e = separated_list(COMMA, expression) RBRACE
+	{ SetLit (Note.make $startpos, e) }
     | LBRACE ID COLON expression BAR expression RBRACE
 	{ Null (Note.make $startpos) }
     | l = expression o = binop r = expression

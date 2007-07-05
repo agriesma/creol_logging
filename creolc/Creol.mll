@@ -137,7 +137,6 @@ rule token = parse
     | "false" { BOOL(false) }
     | "forall" { FORALL }
     | "for" { FOR }
-    | "fun" { FUNCTION }
     | "history" { ID("history") (* XXX: Should be special *) }
     | "if" { IF }
     | "implements" { IMPLEMENTS }

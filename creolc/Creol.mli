@@ -118,6 +118,10 @@ sig
 	  (** Class-qualified access to an attribute value. *)
       | Tuple of 'b * ('b, 'c) t list
 	  (** Tuple expression. *)
+      | ListLit of 'b * ('b, 'c) t list
+	  (** A list literal expression, enumerating its elements. *)
+      | SetLit of 'b * ('b, 'c) t list
+	  (** A set literal expression, enumerating its elements. *)
       | Cast of 'b * ('b, 'c) t * 'c Type.t
 	  (** Re-type an expression.  Involves a run-time check *)
       | Index of 'b * ('b, 'c) t * ('b, 'c) t
@@ -142,7 +146,11 @@ sig
   and ('b, 'c) lhs =
       (** These forms may occur on the left hand side of assignments *)
       LhsVar of 'b * string
+	  (** An assignable variable. *)
     | LhsAttr of 'b * string * 'c Type.t
+	  (** An assignable statically qualified class member. *)
+    | LhsWildcard of 'b * 'c Type.t option
+	  (** An expression which can accept any value. *)
   and unaryop =
       (** Definition of the different unary operator symbols *)
       Not

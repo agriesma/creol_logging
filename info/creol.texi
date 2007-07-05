@@ -24,8 +24,8 @@ semantics, yet.
 @node Comments
 @section Comments
 
-Creol supports too kinds of comments, both have been derived from C++
-abd Java.
+Creol supports too kinds of comments, both have been inspired by C++
+and Java.
 
 The first kind begins with @code{//} and extends until the first
 following linebreak.
