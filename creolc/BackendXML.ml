@@ -23,7 +23,6 @@
 
 (** Read and write Creol Programs.
 
-
     @author Marcel Kyas
     @version 0.0
     @since   0.0
@@ -31,50 +30,15 @@
   *)
 
 open Creol
-open Statement
-open Declaration
 
-let from_file name =
-  (** Read the contents of a file and return an abstract syntax tree.
-
-      @since 0.0 *)
-  let lexbuf = Lexing.from_channel (open_in name) in
-    let pos = lexbuf.Lexing.lex_curr_p in
-      lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } ;
-      CreolParser.main CreolLex.token lexbuf
-
-let rec from_files =
-  (** Read the contents of a list of files and return an abstract syntax
-      tree.
-
-      @since 0.0 *)
-  function
-      [] -> []
-    | name::rest -> (from_file name)@(from_files rest)
-
-
-
-let from_channel channel =
-  (** Read the contents of a channel and return a abstract syntax tree.
-
-      @since 0.0 *)
-  let lexbuf = Lexing.from_channel channel in
-    let pos = lexbuf.Lexing.lex_curr_p in
-      lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = "*channel*" } ;
-      CreolParser.main CreolLex.token lexbuf
-
-
-
-
-
-let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
+let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
   let writer = XmlTextWriter.to_file name 0 in
   let rec creol_declaration_to_xml =
     function
-	Class c -> creol_class_to_xml c
-      | Interface i -> creol_interface_to_xml i
-      | Datatype d -> creol_datatype_to_xml d
-      | Exception e -> creol_exception_to_xml e
+	Declaration.Class c -> creol_class_to_xml c
+      | Declaration.Interface i -> creol_interface_to_xml i
+      | Declaration.Datatype d -> creol_datatype_to_xml d
+      | Declaration.Exception e -> creol_exception_to_xml e
   and creol_exception_to_xml e =
     XmlTextWriter.start_element writer "creol:exception";
     XmlTextWriter.write_attribute writer "name" e.Exception.name;
@@ -172,16 +136,16 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
     XmlTextWriter.end_element writer
   and creol_statement_to_xml =
     function
-	Skip a ->
+	Statement.Skip a ->
 	  XmlTextWriter.start_element writer "creol:skip" ; 
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Assert (a, e) ->
+      | Statement.Assert (a, e) ->
 	  XmlTextWriter.start_element writer "creol:assert" ; 
 	  creol_expression_to_xml e ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Assign (a, vs, es) ->
+      | Statement.Assign (a, vs, es) ->
 	  XmlTextWriter.start_element writer "creol:assign" ;
 	  XmlTextWriter.start_element writer "creol:targets" ;
 	  List.iter creol_lhs_to_xml vs ;
@@ -194,16 +158,16 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Await (a, g) -> 
+      | Statement.Await (a, g) -> 
 	  XmlTextWriter.start_element writer "creol:await" ;
 	  creol_expression_to_xml g ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Release a -> 
+      | Statement.Release a -> 
 	  XmlTextWriter.start_element writer "creol:release" ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | AsyncCall (a, l, c, m, es) ->
+      | Statement.AsyncCall (a, l, c, m, es) ->
 	  XmlTextWriter.start_element writer "creol:asynccall" ;
 	  (match l with
 	      None -> ()
@@ -220,7 +184,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a  ;
           XmlTextWriter.end_element writer
-      | Reply (a, l, is) ->
+      | Statement.Reply (a, l, is) ->
 	  XmlTextWriter.start_element writer "creol:reply" ;
 	  XmlTextWriter.write_attribute writer "label" l ;
 	  XmlTextWriter.start_element writer "creol:results" ;
@@ -228,12 +192,12 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Free (a, l) ->
+      | Statement.Free (a, l) ->
 	  XmlTextWriter.start_element writer "creol:free" ;
 	  XmlTextWriter.write_attribute writer "label" l ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | SyncCall (a, c, m, es, is) ->
+      | Statement.SyncCall (a, c, m, es, is) ->
 	  XmlTextWriter.start_element writer "creol:synccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  XmlTextWriter.start_element writer "callee" ;
@@ -250,7 +214,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | AwaitSyncCall (a, c, m, es, is) ->
+      | Statement.AwaitSyncCall (a, c, m, es, is) ->
 	  XmlTextWriter.start_element writer "creol:awaitsynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  XmlTextWriter.start_element writer "callee" ;
@@ -267,7 +231,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | LocalAsyncCall (a, l, m, lb, ub, es) ->
+      | Statement.LocalAsyncCall (a, l, m, lb, ub, es) ->
 	  XmlTextWriter.start_element writer "creol:localasynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  (match l with
@@ -287,7 +251,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | LocalSyncCall (a, m, l, u, es, is) ->
+      | Statement.LocalSyncCall (a, m, l, u, es, is) ->
 	  XmlTextWriter.start_element writer "creol:localsynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  (match l with
@@ -307,7 +271,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | AwaitLocalSyncCall (a, m, l, u, es, is) ->
+      | Statement.AwaitLocalSyncCall (a, m, l, u, es, is) ->
 	  XmlTextWriter.start_element writer "creol:awaitlocalsynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  (match l with
@@ -327,7 +291,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Tailcall (a, m, l, u, es) ->
+      | Statement.Tailcall (a, m, l, u, es) ->
 	  XmlTextWriter.start_element writer "creol:tailcall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  (match l with
@@ -344,7 +308,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | If (a, c, t, f) ->
+      | Statement.If (a, c, t, f) ->
 	  XmlTextWriter.start_element writer "creol:if" ;
 	  XmlTextWriter.start_element writer "creol:condition" ;
 	  creol_expression_to_xml c ;
@@ -357,7 +321,7 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | While (a, c, i, d) ->
+      | Statement.While (a, c, i, d) ->
 	  XmlTextWriter.start_element writer "creol:while" ;
 	  XmlTextWriter.start_element writer "creol:condition" ;
 	  creol_expression_to_xml c ;
@@ -375,19 +339,19 @@ let creol_to_xml ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Sequence (a, s1, s2) ->
+      | Statement.Sequence (a, s1, s2) ->
 	  XmlTextWriter.start_element writer "creol:sequence" ;
 	  creol_statement_to_xml s1;
 	  creol_statement_to_xml s2;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Merge (a, f, n) ->
+      | Statement.Merge (a, f, n) ->
 	  XmlTextWriter.start_element writer "creol:merge" ;
 	  creol_statement_to_xml f ;
 	  creol_statement_to_xml n ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
-      | Choice (a, f, n) ->
+      | Statement.Choice (a, f, n) ->
 	  XmlTextWriter.start_element writer "creol:choice" ;
 	  creol_statement_to_xml f ;
 	  creol_statement_to_xml n ;

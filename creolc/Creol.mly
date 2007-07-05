@@ -18,7 +18,7 @@
 %token LBRACE RBRACE
 %token HASH QUESTION BANG DOTDOT DOT AT
 %token SUBTYPE SUPERTYPE DLRARROW
-%token DOLLAR PERCENT TICK
+%token DOLLAR PERCENT BACKTICK TICK
 %token BOX DIAMOND MERGE
 %token PLUS MINUS
 %token TIMESTIMES TIMES ARROW DARROW DIV EQ NE LT LE GT GE
@@ -52,7 +52,8 @@
 %left TIMES DIV PERCENT
 %left TIMESTIMES
 %right UMINUS HASH
-%left TICK
+%right BACKTICK
+%left DOT
 (* %right CID *)
 
 %start <'a list> main
@@ -439,11 +440,10 @@ expression:
 	{ Cast (Note.make $startpos, e, t) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall((Note.make $startpos), f, l) }
-    | e = expression TICK i = ID
+    | e = expression DOT i = ID
 	{ FieldAccess ((Note.make $startpos), e, i) }
-(* XXX: Might be nice to have but does not work.
-    | e = expression LBRACK i = expression RBRACK
-        { let n = Note.make $startpos in Index (n, e, i) } *)
+    | e = expression BACKTICK i = expression
+        { let n = Note.make $startpos in Index (n, e, i) }
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (Note.make $startpos, c, t, f) }
 

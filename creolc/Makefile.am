@@ -38,7 +38,7 @@ creolc_SOURCES		= Version.ml Messages.ml \
 			  CreolTyping.mli CreolTyping.ml \
 			  CreolLex.ml CreolLex.mli \
 			  CreolParser.mli CreolParser.ml \
-			  CreolIO.mli CreolIO.ml \
+			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
 			  Passes.ml \
 			  Driver.ml
 
@@ -47,7 +47,7 @@ creolc_opt_SOURCES	= $(creolc_SOURCES)
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Version.ml Messages.ml \
 			  Creol.mli Creol.ml \
-			  CreolIO.mli CreolIO.ml \
+			  BackendMaude.ml BackendXML.ml \
 			  Passes.ml \
 			  Driver.ml
 

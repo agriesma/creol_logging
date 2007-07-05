@@ -186,7 +186,11 @@ sig
 
   val string_of_binaryop : binaryop -> string
 
+  val prec_of_binaryop : binaryop -> (int * int)
+
   val string_of_unaryop : unaryop -> string
+
+  val prec_of_unaryop : unaryop -> int
 
   val note : ('b, 'c) t -> 'b
 end
@@ -386,21 +390,6 @@ type ('a, 'b, 'c) program = ('a, 'b, 'c) Declaration.t list
 
 
 
-module Maude :
-sig
-  type options = {
-    mutable modelchecker: bool;
-    mutable red_init: bool;
-    mutable main: string option;
-  }
-
-  val of_creol: options: options -> out_channel: out_channel ->
-    input: ('a, 'b, 'c) Declaration.t list -> unit
-end
-
-
-
-
 val lower: input: ('a, 'b, 'c) Declaration.t list ->
   copy_stmt_note: ('a -> 'a) ->
   expr_note_of_stmt_note: ('a -> 'b) ->
@@ -432,9 +421,3 @@ val optimise_tailcalls: ('a, 'b, 'c) Declaration.t list ->
 val find_definitions:
   (Note.t, 'b, 'c) Declaration.t list -> (Note.t, 'b, 'c) Declaration.t list
 
-val pretty_print: out_channel -> ('a, 'b, 'c) Declaration.t list -> unit
-  (** Write a pretty-printed tree to [out_channel].
-
-      The result of [lower] cannot be printed to a valid creol
-      program.  The pretty-printed result can, however, be used for
-      debugging. *)

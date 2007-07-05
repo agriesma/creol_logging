@@ -47,14 +47,19 @@ module Target =
 
     let file = ref "creolc.out"
 
-    let options = { Maude.modelchecker = false; red_init = false; main = None }
+    let options = { BackendMaude.modelchecker = false; red_init = false;
+		    main = None }
 
     let set =
 	function
 	    "none" -> target := No
 	  | "creol" -> target := Creol
-	  | "maude" -> options.Maude.modelchecker <- false; target := Maude
-	  | "maudemc" -> options.Maude.modelchecker <- true; target := MaudeMC
+	  | "maude" ->
+	      options.BackendMaude.modelchecker <- false ;
+	      target := Maude
+	  | "maudemc" ->
+	      options.BackendMaude.modelchecker <- true ;
+	      target := MaudeMC
 	  | "xml" -> target := XML
 	  | s -> raise (Arg.Bad ("unknown target " ^ s))
 
@@ -66,14 +71,43 @@ module Target =
       in
 	match !target with
 	    No -> ()
-	  | Creol -> pretty_print out tree
+	  | Creol -> BackendCreol.emit out tree
 	  | Maude | MaudeMC ->
 	      let id x = x in
-		Maude.of_creol options out (lower tree id id id)
-	  | XML -> CreolIO.creol_to_xml !file Note.to_xml (fun a b -> ()) (fun a b -> ()) tree
+		BackendMaude.emit options out (lower tree id id id)
+	  | XML ->
+	      let ign a b = () in
+		BackendXML.emit !file Note.to_xml ign ign tree
   end
 
-(* Pass management *)
+let from_file name =
+  (** Read the contents of a file and return an abstract syntax tree.
+
+      @since 0.0 *)
+  let lexbuf = Lexing.from_channel (open_in name) in
+    let pos = lexbuf.Lexing.lex_curr_p in
+      lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } ;
+      CreolParser.main CreolLex.token lexbuf
+
+let rec from_files =
+  (** Read the contents of a list of files and return an abstract syntax
+      tree.
+
+      @since 0.0 *)
+  function
+      [] -> []
+    | name::rest -> (from_file name)@(from_files rest)
+
+
+
+let from_channel channel =
+  (** Read the contents of a channel and return a abstract syntax tree.
+
+      @since 0.0 *)
+  let lexbuf = Lexing.from_channel channel in
+    let pos = lexbuf.Lexing.lex_curr_p in
+      lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = "*channel*" } ;
+      CreolParser.main CreolLex.token lexbuf
 
 let show_version () =
   (** Show the name and the version of the program and exit. *)
@@ -124,12 +158,13 @@ let main () =
      "    none       Do not generate any result\n" ^
      "    creol      Write out a creol program\n" ^
      "    maude      Write a maude file suitable for the interpreter\n" ^
-     "    maudemc    Write a maude file suitable for the model checker");
+     "    maudemc    Write a maude file suitable for the model checker\n" ^
+     "    xml        Write the final tree as an XML file.");
     ("-main",
-     Arg.String (function s -> Target.options.Maude.main <- Some s),
+     Arg.String (function s -> Target.options.BackendMaude.main <- Some s),
      "  Compile the files for model checking and write the result to [file]");
     ("-red-init",
-     Arg.Unit (function () ->  Target.options.Maude.red_init <- true),
+     Arg.Unit (function () ->  Target.options.BackendMaude.red_init <- true),
      "  Generate an output that will reduce init as first step.");
     ("-V", Unit show_version, "  Show the version and exit");
     ("-version", Unit show_version, "  Show the version and exit");
@@ -139,8 +174,8 @@ let main () =
     let tree =
       match !inputs with
 	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
-	| ["-"] -> CreolIO.from_channel stdin
-	| _ ->  CreolIO.from_files !inputs in
+	| ["-"] -> from_channel stdin
+	| _ ->  from_files !inputs in
       Target.output (Passes.execute_passes !verbose tree) ;
       if !times then Passes.report_timings();
       exit 0 ;;
