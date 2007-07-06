@@ -387,7 +387,7 @@ fmod `CREOL-EVAL' is
 
   vars N N' : Nat .
   vars L L' : Label .
-  vars E E' : Expr .
+  vars E E' E'' : Expr .
   vars D D' : Data .
   var EL : ExprList .
   var NeEL : NeExprList .
@@ -459,6 +459,10 @@ define(`READY', ready($1, $2, $3))'
     pair(EVALGUARD(E, S, MM, T), EVALGUARD(E', S, MM, T)) .
   eq EVALGUARD(setl(EL), S, MM, T) = setl(EVALGUARDLIST(EL, S, MM, T)) .
   eq EVALGUARD(map(M), S, MM, T) = map(EVALGUARDMAP(M, S, MM, T)) .
+  eq EVALGUARD(if E th E' el E'' fi, S, MM, T) =
+    if EVALGUARD(E, S, MM, T) asBool
+    then EVALGUARD(E', S, MM, T)
+    else EVALGUARD(E'', S, MM, T) fi .
 
   *** Evaluate guard lists.  This is almost the same as evalList, but we
   *** had to adapt this to guards.

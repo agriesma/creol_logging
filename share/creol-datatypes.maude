@@ -25,13 +25,9 @@ fmod CREOL-DATA-SIG is
   protecting STRING .
   protecting NAT .
 
-  *** Data is declared to be a subsort of Appl, because Application terms
-  *** of the form "string" ( datalist ) are not constructors, but they should
-  *** be reduced to data (see below).  If we do not include this test, then
-  *** the theory is not pre-regular.
-  sorts   Expr Data Vid Oid Appl .
+  sorts   Expr Data Vid Oid .
   subsort Oid < Data < Expr .
-  subsort Data < Appl < Expr .
+  subsort Data < Expr .
   subsort String < Vid < Expr .
 
   op null : -> Data [ctor format (! o)] .
@@ -78,7 +74,8 @@ fmod CREOL-DATA-SIG is
   op _,_ : VidList NeVidList -> NeVidList [ctor ditto] .
 
   op _(_) : String DataList -> Data [format (! o d d d) prec 12] .
-  op _(_) : String ExprList -> Appl [ctor ditto] .
+  op _(_) : String ExprList -> Expr [ctor ditto] .
+  op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
   op _??  : Vid -> Expr [ctor] .
   op _??  : Label -> Expr [ctor] .
   op _@@_ : String String -> Vid [ctor] .
