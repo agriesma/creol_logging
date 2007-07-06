@@ -21,7 +21,7 @@ reduce in CREOL-DATA-SIG : "a", "a" .
 result NeVidList: "a", "a"
 ==========================================
 reduce in CREOL-DATA-SIG : "a"("a") .
-result Appl: "a"("a")
+result Expr: "a"("a")
 ==========================================
 reduce in CREOL-DATA-SIG : null .
 result Data: null
