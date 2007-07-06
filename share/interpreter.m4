@@ -413,34 +413,40 @@ fmod `CREOL-EVAL' is
   vars SL SL' SL'' : StmList . 
   vars NeSL NeSL' NeSL'' : NeStmList .
   var AL : VidList .
+  var M : ExprMap .
+
 dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
 dnl untimed cases.
 dnl
 define(`EVAL', `EVALGUARD($1, $2, noMsg, $3)')dnl
 define(`EVALLIST', `EVALGUARDLIST($1, $2, noMsg, $3)')dnl
+define(`EVALMAP', `EVALGUARDMAP($1, $2, noMsg, $3)')dnl
 ifdef(`TIME',dnl
   var T : Float .
 `define(`EVALGUARD', evalGuard($1, $2, $3, $4))dnl
 define(`EVALGUARDLIST', evalGuardList($1, $2, $3, $4))dnl
+define(`EVALGUARDMAP', evalGuardMap($1, $2, $3, $4))dnl
 define(`ENABLED', enabled($1, $2, $3, $4))dnl
 define(`READY', ready($1, $2, $3, $4))'
   op evalGuard : Expr Subst MMsg Float -> Bool .
   op evalGuardList : ExprList Subst MMsg Float -> Bool .
+  op evalGuardMap : ExprMap Subst MMsg Float -> DataMap .
   op enabled : NeStmList Subst MMsg Float -> Bool .
   op ready : NeStmList Subst MMsg Float -> Bool .
 ,dnl Untimed:
 `define(`EVALGUARD', evalGuard($1, $2, $3))dnl
 define(`EVALGUARDLIST', evalGuardList($1, $2, $3))dnl
+define(`EVALGUARDMAP', evalGuardMap($1, $2, $3))dnl
 define(`ENABLED', enabled($1, $2, $3))dnl
 define(`READY', ready($1, $2, $3))'
   op evalGuard : Expr Subst MMsg -> Data .
   op evalGuardList : ExprList Subst MMsg -> DataList .
+  op evalGuardMap : ExprMap Subst MMsg -> DataMap .
   op enabled : NeStmList Subst MMsg -> Bool .
   op ready : NeStmList Subst MMsg -> Bool .
 )dnl
 
-  *** I want to err here.
   eq EVALGUARD(D, S, MM, T) = D .
   eq EVALGUARD((Q @@ C), (S # S'), MM, T) =  S [Q] .
   eq EVALGUARD(Q, (S # S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
@@ -452,6 +458,7 @@ define(`READY', ready($1, $2, $3))'
   eq EVALGUARD(pair(E,E'),S, MM, T) =
     pair(EVALGUARD(E, S, MM, T), EVALGUARD(E', S, MM, T)) .
   eq EVALGUARD(setl(EL), S, MM, T) = setl(EVALGUARDLIST(EL, S, MM, T)) .
+  eq EVALGUARD(map(M), S, MM, T) = map(EVALGUARDMAP(M, S, MM, T)) .
 
   *** Evaluate guard lists.  This is almost the same as evalList, but we
   *** had to adapt this to guards.
@@ -461,6 +468,14 @@ define(`READY', ready($1, $2, $3))'
   --- XXX: May be right-to-left is faster?
   eq EVALGUARDLIST(E # NeEL, S, MM, T) =
     EVALGUARD(E, S, MM, T) # EVALGUARDLIST(NeEL, S, MM, T) .
+
+  *** Evaluate a map.
+  eq EVALGUARDMAP(empty, S, MM, T) = empty . *** Short circuit evaluation.
+ eq EVALGUARDMAP((D |~> D', M), S, MM, T) =
+   (D |~> D' , EVALGUARDMAP(M, S, MM, T)) .
+ eq EVALGUARDMAP((E |~> E', M), S, MM, T) =
+   (EVALGUARD(E, S, MM, T) |~> EVALGUARD(E', S, MM, T) ,
+    EVALGUARDMAP(M, S, MM, T)) .
 
   eq ENABLED((NeSL [] NeSL') ; SL'',  S, MM, T) =
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .

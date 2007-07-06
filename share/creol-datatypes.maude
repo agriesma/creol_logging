@@ -201,12 +201,12 @@ endfm
 fmod CREOL-DATA-LIST is
   extending CREOL-DATA-INT .
 
-  op list : ExprList     -> Expr . *** lists
-  op list : DataList     -> Data [ctor] . *** lists of data
+  op list : ExprList -> Expr .
+  op list : DataList -> Data [ctor] .
 
   var N : Nat .
-  vars D D'     : Data .
-  vars E E'     : Expr .
+  vars D D' : Data .
+  vars E E' : Expr .
   vars L L' L'' : ExprList .
 
   *** list-functions
@@ -244,15 +244,31 @@ fmod CREOL-DATA-LIST is
   eq "after" (list(E # L) # int(N))  =
     "after" (list(L) # "-" (int(N) # int(1))) .
 
-  eq "index" ((list(L)) # int(0))  = null .
-  eq "index" ((list(emp)) # int(N))  = null .
-  eq "index" ((list(E # L)) # int(N)) =
-    if (N == 1) then E else "index" (list(L) # "-" (int(N) # int(1))) fi .
+  eq "nth" ((list(L)) # int(0))  = null .
+  eq "nth" ((list(emp)) # int(N))  = null .
+  eq "nth" ((list(E # L)) # int(N)) =
+    if (N == 1) then E else "nth" (list(L) # int(_-_(N, 1))) fi .
+
+  eq "rnth" ((list(L)) # int(0))  = null .
+  eq "rnth" ((list(emp)) # int(N))  = null .
+  eq "rnth" ((list(L # E)) # int(N)) =
+    if (N == 1) then E else "rnth" (list(L) # int(_-_(N, 1))) fi .
 
   eq "begwith" (list(E) # E') = bool("head" (list(E)) == E') .
   eq "begwith" (list(E # L)# E') = bool("head" (list(E # L)) == E') .
   eq "begwith" (list(E)# E') = bool("last" (list(E)) == E') .
   eq "begwith" (list(E # L)# E') = bool("last" (list(L)) == E') .
+
+  *** If E is not in the list, these will fail with the term
+  *** "+" (int(N) # null)
+  eq "index" (list(emp) # E) = null .
+  eq "index" (list(E # L) # E') =
+    if E == E' then int(1) else "+" (int(1) # "index" (list(L) # E')) fi .
+
+  eq "rindex" (list(emp) # E) = null .
+  eq "rindex" (list(L # E) # E') =
+    if E == E' then int(1) else "+" (int(1) # "rindex" (list(L) # E')) fi .
+
 
   eq "|-|" (list(L) # list(L'))   = list(L # L') .
 endfm
@@ -294,11 +310,39 @@ fmod CREOL-DATA-PAIR is
 
   op pair : Data Data -> Data [ctor] .
 
-  vars D D'     : Data .
+  vars D D' : Data .
 
   eq "pair" (D # D') = pair(D, D') .
   eq "fst" (pair(D, D')) = D . 
   eq "snd" (pair(D, D')) = D' .
+endfm
+
+fmod CREOL-DATA-MAP is
+  protecting CREOL-DATA-SIG .
+  protecting MAP{Expr, Expr} * (sort Map{Expr, Expr} to ExprMap,
+				op undefined to udef,
+				op _|->_ to _|~>_ ) .
+
+  op map : ExprMap -> Expr .
+
+  var M : ExprMap .
+  vars D D' : Data .
+
+  eq "get" (map(M) # D) = M[D] .
+  eq "insert" (map(M) # D # D') = map(insert(D, D', M)) .
+
+  *** We have to carefully evaluate whether this makes things better or
+  *** worse.
+  sort DataMap .
+  subsort DataMap < ExprMap .
+
+  var DM : DataMap .
+
+  mb empty : DataMap .
+  mb (D |~> D') : DataMap .
+  --- mb (DM, D |~> D') : DataMap .
+  mb map(DM) : Data .
+
 endfm
 
 fmod CREOL-DATA-TIME is
@@ -338,22 +382,17 @@ fmod CREOL-DATA-TIME is
   *** Division et al. does not make any sense in this domain.
 endfm
 
-
-fmod DATA is 
+fmod CREOL-DATATYPES is
+  *** may easily keep various data types on separate file(s), 
+  *** and plug in upon need.
 
   extending CREOL-DATA-SIG .
   extending CREOL-DATA-INT .
   extending CREOL-DATA-FLOAT .
   extending CREOL-DATA-STRING .
-
-endfm  
-
-fmod CREOL-DATATYPES is
-  *** may easily keep various data types on separate file(s), 
-  *** and plug in upon need.
-  protecting DATA .
   extending CREOL-DATA-LIST .
   extending CREOL-DATA-SET .
+  extending CREOL-DATA-MAP .
   extending CREOL-DATA-PAIR .
 
 
