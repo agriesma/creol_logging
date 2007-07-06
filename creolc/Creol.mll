@@ -107,7 +107,7 @@ rule token = parse
     | ']' { RBRACK }
     | '^' { HAT }
     | '_' { UNDERSCORE }
-    | '`' { BACKTICK }
+    (* | '`' { BACKTICK } *)
 	(* lower case letters *)
     | '{' { LBRACE }
     | "|||" { MERGE }
@@ -136,7 +136,6 @@ rule token = parse
     | "extern" { EXTERN }
     | "false" { BOOL(false) }
     | "forall" { FORALL }
-    | "for" { FOR }
     | "history" { ID("history") (* XXX: Should be special *) }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
@@ -157,11 +156,9 @@ rule token = parse
     | "some" { SOME }
     | "then" { THEN }
     | "this" { ID("this") (* XXX: Should be special, too. *) }
-    | "to" { TO }
     | "true" { BOOL(true) }
     | "try" { reserved lexbuf }
     | "var" { VAR }
-    | "when" { WHEN }
     | "while" { WHILE }
     | "with" { WITH }
     | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }

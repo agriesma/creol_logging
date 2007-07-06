@@ -327,7 +327,6 @@ let emit out_channel input =
 	    print (lvl + 1) 25 b;
 	    output_string out_channel " end";
 	    do_indent lvl
-	| Statement.For _ -> assert false
 	| Statement.Sequence (_, s1, s2) -> 
 	    let op_prec = 25 in
 	    let nl = lvl + if prec < op_prec then 1 else 0 in
@@ -391,15 +390,6 @@ let emit out_channel input =
 	    output_string out_channel "{";
 	    pretty_print_expression_list a;
 	    output_string out_channel "}";
-	| Expression.Cast (_, e, c) ->
-	    open_paren prec 15; print 15 e ;
-	    output_string out_channel (" as " ^ (Type.as_string c)) ;
-	    close_paren prec 15
-	| Expression.Index (_, e, i) ->
-	    open_paren prec 15; print 15 e ;
-	    output_string out_channel "[" ; print 121 i ;
-	    output_string out_channel "]" ;
-	    close_paren prec 15
 	| Expression.FieldAccess(_, e, f) ->
 	    print 15 e; output_string out_channel ("`" ^ f)
 	| Expression.Unary (_, o, e) ->

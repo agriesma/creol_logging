@@ -122,10 +122,6 @@ sig
 	  (** A list literal expression, enumerating its elements. *)
       | SetLit of 'b * ('b, 'c) t list
 	  (** A set literal expression, enumerating its elements. *)
-      | Cast of 'b * ('b, 'c) t * 'c Type.t
-	  (** Re-type an expression.  Involves a run-time check *)
-      | Index of 'b * ('b, 'c) t * ('b, 'c) t
-	  (** Convenience for indexing a sequence/vector/array *)
       | FieldAccess of 'b * ('b, 'c) t * string
 	  (** Access the field of a structure. *)
       | Unary of 'b * unaryop * ('b, 'c) t
@@ -241,10 +237,6 @@ module Statement: sig
       | While of 'a * ('b, 'c) Expression.t * ('b, 'c) Expression.t option *
 	  ('a, 'b, 'c) t
 	  (** While loops. *)
-      | For of 'a * string * ('b, 'c) Expression.t * ('b, 'c) Expression.t *
-	  ('b, 'c) Expression.t option * ('b, 'c) Expression.t option *
-	  ('a, 'b, 'c) t
-	  (** For loop *)
       | Sequence of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	  (** Sequential composition *)
       | Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t

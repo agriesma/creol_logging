@@ -180,8 +180,6 @@ module Expression =
 	| Tuple of 'b * ('b, 'c) t list
 	| ListLit of 'b * ('b, 'c) t list
 	| SetLit of 'b * ('b, 'c) t list
-	| Cast of 'b * ('b, 'c) t * 'c Type.t
-	| Index of 'b * ('b, 'c) t * ('b, 'c) t
         | FieldAccess of 'b * ('b, 'c) t * string
 	| Unary of 'b * unaryop * ('b, 'c) t
 	| Binary of 'b * binaryop * ('b, 'c) t * ('b, 'c) t
@@ -303,8 +301,6 @@ module Expression =
 	| Tuple (a, _) -> a
 	| ListLit (a, _) -> a
 	| SetLit (a, _) -> a
-	| Cast (a, _, _) -> a
-	| Index (a, _, _) -> a
 	| FieldAccess (a, _, _) -> a
 	| Unary (a, _, _) -> a
 	| Binary (a, _, _, _) -> a
@@ -470,9 +466,6 @@ module Statement =
 	| If of 'a * ('b, 'c) Expression.t * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	| While of 'a * ('b, 'c) Expression.t * ('b, 'c) Expression.t option *
 	    ('a, 'b, 'c) t
-	| For of 'a * string * ('b, 'c) Expression.t * ('b, 'c) Expression.t *
-	    ('b, 'c) Expression.t option * ('b, 'c) Expression.t option *
-	    ('a, 'b, 'c) t
 	| Sequence of 'a * ('a, 'b, 'c) t  * ('a, 'b, 'c) t
 	| Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
 	| Choice of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
@@ -496,7 +489,6 @@ module Statement =
 	| Tailcall (a, _, _, _, _) -> a
 	| If (a, _, _, _) -> a
 	| While (a, _, _, _) -> a
-	| For (a, _, _, _, _, _, _) -> a
 	| Sequence(a, _, _) -> a
 	| Merge(a, _, _) -> a
 	| Choice(a, _, _) -> a
@@ -527,8 +519,6 @@ module Statement =
 	      If (a, c, normalize_sequences s1, normalize_sequences s2)
 	  | While (a, c, i, s) -> 
 	      While (a, c, i, normalize_sequences s)
-	  | For (a, v, st, en, sr, i, s) ->
-	      For (a, v, st, en, sr, i, normalize_sequences s)
 	  | Sequence (a, (Sequence _ as s1), (Sequence _ as s2)) ->
 	      append_to_sequence (normalize_sequences s1)
 		(normalize_sequences s2)
@@ -852,11 +842,6 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
       | While (a, c, Some i, b) ->
 	  While (a, lower_expression c, Some (lower_expression i),
 		lower_statement b)
-      | For (a, i, first, last, stride, inv, body) ->
-	  For (a, i, lower_expression first, lower_expression last,
-	      lower_expression_option stride,
-	      lower_expression_option inv,
-	      lower_statement body)
       | Sequence (a, s1, s2) ->
 	  let ls1 = lower_statement s1
 	  and ls2 = lower_statement s2 in
@@ -1053,7 +1038,6 @@ and definitions_in_statement note stm =
       | While (n, c, i, b) ->
 	  While ({ n with Note.env = note.Note.env }, c, i,
 		definitions_in_statement n b)
-      | For _ -> assert false
       | Sequence (n, s1, s2) ->
 	  let ns1 = (definitions_in_statement note s1) in
 	  let ns2 = (definitions_in_statement note s2) in
@@ -1140,7 +1124,6 @@ and uses_in_statement =
 	      (Statement.note ns2).Note.env },
 	     nc, ns1, ns2)
     | While (a, c, i, b) -> assert false
-    | For _ -> assert false
     | Sequence (a, s1, s2) ->
 	let ns1 = uses_in_statement s1
 	and ns2 = uses_in_statement s2 in

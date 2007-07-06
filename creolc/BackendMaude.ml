@@ -64,8 +64,6 @@ let emit ~options ~out_channel ~input =
 	  of_expression_list a;
 	  output_string out_channel " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
-      | Expression.Cast _ -> assert false
-      | Expression.Index _ -> assert false
       | Expression.FieldAccess(_, e, f) -> assert false (* XXX *)
       | Expression.Unary _ -> assert false
       | Expression.Binary _ -> assert false
@@ -76,6 +74,14 @@ let emit ~options ~out_channel ~input =
 	    ("new \"" ^ (Type.as_string c) ^ "\" ( ") ;
 	  of_expression_list a ;
 	  output_string out_channel " )"
+      | Expression.If (_, c, t, f) ->
+	output_string out_channel "(if " ;
+	of_expression c ;
+	output_string out_channel " th " ;
+	of_expression t ;
+	output_string out_channel " el " ;
+	of_expression f ;
+	output_string out_channel " fi)" ;
       | Expression.Extern _ -> assert false
   and of_expression_list =
     (** Compile a list of expressions into the Creol Maude Machine. *)
@@ -178,7 +184,6 @@ let emit ~options ~out_channel ~input =
 	    output_string out_channel " th "; print 25 t;
 	    output_string out_channel " el "; print 25 f;
 	    output_string out_channel " fi"
-	| Statement.For _ -> assert false (* Should have been expanded to while *)
 	| Statement.While (_, c, _, b) ->
 	    output_string out_channel "while " ;
 	    of_expression c;

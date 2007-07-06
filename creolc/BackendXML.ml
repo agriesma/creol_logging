@@ -1,7 +1,7 @@
 (*
- * CreolIO.ml -- Input and Output routines for Creol.
+ * BackendXML.ml -- Backend to XML
  *
- * This file is part of creolcomp
+ * This file is part of creoltools
  *
  * Written and Copyright (c) 2007 by Marcel Kyas
  *
@@ -357,6 +357,11 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  creol_statement_to_xml n ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
+      | Statement.Extern (a, s) ->
+	  XmlTextWriter.start_element writer "creol:extern" ;
+	  XmlTextWriter.write_attribute writer "symbol" s ;
+	  stmt_handler writer a ;
+	  XmlTextWriter.end_element writer
   and creol_vardecl_to_xml v =
     XmlTextWriter.start_element writer "creol:vardecl";
     XmlTextWriter.write_attribute writer "name" v.var_name;
@@ -378,6 +383,13 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
       | Expression.LhsAttr (_, n, c) ->
         XmlTextWriter.start_element writer "creol:attribute" ;
         XmlTextWriter.write_attribute writer "name" n ;
+        XmlTextWriter.end_element writer
+      | Expression.LhsWildcard (_, None) ->
+        XmlTextWriter.start_element writer "creol:wildcard" ;
+        XmlTextWriter.end_element writer
+      | Expression.LhsWildcard (_, Some c) ->
+        XmlTextWriter.start_element writer "creol:wildcard" ;
+	creol_type_to_xml c ;
         XmlTextWriter.end_element writer
   and creol_expression_to_xml =
     function
@@ -471,6 +483,19 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	    XmlTextWriter.start_element writer "expression" ;
 	    creol_expression_to_xml e ;
             XmlTextWriter.end_element writer ) es ;
+          XmlTextWriter.end_element writer ;
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.If (a, c, t, f) ->
+	  XmlTextWriter.start_element writer "creol:if" ;
+	  XmlTextWriter.start_element writer "creol:condition" ;
+	  creol_expression_to_xml c ;
+          XmlTextWriter.end_element writer ;
+	  XmlTextWriter.start_element writer "creol:then" ;
+	  creol_expression_to_xml t ;
+          XmlTextWriter.end_element writer ;
+	  XmlTextWriter.start_element writer "creol:else" ;
+	  creol_expression_to_xml f ;
           XmlTextWriter.end_element writer ;
 	  expr_handler writer a ;
           XmlTextWriter.end_element writer

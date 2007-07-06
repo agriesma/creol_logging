@@ -5,10 +5,9 @@
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
 %token WHILE VAR WITH OP IN OUT CONSTRUCTOR EXTERN
-%token REQUIRES ENSURES INV WHEN SOME FORALL EXISTS
+%token REQUIRES ENSURES INV SOME FORALL EXISTS
 %token IF THEN ELSE SKIP RELEASE AWAIT NEW
-%token FOR TO BY DO
-%token OF AS
+%token OF AS BY DO
 %token EXCEPTION
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token LBRACK RBRACK
@@ -18,7 +17,7 @@
 %token LBRACE RBRACE
 %token HASH QUESTION BANG DOTDOT DOT AT
 %token SUBTYPE SUPERTYPE DLRARROW
-%token DOLLAR PERCENT BACKTICK TICK
+%token DOLLAR PERCENT TICK
 %token BOX DIAMOND MERGE
 %token PLUS MINUS
 %token TIMESTIMES TIMES ARROW DARROW DIV EQ NE LT LE GT GE
@@ -361,11 +360,6 @@ basic_statement:
         { If((Note.make $startpos), e, t, f) }
     | IF e = expression THEN t = statement END
         { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
-    | FOR i = ID ASSIGN f = expression TO l = expression
-	b = ioption(preceded(BY,expression))
-	inv = ioption(preceded(INV, assertion))
-	DO s = statement END
-	{ For (Note.make $startpos, i, f, l, b, inv, s) }
     | WHILE c = expression inv = ioption(preceded(INV, assertion)) DO
 	s = statement END
 	{ While (Note.make $startpos, c, inv, s) }
@@ -436,14 +430,10 @@ expression:
 	{ Unary((Note.make $startpos), UMinus, e) }
     | HASH e = expression
 	{ Unary((Note.make $startpos), Length, e) }
-    | e = expression AS t = creol_type
-	{ Cast (Note.make $startpos, e, t) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall((Note.make $startpos), f, l) }
     | e = expression DOT i = ID
 	{ FieldAccess ((Note.make $startpos), e, i) }
-    | e = expression BACKTICK i = expression
-        { let n = Note.make $startpos in Index (n, e, i) }
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (Note.make $startpos, c, t, f) }
 
