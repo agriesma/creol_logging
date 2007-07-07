@@ -745,10 +745,6 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
       | FuncCall(a, f, args) -> FuncCall(a, f, List.map lower_expression args)
       | New (a, t, p) -> New (a, t, List.map lower_expression p)
       | t -> t
-  and lower_expression_option =
-    function
-	None -> None
-      | Some expr -> Some (lower_expression expr)
   and lower_statement =
     function
 	Skip _ as s -> s

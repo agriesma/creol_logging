@@ -52,6 +52,13 @@ let emit ~options ~out_channel ~input =
 	  output_string out_channel ("( \"" ^ a ^ "\" @@ \"");
 	  of_type c ;
 	  output_string out_channel "\" )"
+      | Expression.Tuple (_, l) ->
+	  (* XXX: The CMC does not distinguish tuples from pairs.  On
+	     the other hand, this is also conceptually bogus.  Can't
+	     tuples and list be identified? *)
+	  output_string out_channel "pair(" ;
+	  of_expression_list l ;
+	  output_string out_channel ")" ;
       | Expression.ListLit (_, l) ->
 	  output_string out_channel "list(" ;
 	  of_expression_list l ;
@@ -64,7 +71,6 @@ let emit ~options ~out_channel ~input =
 	  of_expression_list a;
 	  output_string out_channel " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
-      | Expression.FieldAccess(_, e, f) -> assert false (* XXX *)
       | Expression.Unary _ -> assert false
       | Expression.Binary _ -> assert false
       | Expression.Label(_, l) ->

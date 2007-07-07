@@ -421,6 +421,30 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  XmlTextWriter.write_attribute writer "value" v ;
 	  expr_handler writer a ;
           XmlTextWriter.end_element writer
+      | Expression.Tuple(a, l) ->
+	  XmlTextWriter.start_element writer "creol:tuple-literal" ;
+	  List.iter (function e ->
+	    XmlTextWriter.start_element writer "creol:element" ;
+	    creol_expression_to_xml e ;
+            XmlTextWriter.end_element writer ) l ;
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.ListLit(a, l) ->
+	  XmlTextWriter.start_element writer "creol:list-literal" ; 
+	  List.iter (function e ->
+	    XmlTextWriter.start_element writer "creol:element" ;
+	    creol_expression_to_xml e ;
+            XmlTextWriter.end_element writer ) l ;
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.SetLit(a, l) ->
+	  XmlTextWriter.start_element writer "creol:set-literal" ; 
+	  List.iter (function e ->
+	    XmlTextWriter.start_element writer "creol:element" ;
+	    creol_expression_to_xml e ;
+            XmlTextWriter.end_element writer ) l ;
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
       | Expression.Id (a, v) -> 
 	  XmlTextWriter.start_element writer "creol:identifier" ; 
 	  XmlTextWriter.write_attribute writer "name" v ;
@@ -527,6 +551,46 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  List.iter creol_type_to_xml l;
 	  type_handler writer a ;
           XmlTextWriter.end_element writer
+      | Type.Function (a, dom, rng) ->
+	  XmlTextWriter.start_element writer "creol:function-type" ; 
+	  XmlTextWriter.start_element writer "creol:domain" ; 
+	  List.iter creol_type_to_xml dom ;
+          XmlTextWriter.end_element writer ;
+	  XmlTextWriter.start_element writer "creol:range" ; 
+	  creol_type_to_xml rng ;
+          XmlTextWriter.end_element writer ;
+	  type_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Type.Structure (a, fields) ->
+	  XmlTextWriter.start_element writer "creol:structure-type" ; 
+	  List.iter (function x ->
+	    XmlTextWriter.start_element writer "creol:field" ;
+	    XmlTextWriter.write_attribute writer "name" x.Type.field_name ;
+	    creol_type_to_xml x.Type.field_type ;
+	    type_handler writer x.Type.field_note ;
+	    XmlTextWriter.end_element writer) fields ;
+	  type_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Type.Variant (a, fields) ->
+	  XmlTextWriter.start_element writer "creol:variabt-type" ; 
+	  List.iter (function x ->
+	    XmlTextWriter.start_element writer "creol:field" ;
+	    XmlTextWriter.write_attribute writer "name" x.Type.field_name ;
+	    creol_type_to_xml x.Type.field_type ;
+	    type_handler writer x.Type.field_note ;
+	    XmlTextWriter.end_element writer) fields ;
+	  type_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Type.Intersection (a, p) ->
+	  XmlTextWriter.start_element writer "creol:intersection" ; 
+	  List.iter creol_type_to_xml p ;
+	  type_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Type.Union (a, p) ->
+	  XmlTextWriter.start_element writer "creol:union" ; 
+	  List.iter creol_type_to_xml p ;
+	  type_handler writer a ;
+          XmlTextWriter.end_element writer	  
       | Type.Label (a, co, ins, outs) ->
 	  XmlTextWriter.start_element writer "creol:label" ; 
 	  XmlTextWriter.start_element writer "creol:cointerface" ; 
