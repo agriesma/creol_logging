@@ -42,11 +42,13 @@ let emit ~options ~out_channel ~input =
     function
 	Expression.Nil _ -> output_string out_channel "list(emp)"
       | Expression.Null _ -> output_string out_channel "null"
-      | Expression.Int (_, i) -> output_string out_channel ("int(" ^ (string_of_int i) ^ ")")
+      | Expression.Int (_, i) ->
+	  output_string out_channel ("int(" ^ (string_of_int i) ^ ")")
       | Expression.Float (_, f) -> assert false
       | Expression.Bool (_, false) -> output_string out_channel "bool(false)"
       | Expression.Bool (_, true) -> output_string out_channel "bool(true)"
-      | Expression.String (_, s) -> output_string out_channel ("str(\"" ^ s ^ "\")")
+      | Expression.String (_, s) ->
+	  output_string out_channel ("str(\"" ^ s ^ "\")")
       | Expression.Id (_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
       | Expression.StaticAttr (_, a, c) ->
 	  output_string out_channel ("( \"" ^ a ^ "\" @@ \"");
@@ -67,7 +69,8 @@ let emit ~options ~out_channel ~input =
 	  output_string out_channel "list(" ;
 	  of_expression_list l ; (* Hope to overload # for set in maude *)
 	  output_string out_channel ")" ;
-      | Expression.FuncCall(_, f, a) -> output_string out_channel ("\"" ^ f ^ "\" ( " );
+      | Expression.FuncCall(_, f, a) ->
+	  output_string out_channel ("\"" ^ f ^ "\" ( " );
 	  of_expression_list a;
 	  output_string out_channel " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
@@ -157,14 +160,16 @@ let emit ~options ~out_channel ~input =
 	    output_string out_channel ("( \"" ^ l ^ "\" ? ( ") ;
 	    of_lhs_list o;
 	    output_string out_channel " ) ) "
-	| Statement.Free (_, l) -> output_string out_channel ("free( \"" ^ l ^ "\" )")
+	| Statement.Free (_, l) ->
+	    output_string out_channel ("free( \"" ^ l ^ "\" )")
 	| Statement.LocalSyncCall _ -> assert false
 	| Statement.AwaitLocalSyncCall _ -> assert false
 	| Statement.LocalAsyncCall (_, None, _, _, _, _) -> assert false
 	| Statement.LocalAsyncCall (_, Some l, m, None, None, i) ->
 	    (* An unqualified local synchronous call should use this in
 	       order to get late binding correct. *)
-	    output_string out_channel ("( \"" ^ l ^ "\" ! \"this\" . \"" ^ m ^ "\" (");
+	    output_string out_channel ("( \"" ^ l ^ "\" ! \"this\" . \"" ^
+					  m ^ "\" (");
 	    of_expression_list i;
 	    output_string out_channel " ) ) "
 	| Statement.LocalAsyncCall (_, Some l, m, lb, ub, i) ->
@@ -180,8 +185,12 @@ let emit ~options ~out_channel ~input =
 	    output_string out_channel " ) ) "
 	| Statement.Tailcall (_, m, l, u, i) ->
 	    output_string out_channel ( "\"" ^ m ^ "\"");
-	    (match l with None -> () | Some n -> output_string out_channel (" @ \"" ^ n ^ "\""));
-	    (match u with None -> () | Some n -> output_string out_channel (" << \"" ^ n ^ "\""));
+	    (match l with
+		None -> ()
+	      | Some n -> output_string out_channel (" @ \"" ^ n ^ "\""));
+	    (match u with
+		None -> ()
+	      | Some n -> output_string out_channel (" << \"" ^ n ^ "\""));
 	    output_string out_channel " ( " ;
 	    of_expression_list i;
 	    output_string out_channel " )"
@@ -256,7 +265,8 @@ let emit ~options ~out_channel ~input =
     function
 	[] -> output_string out_channel "noSubst" 
       | [v] -> output_string out_channel ("\"" ^ v.var_name ^ "\" |-> null")
-      | v::r -> output_string out_channel ("\"" ^ v.var_name ^ "\" |-> null , ");
+      | v::r ->
+	  output_string out_channel ("\"" ^ v.var_name ^ "\" |-> null , ");
 	  of_class_attribute_list r
   and of_method_return =
     function
@@ -265,7 +275,8 @@ let emit ~options ~out_channel ~input =
       | n::l -> output_string out_channel ("\"" ^ n.var_name ^ "\" # ");
           of_method_return l
   and of_method cls m =
-    output_string out_channel ("\n  < \"" ^ m.meth_name ^ "\" : Mtdname | Param: ");
+    output_string out_channel ("\n  < \"" ^ m.meth_name ^
+				  "\" : Mtdname | Param: ");
     of_parameter_list m.meth_inpars;
     output_string out_channel ", Latt: " ;
     of_class_attribute_list (m.meth_inpars @ m.meth_outpars @ m.meth_vars);
@@ -334,7 +345,12 @@ let emit ~options ~out_channel ~input =
     output_string out_channel ".\nendm\n" ;
     if options.modelchecker then
       begin
-	output_string out_channel "\n\nmod PROGRAM-CHECKER is\n  protecting MODEL-CHECKER .\n  protecting PROGRAM .\n  protecting CREOL-PREDICATES .\nendm\n"
+	output_string out_channel
+	  ("\n\nmod PROGRAM-CHECKER is\n" ^
+	      "  protecting MODEL-CHECKER .\n" ^
+	      "  protecting PROGRAM .\n" ^
+	      "  protecting CREOL-PREDICATES .\n" ^
+	      "endm\n")
       end ;
     if options.red_init then output_string out_channel "\nred init .\n" ;
     flush out_channel
