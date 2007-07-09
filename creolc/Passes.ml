@@ -41,6 +41,11 @@ let passes = [
     dependencies = [];
     pass = CreolTyping.typecheck;
     elapsed = 0.0; needed = true; dump = false } );
+  ( "lower" ,
+  { help = "Expand statements to Core Creol" ;
+    dependencies = [];
+    pass = CreolTyping.typecheck;
+    elapsed = 0.0; needed = true; dump = false } );
   ( "dataflow" ,
   { help = "Compute data flow." ;
     dependencies = [];
@@ -152,8 +157,10 @@ let execute_dump name pass tree =
     with
 	Not_found -> s
   in
+  let file = ((basename name)  ^ "." ^ pass) in
   let ign a b = () in
-    BackendXML.emit ((basename name)  ^ "." ^ pass) Note.to_xml ign ign tree
+    Messages.message 1 ("Writing dump to " ^ file) ;
+    BackendXML.emit file Note.to_xml ign ign tree
 
 
 let execute_passes filename tree =
