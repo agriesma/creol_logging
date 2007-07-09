@@ -1,4 +1,6 @@
-## Makefile.am - Use automake to create Makefile.in
+#! /bin/sh
+#
+# menhir-sh -- Replacement for a missing menhir binary.
 #
 # This file is part of creoltools
 #
@@ -19,15 +21,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 #
-DISTCHECK_CONFIGURE_FLAGS = --disable-make-install
+cat 1>&2 <<EOF
+ERROR: menhir is needed, but is not installed.
 
-# Subdirs
-DIST_SUBDIRS		= maude-mode creol-mode share info creolc tests
-SUBDIRS			= ${MAUDE_MODE} ${CREOL_MODE} share info creolc tests
-
-MOSTLYCLEANFILES	= *~
-MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
-			  depcomp elisp-comp missing install-sh
-
-bin_SCRIPTS		= creolshell creolbug
-dist_noinst_SCRIPTS	= maude-sh menhir-sh
+You should only need it if you modified a \`.mly' file.
+You can get \`menhir' from <http://cristal.inria.fr/~fpottier/menhir/>
+or from <http://godi.ocaml-programming.de/> to compile the creoltools.  If
+you use godi, the godi_console can help you in installing menhir.
+EOF
+exit 2

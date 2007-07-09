@@ -19,7 +19,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_INIT([Creol Tools], 0.0e, kyas@ifi.uio.no, [creoltools])
+AC_INIT([Creol Tools], 0.0f, kyas@ifi.uio.no, [creoltools])
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.ml])
@@ -27,7 +27,7 @@ AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_PROG_MAKE_SET
 
 dnl Record the date of release
-RELEASE_DATE='2007-06-22'
+RELEASE_DATE='2007-07-09'
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.
@@ -47,42 +47,22 @@ godi distribution from <http://godi.ocaml-programming.de/> to satisfy
 this dependency.
 ])
 fi
-AC_CHECK_PROG([OCAMLLEX], [ocamllex], [ocamllex], [])
-if test -z "$OCAMLLEX"
-then
-    AC_MSG_ERROR([ocamllex cannot be found.
 
-You have to install the ocaml from <http://caml.inria.fr/> or
-<http://godi.ocaml-programming.de/> to compile the creoltools.  If you have
-godi installed, then ocamllex should be installed, too.
-])
-fi
-AC_CHECK_PROG([MENHIR], [menhir], [menhir], [])
-if test -z "$MENHIR"
-then
-    AC_MSG_ERROR([menhir cannot be found.
+dnl If this test fails, we are on a platform which we do not support,
+dnl because ocamllex is part of the ocaml distribution, and ocamlfind
+dnl should depend on ocaml and friends!
+AC_CHECK_PROGS([OCAMLLEX], [ocamllex.opt ocamllex],
+	      ['${top_srcdir}/missing ocamllex'])
 
-You have to install menhir from <http://cristal.inria.fr/~fpottier/menhir/>
-or from <http://godi.ocaml-programming.de/> to compile the creoltools.  If
-you use godi, the godi_console can help you in installing menhir.
-])
-fi
+AC_CHECK_PROG([MENHIR], [menhir], [menhir],
+	      ['${top_srcdir}/menhir-sh'])
 
 dnl For documentation.
-AC_CHECK_PROG([DOT], [dot], [dot], [missing])
+AC_CHECK_PROG([DOT], [dot], [dot], ['${top_srcdir}/missing dot'])
 
-AC_ARG_WITH([maude],
-    AS_HELP_STRING([--with-maude=name],
-       [Whether to use maude and which binary to use.]),
-    [if test "x$with_maude" = "xyes" ; then 
-       AC_CHECK_PROG([MAUDE], [maude], [maude], [:])
-     elif test "x$with_maude" = "x$no" ; then
-       MAUDE="${top_srcdir}/missing maude"
-     else
-       MAUDE=$with_maude
-     fi],
-[AC_CHECK_PROGS([MAUDE], [maude maude.linux maude.darwin],
-		[${top_srcdir}/missing maude])])
+dnl Check for maude.
+AC_CHECK_PROGS([MAUDE], [maude.linux maude.darwin maude],
+	       [${top_srcdir}/maude-sh])
 
 # Check whether the maude we found is usable.
 if (${MAUDE} --version >/dev/null 2>&1 || exit)

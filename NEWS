@@ -1,4 +1,4 @@
-creoltools 0.0e (2007-XX-XX): alpha release.
+creoltools 0.0f (2007-07-09): alpha release.
 
 Please read the news for this release carefully, since the way creoltools
 are build has been changed.
@@ -10,7 +10,8 @@ In the language:
   operators.  A static access to an attribute is written as
   a@C.  The conflict arises after the sequence m@C{.,(}
 * a@C is a left hand side operator now.
-* The grammar for function and tuple types has been changed.
+* The grammar for type variables, function types, and tuple types
+  has been changed.
 * Interfaces may a list of with_block declaration.
 
 In the compiler:
@@ -21,6 +22,7 @@ In the compiler:
 * Proper left hand side constructors are now defined.
 * normalize_sequences will convert all sequences into a right-threaded
   format.
+* Many cleanups have been integrated.
 
 In the interpreter and model checker:
 * The interpreter and the model checker have been optimized.  They run
