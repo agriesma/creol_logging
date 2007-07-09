@@ -13,21 +13,28 @@ A unix shell and assorted shell utilities, for example, sed.
 
 Objective Caml 3.09 <http://caml.inria.fr/ocaml/index.en.html>.
 
-findlib <http://www.ocaml-programming.de/packages/>
+ocaml-libxml2 from <http://heim.ifi.uio.no/~kyas/creoltools/>
+and its dependencies.
+
+findlib <http://www.ocaml-programming.de/packages/>.
 
 If you want to edit the file Creol.mly, you will also need
 menhir <http://cristal.inria.fr/~fpottier/menhir/> to rebuild the
 parser.
 
+Automake and autoconf are needed, if you need to edit the configure
+script or the Makefiles.
+
 The dependencies mentioned so far can also be obtained from
 the GODI project <http://godi.ocaml-programming.de/>, but some
 linux distributions may provide the needed packages, too.
 
-A C compiler for building native binaries, the compiler will be called by
-ocaml.
+maude <http://maude.cs.uiuc.edu/> is useful to execute the result of
+the compilation.  A version of the Creol interpreter is included.
 
-maude <http://maude.cs.uiuc.edu/> is useful to execute the result of the
-compilation.  A version of the interpreter is included.
+If you checked the project out of the subversion repository, please
+read README-svn carefully for an explanation on how to set up the
+project.
 
 Basic Installation
 ==================
