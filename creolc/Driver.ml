@@ -136,19 +136,15 @@ let main () =
     ("-W",
      Arg.Set_string (ref ""),
      " [name]   Disable the warning.  [name]s are the same as for `-w'");
-    ("-d",
-     Arg.Set_string (ref ""),
-     "  Dump tree after [name] to out.[name].  [name]s are identical to `-p'");
     ("-p",
-     Arg.Set_string (ref ""),
-     "[name]   Enable the pass:\n" ^
-     "    all        All passes described below\n" ^
-     "    lifeness   Determine if variables are life or not\n" ^
-     "    deadvars   Eliminate dead variables\n" ^
-     "    tailcall   Optimize tail calls");
+     Arg.String Passes.enable,
+     "{name ,}  Enable passes:\n" ^ (Passes.help ()));
     ("-P",
-     Arg.Set_string (ref ""),
+     Arg.String Passes.disable,
      "  Disable the pass [name].  [name]s are the same as for `-t'");
+    ("-d",
+     Arg.String Passes.dump_after,
+     "  Dump tree after [name] to out.[name].  [name]s are identical to `-p'");
     ("-times",
      Arg.Unit (function () -> times := true),
      "  Print timing information");

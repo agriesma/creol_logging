@@ -24,6 +24,7 @@
 open Creol
 
 type pass = {
+  help: string;
   dependencies: string list;
   pass: (Note.t, Note.t, Note.t) Declaration.t list ->
 			     (Note.t, Note.t, Note.t) Declaration.t list;
@@ -36,22 +37,39 @@ type pass = {
 (** An association list collecting the passes in order. *)
 let passes = [
   ( "typecheck" ,
-  { dependencies = [];
+  { help = "Check for type consistency" ;
+    dependencies = [];
     pass = CreolTyping.typecheck;
     elapsed = 0.0; needed = true; dump = false } );
   ( "dataflow" ,
-  { dependencies = [];
+  { help = "Compute data flow." ;
+    dependencies = [];
     pass = find_definitions;
     elapsed = 0.0; needed = true; dump = false } ) ;
   ( "dead-vars" ,
-  { dependencies = ["dataflow"];
+  { help = "Eliminate dead variables and values." ;
+    dependencies = ["dataflow"];
     pass = find_definitions;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "tailcall" ,
-  { dependencies = [];
+  { help = "Optimise tail-calls." ;
+    dependencies = [];
     pass = optimise_tailcalls;
     elapsed = 0.0; needed = false; dump = false } );
 ]
+
+let help () =
+  let pass_help_line current ps =
+    let name = fst ps
+    and help = (snd ps).help
+    in
+      current ^ "    " ^ name ^
+	(String.make (11 - String.length name) ' ') ^
+	help ^ "\n"
+  in
+    (List.fold_left pass_help_line "" passes) ^
+      "    all        all passes mentioned above."
+
 
 (** Enable passes.
 
@@ -59,7 +77,7 @@ let passes = [
     enables each pass in this list, as well as its dependencies.
 
     May raise Arg.Bad if an undefined pass is provided.  *)
-let enable_passes arg =
+let enable arg =
   let rec enable_pass s =
     let slot = try
 	List.assoc s passes
@@ -85,7 +103,7 @@ let enable_passes arg =
 
     This function will not try to maintain dependencies, so use at your
     own risk.  *)
-let disable_passes arg =
+let disable arg =
   let disable_pass s =
     let slot = try
 	List.assoc s passes
@@ -107,7 +125,7 @@ let disable_passes arg =
 
     This function will not try to maintain dependencies, so use at your
     own risk.  *)
-let dump_passes arg =
+let dump_after arg =
   let dump_pass s =
     let slot = try
 	List.assoc s passes
