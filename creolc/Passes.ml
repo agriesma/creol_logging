@@ -188,11 +188,13 @@ let report_timings () =
   let total = ref 0.0 in
   let rec report =
     function
-	[] -> prerr_endline ("Total: ...................................... " ^
-			     (string_of_float !total) ^ " msec.\n");
+	[] -> prerr_endline ("Total: ................................. " ^
+			     (string_of_float !total) ^ " ms\n");
       | p::r ->
-	  prerr_endline (" " ^ (String.make (38 - String.length (fst p)) '.') ^
-			 " " ^ (string_of_float (snd p).elapsed) ^ " msec.");
+	  if (snd p).needed then
+	    prerr_endline ((fst p) ^ ": " ^
+			   (String.make (38 - String.length (fst p)) '.') ^
+			   " " ^ (string_of_float (snd p).elapsed) ^ " ms");
 	  total := !total +. (snd p).elapsed ; report r
   in
     report passes ;
