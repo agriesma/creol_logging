@@ -138,7 +138,7 @@ module Type =
     let rec as_string =
       function
 	  Basic (_, s) -> s
-	| Variable (_, s) -> "'" ^ s
+	| Variable (_, s) -> "`" ^ s
 	| Application (_, s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Tuple (_, p) ->

@@ -88,25 +88,30 @@ let emit out_channel input =
     output_string out_channel "end"
   and pretty_print_class c =
     output_string out_channel ("class " ^ c.Class.name ^ " ") ;
-    ( match c.Class.parameters with
-	[] -> ()
-      | l -> output_string out_channel "(";
-	  pretty_print_vardecls 0 "" ", " "" l;
-	  output_string out_channel ")" ) ;
-    ( match c.Class.inherits with
-	[] -> ()
-      | l -> output_string out_channel "\ninherits ";
-	  separated_list pretty_print_inherits
-	    (function () -> output_string out_channel ", ") l) ;
-    ( match c.Class.contracts with
-	[] -> ()
-      | l -> output_string out_channel "\ncontracts " );
+    if [] <> c.Class.parameters then
+      begin
+	output_string out_channel "(";
+	pretty_print_vardecls 0 "" ", " "" c.Class.parameters ;
+	output_string out_channel ")"
+      end ;
     if [] <> c.Class.implements then
       begin
 	output_string out_channel "\nimplements " ;
 	separated_list (output_string out_channel)
-	  (function () -> output_string out_channel ", ") c.Class.implements;
+	  (function () -> output_string out_channel ", ") c.Class.implements
       end;
+    if [] <> c.Class.contracts then
+      begin
+	output_string out_channel "\ncontracts " ;
+	separated_list (output_string out_channel)
+	  (function () -> output_string out_channel ", ") c.Class.implements
+      end;
+    if [] <> c.Class.inherits then
+      begin
+	output_string out_channel "\ninherits ";
+	separated_list pretty_print_inherits
+	  (function () -> output_string out_channel ", ") c.Class.inherits 
+      end ;
     do_indent 0;
     output_string out_channel "begin";
     if [] <> c.Class.attributes then

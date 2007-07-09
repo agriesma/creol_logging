@@ -17,7 +17,7 @@
 %token LBRACE RBRACE
 %token HASH QUESTION BANG DOTDOT DOT AT
 %token SUBTYPE SUPERTYPE DLRARROW
-%token DOLLAR PERCENT TICK
+%token DOLLAR PERCENT TICK BACKTICK
 %token BOX DIAMOND MERGE
 %token PLUS MINUS
 %token TIMESTIMES TIMES ARROW DARROW DIV EQ NE LT LE GT GE
@@ -33,7 +33,6 @@
 (* %left COMMA *)
 (* %left BAR *)
 %left IN
-%left AS
 %left DLRARROW
 %left DARROW
 %left HAT
@@ -51,7 +50,6 @@
 %left TIMES DIV PERCENT
 %left TIMESTIMES
 %right UMINUS HASH
-%right BACKTICK
 %left DOT
 (* %right CID *)
 
@@ -118,9 +116,9 @@ declaration:
 classdecl:
       CLASS n = CID;
         p = loption(delimited(LPAREN, separated_nonempty_list(COMMA, vardecl_no_init), RPAREN))
-	i = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
-	c = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, CID)))
 	j = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, CID)))
+	c = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, CID)))
+	i = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
 	BEGIN a = loption(attributes)
         aw = ioption(anon_with_def) m = list(with_def) END {
       { Class.name = n; Class.parameters = p; Class.inherits = i;
@@ -470,7 +468,7 @@ creol_type:
 	{ Type.Basic (Note.make $startpos, t) }
     | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Application(Note.make $startpos, t, p) } 
-    | TICK v = ID
+    | BACKTICK v = ID
 	{ Type.Variable (Note.make $startpos, v) }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type)
       r = ioption(preceded(ARROW, creol_type)) RBRACK

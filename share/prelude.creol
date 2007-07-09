@@ -82,26 +82,26 @@ begin
   op >= (a: String, b: String): Bool == extern ">="
 end
 
-datatype List['a]
+datatype List[`a]
 begin
 
-  op head(l: List['a]): 'a == extern "head"
-  op tail(l: List['a]): List['a] == extern "tail"
-  op last(l: List['a]): 'a == extern "last"
-  op rest(l: List['a]): List['a] == extern "rest"
-  op remove(l: List['a], e: 'a): List['a] == extern "remove"
-  op -|(e: 'a, l: List['a]): List['a] == extern "-|"
-  op |-(l: List['a], e: 'a): List['a] == extern "|-"
-  op |-|(l: List['a], m: List['a]): List['a] == extern "|-|"
-  op #(l: List['a]): Int == extern "length"
-  op length(l: List['a]): Int == extern "length"
-  op isempty(l: List['a]): Bool == extern "isempty"
+  op head(l: List[`a]): `a == extern "head"
+  op tail(l: List[`a]): List[`a] == extern "tail"
+  op last(l: List[`a]): `a == extern "last"
+  op rest(l: List[`a]): List[`a] == extern "rest"
+  op remove(l: List[`a], e: `a): List[`a] == extern "remove"
+  op -|(e: `a, l: List[`a]): List[`a] == extern "-|"
+  op |-(l: List[`a], e: `a): List[`a] == extern "|-"
+  op |-|(l: List[`a], m: List[`a]): List[`a] == extern "|-|"
+  op #(l: List[`a]): Int == extern "length"
+  op length(l: List[`a]): Int == extern "length"
+  op isempty(l: List[`a]): Bool == extern "isempty"
 
   // More to come.
 
 end
 
-datatype Set['a]
+datatype Set[`a]
 begin
 
   // More to come.
@@ -110,7 +110,7 @@ end
 
 datatype Pair
 begin
-  op pair(a: 'a, b: 'b): ['a, 'b] == extern "pair"
-  op fst (a: ['a, 'b]): 'a == extern "fst"
-  op snd (a: ['a, 'b]): 'b == extern "snd"
+  op pair(a: `a, b: `b): [`a, `b] == extern "pair"
+  op fst (a: [`a, `b]): `a == extern "fst"
+  op snd (a: [`a, `b]): `b == extern "snd"
 end

@@ -107,7 +107,7 @@ rule token = parse
     | ']' { RBRACK }
     | '^' { HAT }
     | '_' { UNDERSCORE }
-    (* | '`' { BACKTICK } *)
+    | '`' { BACKTICK }
 	(* lower case letters *)
     | '{' { LBRACE }
     | "|||" { MERGE }

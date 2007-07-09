@@ -553,10 +553,11 @@ declaration ::=
 
 class-decl ::=
     @code{class} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]
-    [@code{inherits} @{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} ]
     [@code{implements} @{ cid @code{,} @} ]
     [@code{contracts} @{ cid @code{,} @} ]
-    @code{begin} @{ @code{var} var-decl @} [ anon-with-def ] @{ with-def @}
+    [@code{inherits} @{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} ]
+    @code{begin} @{ @code{var} var-decl @}
+    [ anon-with-def ] @{ with-def @}
     @code{end}
 
 interface-decl ::=
@@ -590,11 +591,8 @@ with-def ::=
 op-def ::=
     op-decl @code{==} @{ @code{var} var-decl @code{;} @} statement
 
-constructor ::=
-    @code{constructor} cid [ @code{(} @{ type @code{,} @code{)} ] @code{:} cid
-
 function ::=
-    @code{function} id @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{==} expression
+    @code{op} id @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expression | @code{extern} string )
 
 statement ::=
     choice-statement [ @code{|||} statement ]
@@ -603,56 +601,35 @@ choice-statement ::=
     seq-statement [ @code{[]} choice-statement ]
 
 seq-statement ::=
-    @{ basic-statement @code{;} @}
+    basic-statement [ @code{;} seq-statement ]
 
 basic-statement ::=
     @code{skip}
-  | @{ id @code{,} @} @code{:=} @{ expr-or-new @code{,} @}
-  | @code{await} guard
+  | @{ lhs @code{,} @} @code{:=} @{ expr-or-new @code{,} @}
+  | @code{release}
+  | @code{await} expr
   | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)}
-  | [ id ] @code{!} id [ @code{@@} cid ] [ @code{<<} cid ] @code{(} @{ expr @code{,} @} @code{)}
-  | id @code{?} @code{(}  @{ id @code{,} @} @code{)}
-  | expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ id @code{,} @} @code{)}
-  | id [@code{@@} cid] [ @code{<<} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ id @code{,} @} @code{)}
+  | [ id ] @code{!} id [ @code{<:} cid ] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{)}
+  | id @code{?} @code{(}  @{ lhs @code{,} @} @code{)}
+  | [ @code{await} ] expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)}
+  | [ @code{await} ] id [@code{<:} cid] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)}
   | @code{begin} statement @code{end}
   | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
-  | @code{case} expr @code{of} @{ case-stmt @code{|} @} @code{end}
-  | @code{case} id @code{when} @{ type-case-stmt @code{|} @} @code{end}
-  | @code{raise} cid [ @code{(} @{ expr @code{,} @} @code{)} ]
-  | @code{try} statement @code{with} @{ catch-stmt @code{|} @} @code{end}
-  | @code{for} id @code{:=} expression @code{to} expression
-      [ @code{by} expression ] [ @code{inv} assertion ] @code{do} statement @code{end}
   | @code{assert} assertion
-
-case-stmt ::=
-    pattern [ @code{when} expression ] @code{->} statement
-
-type-case-stmt ::=
-    (type | @code{_}) @code{->} statement
-
-catch-stmt ::=
-    ( ( cid [ @code{(} @{ id @code{,} @} @code{)} ] ) | @code{_} ) @code{->} statement
-
-guard ::=
-    id @code{?} [ @code{&} guard ] | expression
 
 expr-or-new ::=
     @code{new} cid @code{(} @{ expr @code{,} @} @code{)}
   | expr
 
 expr ::=
-    @code{true} | @code{false} | integer | float | string | @code{nil} | @code{null} | id
+    @code{true} | @code{false} | integer | float | string | @code{nil} | @code{null} | id [ (@code{?} | @code{@@} type) ]
   | @code{(} @{ expr @code{,} @} @code{)}
   | @code{[} @{ expr @code{,} @} @code{]}
   | @code{@{} @{ expr @code{,} @} @code{@}}
   | @code{@{} id @code{:} expr @code{|} expr @code{@}}
-  | unaryop expr | expr binop expr | expr @code{as} type
-  | id @code{(} @{ expr @code{,} @} @code{)} | expr @code{`} id
+  | unaryop expr | expr binop expr
+  | id @code{(} @{ expr @code{,} @} @code{)} | expr @code{.} id
   | @code{if} expr @code{then} expr @code{else} expr @code{end}
-  | @code{case} expr @code{of} @{ case-expr @code{|} @} @code{end}
-  | @code{case} expr @code{when} @{ type-case-expr @code{|} @} @code{end}
-  | @code{raise} cid [ @code{(} @{ expr @code{,} @} @code{)} ]
-  | @code{try} expr @code{with} @{ catch-expr @} @code{end}
 
 unaryop ::= @code{not} | @code{-} | @code{#}
 
@@ -660,26 +637,6 @@ binop ::=
     @code{+} | @code{-} | @code{*} | @code{/} | @code{=} | @code{<} | @code{>} |
     @code{<=} | @code{>=} | @code{and} | @code{&} | @code{&&} | @code{/\} |
     @code{or} | @code{|} | @code{||} | @code{\/} | @code{|-} | @code{|-|} | @code{-|} | @code{\}
-
-case-expr ::=
-    pattern [ @code{when} expression ] @code{->} expression
-
-type-case-expr ::=
-    (type | @code{_}) @code{->} expr
-
-catch-expr ::=
-    ( ( cid [ @code{(} @{ id @code{,} @} @code{)} ] ) | @code{_} ) @code{->} statement
-
-pattern ::=
-    id
-  | @code{_}
-  | pattern @code{as} id
-  | @code{(} pattern @code{)}
-  | cid pattern
-  | pattern @code{|} pattern
-  | pattern @code{,} pattern
-  | pattern @code{|-} pattern
-  | pattern @code{-|} pattern
 
 type ::=
     cid [ @code{[} @{ type , @} @code{]} ]

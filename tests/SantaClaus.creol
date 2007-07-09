@@ -119,8 +119,8 @@ with SantaClausE
 end
 
 class LeaderElfC(sc:SantaClaus, elves: List)
-	inherits ElfC
 	implements Elf
+	inherits ElfC
 begin
   op run == run:>ElfC(;)
   op work ==
