@@ -25,7 +25,7 @@ open Creol
 
 type pass = {
   help: string;
-  dependencies: string list;
+  dependencies: string;
   pass: (Note.t, Note.t, Note.t) Declaration.t list ->
 			     (Note.t, Note.t, Note.t) Declaration.t list;
   mutable elapsed: float;
@@ -38,27 +38,27 @@ type pass = {
 let passes = [
   ( "typecheck" ,
   { help = "Check for type consistency" ;
-    dependencies = [];
+    dependencies = "";
     pass = CreolTyping.typecheck;
     elapsed = 0.0; needed = true; dump = false } );
   ( "lower" ,
   { help = "Expand statements to Core Creol" ;
-    dependencies = [];
+    dependencies = "";
     pass = CreolTyping.typecheck;
     elapsed = 0.0; needed = true; dump = false } );
   ( "dataflow" ,
   { help = "Compute data flow." ;
-    dependencies = [];
+    dependencies = "lower";
     pass = find_definitions;
-    elapsed = 0.0; needed = true; dump = false } ) ;
+    elapsed = 0.0; needed = false; dump = false } ) ;
   ( "dead-vars" ,
   { help = "Eliminate dead variables and values." ;
-    dependencies = ["dataflow"];
+    dependencies = "dataflow";
     pass = find_definitions;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "tailcall" ,
   { help = "Optimise tail-calls." ;
-    dependencies = [];
+    dependencies = "lower";
     pass = optimise_tailcalls;
     elapsed = 0.0; needed = false; dump = false } );
 ]
@@ -82,15 +82,14 @@ let help () =
     enables each pass in this list, as well as its dependencies.
 
     May raise Arg.Bad if an undefined pass is provided.  *)
-let enable arg =
-  let rec enable_pass s =
+let rec enable arg =
+  let enable_pass s =
     let slot = try
 	List.assoc s passes
       with
 	  Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
     in
-      slot.needed <- true ;
-      List.iter enable_pass slot.dependencies
+      slot.needed <- true ; enable slot.dependencies
   in
     if arg <> "all" then
       List.iter enable_pass (Str.split (Str.regexp "[, \t]+") arg)

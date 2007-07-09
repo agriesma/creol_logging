@@ -814,10 +814,10 @@ let lower ~input ~copy_stmt_note ~expr_note_of_stmt_note ~copy_expr_note =
 	  let smv = lower_method_variables (Statement.note mb) m.meth_vars in
 	    { m with meth_vars = fst smv ;
 	      meth_body = Some( if Statement.is_skip (snd smv) then
-		lower_statement mb
+		normalize_sequences (lower_statement mb)
 		else
 		  Sequence(Statement.note mb, snd smv,
-			  lower_statement mb)) }
+			  normalize_sequences (lower_statement mb))) }
   and lower_with w =
     { w with With.methods = List.map lower_method w.With.methods }
   and lower_inherits =
