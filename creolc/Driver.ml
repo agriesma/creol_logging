@@ -130,11 +130,11 @@ let main () =
      Arg.Unit (function () -> verbose := true),
      "  Print some information while processing");
     ("-w",
-     Arg.Set_string (ref ""),
+     Arg.String Messages.enable,
      "[name]   Enable warning:\n" ^
      "    all        Enable all warnings");
     ("-W",
-     Arg.Set_string (ref ""),
+     Arg.String Messages.disable,
      " [name]   Disable the warning.  [name]s are the same as for `-w'");
     ("-p",
      Arg.String Passes.enable,

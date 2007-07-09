@@ -21,64 +21,75 @@
  * 02111-1307, USA.
  *)
 
+(** The amount of noise the user wants to see. *)
 let verbose = ref 0
 
+(** Print a message, if the compiler is instructed to be noisy. *)
 let message lvl msg = if !verbose > lvl then prerr_endline msg
 
+
+(** Write an error message. *)
 let error file line message =
-  prerr_endline (file ^ ":" ^ (string_of_int line) ^ ": " ^ message)
+  prerr_endline (file ^ ":" ^ (string_of_int line) ^ ": " ^ message) ;
+  flush stderr
 
-let unused = "unused"
-let undefined = "undefined"
 
-type warning = {
-  name: string;
-  help: string;
-  mutable enabled: bool;
-}
+(** The different kinds of warning we want to have *)
+type warning =
+    Unused
+    | Undefined
 
-let warnings = [
-  { name = unused;
-    help = "Warn if a variable is defined but not used";
-    enabled = true };
-  { name = undefined;
-    help = "Warn if a variable may be used without being defined";
-    enabled = true }
-]
+(** Map a warning to its name *)
+let string_of_warning =
+  function
+      Unused -> "unused"
+    | Undefined -> "undefined"
 
-module WarningMap = Map.Make(String)
+(** Map a string representing a warning name to a warning.  May raise
+    a pattern matching exception. *)
+let warning_of_string =
+  function
+      "usused" -> Unused
+    | "undefined" -> Undefined
+    | s -> raise (Arg.Bad ("unknown waring `" ^ s ^ "'"))
 
-let init () =
-  let rec do_init map =
-    function
-	[] -> map
-      | a::r -> WarningMap.add a.name a (do_init map r)
+
+(** A list of enabled warnings. *)
+let enabled = ref []
+
+
+(** Enable a list of warnings *)
+let enable arg =
+  let enable_warning s =
+    let w = warning_of_string s in
+      if not (List.mem w !enabled) then
+	enabled := w::(!enabled)
   in
-    do_init WarningMap.empty warnings
+    if arg <> "all" then
+      List.iter enable_warning (Str.split (Str.regexp "[, \t]+") arg)
+    else
+      (* Enable all *)
+      enabled := [ Unused ; Undefined ]
 
-let warnings = init ()
-  (** This is the map of all warnings *)
-
-let enable_warning name =
-  let setting = WarningMap.find name warnings in
-    setting.enabled <- true
-
-let disable_warning name =
-  let setting = WarningMap.find name warnings in
-    setting.enabled <- false
+let disable arg =
+  let disable_warning s =
+    let w = warning_of_string s in
+      if not (List.mem w !enabled) then
+	enabled := List.filter (fun e -> e <> w) (!enabled)
+  in
+    if arg <> "all" then
+      List.iter disable_warning (Str.split (Str.regexp "[, \t]+") arg)
+    else
+      (* Disable all *)
+      enabled := []
 
 let warn name file line message =
-  if name = "error" then
-    error file line message
-  else
-    let setting = WarningMap.find name warnings in
-      if setting.enabled then
-	begin
-	  let msg = file ^ ":" ^ (string_of_int line) ^ ": Warning" ^
-	    (* If we feel we can add the level
-	       (if verbose then "(" ^ name ^ ")" ^ *)
-	    ": " ^ message
-	  in
-	    prerr_string msg;
-	    prerr_newline ()
-	end
+  if List.mem name !enabled then
+    begin
+      let msg = file ^ ":" ^ (string_of_int line) ^ ": Warning" ^
+	(if !verbose > 0 then "(" ^ (string_of_warning name) ^ ")" else "") ^
+	": " ^ message
+      in
+	prerr_string msg;
+	prerr_newline ()
+    end

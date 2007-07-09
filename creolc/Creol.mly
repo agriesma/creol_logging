@@ -98,10 +98,7 @@ exception Error
 
 (** Print a short error message and abort *)
 let signal_error s m =
-  output_string stderr (s.pos_fname ^ ":" ^ (string_of_int s.pos_lnum) ^ ": " ^
-			m ^ "\n");
-  flush stderr;
-  raise Error
+  Messages.error s.pos_fname s.pos_lnum m; raise Error
 %}
 %%
 
