@@ -24,7 +24,6 @@
 open Creol
 
 type pass = {
-  name: string;
   dependencies: string list;
   pass: (Note.t, Note.t, Note.t) Declaration.t list ->
 			     (Note.t, Note.t, Note.t) Declaration.t list;
@@ -33,69 +32,140 @@ type pass = {
   mutable dump: bool
 }
 
+
+(** An association list collecting the passes in order. *)
 let passes = [
-  { name = "typecheck";
-    dependencies = [];
+  ( "typecheck" ,
+  { dependencies = [];
     pass = CreolTyping.typecheck;
-    elapsed = 0.0; needed = true; dump = false };
-  { name = "liveness";
-    dependencies = [];
+    elapsed = 0.0; needed = true; dump = false } );
+  ( "dataflow" ,
+  { dependencies = [];
     pass = find_definitions;
-    elapsed = 0.0; needed = true; dump = false };
-  { name = "deadvars";
-    dependencies = ["liveness"];
+    elapsed = 0.0; needed = true; dump = false } ) ;
+  ( "dead-vars" ,
+  { dependencies = ["dataflow"];
     pass = find_definitions;
-    elapsed = 0.0; needed = false; dump = false };
-  { name = "tailcall";
-    dependencies = [];
+    elapsed = 0.0; needed = false; dump = false } ) ;
+  ( "tailcall" ,
+  { dependencies = [];
     pass = optimise_tailcalls;
-    elapsed = 0.0; needed = false; dump = false };
+    elapsed = 0.0; needed = false; dump = false } );
 ]
 
-let split str =
-  let rec _split str res =
-    try
-      let p = String.index str ',' in
-       _split (String.sub str (p + 1) (String.length str))
-	((String.sub str 1 (p - 1))::res)
-    with
-      Not_found -> res
+(** Enable passes.
+
+    Accepts a list of strings, separated by comma or whitespace, and
+    enables each pass in this list, as well as its dependencies.
+
+    May raise Arg.Bad if an undefined pass is provided.  *)
+let enable_passes arg =
+  let rec enable_pass s =
+    let slot = try
+	List.assoc s passes
+      with
+	  Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
+    in
+      slot.needed <- true ;
+      List.iter enable_pass slot.dependencies
   in
-    _split str []
-  
+    if arg <> "all" then
+      List.iter enable_pass (Str.split (Str.regexp "[, \t]+") arg)
+    else
+      (* Enable all *)
+      List.iter (fun (_, p) -> p.dump <- true) passes
 
-let enable_passes passes =
-  ()
 
-let disable_passes passes =
-  ()
+(** Disable passes.
 
-let dump_passes passes =
-  ()
+    Accepts a list of strings, separated by comma or whitespace, and
+    enables each pass in this list, as well as its dependencies.
 
-let execute_passes verbose tree =
+    May raise Arg.Bad if an undefined pass is provided.
+
+    This function will not try to maintain dependencies, so use at your
+    own risk.  *)
+let disable_passes arg =
+  let disable_pass s =
+    let slot = try
+	List.assoc s passes
+      with
+	  Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
+    in
+      slot.needed <- false
+  in
+    List.iter disable_pass (Str.split (Str.regexp "[, \t]+") arg)
+
+
+(** Enable dumping after a pass.
+
+    Accepts a list of strings, separated by comma or whitespace, and
+    enables dumping after each pass in this list.  If the string is
+    "all", then all passes are enabled.
+
+    May raise Arg.Bad if an undefined pass is provided.
+
+    This function will not try to maintain dependencies, so use at your
+    own risk.  *)
+let dump_passes arg =
+  let dump_pass s =
+    let slot = try
+	List.assoc s passes
+      with
+	  Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
+    in
+      slot.dump <- true
+  in
+    if arg <> "all" then
+      List.iter dump_pass (Str.split (Str.regexp "[, \t]+") arg)
+    else
+      (* Enable all *)
+      List.iter (fun (_, p) -> p.dump <- true) passes
+
+
+let execute_dump name pass tree =
+  let basename s =
+    try
+      let n = String.rindex name '.' in
+	if "creol" == (String.sub s (n + 1) ((String.length name) - 1)) then
+	  (String.sub s 1 (n - 1))
+	else
+	  s
+    with
+	Not_found -> s
+  in
+  let ign a b = () in
+    BackendXML.emit ((basename name)  ^ "." ^ pass) Note.to_xml ign ign tree
+
+
+let execute_passes verbose filename tree =
   let rec execute tree =
     function 
 	[] -> tree
       | p::rest -> execute (run p tree) rest
   and run p tree =
-    if p.needed then
+    if (snd p).needed then
       begin
 	let now = ref (Unix.gettimeofday ()) in
-	let _ = if verbose then print_string ("executing " ^ p.name ^ "\n") in
-	let result =  (p.pass tree) in
-	let elapsed =
-	  (floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0
-	in
-	  p.elapsed <- p.elapsed +. elapsed;
-	  if p.dump then ();
-	  result
-      end
-    else
-      tree
-  in
-    execute tree passes
+	let _ = if verbose then print_string ("executing " ^ (fst p) ^ "\n") in
+      let result =  ((snd p).pass tree) in
+      let elapsed =
+	(floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0
+      in
+	(snd p).elapsed <- (snd p).elapsed +. elapsed;
+	if (snd p).dump then execute_dump filename (fst p) result ;
+	result
+end
+else
+  tree
+in
+  execute tree passes
 
+(** Write the internal time measurements to standard error.
+
+    The report is written to standard error, because the actual code
+    can be written to standard output, and the report is not part of
+    this code. *)
 let report_timings () =
   let total = ref 0.0 in
   let rec report =
@@ -103,8 +173,8 @@ let report_timings () =
 	[] -> print_string ("Total: ...................................... " ^
 			       (string_of_float !total) ^ " msec.\n");
       | p::r ->
-	  print_string (" " ^ (String.make (38 - String.length p.name) '.') ^
-			   " " ^ (string_of_float p.elapsed) ^ " msec.");
-	  total := !total +. p.elapsed ; report r
+	  print_string (" " ^ (String.make (38 - String.length (fst p)) '.') ^
+			   " " ^ (string_of_float (snd p).elapsed) ^ " msec.");
+	  total := !total +. (snd p).elapsed ; report r
   in
     report passes

@@ -176,7 +176,7 @@ let main () =
 	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
 	| ["-"] -> from_channel stdin
 	| _ ->  from_files !inputs in
-      Target.output (Passes.execute_passes !verbose tree) ;
+      Target.output (Passes.execute_passes !verbose !(Target.file) tree) ;
       if !times then Passes.report_timings();
       exit 0 ;;
 

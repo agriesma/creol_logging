@@ -53,7 +53,7 @@ creolc_DOCSOURCES	= Version.ml Messages.ml \
 
 OCAMLC_FLAGS		+= -g
 OCAMLOPT_FLAGS		+= -w a
-OCAMLFIND_FLAGS		+= -package "unix libxml2"
+OCAMLFIND_FLAGS		+= -package "unix libxml2 str"
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
 
