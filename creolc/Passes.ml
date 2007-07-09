@@ -156,7 +156,7 @@ let execute_dump name pass tree =
     BackendXML.emit ((basename name)  ^ "." ^ pass) Note.to_xml ign ign tree
 
 
-let execute_passes verbose filename tree =
+let execute_passes filename tree =
   let rec execute tree =
     function 
 	[] -> tree
@@ -165,7 +165,7 @@ let execute_passes verbose filename tree =
     if (snd p).needed then
       begin
 	let now = ref (Unix.gettimeofday ()) in
-	let _ = if verbose then print_string ("executing " ^ (fst p) ^ "\n") in
+	let _ = Messages.message 1 ("executing " ^ (fst p)) in
       let result =  ((snd p).pass tree) in
       let elapsed =
 	(floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0
@@ -188,11 +188,12 @@ let report_timings () =
   let total = ref 0.0 in
   let rec report =
     function
-	[] -> print_string ("Total: ...................................... " ^
-			       (string_of_float !total) ^ " msec.\n");
+	[] -> prerr_endline ("Total: ...................................... " ^
+			     (string_of_float !total) ^ " msec.\n");
       | p::r ->
-	  print_string (" " ^ (String.make (38 - String.length (fst p)) '.') ^
-			   " " ^ (string_of_float (snd p).elapsed) ^ " msec.");
+	  prerr_endline (" " ^ (String.make (38 - String.length (fst p)) '.') ^
+			 " " ^ (string_of_float (snd p).elapsed) ^ " msec.");
 	  total := !total +. (snd p).elapsed ; report r
   in
-    report passes
+    report passes ;
+    flush stderr

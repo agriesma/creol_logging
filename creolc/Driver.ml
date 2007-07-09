@@ -31,8 +31,6 @@
 open Creol
 open Arg
 
-let verbose = ref false
-
 let inputs : string list ref = ref []
 
 let times = ref false
@@ -59,6 +57,7 @@ module Target =
 	      target := Maude
 	  | "maudemc" ->
 	      options.BackendMaude.modelchecker <- true ;
+	      Passes.enable "tailcall" ;
 	      target := MaudeMC
 	  | "xml" -> target := XML
 	  | s -> raise (Arg.Bad ("unknown target " ^ s))
@@ -127,7 +126,7 @@ let main () =
      Set_string Target.file,
      "  Write the output to file");
     ("-v",
-     Arg.Unit (function () -> verbose := true),
+     Arg.Unit (function () -> incr Messages.verbose),
      "  Print some information while processing");
     ("-w",
      Arg.String Messages.enable,
@@ -172,7 +171,7 @@ let main () =
 	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
 	| ["-"] -> from_channel stdin
 	| _ ->  from_files !inputs in
-      Target.output (Passes.execute_passes !verbose !(Target.file) tree) ;
+      Target.output (Passes.execute_passes !Target.file tree) ;
       if !times then Passes.report_timings();
       exit 0 ;;
 

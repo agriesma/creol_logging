@@ -25,7 +25,7 @@
 let verbose = ref 0
 
 (** Print a message, if the compiler is instructed to be noisy. *)
-let message lvl msg = if !verbose > lvl then prerr_endline msg
+let message lvl msg = if !verbose >= lvl then prerr_endline msg
 
 
 (** Write an error message. *)
