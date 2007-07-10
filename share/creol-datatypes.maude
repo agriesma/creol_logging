@@ -27,7 +27,6 @@ fmod CREOL-DATA-SIG is
 
   sorts   Expr Data Vid Oid .
   subsort Oid < Data < Expr .
-  subsort Data < Expr .
   subsort String < Vid < Expr .
 
   op null : -> Data [ctor format (! o)] .

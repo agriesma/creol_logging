@@ -92,7 +92,16 @@ load creol-datatypes .
 ***
 ***************************************************************************
 
-*** Bound variables ***
+***
+*** Binding variables to values.
+***
+*** A note on performance:  The binding is using MAP from the prelude.
+*** In Maude 2.3, MAP checks whether the variable is bound for each insert.
+*** This check, however, is the main performance issue of the model
+*** checker:  over 7% of the rewrites are for $hasMapping from MAP this
+*** map implementation.  We could replace map with our own and making use
+*** of the assumption, that insert behaves well in our case.
+*** 
 fmod CREOL-SUBST is
   protecting EXT-BOOL .
   protecting CREOL-DATATYPES .
@@ -258,18 +267,11 @@ fmod CREOL-CLASS is
     < "NoClass" : Cl | Inh: noInh , Par: noVid, Att: noSubst, Mtds: noMtd ,
       Ocnt: 0 > .
 
-  --- checks if Q is a declared method in the method multiset
-  op _in_ : String MMtd -> Bool .
-
-  eq Q in noMtd = false .
-  eq Q in (< Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM) = 
-       if (Q == Q') then true else (Q in MM) fi .
-
   --- fetches pair (code, vars) to bind call to process.
   op get : String MMtd Oid Label ExprList -> Process .
   var Lab : Label .
   eq get(Q, noMtd, O, Lab, EL) = noProc .
-  eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, Lab, EL) =
+  eq get(Q, MM * < Q' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, EL) =
     if Q == Q'
     then (insert("caller", O, insert(".label", Lab, S)), (AL ::= EL) ; SL)
     else get(Q, MM, O, Lab, EL)
@@ -876,7 +878,7 @@ eq
   bindMtd(O, O', Lab, M, EL, (C < EL' >) `##' I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
-  if (M in MS) then
+  if get(M, MS, O', Lab, EL) =/= noProc then
     boundMtd(O,get(M, MS, O', Lab, EL))
   else
     bindMtd(O, O', Lab, M, EL, I `##' I')
