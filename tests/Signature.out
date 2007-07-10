@@ -311,7 +311,7 @@ result Process: idle
 ==========================================
 reduce in CREOL-STM-LIST : idle ++ insert("var2", int(4), insert("var1", str(
     "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)) .
-result NeMProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
+result MProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
     "var" ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in CREOL-STM-LIST : upTerm(idle ++ insert("var2", int(4), insert("var1",
@@ -325,7 +325,7 @@ result GroundTerm: '_++_['idle.Process,'_`,_['_`,_['_|->_['"var1".String,
 reduce in CREOL-STM-LIST : downTerm(upTerm(idle ++ insert("var2", int(4),
     insert("var1", str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var"
     ::= new "C"(null))), noProc) .
-result NeMProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
+result MProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
     "var" ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
 reduce in CREOL-CLASS : noInh .

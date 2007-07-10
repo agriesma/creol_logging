@@ -83,7 +83,7 @@ ifdef(`MODELCHECK',dnl
 ifdef(`MODELCHECK',`load model-checker')
 
 *** Data types are in their own module.
-in creol-datatypes .
+load creol-datatypes .
 
 
 ***************************************************************************
@@ -203,12 +203,12 @@ fmod CREOL-STM-LIST is
   eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
 
 
-  sorts NeMProc MProc .
-  subsort Process < NeMProc < MProc .    *** Multiset of Processes
+  *** Multiset of Processes
+  sorts MProc .
+  subsort Process < MProc .
   op noProc : -> MProc [ctor] .
-  op _++_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 `format' (d r os d)] .
-  op _++_ : NeMProc MProc -> NeMProc [ctor ditto] .
-  op _++_ : MProc NeMProc -> NeMProc [ctor ditto] .
+  op _++_ : MProc MProc -> MProc
+    [ctor assoc comm id: noProc prec 41 `format' (d r os d)] .
 
 endfm
 
@@ -216,8 +216,8 @@ endfm
 fmod CREOL-CLASS is
   protecting CREOL-STM-LIST .
 
-  sorts    Class Mtd MMtd Inh InhList NeInhList . *** inheritance list
-  subsorts Inh < NeInhList < InhList .
+  sort Inh InhList .
+  subsorts Inh < InhList .
 
   op  _<_> : Cid  ExprList -> Inh [ctor prec 15] . *** initialised superclass
   op noInh : -> InhList [ctor] .
@@ -234,20 +234,21 @@ fmod CREOL-CLASS is
   var AL : VidList .
   vars Q Q' : String .
 
-  *** XXX: This looks dangerous or confusing for programmers.
-  *** Why not: Ih ## IL ## Ih = IL ## Ih to have Ih initialised last?
-
-  eq  Ih ## IL ## Ih = Ih ## IL .
-
   op <_: Mtdname | Param:_, Latt:_, Code:_> : 
     String VidList Subst StmList -> Mtd [ctor
       `format' (b d o d d sb o d sb o d sb o b o)] .
 
+  *** Methods and multi-sets of methods.
+  ***
+  sorts Mtd MMtd .
   subsort Mtd < MMtd .    *** Multiset of methods
 
   op noMtd : -> Mtd [ctor] .
   op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd `format' (d d ni d)] .
 
+  *** Class declaration.
+  ***
+  sort Class .
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
     Cid InhList VidList Subst MMtd Nat -> Class 
      [`format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
@@ -257,22 +258,22 @@ fmod CREOL-CLASS is
     < "NoClass" : Cl | Inh: noInh , Par: noVid, Att: noSubst, Mtds: noMtd ,
       Ocnt: 0 > .
 
-  *** Class/method functions ***
-  op get : String MMtd Oid Label ExprList -> Process .  *** fetches pair (code, vars)
-  op _in_ : String MMtd -> Bool .  *** checks if Q is a declared 
-                                *** method in the method multiset
+  --- checks if Q is a declared method in the method multiset
+  op _in_ : String MMtd -> Bool .
 
   eq Q in noMtd = false .
   eq Q in (< Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM) = 
        if (Q == Q') then true else (Q in MM) fi .
 
-  *** bind call to process
+  --- fetches pair (code, vars) to bind call to process.
+  op get : String MMtd Oid Label ExprList -> Process .
   var Lab : Label .
-  eq get(Q, noMtd, O, Lab, EL) = noProc . 
-  eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, Lab, EL) = 
-    if Q == Q' 
+  eq get(Q, noMtd, O, Lab, EL) = noProc .
+  eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, Lab, EL) =
+    if Q == Q'
     then (insert("caller", O, insert(".label", Lab, S)), (AL ::= EL) ; SL)
-    else get(Q, MM, O, Lab, EL) fi .
+    else get(Q, MM, O, Lab, EL)
+    fi .
 
 endfm
 
@@ -282,11 +283,10 @@ fmod CREOL-OBJECT is
 
   sort Object .
 
+  op noObj : -> Object [ctor] .
   op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
        Oid Cid Subst Process MProc Nat -> Object 
          [ctor `format' (nr d d g r d o  r++ ni o  r ni o  r s o--  r o)] .
-
-  op noObj : -> Object [ctor] .
 
 endfm
 
@@ -315,8 +315,11 @@ fmod CREOL-COMMUNICATION is
   op comp(_,_) : Label DataList -> Body [ctor `format' (! o o o o o o)] .  
 
   op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
-  op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .     *** error 
-  op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .   *** warning 
+
+  --- Error and warning messages are intended to stop the machine.
+  --- For now, nothing is emitting these.
+  op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
+  op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
 
   *** Method binding messages
   op bindMtd : Oid Oid Label String ExprList InhList -> Msg [ctor] . 

@@ -113,6 +113,7 @@ A non-empty list of @code{Aid}.  This sort is a subsort of
 
 In addition, this module defines the sort @code{Bool} (@pxref{Boolean}).
 
+
 @anchor{Application}
 @subsubsection Application terms
 
@@ -129,6 +130,13 @@ subsort of @code{Appl}.
 It is an error if a term @code{S:String(D:DataList)} cannot be reduced
 to a @code{Data} value.  This usually occurs if the term is ill-typed,
 i.e., we try to add an integer to a boolean.
+
+
+@anchor{Reply}
+@subsubsection Reply Guard
+
+Guards can be arbitrary boolean expressions or they can test for the
+arrival of a single reply with the syntax @code{@var{label} ??}.
 
 
 @anchor{Equality}
@@ -390,11 +398,11 @@ Creol system.
 
 @menu
 * Substitution::        Mapping variables to values.
-* Guard::               Expressions used as guards.
 * Statement::           Statements.
 * Classes::             Classes.
 * Object::              Objects as processors.
 * Message::             Messages exchanged by objects.
+* Evaluation::          How expressions are evaluated.
 * Configurations::      Combining parts to global states.
 @end menu
 
@@ -402,14 +410,14 @@ Creol system.
 @node Substitution
 @subsection Substitutions
 
-The module @code{CREOL-SUBST} defines a mapping from attribute names
-(of sort @code{Aid}) to values (of sort @code{Data}).  We call this
-mapping a @emph{substitution}.  This substitution is defined using
-Maude's @code{MAP} module.  In addition, the following operators are
-defined:
+The module @code{CREOL-SUBST} defines a mapping from variable
+identifiers (of sort @code{Vid}) to values (of sort @code{Data}).  We
+call this mapping a @emph{substitution}.  This substitution is defined
+using Maude's @code{MAP} module.  In addition, the following operators
+are defined:
 
 @table @code
-@item dom(aid, subst)
+@item dom(A, S)
 This predicate tests, whether the attribute name @code{aid} has a
 value in the substitution @code{subst}.
 
@@ -436,37 +444,14 @@ are looked up from the local environment and the computation of the
 union is costly.
 
 
-@subsection Evaluation of Expressions
-
-The module @code{CREOL-EVAL} defines expressions and how they are
-evaluated, by extending the @code{DATATYPE} module, which defines the
-semantics of all (elementary) datatypes (see @pxref{Datatypes}).
-
-The operation @code{eval(e, S)} evaluates an expression @code{e} in
-the context @code{S}.  This is essentially done by reducing all
-function arguments to data in the hope that an equation defined for
-the data types can be applied to obtain the function-application's
-value.
-
-The operation @code{evalList} maps eval on expression lists (of sort
-@code{ExprList}).
-
-
-@node Guard
-@subsection Guards
-
-The module @code{CREOL-GUARD} defines the syntax of guard
-expressions on the machine level.
-
-Guards can be arbitrary boolean expressions or they can test for the
-arrival of a single reply with the syntax @code{@var{label} ??}.
-
 
 @node Statement
 @subsection Statements
 
 The module @code{CREOL-STATEMENT} defines the syntax of statements on
-the machine level.
+the machine level.  Statements are values of the sort @code{Stm}.
+Values of the subsort @code{SuspStm} are those statements which can
+suspend the current activation (@pxref{Evaluation}).
 
 @table @code
 @item skip
@@ -485,7 +470,11 @@ An asynchronous call statement.
 Receiving a reply.
 
 @item await _
-Awaiting a guard.
+Suspend the process until the expression becomes true.  This form of
+await is much more liberal than the one specified for creol, because
+it allows the test for an reply to occur anywhere in the expression.
+We assume that type checking will ensure that each use of a label is
+positive.
 
 @item release
 Unconditionally release the processor and allow another process to be
@@ -589,7 +578,9 @@ A process queue is a @emph{multi-set} of processes, constructed by
 @node Classes
 @subsection Classes
 
-XXX
+Classes are the main building blocks of Creol programs, and classes
+are represented at the CMC level, too.  A class comprises the super
+classes, the attributes of a class, and the methods of a class.
 
 @menu
 * Inherit::
@@ -601,7 +592,8 @@ XXX
 @node Inherit
 @subsubsection Inherit
 
-XXX
+Classes enumerate their super-classes, as well as the arguments they
+provide to the super class during construction.
 
 
 @node Method
@@ -626,6 +618,24 @@ XXX
 @subsection Messages
 
 XXX
+
+
+@node Evaluation
+@subsection Evaluation of Expressions
+
+The module @code{CREOL-EVAL} defines expressions and how they are
+evaluated, by extending the @code{DATATYPE} module, which defines the
+semantics of all (elementary) datatypes (see @pxref{Datatypes}).
+
+The operation @code{eval(e, S)} evaluates an expression @code{e} in
+the context @code{S}.  This is essentially done by reducing all
+function arguments to data in the hope that an equation defined for
+the data types can be applied to obtain the function-application's
+value.
+
+The operation @code{evalList} maps eval on expression lists (of sort
+@code{ExprList}).
+
 
 
 @node Configurations
