@@ -1,3 +1,9 @@
+creoltools 0.0f (2007-XX-YY): alpha release.
+
+Other:
+* All example programs from previous papers have been moved into the
+  tests/examples directory.
+
 creoltools 0.0f (2007-07-09): alpha release.
 
 Please read the news for this release carefully, since the way creoltools

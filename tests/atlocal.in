@@ -1,9 +1,3 @@
-
-# modify path to find the xml2 bindings for the byte-code interpreted
-# version
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:@abs_top_builddir@/xml
-export LD_LIBRARY_PATH
-
 # Set the path to the uninstalled data files of the tool set
 CREOL_PATH=@abs_top_srcdir@/share
 export CREOL_PATH

@@ -27,6 +27,33 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
+EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
+		  examples/Alarmclock.out \
+		  examples/AsyncLCR.creol examples/AsyncLCR.maude \
+		  examples/AsyncLCR.out \
+		  examples/AsyncSieveBuggy.creol \
+		  examples/AsyncSieveBuggy.maude \
+		  examples/AsyncSieveBuggy.out \
+		  examples/AuthorisationPolicies.creol \
+		  examples/AuthorisationPolicies.maude \
+		  examples/AuthorisationPolicies.out \
+		  examples/BoundedBuffer.creol \
+		  examples/BoundedBuffer.maude \
+		  examples/BoundedBuffer.out \
+		  examples/Fibonacci.creol examples/Fibonacci.maude \
+		  examples/Fibonacci.out \
+		  examples/PeerToPeer.creol examples/PeerToPeer.maude \
+		  examples/PeerToPeer.out \
+		  examples/Philosophers.creol \
+		  examples/Philosophers.maude examples/Philosophers.out \
+		  examples/SantaClaus.creol examples/SantaClaus.maude \
+		  examples/SantaClaus.out \
+		  examples/Sieve.creol examples/Sieve.maude \
+		  examples/Sieve.out \
+		  examples/SingleCellBuffer.creol \
+		  examples/SingleCellBuffer.maude \
+		  examples/SingleCellBuffer.out
+
 TESTFILES	= Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \
 		  Interpreter.maude Interpreter.out \
@@ -38,17 +65,6 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  MutRec.creol MutRec.maude MutRec.out \
 		  MutRec2.creol MutRec2.maude MutRec2.out \
 		  Interleave.creol Interleave.maude Interleave.out \
-		  Alarmclock.creol Alarmclock.maude Alarmclock.out \
-		  AsyncLCR.creol AsyncLCR.maude AsyncLCR.out \
-		  Philosophers.creol Philosophers.maude Philosophers.out \
-		  Sieve.creol Sieve.maude Sieve.out \
-		  AsyncSieveBuggy.creol AsyncSieveBuggy.maude AsyncSieveBuggy.out \
-		  SingleCellBuffer.creol SingleCellBuffer.maude \
-		  SingleCellBuffer.out \
-		  Fibonacci.creol Fibonacci.maude Fibonacci.out \
-		  SantaClaus.creol SantaClaus.maude SantaClaus.out \
-		  BoundedBuffer.creol BoundedBuffer.maude BoundedBuffer.out \
-		  PeerToPeer.creol PeerToPeer.maude PeerToPeer.out \
 		  MC3Phil.creol MC3Phil.maude MC3Phil.out MC3PhilTest.maude \
 		  MC4Phil.creol MC4Phil.maude MC4PhilTest.maude \
 		  MC5Phil.creol MC5Phil.maude MC5PhilTest.maude
@@ -56,7 +72,7 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 TESTPARTS	= 
 
 EXTRA_DIST	= ${srcdir}/atlocal.in ${srcdir}/testsuite.at maude.sed \
-		  package.m4 testsuite ${TESTPARTS} ${TESTFILES} \
+		  package.m4 testsuite ${TESTPARTS} $(EXAMPLES) ${TESTFILES} \
 		  Signature.m4
 
 check-local: atconfig atlocal ${TESTSUITE} Signature.maude

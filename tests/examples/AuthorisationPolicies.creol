@@ -25,8 +25,8 @@ with Any
 end 
 
 class Test
-  inherits SAuth, DB
   implements High 
+  inherits SAuth, DB
 begin
 with Agent
   op openH(out ok:Bool) == 
@@ -38,7 +38,7 @@ with Agent
   op closeH == revoke(caller;)
 end
 
-class LAuth inherits MAuth, DB implements Low 
+class LAuth implements Low inherits MAuth, DB
 begin with Agent
   op openL == // <denne er gal!!!!!!!!! skal ikke kalle clear(..)!!> 
   	await clear(caller; ok);
@@ -53,7 +53,7 @@ interface HighLow inherits High, Low
 begin
 end
 
-class HLAuth inherits LAuth, HAuth implements HighLow
+class HLAuth implements HighLow inherits LAuth, HAuth
 begin with Agent
   op access(in key:Int; out y:Data) ==
     if caller = gr@SAuth then
