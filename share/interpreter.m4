@@ -221,7 +221,10 @@ fmod CREOL-STM-LIST is
 
 endfm
 
-*** CREOL classes ***
+
+***
+*** CREOL Classes
+***
 fmod CREOL-CLASS is
   protecting CREOL-STM-LIST .
 
@@ -250,7 +253,7 @@ fmod CREOL-CLASS is
   *** Methods and multi-sets of methods.
   ***
   sorts Mtd MMtd .
-  subsort Mtd < MMtd .    *** Multiset of methods
+  subsort Mtd < MMtd .
 
   op noMtd : -> Mtd [ctor] .
   op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd `format' (d d ni d)] .
@@ -292,51 +295,63 @@ fmod CREOL-OBJECT is
 
 endfm
 
-*** CREOL messages and queues ***
+***
+*** CREOL messages and queues
+***
 fmod CREOL-COMMUNICATION is
   protecting CREOL-OBJECT .
 
-  sort Labels . *** list of labels
-  subsort Label < Labels .
-
-  sorts Body Msg MMsg Kid Queue .
-  subsort Body < MMsg .
-
-  op noMsg : -> MMsg [ctor] .
-  op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
-
-  op size : MMsg -> Nat .
-  var M : Body .
-  var MB : MMsg .
-  eq size(M + MB) = 1 + size(MB) .
-  eq size(noMsg) = 0 .
+  sort Body .
 
   *** INVOCATION and REPLY
   op invoc(_,_,_,_) : *** Nat Oid 
   Oid Label Mid DataList -> Body [ctor `format' (! o o o o o o o o o o)] .  
   op comp(_,_) : Label DataList -> Body [ctor `format' (! o o o o o o)] .  
 
+  --- Messages.  Messages have at least a receiver.
+
+  sort Msg .
+
+  --- Invocation and completion message.
   op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
+
+  --- Method binding messages.
+  --- Bind method request
+  --- Given: caller callee method params (list of classes to look in)
+  op bindMtd : Oid Oid Label String ExprList InhList -> Msg [ctor] .
+
+  --- Successfully bound method body. 
+  --- Consider the call O.Q(I). bindMtd(O,Q,I,C S) tries to find Q in
+  --- class C or superclasses, then in S. boundMtd(O,Mt) is the result.
+  op boundMtd(_,_) : Oid Process -> Msg [ctor `format' (!r r o o o !r on)] .
 
   --- Error and warning messages are intended to stop the machine.
   --- For now, nothing is emitting these.
-  op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
+  --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
   op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
 
-  *** Method binding messages
-  op bindMtd : Oid Oid Label String ExprList InhList -> Msg [ctor] . 
-  ***Bind method request
-  *** Given: caller callee method params (list of classes to look in)
-  op boundMtd(_,_) : Oid Process -> Msg 
-    [ctor `format' (!r r o o o !r on)] . *** binding result
-  *** CONSIDER the call O.Q(I). bindMtd(O,Q,I,C S) trie to find Q in
-  *** class C or superclasses, then in S. boundMtd(O,Mt) is the result.
+  --- A multiset of messages.
+  sort MMsg .
+  subsort Body < MMsg .
+  op noMsg : -> MMsg [ctor] .
+  op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
 
+  --- Size of the bag.
+  op size : MMsg -> Nat .
+  var M : Body .
+  var MB : MMsg .
+  eq size(MB + M) = 1 + size(MB) .
+  eq size(noMsg) = 0 .
 
-  *** message queue
+  --- Multiset of labels for deallocation.
+  sort Labels .
+  subsort Label < Labels .
+
   op noDealloc :         -> Labels  [ctor] .
   op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
+  --- message queue
+  sort Queue .
   op noQu : -> Queue [ctor] .
   op <_: Qu | Size:_, Dealloc:_, Ev:_ > : Oid Nat Labels MMsg -> Queue 
                           [`format' (nm r o d d sm o d sm o d sm o m o)] .
@@ -474,7 +489,6 @@ define(`READY', ready($1, $2, $3))'
   eq EVALGUARDLIST(emp, S, MM, T) = emp . *** Short circuit evaluation.
   eq EVALGUARDLIST(DL, S, MM, T) = DL .   *** Short circuit evaluation.
   eq EVALGUARDLIST(E, S, MM, T) = EVALGUARD(E, S, MM, T) .
-  --- XXX: May be right-to-left is faster?
   eq EVALGUARDLIST(E # NeEL, S, MM, T) =
     EVALGUARD(E, S, MM, T) # EVALGUARDLIST(NeEL, S, MM, T) .
 

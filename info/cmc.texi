@@ -593,25 +593,58 @@ classes, the attributes of a class, and the methods of a class.
 @subsubsection Inherit
 
 Classes enumerate their super-classes, as well as the arguments they
-provide to the super class during construction.
+provide to the super class during construction.  A term of the form
+@code{"C" < @var{exprs} >} indicates that the contextual class inherits
+from class @code{"C"} and provides @code{@var{exprs}} as a list of
+actual arguments to @code{"C"}'s constructor.
+
+Observe that the run-time system assumes that the class hierarchy is
+acyclic.  If this is not the case, object creation may enter an infinite
+loop.  @c See @xref{XXX} for details.
 
 
 @node Method
 @subsubsection Method
 
-XXX
+A method specifies its name, its formal parameters, its local variables,
+and its body, i.e., a (compound) statement to execute if the method is
+called.
+
+A class may have a multiset of methods, which are seperated by @code{*}.
 
 
 @node Class
 @subsubsection Class
 
-XXX
+A class is a term @code{< @var{C} : Cl | Inh: @var{inh}, Par: @var{par},
+Att: @var{att}, Mtds: @var{mtds}, Ocnt: @var{n} >}, where @var{C} is the
+name of the class, @var{inh} is a list of classes from which the class
+inherits (@pxref{Inherit}), where the empty list is represented by
+@code{noInh}, @var{par} is a list of variable names which serve as the
+constructor arguments, @var{att} is a substitution
+(@pxref{Substitution}), collecting the attributes of @var{C}'s
+instances, @var{mtds} is a multiset of methods, with the empty multiset
+represented by @code{noMtd}, and @var{n} is a number representing the
+number of instances of the class currently created in the system.
 
 
 @node Object
 @subsection Objects
 
-XXX
+An object is an instance of exactly one class.
+
+Usually, an object is represented by a term @code{< @var{id} : @var{cl}
+| Att: @var{A}, Pr: @var{P}, PrQ: @var{Ps}, Lcnt: @var{N} >}, where
+@var{id} is a unique identity of the object, @var{cl} is the class of
+the object, @var{A} is a substitution (@pxref{Substitution})
+representing the valuation of the object's attributes, @var{P} is the
+currently active processor, @var{Ps} represents the queue of inactive
+processes, and @var{N} is a counter used to generate unique label
+values.
+
+The @emph{special} object @code{noObj} is unique, does not have an
+identity, and no behaviour.  This object could be considered to be the
+value of @code{null}.
 
 
 @node Message
@@ -775,7 +808,17 @@ XXX
 @node LTL Specifications
 @subsection LTL Specifications
 
-XXX
+Currently, the support for LTL specifications is ad-hoc.  We express
+state properties in Maude and use the standard methods to turn it into
+LTL specifications for model checking.  However, we must specify in a
+way that all object identities are present in the initial state.
+
+Normal object identities of objects created in normal methods will only
+work if the property is @emph{symmetric} for all instances of a class,
+since we cannot control which identity that object will receive.
+
+A more refined description will come later.
+@c XXX Finish this, after Immo came up with something.
 
 
 
