@@ -44,7 +44,7 @@ let passes = [
   ( "lower" ,
   { help = "Expand statements to Core Creol" ;
     dependencies = "";
-    pass = CreolTyping.typecheck;
+    pass = TreeLower.pass;
     elapsed = 0.0; needed = true; dump = false } );
   ( "dataflow" ,
   { help = "Compute data flow." ;

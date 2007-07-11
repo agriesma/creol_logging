@@ -248,6 +248,10 @@ module Statement: sig
 	      This statement is not allowed to be composed. **)
 
   val note: ('a, 'b, 'c) t -> 'a
+
+  val is_skip_p: ('a, 'b, 'c) t -> bool
+
+  val normalize_sequences: ('a, 'b, 'c) t -> ('a, 'b, 'c) t
 end
 
 
@@ -381,28 +385,6 @@ end
 type ('a, 'b, 'c) program = ('a, 'b, 'c) Declaration.t list
 
 
-
-val lower: input: ('a, 'b, 'c) Declaration.t list ->
-  copy_stmt_note: ('a -> 'a) ->
-  expr_note_of_stmt_note: ('a -> 'b) ->
-  copy_expr_note: ('b -> 'b) ->
-  ('a, 'b, 'c) Declaration.t list
-  (** Lower a Creol program to the "Core Creol" language.
-
-      This function will destroy some statement and expression
-      annotations.  Therefore, all semantic analysis performed before
-      this function should be repeated after calling this function.
-
-      This should only concern type inference, because all other
-      analysis should be performed after this function.
-
-      The following two invariant holds for this function:
-
-      * A type correct program remains type correct and the
-      annotations of unchanged statements are the same after
-      reconstruction.
-
-      * lower (lower tree) == lower tree *)
 
 val tailcall_successes : unit -> int
 
