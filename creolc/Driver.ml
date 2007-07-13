@@ -74,7 +74,7 @@ module Target =
 	  | Maude | MaudeMC -> BackendMaude.emit options out tree
 	  | XML ->
 	      let ign a b = () in
-		BackendXML.emit !file Note.to_xml ign ign tree
+		BackendXML.emit !file ign ign ign tree
   end
 
 let from_file name =

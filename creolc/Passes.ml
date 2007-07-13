@@ -26,8 +26,7 @@ open Creol
 type pass = {
   help: string;
   dependencies: string;
-  pass: (Note.t, Note.t, Note.t) Declaration.t list ->
-			     (Note.t, Note.t, Note.t) Declaration.t list;
+  pass: Declaration.t list -> Declaration.t list ;
   mutable elapsed: float;
   mutable needed: bool;
   mutable dump: bool
@@ -46,21 +45,26 @@ let passes = [
     dependencies = "";
     pass = TreeLower.pass;
     elapsed = 0.0; needed = true; dump = false } );
-  ( "dataflow" ,
+  ( "into-ssa" ,
   { help = "Compute data flow." ;
     dependencies = "lower";
-    pass = TreeDataflow.analyze ;
+    pass = TreeSSA.into ;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "dead-vars" ,
   { help = "Eliminate dead variables and values." ;
-    dependencies = "dataflow";
-    pass = fun x -> x ;
+    dependencies = "dataflow" ;
+    pass = (function x -> x) ;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "tailcall" ,
   { help = "Optimise tail-calls." ;
     dependencies = "lower";
     pass = TreeTailcall.optimize ;
     elapsed = 0.0; needed = false; dump = false } );
+  ( "outof-ssa" ,
+  { help = "Compute data flow." ;
+    dependencies = "into-ssa";
+    pass = TreeSSA.outof ;
+    elapsed = 0.0; needed = false; dump = false } ) ;
 ]
 
 let help () =
@@ -159,7 +163,7 @@ let execute_dump name pass tree =
   let file = ((basename name)  ^ "." ^ pass) in
   let ign a b = () in
     Messages.message 1 ("Writing dump to " ^ file) ;
-    BackendXML.emit file Note.to_xml ign ign tree
+    BackendXML.emit file ign ign ign tree
 
 
 let execute_passes filename tree =

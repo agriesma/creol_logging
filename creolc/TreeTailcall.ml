@@ -29,7 +29,7 @@ let tailcall_counter = ref 0
 
 let tailcall_successes () = !tailcall_counter
 
-let optimise_tailcalls prg =
+let optimize prg =
   (** Take a program and try to replace tail calls with a version using
       out special macro. *)
   let rec optimise_declaration =

@@ -25,32 +25,14 @@ open Creol
 open Expression
 open Statement
 
-let tailcall_counter = ref 0
+let into tree =
+  (** Convert a creol tree into static single assignment form.
 
-let tailcall_successes () = !tailcall_counter
+      Static single assignment form is a form that encodes dataflow
+      information syntactically.  *)
+  tree
 
-let optimise_tailcalls prg =
-  (** Take a program and try to replace tail calls with a version using
-      out special macro. *)
-  let rec optimise_declaration =
-    function
-      Declaration.Class c -> Declaration.Class (optimise_in_class c)
-    | Declaration.Interface i -> Declaration.Interface i
-    | Declaration.Exception e -> Declaration.Exception e
-    | Declaration.Datatype d -> Declaration.Datatype d
-  and optimise_in_class c =
-    { c with Class.with_defs = List.map optimise_in_with c.Class.with_defs }
-  and optimise_in_with w =
-    { w with With.methods = List.map optimise_in_method w.With.methods }
-  and optimise_in_method m =
-    match m.meth_body with
-	None -> m
-      | Some body ->
-	  { m with meth_body =
-	      Some ((optimise_in_statement
-			(List.map (function v -> v.var_name) m.meth_outpars))
-		       body) } 
-  and optimise_in_statement outs s = s
-  in
-    tailcall_counter := 0;
-    List.map optimise_declaration prg
+let outof tree =
+  (** Convert a Creol tree from static single assignment form to its
+      original form. *)
+  tree
