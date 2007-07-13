@@ -129,7 +129,9 @@ let pass input =
 	  and lab = fresh_label ()
           in
 	    Sequence (a, LocalAsyncCall (a, Some lab, m, l, u, ni),
-		     Sequence (a, Await (a, Label(a, lab)),
+		     Sequence (a, Await (a,
+					 Label(make_expr_note_from_stmt_note a,
+					       lab)),
 			      Reply (a, lab, o)))
       | Tailcall (a, m, l, u, i) ->
 	  Tailcall (a, m, l, u, List.map lower_expression i)
@@ -162,8 +164,8 @@ let pass input =
 	removed. *)
     let lower_method_variable =
       function 
-          ({ var_name = n ; var_type = _ ; var_init = Some i } as v) ->
-	    ([{ v with var_init = None }],
+          ({ VarDecl.name = n ; var_type = _ ; init = Some i } as v) ->
+	    ([{ v with VarDecl.init = None }],
 	    Assign(note, [LhsVar(Expression.note i, n)], [lower_expression i]))
         | v -> ([v], Skip note)
     in
@@ -181,11 +183,11 @@ let pass input =
     (** Simplify a method definition. *)
     let _ = next_fresh_label := 0 (* Labels must only be unique per method. *)
     in
-    match m.meth_body with
+    match m.Method.meth_body with
 	None -> m
       | Some mb  ->
-	  let smv = lower_method_variables (Statement.note mb) m.meth_vars in
-	    { m with meth_vars = fst smv ;
+	  let smv = lower_method_variables (Statement.note mb) m.Method.meth_vars in
+	    { m with Method.meth_vars = fst smv ;
 	      meth_body = Some( if Statement.is_skip_p (snd smv) then
 		normalize_sequences (lower_statement mb)
 		else

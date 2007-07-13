@@ -405,3 +405,5 @@ module Program :
     type t = Declaration.t list
 
   end
+
+val make_expr_note_from_stmt_note : Statement.note -> Expression.note
