@@ -232,8 +232,8 @@ let emit ~options ~out_channel ~input =
 	    assert false
     in print 25 stmt
   and of_attribute a =
-    output_string out_channel ("(" ^ a.var_name ^ ": ");
-    (match a.var_init with
+    output_string out_channel ("(" ^ a.VarDecl.name ^ ": ");
+    (match a.VarDecl.init with
 	None -> output_string out_channel "null"
       | Some e -> of_expression e);
     output_string out_channel ")"
@@ -258,34 +258,34 @@ let emit ~options ~out_channel ~input =
   and of_parameter_list =
     function
 	[] -> output_string out_channel "noVid"
-      | [v] -> output_string out_channel ("\"" ^ v.var_name ^ "\"")
-      | v::r -> output_string out_channel ("\"" ^ v.var_name ^ "\" , ");
+      | [v] -> output_string out_channel ("\"" ^ v.VarDecl.name ^ "\"")
+      | v::r -> output_string out_channel ("\"" ^ v.VarDecl.name ^ "\" , ");
 	  of_parameter_list r
   and of_class_attribute_list =
     function
 	[] -> output_string out_channel "noSubst" 
-      | [v] -> output_string out_channel ("\"" ^ v.var_name ^ "\" |-> null")
+      | [v] -> output_string out_channel ("\"" ^ v.VarDecl.name ^ "\" |-> null")
       | v::r ->
-	  output_string out_channel ("\"" ^ v.var_name ^ "\" |-> null , ");
+	  output_string out_channel ("\"" ^ v.VarDecl.name ^ "\" |-> null , ");
 	  of_class_attribute_list r
   and of_method_return =
     function
 	[] -> output_string out_channel "emp" 
-      | [n] -> output_string out_channel ("\"" ^ n.var_name ^ "\"")
-      | n::l -> output_string out_channel ("\"" ^ n.var_name ^ "\" # ");
+      | [n] -> output_string out_channel ("\"" ^ n.VarDecl.name ^ "\"")
+      | n::l -> output_string out_channel ("\"" ^ n.VarDecl.name ^ "\" # ");
           of_method_return l
   and of_method cls m =
-    output_string out_channel ("\n  < \"" ^ m.meth_name ^
+    output_string out_channel ("\n  < \"" ^ m.Method.meth_name ^
 				  "\" : Mtdname | Param: ");
-    of_parameter_list m.meth_inpars;
+    of_parameter_list m.Method.meth_inpars;
     output_string out_channel ", Latt: " ;
-    of_class_attribute_list (m.meth_inpars @ m.meth_outpars @ m.meth_vars);
+    of_class_attribute_list (m.Method.meth_inpars @ m.Method.meth_outpars @ m.Method.meth_vars);
     output_string out_channel ", Code: " ;
-    ( match m.meth_body with
+    ( match m.Method.meth_body with
 	None -> output_string out_channel "skip"
       | Some s -> of_statement cls s ;
 	  output_string out_channel " ; return ( ";
-	  of_method_return m.meth_outpars;
+	  of_method_return m.Method.meth_outpars;
 	  output_string out_channel " )" ) ;
     output_string out_channel " >"
   and of_method_list cls =

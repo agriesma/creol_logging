@@ -118,17 +118,17 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
     ()
   and creol_method_to_xml m =
     XmlTextWriter.start_element writer "creol:method" ; 
-    XmlTextWriter.write_attribute writer "name" m.meth_name;
+    XmlTextWriter.write_attribute writer "name" m.Method.meth_name;
     XmlTextWriter.start_element writer "creol:inputs" ; 
-    List.iter (creol_vardecl_to_xml) m.meth_inpars;
+    List.iter (creol_vardecl_to_xml) m.Method.meth_inpars;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "creol:outputs" ; 
-    List.iter (creol_vardecl_to_xml) m.meth_outpars;
+    List.iter (creol_vardecl_to_xml) m.Method.meth_outpars;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "creol:variables" ; 
-    List.iter (creol_vardecl_to_xml) m.meth_vars;
+    List.iter (creol_vardecl_to_xml) m.Method.meth_vars;
     XmlTextWriter.end_element writer;
-    (match m.meth_body with
+    (match m.Method.meth_body with
 	None -> ()
       | Some s -> XmlTextWriter.start_element writer "creol:body" ; 
 	  creol_statement_to_xml s;
@@ -364,9 +364,9 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  XmlTextWriter.end_element writer
   and creol_vardecl_to_xml v =
     XmlTextWriter.start_element writer "creol:vardecl";
-    XmlTextWriter.write_attribute writer "name" v.var_name;
-    creol_type_to_xml v.var_type;
-    (match v.var_init with
+    XmlTextWriter.write_attribute writer "name" v.VarDecl.name;
+    creol_type_to_xml v.VarDecl.var_type;
+    (match v.VarDecl.init with
 	None -> ()
       | Some e -> creol_argument_to_xml e) ;
     XmlTextWriter.end_element writer

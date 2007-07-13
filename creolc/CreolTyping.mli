@@ -25,5 +25,4 @@ open Creol
 
 exception TypeError
 
-val typecheck:
-  ('a, 'b, 'c) Declaration.t list -> ('a, 'b, 'c) Declaration.t list
+val typecheck: Declaration.t list -> Declaration.t list

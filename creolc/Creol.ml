@@ -21,117 +21,53 @@
  * 02111-1307, USA.
  *)
 
-module Note =
-  struct
-
-    type type_info = {
-      attribute: bool;
-      label: bool;
-      defined: bool;
-      life: bool;
-    }
-
-    module Environment = Map.Make(String)
-
-    let empty = Environment.empty
-
-    type t = { file: string; line: int; env: type_info Environment.t }
-
-    let make pos = {
-      file = pos.Lexing.pos_fname ;
-      line = pos.Lexing.pos_lnum;
-      env = empty
-    }
-
-    let line { file = _ ; line = l; env = _ } = l
-
-    let file { file = f ; line = _; env = _ } = f
-
-    let to_xml writer { file = f; line = l; env = d } =
-      XmlTextWriter.start_element writer "note";
-      XmlTextWriter.write_attribute writer "file" f ;
-      XmlTextWriter.write_attribute writer "line" (string_of_int l) ;
-      Environment.iter (function elt ->
-	function note ->
-	  XmlTextWriter.start_element writer "defined" ;
-	  XmlTextWriter.write_attribute writer "name" elt ;
-	  XmlTextWriter.write_attribute writer "attribute"
-	    (string_of_bool note.attribute) ;
-	  XmlTextWriter.write_attribute writer "label"
-	    (string_of_bool note.label) ;
-	  XmlTextWriter.write_attribute writer "defined"
-	    (string_of_bool note.defined) ;
-	  XmlTextWriter.write_attribute writer "life"
-	    (string_of_bool note.life) ;
-	  XmlTextWriter.end_element writer) d;
-      XmlTextWriter.end_element writer
-
-    module Vars = Set.Make(String)
-
-    let domain env =
-      Environment.fold (fun k _ set -> Vars.add k set) env Vars.empty
-
-    let join left right =
-      let dom = Vars.union (domain left) (domain right) in
-	Vars.fold
-	  (fun k r ->
-	    match (Environment.mem k left, Environment.mem k right) with
-		(true, true) ->
-		  let nl = Environment.find k left
-		  and nr = Environment.find k right
-		  in Environment.add
-		    k
-		    { attribute = nl.attribute && nr.attribute;
-		      label = nl.label && nr.label ;
-		      defined = nl.defined || nr.defined;
-		      life = nl.life || nr.life }
-		    r
-	      | (true, false) -> Environment.add k (Environment.find k left) r
-	      | (false, true) -> Environment.add k (Environment.find k right) r
-	      | (false, false) -> assert false)
-	  dom Environment.empty
-	
-    let meet left right =
-      let dom = Vars.union (domain left) (domain right) in
-	Vars.fold
-	  (fun k r ->
-	    match (Environment.mem k left, Environment.mem k right) with
-		(true, true) ->
-		  let nl = Environment.find k left
-		  and nr = Environment.find k right
-		  in Environment.add
-		    k
-		    { attribute = nl.attribute && nr.attribute;
-		      label = nl.label && nr.label ;
-		      defined = nl.defined || nr.defined;
-		      life = nl.life || nr.life }
-		    r
-	      | (true, false) -> Environment.add k (Environment.find k left) r
-	      | (false, true) -> Environment.add k (Environment.find k right) r
-	      | (false, false) -> assert false)
-	  dom Environment.empty
-	
-  end
-
 module Type =
   struct
-    type 'c t =
-	Basic of 'c * string
-	| Variable of 'c * string
-	| Application of 'c * string * 'c t list
-	| Tuple of 'c * 'c t list
-	| Function of 'c * 'c t list * 'c t
-	| Structure of 'c * 'c field list
-	| Variant of 'c * 'c field list
-	| Label of 'c * 'c t * 'c t list * 'c t list
-	| Intersection of 'c * 'c t list
-	| Union of 'c * 'c t list
-    and 'c field =
-	{ field_note: 'c;
+
+    type note = {
+      file: string;
+      line: int
+    }
+
+    let make_note pos = {
+      file = pos.Lexing.pos_fname ;
+      line = pos.Lexing.pos_lnum
+    }
+
+    type t =
+	Basic of note * string
+	| Variable of note * string
+	| Application of note * string * t list
+	| Tuple of note * t list
+	| Function of note * t list * t
+	| Structure of note * field list
+	| Variant of note * field list
+	| Label of note * t * t list * t list
+	| Intersection of note * t list
+	| Union of note * t list
+    and field =
+	{ field_note: note;
 	  field_name: string;
-	  field_type: 'c t
+	  field_type: t
 	}
 
+
+    let note_of =
+      function
+	  Basic (n, _) -> n
+	| Variable (n, _) -> n
+	| Application (n, _, _) -> n
+	| Tuple (n, _) -> n
+	| Function (n, _, _) -> n
+	| Structure (n, _) -> n
+	| Variant (n, _) -> n
+	| Label (n, _, _, _) -> n
+	| Intersection (n, _) -> n
+	| Union (n, _) -> n
+
+    let file t = (note_of t).file
+
+    let line t = (note_of t).line
 
     (* These are the support functions for the abstract syntax tree. *)
 
@@ -167,31 +103,44 @@ module Type =
 
 module Expression =
   struct
+
+    type note = {
+	file: string;
+	line: int
+    }
     
-    type ('b, 'c) t =
-	Null of 'b
-	| Nil of 'b
-	| Bool of 'b * bool
-	| Int of 'b * int
-	| Float of 'b * float
-	| String of 'b * string
-	| Id of 'b * string
-        | StaticAttr of 'b * string * 'c Type.t
-	| Tuple of 'b * ('b, 'c) t list
-	| ListLit of 'b * ('b, 'c) t list
-	| SetLit of 'b * ('b, 'c) t list
-        | FieldAccess of 'b * ('b, 'c) t * string
-	| Unary of 'b * unaryop * ('b, 'c) t
-	| Binary of 'b * binaryop * ('b, 'c) t * ('b, 'c) t
-	| If of 'b * ('b, 'c) t * ('b, 'c) t * ('b, 'c) t
-	| FuncCall of 'b * string * ('b, 'c) t list
-	| Label of 'b * string
-	| New of 'b * 'c Type.t * ('b, 'c) t list
-	| Extern of 'b * string
-  and ('b, 'c) lhs =
-          LhsVar of 'b * string
-        | LhsAttr of 'b * string * 'c Type.t
-        | LhsWildcard of 'b * 'c Type.t option
+    let make_note pos = {
+      file = pos.Lexing.pos_fname ;
+      line = pos.Lexing.pos_lnum
+    }
+
+    type t =
+	Null of note
+	| Nil of note
+	| Bool of note * bool
+	| Int of note * int
+	| Float of note * float
+	| String of note * string
+	| Id of note * string
+        | StaticAttr of note * string * Type.t
+	| Tuple of note * t list
+	| ListLit of note * t list
+	| SetLit of note * t list
+        | FieldAccess of note * t * string
+	| Unary of note * unaryop * t
+	| Binary of note * binaryop * t * t
+	| If of note * t * t * t
+	| FuncCall of note * string * t list
+	| Label of note * string
+	| New of note * Type.t * t list
+	| Extern of note * string
+        | SSAId of note * string * int
+        | Phi of note * t list
+  and lhs =
+          LhsVar of note * string
+        | LhsAttr of note * string * Type.t
+        | LhsWildcard of note * Type.t option
+        | LhsSSAId of note * string * int
     and unaryop =
 	Not
 	| UMinus
@@ -407,22 +356,52 @@ module Expression =
     let to_cnf f =
       let rec to_cnf_from_nnf =
 	function
-	    Binary(b, And, f, g) ->
-	      Binary(b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
+	    Binary (b, And, f, g) ->
+	      Binary (b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
+	  | FuncCall (b, "&&", [f; g]) ->
+	      (* XXX: Should check that this is boolean *)
+	      FuncCall (b, "&&", [to_cnf_from_nnf f; to_cnf_from_nnf g])
 	  | Binary(b, Or, f, g) ->
 	      (* Push or inside of and using distributive laws *)
 	      let rec to_cnf_or left right =
 		match (left, right) with
 		    (Binary(lb, And, lf, lg), _) ->
 		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
+		  | (FuncCall (lb, "&&", [lf; lg]), _) ->
+	      	      (* XXX: Should check that this is boolean *)
+		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
 		  | (_, Binary(rb, And, rf, rg)) ->
-		      Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
+		      Binary (b, And, to_cnf_or left rf, to_cnf_or left rg)
+		  | (_, FuncCall (rb, "&&", [rf; rg])) ->
+	      	      (* XXX: Should check that this is boolean *)
+		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
 		  | _ ->
 		      (* neither subformula contains and *)
-		      Binary(b, Or, f, g)
+		      Binary(b, Or, to_cnf_from_nnf f, to_cnf_from_nnf g)
 	      in
 		to_cnf_or f g
-	  | Binary(_, (Implies|Xor|Iff), f, g) ->
+	  | FuncCall (b, "||", [f; g]) ->
+	      (* Push or inside of and using distributive laws *)
+	      let rec to_cnf_or left right =
+		match (left, right) with
+		    (Binary(lb, And, lf, lg), _) ->
+		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
+		  | (FuncCall (lb, "&&", [lf; lg]), _) ->
+	      	      (* XXX: Should check that this is boolean *)
+		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
+		  | (_, Binary(rb, And, rf, rg)) ->
+		      Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
+		  | (_, FuncCall (rb, "&&", [rf; rg])) ->
+	      	      (* XXX: Should check that this is boolean *)
+		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
+		  | _ ->
+		      (* neither subformula contains and *)
+		      FuncCall (b, "||", [to_cnf_from_nnf f; to_cnf_from_nnf g])
+	      in
+		to_cnf_or f g
+	  | Binary (_, (Implies|Xor|Iff), _, _) ->
+	      assert false (* Input was assumed to be in NNF *)
+	  | FuncCall (_, ("=>" | "^" | "<=>"), [_; _]) ->
 	      assert false (* Input was assumed to be in NNF *)
 	  | e -> e
       in
@@ -435,41 +414,70 @@ module Expression =
 	Core Creol. *)
     let to_dnf exp =
       to_nnf (negate (to_cnf (to_nnf (negate exp))))
-  end
 
-open Expression
+    (** Check whether all occurences of labels are positive in a formula
+	f.  Assume, that a label value does not occur as the argument of
+	a function call! *)
+    let all_labels_positive_p expr =
+      let rec all_labels_positive =
+	(* Check whether all labels are positive assuming negation normal
+	   form *)
+        function
+	    Unary (_, Not, Label _) -> false
+	  | Binary(_, (And | Or), left, right) ->
+	      (all_labels_positive left) && (all_labels_positive right)
+	  | FuncCall(_, ("&&" | "||"), [left; right]) ->
+	      (* XXX: Should check, whether the type is boolean. *)
+	      (all_labels_positive left) && (all_labels_positive right)
+	  | Binary(_, (Implies|Xor|Iff), f, g) ->
+	      assert false (* Input was assumed to be in NNF *)
+          | _ -> true
+      in
+	all_labels_positive (to_nnf expr)
+  end
 
 module Statement =
   struct
-    type ('a, 'b, 'c) t =
-	Skip of 'a
-	| Release of 'a
-	| Assert of 'a * ('b, 'c) Expression.t
-	| Assign of 'a * ('b, 'c) Expression.lhs list * ('b, 'c) Expression.t list
-	| Await of 'a * ('b, 'c) Expression.t
-	| AsyncCall of 'a * string option * ('b, 'c) Expression.t * string *
-	    ('b, 'c) Expression.t list
-	| Reply of 'a * string * ('b, 'c) Expression.lhs list
-	| Free of 'a * string
-	| SyncCall of 'a * ('b, 'c) Expression.t * string *
-	    ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
-	| AwaitSyncCall of 'a * ('b, 'c) Expression.t * string *
-	    ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
-	| LocalAsyncCall of 'a * string option * string * string option *
-	    string option * ('b, 'c) Expression.t list
-	| LocalSyncCall of 'a * string * string option * string option *
-            ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
-	| AwaitLocalSyncCall of 'a * string * string option * string option *
-            ('b, 'c) Expression.t list * ('b, 'c) Expression.lhs list
-	| Tailcall of 'a * string * string option * string option *
-	    ('b, 'c) Expression.t list
-	| If of 'a * ('b, 'c) Expression.t * ('a, 'b, 'c) t * ('a, 'b, 'c) t
-	| While of 'a * ('b, 'c) Expression.t * ('b, 'c) Expression.t option *
-	    ('a, 'b, 'c) t
-	| Sequence of 'a * ('a, 'b, 'c) t  * ('a, 'b, 'c) t
-	| Merge of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
-	| Choice of 'a * ('a, 'b, 'c) t * ('a, 'b, 'c) t
-        | Extern of 'a * string
+    type note = {
+	file: string;
+	line: int
+    }
+    
+    let make_note pos = {
+      file = pos.Lexing.pos_fname ;
+      line = pos.Lexing.pos_lnum
+    }
+
+
+    type t =
+	Skip of note
+	| Release of note
+	| Assert of note * Expression.t
+	| Assign of note * Expression.lhs list * Expression.t list
+	| Await of note * Expression.t
+	| AsyncCall of note * string option * Expression.t * string *
+	    Expression.t list
+	| Reply of note * string * Expression.lhs list
+	| Free of note * string
+	| SyncCall of note * Expression.t * string *
+	    Expression.t list * Expression.lhs list
+	| AwaitSyncCall of note * Expression.t * string *
+	    Expression.t list * Expression.lhs list
+	| LocalAsyncCall of note * string option * string * string option *
+	    string option * Expression.t list
+	| LocalSyncCall of note * string * string option * string option *
+            Expression.t list * Expression.lhs list
+	| AwaitLocalSyncCall of note * string * string option * string option *
+            Expression.t list * Expression.lhs list
+	| Tailcall of note * string * string option * string option *
+	    Expression.t list
+	| If of note * Expression.t * t * t
+	| While of note * Expression.t * Expression.t option *
+	    t
+	| Sequence of note * t  * t
+	| Merge of note * t * t
+	| Choice of note * t * t
+        | Extern of note * string
 
     let note =
       function
@@ -534,18 +542,23 @@ module Statement =
 
   end
 
-open Statement
-
 (** The abstract syntax of Creol *)
-type ('b, 'c) creol_vardecl =
-    { var_name: string; var_type: 'c Type.t; var_init: ('b, 'c) Expression.t option }
 
-type ('a, 'b, 'c) creolmethod =
-    { meth_name: string;
-      meth_inpars: ('b, 'c) creol_vardecl list;
-      meth_outpars: ('b, 'c) creol_vardecl list;
-      meth_vars: ('b, 'c) creol_vardecl list;
-      meth_body: ('a, 'b, 'c) Statement.t option }
+module VarDecl =
+  struct
+    type t =
+      { name: string; var_type: Type.t; init: Expression.t option }
+  end
+
+module Method =
+  struct
+    type t =
+      { meth_name: string;
+        meth_inpars: VarDecl.t list;
+        meth_outpars: VarDecl.t list;
+        meth_vars: VarDecl.t list;
+        meth_body: Statement.t option }
+  end
 
 
 
@@ -553,10 +566,10 @@ type ('a, 'b, 'c) creolmethod =
 
 module With = struct
 
-  type ('a, 'b, 'c) t = {
+  type t = {
     co_interface: string option;
-    methods: ('a, 'b, 'c) creolmethod list;
-    invariants: ('b, 'c) Expression.t list
+    methods: Method.t list;
+    invariants: Expression.t list
   }
 
 end
@@ -568,16 +581,16 @@ end
 module Class =
 struct
 
-  type ('b, 'c) inherits = string * (('b, 'c) Expression.t list)
+  type inherits = string * Expression.t list
 
-  type ('a, 'b, 'c) t =
+  type t =
       { name: string;
-	parameters: ('b, 'c) creol_vardecl list;
-	inherits: ('b, 'c) inherits list;
+	parameters: VarDecl.t list;
+	inherits: inherits list;
 	contracts: string list;
 	implements: string list;
-	attributes: ('b, 'c) creol_vardecl list;
-	with_defs: ('a, 'b, 'c) With.t list }
+	attributes: VarDecl.t list;
+	with_defs: With.t list }
 
 end
 
@@ -588,16 +601,16 @@ end
 module Interface =
 struct
 
-  type  ('a, 'b, 'c) t =
+  type  t =
       { name: string;
 	inherits: string list;
-	with_decl: ('a, 'b, 'c) With.t list }
+	with_decl: With.t list }
 
 end
 
 module Exception =
 struct
-  type ('b, 'c) t = { name: string; parameters: ('b, 'c) creol_vardecl list }
+  type t = { name: string; parameters: VarDecl.t list }
 end
 
 
@@ -607,26 +620,26 @@ end
 module Operation =
   struct
 
-    type ('b, 'c) t = {
+    type t = {
       name: string;
-      parameters: ('b, 'c) creol_vardecl list;
-      result_type: 'c Type.t;
-      body: ('b, 'c) Expression.t
+      parameters: VarDecl.t list;
+      result_type: Type.t;
+      body: Expression.t
     }
 
   end
 
 
 module Datatype =
-struct
+  struct
 
-  type ('b, 'c) t = {
-    name: 'c Type.t;
-    supers: 'c Type.t list;
-    operations: ('b, 'c) Operation.t list
-  }
+    type t = {
+      name: Type.t;
+      supers: Type.t list;
+      operations: Operation.t list
+    }
 
-end
+  end
 
 
 
@@ -635,306 +648,16 @@ end
 module Declaration =
 struct
 
-  type ('a, 'b, 'c) t =
-      Class of ('a, 'b, 'c) Class.t
-      | Interface of ('a, 'b, 'c) Interface.t
-      | Datatype of ('b, 'c) Datatype.t
-      | Exception of ('b, 'c) Exception.t
+  type t =
+      Class of Class.t
+      | Interface of Interface.t
+      | Datatype of Datatype.t
+      | Exception of Exception.t
 
 end
 
-type ('a, 'b, 'c) program = ('a, 'b, 'c) Declaration.t list
 
-open Declaration
-
-
-
-
-let collect_declarations attribute =
-    List.fold_left
-	(function map ->
-	  function { var_name = name; var_type = _; var_init = _ } -> 
-            Note.Environment.add name
-	      { Note.attribute = attribute;
-		Note.label = false;
-		(* The value of an attribute is always defined *)
-		Note.defined = attribute;
-		(* The value of an attribute is always life *)
-		Note.life = attribute }
-	      map)
-	Note.Environment.empty
-
-let collect_declarations attribute =
-    List.fold_left
-	(function map ->
-	  function { var_name = name; var_type = _; var_init = _ } -> 
-            Note.Environment.add name
-	      { Note.attribute = attribute;
-		Note.label = false;
-		(* The value of an attribute is always defined *)
-		Note.defined = attribute;
-		(* The value of an attribute is always life *)
-		Note.life = attribute }
-	      map)
-	Note.Environment.empty
-
-let rec find_definitions l =
-  (** Computes the definitions of a variable.
-
-  *)
-  List.map definitions_in_declaration l
-and definitions_in_declaration =
-  function
-      Class c -> Class (definitions_in_class c)
-    | Interface i -> Interface (definitions_in_interface i)
-    | Exception e -> Exception e
-    | Datatype d -> Datatype d (* XXX *)
-and definitions_in_class c =
-  let attrs = collect_declarations true
-    (c.Class.parameters @ c.Class.attributes) in
-    { c with
-      Class.with_defs = List.map (definitions_in_with attrs) c.Class.with_defs }
-and definitions_in_interface i =
-  i
-and definitions_in_with attrs w =
-  { w with
-    With.methods = List.map (definitions_in_method attrs) w.With.methods }
-and definitions_in_method attrs m =
-  match m.meth_body with
-      None -> m
-    | Some body ->
-	{ m with meth_body =
-	    let note =
-	      { Note.file = Note.file (Statement.note body);
-		Note.line = Note.line (Statement.note body);
-		Note.env = attrs }
-	    in
-	      Some (definitions_in_statement note body) }
-and definitions_in_statement note stm =
-  (** Compute the variables defined at a current statement.
-
-      @param attrs is the set of names which are attributes.  They are always
-      defined in a program.
-
-      @param note is the updated note of the preceding statement.
-
-      @return The statement with its note updated.  *)
-  let define env name label =
-    (** Define a name in an environment. *)
-    let v =
-      { Note.attribute = false;
-	Note.label = label;
-	Note.defined = true;
-	Note.life = false }
-    in
-      Note.Environment.add name v env
-  in
-    match stm with
-	Skip n ->
-	  Skip { n with Note.env = note.Note.env }
-      | Assert (n, e) ->
-	  Assert ({ n with Note.env = note.Note.env }, e)
-      | Assign (n, lhs, rhs) ->
-	  Assign ({n with Note.env = note.Note.env }, lhs, rhs)
-	(* XXX: Completely broken...
-	  Assign ({ n with Note.env = 
-	      List.fold_left (fun e n -> define e n false)
-		note.Note.env (name lhs)}, lhs, rhs) *)
-      | Await (n, g) ->
-	  Await ({ n with Note.env = note.Note.env }, g)
-      | Release a ->
-	  Release { a with Note.env = note.Note.env }
-      | AsyncCall (n, None, c, m, a) ->
-	  (* XXX: This should not happen, but if we resolve this, we need to
-	     rerun this for updating the chain... *)
-	  AsyncCall ({ n with Note.env = note.Note.env }, None, c, m, a)
-      | AsyncCall (n, Some l, c, m, a) ->
-	  AsyncCall ({ n with Note.env = (define note.Note.env l true) },
-		    Some l, c, m, a)
-      | Reply (n, l, p) ->
-	  Reply ({ n with Note.env = note.Note.env } , l, p)
-      | Free (n, v) -> assert false
-      | SyncCall (n, c, m, ins, outs) ->
-	  SyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
-      | AwaitSyncCall (n, c, m, ins, outs) ->
-	  AwaitSyncCall ({ n with Note.env = note.Note.env }, c, m, ins, outs) (* XXX *)
-      | LocalAsyncCall (n, None, m, ub, lb, i) ->
-	  (* XXX: This should not happen, but if we resolve this, we need to
-	     rerun this for updating the chain... *)
-	  LocalAsyncCall ({ n with Note.env = note.Note.env}, None, m, ub, lb,
-			 i)
-      | LocalAsyncCall (n, Some l, m, ub, lb, i) ->
-	  LocalAsyncCall ({ n with Note.env = (define note.Note.env l true)},
-			 Some l, m, ub, lb, i)
-      | LocalSyncCall (n, m, u, l, a, r) ->
-	  LocalSyncCall ({ n with Note.env = note.Note.env },
-			m, u, l, a, r) (* XXX *)
-      | AwaitLocalSyncCall (n, m, u, l, a, r) ->
-	  AwaitLocalSyncCall ({ n with Note.env = note.Note.env },
-		             m, u, l, a, r) (* XXX *)
-      | Tailcall (n, m, u, l, a) -> assert false
-      | If (n, c, l, r) ->
-	  (* Beware, that the new note essentially contains the union
-	     of the definitions of both its branches, whereas the first
-	     statement of each branch contains the updated note of the
-	     preceding statement. *)
-	  let nl = (definitions_in_statement note l)
-	  and nr = (definitions_in_statement note r) in
-	    If ({n with Note.env = Note.join (Statement.note nl).Note.env
-		(Statement.note nr).Note.env},
-	       c, nl, nr)
-      | While (n, c, i, b) ->
-	  While ({ n with Note.env = note.Note.env }, c, i,
-		definitions_in_statement n b)
-      | Sequence (n, s1, s2) ->
-	  let ns1 = (definitions_in_statement note s1) in
-	  let ns2 = (definitions_in_statement note s2) in
-	    Sequence ({n with Note.env = Note.join (Statement.note ns1).Note.env
-		(Statement.note ns2).Note.env},
-		  ns1, ns2)
-	      (* For merge and choice we do not enforce sequencing of the
-		 computation of the parts, but we allow the compiler to
-		 choose some order *)
-      | Merge (n, l, r) -> 
-	  let nl = (definitions_in_statement note l)
-	  and nr = (definitions_in_statement note r) in
-	    Merge ({n with Note.env = Note.join (Statement.note nl).Note.env
-		(Statement.note nr).Note.env},
-		  nl, nr)
-      | Choice (n, l, r) -> 
-	  let nl = (definitions_in_statement note l)
-	  and nr = (definitions_in_statement note r) in
-	    Choice ({n with Note.env = Note.join (Statement.note nl).Note.env
-		(Statement.note nr).Note.env},
-		   nl, nr)
-      | Extern (n, s) -> Extern (n, s)
-
-let rec life_variables tree =
-  (** Compute whether a variable is still in use at a position in the
-      program.
-
-      The algorithm assumes that the input [tree] has been annotated with
-      information about the definitions of variables.  See
-      [find_definitions].
-
-      It will perform a back-ward pass and annotate each node with the
-      use-information.
-
-      This algorithms has been adapted from the algorithm described in
-      Section 9.5 "Next-Use Information" of A.V. Aho, R. Sethi, and J.D.
-      Ullman, "Compilers: Principles, Techniques, and Tools",
-      Addison-Wesley, 1986.
-
-      Where this algorithm comes from is not clear to me, but it may already
-      be mentioned in Knuth, Donald E. (1962), "A History of Writing
-      Compilers," Computers and Automation,, December, 1962, reprinted in
-      Pollock, Barry W., ed. Compiler Techniques, Auerbach Publishers,
-      1972. *)
-  List.map uses_in_declaration tree
-and uses_in_declaration =
-  function
-      Class c -> Class (uses_in_class c)
-    | Interface i -> Interface (uses_in_interface i)
-    | Exception e -> Exception e
-    | Datatype d -> Datatype d (* XXX *)
-and uses_in_class c =
-  { c with Class.with_defs = List.map uses_in_with c.Class.with_defs }
-and uses_in_interface i =
-  i
-and uses_in_with w =
-  { w with With.methods = List.map uses_in_method w.With.methods }
-and uses_in_method m =
-  match m.meth_body with
-      None -> m
-    | Some body -> { m with meth_body = Some (uses_in_statement body) }
-and uses_in_statement =
-  function
-      Skip _ as s -> s
-    | Assert (_, _) as s -> s
-    | Assign (a, l, r) -> assert false
-    | Await (a, g) -> assert false
-    | Release a -> assert false
-    | AsyncCall (a, None, c, m, ins) -> assert false
-    | AsyncCall (a, Some l, c, m, ins) -> assert false
-    | Reply (a, l, outs) -> assert false (* use l and clear p *)
-    | Free (a, v) -> assert false
-    | SyncCall (a, c, m, ins, outs) -> assert false
-    | LocalAsyncCall (a, None, m, lb, ub, ins) -> assert false
-    | LocalAsyncCall (a, Some l, m, lb, ub, ins) -> assert false
-    | LocalSyncCall (a, m, lb, ub, ins, outs) -> assert false
-    | Tailcall (a, m, lb, ub, ins) -> assert false
-    | If (a, c, s1, s2) ->
-	let ns1 = uses_in_statement s1
-	and ns2 = uses_in_statement s2 in
-	let nc = uses_in_expression c in
-	  If ({ a with
-	    Note.env = Note.meet (Statement.note ns1).Note.env
-	      (Statement.note ns2).Note.env },
-	     nc, ns1, ns2)
-    | While (a, c, i, b) -> assert false
-    | Sequence (a, s1, s2) ->
-	let ns1 = uses_in_statement s1
-	and ns2 = uses_in_statement s2 in
-	  Sequence ({ a with
-	    Note.env = Note.meet (Statement.note ns1).Note.env
-	      (Statement.note ns2).Note.env },
-		ns1, ns2)
-    | Merge (a, s1, s2) ->
-	let ns1 = uses_in_statement s1
-	and ns2 = uses_in_statement s2 in
-	  Merge ({ a with
-	    Note.env = Note.meet (Statement.note ns1).Note.env
-	      (Statement.note ns2).Note.env },
-		ns1, ns2)
-    | Choice (a, s1, s2) ->
-	let ns1 = uses_in_statement s1
-	and ns2 = uses_in_statement s2 in
-	  Choice ({ a with 
-	    Note.env = Note.meet (Statement.note ns1).Note.env
-	      (Statement.note ns2).Note.env },
-		 ns1, ns2)
-      | Extern (n, s) -> Extern (n, s)
-and uses_in_sequence note =
-  function
-      [] -> assert false
-    | [s] -> assert false
-    | s::r ->
-	let nr = uses_in_sequence note r in
-	let ns = uses_in_statement s in
-	  ns::nr
-and uses_in_expression e = e
-
-
-
-let tailcall_counter = ref 0
-
-let tailcall_successes () = !tailcall_counter
-
-let optimise_tailcalls prg =
-  (** Take a program and try to replace tail calls with a version using
-      out special macro. *)
-  let rec optimise_declaration =
-    function
-      Class c -> Class (optimise_in_class c)
-    | Interface i -> Interface i
-    | Exception e -> Exception e
-    | Datatype d -> Datatype d
-  and optimise_in_class c =
-    { c with Class.with_defs = List.map optimise_in_with c.Class.with_defs }
-  and optimise_in_with w =
-    { w with With.methods = List.map optimise_in_method w.With.methods }
-  and optimise_in_method m =
-    match m.meth_body with
-	None -> m
-      | Some body ->
-	  { m with meth_body =
-	      Some ((optimise_in_statement
-			(List.map (function v -> v.var_name) m.meth_outpars))
-		       body) } 
-  and optimise_in_statement outs s = s
-  in
-    tailcall_counter := 0;
-    List.map optimise_declaration prg
-
-
-
+module Program =
+  struct
+    type t = Declaration.t list
+  end

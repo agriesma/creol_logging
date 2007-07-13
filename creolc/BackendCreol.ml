@@ -155,11 +155,11 @@ let emit out_channel input =
       (function () -> do_indent indent)
       list
   and pretty_print_method indent m =
-    output_string out_channel ("op " ^ m.meth_name);
-    if m.meth_inpars <> [] || m.meth_outpars <> [] then
+    output_string out_channel ("op " ^ m.Method.meth_name);
+    if m.Method.meth_inpars <> [] || m.Method.meth_outpars <> [] then
       output_string out_channel "(";
     begin
-      match (m.meth_inpars, m.meth_outpars) with
+      match (m.Method.meth_inpars, m.Method.meth_outpars) with
 	  ([], []) -> ()
 	| (i, []) ->
 	    output_string out_channel "in ";
@@ -173,9 +173,9 @@ let emit out_channel input =
 	    output_string out_channel "; out ";
 	    pretty_print_vardecls 0 "" ", " "" o
     end;
-    if m.meth_inpars <> [] || m.meth_outpars <> [] then
+    if m.Method.meth_inpars <> [] || m.Method.meth_outpars <> [] then
       output_string out_channel ")";
-    (match m.meth_body with
+    (match m.Method.meth_body with
 	None -> ()
       | Some s ->
 	  output_string out_channel " == " ;
@@ -187,8 +187,8 @@ let emit out_channel input =
 	    (function () ->
 	      output_string out_channel ";" ;
 	      do_indent indent)
-	    m.meth_vars;
-	  if [] <> m.meth_vars then
+	    m.Method.meth_vars;
+	  if [] <> m.Method.meth_vars then
 	    begin
 	      output_string out_channel ";" ;
 	      do_indent indent
@@ -205,8 +205,8 @@ let emit out_channel input =
 	if lvl > 0 then do_indent lvl)
       list
   and pretty_print_vardecl v =
-    output_string out_channel (v.var_name ^ ": " ^ (Type.as_string v.var_type ));
-    ( match v.var_init with
+    output_string out_channel (v.VarDecl.name ^ ": " ^ (Type.as_string v.VarDecl.var_type ));
+    ( match v.VarDecl.init with
 	Some e -> output_string out_channel " := " ;
 	  pretty_print_expression e
       | None -> () )

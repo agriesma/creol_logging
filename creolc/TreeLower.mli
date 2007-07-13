@@ -23,7 +23,7 @@
 
 open Creol
 
-val pass: ('a, 'a, 'b) Declaration.t list -> ('a, 'a, 'b) Declaration.t list
+val pass: Declaration.t list -> Declaration.t list
   (** Lower a Creol program to the "Core Creol" language.
 
       This function will destroy some statement and expression

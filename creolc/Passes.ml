@@ -49,17 +49,17 @@ let passes = [
   ( "dataflow" ,
   { help = "Compute data flow." ;
     dependencies = "lower";
-    pass = find_definitions;
+    pass = TreeDataflow.analyze ;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "dead-vars" ,
   { help = "Eliminate dead variables and values." ;
     dependencies = "dataflow";
-    pass = find_definitions;
+    pass = fun x -> x ;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "tailcall" ,
   { help = "Optimise tail-calls." ;
     dependencies = "lower";
-    pass = optimise_tailcalls;
+    pass = TreeTailcall.optimize ;
     elapsed = 0.0; needed = false; dump = false } );
 ]
 

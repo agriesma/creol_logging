@@ -91,6 +91,8 @@ open Lexing
 open Creol
 open Expression
 open Statement
+open Method
+open VarDecl
 
 exception Error
 
@@ -142,10 +144,11 @@ vardecl:
       v = vardecl_no_init
 	{ v }
     | v = vardecl_no_init ASSIGN i = expression
-	{ { v with var_init = Some i } }
+	{ { v with VarDecl.init = Some i } }
 
 %inline vardecl_no_init:
-      i = ID COLON t = creol_type { { var_name = i; var_type = t; var_init = None } }
+      i = ID COLON t = creol_type
+        { { VarDecl.name = i; VarDecl.var_type = t; VarDecl.init = None } }
     | ID error
     | ID COLON error
 	{ signal_error $startpos "syntax error in variable declaration" }
@@ -191,7 +194,7 @@ method_def:
   |   d = method_decl EQEQ EXTERN s = STRING
     { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
 	meth_outpars = d.meth_outpars; meth_vars = [];
-        meth_body = Some (Extern (Note.make $startpos, s)) } }
+        meth_body = Some (Extern (Statement.make_note $startpos, s)) } }
 
 (* Interface Declaration *)
 
@@ -246,7 +249,7 @@ functiondecl:
     p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON t = creol_type EQEQ EXTERN s = STRING
     { { Operation.name = n; parameters = p; result_type = t;
-	body = Expression.Extern (Note.make $startpos, s) } }
+	body = Expression.Extern (Expression.make_note $startpos, s) } }
   | OP error
   | OP id_or_op
   | OP id_or_op error
@@ -293,144 +296,144 @@ statement:
       l = choice_statement r = ioption(preceded(MERGE, statement))
 	{ match r with
 	      None -> l
-	    | Some s -> Merge((Note.make $startpos), l, s) }
+	    | Some s -> Merge((Statement.make_note $startpos), l, s) }
 
 choice_statement:
       l = statement_sequence r = ioption(preceded(BOX, choice_statement))
 	{ match r with
 	      None -> l
-	    | Some s -> Choice((Note.make $startpos), l, s) }
+	    | Some s -> Choice((Statement.make_note $startpos), l, s) }
 
 statement_sequence:
       l = basic_statement r = ioption(preceded(SEMI, statement_sequence))
 	{ match r with
 	      None -> l
-	    | Some s -> Sequence((Note.make $startpos), l, s) }
+	    | Some s -> Sequence((Statement.make_note $startpos), l, s) }
 
 basic_statement:
       SKIP
-	{ Skip (Note.make $startpos) }
+	{ Skip (Statement.make_note $startpos) }
     | RELEASE
-	{ Release (Note.make $startpos) }
+	{ Release (Statement.make_note $startpos) }
     | t = separated_nonempty_list(COMMA, lhs) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
-	{ Assign((Note.make $startpos), t, e) }
+	{ Assign((Statement.make_note $startpos), t, e) }
     | AWAIT g = guard
-	{ Await ((Note.make $startpos), g) }
+	{ Await ((Statement.make_note $startpos), g) }
     | AWAIT error
 	{ signal_error $startpos "Syntax error in await condition" }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
-	{ AsyncCall ((Note.make $startpos), l, callee, m, i) }
+	{ AsyncCall ((Statement.make_note $startpos), l, callee, m, i) }
     | l = ioption(ID) BANG m = ID
 	lb = ioption(preceded(SUPERTYPE, CID)) 
 	ub = ioption(preceded(SUBTYPE, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
-	{ LocalAsyncCall ((Note.make $startpos), l, m, lb, ub, i) }
+	{ LocalAsyncCall ((Statement.make_note $startpos), l, m, lb, ub, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
-	{ Reply ((Note.make $startpos), l, o) }
+	{ Reply ((Statement.make_note $startpos), l, o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ SyncCall ((Note.make $startpos), c, m, i, o) }
+	{ SyncCall ((Statement.make_note $startpos), c, m, i, o) }
     | m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ LocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
+	{ LocalSyncCall((Statement.make_note $startpos), m, lb, ub, i, o) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ AwaitSyncCall ((Note.make $startpos), c, m, i, o) }
+	{ AwaitSyncCall ((Statement.make_note $startpos), c, m, i, o) }
     | AWAIT m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ AwaitLocalSyncCall((Note.make $startpos), m, lb, ub, i, o) }
+	{ AwaitLocalSyncCall((Statement.make_note $startpos), m, lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement END
-        { If((Note.make $startpos), e, t, f) }
+        { If((Statement.make_note $startpos), e, t, f) }
     | IF e = expression THEN t = statement END
-        { If((Note.make $startpos), e, t, Skip (Note.make $startpos)) }
+        { If((Statement.make_note $startpos), e, t, Skip (Statement.make_note $startpos)) }
     | WHILE c = expression inv = ioption(preceded(INV, assertion)) DO
 	s = statement END
-	{ While (Note.make $startpos, c, inv, s) }
+	{ While (Statement.make_note $startpos, c, inv, s) }
     | ASSERT a = assertion
-	{ Assert (Note.make $startpos, a) }
+	{ Assert (Statement.make_note $startpos, a) }
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
 
 guard:
-      l = ID QUESTION { Label ((Note.make $startpos), l) }
+      l = ID QUESTION { Label ((Expression.make_note $startpos), l) }
     | l = ID QUESTION AMPAMP g = guard
-        { Binary ((Note.make $startpos), And,
-		  Label((Note.make $startpos), l), g) }
+        { Binary ((Expression.make_note $startpos), And,
+		  Label((Expression.make_note $startpos), l), g) }
     | e = expression { e }
 
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:
       id = ID c = ioption(preceded(AT, creol_type))
 	{ match c with
-	      None -> LhsVar ((Note.make $startpos), id)
-	    | Some cl -> LhsAttr ((Note.make $startpos), id, cl) }
+	      None -> LhsVar ((Expression.make_note $startpos), id)
+	    | Some cl -> LhsAttr ((Expression.make_note $startpos), id, cl) }
     | UNDERSCORE t = ioption(preceded(COLON, creol_type))
-	{ LhsWildcard (Note.make $startpos, t) }
+	{ LhsWildcard (Expression.make_note $startpos, t) }
 
 expression_or_new:
       e = expression
 	{ e }
     | NEW t = creol_type
       a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
-	{ New (Note.make $startpos, t, a) }
+	{ New (Expression.make_note $startpos, t, a) }
     | NEW error
 	{ signal_error $startpos "syntax error in new statement" }
 
 expression:
       b = BOOL
-	{ Bool ((Note.make $startpos), b) }
+	{ Bool ((Expression.make_note $startpos), b) }
     | i = INT
-	{ Int ((Note.make $startpos), i) }
+	{ Int ((Expression.make_note $startpos), i) }
     | f = FLOAT
-	{ Float ((Note.make $startpos), f) }
+	{ Float ((Expression.make_note $startpos), f) }
     | s = STRING
-	{ String ((Note.make $startpos), s) }
+	{ String ((Expression.make_note $startpos), s) }
     | NIL
-	{ Nil (Note.make $startpos) }
+	{ Nil (Expression.make_note $startpos) }
     | NULL
-	{ Null (Note.make $startpos) }
+	{ Null (Expression.make_note $startpos) }
     | id = ID c = ioption(preceded(AT, creol_type))
 	{ match c with
-	      None -> Id ((Note.make $startpos), id)
-	    | Some cl -> StaticAttr ((Note.make $startpos), id, cl) }
+	      None -> Id ((Expression.make_note $startpos), id)
+	    | Some cl -> StaticAttr ((Expression.make_note $startpos), id, cl) }
     | LPAREN l = separated_list(COMMA, expression) RPAREN 
 	{ (* let n = Note.make $startpos in *)
 	    match l with
-		[] -> Nil (Note.make $startpos) (* XXX: Should be unit *)
+		[] -> Nil (Expression.make_note $startpos) (* XXX: Should be unit *)
 	      | [e] -> e
-	      | _ -> Tuple (Note.make $startpos, l) }
+	      | _ -> Tuple (Expression.make_note $startpos, l) }
     | LBRACK l = separated_list(COMMA, expression) RBRACK
-	{ ListLit (Note.make $startpos, l) }
+	{ ListLit (Expression.make_note $startpos, l) }
     | LBRACE e = separated_list(COMMA, expression) RBRACE
-	{ SetLit (Note.make $startpos, e) }
+	{ SetLit (Expression.make_note $startpos, e) }
     | LBRACE ID COLON expression BAR expression RBRACE
-	{ Null (Note.make $startpos) }
+	{ Null (Expression.make_note $startpos) }
     | l = expression o = binop r = expression
-        { Binary((Note.make $startpos), o, l, r) }
+        { Binary((Expression.make_note $startpos), o, l, r) }
     | TILDE e = expression
-        { Unary((Note.make $startpos), Not, e) }
+        { Unary((Expression.make_note $startpos), Not, e) }
     | MINUS e = expression %prec UMINUS
-	{ Unary((Note.make $startpos), UMinus, e) }
+	{ Unary((Expression.make_note $startpos), UMinus, e) }
     | HASH e = expression
-	{ Unary((Note.make $startpos), Length, e) }
+	{ Unary((Expression.make_note $startpos), Length, e) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
-	{ FuncCall((Note.make $startpos), f, l) }
+	{ FuncCall((Expression.make_note $startpos), f, l) }
     | e = expression DOT i = ID
-	{ FieldAccess ((Note.make $startpos), e, i) }
+	{ FieldAccess ((Expression.make_note $startpos), e, i) }
     | IF c = expression THEN t = expression ELSE f = expression END
-        { Expression.If (Note.make $startpos, c, t, f) }
+        { Expression.If (Expression.make_note $startpos, c, t, f) }
 
 %inline binop:
       AMPAMP { And (* XXX *) }
@@ -465,26 +468,26 @@ expression:
 
 creol_type:
       t = CID
-	{ Type.Basic (Note.make $startpos, t) }
+	{ Type.Basic (Type.make_note $startpos, t) }
     | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
-	{ Type.Application(Note.make $startpos, t, p) } 
+	{ Type.Application(Type.make_note $startpos, t, p) } 
     | BACKTICK v = ID
-	{ Type.Variable (Note.make $startpos, v) }
+	{ Type.Variable (Type.make_note $startpos, v) }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type)
       r = ioption(preceded(ARROW, creol_type)) RBRACK
 	{ match r with
-	    None -> Type.Tuple (Note.make $startpos, d)
-	  | Some rt -> Type.Function (Note.make $startpos, d, rt) }
+	    None -> Type.Tuple (Type.make_note $startpos, d)
+	  | Some rt -> Type.Function (Type.make_note $startpos, d, rt) }
     | LBRACK ARROW r = creol_type RBRACK
-	{ Type.Function (Note.make $startpos, [], r) }
+	{ Type.Function (Type.make_note $startpos, [], r) }
     | LBRACKS f = separated_nonempty_list(COMMA, field_decl) RBRACKS
-        { Type.Structure (Note.make $startpos, f) }
+        { Type.Structure (Type.make_note $startpos, f) }
     | LBRACKV f = separated_nonempty_list(BAR, field_decl) RBRACKV
-        { Type.Variant (Note.make $startpos, f) }
+        { Type.Variant (Type.make_note $startpos, f) }
 
 field_decl:
       i = ID COLON t = creol_type
-        { { Type.field_note = Note.make $startpos;
+        { { Type.field_note = Type.make_note $startpos;
 	    Type.field_name = i; Type.field_type = t } }
 
 (* Assertions. *)

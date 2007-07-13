@@ -129,8 +129,7 @@ let pass input =
 	  and lab = fresh_label ()
           in
 	    Sequence (a, LocalAsyncCall (a, Some lab, m, l, u, ni),
-		     Sequence (a, Await (a,
-						       Label(a, lab)),
+		     Sequence (a, Await (a, Label(a, lab)),
 			      Reply (a, lab, o)))
       | Tailcall (a, m, l, u, i) ->
 	  Tailcall (a, m, l, u, List.map lower_expression i)
