@@ -318,20 +318,29 @@ basic_statement:
     | t = separated_nonempty_list(COMMA, lhs) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((Statement.make_note $startpos), t, e) }
-    | AWAIT g = guard
-	{ Await ((Statement.make_note $startpos), g) }
+    | AWAIT e = expression
+	{ Await ((Statement.make_note $startpos), e) }
     | AWAIT error
 	{ signal_error $startpos "Syntax error in await condition" }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
-	{ AsyncCall ((Statement.make_note $startpos), l, callee, m, i) }
+	{ AsyncCall ((Statement.make_note $startpos), 
+		     (match l with
+                          None -> None
+			| Some lab -> Some (LhsVar (Expression.make_note $startpos, lab))),
+                    callee, m, i) }
     | l = ioption(ID) BANG m = ID
 	lb = ioption(preceded(SUPERTYPE, CID)) 
 	ub = ioption(preceded(SUBTYPE, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
-	{ LocalAsyncCall ((Statement.make_note $startpos), l, m, lb, ub, i) }
+	{ LocalAsyncCall ((Statement.make_note $startpos), 
+			 (match l with
+                              None -> None
+			    | Some lab -> Some (LhsVar (Expression.make_note $startpos, lab))),
+			  m, lb, ub, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
-	{ Reply ((Statement.make_note $startpos), l, o) }
+	{ Reply (Statement.make_note $startpos,
+		 Id (Expression.make_note $startpos, l), o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
@@ -366,13 +375,6 @@ basic_statement:
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
 
-guard:
-      l = ID QUESTION { Label ((Expression.make_note $startpos), l) }
-    | l = ID QUESTION AMPAMP g = guard
-        { Binary ((Expression.make_note $startpos), And,
-		  Label((Expression.make_note $startpos), l), g) }
-    | e = expression { e }
-
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:
       id = ID c = ioption(preceded(AT, creol_type))
@@ -406,8 +408,10 @@ expression:
 	{ Null (Expression.make_note $startpos) }
     | id = ID c = ioption(preceded(AT, creol_type))
 	{ match c with
-	      None -> Id ((Expression.make_note $startpos), id)
-	    | Some cl -> StaticAttr ((Expression.make_note $startpos), id, cl) }
+	      None -> Id (Expression.make_note $startpos, id)
+	    | Some cl -> StaticAttr (Expression.make_note $startpos, id, cl) }
+    | l = ID QUESTION { Label (Expression.make_note $startpos,
+			       Id (Expression.make_note $startpos, l)) }
     | LPAREN l = separated_list(COMMA, expression) RPAREN 
 	{ (* let n = Note.make $startpos in *)
 	    match l with

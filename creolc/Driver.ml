@@ -63,18 +63,18 @@ module Target =
 	  | s -> raise (Arg.Bad ("unknown target " ^ s))
 
     let output tree =
-      let out =
-	match !file with
-          | "-" -> stdout
-          | s -> open_out s
-      in
+      let do_output out =
+	Messages.message 1 "Emitting tree" ;
 	match !target with
 	    No -> ()
 	  | Creol -> BackendCreol.emit out tree
 	  | Maude | MaudeMC -> BackendMaude.emit options out tree
-	  | XML ->
-	      let ign a b = () in
-		BackendXML.emit !file ign ign ign tree
+	  | XML -> let ign a b = () in BackendXML.emit !file ign ign ign tree
+	in
+	match !file with
+          | "-" -> do_output stdout
+          | s -> let out = open_out s in do_output out ; close_out out
+
   end
 
 let from_file name =

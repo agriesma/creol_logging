@@ -32,7 +32,7 @@ type options = {
 (** Write a Creol program as a maude term. If the program is parsable
     but not semantically correct, this function will only produce
     garbage. *)
-let emit ~options ~out_channel ~input =
+let emit options out_channel input =
   let rec of_type =
     function
 	Type.Basic (_, n) -> output_string out_channel n
@@ -77,7 +77,9 @@ let emit ~options ~out_channel ~input =
       | Expression.Unary _ -> assert false
       | Expression.Binary _ -> assert false
       | Expression.Label(_, l) ->
-	  output_string out_channel ("( \"" ^ l ^ "\" ?? )")
+	  output_string out_channel "( " ;
+	  of_expression l ;
+	  output_string out_channel " ?? )"
       | Expression.New (_, c, a) ->
 	  output_string out_channel
 	    ("new \"" ^ (Type.as_string c) ^ "\" ( ") ;
@@ -107,28 +109,22 @@ let emit ~options ~out_channel ~input =
       | [i] -> output_string out_channel ("\"" ^ i ^ "\"")
       | i::l -> output_string out_channel ("\"" ^ i ^ "\", ");
 	  of_identifier_list l
+  and of_lhs =
+    function
+	Expression.LhsVar(_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
+      | Expression.LhsAttr(_, i, c) ->
+	  output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
+	  of_type c ;
+	  output_string out_channel "\" )"
+      | Expression.LhsWildcard _ -> assert false
   and of_lhs_list =
     (** Translate a list of left hand side expressions a list of
 	Attribute identifiers. *)
     function
 	[] ->
 	  output_string out_channel "noVid"
-      | [Expression.LhsVar(_, i)] ->
-	  output_string out_channel ("\"" ^ i ^ "\"")
-      | [Expression.LhsAttr(_, i, c)] ->
-	  output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
-	  of_type c ;
-	  output_string out_channel "\" )"
-      | [Expression.LhsWildcard _] -> assert false
-      | Expression.LhsVar(_, i)::l ->
-	  output_string out_channel ("\"" ^ i ^ "\"") ;
-	  of_lhs_list l
-      | Expression.LhsAttr(_, i, c)::l ->
-	  output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
-	  of_type c ;
-	  output_string out_channel "\" )" ;
-	  of_lhs_list l
-      | (Expression.LhsWildcard _)::l -> assert false
+       | [l] -> of_lhs l
+       | l::r -> of_lhs l ; output_string out_channel ", " ; of_lhs_list r
   and of_statement cls stmt =
     let open_paren prec op_prec =
       if prec < op_prec then output_string out_channel "( " ;
@@ -150,30 +146,37 @@ let emit ~options ~out_channel ~input =
 	| Statement.AwaitSyncCall _ -> assert false
 	| Statement.AsyncCall (_, None, _, _, _) -> assert false
 	| Statement.AsyncCall (_, Some l, c, m, a) ->
-	    output_string out_channel ("\"" ^ l ^ "\"") ;
+	    of_lhs l ;
 	    output_string out_channel " ! ";
 	    of_expression c ;
 	    output_string out_channel (" . \"" ^ m ^ "\" ( ") ;
 	    of_expression_list a;
 	    output_string out_channel " )"
 	| Statement.Reply (_, l, o) ->
-	    output_string out_channel ("( \"" ^ l ^ "\" ? ( ") ;
+	    output_string out_channel "( " ;
+	    of_expression l ;
+	    output_string out_channel " ? ( " ;
 	    of_lhs_list o;
 	    output_string out_channel " ) ) "
 	| Statement.Free (_, l) ->
-	    output_string out_channel ("free( \"" ^ l ^ "\" )")
+	    output_string out_channel "free( " ;
+	    of_expression_list l ;
+	    output_string out_channel " )"
 	| Statement.LocalSyncCall _ -> assert false
 	| Statement.AwaitLocalSyncCall _ -> assert false
 	| Statement.LocalAsyncCall (_, None, _, _, _, _) -> assert false
 	| Statement.LocalAsyncCall (_, Some l, m, None, None, i) ->
 	    (* An unqualified local synchronous call should use this in
 	       order to get late binding correct. *)
-	    output_string out_channel ("( \"" ^ l ^ "\" ! \"this\" . \"" ^
-					  m ^ "\" (");
-	    of_expression_list i;
+	    output_string out_channel "( " ;
+	    of_lhs l ;
+	    output_string out_channel (" ! \"this\" . \"" ^ m ^ "\" (");
+	    of_expression_list i ;
 	    output_string out_channel " ) ) "
 	| Statement.LocalAsyncCall (_, Some l, m, lb, ub, i) ->
-	    output_string out_channel ("( \"" ^ l ^ "\" ! \"" ^ m ^ "\" ") ;
+	    output_string out_channel "( " ;
+	    of_lhs l ;
+	    output_string out_channel (" ! \"" ^ m ^ "\" ") ;
 	    (match lb with
 		None -> output_string out_channel ("@ \"" ^ cls ^ "\" ")
 	      | Some n -> output_string out_channel ("@ \"" ^ n ^ "\" "));

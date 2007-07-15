@@ -60,9 +60,11 @@ let pass input =
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
 	  Sequence (a, AsyncCall (a,
-				 Some ".anon", lower_expression e, n,
+				 Some (LhsVar (make_expr_note_from_stmt_note a,
+					      ".anon")),
+				 lower_expression e, n,
 				 List.map lower_expression p),
-		   Free (a, ".anon"))
+		   Free (a, [Id (make_expr_note_from_stmt_note a, ".anon")]))
       | AsyncCall (a, Some l, e, n, p) ->
 	  AsyncCall (a, Some l, lower_expression e, n,
 		    List.map lower_expression p)
@@ -79,9 +81,8 @@ let pass input =
 	  and np = List.map lower_expression p
 	  and l = fresh_label ()
           in
-	    Sequence (a, AsyncCall (a,
-				   Some l, ne, n, np),
-		     Reply (a, l, r))
+	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, np),
+		     Reply (a, Id (make_expr_note_from_stmt_note a, l), r))
       | AwaitSyncCall (a, e, n, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
@@ -89,21 +90,24 @@ let pass input =
 	     XXX: Usually, we nest a sequence into a sequence here, which is
 	     not very nice.  May be we want to have something smarter for
 	     sequences which avoids this nesting? *)
-          let ne = lower_expression e
+	  let ne = lower_expression e
 	  and np = List.map lower_expression p
-	  and l = fresh_label ()
-          in
-	    Sequence (a, AsyncCall (a, Some l, ne, n, np),
+	  and l = fresh_label () in
+	  let nn = Expression.note ne
+	  in
+	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, np),
 		     Sequence(a,
-			     Await (a, Label(Expression.note ne, l)),
-			     Reply (a, l, r)))
+			     Await (a, Label (nn, Id (nn, l))),
+			     Reply (a, Id (make_expr_note_from_stmt_note a,
+					  l),
+				   r)))
       | LocalAsyncCall (a, None, m, lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
-	  Sequence (a, LocalAsyncCall(a, Some ".anon", m, lb, ub,
+	  Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a, ".anon")), m, lb, ub,
 				     List.map lower_expression i),
-		   Free (a, ".anon"))
+		   Free (a, [Id (make_expr_note_from_stmt_note a, ".anon")]))
       | LocalAsyncCall (a, Some l, m, lb, ub, i) ->
 	  LocalAsyncCall (a, Some l, m, lb, ub, List.map lower_expression i)
       | LocalSyncCall (a, m, l, u, i, o) ->
@@ -115,9 +119,9 @@ let pass input =
 	     sequences which avoids this nesting? *)
 	  let ni = List.map lower_expression i
 	  and lab = fresh_label ()
-          in
-	    Sequence (a, LocalAsyncCall (a, Some lab, m, l, u, ni),
-		     Reply (a, lab, o))
+	  in
+	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, l, u, ni),
+		     Reply (a, Id (make_expr_note_from_stmt_note a, lab), o))
       | AwaitLocalSyncCall (a, m, l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
@@ -127,12 +131,14 @@ let pass input =
 	     sequences which avoids this nesting? *)
 	  let ni = List.map lower_expression i
 	  and lab = fresh_label ()
-          in
-	    Sequence (a, LocalAsyncCall (a, Some lab, m, l, u, ni),
+	  in
+	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, l, u, ni),
 		     Sequence (a, Await (a,
-					 Label(make_expr_note_from_stmt_note a,
-					       lab)),
-			      Reply (a, lab, o)))
+					Label(make_expr_note_from_stmt_note a,
+					     Id (make_expr_note_from_stmt_note a, lab))),
+			      Reply (a, Id (make_expr_note_from_stmt_note a,
+					   lab),
+				    o)))
       | Tailcall (a, m, l, u, i) ->
 	  Tailcall (a, m, l, u, List.map lower_expression i)
       | If (a, c, t, f) -> If(a, lower_expression c, lower_statement t,
@@ -183,16 +189,16 @@ let pass input =
     (** Simplify a method definition. *)
     let _ = next_fresh_label := 0 (* Labels must only be unique per method. *)
     in
-    match m.Method.meth_body with
-	None -> m
-      | Some mb  ->
-	  let smv = lower_method_variables (Statement.note mb) m.Method.meth_vars in
-	    { m with Method.meth_vars = fst smv ;
-	      meth_body = Some( if Statement.is_skip_p (snd smv) then
-		normalize_sequences (lower_statement mb)
-		else
-		  Sequence(Statement.note mb, snd smv,
-			  normalize_sequences (lower_statement mb))) }
+      match m.Method.meth_body with
+	  None -> m
+	| Some mb  ->
+	    let smv = lower_method_variables (Statement.note mb) m.Method.meth_vars in
+	      { m with Method.meth_vars = fst smv ;
+		meth_body = Some( if Statement.is_skip_p (snd smv) then
+		  normalize_sequences (lower_statement mb)
+		  else
+		    Sequence(Statement.note mb, snd smv,
+			    normalize_sequences (lower_statement mb))) }
   and lower_with w =
     { w with With.methods = List.map lower_method w.With.methods }
   and lower_inherits =

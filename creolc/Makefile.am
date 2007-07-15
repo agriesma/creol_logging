@@ -79,10 +79,14 @@ creolc.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolc_SOURCES)))
 # We must make sure that Creol.cmi is build before CreolParser.ml, but we
 # do not want that CreolParser.ml depends on Creol.cmi, because then the
 # end user needs to have menhir installed in order to rebuild the parser
-# sources.  We build Creol.cmi by hand here.
+# sources.  We build Creol.cmi by hand here.  Same goes for Messages.cmi.
 #
-CreolParser.ml CreolParser.mli: Creol.mly
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o Creol.cmi -c ${srcdir}/Creol.mli
+# Nonetheless, we depend on the source files, since type inference needs
+# to be redone after those files have been changed.
+#
+CreolParser.ml CreolParser.mli: Creol.mly Creol.mli Messages.ml
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.mli
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Messages.ml
 	rm -f CreolParser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
 

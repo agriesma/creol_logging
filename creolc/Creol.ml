@@ -131,7 +131,7 @@ module Expression =
 	| Binary of note * binaryop * t * t
 	| If of note * t * t * t
 	| FuncCall of note * string * t list
-	| Label of note * string
+	| Label of note * t
 	| New of note * Type.t * t list
 	| Extern of note * string
         | SSAId of note * string * int
@@ -257,13 +257,16 @@ module Expression =
 	| FuncCall (a, _, _) -> a
 	| Label (a, _) -> a
 	| New (a, _, _) -> a
-	| Extern(a, _) -> a
+	| Extern (a, _) -> a
+	| SSAId (a, _, _) -> a
+	| Phi (a, _) -> a
 
     let name =
       function
 	  LhsVar(_, n) -> n
 	| LhsAttr(_, n, _) -> n
 	| LhsWildcard _ -> "_"
+	| LhsSSAId (_, n, _) -> n
 
     (** Whether an expression contains a label *)
     let rec contains_label_p =
@@ -455,16 +458,16 @@ module Statement =
 	| Assert of note * Expression.t
 	| Assign of note * Expression.lhs list * Expression.t list
 	| Await of note * Expression.t
-	| AsyncCall of note * string option * Expression.t * string *
+	| AsyncCall of note * Expression.lhs option * Expression.t * string *
 	    Expression.t list
-	| Reply of note * string * Expression.lhs list
-	| Free of note * string
+	| Reply of note * Expression.t * Expression.lhs list
+	| Free of note * Expression.t list
 	| SyncCall of note * Expression.t * string *
 	    Expression.t list * Expression.lhs list
 	| AwaitSyncCall of note * Expression.t * string *
 	    Expression.t list * Expression.lhs list
-	| LocalAsyncCall of note * string option * string * string option *
-	    string option * Expression.t list
+	| LocalAsyncCall of note * Expression.lhs option * string *
+	    string option * string option * Expression.t list
 	| LocalSyncCall of note * string * string option * string option *
             Expression.t list * Expression.lhs list
 	| AwaitLocalSyncCall of note * string * string option * string option *

@@ -233,18 +233,21 @@ let emit out_channel input =
 	| Statement.AsyncCall (_, l, c, m, a) ->
 	    (match l with
 		None -> ()
-	      | Some l -> output_string out_channel l ) ;
+	      | Some l -> pretty_print_lhs l ) ;
 	    output_string out_channel "!";
 	    pretty_print_expression c ;
 	    output_string out_channel ("." ^ m ^ "(");
 	    pretty_print_expression_list a;
 	    output_string out_channel ")"
 	| Statement.Reply (_, l, o) ->
-	    output_string out_channel (l ^ "?(");
+	    pretty_print_expression l ;
+	    output_string out_channel "?(";
 	    pretty_print_lhs_list o;
 	    output_string out_channel ")";
 	| Statement.Free(_, l) ->
-	    output_string out_channel ("/* free(" ^ l ^ ") */")
+	    output_string out_channel "/* free(" ;
+	    pretty_print_expression_list l ;
+	    output_string out_channel ") */"
 	| Statement.SyncCall (_, c, m, a, r) ->
 	    pretty_print_expression c ;
 	    output_string out_channel ("." ^ m ^ "(");
@@ -261,11 +264,11 @@ let emit out_channel input =
 	    pretty_print_lhs_list r;
 	    output_string out_channel ")"
 	| Statement.LocalAsyncCall (_, l, m, lb, ub, i) ->
-	    output_string out_channel
 	      (match l with
-		  None -> "!"
-		| Some n -> (n ^ "!"));
-	    output_string out_channel m;
+		  None -> ()
+		| Some n -> pretty_print_lhs n ) ;
+	    output_string out_channel "!" ;
+	    output_string out_channel m ;
 	    (match lb with
 		None -> ()
 	      | Some n -> output_string out_channel (":>" ^ n));
@@ -412,7 +415,7 @@ let emit out_channel input =
 	    output_string out_channel (i ^ "(");
 	    pretty_print_expression_list a;
 	    output_string out_channel ")";
-	| Expression.Label (_, l) -> output_string out_channel (l ^ "?")
+	| Expression.Label (_, l) -> print 121 l; output_string out_channel "?"
 	| Expression.If (_, c, t, f) ->
 	    output_string out_channel "if "; print 121 c ;
 	    output_string out_channel " then "; print 121 t ;
@@ -424,20 +427,31 @@ let emit out_channel input =
 	    output_string out_channel ")"
         | Expression.Extern (_, s) ->
             output_string out_channel ("extern \"" ^ s ^ "\"");
+	| Expression.SSAId (_, v, n) ->
+	    output_string out_channel
+	      (v ^ "/* version " ^ (string_of_int n) ^ " */")
+	| Expression.Phi (_, l) ->
+	    output_string out_channel "$Phi(" ;
+	    pretty_print_expression_list l ;
+	    output_string out_channel ")";
     in
       print 121 exp
   and pretty_print_expression_list l =
     separated_list pretty_print_expression
       (function () -> output_string out_channel ", ") l
-  and pretty_print_lhs_list l =
-    separated_list
-      (function
+  and pretty_print_lhs =
+      function
 	  Expression.LhsVar (_, n) -> output_string out_channel n
 	| Expression.LhsAttr(_, n, c) -> output_string out_channel
 	    (n ^ "@" ^ (Type.as_string c))
 	| Expression.LhsWildcard (_, None) -> output_string out_channel "_"
 	| Expression.LhsWildcard (_, Some t) ->
-	    output_string out_channel ("_: " ^ (Type.as_string t)))
+	    output_string out_channel ("_: " ^ (Type.as_string t))
+	| Expression.LhsSSAId (_, v, n) ->
+	    output_string out_channel
+	      (v ^ "/* version " ^ (string_of_int n) ^ " */")
+  and pretty_print_lhs_list l =
+    separated_list pretty_print_lhs
       (function () -> output_string out_channel ", ") l
   and do_indent lvl =
     output_string out_channel ("\n" ^ (String.make (lvl * 2) ' '))

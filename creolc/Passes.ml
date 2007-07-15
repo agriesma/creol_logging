@@ -32,6 +32,7 @@ type pass = {
   mutable dump: bool
 }
 
+let id x = x
 
 (** An association list collecting the passes in order. *)
 let passes = [
@@ -48,12 +49,17 @@ let passes = [
   ( "into-ssa" ,
   { help = "Compute data flow." ;
     dependencies = "lower";
-    pass = TreeSSA.into ;
+    pass = TreeSSA.into_ssa ;
+    elapsed = 0.0; needed = false; dump = false } ) ;
+  ( "life-vars" ,
+  { help = "Compute data flow." ;
+    dependencies = "lower";
+    pass = id ;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "dead-vars" ,
   { help = "Eliminate dead variables and values." ;
-    dependencies = "dataflow" ;
-    pass = (function x -> x) ;
+    dependencies = "life-vars" ;
+    pass = id ;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "tailcall" ,
   { help = "Optimise tail-calls." ;
@@ -61,9 +67,9 @@ let passes = [
     pass = TreeTailcall.optimize ;
     elapsed = 0.0; needed = false; dump = false } );
   ( "outof-ssa" ,
-  { help = "Compute data flow." ;
+  { help = "Convert a tree in SSA back to a non-SSA form." ;
     dependencies = "into-ssa";
-    pass = TreeSSA.outof ;
+    pass = TreeSSA.out_of_ssa ;
     elapsed = 0.0; needed = false; dump = false } ) ;
 ]
 
@@ -163,7 +169,8 @@ let execute_dump name pass tree =
   let file = ((basename name)  ^ "." ^ pass) in
   let ign a b = () in
     Messages.message 1 ("Writing dump to " ^ file) ;
-    BackendXML.emit file ign ign ign tree
+    BackendXML.emit file ign ign ign tree ;
+    Messages.message 1 ("Finished writing dump to " ^ file)
 
 
 let execute_passes filename tree =
@@ -175,19 +182,20 @@ let execute_passes filename tree =
     if (snd p).needed then
       begin
 	let now = ref (Unix.gettimeofday ()) in
-	let _ = Messages.message 1 ("executing " ^ (fst p)) in
-      let result =  ((snd p).pass tree) in
-      let elapsed =
-	(floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0
-      in
-	(snd p).elapsed <- (snd p).elapsed +. elapsed;
-	if (snd p).dump then execute_dump filename (fst p) result ;
-	result
-end
-else
-  tree
-in
-  execute tree passes
+	let _ = Messages.message 1 ("Executing " ^ (fst p)) in
+	let result =  ((snd p).pass tree) in
+	let _ = Messages.message 1 ("Finished executing " ^ (fst p)) in
+	let elapsed =
+	  (floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0
+	in
+	  (snd p).elapsed <- (snd p).elapsed +. elapsed ;
+	  if (snd p).dump then execute_dump filename (fst p) result ;
+	  result
+      end
+    else
+      tree
+  in
+    execute tree passes
 
 (** Write the internal time measurements to standard error.
 

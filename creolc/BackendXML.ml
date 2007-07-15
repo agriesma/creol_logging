@@ -169,10 +169,10 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer
       | Statement.AsyncCall (a, l, c, m, es) ->
 	  XmlTextWriter.start_element writer "creol:asynccall" ;
+	  XmlTextWriter.write_attribute writer "method" m ;
 	  (match l with
 	      None -> ()
-	    | Some n -> XmlTextWriter.write_attribute writer "label" n ) ;
-	  XmlTextWriter.write_attribute writer "method" m ;
+	    | Some n -> creol_lhs_to_xml n ) ;
 	  XmlTextWriter.start_element writer "creol:callee" ;
 	  creol_expression_to_xml c ;
           XmlTextWriter.end_element writer ;
@@ -186,7 +186,7 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer
       | Statement.Reply (a, l, is) ->
 	  XmlTextWriter.start_element writer "creol:reply" ;
-	  XmlTextWriter.write_attribute writer "label" l ;
+	  creol_expression_to_xml l ;
 	  XmlTextWriter.start_element writer "creol:results" ;
 	  List.iter creol_lhs_to_xml is ;
           XmlTextWriter.end_element writer ;
@@ -194,7 +194,7 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer
       | Statement.Free (a, l) ->
 	  XmlTextWriter.start_element writer "creol:free" ;
-	  XmlTextWriter.write_attribute writer "label" l ;
+	  List.iter creol_expression_to_xml l ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
       | Statement.SyncCall (a, c, m, es, is) ->
@@ -234,15 +234,15 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
       | Statement.LocalAsyncCall (a, l, m, lb, ub, es) ->
 	  XmlTextWriter.start_element writer "creol:localasynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
-	  (match l with
-	      None -> ()
-	    | Some n -> XmlTextWriter.write_attribute writer "label" n ) ;
 	  (match lb with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "lower" n ) ;
 	  (match ub with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "upper" n ) ;
+	  (match l with
+	      None -> ()
+	    | Some n -> creol_lhs_to_xml n ) ;
 	  XmlTextWriter.start_element writer "creol:arguments" ;
 	  List.iter (function e -> 
 	    XmlTextWriter.start_element writer "creol:expression" ;
@@ -391,6 +391,11 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
         XmlTextWriter.start_element writer "creol:wildcard" ;
 	creol_type_to_xml c ;
         XmlTextWriter.end_element writer
+      | Expression.LhsSSAId (_, i, v) ->
+        XmlTextWriter.start_element writer "creol:ssa-name" ;
+        XmlTextWriter.write_attribute writer "name" i ;
+        XmlTextWriter.write_attribute writer "version" (string_of_int v) ;
+        XmlTextWriter.end_element writer
   and creol_expression_to_xml =
     function
 	Expression.Null a -> 
@@ -496,7 +501,7 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer
       | Expression.Label (a, l) ->
 	  XmlTextWriter.start_element writer "creol:label" ;
-	  XmlTextWriter.write_attribute writer "name" l;
+	  creol_expression_to_xml l ;
 	  expr_handler writer a ;
 	  XmlTextWriter.end_element writer
       | Expression.New (a, c, es) ->
@@ -527,6 +532,17 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  XmlTextWriter.start_element writer "creol:extern" ; 
           XmlTextWriter.write_attribute writer "name" s ;
 	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.SSAId (n, i, v) ->
+          XmlTextWriter.start_element writer "creol:ssa-name" ;
+          XmlTextWriter.write_attribute writer "name" i ;
+          XmlTextWriter.write_attribute writer "version" (string_of_int v) ;
+	  expr_handler writer n ;
+          XmlTextWriter.end_element writer
+      | Expression.Phi (n, l) ->
+	  XmlTextWriter.start_element writer "creol:phi" ; 
+	  List.iter creol_expression_to_xml l ;
+	  expr_handler writer n ;
           XmlTextWriter.end_element writer
   and creol_type_to_xml =
     function

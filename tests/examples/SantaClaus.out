@@ -57,8 +57,8 @@ result Configuration:
     "waitReindeers")) ; "waitReindeers" ::= "tail"("waitReindeers") ; "t5" !
     "head"("waitReindeers") . "harness"(emp) ; "harnessedReindeers" ::= "|-"(
     "harnessedReindeers" # "head"("waitReindeers")) ; "waitReindeers" ::=
-    "tail"("waitReindeers") ; await "&&"("t1" ?? # "&&"("t2" ?? # "&&"("t3" ??
-    # "&&"("t4" ?? # "t5" ??)))) ; ".anon" ! "head"("harnessedReindeers") .
+    "tail"("waitReindeers") ; await "&&"("&&"("&&"("&&"("t1" ?? # "t2" ??) #
+    "t3" ??) # "t4" ??) # "t5" ??) ; ".anon" ! "head"("harnessedReindeers") .
     "unharness"(emp) ; free(".anon") ; "harnessedReindeers" ::= "tail"(
     "harnessedReindeers") ; ".anon" ! "head"("harnessedReindeers") .
     "unharness"(emp) ; free(".anon") ; "harnessedReindeers" ::= "tail"(
@@ -81,11 +81,11 @@ result Configuration:
     "waitElves")) ; "waitElves" ::= "tail"("waitElves") ; "t3" ! "head"(
     "waitElves") . "showIn"(emp) ; "inofficeElves" ::= "|-"("inofficeElves" #
     "head"("waitElves")) ; "waitElves" ::= "tail"("waitElves") ; await "&&"(
-    "t1" ?? # "&&"("t2" ?? # "t3" ??)) ; "t1" ! "head"("inoffcieElves") .
+    "&&"("t1" ?? # "t2" ??) # "t3" ??) ; "t1" ! "head"("inoffcieElves") .
     "showOut"(emp) ; "inofficeElves" ::= "tail"("inofficeElves") ; "t2" !
     "head"("inoffcieElves") . "showOut"(emp) ; "inofficeElves" ::= "tail"(
     "inofficeElves") ; "t3" ! "head"("inoffcieElves") . "showOut"(emp) ;
-    "inofficeElves" ::= "tail"("inofficeElves") ; await "&&"("t1" ?? # "&&"(
-    "t2" ?? # "t3" ??)) ; return(emp) >,
+    "inofficeElves" ::= "tail"("inofficeElves") ; await "&&"("&&"("t1" ?? #
+    "t2" ??) # "t3" ??) ; return(emp) >,
   Ocnt: 0 >
 Bye.

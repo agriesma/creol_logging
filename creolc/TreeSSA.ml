@@ -1,5 +1,5 @@
 (*
- * TreeTailcall.ml -- Optimize tailcalls.
+ * TreeSSA.ml -- Convert a tree into or out of SSA form
  *
  * This file is part of creoltools
  *
@@ -25,14 +25,299 @@ open Creol
 open Expression
 open Statement
 
-let into tree =
+(** The information we want to collect about variables during analysis *)
+
+type kind = Attribute | Input | Output | Local | Label
+
+type info = {
+  kind : kind ;
+  version: int ;
+}
+
+let into_ssa tree =
   (** Convert a creol tree into static single assignment form.
 
       Static single assignment form is a form that encodes dataflow
-      information syntactically.  *)
-  tree
+      information syntactically.
 
-let outof tree =
+      The algorithm used follows Marc M. Brandis and Hanspeter
+      Mössenböck {i Single-Pass Generation of Static Single Assignment
+      Foerm for Structured Languages}, ACM Transactions on Programming
+      Languages and Systems 16(6), November 1994, p. 1684--1698.
+
+      Our version is much simpler, since we only need to cover if
+      statements and while loops and we do not compute dominators, and
+      we operate on tree-level.  This function also treats choice
+      statements.
+
+      {b BUG}: We need to find out how we can come up with a clever
+      implementation for merge statements.  We may need to expand the
+      merge statements into choice statements.  For now, we assume
+      that there is {i no} assignment to local variables within merge
+      statements, if they are also used within the merge
+      statement.
+
+      The current code breaks on this:
+
+      begin x := a; release; a := x end |||
+      begin a := x; release; x:= a end
+
+      This will result in
+
+      begin x1 := a0; release; a1 := x1 end |||
+      begin a2 := x0; release; x2 := a2 end
+
+      But we are missing some phi nodes here, since the interleaving
+      would make something like x1 := phi(a0, a2) and a2 := phi(x0,
+      x1), a1 := phi(x1, x2), and x2 := phi(a0, a2).  How we can come
+      up with something like this, and have some of these statements
+      become join nodes has to be worked out.  *)
+  let rec expression_to_ssa env =
+    (* A use of the SSA name.  We should be able to find the name in
+       the environment. *)
+    function
+	(Null _ | Nil _ | Bool _ | Int _ | Float _ | String _) as e -> e
+      | Id (a, v) ->
+	  begin
+	    try
+	      let info = Hashtbl.find env v in
+		match info.kind with
+	            Attribute -> Id (a, v)
+		      (* FIXME: Get the actual class of the attribute
+			 from the type checker and replace it by a
+			 static attribute access. *)
+	          | (Input | Output) -> SSAId (a, v, info.version)
+		      (* Input and output variables should be used linearily,
+			 but nothing enforces that yet.  We use an SSAId to
+			 see, whether their version remains 0 in this
+			 situation. *)
+	          | (Local | Label) -> SSAId (a, v, info.version)
+	    with Not_found ->
+	      (* FIXME: This should actually not happen, but here it may
+		 indecate an inherited attribute.  The type checker should
+		 provide us with the necessary information. *)
+	      Messages.message 1 ("expression_to_ssa: " ^ v ^ " not found") ;
+	      Id (a, v)
+          end
+      | StaticAttr _ as e -> e
+      | Tuple (a, l) -> Tuple (a, List.map (expression_to_ssa env) l)
+      | ListLit (a, l) -> ListLit (a, List.map (expression_to_ssa env) l)
+      | SetLit (a, l) -> SetLit (a, List.map (expression_to_ssa env) l)
+      | FieldAccess (a, v, f) -> FieldAccess (a, expression_to_ssa env v, f)
+      | Unary (a, o, e) -> Unary (a, o, expression_to_ssa env e)
+      | Binary (a, o, l, r) ->
+	  Binary (a, o, expression_to_ssa env l, expression_to_ssa env r)
+      | Expression.If (a, c, t, f) -> 
+	  Expression.If (a, expression_to_ssa env c, expression_to_ssa env t,
+			expression_to_ssa env f)
+      | FuncCall (a, f, l) ->
+	  FuncCall (a, f, List.map (expression_to_ssa env) l)
+      | Expression.Label (a, l) ->
+	  Expression.Label (a, expression_to_ssa env l)
+      | New (a, c, l) -> New (a, c, List.map (expression_to_ssa env) l)
+      | Expression.Extern _ as e -> e
+      | SSAId (a, v, n) ->
+	  (* We seem to rerun to_ssa, and then we just recompute all
+	     assignments. *)
+	  SSAId (a, v, (Hashtbl.find env v).version)
+      | Phi (a, l) ->
+	  (* We seem to rerun to_ssa, and then we just recompute all
+	     assignments. *)
+	  Phi (a, List.map (expression_to_ssa env) l)
+  in
+  let left_hand_side_to_ssa env =
+    (* This function is used to create a new SSA name, because we
+       define a new value for that variable. *)
+    function
+	LhsVar (n, i) ->
+	  begin
+	    try 
+	      let info = Hashtbl.find env i in
+	        match info.kind with
+	            Attribute -> LhsVar (n, i) (* Attributes are unversioned *)
+	          | Input -> assert false
+	          | (Output | Local) ->
+		      Hashtbl.replace env i { info with version = info.version + 1 } ;
+		      LhsSSAId (n, i, info.version)
+		  | Label -> (* FIXME: Should we do more? *)
+		      Hashtbl.replace env i { info with version = info.version + 1 } ;
+		      LhsSSAId (n, i, info.version)
+            with
+                Not_found ->
+		  Hashtbl.add env i { kind = Label ; version = 1 } ;
+		  LhsSSAId (n, i, 1)
+          end
+      | LhsAttr (n, s, t) -> LhsAttr (n, s, t)
+      | LhsWildcard (n, t) -> LhsWildcard (n, t)
+      | LhsSSAId (n, i, v) -> LhsSSAId (n, i, v)
+  in
+  let compute_phi note pre left right =
+    Messages.message 1 ("compute_phi") ;
+    let changeset = Hashtbl.create 32 in
+    let find v i c =
+      try
+	if (Hashtbl.find pre v).version < i.version then
+	  begin
+	    Messages.message 1 ("compute_phi: name " ^ v ^ " changed") ;
+	    Hashtbl.replace changeset v ()
+	  end
+	else
+	  Messages.message 1
+	    ("compute_phi: name " ^ v ^ " old: " ^
+		(string_of_int (Hashtbl.find pre v).version) ^ " new: " ^
+		(string_of_int i.version)) ;
+      with
+	  Not_found ->
+	    Messages.message 1 ("compute_phi: new name " ^ v ) ;
+	    Hashtbl.replace changeset v ()
+    in
+    let _ = Hashtbl.fold find left () in
+    let _ = Hashtbl.fold find right () in
+    let build v () (l, r) =
+      let phi =
+	let lv = try (Hashtbl.find left v).version with Not_found -> (-1)
+	and rv = try (Hashtbl.find right v).version with Not_found -> (-1) in
+	  Phi (make_expr_note_from_stmt_note note,
+	      [SSAId (make_expr_note_from_stmt_note note, v, lv);
+	       SSAId (make_expr_note_from_stmt_note note, v, rv)]) in
+      let lhs = left_hand_side_to_ssa right
+	(LhsVar (make_expr_note_from_stmt_note note, v))
+      in
+	(lhs::l, phi::r)
+    in
+      (* changeset contains all names which changed their version in left or
+         right.  Now we figure out which versions we need to add. *)
+    let res = Hashtbl.fold build changeset ([], []) in
+      Assign (note, fst res, snd res)
+  in
+  let rec statement_to_ssa env =
+    function
+	Skip n -> Skip n
+      | Assert (n, e) -> Assert (n, expression_to_ssa env e)
+      | Assign (n, lhs, rhs) ->
+	  let nr = List.map (expression_to_ssa env) rhs in
+	  let nl = List.map (left_hand_side_to_ssa env) lhs in
+	    Assign (n, nl, nr)
+      | Await (n, g) -> Await (n, expression_to_ssa env g)
+      | Release n -> Release n
+      | AsyncCall (n, None, c, m, a) ->
+	  AsyncCall (n, None, c, m, List.map (expression_to_ssa env) a)
+      | AsyncCall (n, Some l, c, m, a) ->
+	  let na = List.map (expression_to_ssa env) a in
+	  let nl = left_hand_side_to_ssa env l in
+	    AsyncCall (n, Some nl, c, m, na)
+      | Reply (n, l, p) ->
+	  let nl = expression_to_ssa env l in
+	  let np = List.map (left_hand_side_to_ssa env) p in
+	    Reply (n, nl, np)
+      | Free (n, v) -> Free (n, List.map (expression_to_ssa env) v)
+      | SyncCall (n, c, m, ins, outs) ->
+	  let nc = expression_to_ssa env c in
+	  let ni = List.map (expression_to_ssa env) ins in
+	  let no = List.map (left_hand_side_to_ssa env) outs in
+	    SyncCall (n, nc, m, ni, no)
+      | AwaitSyncCall (n, c, m, ins, outs) ->
+	  let nc = expression_to_ssa env c in
+	  let ni = List.map (expression_to_ssa env) ins in
+	  let no = List.map (left_hand_side_to_ssa env) outs in
+	    AwaitSyncCall (n, nc, m, ni, no)
+      | LocalAsyncCall (n, None, m, ub, lb, i) ->
+	  (* XXX: This should not happen, but if we resolve this, we need to
+	     rerun this for updating the chain... *)
+	  LocalAsyncCall (n, None, m, ub, lb,
+			 List.map (expression_to_ssa env) i)
+      | LocalAsyncCall (n, Some l, m, ub, lb, i) ->
+	  LocalAsyncCall (n, Some (left_hand_side_to_ssa env l), m, ub, lb,
+			 List.map (expression_to_ssa env) i)
+      | LocalSyncCall (n, m, u, l, ins, outs) ->
+	  let ni = List.map (expression_to_ssa env) ins in
+	  let no = List.map (left_hand_side_to_ssa env) outs in
+	    LocalSyncCall (n, m, u, l, ni, no)
+      | AwaitLocalSyncCall (n, m, u, l, ins, outs) ->
+	  let ni = List.map (expression_to_ssa env) ins in
+	  let no = List.map (left_hand_side_to_ssa env) outs in
+	    AwaitLocalSyncCall (n, m, u, l, ni, no)
+      | Tailcall (n, m, u, l, ins) ->
+	  let ni = List.map (expression_to_ssa env) ins in
+            Tailcall (n, m, u, l, ni)
+      | If (n, c, l, r) ->
+	  let nc = expression_to_ssa env c in
+	  let env_pre = Hashtbl.copy env in
+	  let nl = statement_to_ssa env l in
+	  let env_true = Hashtbl.copy env in
+	  let nr = statement_to_ssa env r in
+	  let phi = compute_phi n env_pre env_true env in
+	    Sequence (n, If (n, nc, nl, nr), phi)
+      | While (n, c, i, b) ->
+	  let nc = expression_to_ssa env c in
+	  let nb = statement_to_ssa env b in
+	  let phi = Skip n in
+	    While (n, nc, i, Sequence (n, phi, nb))
+      | Sequence (n, s1, s2) ->
+	  let ns1 = statement_to_ssa env s1 in
+	  let ns2 = statement_to_ssa env s2 in
+	    Sequence (n, ns1, ns2)
+	      (* For merge and choice we do not enforce sequencing of the
+		 computation of the parts, but we allow the compiler to
+		 choose some order *)
+      | Merge (n, l, r) -> 
+	  let env_pre = Hashtbl.copy env in
+	  let nl = statement_to_ssa env l in
+	  let env_left = Hashtbl.copy env in
+	  let nr = statement_to_ssa env r in
+	  let phi = compute_phi n env_pre env_left env in
+	    Sequence (n, Merge (n, nl, nr), phi)
+      | Choice (n, l, r) -> 
+	  let env_pre = Hashtbl.copy env in
+	  let nl = statement_to_ssa env l in
+	  let env_left = Hashtbl.copy env in
+	  let nr = statement_to_ssa env r in
+	  let phi = compute_phi n env_pre env_left env in
+	    Sequence(n, Choice (n, nl, nr), phi)
+      | Extern (n, s) -> Extern (n, s)
+  in
+  let add_all k v tbl { VarDecl.name = name; var_type = _; init = _ }=
+    Hashtbl.add tbl name { kind = k ; version = v } ; tbl
+  in
+  let method_to_ssa env m =
+    match m.Method.meth_body with
+	None -> m
+      | Some b ->
+	  (* Make an environment which is specific to this method and
+	     then compute an SSA format for this method *)
+	  let e1 = 
+	    List.fold_left (add_all Input 0) (Hashtbl.copy env)
+	      m.Method.meth_inpars
+	  in
+	  let e2 =
+	    List.fold_left (add_all Output 0) e1 m.Method.meth_outpars
+	  in
+	  let e =
+	    List.fold_left (add_all Local 0) e2 m.Method.meth_vars
+	  in
+	    { m with Method.meth_body = Some (statement_to_ssa e b) }
+  in
+  let with_def_to_ssa env w =
+    { w with With.methods = List.map (method_to_ssa env) w.With.methods }
+  in
+  let class_to_ssa cls =
+    let env =
+      List.fold_left (add_all Attribute (- 1)) (Hashtbl.create 32)
+	(cls.Class.parameters @ cls.Class.attributes)
+    in
+      { cls with
+	Class.with_defs = List.map (with_def_to_ssa env) cls.Class.with_defs }
+  in
+  let declaration_to_ssa =
+    function
+	Declaration.Class c -> Declaration.Class (class_to_ssa c)
+      | Declaration.Interface i -> Declaration.Interface i
+      | Declaration.Exception e -> Declaration.Exception e
+      | Declaration.Datatype d -> Declaration.Datatype d
+  in
+    List.map declaration_to_ssa tree
+
+let out_of_ssa tree =
   (** Convert a Creol tree from static single assignment form to its
       original form. *)
   tree

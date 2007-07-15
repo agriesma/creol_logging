@@ -130,8 +130,9 @@ sig
 	  (** Conditional expression *)
       | FuncCall of note * string * t list
 	  (** A call of a primitive function *)
-      | Label of note * string
-	  (** The label expression, permitted only in guards *)
+      | Label of note * t
+	  (** The label expression, permitted only in guards.  The
+              sub-expression {i must} be an [Id] or [SSAId]. *)
       | New of note * Type.t * t list
 	  (** Object creation expression, permitted only as top nodes *)
       | Extern of note * string
@@ -216,22 +217,23 @@ module Statement: sig
 	      are of the same length. *)
       | Await of note * Expression.t
 	  (** An await statement. *)
-      | AsyncCall of note * string option * Expression.t * string *
+      | AsyncCall of note * Expression.lhs option * Expression.t * string *
 	  Expression.t list
 	  (** Call a method asynchronously. *)
-      | Reply of note * string * Expression.lhs list
+      | Reply of note * Expression.t * Expression.lhs list
 	  (** Receive the reply to an asynchronous call. *)
-      | Free of note * string
-	  (** Release a label.  It is not usable after executing this statement
-	      anymore. *)
+      | Free of note * Expression.t list
+	  (** Release labels.  The labels are not usable after
+	      executing this statement anymore. The argument {i must}
+	      refer to a list of Id or SSAId. *)
       | SyncCall of note * Expression.t * string *
 	  Expression.t list * Expression.lhs list
 	  (** Call a (remote) method synchronously. *)
       | AwaitSyncCall of note * Expression.t * string *
 	  Expression.t list * Expression.lhs list
 	  (** Call a (remote) method synchronously. *)
-      | LocalAsyncCall of note * string option * string * string option *
-	  string option * Expression.t list
+      | LocalAsyncCall of note * Expression.lhs option * string *
+	  string option * string option * Expression.t list
 	  (** Call a local method synchronously. *)
       | LocalSyncCall of note * string * string option * string option *
 	  Expression.t list * Expression.lhs list
