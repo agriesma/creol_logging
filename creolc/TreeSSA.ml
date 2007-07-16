@@ -45,7 +45,12 @@ let into_ssa tree =
       Foerm for Structured Languages}, ACM Transactions on Programming
       Languages and Systems 16(6), November 1994, p. 1684--1698.
 
-      Our version is much simpler, since we only need to cover if
+      In contrast to the cited version, our SSA transformation does not
+      compute a control-flow graph (may be later versions do).  This
+      does not matter for most cases, but this algorithm must duplicate
+      Phi-nodes for while statements.  See below on how this is done.
+
+      This version is much simpler, since we only need to cover if
       statements and while loops and we do not compute dominators, and
       we operate on tree-level.  This function also treats choice
       statements.
@@ -262,14 +267,17 @@ let into_ssa tree =
 	  let env_pre = Hashtbl.copy env in
 	  let nb = statement_to_ssa env b in
 	    (* Phi is computed like this, since we have one incoming
-	       branch (env_pre), one branch if the loop is executed once
-	       (env), and one exit branch.  We use the incoming branch,
+	       branch (env_pre), one branch if the loop is executed once,
+	       and one exit branch [env].  We use the incoming branch,
 	       pretending that in this case the loop has never been
-	       executed. 
+	       executed.   [phi2] is a copy of phi1, but updated for the
+	       exit of the loop; it is actually redundant, if we compute
+	       a control flow graph.
 
 	       XXX: Review whether this statement really holds. *)
-	  let phi = compute_phi n env_pre env env_pre in
-	    While (n, nc, i, Sequence (n, phi, nb))
+	  let phi1 = compute_phi n env_pre env_pre env in
+	  let phi2 = compute_phi n env_pre env_pre env in
+	    Sequence (n, While (n, nc, i, Sequence (n, phi1, nb)), phi2)
       | Sequence (n, s1, s2) ->
 	  let ns1 = statement_to_ssa env s1 in
 	  let ns2 = statement_to_ssa env s2 in

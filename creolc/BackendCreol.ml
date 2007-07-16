@@ -336,8 +336,8 @@ let emit out_channel input =
 	    output_string out_channel " do ";
 	    do_indent (lvl + 1);
 	    print (lvl + 1) 25 b;
-	    output_string out_channel " end";
-	    do_indent lvl
+	    do_indent lvl ;
+	    output_string out_channel "end";
 	| Statement.Sequence (_, s1, s2) -> 
 	    let op_prec = 25 in
 	    let nl = lvl + if prec < op_prec then 1 else 0 in
