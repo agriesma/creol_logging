@@ -272,6 +272,10 @@ module Statement: sig
   val is_skip_p: t -> bool
 
   val normalize_sequences: t -> t
+
+  val simplify_assignment: t -> t
+
+  val remove_redundant_skips: t -> t
 end
 
 

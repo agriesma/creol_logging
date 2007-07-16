@@ -447,6 +447,9 @@ module Expression =
 
 module Statement =
   struct
+
+    open Expression
+
     type note = {
 	file: string;
 	line: int
@@ -551,6 +554,39 @@ module Statement =
 	      Choice (a, normalize_sequences s1, normalize_sequences s2)
 	  | _ -> stmt
 
+    let simplify_assignment =
+      function
+          Assign (note, lhs, rhs) ->
+            let needed =
+	      function
+	          (LhsVar (a, v), Id (b, w)) when v = w -> false
+                | _ -> true
+            in
+	    begin
+	      match List.split (List.filter needed (List.combine lhs rhs)) with
+	          ([], []) -> Skip note
+	        | (nl, nr) -> Assign (note, nl, nr)
+	      end
+        | _ -> assert false
+
+    let rec remove_redundant_skips =
+      function
+	  (Release _ | Assert _ | Assign _ | Await _ | Posit _ | AsyncCall _ |
+	   Reply _ | Free _ | SyncCall _ | AwaitSyncCall _ | LocalAsyncCall _ |
+	   LocalSyncCall _ | AwaitLocalSyncCall _ | Tailcall _ |
+	   Extern _) as s -> s
+	| Skip note -> Skip note
+	| If (note, c, t, f) ->
+	    If (note, c, remove_redundant_skips t, remove_redundant_skips f)
+	| While (note, c, i, b) -> While (note, c, i, remove_redundant_skips b)
+	| Sequence (_, Skip note, Skip _) -> Skip note
+	| Sequence (_, Skip _, stmt) -> remove_redundant_skips stmt
+	| Sequence (_, stmt, Skip _) -> remove_redundant_skips stmt
+	| Sequence (note, stmt1, stmt2) -> 
+	    Sequence (note, remove_redundant_skips stmt1,
+		     remove_redundant_skips stmt2)
+	| Merge (note, l, r) -> Merge (note, l, r)
+	| Choice (note, l, r) -> Choice (note, l, r)
   end
 
 (** The abstract syntax of Creol *)

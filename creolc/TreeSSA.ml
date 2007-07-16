@@ -404,7 +404,7 @@ let out_of_ssa tree =
 	  let nl = List.map left_hand_side_of_ssa lhs in
 	    (* FIXME: This may give rise to identity assignments (caused by
 	       introducing Phi notes, which we want to eliminate. *)
-	    Assign (n, nl, nr)
+	    Statement.simplify_assignment (Assign (n, nl, nr))
       | Await (n, g) -> Await (n, expression_of_ssa g)
       | Posit (n, g) -> Posit (n, expression_of_ssa g)
       | Release n -> Release n
@@ -477,7 +477,9 @@ let out_of_ssa tree =
     Messages.message 1 ("method_of_ssa: working in " ^ m.Method.meth_name) ;
     match m.Method.meth_body with
 	None -> m
-      | Some b -> { m with Method.meth_body = Some (statement_of_ssa b) }
+      | Some b ->
+	    { m with Method.meth_body =
+	      Some (Statement.remove_redundant_skips (statement_of_ssa b)) }
   in
   let with_def_of_ssa w =
     { w with With.methods = List.map method_of_ssa w.With.methods }
