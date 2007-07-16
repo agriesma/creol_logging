@@ -351,4 +351,147 @@ let into_ssa tree =
 let out_of_ssa tree =
   (** Convert a Creol tree from static single assignment form to its
       original form. *)
-  tree
+  let rec expression_of_ssa =
+    (* A use of the SSA name.  We should be able to find the name in
+       the environment. *)
+    function
+	(This _ | Caller _ | Now _ | Null _ | Nil _ | Bool _ | Int _ |
+	    Float _ | String _ | Id _ | StaticAttr _ ) as e -> e
+      | Tuple (a, l) -> Tuple (a, List.map expression_of_ssa l)
+      | ListLit (a, l) -> ListLit (a, List.map expression_of_ssa l)
+      | SetLit (a, l) -> SetLit (a, List.map expression_of_ssa l)
+      | FieldAccess (a, v, f) -> FieldAccess (a, expression_of_ssa v, f)
+      | Unary (a, o, e) -> Unary (a, o, expression_of_ssa e)
+      | Binary (a, o, l, r) ->
+	  Binary (a, o, expression_of_ssa l, expression_of_ssa r)
+      | Expression.If (a, c, t, f) -> 
+	  Expression.If (a, expression_of_ssa c, expression_of_ssa t,
+			expression_of_ssa f)
+      | FuncCall (a, f, l) ->
+	  FuncCall (a, f, List.map expression_of_ssa l)
+      | Expression.Label (a, l) ->
+	  Expression.Label (a, expression_of_ssa l)
+      | New (a, c, l) -> New (a, c, List.map expression_of_ssa l)
+      | Expression.Extern _ as e -> e
+      | SSAId (a, v, n) -> (* Just drop the version *) Id (a, v)
+      | Phi (a, l) ->
+	  let same_base_p lst = List.fold_left
+	    (function c ->
+	      (function
+		  SSAId (a, v, n) -> 
+		    c && (match (List.hd lst) with
+			SSAId (_, vv, _) -> v == vv
+		      | _ -> assert false )
+	      | _ -> assert false)) true lst
+	  in
+	    assert (same_base_p l) ; expression_of_ssa (List.hd l)
+  in
+  let left_hand_side_of_ssa =
+    (* This function is used to create a new SSA name, because we
+       define a new value for that variable. *)
+    function
+	LhsVar _ as l -> l
+      | LhsAttr (n, s, t) -> LhsAttr (n, s, t)
+      | LhsWildcard (n, t) -> LhsWildcard (n, t)
+      | LhsSSAId (n, i, v) -> LhsVar (n, i)
+  in
+  let rec statement_of_ssa =
+    function
+	Skip n -> Skip n
+      | Assert (n, e) -> Assert (n, expression_of_ssa e)
+      | Assign (n, lhs, rhs) ->
+	  let nr = List.map expression_of_ssa rhs in
+	  let nl = List.map left_hand_side_of_ssa lhs in
+	    (* FIXME: This may give rise to identity assignments (caused by
+	       introducing Phi notes, which we want to eliminate. *)
+	    Assign (n, nl, nr)
+      | Await (n, g) -> Await (n, expression_of_ssa g)
+      | Posit (n, g) -> Posit (n, expression_of_ssa g)
+      | Release n -> Release n
+      | AsyncCall (n, None, c, m, a) ->
+	  AsyncCall (n, None, c, m, List.map expression_of_ssa a)
+      | AsyncCall (n, Some l, c, m, a) ->
+	  let na = List.map expression_of_ssa a in
+	  let nl = left_hand_side_of_ssa l in
+	    AsyncCall (n, Some nl, c, m, na)
+      | Reply (n, l, p) ->
+	  let nl = expression_of_ssa l in
+	  let np = List.map left_hand_side_of_ssa p in
+	    Reply (n, nl, np)
+      | Free (n, v) -> Free (n, List.map expression_of_ssa v)
+      | SyncCall (n, c, m, ins, outs) ->
+	  let nc = expression_of_ssa c in
+	  let ni = List.map expression_of_ssa ins in
+	  let no = List.map left_hand_side_of_ssa outs in
+	    SyncCall (n, nc, m, ni, no)
+      | AwaitSyncCall (n, c, m, ins, outs) ->
+	  let nc = expression_of_ssa c in
+	  let ni = List.map expression_of_ssa ins in
+	  let no = List.map left_hand_side_of_ssa outs in
+	    AwaitSyncCall (n, nc, m, ni, no)
+      | LocalAsyncCall (n, None, m, ub, lb, i) ->
+	  (* XXX: This should not happen, but if we resolve this, we need to
+	     rerun this for updating the chain... *)
+	  LocalAsyncCall (n, None, m, ub, lb, List.map expression_of_ssa i)
+      | LocalAsyncCall (n, Some l, m, ub, lb, i) ->
+	  LocalAsyncCall (n, Some (left_hand_side_of_ssa l), m, ub, lb,
+			 List.map expression_of_ssa i)
+      | LocalSyncCall (n, m, u, l, ins, outs) ->
+	  let ni = List.map expression_of_ssa ins in
+	  let no = List.map left_hand_side_of_ssa outs in
+	    LocalSyncCall (n, m, u, l, ni, no)
+      | AwaitLocalSyncCall (n, m, u, l, ins, outs) ->
+	  let ni = List.map expression_of_ssa ins in
+	  let no = List.map left_hand_side_of_ssa outs in
+	    AwaitLocalSyncCall (n, m, u, l, ni, no)
+      | Tailcall (n, m, u, l, ins) ->
+	  let ni = List.map expression_of_ssa ins in
+	    Tailcall (n, m, u, l, ni)
+      | If (n, c, l, r) ->
+	  let nc = expression_of_ssa c in
+	  let nl = statement_of_ssa l in
+	  let nr = statement_of_ssa r in
+	    If (n, nc, nl, nr)
+      | While (n, c, i, b) ->
+	  let nc = expression_of_ssa c in
+	  let nb = statement_of_ssa b in
+	    While (n, nc, i, nb)
+      | Sequence (n, s1, s2) ->
+	  let ns1 = statement_of_ssa s1 in
+	  let ns2 = statement_of_ssa s2 in
+	    Sequence (n, ns1, ns2)
+	      (* For merge and choice we do not enforce sequencing of the
+		 computation of the parts, but we allow the compiler to
+		 choose some order *)
+      | Merge (n, l, r) -> 
+	  let nl = statement_of_ssa l in
+	  let nr = statement_of_ssa r in
+	    Merge (n, nl, nr)
+      | Choice (n, l, r) -> 
+	  let nl = statement_of_ssa l in
+	  let nr = statement_of_ssa r in
+	    Choice (n, nl, nr)
+      | Extern (n, s) -> Extern (n, s)
+  in
+  let method_of_ssa m =
+    Messages.message 1 ("method_of_ssa: working in " ^ m.Method.meth_name) ;
+    match m.Method.meth_body with
+	None -> m
+      | Some b -> { m with Method.meth_body = Some (statement_of_ssa b) }
+  in
+  let with_def_of_ssa w =
+    { w with With.methods = List.map method_of_ssa w.With.methods }
+  in
+  let class_of_ssa cls =
+    Messages.message 1 ("class_of_ssa: working in " ^ cls.Class.name) ;
+      { cls with
+	Class.with_defs = List.map with_def_of_ssa cls.Class.with_defs }
+  in
+  let declaration_of_ssa =
+    function
+	Declaration.Class c -> Declaration.Class (class_of_ssa c)
+      | Declaration.Interface i -> Declaration.Interface i
+      | Declaration.Exception e -> Declaration.Exception e
+      | Declaration.Datatype d -> Declaration.Datatype d
+  in
+    List.map declaration_of_ssa tree
