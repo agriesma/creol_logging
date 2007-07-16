@@ -428,8 +428,7 @@ let emit out_channel input =
         | Expression.Extern (_, s) ->
             output_string out_channel ("extern \"" ^ s ^ "\"");
 	| Expression.SSAId (_, v, n) ->
-	    output_string out_channel
-	      (v ^ "/* version " ^ (string_of_int n) ^ " */")
+	    output_string out_channel ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
 	| Expression.Phi (_, l) ->
 	    output_string out_channel "$Phi(" ;
 	    pretty_print_expression_list l ;
@@ -448,8 +447,7 @@ let emit out_channel input =
 	| Expression.LhsWildcard (_, Some t) ->
 	    output_string out_channel ("_: " ^ (Type.as_string t))
 	| Expression.LhsSSAId (_, v, n) ->
-	    output_string out_channel
-	      (v ^ "/* version " ^ (string_of_int n) ^ " */")
+	    output_string out_channel ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
   and pretty_print_lhs_list l =
     separated_list pretty_print_lhs
       (function () -> output_string out_channel ", ") l

@@ -135,13 +135,14 @@ let into_ssa tree =
 	      let info = Hashtbl.find env i in
 	        match info.kind with
 	            Attribute -> LhsVar (n, i) (* Attributes are unversioned *)
-	          | Input -> assert false
+	          | Input ->
+		      assert false (* No assignment to input variables. *)
 	          | (Output | Local) ->
 		      Hashtbl.replace env i { info with version = info.version + 1 } ;
-		      LhsSSAId (n, i, info.version)
+		      LhsSSAId (n, i, info.version + 1)
 		  | Label -> (* FIXME: Should we do more? *)
 		      Hashtbl.replace env i { info with version = info.version + 1 } ;
-		      LhsSSAId (n, i, info.version)
+		      LhsSSAId (n, i, info.version + 1)
             with
                 Not_found ->
 		  Hashtbl.add env i { kind = Label ; version = 1 } ;
@@ -174,21 +175,27 @@ let into_ssa tree =
     let _ = Hashtbl.fold find left () in
     let _ = Hashtbl.fold find right () in
     let build v () (l, r) =
-      let phi =
-	let lv = try (Hashtbl.find left v).version with Not_found -> (-1)
-	and rv = try (Hashtbl.find right v).version with Not_found -> (-1) in
-	  Phi (make_expr_note_from_stmt_note note,
-	      [SSAId (make_expr_note_from_stmt_note note, v, lv);
-	       SSAId (make_expr_note_from_stmt_note note, v, rv)]) in
-      let lhs = left_hand_side_to_ssa right
-	(LhsVar (make_expr_note_from_stmt_note note, v))
-      in
-	(lhs::l, phi::r)
+      let lv = try (Hashtbl.find left v).version with Not_found -> (-1)
+      and rv = try (Hashtbl.find right v).version with Not_found -> (-1) in
+	if lv >= 0 && rv >= 0 && lv <> rv then
+	  begin
+            let lhs = left_hand_side_to_ssa right
+	      (LhsVar (make_expr_note_from_stmt_note note, v))
+            in
+	      (lhs :: l,
+              Phi (make_expr_note_from_stmt_note note,
+	          [SSAId (make_expr_note_from_stmt_note note, v, lv);
+	           SSAId (make_expr_note_from_stmt_note note, v, rv)]) :: r)
+	  end
+	else
+	  (l, r)
     in
       (* changeset contains all names which changed their version in left or
          right.  Now we figure out which versions we need to add. *)
     let res = Hashtbl.fold build changeset ([], []) in
-      Assign (note, fst res, snd res)
+      match res with
+	  ([], []) -> Skip note
+	| (lhs, rhs) -> Assign (note, lhs, rhs)
   in
   let rec statement_to_ssa env =
     function
@@ -276,17 +283,21 @@ let into_ssa tree =
 	    Sequence(n, Choice (n, nl, nr), phi)
       | Extern (n, s) -> Extern (n, s)
   in
-  let add_all k v tbl { VarDecl.name = name; var_type = _; init = _ }=
+  let add_all k v tbl { VarDecl.name = name; var_type = _; init = _ } =
+    (* assert (not (Hashtbl.mem tbl name)) ; *)
+    if not (Hashtbl.mem tbl name) then
+      Messages.message 1 ("add_all: redefining variable " ^ name) ;
     Hashtbl.add tbl name { kind = k ; version = v } ; tbl
   in
   let method_to_ssa env m =
+    Messages.message 1 ("method_to_ssa: working in " ^ m.Method.meth_name) ;
     match m.Method.meth_body with
 	None -> m
       | Some b ->
 	  (* Make an environment which is specific to this method and
 	     then compute an SSA format for this method *)
 	  let e1 = 
-	    List.fold_left (add_all Input 0) (Hashtbl.copy env)
+	    List.fold_left (add_all Input 1) (Hashtbl.copy env)
 	      m.Method.meth_inpars
 	  in
 	  let e2 =
@@ -301,8 +312,10 @@ let into_ssa tree =
     { w with With.methods = List.map (method_to_ssa env) w.With.methods }
   in
   let class_to_ssa cls =
+    Messages.message 1 ("class_to_ssa: working in " ^ cls.Class.name) ;
+    let tbl = Hashtbl.create 32 in
     let env =
-      List.fold_left (add_all Attribute (- 1)) (Hashtbl.create 32)
+      List.fold_left (add_all Attribute (- 1)) tbl
 	(cls.Class.parameters @ cls.Class.attributes)
     in
       { cls with
