@@ -6,7 +6,7 @@
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
 %token WHILE VAR WITH OP IN OUT CONSTRUCTOR EXTERN
 %token REQUIRES ENSURES INV SOME FORALL EXISTS
-%token IF THEN ELSE SKIP RELEASE AWAIT NEW
+%token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
 %token OF AS BY DO
 %token EXCEPTION
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
@@ -322,6 +322,10 @@ basic_statement:
 	{ Await ((Statement.make_note $startpos), e) }
     | AWAIT error
 	{ signal_error $startpos "Syntax error in await condition" }
+    | POSIT e = expression
+	{ Posit ((Statement.make_note $startpos), e) }
+    | POSIT error
+	{ signal_error $startpos "Syntax error in posit condition" }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
 	{ AsyncCall ((Statement.make_note $startpos), 
@@ -402,6 +406,12 @@ expression:
 	{ Float ((Expression.make_note $startpos), f) }
     | s = STRING
 	{ String ((Expression.make_note $startpos), s) }
+    | CALLER
+	{ Caller (Expression.make_note $startpos) }
+    | NOW
+	{ Now (Expression.make_note $startpos) }
+    | THIS
+	{ This (Expression.make_note $startpos) }
     | NIL
 	{ Nil (Expression.make_note $startpos) }
     | NULL

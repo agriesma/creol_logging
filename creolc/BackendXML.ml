@@ -163,6 +163,11 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  creol_expression_to_xml g ;
 	  stmt_handler writer a ;
           XmlTextWriter.end_element writer
+      | Statement.Posit (a, g) -> 
+	  XmlTextWriter.start_element writer "creol:posit" ;
+	  creol_expression_to_xml g ;
+	  stmt_handler writer a ;
+          XmlTextWriter.end_element writer
       | Statement.Release a -> 
 	  XmlTextWriter.start_element writer "creol:release" ;
 	  stmt_handler writer a ;
@@ -398,7 +403,19 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
         XmlTextWriter.end_element writer
   and creol_expression_to_xml =
     function
-	Expression.Null a -> 
+        Expression.This a -> 
+	  XmlTextWriter.start_element writer "creol:this" ; 
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.Caller a -> 
+	  XmlTextWriter.start_element writer "creol:caller" ; 
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.Now a -> 
+	  XmlTextWriter.start_element writer "creol:now" ; 
+	  expr_handler writer a ;
+          XmlTextWriter.end_element writer
+      | Expression.Null a -> 
 	  XmlTextWriter.start_element writer "creol:null" ; 
 	  expr_handler writer a ;
           XmlTextWriter.end_element writer

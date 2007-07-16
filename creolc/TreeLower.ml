@@ -55,6 +55,7 @@ let pass input =
       | Assert (a, e) -> Assert (a, lower_expression e)
       | Assign (a, s, e) -> Assign (a, s, List.map lower_expression e)
       | Await (a, g) -> Await (a, lower_expression g)
+      | Posit (a, g) -> Posit (a, lower_expression g)
       | AsyncCall (a, None, e, n, p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this

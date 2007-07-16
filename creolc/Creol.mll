@@ -121,7 +121,7 @@ rule token = parse
     | "await" { AWAIT }
     | "begin" { BEGIN }
     | "by" { BY }
-    | "caller" { ID("caller") (* XXX: Should be special *) }
+    | "caller" { CALLER }
     | "case" { reserved lexbuf }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
@@ -145,17 +145,19 @@ rule token = parse
     | "in" { IN }
     | "new" { NEW }
     | "nil" { NIL }
+    | "now" { NOW }
     | "null" { NULL }
     | "of" { OF }
     | "op" { OP }
     | "out" { OUT }
+    | "posit" { POSIT }
     | "raise" { reserved lexbuf }
     | "release" { RELEASE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }
     | "some" { SOME }
     | "then" { THEN }
-    | "this" { ID("this") (* XXX: Should be special, too. *) }
+    | "this" { THIS }
     | "true" { BOOL(true) }
     | "try" { reserved lexbuf }
     | "var" { VAR }

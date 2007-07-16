@@ -1,12 +1,12 @@
 class Alarmclock
  begin
- 	var now: Int
+ 	var clock: Int
 
- op run == now := 0
+ op init == clock := 0
 
  with Any
   op wakeme(in n: Int) == var alarmsetting: Int ;
- 		alarmsetting := now + n;
- 		await now >= alarmsetting
-  op tick == now := now + 1
+ 		alarmsetting := clock + n;
+ 		await clock >= alarmsetting
+  op tick == clock := clock + 1
  end

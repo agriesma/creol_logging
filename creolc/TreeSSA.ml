@@ -76,7 +76,8 @@ let into_ssa tree =
     (* A use of the SSA name.  We should be able to find the name in
        the environment. *)
     function
-	(Null _ | Nil _ | Bool _ | Int _ | Float _ | String _) as e -> e
+	(This _ | Caller _ | Now _ | Null _ | Nil _ | Bool _ | Int _ |
+	 Float _ | String _) as e -> e
       | Id (a, v) ->
 	  begin
 	    try
@@ -206,6 +207,7 @@ let into_ssa tree =
 	  let nl = List.map (left_hand_side_to_ssa env) lhs in
 	    Assign (n, nl, nr)
       | Await (n, g) -> Await (n, expression_to_ssa env g)
+      | Posit (n, g) -> Posit (n, expression_to_ssa env g)
       | Release n -> Release n
       | AsyncCall (n, None, c, m, a) ->
 	  AsyncCall (n, None, c, m, List.map (expression_to_ssa env) a)

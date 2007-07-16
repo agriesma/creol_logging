@@ -229,6 +229,9 @@ let emit out_channel input =
 	| Statement.Await (_, e) -> 
 	    output_string out_channel "await ";
 	    pretty_print_expression e;
+	| Statement.Posit (_, e) -> 
+	    output_string out_channel "posit ";
+	    pretty_print_expression e;
 	| Statement.Release _ -> output_string out_channel "release";
 	| Statement.AsyncCall (_, l, c, m, a) ->
 	    (match l with
@@ -374,7 +377,10 @@ let emit out_channel input =
     in
     let rec print prec =
       function
-	  Expression.Nil _ -> output_string out_channel "nil"
+	  Expression.This _ -> output_string out_channel "this"
+	| Expression.Caller _ -> output_string out_channel "caller"
+	| Expression.Now _ -> output_string out_channel "now"
+	| Expression.Nil _ -> output_string out_channel "nil"
 	| Expression.Null _ -> output_string out_channel "null"
 	| Expression.Int (_, i) -> output_string out_channel (string_of_int i)
 	| Expression.Float (_, f) ->

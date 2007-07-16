@@ -40,7 +40,10 @@ let emit options out_channel input =
       | _ -> assert false
   and of_expression =
     function
-	Expression.Nil _ -> output_string out_channel "list(emp)"
+	Expression.This _ -> output_string out_channel "\"this\""
+      | Expression.Caller _ -> output_string out_channel "\"caller\""
+      | Expression.Now _ -> output_string out_channel "now"
+      | Expression.Nil _ -> output_string out_channel "list(emp)"
       | Expression.Null _ -> output_string out_channel "null"
       | Expression.Int (_, i) ->
 	  output_string out_channel ("int(" ^ (string_of_int i) ^ ")")
@@ -135,6 +138,9 @@ let emit options out_channel input =
 	  Statement.Skip _ -> output_string out_channel "skip"
 	| Statement.Assert (_, _) -> output_string out_channel "skip"
 	| Statement.Await (_, e) -> output_string out_channel "( await ";
+	    of_expression e;
+	    output_string out_channel " )"
+	| Statement.Posit (_, e) -> output_string out_channel "( posit ";
 	    of_expression e;
 	    output_string out_channel " )"
 	| Statement.Release _ -> output_string out_channel "release"

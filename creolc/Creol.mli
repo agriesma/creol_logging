@@ -98,7 +98,13 @@ sig
 	  
           The parameter 'b refers to a possible annotation of the
           element. *)
-      Null of note
+	This of note
+	(** The name of this. *)
+      | Caller of note
+	(** The name of the caller in a method. *)
+      | Now of note
+	(** The current time *)
+      | Null of note
 	(** Literal of the null pointer. *)
       | Nil of note
 	  (** Literal for an empty list. *)
@@ -217,6 +223,9 @@ module Statement: sig
 	      are of the same length. *)
       | Await of note * Expression.t
 	  (** An await statement. *)
+      | Posit of note * Expression.t
+	  (** A posit statement, which is used to define {i true} properties
+              about time in a model. *)
       | AsyncCall of note * Expression.lhs option * Expression.t * string *
 	  Expression.t list
 	  (** Call a method asynchronously. *)

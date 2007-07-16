@@ -115,7 +115,10 @@ module Expression =
     }
 
     type t =
-	Null of note
+	  This of note
+	| Caller of note
+	| Now of note
+	| Null of note
 	| Nil of note
 	| Bool of note * bool
 	| Int of note * int
@@ -239,7 +242,10 @@ module Expression =
     (** Extract the annotation of an expression *)
     let note =
       function
-	  Null a -> a
+	  This a -> a
+	| Caller a -> a
+	| Now a -> a
+	| Null a -> a
 	| Nil a -> a
 	| Bool (a, _) -> a
 	| Int (a, _) -> a
@@ -458,6 +464,7 @@ module Statement =
 	| Assert of note * Expression.t
 	| Assign of note * Expression.lhs list * Expression.t list
 	| Await of note * Expression.t
+	| Posit of note * Expression.t
 	| AsyncCall of note * Expression.lhs option * Expression.t * string *
 	    Expression.t list
 	| Reply of note * Expression.t * Expression.lhs list
@@ -489,6 +496,7 @@ module Statement =
 	| Assign (a, _, _) -> a
 	| Release a -> a
 	| Await (a, _) -> a
+	| Posit (a, _) -> a
 	| AsyncCall (a, _, _, _, _) -> a
 	| Reply (a, _, _) -> a
 	| Free (a, _) -> a
