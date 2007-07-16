@@ -257,8 +257,16 @@ let into_ssa tree =
 	    Sequence (n, If (n, nc, nl, nr), phi)
       | While (n, c, i, b) ->
 	  let nc = expression_to_ssa env c in
+	  let env_pre = Hashtbl.copy env in
 	  let nb = statement_to_ssa env b in
-	  let phi = Skip n in
+	    (* Phi is computed like this, since we have one incoming
+	       branch (env_pre), one branch if the loop is executed once
+	       (env), and one exit branch.  We use the incoming branch,
+	       pretending that in this case the loop has never been
+	       executed. 
+
+	       XXX: Review whether this statement really holds. *)
+	  let phi = compute_phi n env_pre env env_pre in
 	    While (n, nc, i, Sequence (n, phi, nb))
       | Sequence (n, s1, s2) ->
 	  let ns1 = statement_to_ssa env s1 in
