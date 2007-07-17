@@ -54,7 +54,7 @@ let passes = [
   ( "life-vars" ,
   { help = "Compute data flow." ;
     dependencies = "lower";
-    pass = id ;
+    pass = TreeLife.compute ;
     elapsed = 0.0; needed = false; dump = false } ) ;
   ( "dead-vars" ,
   { help = "Eliminate dead variables and values." ;

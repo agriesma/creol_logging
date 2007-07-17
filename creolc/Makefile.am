@@ -38,6 +38,7 @@ creolc_SOURCES		= Version.ml Messages.ml \
 			  CreolTyping.mli CreolTyping.ml \
 			  TreeLower.mli TreeLower.ml \
 			  TreeSSA.ml \
+			  TreeLife.ml \
 			  TreeTailcall.ml \
 			  CreolLex.ml CreolLex.mli \
 			  CreolParser.mli CreolParser.ml \

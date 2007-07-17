@@ -21,6 +21,17 @@
  * 02111-1307, USA.
  *)
 
+(** Definition of the abstract syntax of Creol and a collection
+    of functions for its manipulation.
+
+    @author Marcel Kyas
+    @version 0.0
+    @since   0.0
+
+ *)
+
+
+(** Types *)
 module Type =
   struct
 
@@ -29,26 +40,47 @@ module Type =
       line: int
     }
 
+    (** Create a new note *)
     let make_note pos = {
       file = pos.Lexing.pos_fname ;
       line = pos.Lexing.pos_lnum
     }
 
     type t =
+	(** The abstract syntax of types in Creol. *)
 	Basic of note * string
+	  (** A basic type. *)
 	| Variable of note * string
+	    (** A type variable. *)
 	| Application of note * string * t list
+	    (** A type application, e.g., [List[Int]]. *)
 	| Tuple of note * t list
+	    (** The type of a tuple. *)
 	| Function of note * t list * t
+	    (** The type of a function.  The first component refers to
+		the annotation of the function tupe, the second
+		component is a tuple describing the domain and the
+		last component is the (unique) type of the function's
+		range. *)
 	| Structure of note * field list
+	    (** The type of a structure. *)
 	| Variant of note * field list
+	    (** The type of a variant. *)
 	| Label of note * t * t list * t list
+	    (** The type of a label.
+
+		This needs to be refined for type inference. *)
 	| Intersection of note * t list
+	    (** The type is an intersection type.  Intersection types
+		do not have concrete syntax. *)
 	| Union of note * t list
+	    (** The type is a union type.  Union types do not have
+		concrete syntax. *)
     and field =
-	{ field_note: note;
-	  field_name: string;
-	  field_type: t
+	(** The declaration of a field of a structure or a variant. *)
+	{ field_note: note; (** Type annotation of this field. *)
+	  field_name: string; (** Name of this field. *)
+	  field_type: t (** Type of this field *)
 	}
 
 
@@ -65,8 +97,11 @@ module Type =
 	| Intersection (n, _) -> n
 	| Union (n, _) -> n
 
+
+    (** Get the line of a note *)
     let file t = (note_of t).file
 
+    (** Get the file of a note *)
     let line t = (note_of t).line
 
     (* These are the support functions for the abstract syntax tree. *)
@@ -450,14 +485,18 @@ module Statement =
 
     open Expression
 
+    module IdSet = Set.Make(String)
+
     type note = {
 	file: string;
-	line: int
+	line: int;
+	life: IdSet.t
     }
     
     let make_note pos = {
       file = pos.Lexing.pos_fname ;
-      line = pos.Lexing.pos_lnum
+      line = pos.Lexing.pos_lnum ;
+      life = IdSet.empty 
     }
 
 

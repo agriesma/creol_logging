@@ -21,67 +21,33 @@
  * 02111-1307, USA.
  *)
 
-(** Definition of the abstract syntax of Creol and a collection
-    of functions for its manipulation.
-
-    @author Marcel Kyas
-    @version 0.0
-    @since   0.0
-
- *)
-
-
-(** Types *)
 module Type :
   sig
 
     type note
 
     val make_note : Lexing.position -> note
-      (** Create a new note *)
 
     type t = 
-	(** The abstract syntax of types in Creol. *)
 	Basic of note * string
-	  (** A basic type. *)
 	| Variable of note * string
-	    (** A type variable. *)
 	| Application of note * string * t list
-	    (** A type application, e.g., [List[Int]]. *)
 	| Tuple of note * t list
-	    (** The type of a tuple. *)
 	| Function of note * t list * t
-	    (** The type of a function.  The first component refers to
-		the annotation of the function tupe, the second
-		component is a tuple describing the domain and the
-		last component is the (unique) type of the function's
-		range. *)
 	| Structure of note * field list
-	    (** The type of a structure. *)
 	| Variant of note * field list
-	    (** The type of a variant. *)
 	| Label of note * t * t list * t list
-	    (** The type of a label.
-
-		This needs to be refined for type inference. *)
 	| Intersection of note * t list
-	    (** The type is an intersection type.  Intersection types
-		do not have concrete syntax. *)
 	| Union of note * t list
-	    (** The type is a union type.  Union types do not have
-		concrete syntax. *)
     and field =
-	(** The declaration of a field of a structure or a variant. *)
-	{ field_note: note;     (** Type annotation of this field. *)
-	  field_name: string; (** Name of this field. *)
-	  field_type: t    (** Type of this field *)
+	{ field_note: note;
+	  field_name: string;
+	  field_type: t   
 	}
 
     val line : t -> int
-      (** Get the line of a note *)
 
     val file : t -> string
-      (** Get the file of a note *)
 
     val as_string : t -> string
   end
@@ -91,13 +57,8 @@ sig
   type note
 
   val make_note : Lexing.position -> note
-      (** Create a new note *)
 
   type  t =
-      (** Definition of the abstract syntax of Creol-expressions.
-	  
-          The parameter 'b refers to a possible annotation of the
-          element. *)
 	This of note
 	(** The name of this. *)
       | Caller of note
