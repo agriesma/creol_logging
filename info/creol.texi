@@ -17,6 +17,7 @@ semantics, yet.
 * Class Declaration::           Implementation for types.
 * Datatype Declaration::
 * Exception Declaration::
+* Creol Prelude::               Predefined functions.
 * Grammar::                     Creol grammar in EBNF.
 @end menu
 
@@ -476,6 +477,15 @@ exception.
 Actually, only a sequence of types should be sufficient, or we may use
 these names as record names.
 @end itemize
+
+
+@node Creol Prelude
+@section Creol Prelude
+
+The Creol system provides the following datatypes and functions as
+part of its prelude.
+
+
 
 
 @node Grammar

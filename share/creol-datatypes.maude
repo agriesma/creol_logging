@@ -200,7 +200,7 @@ fmod CREOL-DATA-LIST is
   op list : ExprList -> Expr .
   op list : DataList -> Data [ctor] .
 
-  var N : Nat .
+  vars N M : Nat .
   vars D D' : Data .
   vars E E' : Expr .
   vars L L' L'' : ExprList .
@@ -222,10 +222,19 @@ fmod CREOL-DATA-LIST is
   eq "isempty" (list(E # L))= bool(false) .
   
   eq "remove" (list(E) #   E')  = if  E == E' then list(emp) else list(E) fi .
-  eq "remove" (list(emp)# E )  = list(emp) .
-  eq "remove" (list(E # L)# E') =
+  eq "remove" (list(emp) # E )  = list(emp) .
+  eq "remove" (list(E # L) # E') =
     if E == E' then "remove" ((list(L))# E') 
       else "|-|" (list(E) # ("remove" (list(L) # E'))) fi .
+
+  --- Compute a slice of a sequence.
+  eq "sub" (list(L) # int(N) # int(M)) =
+    ".sub" (list(L) # int(N) # int(M) # list(emp)) .
+  ceq ".sub" (list(E # L) # int(N) # int(M) # list(L')) =
+    ".sub" (list(L) # int(_-_(N, 1)) # int(_-_(M, 1)) # list(L')) if N > 1 .
+  ceq ".sub" (list(E # L) # int(1) # int(M) # list(L')) =
+    ".sub" (list(L) # int(1) # int(_-_(M, 1)) # list(L' # E)) if M >= 1 .
+  eq ".sub" (list(L) # int(1) # int(0) # list(L')) = list(L') .
 
   eq "-|" (D # list(L)) = list(D # L) .
   eq "|-" (list(L) # D) = list(L # D) .
@@ -238,7 +247,7 @@ fmod CREOL-DATA-LIST is
   eq "after" (list(emp) # int(N))    = null . 
   eq "after" (list(E # L) # int(0))  = list(E # L) .
   eq "after" (list(E # L) # int(N))  =
-    "after" (list(L) # "-" (int(N) # int(1))) .
+    "after" (list(L) # int(_-_(N, 1))) .
 
   eq "nth" ((list(L)) # int(0))  = null .
   eq "nth" ((list(emp)) # int(N))  = null .
@@ -255,50 +264,70 @@ fmod CREOL-DATA-LIST is
   eq "begwith" (list(E)# E') = bool("last" (list(E)) == E') .
   eq "begwith" (list(E # L)# E') = bool("last" (list(L)) == E') .
 
-  *** If E is not in the list, these will fail with the term
-  *** "+" (int(N) # null)
+  --- If E is not in the list, these will fail with the term
+  --- "+" (int(N) # null)
   eq "index" (list(emp) # E) = null .
   eq "index" (list(E # L) # E') =
     if E == E' then int(1) else "+" (int(1) # "index" (list(L) # E')) fi .
 
-  eq "rindex" (list(emp) # E) = null .
-  eq "rindex" (list(L # E) # E') =
+  --- If E is not in the list, these will fail with the term
+  --- "-" (int(N) # null)
+  eq "rindex" (list(L) # E) =
+    "-" ("length" (list(L)) # ".rindex" (list(L) # E)) .
+  eq ".rindex" (list(emp) # E') = null .
+  eq ".rindex" (list(L # E) # E') =
     if E == E' then int(1) else "+" (int(1) # "rindex" (list(L) # E')) fi .
-
 
   eq "|-|" (list(L) # list(L'))   = list(L # L') .
 endfm
 
 fmod CREOL-DATA-SET is
-  extending CREOL-DATA-LIST .
 
-  op setl : ExprList     -> Expr .        *** set
-  op setl : DataList     -> Data [ctor] . *** set
+  extending CREOL-DATA-SIG .
+  extending CREOL-DATA-INT .
+
+  sorts DataSet NeDataSet ExprSet NeExprSet .
+  subsort NeDataSet < DataSet .
+  subsort NeExprSet < ExprSet .
+  subsort DataSet < ExprSet .
+  subsort NeDataSet < NeExprSet .
+  subsort Data < NeDataSet .
+  subsort Expr < NeExprSet .
+
+  op emptyset : -> DataSet [ctor] .
+  op _:_ : DataSet DataSet -> DataSet [ctor comm assoc id: emp] .
+  op _:_ : NeDataSet DataSet -> NeDataSet [ctor ditto] .
+  op _:_ : DataSet NeDataSet -> DataSet [ctor ditto] .
+  op _:_ : ExprSet ExprSet -> ExprSet [ctor ditto] .
+  op _:_ : NeExprSet ExprSet -> NeExprSet [ctor ditto] .
+  op _:_ : ExprSet NeExprSet -> ExprSet [ctor ditto] .
+
+  op set : ExprSet -> Expr .
+  op set : DataSet -> Data [ctor] .
 
   vars N        : Nat .
   vars D D'     : Data .
   vars E E'     : Expr .
-  vars L L' L'' : ExprList .
-  
-  *** reduction for sets 
-  eq  setl(L # E # L' # E # L'') = setl(L # E # L' # L'') .
-  ceq setl(D # D' # L) = setl(D' # D # L) if ("<" (D' # D)) asBool .
-  *** ceq setl(L # D # L' # D' # L'') = setl(L # D' # L' # D # L'') 
-  *** if (D > D')asBool . *** old
+  vars L L' L'' : ExprSet .
 
-  eq "length" (setl(E # L)) = int(1) + ("length" (setl(L))) .
-  eq "length" (setl(E)#   E')  = if  E == E' then setl(emp) else setl(E) fi .
-  eq "remove" (setl(emp)# E )  = setl(emp) .
-  eq "remove" (setl(E # L)# E') = if E == E' then setl(L)
-			 else "plus" (setl(E)#("remove" ((setl(L))# E'))) fi .
+  eq D : D = D . --- Collapse multiple elements.
 
-  eq "add" (setl(L) # E) =
-    if "has" (setl(L) # E) asBool then setl(L) else setl(L # E) fi .    
+  eq "#" (set(emptyset)) = int(0) .
+  eq "#" (set(L : E)) = "+" (int(1) # "#" (set(L))) .
 
-  eq "has" (setl(emp) #  E ) = bool(false) .
-  eq "has" (setl(E # L) # E) = bool(true) .
-  eq "has" (setl(E # L) # E') = "has" (setl(L) # E') [otherwise] .
-  eq "plus" (setl(L) # setl(L'))   = setl(L # L') .
+  eq "remove" (set(emptyset) # E)  = set(emp) .
+  eq "remove" (set(L : E) # E') =
+    if E == E' then set(L) else "add" (set(E) # ("remove" (set(L) # E'))) fi .
+
+  eq "add" (set(L) # E) =
+    if "has" (set(L) # E) asBool then set(L) else set(L # E) fi .    
+
+  eq "has" (set(emptyset) #  E ) = bool(false) .
+  eq "has" (set(L # E) # E') =
+    if E == E' then bool(true) else "has" (set(L) # E') fi .
+
+  eq "union" (set(L) # set(L'))   = set(L # L') .
+
 endfm
 
 fmod CREOL-DATA-PAIR is
@@ -390,11 +419,5 @@ fmod CREOL-DATATYPES is
   extending CREOL-DATA-SET .
   extending CREOL-DATA-MAP .
   extending CREOL-DATA-PAIR .
-
-
-  var L : ExprList .
- 
-  eq  "setl" (list(L)) = setl(L) .
-  eq  "listl" (setl(L)) = list(L) .
 
 endfm
