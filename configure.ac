@@ -39,7 +39,7 @@ dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [])
 if test -z "$OCAMLFIND"
 then
-    AC_MSG_ERROR([ocamlfind is not installed.
+    AC_MSG_ERROR([ocamlfind was not found.
 
 You have to install findlib from <http://www.ocaml-programming.de/>
 to compile the creoltools.  Alternatively, you can install the
@@ -51,11 +51,26 @@ fi
 dnl If this test fails, we are on a platform which we do not support,
 dnl because ocamllex is part of the ocaml distribution, and ocamlfind
 dnl should depend on ocaml and friends!
-AC_CHECK_PROGS([OCAMLLEX], [ocamllex.opt ocamllex],
-	      ['${top_srcdir}/missing ocamllex'])
+AC_CHECK_PROGS([OCAMLLEX], [ocamllex.opt ocamllex], [''])
+if test -z "$OCAMLLEX"
+then
+    AC_MSG_ERROR([ocamllex was not found.
 
-AC_CHECK_PROG([MENHIR], [menhir], [menhir],
-	      ['${top_srcdir}/menhir-sh'])
+This may indicate that your ocaml installation is faulty.
+])
+fi
+
+AC_CHECK_PROG([MENHIR], [menhir], [menhir], ['${top_srcdir}/menhir-sh'])
+if test -z "$MENHIR"
+then
+    AC_MSG_ERROR([menhir was not found.
+
+You have to install menhir.  If you have installed menhir in a non-standard
+place, rerun this script with 'MENHIR=/path/to/menhir'.  Otherwise, consult
+INSTALL on obtaining and installing menhir.
+])
+fi
+
 
 dnl For documentation.
 AC_CHECK_PROG([DOT], [dot], [dot], ['${top_srcdir}/missing dot'])
