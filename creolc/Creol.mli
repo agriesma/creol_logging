@@ -28,6 +28,8 @@ module Type :
 
     val make_note : Lexing.position -> note
 
+    val label : string
+
     type t = 
 	Basic of note * string
 	| Variable of note * string
@@ -36,7 +38,6 @@ module Type :
 	| Function of note * t list * t
 	| Structure of note * field list
 	| Variant of note * field list
-	| Label of note * t * t list * t list
 	| Intersection of note * t list
 	| Union of note * t list
     and field =

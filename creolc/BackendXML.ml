@@ -624,19 +624,6 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  List.iter creol_type_to_xml p ;
 	  type_handler writer a ;
           XmlTextWriter.end_element writer	  
-      | Type.Label (a, co, ins, outs) ->
-	  XmlTextWriter.start_element writer "creol:label" ; 
-	  XmlTextWriter.start_element writer "creol:cointerface" ; 
-	  creol_type_to_xml co ;
-	  XmlTextWriter.end_element writer ;
-	  XmlTextWriter.start_element writer "creol:inputs" ; 
-	  List.iter creol_type_to_xml ins ;
-	  XmlTextWriter.end_element writer ;
-	  XmlTextWriter.start_element writer "creol:outputs" ; 
-	  List.iter creol_type_to_xml outs ;
-	  XmlTextWriter.end_element writer ;
-	  type_handler writer a ;
-          XmlTextWriter.end_element writer
   in
     XmlTextWriter.set_indent writer true;
     XmlTextWriter.start_document writer None None None;

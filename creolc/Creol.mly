@@ -505,8 +505,8 @@ expression:
 
 creol_type:
       t = CID
-	{ Type.Basic (Type.make_note $startpos, t) }
-    | t = CID LBRACK p = separated_nonempty_list(COMMA, creol_type) RBRACK
+	{ Type.Basic (Type.make_note $startpos , t) }
+    | t = CID LBRACK p = separated_list(COMMA, creol_type) RBRACK
 	{ Type.Application(Type.make_note $startpos, t, p) } 
     | BACKTICK v = ID
 	{ Type.Variable (Type.make_note $startpos, v) }

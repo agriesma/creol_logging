@@ -35,6 +35,8 @@
 module Type =
   struct
 
+    let label = "Label"
+
     type note = {
       file: string;
       line: int
@@ -66,10 +68,6 @@ module Type =
 	    (** The type of a structure. *)
 	| Variant of note * field list
 	    (** The type of a variant. *)
-	| Label of note * t * t list * t list
-	    (** The type of a label.
-
-		This needs to be refined for type inference. *)
 	| Intersection of note * t list
 	    (** The type is an intersection type.  Intersection types
 		do not have concrete syntax. *)
@@ -93,7 +91,6 @@ module Type =
 	| Function (n, _, _) -> n
 	| Structure (n, _) -> n
 	| Variant (n, _) -> n
-	| Label (n, _, _, _) -> n
 	| Intersection (n, _) -> n
 	| Union (n, _) -> n
 
@@ -121,7 +118,6 @@ module Type =
 	| Variant (_, f) -> "[+ " ^ (string_of_field_list f) ^ " +]"
 	| Intersection _ -> assert false (* XXX Implement if needed. *)
 	| Union _ -> assert false (* XXX Implement if needed. *)
-	| Label _ -> "/* Label */"
     and string_of_creol_type_list =
       function
 	  [] -> ""
