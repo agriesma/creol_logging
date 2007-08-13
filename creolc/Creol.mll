@@ -47,7 +47,7 @@ let reserved lexbuf =
 }
 let COMMENT = '/' '/' [ ^ '\n' ]*
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)
-let CID = [ 'A'-'Z' ][ 'a'-'z' 'A'-'Z' ]*
+let CID = [ 'A'-'Z' ][ 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let ID =  [ 'a'-'z' ][ 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let STRING = '"' [^ '\n' '"' ]* '"'
 rule token = parse

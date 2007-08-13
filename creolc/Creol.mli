@@ -304,8 +304,8 @@ module Class : sig
       { name: string;
 	parameters: VarDecl.t list;
 	inherits: inherits list;
-	contracts: string list;
-	implements: string list;
+	contracts: inherits list;
+	implements: inherits list;
 	attributes: VarDecl.t list;
 	with_defs: With.t list }
 
@@ -317,9 +317,11 @@ end
 
 module Interface : sig
 
+  type inherits = string * Expression.t list
+
   type t =
     { name: string;
-      inherits: string list;
+      inherits: inherits list;
       with_decl: With.t list }
 
 end

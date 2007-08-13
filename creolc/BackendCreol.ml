@@ -97,14 +97,14 @@ let emit out_channel input =
     if [] <> c.Class.implements then
       begin
 	output_string out_channel "\nimplements " ;
-	separated_list (output_string out_channel)
+	separated_list pretty_print_inherits
 	  (function () -> output_string out_channel ", ") c.Class.implements
       end;
     if [] <> c.Class.contracts then
       begin
 	output_string out_channel "\ncontracts " ;
-	separated_list (output_string out_channel)
-	  (function () -> output_string out_channel ", ") c.Class.implements
+	separated_list pretty_print_inherits
+	  (function () -> output_string out_channel ", ") c.Class.contracts
       end;
     if [] <> c.Class.inherits then
       begin

@@ -116,19 +116,45 @@ declaration:
     | d = datatypedecl { Declaration.Datatype d }
 
 classdecl:
-      CLASS n = CID;
-        p = loption(delimited(LPAREN, separated_nonempty_list(COMMA, vardecl_no_init), RPAREN))
-	j = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, CID)))
-	c = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, CID)))
-	i = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
+      CLASS n = CID p = class_param_list
+	j = implements_list c = contracts_list i = inherits_list
 	BEGIN a = loption(attributes)
-        aw = ioption(anon_with_def) m = list(with_def) END {
+        aw = ioption(anon_with_def) m = list(with_def) END
+      {
       { Class.name = n; Class.parameters = p; Class.inherits = i;
 	Class.contracts = c; Class.implements = j; Class.attributes = a;
 	Class.with_defs = match aw with None -> m | Some w -> w::m } }
     | CLASS error
+	{ signal_error $startpos "syntax error: invalid class name" }
     | CLASS CID error
 	{ signal_error $startpos "syntax error in class declaration" }
+    | CLASS CID class_param_list implements_list contracts_list inherits_list
+      BEGIN error
+	{ signal_error $startpos "syntax error in class body definition" }
+
+%inline class_param_list:
+      l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, vardecl_no_init), RPAREN))
+        { l }
+    | LPAREN error
+	{ signal_error $startpos "syntax error in class/interface parameter list" }
+
+%inline implements_list:
+      l = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, inherits)))
+        { l }
+    | IMPLEMENTS error
+	{ signal_error $startpos "syntax error in implements declaration" }
+
+%inline contracts_list:
+      l = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, inherits)))
+        { l }
+    | CONTRACTS error
+	{ signal_error $startpos "syntax error in contracts list" }
+
+%inline inherits_list:
+      l = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
+        { l }
+    | INHERITS error
+	{ signal_error $startpos "syntax error in inherits list" }
 
 %inline inherits:
     i = CID e = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN))
@@ -199,15 +225,12 @@ method_def:
 (* Interface Declaration *)
 
 interfacedecl:
-      INTERFACE n = CID i = iface_inherits_opt BEGIN w = list(with_decl) END
+      INTERFACE n = CID class_param_list
+      i = inherits_list BEGIN w = list(with_decl) END
     { { Interface.name = n; Interface.inherits = i; Interface.with_decl = w } }
     | INTERFACE error
     | INTERFACE CID error
 	{ signal_error $startpos "syntax error in interface declaration" }
-
-iface_inherits_opt:
-      (* empty *) { [] }
-    | INHERITS l = separated_nonempty_list(COMMA, CID) { l }
 
 with_decl:
       WITH m = CID l = nonempty_list(method_decl) i = list(invariant)
@@ -320,8 +343,6 @@ basic_statement:
 	{ Assign((Statement.make_note $startpos), t, e) }
     | AWAIT e = expression
 	{ Await ((Statement.make_note $startpos), e) }
-    | AWAIT error
-	{ signal_error $startpos "Syntax error in await condition" }
     | POSIT e = expression
 	{ Posit ((Statement.make_note $startpos), e) }
     | POSIT error
@@ -378,6 +399,8 @@ basic_statement:
 	{ Assert (Statement.make_note $startpos, a) }
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
+    | AWAIT error
+	{ signal_error $startpos "Syntax error in await condition" }
 
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:
