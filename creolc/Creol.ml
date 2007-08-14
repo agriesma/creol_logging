@@ -35,87 +35,58 @@
 module Type =
   struct
 
-    let label = "Label"
-
-    type note = {
-      file: string;
-      line: int
-    }
-
-    (** Create a new note *)
-    let make_note pos = {
-      file = pos.Lexing.pos_fname ;
-      line = pos.Lexing.pos_lnum
-    }
-
     type t =
 	(** The abstract syntax of types in Creol. *)
-	Basic of note * string
+	Basic of string
 	  (** A basic type. *)
-	| Variable of note * string
+	| Variable of string
 	    (** A type variable. *)
-	| Application of note * string * t list
+	| Application of string * t list
 	    (** A type application, e.g., [List[Int]]. *)
-	| Tuple of note * t list
+	| Tuple of t list
 	    (** The type of a tuple. *)
-	| Function of note * t list * t
+	| Function of t list * t
 	    (** The type of a function.  The first component refers to
 		the annotation of the function tupe, the second
 		component is a tuple describing the domain and the
 		last component is the (unique) type of the function's
 		range. *)
-	| Structure of note * field list
+	| Structure of field list
 	    (** The type of a structure. *)
-	| Variant of note * field list
+	| Variant of field list
 	    (** The type of a variant. *)
-	| Intersection of note * t list
+	| Intersection of t list
 	    (** The type is an intersection type.  Intersection types
 		do not have concrete syntax. *)
-	| Union of note * t list
+	| Union of t list
 	    (** The type is a union type.  Union types do not have
 		concrete syntax. *)
     and field =
 	(** The declaration of a field of a structure or a variant. *)
-	{ field_note: note; (** Type annotation of this field. *)
-	  field_name: string; (** Name of this field. *)
+	{ field_name: string; (** Name of this field. *)
 	  field_type: t (** Type of this field *)
 	}
 
 
-    let note_of =
-      function
-	  Basic (n, _) -> n
-	| Variable (n, _) -> n
-	| Application (n, _, _) -> n
-	| Tuple (n, _) -> n
-	| Function (n, _, _) -> n
-	| Structure (n, _) -> n
-	| Variant (n, _) -> n
-	| Intersection (n, _) -> n
-	| Union (n, _) -> n
+    let data = Basic "Data"
 
-
-    (** Get the line of a note *)
-    let file t = (note_of t).file
-
-    (** Get the file of a note *)
-    let line t = (note_of t).line
+    let label = "Label"
 
     (* These are the support functions for the abstract syntax tree. *)
 
     let rec as_string =
       function
-	  Basic (_, s) -> s
-	| Variable (_, s) -> "`" ^ s
-	| Application (_, s, p) ->
+	  Basic s -> s
+	| Variable s -> "`" ^ s
+	| Application (s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Tuple (_, p) ->
+	| Tuple p ->
 	    "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Function (_, d, r) ->
+	| Function (d, r) ->
 	    "[" ^ (string_of_creol_type_list d) ^ " -> " ^
 		(as_string r) ^ "]"
-	| Structure (_, f) -> "[# " ^ (string_of_field_list f) ^ " #]"
-	| Variant (_, f) -> "[+ " ^ (string_of_field_list f) ^ " +]"
+	| Structure f -> "[# " ^ (string_of_field_list f) ^ " #]"
+	| Variant f -> "[+ " ^ (string_of_field_list f) ^ " +]"
 	| Intersection _ -> assert false (* XXX Implement if needed. *)
 	| Union _ -> assert false (* XXX Implement if needed. *)
     and string_of_creol_type_list =
@@ -130,6 +101,11 @@ module Type =
 	| [] -> assert false
     and string_of_field f = f.field_name ^ ": " ^ (as_string f.field_type)
 
+    let result_type =
+      function
+	  Function (_, r) -> r
+	| _ -> assert false
+
   end
 
 module Expression =
@@ -137,13 +113,22 @@ module Expression =
 
     type note = {
 	file: string;
-	line: int
+	line: int;
+	ty: Type.t
     }
-    
-    let make_note pos = {
-      file = pos.Lexing.pos_fname ;
-      line = pos.Lexing.pos_lnum
-    }
+
+    let make_note pos =
+      {
+	file = pos.Lexing.pos_fname ;
+	line = pos.Lexing.pos_lnum ;
+	ty = Type.data
+      }
+
+    let file note = note.file
+
+    let line note = note.line
+
+    let set_type note t = { note with ty = t }
 
     type t =
 	  This of note
@@ -297,6 +282,8 @@ module Expression =
 	| Extern (a, _) -> a
 	| SSAId (a, _, _) -> a
 	| Phi (a, _) -> a
+
+    let get_type expr = (note expr).ty
 
     let name =
       function
@@ -488,7 +475,11 @@ module Statement =
 	line: int;
 	life: IdSet.t
     }
-    
+
+    let file note = note.file
+
+    let line note = note.line
+
     let make_note pos = {
       file = pos.Lexing.pos_fname ;
       line = pos.Lexing.pos_lnum ;
@@ -674,6 +665,19 @@ struct
 	attributes: VarDecl.t list;
 	with_defs: With.t list }
 
+  let get_type cls =
+    let to_type inh = Type.Basic (fst inh)
+    in
+      Type.Intersection ((List.map to_type cls.implements) @
+			    (List.map to_type cls.contracts))
+
+  let find_attr_decl cls name =
+    let has_name =
+      function
+	  { VarDecl.name = n } when n = name -> true
+	| _ -> false
+    in
+      List.find has_name cls.attributes
 end
 
 
@@ -744,6 +748,39 @@ end
 module Program =
   struct
     type t = Declaration.t list
+
+    let find_class  program name =
+      let class_with_name =
+	function
+	    Declaration.Class { Class.name = n } when n = name -> true
+	  | _ -> false
+      in
+	match List.find class_with_name program with
+	    Declaration.Class cls -> cls
+	  | _ -> assert false
+
+    let find_attr_decl program cls name =
+      let cn =
+	match cls with
+	    Type.Basic s -> s
+	  | _ -> assert false
+      in
+      let c = find_class program cn in
+	Class.find_attr_decl c name
+
+    let find_functions program name =
+      let all_operations =
+	List.flatten
+	  (List.map
+	      (function
+		  (Declaration.Datatype d) -> d.Datatype.operations
+		| _ -> [])
+	      program)
+      in
+      let
+	  oper_has_name { Operation.name = n } = (n = name)
+      in
+	List.filter oper_has_name all_operations
   end
 
 
@@ -753,4 +790,5 @@ module Program =
    of such a function and where we should put it. *)
 let make_expr_note_from_stmt_note s =
 	{ Expression.file = s.Statement.file;
-	  Expression.line = s.Statement.line }
+	  Expression.line = s.Statement.line;
+	  ty = Type.data }

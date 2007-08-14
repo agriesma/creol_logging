@@ -31,7 +31,7 @@
 
 open Creol
 
-let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
+let emit ~name ~stmt_handler ~expr_handler ~tree =
   let writer = XmlTextWriter.to_file name 0 in
   let rec creol_declaration_to_xml =
     function
@@ -563,28 +563,24 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
           XmlTextWriter.end_element writer
   and creol_type_to_xml =
     function
-	Type.Basic (a, s) ->
+	Type.Basic s ->
 	  XmlTextWriter.start_element writer "creol:type" ; 
           XmlTextWriter.write_attribute writer "name" s ;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Variable (a, s) ->
+      | Type.Variable s ->
 	  XmlTextWriter.start_element writer "creol:typevariable" ; 
           XmlTextWriter.write_attribute writer "name" s ;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Application (a, s, l) ->
+      | Type.Application (s, l) ->
 	  XmlTextWriter.start_element writer "creol:typeapplication" ; 
           XmlTextWriter.write_attribute writer "name" s ;
 	  List.iter creol_type_to_xml l;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Tuple(a, l) ->
+      | Type.Tuple l ->
 	  XmlTextWriter.start_element writer "creol:tuple" ; 
 	  List.iter creol_type_to_xml l;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Function (a, dom, rng) ->
+      | Type.Function (dom, rng) ->
 	  XmlTextWriter.start_element writer "creol:function-type" ; 
 	  XmlTextWriter.start_element writer "creol:domain" ; 
 	  List.iter creol_type_to_xml dom ;
@@ -592,37 +588,30 @@ let emit ~name ~stmt_handler ~expr_handler ~type_handler ~tree =
 	  XmlTextWriter.start_element writer "creol:range" ; 
 	  creol_type_to_xml rng ;
           XmlTextWriter.end_element writer ;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Structure (a, fields) ->
+      | Type.Structure fields ->
 	  XmlTextWriter.start_element writer "creol:structure-type" ; 
 	  List.iter (function x ->
 	    XmlTextWriter.start_element writer "creol:field" ;
 	    XmlTextWriter.write_attribute writer "name" x.Type.field_name ;
 	    creol_type_to_xml x.Type.field_type ;
-	    type_handler writer x.Type.field_note ;
 	    XmlTextWriter.end_element writer) fields ;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Variant (a, fields) ->
+      | Type.Variant fields ->
 	  XmlTextWriter.start_element writer "creol:variabt-type" ; 
 	  List.iter (function x ->
 	    XmlTextWriter.start_element writer "creol:field" ;
 	    XmlTextWriter.write_attribute writer "name" x.Type.field_name ;
 	    creol_type_to_xml x.Type.field_type ;
-	    type_handler writer x.Type.field_note ;
 	    XmlTextWriter.end_element writer) fields ;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Intersection (a, p) ->
+      | Type.Intersection p ->
 	  XmlTextWriter.start_element writer "creol:intersection" ; 
 	  List.iter creol_type_to_xml p ;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer
-      | Type.Union (a, p) ->
+      | Type.Union p ->
 	  XmlTextWriter.start_element writer "creol:union" ; 
 	  List.iter creol_type_to_xml p ;
-	  type_handler writer a ;
           XmlTextWriter.end_element writer	  
   in
     XmlTextWriter.set_indent writer true;

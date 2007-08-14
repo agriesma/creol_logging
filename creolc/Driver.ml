@@ -69,7 +69,7 @@ module Target =
 	    No -> ()
 	  | Creol -> BackendCreol.emit out tree
 	  | Maude | MaudeMC -> BackendMaude.emit options out tree
-	  | XML -> let ign a b = () in BackendXML.emit !file ign ign ign tree
+	  | XML -> let ign a b = () in BackendXML.emit !file ign ign tree
 	in
 	match !file with
           | "-" -> do_output stdout

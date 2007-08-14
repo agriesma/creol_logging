@@ -505,27 +505,26 @@ expression:
 
 creol_type:
       t = CID
-	{ Type.Basic (Type.make_note $startpos , t) }
+	{ Type.Basic t }
     | t = CID LBRACK p = separated_list(COMMA, creol_type) RBRACK
-	{ Type.Application(Type.make_note $startpos, t, p) } 
+	{ Type.Application (t, p) } 
     | BACKTICK v = ID
-	{ Type.Variable (Type.make_note $startpos, v) }
+	{ Type.Variable v }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type)
       r = ioption(preceded(ARROW, creol_type)) RBRACK
 	{ match r with
-	    None -> Type.Tuple (Type.make_note $startpos, d)
-	  | Some rt -> Type.Function (Type.make_note $startpos, d, rt) }
+	    None -> Type.Tuple d
+	  | Some rt -> Type.Function (d, rt) }
     | LBRACK ARROW r = creol_type RBRACK
-	{ Type.Function (Type.make_note $startpos, [], r) }
+	{ Type.Function ([], r) }
     | LBRACKS f = separated_nonempty_list(COMMA, field_decl) RBRACKS
-        { Type.Structure (Type.make_note $startpos, f) }
+        { Type.Structure f }
     | LBRACKV f = separated_nonempty_list(BAR, field_decl) RBRACKV
-        { Type.Variant (Type.make_note $startpos, f) }
+        { Type.Variant f }
 
 field_decl:
       i = ID COLON t = creol_type
-        { { Type.field_note = Type.make_note $startpos;
-	    Type.field_name = i; Type.field_type = t } }
+        { { Type.field_name = i; Type.field_type = t } }
 
 (* Assertions. *)
 

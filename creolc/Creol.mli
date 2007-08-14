@@ -24,33 +24,28 @@
 module Type :
   sig
 
-    type note
-
-    val make_note : Lexing.position -> note
-
-    val label : string
-
     type t = 
-	Basic of note * string
-	| Variable of note * string
-	| Application of note * string * t list
-	| Tuple of note * t list
-	| Function of note * t list * t
-	| Structure of note * field list
-	| Variant of note * field list
-	| Intersection of note * t list
-	| Union of note * t list
+	Basic of string
+	| Variable of string
+	| Application of string * t list
+	| Tuple of t list
+	| Function of t list * t
+	| Structure of field list
+	| Variant of field list
+	| Intersection of t list
+	| Union of t list
     and field =
-	{ field_note: note;
-	  field_name: string;
+	{ field_name: string;
 	  field_type: t   
 	}
 
-    val line : t -> int
+    val data : t
 
-    val file : t -> string
+    val label : string
 
     val as_string : t -> string
+
+    val result_type : t -> t
   end
 
 module Expression :
@@ -58,6 +53,12 @@ sig
   type note
 
   val make_note : Lexing.position -> note
+
+  val file : note -> string
+
+  val line : note -> int
+
+  val set_type : note -> Type.t -> note
 
   type  t =
 	This of note
@@ -162,6 +163,9 @@ sig
   val prec_of_unaryop : unaryop -> int
 
   val note : t -> note
+
+  val get_type : t -> Type.t
+
 end
 
 module Statement: sig
@@ -170,6 +174,10 @@ module Statement: sig
 
   val make_note : Lexing.position -> note
       (** Create a new note *)
+
+  val file : note -> string
+
+  val line : note -> int
 
   type t =
       (** Abstract syntax of statements in Creol.  The type parameter ['a]
@@ -310,6 +318,7 @@ module Class : sig
 	attributes: VarDecl.t list;
 	with_defs: With.t list }
 
+  val get_type : t -> Type.t
 end
 
 
@@ -382,6 +391,10 @@ module Program :
   sig
 
     type t = Declaration.t list
+
+    val find_attr_decl : t -> Type.t -> string -> VarDecl.t
+
+    val find_functions : t -> string -> Operation.t list
 
   end
 
