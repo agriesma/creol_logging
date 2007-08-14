@@ -70,6 +70,8 @@ module Type =
 
     let data = Basic "Data"
 
+    let boolean = Basic "Bool"
+
     let label = "Label"
 
     (* These are the support functions for the abstract syntax tree. *)
@@ -749,7 +751,7 @@ module Program =
   struct
     type t = Declaration.t list
 
-    let find_class  program name =
+    let find_class program name =
       let class_with_name =
 	function
 	    Declaration.Class { Class.name = n } when n = name -> true
@@ -768,6 +770,14 @@ module Program =
       let c = find_class program cn in
 	Class.find_attr_decl c name
 
+    let subtype_p ~program ~s ~t =
+      (* FIXME: For simplicity we define subtype relation to be structural
+         equality *)
+      s = t
+
+    let meet ~program types =
+      Type.data
+
     let find_functions program name =
       let all_operations =
 	List.flatten
@@ -781,6 +791,11 @@ module Program =
 	  oper_has_name { Operation.name = n } = (n = name)
       in
 	List.filter oper_has_name all_operations
+
+    let find_function program name insig =
+      let candidates = find_functions program name in
+        List.hd candidates
+	
   end
 
 

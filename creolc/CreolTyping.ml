@@ -27,9 +27,6 @@ open Statement
 
 exception TypeError of string * int * string
 
-let subtype_p t1 t2 =
-  (* For simplicity we define subtype relation to be structural equality *)
-  (t1 = t2)
 
 let typecheck tree: Declaration.t list =
   let cnt = ref 0 in
@@ -77,8 +74,8 @@ let typecheck tree: Declaration.t list =
 	    type_check_expression program cls gamma delta coiface arg
 	  in
 	  let restype =
-	    Type.result_type (find_function program (string_of_binaryop op)
-				(List.map get_type [narg]))
+	    Type.result_type (Program.find_function program (string_of_unaryop op)
+				(Type.Tuple (List.map get_type [narg]))).Operation.result_type
 	  in
 	    Unary (set_type n restype, op, narg)
       | Binary (n, op, arg1, arg2) ->
@@ -88,8 +85,8 @@ let typecheck tree: Declaration.t list =
 	    type_check_expression program cls gamma delta coiface arg2
 	  in
 	  let restype =
-	    get_result_type (find_function program (string_of_binaryop op)
-				(List.map get_type [narg1; narg2]))
+	    (Program.find_function program (string_of_binaryop op)
+				(Type.Tuple (List.map get_type [narg1; narg2]))).Operation.result_type
 	  in
 	    Binary (set_type n restype, op, narg1, narg2)
       | Expression.If (n, cond, iftrue, iffalse) ->
@@ -100,38 +97,41 @@ let typecheck tree: Declaration.t list =
 	  and niffalse =
 	    type_check_expression program cls gamma delta coiface iffalse
 	  in
-	    if has_type_boolean ncond then
+	    if (Expression.get_type ncond) = Type.boolean then
 	      let restype =
-		meet [get_type niftrue; get_type niffalse]
+		Program.meet program [get_type niftrue; get_type niffalse]
 	      in
 		Expression.If (set_type n restype, ncond, niftrue, niffalse)
 	    else
-	      raise TypeError (line n, file n, "Condition must be boolean")
+	      raise (TypeError (Expression.file n, Expression.line n,
+				"Condition must be boolean"))
       | FuncCall (n, name, args) ->
 	  let nargs =
 	    List.map (type_check_expression program cls gamma delta coiface)
 	      args
 	  in
 	  let restype =
-	    get_result_type (find_function program name (List.map get_type nargs))
+	    (Program.find_function program name (Type.Tuple (List.map get_type nargs))).Operation.result_type
 	  in
-	    FuncCall (set_type n restype, nargs)
-      | Label (n, name) ->
+	    FuncCall (set_type n restype, name, nargs)
+      | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
 	  if Hashtbl.mem delta name then
-	    Label (set_type n (Type.Basic "Bool"), name)
+	    Label (set_type n (Type.Basic "Bool"), l)
 	  else
-	    raise TypeError (get_file n, get_line n,
-			    "Label " ^ name ^ " not declared")
-      | New (n, cls, args) ->
+	    raise (TypeError (Expression.file n, Expression.line n,
+			    "Label " ^ name ^ " not declared"))
+      | New (n, Type.Basic c, args) ->
 	  let nargs =
 	    List.map (type_check_expression program cls gamma delta coiface)
 	      args
 	  in
 	    if
-	      subtype_p (List.map get_type nargs)
-		(get_param_sig (find_class program cls))
+	      Program.subtype_p program
+	        (Type.Tuple (List.map get_type nargs))
+		(Type.Tuple (List.map (fun x -> x.VarDecl.var_type)
+			      (Program.find_class program c).Class.parameters))
 	    then
-	      New (set_type n (Type.intersection (get_interfaces (find_class program cls))), cls, nargs)
+	      New (set_type n (Type.Intersection (get_interfaces (find_class program cls))), cls, nargs)
 	    else
 	      raise TypeError (get_file n, get_line n,
 			      "Constructor argument mismatch")

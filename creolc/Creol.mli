@@ -41,6 +41,8 @@ module Type :
 
     val data : t
 
+    val boolean : t
+
     val label : string
 
     val as_string : t -> string
@@ -392,9 +394,18 @@ module Program :
 
     type t = Declaration.t list
 
+    val find_class : t -> string -> Class.t
+
     val find_attr_decl : t -> Type.t -> string -> VarDecl.t
 
     val find_functions : t -> string -> Operation.t list
+
+    val find_function : t -> string -> Type.t -> Operation.t
+
+    val subtype_p : program: t -> s: Type.t -> t: Type.t -> bool
+      (** Decides whether [s] is a subtype of [t] in [program]. *)
+
+    val meet : program: t -> Type.t list -> Type.t
 
   end
 
