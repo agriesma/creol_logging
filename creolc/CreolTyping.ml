@@ -474,25 +474,35 @@ let typecheck tree: Declaration.t list =
     end ;
     gamma
   and type_check_method program cls gamma coiface m =
-    let d0 = Hashtbl.create 32 in
-    let d1 = List.fold_left insert d0 m.Method.meth_inpars in
-    let d2 = List.fold_left insert d1 m.Method.meth_outpars in
-    let delta = List.fold_left insert d2 m.Method.meth_vars in
-      match m with
-	  None -> s
-	| Some s -> type_check_statement program cls gamma delta coinface s
+	  let d0 = Hashtbl.create 32 in
+	  let d1 = List.fold_left insert d0 m.Method.meth_inpars in
+	  let d2 = List.fold_left insert d1 m.Method.meth_outpars in
+	  let delta = List.fold_left insert d2 m.Method.meth_vars in
+	    { m with Method.meth_body =
+		match m.Method.meth_body with
+		    None -> None
+		  | Some s ->
+		      Some (type_check_statement program cls gamma delta coiface s) }
   and type_check_with_def program cls gamma w =
-    List.iter (type_check_method program cls gamma w.With.co_interface)
-      w.With.methods
+    let coiface =
+      match w.With.co_interface with
+	  None -> ""
+	| Some c -> c
+    in
+      { w with With.methods =
+	  List.map
+	    (fun m -> type_check_method program cls gamma coiface m)
+	    w.With.methods }
   and type_check_class program cls =
     (* Compute the type environment within a class by adding first the class
        parameters to an empty hash table and then all attributes. *)
     let g1 = List.fold_left insert (Hashtbl.create 32) cls.Class.parameters in
     let gamma = List.fold_left insert g1 cls.Class.attributes in
-      List.iter (type_check_with_def program cls gamma) cls.Class.with_defs
+      { cls with Class.with_defs =
+	  List.map (type_check_with_def program cls gamma) cls.Class.with_defs }
   and type_check_declaration program =
     function
-	Declaration.Class c -> type_check_class program c
+	Declaration.Class c -> Declaration.Class (type_check_class program c)
       | _ as d -> d
   in
-    type_check_declaration tree
+    List.map (type_check_declaration tree) tree
