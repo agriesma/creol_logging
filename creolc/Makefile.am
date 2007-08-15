@@ -22,8 +22,8 @@
 export OCAMLPATH
 
 # Subdirs
-MOSTLYCLEANFILES	= *~ *.aux *.log
-CLEANFILES		= *.cmi *.cmo *.cmx *.cma *.cmxa *.o *.tex
+MOSTLYCLEANFILES	= *~ *.aux *.log *.cmi *.cmo *.cmx *.cma *.cmxa *.o
+CLEANFILES		=
 DISTCLEANFILES		= html-stamp
 MAINTAINERCLEANFILES	= .depend $(BUILT_SOURCES)
 

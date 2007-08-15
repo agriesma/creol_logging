@@ -34,6 +34,7 @@ module Type :
 	| Variant of field list
 	| Intersection of t list
 	| Union of t list
+	| Internal
     and field =
 	{ field_name: string;
 	  field_type: t   
@@ -48,6 +49,8 @@ module Type :
     val as_string : t -> string
 
     val result_type : t -> t
+
+    val get_from_label : t -> t
   end
 
 module Expression :
@@ -167,6 +170,8 @@ sig
   val note : t -> note
 
   val get_type : t -> Type.t
+
+  val get_lhs_type : lhs -> Type.t
 
 end
 
@@ -321,6 +326,8 @@ module Class : sig
 	with_defs: With.t list }
 
   val get_type : t -> Type.t
+
+  val contracts_p : t -> Type.t -> bool
 end
 
 
@@ -335,6 +342,8 @@ module Interface : sig
     { name: string;
       inherits: inherits list;
       with_decl: With.t list }
+
+  val cointerface : t -> Type.t
 
 end
 
@@ -396,6 +405,8 @@ module Program :
 
     val find_class : t -> string -> Class.t
 
+    val find_interface : t -> string -> Interface.t
+
     val find_attr_decl : t -> Type.t -> string -> VarDecl.t
 
     val find_functions : t -> string -> Operation.t list
@@ -407,6 +418,11 @@ module Program :
 
     val meet : program: t -> Type.t list -> Type.t
 
+    val provides_op_p : t -> Interface.t -> string -> Type.t -> Type.t ->
+      Type.t -> bool
+
+    val class_provides_method_p : t -> Class.t -> string -> Type.t ->
+      Type.t -> bool
   end
 
 val make_expr_note_from_stmt_note : Statement.note -> Expression.note

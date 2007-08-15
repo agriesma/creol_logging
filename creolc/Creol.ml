@@ -61,6 +61,8 @@ module Type =
 	| Union of t list
 	    (** The type is a union type.  Union types do not have
 		concrete syntax. *)
+	| Internal
+	    (** The co-interface of internal calls *)
     and field =
 	(** The declaration of a field of a structure or a variant. *)
 	{ field_name: string; (** Name of this field. *)
@@ -91,6 +93,7 @@ module Type =
 	| Variant f -> "[+ " ^ (string_of_field_list f) ^ " +]"
 	| Intersection _ -> assert false (* XXX Implement if needed. *)
 	| Union _ -> assert false (* XXX Implement if needed. *)
+	| Internal -> "/* Internal */"
     and string_of_creol_type_list =
       function
 	  [] -> ""
@@ -106,6 +109,11 @@ module Type =
     let result_type =
       function
 	  Function (_, r) -> r
+	| _ -> assert false
+
+    let get_from_label =
+      function
+	  Application (label, args) -> Tuple args
 	| _ -> assert false
 
   end
@@ -286,6 +294,13 @@ module Expression =
 	| Phi (a, _) -> a
 
     let get_type expr = (note expr).ty
+
+    let get_lhs_type =
+      function
+	  LhsVar(n, _) -> n.ty
+	| LhsAttr(n, _, _) -> n.ty
+	| LhsWildcard (n, _) -> n.ty
+	| LhsSSAId (n, _, _) -> n.ty
 
     let name =
       function
@@ -680,6 +695,10 @@ struct
 	| _ -> false
     in
       List.find has_name cls.attributes
+
+  let contracts_p cls iface =
+      List.exists (fun inh -> (fst inh) = (Type.as_string iface)) cls.contracts
+	  
 end
 
 
@@ -695,6 +714,11 @@ struct
       { name: string;
 	inherits: inherits list;
 	with_decl: With.t list }
+
+  let cointerface iface =
+    match (List.hd iface.with_decl).With.co_interface with
+	None -> Type.Internal
+      | Some i -> Type.Basic i
 
 end
 
@@ -761,6 +785,16 @@ module Program =
 	    Declaration.Class cls -> cls
 	  | _ -> assert false
 
+    let find_interface program name =
+      let interface_with_name_p =
+	function
+	    Declaration.Interface { Interface.name = n } when n = name -> true
+	  | _ -> false
+      in
+	match List.find interface_with_name_p program with
+	    Declaration.Interface i -> i
+	  | _ -> assert false
+
     let find_attr_decl program cls name =
       let cn =
 	match cls with
@@ -795,7 +829,13 @@ module Program =
     let find_function program name insig =
       let candidates = find_functions program name in
         List.hd candidates
-	
+
+
+    let provides_op_p program iface name coiface ins outs =
+      false (* XXX *)
+
+    let class_provides_method_p program cls meth ins outs =
+      false (* XXX *)
   end
 
 

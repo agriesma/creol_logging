@@ -75,7 +75,7 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let restype =
 	    Type.result_type (Program.find_function program (string_of_unaryop op)
-				(Type.Tuple (List.map get_type [narg]))).Operation.result_type
+				 (Type.Tuple (List.map get_type [narg]))).Operation.result_type
 	  in
 	    Unary (set_type n restype, op, narg)
       | Binary (n, op, arg1, arg2) ->
@@ -86,7 +86,7 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let restype =
 	    (Program.find_function program (string_of_binaryop op)
-				(Type.Tuple (List.map get_type [narg1; narg2]))).Operation.result_type
+		(Type.Tuple (List.map get_type [narg1; narg2]))).Operation.result_type
 	  in
 	    Binary (set_type n restype, op, narg1, narg2)
       | Expression.If (n, cond, iftrue, iffalse) ->
@@ -104,7 +104,7 @@ let typecheck tree: Declaration.t list =
 		Expression.If (set_type n restype, ncond, niftrue, niffalse)
 	    else
 	      raise (TypeError (Expression.file n, Expression.line n,
-				"Condition must be boolean"))
+			       "Condition must be boolean"))
       | FuncCall (n, name, args) ->
 	  let nargs =
 	    List.map (type_check_expression program cls gamma delta coiface)
@@ -119,7 +119,7 @@ let typecheck tree: Declaration.t list =
 	    Label (set_type n (Type.Basic "Bool"), l)
 	  else
 	    raise (TypeError (Expression.file n, Expression.line n,
-			    "Label " ^ name ^ " not declared"))
+			     "Label " ^ name ^ " not declared"))
       | New (n, Type.Basic c, args) ->
 	  let nargs =
 	    List.map (type_check_expression program cls gamma delta coiface)
@@ -129,12 +129,13 @@ let typecheck tree: Declaration.t list =
 	      Program.subtype_p program
 	        (Type.Tuple (List.map get_type nargs))
 		(Type.Tuple (List.map (fun x -> x.VarDecl.var_type)
-			      (Program.find_class program c).Class.parameters))
+				(Program.find_class program c).Class.parameters))
 	    then
-	      New (set_type n (Type.Intersection (get_interfaces (find_class program cls))), cls, nargs)
+	      New (set_type n (Class.get_type (Program.find_class program c)),
+		  Type.Basic c, nargs)
 	    else
-	      raise TypeError (get_file n, get_line n,
-			      "Constructor argument mismatch")
+	      raise (TypeError (Expression.file n, Expression.line n,
+			       "Constructor argument mismatch"))
       | Expression.Extern _ -> assert false
       | SSAId (n, name, version) ->
 	  let res =
@@ -146,8 +147,8 @@ let typecheck tree: Declaration.t list =
 		    Hashtbl.find gamma name
 		  with
 		      Not_found ->
-			raise TypeError (get_file n, get_line n,
-					name ^ " not declared")
+			raise (TypeError (Expression.file n, Expression.line n,
+					 name ^ " not declared"))
 	  in
 	    SSAId (set_type n res, name, version)
       | Phi (n, args) ->
@@ -156,7 +157,7 @@ let typecheck tree: Declaration.t list =
 	      args
 	  in
 	  let nty =
-	    meet (List.map get_type nargs)
+	    Program.meet program (List.map get_type nargs)
 	  in
 	    Phi (set_type n nty, nargs)
   and type_check_lhs program cls gamma delta coiface =
@@ -171,17 +172,18 @@ let typecheck tree: Declaration.t list =
 		    Hashtbl.find gamma name
 		  with
 		      Not_found ->
-			raise TypeError (get_file n, get_line n,
-					name ^ " not declared")
+			raise (TypeError (Expression.file n, Expression.line n,
+					 name ^ " not declared"))
 	  in
 	    LhsVar (set_type n res, name)
       | LhsAttr (n, name, ty) ->
-	  let res = find_attr_decl name program cls in
+	  let res = (Program.find_attr_decl program cls name).VarDecl.var_type
+	  in
 	    LhsAttr (set_type n res, name, cls)
       | LhsWildcard (n, None) ->
-	  LhsWildcard(set_type n (Type.Basic "Data"), None)
-      | LhsWildcard (n, Some cls) ->
-	  LhsWildcard(set_type n ty, Some cls)
+	  LhsWildcard(set_type n Type.data, None)
+      | LhsWildcard (n, Some ty) ->
+	  LhsWildcard(set_type n ty, Some ty)
       | LhsSSAId (n, name, version) ->
 	  let res =
 	    try
@@ -192,8 +194,8 @@ let typecheck tree: Declaration.t list =
 		    Hashtbl.find gamma name
 		  with
 		      Not_found ->
-			raise TypeError (get_file n, get_line n,
-					name ^ " not declared")
+			raise (TypeError (Expression.file n, Expression.line n,
+					 name ^ " not declared"))
 	  in
 	    LhsSSAId (set_type n res, name, version)
   and type_check_statement program cls gamma delta coiface =
@@ -201,201 +203,276 @@ let typecheck tree: Declaration.t list =
 	Skip n -> Skip n
       | Release n -> Release n
       | Assert (n, e) ->
-	  Assert (n, type_check_expression program gamma delta coiface e)
+	  Assert (n, type_check_expression program cls gamma delta coiface e)
       | Assign (n, lhs, rhs) ->
-	  let nlhs = List.map (type_check_lhs) lhs
-	  and nrhs = List.map (type_check_expression) rhs
+	  let nlhs =
+	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma delta coiface) lhs
+	  and nrhs =
+	    List.map (type_check_expression program cls gamma delta coiface) rhs
 	  in
-	    if subtype_p (List.map get_lhs_type nrhs)
-	      (List.map get_expression_type nlhs)
+	    if Program.subtype_p program
+	      (Type.Tuple (List.map Expression.get_type nrhs))
+	      (Type.Tuple (List.map Expression.get_lhs_type nlhs))
 	    then
 	      Assign (n, nlhs, nrhs)
 	    else
-	      raise TypeError (get_file n, get_line n, "Type mismatch")
+	      raise (TypeError (file n, line n, "Type mismatch"))
       | Await (n, e) ->
-	  Await (n, type_check_expression program gamma delta coiface e)
+	  Await (n, type_check_expression program cls gamma delta coiface e)
       | Posit (n, e) ->
-	  Posit (n, type_check_expression program gamma delta coiface e)
+	  Posit (n, type_check_expression program cls gamma delta coiface e)
       | AsyncCall (n, None, callee, meth, args) ->
 	  let ncallee =
-	    type_check_expression program gamma delte coiface callee
+	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
-	  and co =
-	    cointerface_of (find_iface program ncallee)
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  in
-	    if (contracts_p cls co) &&
-	      (find_in_iface meth co (List.map get_type nargs)
-		  (Type.Basic "Data") (find_iface program ncallee))
+	  let co =
+	    Interface.cointerface (Program.find_interface program 
+				      (Type.as_string
+					  (Expression.get_type ncallee)))
+	  in
+	    if (Class.contracts_p cls co) &&
+	      (Program.provides_op_p program
+		  (Program.find_interface program
+		      (Type.as_string (Expression.get_type ncallee)))
+		  meth co (Type.Tuple (List.map Expression.get_type nargs))
+		  Type.data)
 	    then
 	      (* A label value of none implies that the type if that
 		 anonymous label is Label[Data]. *)
 	      AsyncCall (n, None, ncallee, meth, nargs)
 	    else
 	      begin
-		if ! contracts_p cls co then
-		  raise TypeError (get_file n, get_line n,
-				  "Class does not implement co-interace")
+		if not (Class.contracts_p cls co) then
+		  raise (TypeError (file n, line n,
+				   "Class does not implement co-interace"))
 		else
-		  raise TypeError (get_file n, get_line n,
-				  "Interface does not provide method " ^ meth)
+		  raise (TypeError (file n, line n,
+				   "Interface does not provide method " ^ meth))
 	      end
       | AsyncCall (n, Some label, callee, meth, args) ->
 	  let ncallee =
-	    type_check_expression program gamma delte coiface callee
+	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  and nlabel =
-	    type_check_lhs program gamma delta coiface label
-	  and co =
-	    cointerface_of (find_iface program ncallee)
+	    type_check_lhs program (Type.Basic cls.Class.name) gamma delta
+	      coiface label
 	  in
-	    if (contracts_p cls co) &&
-	      (find_in_iface meth co (List.map get_type nargs)
-		  (get_type_from_label nlabel) (find_iface program ncallee))
+	  let co =
+	    Interface.cointerface (Program.find_interface program
+				      (Type.as_string (Expression.get_type
+							  ncallee)))
+	  in
+	    if (Class.contracts_p cls co) &&
+	      (Program.provides_op_p program
+		  (Program.find_interface program
+		      (Type.as_string (Expression.get_type ncallee)))
+		  meth co
+		  (Type.Tuple (List.map get_type nargs))
+		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	    then
 	      AsyncCall (n, Some nlabel, ncallee, meth, nargs)
 	    else
 	      begin
-		if ! contracts_p cls co then
-		  raise TypeError (get_file n, get_line n,
-				  "Class does not implement co-interace")
+		if not (Class.contracts_p cls co) then
+		  raise (TypeError (file n, line n,
+				   "Class does not implement co-interace"))
 		else
-		  raise TypeError (get_file n, get_line n,
-				  "Interface does not provide method " ^ meth)
+		  raise (TypeError (file n, line n,
+				   "Interface does not provide method " ^ meth))
 	      end
       | Reply (n, label, retvals) -> 
 	  let nlabel =
-	    type_check_lhs program gamma delta coiface label
+	    type_check_expression program cls gamma delta coiface label
 	  and nretvals =
-	    List.map (type_check_lhs program gamma delta coiface) retvals
+	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
+			 delta coiface) retvals
 	  in
-	    if subtype_p (List.map get_lhs_type nouts)
-	      (get_type_from_label nlabel)
+	    if Program.subtype_p program
+	      (Type.Tuple (List.map get_lhs_type nretvals))
+	      (Type.get_from_label (Expression.get_type nlabel))
 	    then
 	      Reply (n, nlabel, nretvals)
 	    else
-	      raise TypeError (get_file n, get_line n, "Type mismatch")
+	      raise (TypeError (file n, line n, "Type mismatch"))
       | Free (n, args) -> assert false
-      | LocalAsyncCall (n, None, meth, args) ->
+      | LocalAsyncCall (n, None, meth, lb, ub, args) ->
+	  (* FIXME:  Check the upper bound and lower bound constraints
+	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  in
-	    if find_in_class cls meth (List.map get_type nargs)
-	      (Type.Basic "Data")
+	    (* A label value of none implies that the type if that
+	       anonymous label is Label[Data]. *)
+	    if Program.class_provides_method_p program cls meth
+	      (Type.Tuple (List.map get_type nargs)) Type.data
 	    then
-	      (* A label value of none implies that the type if that
-		 anonymous label is Label[Data]. *)
-	      LocalAsyncCall (n, None, meth, nargs)
+	      LocalAsyncCall (n, None, meth, lb, ub, nargs)
 	    else
-	      raise TypeError (get_file n, get_line n,
-			      "Class does not provide method " ^ meth)
-      | LocalAsyncCall (n, Some label, meth, args) ->
+	      raise (TypeError (file n, line n,
+			       "Class does not provide method " ^ meth))
+      | LocalAsyncCall (n, Some label, meth, lb, ub, args) ->
+	  (* FIXME:  Check the upper bound and lower bound constraints
+	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  and nlabel =
-	    type_check_lhs program gamma delta coiface label
+	    type_check_lhs program (Type.Basic cls.Class.name) gamma delta
+	      coiface label
 	  in
-	    if find_in_class cls meth (List.map get_type nargs)
-	      (get_type_from_label nlabel)
+	    if Program.class_provides_method_p program cls meth
+	      (Type.Tuple (List.map get_type nargs))
+	      (Type.get_from_label (Expression.get_lhs_type nlabel))
 	    then
-	      LocalAsyncCall (n, Some nlabel, meth, nargs)
+	      LocalAsyncCall (n, Some nlabel, meth, lb, ub, nargs)
 	    else
-	      raise TypeError (get_file n, get_line n,
-			      "Class does not provide method " ^ meth)
+	      raise (TypeError (file n, line n,
+			       "Class does not provide method " ^ meth))
       | SyncCall (n, callee, meth, args, retvals) ->
 	  let ncallee =
-	    type_check_expression program gamma delte coiface callee
+	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  and nouts =
-	    List.map (type_check_lhs program gamma delta coiface) retvals
-	  and co =
-	    cointerface_of (find_iface program ncallee)
+	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
+			 delta coiface) retvals
 	  in
-	    if (contracts_p cls co) &&
-	      (find_in_iface meth co (List.map get_type nargs)
-		  (List.map get_lhs_type nouts) (find_iface program ncallee))
+	  let co =
+	    Interface.cointerface (Program.find_interface program
+				      (Type.as_string
+					  (Expression.get_type ncallee)))
+	  in
+	    if (Class.contracts_p cls co) &&
+	      (Program.provides_op_p program
+		  (Program.find_interface program
+		      (Type.as_string (Expression.get_type ncallee)))
+		  meth
+		  co
+		  (Type.Tuple (List.map get_type nargs))
+		  (Type.Tuple (List.map get_lhs_type nouts)))
 	    then
 	      SyncCall (n, ncallee, meth, nargs, nouts)
 	    else
 	      begin
-		if ! contracts_p cls co then
-		  raise TypeError (get_file n, get_line n,
-				  "Class does not implement co-interace")
+		if not (Class.contracts_p cls co) then
+		  raise (TypeError (file n, line n,
+				   "Class does not implement co-interace"))
 		else
-		  raise TypeError (get_file n, get_line n,
-				  "Interface does not provide method " ^ meth)
+		  raise (TypeError (file n, line n,
+				   "Interface does not provide method " ^ meth))
 	      end
       | AwaitSyncCall (n, callee, meth, args, retvals) ->
 	  let ncallee =
-	    type_check_expression program gamma delte coiface callee
+	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  and nouts =
-	    List.map (type_check_lhs program gamma delta coiface) retvals
-	  and co =
-	    cointerface_of (find_iface program ncallee)
+	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
+			 delta coiface) retvals
 	  in
-	    if (contracts_p cls co) &&
-	      (find_in_iface meth co (List.map get_type nargs)
-		  (List.map get_lhs_type nouts) (find_iface program ncallee))
+	  let co =
+	    Interface.cointerface (Program.find_interface program
+				      (Type.as_string (Expression.get_type ncallee)))
+	  in
+	    if (Class.contracts_p cls co) &&
+	      (Program.provides_op_p program
+		  (Program.find_interface program
+		      (Type.as_string (Expression.get_type ncallee)))
+		  meth
+		  co
+		  (Type.Tuple (List.map get_type nargs))
+		  (Type.Tuple (List.map get_lhs_type nouts)))
 	    then
 	      AwaitSyncCall (n, ncallee, meth, nargs, nouts)
 	    else
 	      begin
-		if ! contracts_p cls co then
-		  raise TypeError (get_file n, get_line n,
-				  "Class does not implement co-interace")
+		if not (Class.contracts_p cls co) then
+		  raise (TypeError (file n, line n,
+				   "Class does not implement co-interace"))
 		else
-		  raise TypeError (get_file n, get_line n,
-				  "Interface does not provide method " ^ meth)
+		  raise (TypeError (file n, line n,
+				   "Interface does not provide method " ^ meth))
 	      end	  
-      | LocalSyncCall (n, meth, args, retvals) ->
+      | LocalSyncCall (n, meth, lb, ub, args, retvals) ->
+	  (* FIXME:  Check the upper bound and lower bound constraints
+	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  and nouts =
-	    List.map (type_check_lhs program gamma delta coiface) retvals
+	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
+			 delta coiface) retvals
 	  in
-	    if (find_in_class cls meth (List.map get_type nargs)
-		   (List.map get_lhs_type nouts))
+	    if
+	      Program.class_provides_method_p program cls meth
+		(Type.Tuple (List.map get_type nargs))
+		(Type.Tuple (List.map get_lhs_type nouts))
 	    then
-	      LocalSyncCall (n, meth, nargs, nouts)
+	      LocalSyncCall (n, meth, lb, ub, nargs, nouts)
 	    else
-	      raise TypeError (get_file n, get_line n,
-			      "Class does not provide method " ^ meth)
-      | AwaitLocalSyncCall (n, meth, args, retvals) ->
+	      raise (TypeError (file n, line n,
+			       "Class does not provide method " ^ meth))
+      | AwaitLocalSyncCall (n, meth, lb, ub, args, retvals) ->
+	  (* FIXME:  Check the upper bound and lower bound constraints
+	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program gamma delta coiface) args
+	    List.map (type_check_expression program cls gamma delta coiface)
+	      args
 	  and nouts =
-	    List.map (type_check_lhs program gamma delta coiface) retvals
+	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
+			 delta coiface) retvals
 	  in
-	    if (find_in_class cls meth (List.map get_type nargs)
-		   (List.map get_lhs_type nouts))
+	    if
+	      Program.class_provides_method_p program cls meth
+		(Type.Tuple (List.map get_type nargs))
+		(Type.Tuple (List.map get_lhs_type nouts))
 	    then
-	      AwaitLocalSyncCall (n, meth, nargs, nouts)
+	      AwaitLocalSyncCall (n, meth, lb, ub, nargs, nouts)
 	    else
-	      raise TypeError (get_file n, get_line n,
-			      "Class does not provide method " ^ meth)
+	      raise (TypeError (file n, line n,
+			       "Class does not provide method " ^ meth))
       | Tailcall _ -> assert false
       | If (n, cond, iftrue, iffalse) ->
-	  If (n, type_check_expression program gamma delte coiface cond,
-	     type_check_statement program gamma delta coiface iftrue,
-	     type_check_statement program gamma delta coiface iffalse)
-      | While (n, cond, body) ->
-	  While (n, tyep_check_expression program gamma delte coiface cond,
-		type_check_statement program gamma delta coiface body)
+	  If (n, type_check_expression program cls gamma delta coiface cond,
+	     type_check_statement program cls gamma delta coiface iftrue,
+	     type_check_statement program cls gamma delta coiface iffalse)
+      | While (n, cond, None, body) ->
+	  While (n, type_check_expression program cls gamma delta coiface cond,
+		None,
+		type_check_statement program cls gamma delta coiface body)
+      | While (n, cond, Some inv, body) ->
+	  While (n, type_check_expression program cls gamma delta coiface cond,
+		Some (type_check_expression program cls gamma delta coiface inv),
+		type_check_statement program cls gamma delta coiface body)
       | Sequence (n, s1, s2) ->
-	  let ns1 = type_check_statement program gamma delta coiface s1 in
-	  let ns2 = type_check_statement program gamma delta coiface s2 in
+	  let ns1 = type_check_statement program cls gamma delta coiface s1 in
+	  let ns2 = type_check_statement program cls gamma delta coiface s2 in
 	    Sequence (n, ns1, ns2)
       | Merge (n, s1, s2) ->
-	  Merge (n, type_check_statement program gamma delta coiface s1,
-		type_check_statement program gamma delta coiface s2)
+	  Merge (n, type_check_statement program cls gamma delta coiface s1,
+		type_check_statement program cls gamma delta coiface s2)
       | Choice (n, s1, s2) ->
-	  Choice (n, type_check_statement program gamma delta coiface s1,
-		 type_check_statement program gamma delta coiface s2)
+	  Choice (n, type_check_statement program cls gamma delta coiface s1,
+		 type_check_statement program cls gamma delta coiface s2)
       | Extern _ as s -> s
+  and insert gamma vardecl =
+    begin
+      if not (Hashtbl.mem gamma vardecl.VarDecl.name)
+      then
+	(Hashtbl.add gamma vardecl.VarDecl.name vardecl.VarDecl.var_type)
+      else
+	raise (TypeError ("", 0,
+			 "Variable " ^ vardecl.VarDecl.name ^ " redeclared"))
+    end ;
+    gamma
   and type_check_method program cls gamma coiface m =
     let d0 = Hashtbl.create 32 in
     let d1 = List.fold_left insert d0 m.Method.meth_inpars in
@@ -418,4 +495,4 @@ let typecheck tree: Declaration.t list =
 	Declaration.Class c -> type_check_class program c
       | _ as d -> d
   in
-      type_check_declaration tree
+    type_check_declaration tree
