@@ -50,7 +50,7 @@ module Type :
 
     val result_type : t -> t
 
-    val get_from_label : t -> t
+    val get_from_label : t -> t list
   end
 
 module Expression :
@@ -403,23 +403,25 @@ module Program :
 
     type t = Declaration.t list
 
-    val find_class : t -> string -> Class.t
+    val find_class : program: t -> name: string -> Class.t
 
-    val find_interface : t -> string -> Interface.t
+    val find_interface : program: t -> name: string -> Interface.t
+
+    val find_datatype : program: t -> name: string -> Datatype.t
+
+    val find_function : program: t -> name: string -> domain: Type.t list ->
+      Operation.t
 
     val find_attr_decl : t -> Type.t -> string -> VarDecl.t
-
-    val find_functions : t -> string -> Operation.t list
-
-    val find_function : t -> string -> Type.t -> Operation.t
 
     val subtype_p : program: t -> s: Type.t -> t: Type.t -> bool
       (** Decides whether [s] is a subtype of [t] in [program]. *)
 
     val meet : program: t -> Type.t list -> Type.t
 
-    val provides_op_p : t -> Interface.t -> string -> Type.t -> Type.t ->
-      Type.t -> bool
+    val provides_op_p : program: t -> iface: Interface.t -> name: string ->
+      coiface: Type.t -> inputs: Type.t list -> outputs: Type.t list ->
+      bool
 
     val class_provides_method_p : t -> Class.t -> string -> Type.t ->
       Type.t -> bool

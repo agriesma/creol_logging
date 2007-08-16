@@ -86,6 +86,10 @@ let from_file name =
       lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } ;
       CreolParser.main CreolLex.token lexbuf
 
+let load_prelude () =
+  (** Try to find the prelude and load it. *)
+  []
+
 let rec from_files =
   (** Read the contents of a list of files and return an abstract syntax
       tree.
@@ -168,8 +172,10 @@ let main () =
       match !inputs with
 	  [] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
 	| ["-"] -> from_channel stdin
-	| _ ->  from_files !inputs in
-      Target.output (Passes.execute_passes !Target.file tree) ;
+	| _ ->  from_files !inputs
+    in
+      Target.output (Passes.execute_passes !Target.file
+			((load_prelude ())@tree)) ;
       if !times then Passes.report_timings();
       exit 0 ;;
 

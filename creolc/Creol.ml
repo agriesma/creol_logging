@@ -113,7 +113,7 @@ module Type =
 
     let get_from_label =
       function
-	  Application (label, args) -> Tuple args
+	  Application ("Label", args) -> args
 	| _ -> assert false
 
   end
@@ -775,7 +775,7 @@ module Program =
   struct
     type t = Declaration.t list
 
-    let find_class program name =
+    let find_class ~program ~name =
       let class_with_name =
 	function
 	    Declaration.Class { Class.name = n } when n = name -> true
@@ -785,14 +785,27 @@ module Program =
 	    Declaration.Class cls -> cls
 	  | _ -> assert false
 
-    let find_interface program name =
-      let interface_with_name_p =
+    let find_interface ~program ~name =
+      let interface_with_name =
 	function
 	    Declaration.Interface { Interface.name = n } when n = name -> true
 	  | _ -> false
       in
-	match List.find interface_with_name_p program with
+	match List.find interface_with_name program with
 	    Declaration.Interface i -> i
+	  | _ -> assert false
+
+    let find_datatype ~program ~name =
+      let datatype_with_name =
+	function
+	    Declaration.Datatype { Datatype.name = Type.Basic n }
+	      when n = name -> true
+	  | Declaration.Datatype { Datatype.name = Type.Application (n, _) }
+	      when n = name -> true
+	  | _ -> false
+      in
+	match List.find datatype_with_name program with
+	    Declaration.Datatype d -> d
 	  | _ -> assert false
 
     let find_attr_decl program cls name =
@@ -821,17 +834,21 @@ module Program =
 		| _ -> [])
 	      program)
       in
-      let
-	  oper_has_name { Operation.name = n } = (n = name)
-      in
-	List.filter oper_has_name all_operations
+	List.filter (fun { Operation.name = n } -> (n = name))
+	  all_operations
 
-    let find_function program name insig =
+    let find_function ~program ~name ~domain =
+      (** Find the function [name] in [program], that matches
+	  arguments of type [domain] best. *)
       let candidates = find_functions program name in
-        List.hd candidates
+        List.find (fun f ->
+	  (List.for_all2 (fun s t -> subtype_p program s t)
+	      (List.map (fun p -> p.VarDecl.var_type) f.Operation.parameters))
+	    domain)
+	  candidates
 
 
-    let provides_op_p program iface name coiface ins outs =
+    let provides_op_p ~program ~iface ~name ~coiface ~inputs ~outputs =
       false (* XXX *)
 
     let class_provides_method_p program cls meth ins outs =

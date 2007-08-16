@@ -75,7 +75,7 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let restype =
 	    Type.result_type (Program.find_function program (string_of_unaryop op)
-				 (Type.Tuple (List.map get_type [narg]))).Operation.result_type
+				 (List.map get_type [narg])).Operation.result_type
 	  in
 	    Unary (set_type n restype, op, narg)
       | Binary (n, op, arg1, arg2) ->
@@ -86,7 +86,7 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let restype =
 	    (Program.find_function program (string_of_binaryop op)
-		(Type.Tuple (List.map get_type [narg1; narg2]))).Operation.result_type
+		(List.map get_type [narg1; narg2])).Operation.result_type
 	  in
 	    Binary (set_type n restype, op, narg1, narg2)
       | Expression.If (n, cond, iftrue, iffalse) ->
@@ -111,7 +111,7 @@ let typecheck tree: Declaration.t list =
 	      args
 	  in
 	  let restype =
-	    (Program.find_function program name (Type.Tuple (List.map get_type nargs))).Operation.result_type
+	    (Program.find_function program name (List.map get_type nargs)).Operation.result_type
 	  in
 	    FuncCall (set_type n restype, name, nargs)
       | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
@@ -237,8 +237,8 @@ let typecheck tree: Declaration.t list =
 	      (Program.provides_op_p program
 		  (Program.find_interface program
 		      (Type.as_string (Expression.get_type ncallee)))
-		  meth co (Type.Tuple (List.map Expression.get_type nargs))
-		  Type.data)
+		  meth co (List.map Expression.get_type nargs)
+		  [Type.data])
 	    then
 	      (* A label value of none implies that the type if that
 		 anonymous label is Label[Data]. *)
@@ -272,7 +272,7 @@ let typecheck tree: Declaration.t list =
 		  (Program.find_interface program
 		      (Type.as_string (Expression.get_type ncallee)))
 		  meth co
-		  (Type.Tuple (List.map get_type nargs))
+		  (List.map get_type nargs)
 		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	    then
 	      AsyncCall (n, Some nlabel, ncallee, meth, nargs)
@@ -294,7 +294,7 @@ let typecheck tree: Declaration.t list =
 	  in
 	    if Program.subtype_p program
 	      (Type.Tuple (List.map get_lhs_type nretvals))
-	      (Type.get_from_label (Expression.get_type nlabel))
+	      (Type.Tuple (Type.get_from_label (Expression.get_type nlabel)))
 	    then
 	      Reply (n, nlabel, nretvals)
 	    else
@@ -328,7 +328,8 @@ let typecheck tree: Declaration.t list =
 	  in
 	    if Program.class_provides_method_p program cls meth
 	      (Type.Tuple (List.map get_type nargs))
-	      (Type.get_from_label (Expression.get_lhs_type nlabel))
+	      (Type.Tuple
+		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	    then
 	      LocalAsyncCall (n, Some nlabel, meth, lb, ub, nargs)
 	    else
@@ -355,8 +356,8 @@ let typecheck tree: Declaration.t list =
 		      (Type.as_string (Expression.get_type ncallee)))
 		  meth
 		  co
-		  (Type.Tuple (List.map get_type nargs))
-		  (Type.Tuple (List.map get_lhs_type nouts)))
+		  (List.map get_type nargs)
+		  (List.map get_lhs_type nouts))
 	    then
 	      SyncCall (n, ncallee, meth, nargs, nouts)
 	    else
@@ -388,8 +389,8 @@ let typecheck tree: Declaration.t list =
 		      (Type.as_string (Expression.get_type ncallee)))
 		  meth
 		  co
-		  (Type.Tuple (List.map get_type nargs))
-		  (Type.Tuple (List.map get_lhs_type nouts)))
+		  (List.map get_type nargs)
+		  (List.map get_lhs_type nouts))
 	    then
 	      AwaitSyncCall (n, ncallee, meth, nargs, nouts)
 	    else
