@@ -86,24 +86,35 @@ let from_file name =
       lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } ;
       CreolParser.main CreolLex.token lexbuf
 
-let load_prelude () =
+let load_prelude prelude_name =
   (** Try to find the prelude and load it. *)
-  let prelude_name = "prelude.creol" in
-  let places = 
+  let home =
+    (* Try to find the directory in which the binary has been executed. *)
+    let exec_name = Sys.executable_name in
+      if String.contains exec_name '/' then
+	begin
+          let lastsep = String.rindex exec_name '/' in
+	    String.sub exec_name 0 lastsep
+	end
+      else
+	begin
+	  (* Try to find us somewhere in the path *)
+	  let path = (Str.split (Str.regexp ":") (Sys.getenv "PATH")) in
+	    List.find (fun p -> Sys.file_exists (p ^ "/" ^ exec_name)) path
+	end
+  and library_path =
     try
       (Str.split (Str.regexp ":") (Sys.getenv "CREOL_LIBRARY_PATH"))
     with
 	Not_found -> []
   in
-  let prelude_file =
-    List.find (fun d ->
-      try
-	let s = Unix.stat (d ^ "/" ^ prelude_name) in
-	  s.Unix.st_kind = Unix.S_REG
-      with
-	  _ -> false) places
+  let places = library_path @ [ home ^ "/../share" ; home ; Sys.getcwd () ] in
+  let prelude =
+    (List.find (fun d -> Sys.file_exists (d ^ "/" ^ prelude_name)) places) ^
+      "/" ^ prelude_name
   in
-    from_file (prelude_file ^ "/" ^ prelude_name)
+    Messages.message 1 ("Reading prelude from " ^ prelude) ;
+    from_file prelude
 
 let rec from_files =
   (** Read the contents of a list of files and return an abstract syntax
@@ -190,7 +201,7 @@ let main () =
 	| _ ->  from_files !inputs
     in
       Target.output (Passes.execute_passes !Target.file
-			((load_prelude ())@tree)) ;
+			((load_prelude "prelude.creol")@tree)) ;
       if !times then Passes.report_timings();
       exit 0 ;;
 
