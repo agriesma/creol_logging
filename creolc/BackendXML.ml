@@ -242,13 +242,13 @@ let emit ~name ~tree =
       | Statement.LocalAsyncCall (a, l, m, s, lb, ub, es) ->
 	  XmlTextWriter.start_element writer "creol:localasynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
-	  creol_signature_to_xml s ;
 	  (match lb with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "lower" n ) ;
 	  (match ub with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "upper" n ) ;
+	  creol_signature_to_xml s ;
 	  (match l with
 	      None -> ()
 	    | Some n -> creol_lhs_to_xml n ) ;
@@ -263,13 +263,13 @@ let emit ~name ~tree =
       | Statement.LocalSyncCall (a, m, s, l, u, es, is) ->
 	  XmlTextWriter.start_element writer "creol:localsynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
-	  creol_signature_to_xml s ;
 	  (match l with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "lower" n ) ;
 	  (match u with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "upper" n ) ;
+	  creol_signature_to_xml s ;
 	  XmlTextWriter.start_element writer "creol:arguments" ;
 	  List.iter (function e -> 
 	    XmlTextWriter.start_element writer "creol:expression" ;
@@ -284,13 +284,13 @@ let emit ~name ~tree =
       | Statement.AwaitLocalSyncCall (a, m, s, l, u, es, is) ->
 	  XmlTextWriter.start_element writer "creol:awaitlocalsynccall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
-	  creol_signature_to_xml s ;
 	  (match l with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "lower" n ) ;
 	  (match u with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "upper" n ) ;
+	  creol_signature_to_xml s ;
 	  XmlTextWriter.start_element writer "creol:arguments" ;
 	  List.iter (function e -> 
 	    XmlTextWriter.start_element writer "creol:expression" ;
@@ -305,13 +305,13 @@ let emit ~name ~tree =
       | Statement.Tailcall (a, m, s, l, u, es) ->
 	  XmlTextWriter.start_element writer "creol:tailcall" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
-	  creol_signature_to_xml s ;
 	  (match l with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "lower" n ) ;
 	  (match u with
 	      None -> ()
 	    | Some n -> XmlTextWriter.write_attribute writer "upper" n ) ;
+	  creol_signature_to_xml s ;
 	  XmlTextWriter.start_element writer "creol:arguments" ;
 	  List.iter (function e -> 
 	    XmlTextWriter.start_element writer "creol:expression" ;

@@ -51,7 +51,6 @@
 %left TIMESTIMES
 %right UMINUS HASH
 %left DOT
-(* %right CID *)
 
 %start <'a list> main
 
@@ -256,7 +255,7 @@ datatypedecl:
     BEGIN
       list(constructordecl) o = list(functiondecl) list(invariant)
     END
-    { { Datatype.name = t; supers = s; operations = o } }
+    { { Datatype.name = t; supers = s; operations = o; hidden = false } }
 
 constructordecl:
     CONSTRUCTOR CID COLON
@@ -508,8 +507,6 @@ creol_type:
 	{ Type.Basic t }
     | t = CID LBRACK p = separated_list(COMMA, creol_type) RBRACK
 	{ Type.Application (t, p) }
-(*    | t = CID BOX
-        { Type.Application (t, []) } *)
     | BACKTICK v = ID
 	{ Type.Variable v }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type)

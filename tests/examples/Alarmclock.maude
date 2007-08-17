@@ -5,8 +5,8 @@ op init : -> Configuration [ctor] .
 eq init =
 < "Alarmclock" : Cl | Inh: noInh, Par: noVid, Att: "clock" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "clock" ::= int(0) ; return ( emp ) > *
-  < "wakeme" : Mtdname | Param: "n", Latt: "n" |-> null , "alarmsetting" |-> null, Code: "alarmsetting" ::= "+" ( "clock" # "n" ) ; ( await ">=" ( "clock" # "alarmsetting" ) ) ; return ( emp ) > *
-  < "tick" : Mtdname | Param: noVid, Latt: noSubst, Code: "clock" ::= "+" ( "clock" # int(1) ) ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "clock" ::= "+" ( "clock" # int(1) ) ; ( ".anon" ! "this" . "run" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
+  < "wakeme" : Mtdname | Param: "n", Latt: "n" |-> null , "alarmsetting" |-> null, Code: "alarmsetting" ::= "+" ( "clock" # "n" ) ; ( await ">=" ( "clock" # "alarmsetting" ) ) ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

@@ -33,8 +33,7 @@ bin_PROGRAMS		= creolc creolc.opt
 
 BUILT_SOURCES		= CreolLex.ml CreolParser.ml CreolParser.mli
 
-creolc_SOURCES		= Version.ml Messages.ml \
-			  Creol.mli Creol.ml \
+creolc_SOURCES		= Version.ml Messages.ml Creol.ml \
 			  CreolTyping.mli CreolTyping.ml \
 			  TreeLower.mli TreeLower.ml \
 			  TreeSSA.ml \
@@ -49,8 +48,7 @@ creolc_SOURCES		= Version.ml Messages.ml \
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 # This is the subset for which we want to generate documentation.
-creolc_DOCSOURCES	= Version.ml Messages.ml \
-			  Creol.mli Creol.ml \
+creolc_DOCSOURCES	= Version.ml Messages.ml Creol.ml \
 			  BackendMaude.ml BackendXML.ml \
 			  Passes.ml \
 			  Driver.ml
@@ -85,8 +83,8 @@ creolc.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolc_SOURCES)))
 # Nonetheless, we depend on the source files, since type inference needs
 # to be redone after those files have been changed.
 #
-CreolParser.ml CreolParser.mli: Creol.mly Creol.mli Messages.ml
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.mli
+CreolParser.ml CreolParser.mli: Creol.mly Creol.ml Messages.ml
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.ml
 	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Messages.ml
 	rm -f CreolParser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<

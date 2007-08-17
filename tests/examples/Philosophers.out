@@ -24,9 +24,9 @@ result Configuration:
   < "digest" : Mtdname | Param: noVid, Latt: noSubst, Code: release ; "hungry"
     ::= bool(true) ; "hist" ::= "|-"("hist" # str("d")) ; release ; ".anon" !
     "this" . "digest"(emp) ; free(".anon") ; return(emp) > *
-  < "eat" : Mtdname | Param: noVid, Latt: noSubst, Code: await "hungry" ; "l" !
-    "neighbor" . "borrowStick"(emp) ; await ("l" ??) ; await "chopstick" ;
-    "hist" ::= "|-"("hist" # str("e")) ; "hungry" ::= bool(false) ; ".anon" !
+  < "eat" : Mtdname | Param: noVid, Latt: "l" |-> null, Code: await "hungry" ;
+    "l" ! "neighbor" . "borrowStick"(emp) ; await ("l" ??) ; await "chopstick"
+    ; "hist" ::= "|-"("hist" # str("e")) ; "hungry" ::= bool(false) ; ".anon" !
     "neighbor" . "returnStick"(emp) ; free(".anon") ; release ; ".anon" !
     "this" . "eat"(emp) ; free(".anon") ; return(emp) > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hist" ::= str("") ;

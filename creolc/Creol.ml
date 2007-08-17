@@ -84,6 +84,8 @@ module Type =
       function
 	  Basic s -> s
 	| Variable s -> "`" ^ s
+	| Application (s, []) ->
+	    s ^ "[ ]"
 	| Application (s, p) ->
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Tuple p ->
@@ -510,12 +512,18 @@ module Statement =
     let default_sig = (Type.any, Type.data, Type.data)
 
     type t =
+      (** Abstract syntax of statements in Creol.  The type parameter ['a]
+	  refers to the type of possible annotations. *)
 	Skip of note
 	| Release of note
 	| Assert of note * Expression.t
 	| Assign of note * Expression.lhs list * Expression.t list
+	  (** A multiple assignment statement.  Requires that the two lists
+	      are of the same length. *)
 	| Await of note * Expression.t
 	| Posit of note * Expression.t
+	  (** A posit statement, which is used to define {i true} properties
+              about time in a model. *)
 	| AsyncCall of note * Expression.lhs option * Expression.t * string *
 	   signature *  Expression.t list
 	| Reply of note * Expression.t * Expression.lhs list
@@ -659,6 +667,10 @@ module Method =
 
 
 
+(** Abstract syntax of a with clause.
+
+    A with clause consists of a co-interface name, a list of methods
+    and a sequence of invariants. *)
 module With = struct
 
   type t = {
@@ -755,7 +767,9 @@ module Datatype =
     type t = {
       name: Type.t;
       supers: Type.t list;
-      operations: Operation.t list
+      operations: Operation.t list;
+      hidden: bool
+	(** Hide from output.  Set for datatypes defined in the prelude. *)
     }
 
   end
@@ -823,6 +837,7 @@ module Program =
 	Class.find_attr_decl c name
 
     let subtype_p ~program ~s ~t =
+      (** Decides whether [s] is a subtype of [t] in [program]. *)
       (* FIXME: For simplicity we define subtype relation to be structural
          equality *)
       s = t

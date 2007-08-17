@@ -46,7 +46,8 @@ let emit out_channel input =
 	Declaration.Class c -> pretty_print_class c
       | Declaration.Interface i -> pretty_print_iface i
       | Declaration.Exception e -> pretty_print_exception e
-      | Declaration.Datatype d -> pretty_print_datatype d
+      | Declaration.Datatype d ->
+          if not d.Datatype.hidden then pretty_print_datatype d
   and pretty_print_datatype d =
     output_string out_channel ("datatype " ^ (Type.as_string d.Datatype.name));
     if d.Datatype.supers <> [] then
