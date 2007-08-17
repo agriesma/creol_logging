@@ -233,7 +233,7 @@ let emit out_channel input =
 	    output_string out_channel "posit ";
 	    pretty_print_expression e;
 	| Statement.Release _ -> output_string out_channel "release";
-	| Statement.AsyncCall (_, l, c, m, a) ->
+	| Statement.AsyncCall (_, l, c, m, _, a) ->
 	    (match l with
 		None -> ()
 	      | Some l -> pretty_print_lhs l ) ;
@@ -251,14 +251,14 @@ let emit out_channel input =
 	    output_string out_channel "/* free(" ;
 	    pretty_print_expression_list l ;
 	    output_string out_channel ") */"
-	| Statement.SyncCall (_, c, m, a, r) ->
+	| Statement.SyncCall (_, c, m, _, a, r) ->
 	    pretty_print_expression c ;
 	    output_string out_channel ("." ^ m ^ "(");
 	    pretty_print_expression_list a;
 	    output_string out_channel "; " ;
 	    pretty_print_lhs_list r;
 	    output_string out_channel ")"
-	| Statement.AwaitSyncCall (_, c, m, a, r) ->
+	| Statement.AwaitSyncCall (_, c, m, _, a, r) ->
 	    output_string out_channel "await " ;
 	    pretty_print_expression c ;
 	    output_string out_channel ("." ^ m ^ "(");
@@ -266,7 +266,7 @@ let emit out_channel input =
 	    output_string out_channel "; " ;
 	    pretty_print_lhs_list r;
 	    output_string out_channel ")"
-	| Statement.LocalAsyncCall (_, l, m, lb, ub, i) ->
+	| Statement.LocalAsyncCall (_, l, m, _, lb, ub, i) ->
 	      (match l with
 		  None -> ()
 		| Some n -> pretty_print_lhs n ) ;
@@ -281,7 +281,7 @@ let emit out_channel input =
 	    output_string out_channel "(" ;
 	    pretty_print_expression_list i;
 	    output_string out_channel ")"
-	| Statement.LocalSyncCall (_, m, lb, ub, i, o) ->
+	| Statement.LocalSyncCall (_, m, _, lb, ub, i, o) ->
 	    output_string out_channel m;
 	    (match lb with
 		None -> ()
@@ -294,7 +294,7 @@ let emit out_channel input =
 	    output_string out_channel "; " ;
 	    pretty_print_lhs_list o;
 	    output_string out_channel ")"
-	| Statement.AwaitLocalSyncCall (_, m, lb, ub, i, o) ->
+	| Statement.AwaitLocalSyncCall (_, m, _, lb, ub, i, o) ->
 	    output_string out_channel ("await " ^ m) ;
 	    (match lb with
 		None -> ()
@@ -307,7 +307,7 @@ let emit out_channel input =
 	    output_string out_channel "; " ;
 	    pretty_print_lhs_list o;
 	    output_string out_channel ")"
-	| Statement.Tailcall (_, m, l, u, i) -> assert false
+	| Statement.Tailcall (_, m, _, l, u, i) -> assert false
 	| Statement.If (_, c, t, f) ->
 	    output_string out_channel "if ";
 	    pretty_print_expression c;

@@ -1,12 +1,13 @@
 class Alarmclock
- begin
- 	var clock: Int
+begin
+  var clock: Int
 
- op init == clock := 0
+  op init == clock := 0
 
- with Any
-  op wakeme(in n: Int) == var alarmsetting: Int ;
- 		alarmsetting := clock + n;
- 		await clock >= alarmsetting
-  op tick == clock := clock + 1
- end
+  op run == clock := clock + 1 ; !run()
+
+  with Any
+    op wakeme(in n: Int) == var alarmsetting: Int ;
+ 		 alarmsetting := clock + n;
+ 		 await clock >= alarmsetting
+end

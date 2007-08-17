@@ -56,22 +56,22 @@ let pass input =
       | Assign (a, s, e) -> Assign (a, s, List.map lower_expression e)
       | Await (a, g) -> Await (a, lower_expression g)
       | Posit (a, g) -> Posit (a, lower_expression g)
-      | AsyncCall (a, None, e, n, p) ->
+      | AsyncCall (a, None, e, n, s, p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
 	  Sequence (a, AsyncCall (a,
 				 Some (LhsVar (make_expr_note_from_stmt_note a,
 					      ".anon")),
-				 lower_expression e, n,
+				 lower_expression e, n, s,
 				 List.map lower_expression p),
 		   Free (a, [Id (make_expr_note_from_stmt_note a, ".anon")]))
-      | AsyncCall (a, Some l, e, n, p) ->
-	  AsyncCall (a, Some l, lower_expression e, n,
+      | AsyncCall (a, Some l, e, n, s, p) ->
+	  AsyncCall (a, Some l, lower_expression e, n, s,
 		    List.map lower_expression p)
       | Free _ as s -> s
       | Reply _ as s -> s
-      | SyncCall (a, e, n, p, r) ->
+      | SyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
 	     
@@ -82,9 +82,9 @@ let pass input =
 	  and np = List.map lower_expression p
 	  and l = fresh_label ()
           in
-	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, np),
+	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, s, np),
 		     Reply (a, Id (make_expr_note_from_stmt_note a, l), r))
-      | AwaitSyncCall (a, e, n, p, r) ->
+      | AwaitSyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
 	     
@@ -96,22 +96,22 @@ let pass input =
 	  and l = fresh_label () in
 	  let nn = Expression.note ne
 	  in
-	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, np),
+	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, s, np),
 		     Sequence(a,
 			     Await (a, Label (nn, Id (nn, l))),
 			     Reply (a, Id (make_expr_note_from_stmt_note a,
 					  l),
 				   r)))
-      | LocalAsyncCall (a, None, m, lb, ub, i) ->
+      | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
-	  Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a, ".anon")), m, lb, ub,
+	  Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a, ".anon")), m, s, lb, ub,
 				     List.map lower_expression i),
 		   Free (a, [Id (make_expr_note_from_stmt_note a, ".anon")]))
-      | LocalAsyncCall (a, Some l, m, lb, ub, i) ->
-	  LocalAsyncCall (a, Some l, m, lb, ub, List.map lower_expression i)
-      | LocalSyncCall (a, m, l, u, i, o) ->
+      | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
+	  LocalAsyncCall (a, Some l, m, s, lb, ub, List.map lower_expression i)
+      | LocalSyncCall (a, m, s, l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
 	     
@@ -121,9 +121,9 @@ let pass input =
 	  let ni = List.map lower_expression i
 	  and lab = fresh_label ()
 	  in
-	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, l, u, ni),
+	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, s, l, u, ni),
 		     Reply (a, Id (make_expr_note_from_stmt_note a, lab), o))
-      | AwaitLocalSyncCall (a, m, l, u, i, o) ->
+      | AwaitLocalSyncCall (a, m, s, l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
 	     
@@ -133,15 +133,15 @@ let pass input =
 	  let ni = List.map lower_expression i
 	  and lab = fresh_label ()
 	  in
-	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, l, u, ni),
+	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, s, l, u, ni),
 		     Sequence (a, Await (a,
 					Label(make_expr_note_from_stmt_note a,
 					     Id (make_expr_note_from_stmt_note a, lab))),
 			      Reply (a, Id (make_expr_note_from_stmt_note a,
 					   lab),
 				    o)))
-      | Tailcall (a, m, l, u, i) ->
-	  Tailcall (a, m, l, u, List.map lower_expression i)
+      | Tailcall (a, m, s, l, u, i) ->
+	  Tailcall (a, m, s, l, u, List.map lower_expression i)
       | If (a, c, t, f) -> If(a, lower_expression c, lower_statement t,
 			     lower_statement f)
       | While (a, c, None, b) ->

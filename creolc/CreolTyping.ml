@@ -221,7 +221,7 @@ let typecheck tree: Declaration.t list =
 	  Await (n, type_check_expression program cls gamma delta coiface e)
       | Posit (n, e) ->
 	  Posit (n, type_check_expression program cls gamma delta coiface e)
-      | AsyncCall (n, None, callee, meth, args) ->
+      | AsyncCall (n, None, callee, meth, _, args) ->
 	  let ncallee =
 	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
@@ -233,6 +233,9 @@ let typecheck tree: Declaration.t list =
 				      (Type.as_string
 					  (Expression.get_type ncallee)))
 	  in
+	  let signature =
+	    (co, Type.Tuple (List.map Expression.get_type nargs), Type.data)
+	  in
 	    if (Class.contracts_p cls co) &&
 	      (Program.provides_op_p program
 		  (Program.find_interface program
@@ -242,17 +245,17 @@ let typecheck tree: Declaration.t list =
 	    then
 	      (* A label value of none implies that the type if that
 		 anonymous label is Label[Data]. *)
-	      AsyncCall (n, None, ncallee, meth, nargs)
+	      AsyncCall (n, None, ncallee, meth, signature, nargs)
 	    else
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not implement co-interace"))
+				   "Class does not implement co-interface"))
 		else
 		  raise (TypeError (file n, line n,
 				   "Interface does not provide method " ^ meth))
 	      end
-      | AsyncCall (n, Some label, callee, meth, args) ->
+      | AsyncCall (n, Some label, callee, meth, _, args) ->
 	  let ncallee =
 	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
@@ -267,6 +270,11 @@ let typecheck tree: Declaration.t list =
 				      (Type.as_string (Expression.get_type
 							  ncallee)))
 	  in
+	  let signature =
+	    (co, Type.Tuple (List.map Expression.get_type nargs),
+	    (Type.Tuple
+		(Type.get_from_label (Expression.get_lhs_type nlabel))))
+	  in
 	    if (Class.contracts_p cls co) &&
 	      (Program.provides_op_p program
 		  (Program.find_interface program
@@ -275,12 +283,12 @@ let typecheck tree: Declaration.t list =
 		  (List.map get_type nargs)
 		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	    then
-	      AsyncCall (n, Some nlabel, ncallee, meth, nargs)
+	      AsyncCall (n, Some nlabel, ncallee, meth, signature, nargs)
 	    else
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not implement co-interace"))
+				   "Class does not implement co-interface"))
 		else
 		  raise (TypeError (file n, line n,
 				   "Interface does not provide method " ^ meth))
@@ -300,23 +308,27 @@ let typecheck tree: Declaration.t list =
 	    else
 	      raise (TypeError (file n, line n, "Type mismatch"))
       | Free (n, args) -> assert false
-      | LocalAsyncCall (n, None, meth, lb, ub, args) ->
+      | LocalAsyncCall (n, None, meth, _, lb, ub, args) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
 	    List.map (type_check_expression program cls gamma delta coiface)
 	      args
 	  in
+	  let signature =
+	    (Type.Internal,
+	    Type.Tuple (List.map Expression.get_type nargs), Type.data)
+	  in
 	    (* A label value of none implies that the type if that
 	       anonymous label is Label[Data]. *)
 	    if Program.class_provides_method_p program cls meth
 	      (Type.Tuple (List.map get_type nargs)) Type.data
 	    then
-	      LocalAsyncCall (n, None, meth, lb, ub, nargs)
+	      LocalAsyncCall (n, None, meth, signature, lb, ub, nargs)
 	    else
 	      raise (TypeError (file n, line n,
 			       "Class does not provide method " ^ meth))
-      | LocalAsyncCall (n, Some label, meth, lb, ub, args) ->
+      | LocalAsyncCall (n, Some label, meth, _, lb, ub, args) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
@@ -326,16 +338,21 @@ let typecheck tree: Declaration.t list =
 	    type_check_lhs program (Type.Basic cls.Class.name) gamma delta
 	      coiface label
 	  in
+	  let signature =
+	    (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
+	    (Type.Tuple
+		(Type.get_from_label (Expression.get_lhs_type nlabel))))
+	  in
 	    if Program.class_provides_method_p program cls meth
 	      (Type.Tuple (List.map get_type nargs))
 	      (Type.Tuple
 		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	    then
-	      LocalAsyncCall (n, Some nlabel, meth, lb, ub, nargs)
+	      LocalAsyncCall (n, Some nlabel, meth, signature, lb, ub, nargs)
 	    else
 	      raise (TypeError (file n, line n,
 			       "Class does not provide method " ^ meth))
-      | SyncCall (n, callee, meth, args, retvals) ->
+      | SyncCall (n, callee, meth, _, args, retvals) ->
 	  let ncallee =
 	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
@@ -350,6 +367,11 @@ let typecheck tree: Declaration.t list =
 				      (Type.as_string
 					  (Expression.get_type ncallee)))
 	  in
+	  let signature =
+	    (co, Type.Tuple (List.map Expression.get_type nargs),
+	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
+		
+	  in
 	    if (Class.contracts_p cls co) &&
 	      (Program.provides_op_p program
 		  (Program.find_interface program
@@ -359,17 +381,18 @@ let typecheck tree: Declaration.t list =
 		  (List.map get_type nargs)
 		  (List.map get_lhs_type nouts))
 	    then
-	      SyncCall (n, ncallee, meth, nargs, nouts)
+	      SyncCall (n, ncallee, meth, signature, nargs, nouts)
 	    else
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not implement co-interace"))
+				   "Class does not contract interface " ^
+				     (Type.as_string co)))
 		else
 		  raise (TypeError (file n, line n,
 				   "Interface does not provide method " ^ meth))
 	      end
-      | AwaitSyncCall (n, callee, meth, args, retvals) ->
+      | AwaitSyncCall (n, callee, meth, _, args, retvals) ->
 	  let ncallee =
 	    type_check_expression program cls gamma delta coiface callee
 	  and nargs =
@@ -383,6 +406,11 @@ let typecheck tree: Declaration.t list =
 	    Interface.cointerface (Program.find_interface program
 				      (Type.as_string (Expression.get_type ncallee)))
 	  in
+	  let signature =
+	    (co, Type.Tuple (List.map Expression.get_type nargs),
+	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
+		
+	  in
 	    if (Class.contracts_p cls co) &&
 	      (Program.provides_op_p program
 		  (Program.find_interface program
@@ -392,17 +420,17 @@ let typecheck tree: Declaration.t list =
 		  (List.map get_type nargs)
 		  (List.map get_lhs_type nouts))
 	    then
-	      AwaitSyncCall (n, ncallee, meth, nargs, nouts)
+	      AwaitSyncCall (n, ncallee, meth, signature, nargs, nouts)
 	    else
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not implement co-interace"))
+				   "Class does not implement co-interface"))
 		else
 		  raise (TypeError (file n, line n,
 				   "Interface does not provide method " ^ meth))
 	      end	  
-      | LocalSyncCall (n, meth, lb, ub, args, retvals) ->
+      | LocalSyncCall (n, meth, _, lb, ub, args, retvals) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
@@ -412,16 +440,21 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
 			 delta coiface) retvals
 	  in
+	  let signature =
+	    (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
+	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
+		
+	  in
 	    if
 	      Program.class_provides_method_p program cls meth
 		(Type.Tuple (List.map get_type nargs))
 		(Type.Tuple (List.map get_lhs_type nouts))
 	    then
-	      LocalSyncCall (n, meth, lb, ub, nargs, nouts)
+	      LocalSyncCall (n, meth, signature, lb, ub, nargs, nouts)
 	    else
 	      raise (TypeError (file n, line n,
 			       "Class does not provide method " ^ meth))
-      | AwaitLocalSyncCall (n, meth, lb, ub, args, retvals) ->
+      | AwaitLocalSyncCall (n, meth, _, lb, ub, args, retvals) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
@@ -431,12 +464,17 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
 			 delta coiface) retvals
 	  in
+	  let signature =
+	    (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
+	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
+		
+	  in
 	    if
 	      Program.class_provides_method_p program cls meth
 		(Type.Tuple (List.map get_type nargs))
 		(Type.Tuple (List.map get_lhs_type nouts))
 	    then
-	      AwaitLocalSyncCall (n, meth, lb, ub, nargs, nouts)
+	      AwaitLocalSyncCall (n, meth, signature, lb, ub, nargs, nouts)
 	    else
 	      raise (TypeError (file n, line n,
 			       "Class does not provide method " ^ meth))

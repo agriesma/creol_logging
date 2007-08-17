@@ -69,7 +69,7 @@ module Target =
 	    No -> ()
 	  | Creol -> BackendCreol.emit out tree
 	  | Maude | MaudeMC -> BackendMaude.emit options out tree
-	  | XML -> let ign a b = () in BackendXML.emit !file ign ign tree
+	  | XML -> BackendXML.emit !file tree
 	in
 	match !file with
           | "-" -> do_output stdout
@@ -88,7 +88,22 @@ let from_file name =
 
 let load_prelude () =
   (** Try to find the prelude and load it. *)
-  []
+  let prelude_name = "prelude.creol" in
+  let places = 
+    try
+      (Str.split (Str.regexp ":") (Sys.getenv "CREOL_LIBRARY_PATH"))
+    with
+	Not_found -> []
+  in
+  let prelude_file =
+    List.find (fun d ->
+      try
+	let s = Unix.stat (d ^ "/" ^ prelude_name) in
+	  s.Unix.st_kind = Unix.S_REG
+      with
+	  _ -> false) places
+  in
+    from_file (prelude_file ^ "/" ^ prelude_name)
 
 let rec from_files =
   (** Read the contents of a list of files and return an abstract syntax

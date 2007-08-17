@@ -55,7 +55,11 @@ module Type :
 
 module Expression :
 sig
-  type note
+  type note =  {
+    file: string;
+    line: int;
+    ty: Type.t
+  }
 
   val make_note : Lexing.position -> note
 
@@ -175,9 +179,18 @@ sig
 
 end
 
-module Statement: sig
+module Statement:
+sig
 
-  type note
+  type note = {
+    file: string;
+    line: int;
+    life: Set.Make(String).t
+  }
+
+  type signature = Type.t * Type.t * Type.t 
+
+  val default_sig : signature
 
   val make_note : Lexing.position -> note
       (** Create a new note *)
@@ -204,7 +217,7 @@ module Statement: sig
 	  (** A posit statement, which is used to define {i true} properties
               about time in a model. *)
       | AsyncCall of note * Expression.lhs option * Expression.t * string *
-	  Expression.t list
+	  signature * Expression.t list
 	  (** Call a method asynchronously. *)
       | Reply of note * Expression.t * Expression.lhs list
 	  (** Receive the reply to an asynchronous call. *)
@@ -212,22 +225,22 @@ module Statement: sig
 	  (** Release labels.  The labels are not usable after
 	      executing this statement anymore. The argument {i must}
 	      refer to a list of Id or SSAId. *)
-      | SyncCall of note * Expression.t * string *
+      | SyncCall of note * Expression.t * string * signature *
 	  Expression.t list * Expression.lhs list
 	  (** Call a (remote) method synchronously. *)
-      | AwaitSyncCall of note * Expression.t * string *
+      | AwaitSyncCall of note * Expression.t * string * signature *
 	  Expression.t list * Expression.lhs list
 	  (** Call a (remote) method synchronously. *)
       | LocalAsyncCall of note * Expression.lhs option * string *
-	  string option * string option * Expression.t list
+	  signature * string option * string option * Expression.t list
 	  (** Call a local method synchronously. *)
-      | LocalSyncCall of note * string * string option * string option *
-	  Expression.t list * Expression.lhs list
+      | LocalSyncCall of note * string * signature * string option *
+	  string option * Expression.t list * Expression.lhs list
 	  (** Call a local method synchronously. *)
-      | AwaitLocalSyncCall of note * string * string option * string option *
-	  Expression.t list * Expression.lhs list
+      | AwaitLocalSyncCall of note * string * signature * string option *
+	  string option * Expression.t list * Expression.lhs list
 	  (** Call a local method synchronously. *)
-      | Tailcall of note * string * string option * string option *
+      | Tailcall of note * string * signature * string option * string option *
 	  Expression.t list
 	  (** Internal statement for eliminating tail calls. *)
       | If of note * Expression.t * t * t

@@ -70,6 +70,8 @@ module Type =
 	}
 
 
+    let any = Basic "Any"
+
     let data = Basic "Data"
 
     let boolean = Basic "Bool"
@@ -503,6 +505,9 @@ module Statement =
       life = IdSet.empty 
     }
 
+    type signature = Type.t * Type.t * Type.t
+
+    let default_sig = (Type.any, Type.data, Type.data)
 
     type t =
 	Skip of note
@@ -512,21 +517,21 @@ module Statement =
 	| Await of note * Expression.t
 	| Posit of note * Expression.t
 	| AsyncCall of note * Expression.lhs option * Expression.t * string *
-	    Expression.t list
+	   signature *  Expression.t list
 	| Reply of note * Expression.t * Expression.lhs list
 	| Free of note * Expression.t list
-	| SyncCall of note * Expression.t * string *
+	| SyncCall of note * Expression.t * string * signature *
 	    Expression.t list * Expression.lhs list
-	| AwaitSyncCall of note * Expression.t * string *
+	| AwaitSyncCall of note * Expression.t * string * signature *
 	    Expression.t list * Expression.lhs list
 	| LocalAsyncCall of note * Expression.lhs option * string *
-	    string option * string option * Expression.t list
-	| LocalSyncCall of note * string * string option * string option *
-            Expression.t list * Expression.lhs list
-	| AwaitLocalSyncCall of note * string * string option * string option *
-            Expression.t list * Expression.lhs list
-	| Tailcall of note * string * string option * string option *
-	    Expression.t list
+	    signature * string option * string option * Expression.t list
+	| LocalSyncCall of note * string * signature * string option *
+	    string option * Expression.t list * Expression.lhs list
+	| AwaitLocalSyncCall of note * string * signature * string option *
+	    string option * Expression.t list * Expression.lhs list
+	| Tailcall of note * string * signature * string option *
+	    string option * Expression.t list
 	| If of note * Expression.t * t * t
 	| While of note * Expression.t * Expression.t option *
 	    t
@@ -543,15 +548,15 @@ module Statement =
 	| Release a -> a
 	| Await (a, _) -> a
 	| Posit (a, _) -> a
-	| AsyncCall (a, _, _, _, _) -> a
+	| AsyncCall (a, _, _, _, _, _) -> a
 	| Reply (a, _, _) -> a
 	| Free (a, _) -> a
-	| SyncCall (a, _, _, _, _) -> a
-	| AwaitSyncCall (a, _, _, _, _) -> a
-	| LocalAsyncCall (a, _, _, _, _, _) -> a
-	| LocalSyncCall (a, _, _, _, _, _) -> a
-	| AwaitLocalSyncCall (a, _, _, _, _, _) -> a
-	| Tailcall (a, _, _, _, _) -> a
+	| SyncCall (a, _, _, _, _, _) -> a
+	| AwaitSyncCall (a, _, _, _, _, _) -> a
+	| LocalAsyncCall (a, _, _, _, _, _, _) -> a
+	| LocalSyncCall (a, _, _, _, _, _, _) -> a
+	| AwaitLocalSyncCall (a, _, _, _, _, _, _) -> a
+	| Tailcall (a, _, _, _, _, _) -> a
 	| If (a, _, _, _) -> a
 	| While (a, _, _, _) -> a
 	| Sequence(a, _, _) -> a
@@ -849,10 +854,19 @@ module Program =
 
 
     let provides_op_p ~program ~iface ~name ~coiface ~inputs ~outputs =
-      false (* XXX *)
+      (* FIXME: Take the signature into account. *)
+      List.exists
+	(fun w -> List.exists (fun m -> m.Method.meth_name = name)
+	  w.With.methods)
+	iface.Interface.with_decl
 
     let class_provides_method_p program cls meth ins outs =
-      false (* XXX *)
+      (* FIXME: Take the signature into account. *)
+      List.exists
+	(fun w -> List.exists (fun m -> m.Method.meth_name = meth)
+	  w.With.methods)
+	cls.Class.with_defs
+
   end
 
 

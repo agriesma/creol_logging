@@ -353,7 +353,7 @@ basic_statement:
 		     (match l with
                           None -> None
 			| Some lab -> Some (LhsVar (Expression.make_note $startpos, lab))),
-                    callee, m, i) }
+                    callee, m, Statement.default_sig, i) }
     | l = ioption(ID) BANG m = ID
 	lb = ioption(preceded(SUPERTYPE, CID)) 
 	ub = ioption(preceded(SUBTYPE, CID))
@@ -362,30 +362,30 @@ basic_statement:
 			 (match l with
                               None -> None
 			    | Some lab -> Some (LhsVar (Expression.make_note $startpos, lab))),
-			  m, lb, ub, i) }
+			  m, Statement.default_sig, lb, ub, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
 	{ Reply (Statement.make_note $startpos,
 		 Id (Expression.make_note $startpos, l), o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ SyncCall ((Statement.make_note $startpos), c, m, i, o) }
+	{ SyncCall ((Statement.make_note $startpos), c, m, Statement.default_sig,  i, o) }
     | m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ LocalSyncCall((Statement.make_note $startpos), m, lb, ub, i, o) }
+	{ LocalSyncCall((Statement.make_note $startpos), m, Statement.default_sig, lb, ub, i, o) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ AwaitSyncCall ((Statement.make_note $startpos), c, m, i, o) }
+	{ AwaitSyncCall ((Statement.make_note $startpos), c, m, Statement.default_sig, i, o) }
     | AWAIT m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ AwaitLocalSyncCall((Statement.make_note $startpos), m, lb, ub, i, o) }
+	{ AwaitLocalSyncCall((Statement.make_note $startpos), m, Statement.default_sig, lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement END
@@ -507,7 +507,9 @@ creol_type:
       t = CID
 	{ Type.Basic t }
     | t = CID LBRACK p = separated_list(COMMA, creol_type) RBRACK
-	{ Type.Application (t, p) } 
+	{ Type.Application (t, p) }
+(*    | t = CID BOX
+        { Type.Application (t, []) } *)
     | BACKTICK v = ID
 	{ Type.Variable v }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type)

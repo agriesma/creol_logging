@@ -214,46 +214,46 @@ let into_ssa tree =
       | Await (n, g) -> Await (n, expression_to_ssa env g)
       | Posit (n, g) -> Posit (n, expression_to_ssa env g)
       | Release n -> Release n
-      | AsyncCall (n, None, c, m, a) ->
-	  AsyncCall (n, None, c, m, List.map (expression_to_ssa env) a)
-      | AsyncCall (n, Some l, c, m, a) ->
+      | AsyncCall (n, None, c, m, s, a) ->
+	  AsyncCall (n, None, c, m, s, List.map (expression_to_ssa env) a)
+      | AsyncCall (n, Some l, c, m, s, a) ->
 	  let na = List.map (expression_to_ssa env) a in
 	  let nl = left_hand_side_to_ssa env l in
-	    AsyncCall (n, Some nl, c, m, na)
+	    AsyncCall (n, Some nl, c, m, s, na)
       | Reply (n, l, p) ->
 	  let nl = expression_to_ssa env l in
 	  let np = List.map (left_hand_side_to_ssa env) p in
 	    Reply (n, nl, np)
       | Free (n, v) -> Free (n, List.map (expression_to_ssa env) v)
-      | SyncCall (n, c, m, ins, outs) ->
+      | SyncCall (n, c, m, s, ins, outs) ->
 	  let nc = expression_to_ssa env c in
 	  let ni = List.map (expression_to_ssa env) ins in
 	  let no = List.map (left_hand_side_to_ssa env) outs in
-	    SyncCall (n, nc, m, ni, no)
-      | AwaitSyncCall (n, c, m, ins, outs) ->
+	    SyncCall (n, nc, m, s, ni, no)
+      | AwaitSyncCall (n, c, m, s, ins, outs) ->
 	  let nc = expression_to_ssa env c in
 	  let ni = List.map (expression_to_ssa env) ins in
 	  let no = List.map (left_hand_side_to_ssa env) outs in
-	    AwaitSyncCall (n, nc, m, ni, no)
-      | LocalAsyncCall (n, None, m, ub, lb, i) ->
+	    AwaitSyncCall (n, nc, m, s, ni, no)
+      | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
 	  (* XXX: This should not happen, but if we resolve this, we need to
 	     rerun this for updating the chain... *)
-	  LocalAsyncCall (n, None, m, ub, lb,
+	  LocalAsyncCall (n, None, m, s, ub, lb,
 			 List.map (expression_to_ssa env) i)
-      | LocalAsyncCall (n, Some l, m, ub, lb, i) ->
-	  LocalAsyncCall (n, Some (left_hand_side_to_ssa env l), m, ub, lb,
+      | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
+	  LocalAsyncCall (n, Some (left_hand_side_to_ssa env l), m, s, ub, lb,
 			 List.map (expression_to_ssa env) i)
-      | LocalSyncCall (n, m, u, l, ins, outs) ->
+      | LocalSyncCall (n, m, s, u, l, ins, outs) ->
 	  let ni = List.map (expression_to_ssa env) ins in
 	  let no = List.map (left_hand_side_to_ssa env) outs in
-	    LocalSyncCall (n, m, u, l, ni, no)
-      | AwaitLocalSyncCall (n, m, u, l, ins, outs) ->
+	    LocalSyncCall (n, m, s, u, l, ni, no)
+      | AwaitLocalSyncCall (n, m, s, u, l, ins, outs) ->
 	  let ni = List.map (expression_to_ssa env) ins in
 	  let no = List.map (left_hand_side_to_ssa env) outs in
-	    AwaitLocalSyncCall (n, m, u, l, ni, no)
-      | Tailcall (n, m, u, l, ins) ->
+	    AwaitLocalSyncCall (n, m, s, u, l, ni, no)
+      | Tailcall (n, m, s, u, l, ins) ->
 	  let ni = List.map (expression_to_ssa env) ins in
-            Tailcall (n, m, u, l, ni)
+            Tailcall (n, m, s, u, l, ni)
       | If (n, c, l, r) ->
 	  let nc = expression_to_ssa env c in
 	  let env_pre = Hashtbl.copy env in
@@ -408,45 +408,45 @@ let out_of_ssa tree =
       | Await (n, g) -> Await (n, expression_of_ssa g)
       | Posit (n, g) -> Posit (n, expression_of_ssa g)
       | Release n -> Release n
-      | AsyncCall (n, None, c, m, a) ->
-	  AsyncCall (n, None, c, m, List.map expression_of_ssa a)
-      | AsyncCall (n, Some l, c, m, a) ->
+      | AsyncCall (n, None, c, m, s, a) ->
+	  AsyncCall (n, None, c, m, s, List.map expression_of_ssa a)
+      | AsyncCall (n, Some l, c, m, s, a) ->
 	  let na = List.map expression_of_ssa a in
 	  let nl = left_hand_side_of_ssa l in
-	    AsyncCall (n, Some nl, c, m, na)
+	    AsyncCall (n, Some nl, c, m, s, na)
       | Reply (n, l, p) ->
 	  let nl = expression_of_ssa l in
 	  let np = List.map left_hand_side_of_ssa p in
 	    Reply (n, nl, np)
       | Free (n, v) -> Free (n, List.map expression_of_ssa v)
-      | SyncCall (n, c, m, ins, outs) ->
+      | SyncCall (n, c, m, s, ins, outs) ->
 	  let nc = expression_of_ssa c in
 	  let ni = List.map expression_of_ssa ins in
 	  let no = List.map left_hand_side_of_ssa outs in
-	    SyncCall (n, nc, m, ni, no)
-      | AwaitSyncCall (n, c, m, ins, outs) ->
+	    SyncCall (n, nc, m, s, ni, no)
+      | AwaitSyncCall (n, c, m, s, ins, outs) ->
 	  let nc = expression_of_ssa c in
 	  let ni = List.map expression_of_ssa ins in
 	  let no = List.map left_hand_side_of_ssa outs in
-	    AwaitSyncCall (n, nc, m, ni, no)
-      | LocalAsyncCall (n, None, m, ub, lb, i) ->
+	    AwaitSyncCall (n, nc, m, s, ni, no)
+      | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
 	  (* XXX: This should not happen, but if we resolve this, we need to
 	     rerun this for updating the chain... *)
-	  LocalAsyncCall (n, None, m, ub, lb, List.map expression_of_ssa i)
-      | LocalAsyncCall (n, Some l, m, ub, lb, i) ->
-	  LocalAsyncCall (n, Some (left_hand_side_of_ssa l), m, ub, lb,
+	  LocalAsyncCall (n, None, m, s, ub, lb, List.map expression_of_ssa i)
+      | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
+	  LocalAsyncCall (n, Some (left_hand_side_of_ssa l), m, s, ub, lb,
 			 List.map expression_of_ssa i)
-      | LocalSyncCall (n, m, u, l, ins, outs) ->
+      | LocalSyncCall (n, m, s, u, l, ins, outs) ->
 	  let ni = List.map expression_of_ssa ins in
 	  let no = List.map left_hand_side_of_ssa outs in
-	    LocalSyncCall (n, m, u, l, ni, no)
-      | AwaitLocalSyncCall (n, m, u, l, ins, outs) ->
+	    LocalSyncCall (n, m, s, u, l, ni, no)
+      | AwaitLocalSyncCall (n, m, s, u, l, ins, outs) ->
 	  let ni = List.map expression_of_ssa ins in
 	  let no = List.map left_hand_side_of_ssa outs in
-	    AwaitLocalSyncCall (n, m, u, l, ni, no)
-      | Tailcall (n, m, u, l, ins) ->
+	    AwaitLocalSyncCall (n, m, s, u, l, ni, no)
+      | Tailcall (n, m, s, u, l, ins) ->
 	  let ni = List.map expression_of_ssa ins in
-	    Tailcall (n, m, u, l, ni)
+	    Tailcall (n, m, s, u, l, ni)
       | If (n, c, l, r) ->
 	  let nc = expression_of_ssa c in
 	  let nl = statement_of_ssa l in

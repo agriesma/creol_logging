@@ -71,36 +71,36 @@ let compute tree =
       | Await (n, g) -> generate env g
       | Posit (n, g) -> generate env g
       | Release n -> ()
-      | AsyncCall (n, None, c, m, a) -> List.iter (generate env) (c::a)
-      | AsyncCall (n, Some l, c, m, a) ->
+      | AsyncCall (n, None, c, m, s, a) -> List.iter (generate env) (c::a)
+      | AsyncCall (n, Some l, c, m, s, a) ->
 	  List.iter (generate env) (c::a) ; kill env l
       | Reply (n, l, p) -> List.iter (kill env) p
       | Free (n, v) -> ()
 	  (* List.iter (kill env) v (* FIXME: Ugh! should be rhs *) *)
-      | SyncCall (n, c, m, ins, outs) ->
+      | SyncCall (n, c, m, s, ins, outs) ->
 	  let _ = List.iter (generate env) (c::ins) in
 	  let _ = List.iter (kill env) outs in
 	    ()
-      | AwaitSyncCall (n, c, m, ins, outs) ->
+      | AwaitSyncCall (n, c, m, s, ins, outs) ->
 	  let _ = List.iter (generate env) (c::ins) in
 	  let _ = List.iter (kill env) outs in
 	    ()
-      | LocalAsyncCall (n, None, m, ub, lb, i) ->
+      | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
 	  let _ = List.iter (generate env) i in
 	    ()
-      | LocalAsyncCall (n, Some l, m, ub, lb, i) ->
+      | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
 	  let _ = List.iter (generate env) i in
 	  let _ = kill env l in
 	    ()
-      | LocalSyncCall (n, m, u, l, ins, outs) ->
+      | LocalSyncCall (n, m, s, u, l, ins, outs) ->
 	  let _ = List.iter (generate env) ins in
 	  let _ = List.iter (kill env) outs in
 	    ()
-      | AwaitLocalSyncCall (n, m, u, l, ins, outs) ->
+      | AwaitLocalSyncCall (n, m, s, u, l, ins, outs) ->
 	  let _ = List.iter (generate env) ins in
 	  let _ = List.iter (kill env) outs in
 	    ()
-      | Tailcall (n, m, u, l, ins) ->
+      | Tailcall (n, m, s, u, l, ins) ->
 	  let _ = List.iter (generate env) ins in
 	    ()
       | If (n, c, l, r) ->

@@ -167,9 +167,8 @@ let execute_dump name pass tree =
 	Not_found -> s
   in
   let file = ((basename name)  ^ "." ^ pass) in
-  let ign a b = () in
     Messages.message 1 ("Writing dump to " ^ file) ;
-    BackendXML.emit file ign ign tree ;
+    BackendXML.emit file tree ;
     Messages.message 1 ("Finished writing dump to " ^ file)
 
 

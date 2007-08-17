@@ -153,8 +153,8 @@ let emit options out_channel input =
 	    of_expression_list e
 	| Statement.SyncCall _ -> assert false
 	| Statement.AwaitSyncCall _ -> assert false
-	| Statement.AsyncCall (_, None, _, _, _) -> assert false
-	| Statement.AsyncCall (_, Some l, c, m, a) ->
+	| Statement.AsyncCall (_, None, _, _, _, _) -> assert false
+	| Statement.AsyncCall (_, Some l, c, m, _, a) ->
 	    of_lhs l ;
 	    output_string out_channel " ! ";
 	    of_expression c ;
@@ -173,8 +173,8 @@ let emit options out_channel input =
 	    output_string out_channel " )"
 	| Statement.LocalSyncCall _ -> assert false
 	| Statement.AwaitLocalSyncCall _ -> assert false
-	| Statement.LocalAsyncCall (_, None, _, _, _, _) -> assert false
-	| Statement.LocalAsyncCall (_, Some l, m, None, None, i) ->
+	| Statement.LocalAsyncCall (_, None, _, _, _, _, _) -> assert false
+	| Statement.LocalAsyncCall (_, Some l, m, _, None, None, i) ->
 	    (* An unqualified local synchronous call should use this in
 	       order to get late binding correct. *)
 	    output_string out_channel "( " ;
@@ -182,7 +182,7 @@ let emit options out_channel input =
 	    output_string out_channel (" ! \"this\" . \"" ^ m ^ "\" (");
 	    of_expression_list i ;
 	    output_string out_channel " ) ) "
-	| Statement.LocalAsyncCall (_, Some l, m, lb, ub, i) ->
+	| Statement.LocalAsyncCall (_, Some l, m, _, lb, ub, i) ->
 	    output_string out_channel "( " ;
 	    of_lhs l ;
 	    output_string out_channel (" ! \"" ^ m ^ "\" ") ;
@@ -195,7 +195,7 @@ let emit options out_channel input =
 	    output_string out_channel "( " ;
 	    of_expression_list i;
 	    output_string out_channel " ) ) "
-	| Statement.Tailcall (_, m, l, u, i) ->
+	| Statement.Tailcall (_, m, _, l, u, i) ->
 	    output_string out_channel ( "\"" ^ m ^ "\"");
 	    (match l with
 		None -> ()
