@@ -34,9 +34,7 @@ let typecheck tree: Declaration.t list =
   let rec type_check_expression program cls gamma delta coiface =
     function
 	This n ->
-	  (* This has the internal type, and needs to be qualified if
-	     it should have another type. *)
-	  This (set_type n Type.Internal)
+	  This (set_type n (Class.get_type cls))
       | Caller n ->
 	  Caller (set_type n (Type.Basic coiface))
       | Null n ->
@@ -65,7 +63,8 @@ let typecheck tree: Declaration.t list =
 		      Not_found ->
 			raise (TypeError ((Expression.file n),
 					 (Expression.line n),
-					 name ^ " not declared"))
+					 "Identifier " ^ name ^
+					 " not declared"))
 	  in
 	    Id (set_type n res, name)
       | StaticAttr (n, name, cls) ->
@@ -78,9 +77,8 @@ let typecheck tree: Declaration.t list =
 	    type_check_expression program cls gamma delta coiface arg
 	  in
 	  let restype =
-	    Type.result_type
-	      (Program.find_function program (string_of_unaryop op)
-		  (List.map get_type [narg])).Operation.result_type
+	    (Program.find_function program (string_of_unaryop op)
+	      (List.map get_type [narg])).Operation.result_type
 	  in
 	    Unary (set_type n restype, op, narg)
       | Binary (n, op, arg1, arg2) ->
@@ -131,18 +129,23 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_expression program cls gamma delta coiface)
 	      args
 	  in
-	    if
-	      Program.subtype_p program
-	        (Type.Tuple (List.map get_type nargs))
-		(Type.Tuple
+          let args_t = Type.Tuple (List.map get_type nargs) in
+	  let ctor_t = Type.Tuple
 		    (List.map (fun x -> x.VarDecl.var_type)
-			(Program.find_class program c).Class.parameters))
+			(Program.find_class program c).Class.parameters)
+	  in
+	    if
+	      Program.subtype_p program args_t ctor_t
 	    then
 	      New (set_type n (Class.get_type (Program.find_class program c)),
 		  Type.Basic c, nargs)
 	    else
 	      raise (TypeError (Expression.file n, Expression.line n,
-			       "Constructor argument mismatch"))
+			       "Arguments to new " ^ c ^
+			       " mismatch: expected " ^
+                               (Type.as_string ctor_t) ^ " but got " ^
+			       (Type.as_string args_t)))
+
       | Expression.Extern _ -> assert false
       | SSAId (n, name, version) ->
 	  let res =
@@ -155,7 +158,8 @@ let typecheck tree: Declaration.t list =
 		  with
 		      Not_found ->
 			raise (TypeError (Expression.file n, Expression.line n,
-					 name ^ " not declared"))
+					 "Identifier " ^ name ^
+					 " not declared"))
 	  in
 	    SSAId (set_type n res, name, version)
       | Phi (n, args) ->
@@ -217,13 +221,17 @@ let typecheck tree: Declaration.t list =
 	  and nrhs =
 	    List.map (type_check_expression program cls gamma delta coiface) rhs
 	  in
-	    if Program.subtype_p program
-	      (Type.Tuple (List.map Expression.get_type nrhs))
-	      (Type.Tuple (List.map Expression.get_lhs_type nlhs))
+	  let lhs_t = Type.Tuple (List.map Expression.get_lhs_type nlhs)
+	  and rhs_t = Type.Tuple (List.map Expression.get_type nrhs)
+	  in
+	    if Program.subtype_p program rhs_t lhs_t
 	    then
 	      Assign (n, nlhs, nrhs)
 	    else
-	      raise (TypeError (file n, line n, "Type mismatch"))
+	      raise (TypeError (file n, line n,
+			       "Type mismatch in assignment: Expected " ^
+			       (Type.as_string lhs_t) ^ " but got " ^
+			       (Type.as_string rhs_t)))
       | Await (n, e) ->
 	  Await (n, type_check_expression program cls gamma delta coiface e)
       | Posit (n, e) ->

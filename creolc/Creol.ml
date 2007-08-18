@@ -95,7 +95,7 @@ module Type =
 		(as_string r) ^ "]"
 	| Structure f -> "[# " ^ (string_of_field_list f) ^ " #]"
 	| Variant f -> "[+ " ^ (string_of_field_list f) ^ " +]"
-	| Intersection l -> "/* /\ [" ^ (string_of_creol_type_list l) ^ "] */"
+	| Intersection l -> "/* /\\ [" ^ (string_of_creol_type_list l) ^ "] */"
 	| Union l -> "/* \\/ [" ^ (string_of_creol_type_list l) ^ "] */"
 	| Internal -> "/* Internal */"
     and string_of_creol_type_list =
