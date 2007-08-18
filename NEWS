@@ -1,8 +1,23 @@
-creoltools 0.0f (2007-XX-YY): alpha release.
+creoltools 0.0f (2007-08-2Y): alpha release.
+
+In the language:
+* Labels must be declared now.  A label type has the form
+  Label[t1, t2, ..., tn], where the ti represent the output
+  types.  If a method does not have any outputs, the label type
+  is Label[ ].  Observe that the white-space between the brackets
+  is mandatory.
+
+In the compiler:
+* The compiler includes a type checker now.  Please test and report
+  errors.
+
+In the standard library:
+* Some functions and types have been added.
 
 Other:
 * All example programs from previous papers have been moved into the
   tests/examples directory.
+
 
 creoltools 0.0f (2007-07-09): alpha release.
 

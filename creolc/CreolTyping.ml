@@ -34,13 +34,17 @@ let typecheck tree: Declaration.t list =
   let rec type_check_expression program cls gamma delta coiface =
     function
 	This n ->
-	  This (set_type n (Class.get_type cls))
+	  (* This has the internal type, and needs to be qualified if
+	     it should have another type. *)
+	  This (set_type n Type.Internal)
       | Caller n ->
 	  Caller (set_type n (Type.Basic coiface))
       | Null n ->
 	  Null (set_type n (Type.Variable (fresh_name ())))
       | Nil n ->
 	  Nil (set_type n (Type.Application ("List", [(Type.Variable (fresh_name ()))])))
+      | Now n ->
+	  Now (set_type n (Type.Basic "Time"))
       | Bool (n, value) ->
 	  Bool (set_type n (Type.Basic "Bool"), value)
       | Int (n, value) ->
@@ -74,8 +78,9 @@ let typecheck tree: Declaration.t list =
 	    type_check_expression program cls gamma delta coiface arg
 	  in
 	  let restype =
-	    Type.result_type (Program.find_function program (string_of_unaryop op)
-				 (List.map get_type [narg])).Operation.result_type
+	    Type.result_type
+	      (Program.find_function program (string_of_unaryop op)
+		  (List.map get_type [narg])).Operation.result_type
 	  in
 	    Unary (set_type n restype, op, narg)
       | Binary (n, op, arg1, arg2) ->
@@ -111,7 +116,8 @@ let typecheck tree: Declaration.t list =
 	      args
 	  in
 	  let restype =
-	    (Program.find_function program name (List.map get_type nargs)).Operation.result_type
+	    (Program.find_function program name
+		(List.map get_type nargs)).Operation.result_type
 	  in
 	    FuncCall (set_type n restype, name, nargs)
       | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
@@ -128,8 +134,9 @@ let typecheck tree: Declaration.t list =
 	    if
 	      Program.subtype_p program
 	        (Type.Tuple (List.map get_type nargs))
-		(Type.Tuple (List.map (fun x -> x.VarDecl.var_type)
-				(Program.find_class program c).Class.parameters))
+		(Type.Tuple
+		    (List.map (fun x -> x.VarDecl.var_type)
+			(Program.find_class program c).Class.parameters))
 	    then
 	      New (set_type n (Class.get_type (Program.find_class program c)),
 		  Type.Basic c, nargs)
@@ -228,16 +235,16 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_expression program cls gamma delta coiface)
 	      args
 	  in
+	  let callee_t = (Expression.get_type ncallee) in
 	  let co =
 	    Interface.cointerface (Program.find_interface program 
-				      (Type.as_string
-					  (Expression.get_type ncallee)))
+				      (Type.as_string callee_t))
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs), Type.data)
 	  in
 	    if (Class.contracts_p cls co) &&
-	      (Program.provides_op_p program
+	      (Program.interface_provides_p program
 		  (Program.find_interface program
 		      (Type.as_string (Expression.get_type ncallee)))
 		  meth co (List.map Expression.get_type nargs)
@@ -250,10 +257,13 @@ let typecheck tree: Declaration.t list =
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not implement co-interface"))
+				   "Class " ^ cls.Class.name ^
+				     " does not contract interface " ^
+				     (Type.as_string co)))
 		else
 		  raise (TypeError (file n, line n,
-				   "Interface does not provide method " ^ meth))
+				   "Interface " ^ (Type.as_string callee_t) ^
+				     " does not provide method " ^ meth))
 	      end
       | AsyncCall (n, Some label, callee, meth, _, args) ->
 	  let ncallee =
@@ -265,10 +275,10 @@ let typecheck tree: Declaration.t list =
 	    type_check_lhs program (Type.Basic cls.Class.name) gamma delta
 	      coiface label
 	  in
+	  let callee_t = (Expression.get_type ncallee) in
 	  let co =
 	    Interface.cointerface (Program.find_interface program
-				      (Type.as_string (Expression.get_type
-							  ncallee)))
+				      (Type.as_string callee_t))
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
@@ -276,9 +286,9 @@ let typecheck tree: Declaration.t list =
 		(Type.get_from_label (Expression.get_lhs_type nlabel))))
 	  in
 	    if (Class.contracts_p cls co) &&
-	      (Program.provides_op_p program
+	      (Program.interface_provides_p program
 		  (Program.find_interface program
-		      (Type.as_string (Expression.get_type ncallee)))
+		      (Type.as_string callee_t))
 		  meth co
 		  (List.map get_type nargs)
 		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
@@ -288,10 +298,13 @@ let typecheck tree: Declaration.t list =
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not implement co-interface"))
+				   "Class " ^ cls.Class.name ^
+				     " does not contract interface " ^
+				     (Type.as_string co)))
 		else
 		  raise (TypeError (file n, line n,
-				   "Interface does not provide method " ^ meth))
+				   "Interface " ^ (Type.as_string callee_t) ^
+				     " does not provide method " ^ meth))
 	      end
       | Reply (n, label, retvals) -> 
 	  let nlabel =
@@ -327,7 +340,8 @@ let typecheck tree: Declaration.t list =
 	      LocalAsyncCall (n, None, meth, signature, lb, ub, nargs)
 	    else
 	      raise (TypeError (file n, line n,
-			       "Class does not provide method " ^ meth))
+			       "Class " ^ cls.Class.name ^
+				 " does not provide method " ^ meth))
       | LocalAsyncCall (n, Some label, meth, _, lb, ub, args) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
@@ -362,10 +376,10 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
 			 delta coiface) retvals
 	  in
+	  let callee_t = (Expression.get_type ncallee) in
 	  let co =
 	    Interface.cointerface (Program.find_interface program
-				      (Type.as_string
-					  (Expression.get_type ncallee)))
+				      (Type.as_string callee_t))
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
@@ -373,9 +387,9 @@ let typecheck tree: Declaration.t list =
 		
 	  in
 	    if (Class.contracts_p cls co) &&
-	      (Program.provides_op_p program
+	      (Program.interface_provides_p program
 		  (Program.find_interface program
-		      (Type.as_string (Expression.get_type ncallee)))
+		      (Type.as_string callee_t))
 		  meth
 		  co
 		  (List.map get_type nargs)
@@ -390,7 +404,8 @@ let typecheck tree: Declaration.t list =
 				     (Type.as_string co)))
 		else
 		  raise (TypeError (file n, line n,
-				   "Interface does not provide method " ^ meth))
+				   "Interface " ^ (Type.as_string callee_t) ^
+				     " does not provide method " ^ meth))
 	      end
       | AwaitSyncCall (n, callee, meth, _, args, retvals) ->
 	  let ncallee =
@@ -402,9 +417,10 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_lhs program (Type.Basic cls.Class.name) gamma
 			 delta coiface) retvals
 	  in
+	  let callee_t = Expression.get_type ncallee in
 	  let co =
 	    Interface.cointerface (Program.find_interface program
-				      (Type.as_string (Expression.get_type ncallee)))
+				      (Type.as_string callee_t))
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
@@ -412,9 +428,9 @@ let typecheck tree: Declaration.t list =
 		
 	  in
 	    if (Class.contracts_p cls co) &&
-	      (Program.provides_op_p program
+	      (Program.interface_provides_p program
 		  (Program.find_interface program
-		      (Type.as_string (Expression.get_type ncallee)))
+		      (Type.as_string callee_t))
 		  meth
 		  co
 		  (List.map get_type nargs)
@@ -425,10 +441,13 @@ let typecheck tree: Declaration.t list =
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not implement co-interface"))
+				   "Class " ^ cls.Class.name ^
+				     " does not contract interface " ^
+				     (Type.as_string co)))
 		else
 		  raise (TypeError (file n, line n,
-				   "Interface does not provide method " ^ meth))
+				   "Interface " ^ (Type.as_string callee_t) ^
+				     " does not provide method " ^ meth))
 	      end	  
       | LocalSyncCall (n, meth, _, lb, ub, args, retvals) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints

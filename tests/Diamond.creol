@@ -4,34 +4,34 @@
  * This test case is used to analyze how Diamond-shaped inheritance is going
  * to be executed in Creol.
  */
-class A(a: Integer)
+class A(a: Int)
 begin
   op init == skip
   op run == skip
   with Any
-    op m(out r: Integer) == r := a
+    op m(out r: Int) == r := a
 end
 
-class B(b: Integer) inherits A(b)
+class B(b: Int) inherits A(b)
 begin
   op init == assert a = b
   op run == skip
   with Any
-    op n(out r: Integer) == r := b
+    op n(out r: Int) == r := b
 end
 
-class C(c: Integer) inherits A(c)
+class C(c: Int) inherits A(c)
 begin
   op init == assert a = c
   op run == skip
   with Any
-    op n(out r: Integer) == r := c
+    op n(out r: Int) == r := c
 end
 
 class D inherits B(1), C(2)
 begin
-  var x: Integer
-  var y: Integer
+  var x: Int
+  var y: Int
   op init == skip
   op run == m(; x); n(; y); assert x = 1 && y = 2
 end

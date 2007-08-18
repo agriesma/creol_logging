@@ -31,13 +31,13 @@ begin
 end
 
 class Node(db: DB)
-  implements Peer
+  contracts Peer, ToServer
 begin
   with ToServer
     op enquire(out files: List[String]) ==
       await db.listFiles(; files)
     op getLength(in fId: String; out lth: Nat) ==
-      await db.length(fId; lth)
+      await db.getLength(fId; lth)
     op getPack(in fId: String, pNbr: Nat; out pack: List[Data]) ==
       var f: List[List[Data]];
       await db.getFile(fId; f);

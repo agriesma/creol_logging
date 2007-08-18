@@ -75,14 +75,14 @@ AT_CLEANUP
 ])
 
 m4_define([TEST_CREOLC_PP],[dnl
-AT_CHECK([creolc -target creol -P lower -o $1-pp1.creol ${abs_srcdir}/$2/$1.creol])
-AT_CHECK([creolc -target creol -P lower -o $1-pp2.creol $1-pp1.creol])
+AT_CHECK([creolc -target creol -P typecheck,lower -o $1-pp1.creol ${abs_srcdir}/$2/$1.creol])
+AT_CHECK([creolc -target creol -P typecheck,lower -o $1-pp2.creol $1-pp1.creol])
 AT_CHECK([diff $1-pp1.creol $1-pp2.creol])
 ])
 
 dnl test the xml export.
 m4_define([TEST_CREOLC_XML],[dnl
-AT_CHECK([creolc -target xml -o $1-pass1.xml ${abs_srcdir}/$2/$1.creol])
+AT_CHECK([creolc -target xml -P typecheck -o $1-pass1.xml ${abs_srcdir}/$2/$1.creol])
 ])
 
 AT_INIT([creolc])

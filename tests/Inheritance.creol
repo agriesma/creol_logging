@@ -7,13 +7,13 @@
  *
  * main("B", int(1))
  */
-class A(a: Integer)
+class A(a: Int)
 begin
   op init == skip
   op run == skip
 end
 
-class B(b: Integer) inherits A(b)
+class B(b: Int) inherits A(b)
 begin
   op init == assert a = b
   op run == skip

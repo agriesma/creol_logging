@@ -2,7 +2,7 @@
 class Weirdness
 implements Weirdness
 begin
-  var x: Integer
+  var x: Int
   op init == x := 0
   /* In the old interpreter, we have x = 1 \/ x = 2 as run's post condition.
      But if we remove await wait, then post is always x = 1.

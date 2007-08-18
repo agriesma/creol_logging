@@ -8,7 +8,7 @@ begin
   // unknown = 0 || null
   // chosen = 1
   // reported = 2
-  var status: Nat
+  var status: Int
   var neighbor: Process
 
   op init == status := 0; i.getNeighbor(; neighbor); !neighbor.receive(u)

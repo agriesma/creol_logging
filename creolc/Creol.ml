@@ -95,8 +95,8 @@ module Type =
 		(as_string r) ^ "]"
 	| Structure f -> "[# " ^ (string_of_field_list f) ^ " #]"
 	| Variant f -> "[+ " ^ (string_of_field_list f) ^ " +]"
-	| Intersection _ -> assert false (* XXX Implement if needed. *)
-	| Union _ -> assert false (* XXX Implement if needed. *)
+	| Intersection l -> "/* /\ [" ^ (string_of_creol_type_list l) ^ "] */"
+	| Union l -> "/* \\/ [" ^ (string_of_creol_type_list l) ^ "] */"
 	| Internal -> "/* Internal */"
     and string_of_creol_type_list =
       function
@@ -843,9 +843,14 @@ module Program =
       s = t
 
     let meet ~program types =
-      Type.data
+      if (List.for_all (fun x -> (List.hd types) = x) types) then
+	(List.hd types)
+      else
+	Type.data
 
-    let find_functions program name =
+    let find_functions ~program ~name =
+      (** Find all definitions of a function called [name] in [program].
+	  Returns the empty list if none is found. *)
       let all_operations =
 	List.flatten
 	  (List.map
@@ -859,23 +864,42 @@ module Program =
 
     let find_function ~program ~name ~domain =
       (** Find the function [name] in [program], that matches
-	  arguments of type [domain] best. *)
+	  arguments of type [domain] best. Raises [Not_found] if no
+	  such function can be found. *)
       let candidates = find_functions program name in
-        List.find (fun f ->
-	  (List.for_all2 (fun s t -> subtype_p program s t)
-	      (List.map (fun p -> p.VarDecl.var_type) f.Operation.parameters))
-	    domain)
-	  candidates
+      let domains_match cand =
+	try
+	  List.for_all2 (fun s t -> subtype_p program s t)
+	    (List.map (fun p -> p.VarDecl.var_type) cand.Operation.parameters)
+	    domain
+	with
+	    Invalid_argument _ -> false
+      in
+        List.find domains_match candidates
 
+    let interface_find_all ~program ~iface ~name coiface inputs outputs =
+      (** Find all definitions of a method called [name] that matches
+	  the signature [(coiface, inputs, outputs)] in [iface] and
+	  its super-interfaces.  *)
+      []
 
-    let provides_op_p ~program ~iface ~name ~coiface ~inputs ~outputs =
+    let interface_provides_p ~program ~iface ~name coiface inputs outputs =
+      (** Check whether the interface [iface] or one of its
+	  superinterfaces provide a method matching the signature
+	  [(coiface, inputs, outputs)]. *)
       (* FIXME: Take the signature into account. *)
       List.exists
 	(fun w -> List.exists (fun m -> m.Method.meth_name = name)
 	  w.With.methods)
 	iface.Interface.with_decl
 
-    let class_provides_method_p program cls meth ins outs =
+    let class_find_all ~program ~cls meth coiface ins outs =
+      (** Find all definitions of a method called [name] that matches
+	  the signature [(coiface, inputs, outputs)] in class [cls]
+	  and its super-classes.  *)
+      []
+
+    let class_provides_method_p ~program ~cls meth ins outs =
       (* FIXME: Take the signature into account. *)
       List.exists
 	(fun w -> List.exists (fun m -> m.Method.meth_name = meth)

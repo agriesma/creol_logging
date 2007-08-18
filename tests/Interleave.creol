@@ -1,7 +1,7 @@
 class Test
 begin
-  var x: Integer
-  var y: Integer
+  var x: Int
+  var y: Int
   op init == x := 0; y := 0
   op run ensures x /= y == x := 1; y := 2 ||| y := 1; x := 2
 end

@@ -40,7 +40,7 @@ let passes = [
   { help = "Check for type consistency" ;
     dependencies = "";
     pass = CreolTyping.typecheck;
-    elapsed = 0.0; needed = false; dump = false } );
+    elapsed = 0.0; needed = true; dump = false } );
   ( "lower" ,
   { help = "Expand statements to Core Creol" ;
     dependencies = "";

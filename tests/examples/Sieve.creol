@@ -8,19 +8,19 @@ end
 
 class Generator
 begin
-  var n: Integer
+  var n: Int
   var next: Sieve
   op init == next := new Sieve(2); n := 3
   op run == var r: Bool; next.send(n; r); n := n + 1; !run()
 end
 
-class Sieve(p: Integer) implements Sieve
+class Sieve(p: Int) implements Sieve
 begin
   var next: Sieve
   op init == skip
   op run == skip
-  op send(in n: Integer; out res: Bool) ==
-    var d: Integer := n / p, r: Integer := n - d * p;
+  op send(in n: Int; out res: Bool) ==
+    var d: Int := n / p, r: Int := n - d * p;
     if r = 0
     then res := false
     else if next /= null
