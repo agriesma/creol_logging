@@ -4,7 +4,7 @@ Version:	0.0f
 Release:	0%{?dist}
 Vendor:		Universitetet i Oslo
 URL:		http://creol.berlios.de/
-License:	GPL
+License:	GPLv2+
 Group:		Development/Languages
 BuildRoot:	%{_tmppath}/%{name}-root
 Source0:	%{name}-%{version}.tar.bz2
