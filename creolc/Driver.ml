@@ -114,7 +114,14 @@ let load_prelude prelude_name =
       "/" ^ prelude_name
   in
     Messages.message 1 ("Reading prelude from " ^ prelude) ;
-    List.map (function Declaration.Datatype d -> Declaration.Datatype { d with Datatype.hidden = true } | d -> d) (from_file prelude)
+    List.map
+      (function
+	  Declaration.Datatype d ->
+	    Declaration.Datatype { d with Datatype.hidden = true }
+	| Declaration.Interface i ->
+	    Declaration.Interface { i with Interface.hidden = true }
+	| d -> d)
+      (from_file prelude)
 
 let rec from_files =
   (** Read the contents of a list of files and return an abstract syntax

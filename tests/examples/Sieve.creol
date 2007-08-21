@@ -14,7 +14,7 @@ begin
   op run == var r: Bool; next.send(n; r); n := n + 1; !run()
 end
 
-class Sieve(p: Int) implements Sieve
+class Sieve(p: Int) implements Sieve, Test
 begin
   var next: Sieve
   op init == skip

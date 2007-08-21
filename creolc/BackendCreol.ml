@@ -44,10 +44,12 @@ let emit out_channel input =
   let rec pretty_print_declaration =
     function
 	Declaration.Class c -> pretty_print_class c
-      | Declaration.Interface i -> pretty_print_iface i
+      | Declaration.Interface i when not i.Interface.hidden ->
+	  pretty_print_iface i
       | Declaration.Exception e -> pretty_print_exception e
-      | Declaration.Datatype d ->
-          if not d.Datatype.hidden then pretty_print_datatype d
+      | Declaration.Datatype d when not d.Datatype.hidden ->
+          pretty_print_datatype d
+      | _ -> ()
   and pretty_print_datatype d =
     output_string out_channel ("datatype " ^ (Type.as_string d.Datatype.name));
     if d.Datatype.supers <> [] then

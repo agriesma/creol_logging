@@ -89,6 +89,7 @@ begin
   op tail(l: List[`a]): List[`a] == extern "tail"
   op last(l: List[`a]): `a == extern "last"
   op rest(l: List[`a]): List[`a] == extern "rest"
+  op at(l: List[`a], p: Int): `a == extern "at"
   op remove(l: List[`a], e: `a): List[`a] == extern "remove"
   op -|(e: `a, l: List[`a]): List[`a] == extern "-|"
   op |-(l: List[`a], e: `a): List[`a] == extern "|-"
@@ -113,4 +114,8 @@ begin
   op pair(a: `a, b: `b): [`a, `b] == extern "pair"
   op fst (a: [`a, `b]): `a == extern "fst"
   op snd (a: [`a, `b]): `b == extern "snd"
+end
+
+interface Any
+begin
 end

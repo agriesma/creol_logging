@@ -226,7 +226,7 @@ method_def:
 interfacedecl:
       INTERFACE n = CID class_param_list
       i = inherits_list BEGIN w = list(with_decl) END
-    { { Interface.name = n; Interface.inherits = i; Interface.with_decl = w } }
+    { { Interface.name = n; inherits = i; with_decl = w; hidden = false } }
     | INTERFACE error
     | INTERFACE CID error
 	{ signal_error $startpos "syntax error in interface declaration" }

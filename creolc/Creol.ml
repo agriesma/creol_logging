@@ -700,10 +700,12 @@ struct
 	with_defs: With.t list }
 
   let get_type cls =
-    let to_type inh = Type.Basic (fst inh)
-    in
-      Type.Intersection ((List.map to_type cls.implements) @
-			    (List.map to_type cls.contracts))
+    let to_type inh = Type.Basic (fst inh) in
+    let ifaces = cls.implements @ cls.contracts in
+      if ifaces <> [] then
+	Type.Intersection (List.map to_type ifaces)
+      else
+	Type.any
 
   let find_attr_decl cls name =
     let has_name =
@@ -714,7 +716,10 @@ struct
       List.find has_name cls.attributes
 
   let contracts_p cls iface =
+    if iface <> Type.any then
       List.exists (fun inh -> (fst inh) = (Type.as_string iface)) cls.contracts
+    else
+      true
 	  
 end
 
@@ -730,7 +735,8 @@ struct
   type  t =
       { name: string;
 	inherits: inherits list;
-	with_decl: With.t list }
+	with_decl: With.t list;
+	hidden: bool }
 
   let cointerface iface =
     match (List.hd iface.with_decl).With.co_interface with
@@ -836,11 +842,36 @@ module Program =
       let c = find_class program cn in
 	Class.find_attr_decl c name
 
-    let subtype_p ~program ~s ~t =
+    let rec subtype_p program s t =
       (** Decides whether [s] is a subtype of [t] in [program]. *)
       (* FIXME: For simplicity we define subtype relation to be structural
          equality *)
-      s = t
+      match (s, t) with
+	  (_, Type.Basic "Data") -> true
+	| (Type.Basic st, Type.Basic tt) ->
+	    st = tt
+	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
+	    (subtype_p program (Type.Basic sc) (Type.Basic tc)) &&
+	      (List.for_all2 (subtype_p program) sa ta)
+	| (Type.Tuple sa, Type.Tuple ta) ->
+	    begin
+	      try 
+		(List.for_all2 (subtype_p program) sa ta)
+	      with
+		  Invalid_argument _ -> false
+	    end
+	| (Type.Intersection sa, Type.Intersection ta) ->
+	    List.exists
+	      (fun s -> (List.for_all (fun t -> subtype_p program s t) ta)) sa
+	| (Type.Intersection sa, _) ->
+	    List.exists (fun s -> subtype_p program s t) sa
+	| (Type.Union sa, Type.Union ta) -> assert false
+	| (Type.Union sa, Type.Intersection ta) -> assert false
+	| (Type.Union sa, _) ->
+	    List.for_all (fun s -> subtype_p program s t) sa
+	| (Type.Internal, Type.Internal) -> true
+	| (Type.Internal, _) -> false
+	| (_, Type.Internal) -> false
 
     let meet ~program types =
       if (List.for_all (fun x -> (List.hd types) = x) types) then
@@ -859,8 +890,10 @@ module Program =
 		| _ -> [])
 	      program)
       in
-	List.filter (fun { Operation.name = n } -> (n = name))
-	  all_operations
+	  List.filter (fun { Operation.name = n } -> (n = name))
+	    all_operations
+
+    exception Function_not_found of Operation.t list
 
     let find_function ~program ~name ~domain =
       (** Find the function [name] in [program], that matches
@@ -870,12 +903,15 @@ module Program =
       let domains_match cand =
 	try
 	  List.for_all2 (fun s t -> subtype_p program s t)
-	    (List.map (fun p -> p.VarDecl.var_type) cand.Operation.parameters)
 	    domain
+	    (List.map (fun p -> p.VarDecl.var_type) cand.Operation.parameters)
 	with
 	    Invalid_argument _ -> false
       in
-        List.find domains_match candidates
+	try
+          List.find domains_match candidates
+	with
+	    Not_found -> raise (Function_not_found candidates)
 
     let interface_find_all ~program ~iface ~name coiface inputs outputs =
       (** Find all definitions of a method called [name] that matches

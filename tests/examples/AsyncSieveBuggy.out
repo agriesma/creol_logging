@@ -5,9 +5,9 @@ result Configuration:
     null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "next" ::= new
     "Sieve"(int(2)) ; "n" ::= int(3) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "l" ! "next" .
-    "send"("n") ; "n" ::= "+"("n" # int(1)) ; ".anon" ! "this" . "run"(emp) ;
-    free(".anon") ; await ("l" ??) ; "l" ?("r") ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "l" |-> null, "r" |-> null, Code: "l"
+    ! "next" . "send"("n") ; "n" ::= "+"("n" # int(1)) ; ".anon" ! "this" .
+    "run"(emp) ; free(".anon") ; await ("l" ??) ; "l" ?("r") ; return(emp) >,
   Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "next" |-> null, "p" |-> null,

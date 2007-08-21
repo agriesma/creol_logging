@@ -38,10 +38,10 @@ begin
       await db.listFiles(; files)
     op getLength(in fId: String; out lth: Nat) ==
       await db.getLength(fId; lth)
-    op getPack(in fId: String, pNbr: Nat; out pack: List[Data]) ==
+    op getPack(in fId: String, pNbr: Int; out pack: List[Data]) ==
       var f: List[List[Data]];
       await db.getFile(fId; f);
-      pack := f(pNbr)
+      pack := at(f, pNbr)
   with Any
     op availFiles (in sList: List[ToServer];
 		   out files: List[[ToServer , List[Str]]]) ==

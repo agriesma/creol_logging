@@ -77,8 +77,20 @@ let typecheck tree: Declaration.t list =
 	    type_check_expression program cls gamma delta coiface arg
 	  in
 	  let restype =
-	    (Program.find_function program (string_of_unaryop op)
-	      (List.map get_type [narg])).Operation.result_type
+	    try
+	      (Program.find_function program (string_of_unaryop op)
+		  (List.map get_type [narg])).Operation.result_type
+	    with
+		Program.Function_not_found [] ->
+		  raise (TypeError (Expression.file n, Expression.line n,
+				   "Unary operator " ^
+				     (string_of_unaryop op) ^
+				     " not defined"))
+	      | Program.Function_not_found l ->
+		  raise (TypeError (Expression.file n, Expression.line n,
+				   "Unary operator " ^
+				     (string_of_unaryop op) ^
+				     " ambigous"))
 	  in
 	    Unary (set_type n restype, op, narg)
       | Binary (n, op, arg1, arg2) ->
@@ -88,8 +100,20 @@ let typecheck tree: Declaration.t list =
 	    type_check_expression program cls gamma delta coiface arg2
 	  in
 	  let restype =
-	    (Program.find_function program (string_of_binaryop op)
-		(List.map get_type [narg1; narg2])).Operation.result_type
+	    try
+	      (Program.find_function program (string_of_binaryop op)
+		  (List.map get_type [narg1; narg2])).Operation.result_type
+	    with
+		Program.Function_not_found [] ->
+		  raise (TypeError (Expression.file n, Expression.line n,
+				   "Binary operator " ^
+				     (string_of_binaryop op) ^
+				     " not defined"))
+	      | Program.Function_not_found l ->
+		  raise (TypeError (Expression.file n, Expression.line n,
+				   "Binary operator " ^
+				     (string_of_binaryop op) ^
+				     " ambigous"))
 	  in
 	    Binary (set_type n restype, op, narg1, narg2)
       | Expression.If (n, cond, iftrue, iffalse) ->
@@ -113,9 +137,22 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_expression program cls gamma delta coiface)
 	      args
 	  in
+	  let nargs_t = List.map get_type nargs in
 	  let restype =
-	    (Program.find_function program name
-		(List.map get_type nargs)).Operation.result_type
+	    try
+	      (Program.find_function program name
+		  nargs_t).Operation.result_type
+	    with
+		Program.Function_not_found [] ->
+		  raise (TypeError (Expression.file n, Expression.line n,
+				   "Function " ^ name ^
+				     (Type.as_string (Type.Tuple nargs_t)) ^
+				     " not defined"))
+	      | Program.Function_not_found l ->
+		  raise (TypeError (Expression.file n, Expression.line n,
+				   "Function " ^ name ^
+				     (Type.as_string (Type.Tuple nargs_t)) ^
+				     " ambigous"))
 	  in
 	    FuncCall (set_type n restype, name, nargs)
       | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
