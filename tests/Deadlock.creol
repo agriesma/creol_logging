@@ -8,6 +8,6 @@
 class Deadlock
 begin
   op init == skip
-  op run == var l: Label[ ]; l!this.n(); release; skip; l?()
+  op run == var l: Label[ ]; l!n(); release; skip; l?()
   op n == release
 end

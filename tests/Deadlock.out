@@ -6,7 +6,7 @@ result Class:
     *
   < "n" : Mtdname | Param: noVid, Latt: noSubst, Code: release ; return(emp) >
     *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "l" ! "this" . "n"(
-    emp) ; release ; skip ; "l" ?(noVid) ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "l" |-> null, Code: "l" ! "this" .
+    "n"(emp) ; release ; skip ; "l" ?(noVid) ; return(emp) >,
   Ocnt: 0 >
 Bye.

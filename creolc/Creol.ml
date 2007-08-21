@@ -739,9 +739,9 @@ struct
 	hidden: bool }
 
   let cointerface iface =
-    match (List.hd iface.with_decl).With.co_interface with
-	None -> Type.Internal
-      | Some i -> Type.Basic i
+      match (List.hd iface.with_decl).With.co_interface with
+	  None -> Type.Internal
+        | Some i -> Type.Basic i
 
 end
 
