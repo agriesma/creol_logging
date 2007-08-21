@@ -438,8 +438,23 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let callee_t = (Expression.get_type ncallee) in
 	  let co =
-	    Interface.cointerface (Program.find_interface program
-				      (Type.as_string callee_t))
+	    let iface =
+	      try
+		Program.find_interface program (Type.as_string callee_t)
+	      with
+		Not_found -> 
+		    raise (TypeError (file n, line n,
+			   "Callee's interface " ^ (Type.as_string callee_t) ^
+			   " not defined"))
+	    in
+	      try
+	        Interface.cointerface iface
+	      with
+		Failure _ ->
+		  raise (TypeError (file n, line n,
+				   "Method " ^ meth ^
+				   " not provided in empty interface " ^
+				   iface.Interface.name))
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),

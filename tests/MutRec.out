@@ -11,6 +11,8 @@ result Configuration:
 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "m1" |-> null, "m2" |-> null,
     Mtds:
+  < "doit" : Mtdname | Param: "other", Latt: "other" |-> null, Code: skip ;
+    return(emp) > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "m1" ::= new
     "MutRec"(emp) ; "m2" ::= new "MutRec"(emp) ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "m1" .

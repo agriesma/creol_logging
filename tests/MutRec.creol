@@ -7,19 +7,31 @@
  *
  * This file is part of creoltools.
  */
+interface MutRec
+begin
+with MutRec
+  op doit(in other: MutRec)
+end
+
 class MutRec
-implements MutRec
+contracts MutRec
 begin
   op init == skip
   op run == skip
-  op doit(in other: MutRec) == other.doit(this;)
+  with MutRec
+    op doit(in other: MutRec) == other.doit(this;)
 end
 
 class Test
+contracts MutRec
 begin
   var m1: MutRec
   var m2: MutRec
 
   op init ==  m1 := new MutRec(); m2 := new MutRec()
   op run == !m1.doit(m2)
+
+  with MutRec
+    op doit(in other: MutRec) == skip
+  
 end
