@@ -2,6 +2,9 @@
 CREOL_PATH=@abs_top_srcdir@/share
 export CREOL_PATH
 
+CREOL_LIBRARY_PATH=@abs_top_srcdir@/share
+export CREOL_LIBRARY_PATH
+
 # Modify the path of maude to find our interpreter definitions
 MAUDE_LIB=$CREOL_PATH:@abs_top_srcdir@:$MAUDE_LIB
 export MAUDE_LIB
