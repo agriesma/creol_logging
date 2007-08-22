@@ -167,9 +167,17 @@ let typecheck tree: Declaration.t list =
 	      args
 	  in
           let args_t = Type.Tuple (List.map get_type nargs) in
+	  let cls_n =
+	    try
+	      Program.find_class program c
+	    with
+		Not_found ->
+		  raise (TypeError (Expression.file n, Expression.line n,
+				   "Class " ^ c ^ " not defined"))
+	  in
 	  let ctor_t = Type.Tuple
 		    (List.map (fun x -> x.VarDecl.var_type)
-			(Program.find_class program c).Class.parameters)
+			cls_n.Class.parameters)
 	  in
 	    if
 	      Program.subtype_p program args_t ctor_t

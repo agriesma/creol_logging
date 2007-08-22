@@ -2,8 +2,9 @@
 reduce in PROGRAM : init .
 result Class: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "a" |-> null, Code: "a" ::= new "A"(
-    emp) ; "sync.0" ! "a" . "m"(emp) ; "sync.0" ?(noVid) ; return(emp) > *
+  < "init" : Mtdname | Param: noVid, Latt: "a" |-> null, Code: "a" ::= new
+    "Test"(emp) ; "sync.0" ! "a" . "m"(emp) ; "sync.0" ?(noVid) ; return(emp) >
+    *
   < "m" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "caller" .
     "m"(emp) ; "sync.0" ?(noVid) ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,

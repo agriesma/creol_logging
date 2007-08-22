@@ -5,9 +5,9 @@ begin
 end
 
 class Test
-implements Test
+contracts Test
 begin
-  op init == var a: A; a := new A; a.m(;)
+  op init == var a: Test; a := new Test; a.m(;)
   op run == skip
   with Test
     op m == caller.m(;)
