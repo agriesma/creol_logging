@@ -1,3 +1,9 @@
+interface Fibonacci
+begin
+  with Any
+    op fibonacci(in n: Int; out f: Int)
+end
+
 class Fibonacci(n:Int)
 begin
   op init == skip
