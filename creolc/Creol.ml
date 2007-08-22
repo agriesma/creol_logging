@@ -1,5 +1,4 @@
-(*
- * Creol.ml -- Definition and manipulation of Creol AST
+(* Creol.ml -- Definition and manipulation of Creol AST
  *
  * This file is part of creolcomp
  *
@@ -661,6 +660,18 @@ module Method =
         meth_outpars: VarDecl.t list;
         meth_vars: VarDecl.t list;
         meth_body: Statement.t option }
+
+    let find_variable meth name =
+      let find l = List.find (fun { VarDecl.name = n } -> n = name) l in
+      try
+	find meth.meth_vars
+      with
+	  Not_found ->
+	    try
+	      find meth.meth_inpars
+	    with
+		Not_found -> find meth.meth_outpars
+
   end
 
 
@@ -708,12 +719,13 @@ struct
 	Type.any
 
   let find_attr_decl cls name =
-    let has_name =
-      function
-	  { VarDecl.name = n } when n = name -> true
-	| _ -> false
+    let find l = List.find (function { VarDecl.name = n } -> n = name) l
     in
-      List.find has_name cls.attributes
+      try
+	find cls.attributes
+      with
+	  Not_found -> find cls.parameters
+
 
   let contracts_p cls iface =
     if iface <> Type.any then
@@ -833,16 +845,24 @@ module Program =
 	    Declaration.Datatype d -> d
 	  | _ -> assert false
 
-    let find_attr_decl program cls name =
-      let cn =
-	match cls with
-	    Type.Basic s -> s
-	  | _ -> assert false
+    let rec find_attr_decl program cls name =
+      let rec find lst =
+	match lst with
+	    [] -> raise Not_found
+	  | i::r ->
+	      try
+		find_attr_decl program (find_class program (fst i)) name
+	      with
+		  Not_found -> find r
       in
-      let c = find_class program cn in
-	Class.find_attr_decl c name
+	try
+	  Class.find_attr_decl cls name
+	with
+	    Not_found -> find cls.Class.inherits
 
-    let rec subtype_p program s t =
+    let empty: (string, Type.t) Hashtbl.t = Hashtbl.create 1
+
+    let rec subtype_p program gamma s t =
       (** Decides whether [s] is a subtype of [t] in [program]. *)
       (* FIXME: For simplicity we define subtype relation to be structural
          equality *)
@@ -851,27 +871,39 @@ module Program =
 	| (Type.Basic st, Type.Basic tt) ->
 	    st = tt
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
-	    (subtype_p program (Type.Basic sc) (Type.Basic tc)) &&
-	      (List.for_all2 (subtype_p program) sa ta)
+	    (subtype_p program gamma (Type.Basic sc) (Type.Basic tc)) &&
+	      begin
+		try 
+		  List.for_all2 (subtype_p program gamma) sa ta
+		with
+		    Invalid_argument _ -> false
+	      end
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	      try 
-		(List.for_all2 (subtype_p program) sa ta)
+		(List.for_all2 (subtype_p program gamma) sa ta)
 	      with
 		  Invalid_argument _ -> false
 	    end
 	| (Type.Intersection sa, Type.Intersection ta) ->
 	    List.exists
-	      (fun s -> (List.for_all (fun t -> subtype_p program s t) ta)) sa
+	      (fun s ->
+		(List.for_all (fun t -> subtype_p program gamma s t) ta)) sa
 	| (Type.Intersection sa, _) ->
-	    List.exists (fun s -> subtype_p program s t) sa
+	    List.exists (fun s -> subtype_p program gamma s t) sa
 	| (Type.Union sa, Type.Union ta) -> assert false
 	| (Type.Union sa, Type.Intersection ta) -> assert false
 	| (Type.Union sa, _) ->
-	    List.for_all (fun s -> subtype_p program s t) sa
+	    List.for_all (fun s -> subtype_p program gamma s t) sa
 	| (Type.Internal, Type.Internal) -> true
 	| (Type.Internal, _) -> false
 	| (_, Type.Internal) -> false
+    and promote program gamma =
+      function
+	  Type.Variable v ->
+	      Hashtbl.find gamma v
+	| Type.Application (s, t) -> Type.Application(s, t)
+	| _ -> raise (Failure "promote")
 
     let meet ~program types =
       if (List.for_all (fun x -> (List.hd types) = x) types) then
@@ -902,7 +934,7 @@ module Program =
       let candidates = find_functions program name in
       let domains_match cand =
 	try
-	  List.for_all2 (fun s t -> subtype_p program s t)
+	  List.for_all2 (fun s t -> subtype_p program empty s t)
 	    domain
 	    (List.map (fun p -> p.VarDecl.var_type) cand.Operation.parameters)
 	with
@@ -929,18 +961,22 @@ module Program =
 	  w.With.methods)
 	iface.Interface.with_decl
 
-    let class_find_all ~program ~cls meth coiface ins outs =
+    let rec class_find_methods ~program ~cls meth ins outs =
       (** Find all definitions of a method called [name] that matches
 	  the signature [(coiface, inputs, outputs)] in class [cls]
 	  and its super-classes.  *)
-      []
+      let this =
+	List.flatten
+	  (List.map
+	      (fun w ->
+		List.filter (fun { Method.meth_name = m } -> m = meth)
+		  w.With.methods) cls.Class.with_defs)
+      in
+	this
+		
 
     let class_provides_method_p ~program ~cls meth ins outs =
-      (* FIXME: Take the signature into account. *)
-      List.exists
-	(fun w -> List.exists (fun m -> m.Method.meth_name = meth)
-	  w.With.methods)
-	cls.Class.with_defs
+      [] <> (class_find_methods program cls meth ins outs)
 
   end
 

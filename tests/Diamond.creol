@@ -8,24 +8,21 @@ class A(a: Int)
 begin
   op init == skip
   op run == skip
-  with Any
-    op m(out r: Int) == r := a
+  op m(out r: Int) == r := a
 end
 
 class B(b: Int) inherits A(b)
 begin
   op init == assert a = b
   op run == skip
-  with Any
-    op n(out r: Int) == r := b
+  op n(out r: Int) == r := b
 end
 
 class C(c: Int) inherits A(c)
 begin
   op init == assert a = c
   op run == skip
-  with Any
-    op n(out r: Int) == r := c
+  op o(out r: Int) == r := c
 end
 
 class D inherits B(1), C(2)
