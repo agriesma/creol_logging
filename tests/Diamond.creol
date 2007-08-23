@@ -15,14 +15,14 @@ class B(b: Int) inherits A(b)
 begin
   op init == assert a = b
   op run == skip
-  op n(out r: Int) == r := b
+  op n(out r: Int) == m(; r)
 end
 
 class C(c: Int) inherits A(c)
 begin
   op init == assert a = c
   op run == skip
-  op o(out r: Int) == r := c
+  op o(out r: Int) == m(; r)
 end
 
 class D inherits B(1), C(2)
@@ -30,5 +30,5 @@ begin
   var x: Int
   var y: Int
   op init == skip
-  op run == m(; x); n(; y); assert x = 1 && y = 2
+  op run == n(; x); o(; y); assert x = 1 && y = 2
 end

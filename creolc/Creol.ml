@@ -815,7 +815,7 @@ module Program =
     let find_class ~program ~name =
       let class_with_name =
 	function
-	    Declaration.Class { Class.name = n } when n = name -> true
+	    Declaration.Class { Class.name = n } -> n = name
 	  | _ -> false
       in
 	match List.find class_with_name program with
@@ -961,19 +961,25 @@ module Program =
 	  w.With.methods)
 	iface.Interface.with_decl
 
-    let rec class_find_methods ~program ~cls meth ins outs =
+    let class_find_methods ~program ~cls meth ins outs =
       (** Find all definitions of a method called [name] that matches
 	  the signature [(coiface, inputs, outputs)] in class [cls]
 	  and its super-classes.  *)
-      let this =
-	List.flatten
-	  (List.map
-	      (fun w ->
-		List.filter (fun { Method.meth_name = m } -> m = meth)
-		  w.With.methods) cls.Class.with_defs)
-      in
-	this
-		
+      let rec find_methods_in_class c =
+        let here =
+	  List.flatten
+	    (List.map
+	        (fun w ->
+		  List.filter (fun m -> m.Method.meth_name = meth)
+		    w.With.methods) c.Class.with_defs)
+        and supers = List.map fst c.Class.inherits
+        in
+	  List.fold_left
+           (fun r i ->
+             (find_methods_in_class (find_class program i))@r)
+             here supers
+    in
+      find_methods_in_class cls
 
     let class_provides_method_p ~program ~cls meth ins outs =
       [] <> (class_find_methods program cls meth ins outs)

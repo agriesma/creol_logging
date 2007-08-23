@@ -12,16 +12,16 @@ result Configuration:
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "b" ;
-    return("r") > *
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
+    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" >, Par: "c", Att: "c" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "c" ;
-    return("r") > *
+  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
+    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
@@ -30,7 +30,7 @@ result Configuration:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "this" .
-    "m"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "n"(emp) ; "sync.1" ?("y")
+    "n"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "o"(emp) ; "sync.1" ?("y")
     ; skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
@@ -52,16 +52,16 @@ result Configuration:
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "b" ;
-    return("r") > *
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
+    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" >, Par: "c", Att: "c" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "c" ;
-    return("r") > *
+  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
+    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
@@ -70,14 +70,14 @@ result Configuration:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "this" .
-    "m"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "n"(emp) ; "sync.1" ?("y")
+    "n"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "o"(emp) ; "sync.1" ?("y")
     ; skip ; return(emp) >,
   Ocnt: 1 >
 
 < ob("D0") : "D" | Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this"
-    |-> ob("D0"), "x" |-> int(2), "y" |-> int(1),
+    |-> ob("D0"), "x" |-> int(2), "y" |-> int(2),
   Pr: idle,
-  PrQ: noProc, Lcnt: 9 >
+  PrQ: noProc, Lcnt: 11 >
 
 < ob("main") : "NoClass" | Att: noSubst,
   Pr: idle,
