@@ -42,7 +42,7 @@ let typecheck tree: Declaration.t list =
 	" ambigous.\nPossible candidates are:\n" ^
 	(List.fold_left (fun c o -> c ^ "    " ^ (cand_s o) ^ "\n") "" cands)
   in
-  let rec type_check_expression (program: Program.t) (cls: Class.t) (meth: Method.t) coiface =
+  let rec type_check_expression program cls meth coiface =
     function
 	This n ->
 	  This (set_type n (Class.get_type cls))

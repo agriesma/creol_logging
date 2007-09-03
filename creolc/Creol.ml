@@ -747,11 +747,11 @@ struct
   type  t =
       { name: string;
 	inherits: inherits list;
-	with_decl: With.t list;
+	with_decls: With.t list;
 	hidden: bool }
 
   let cointerface iface =
-      match (List.hd iface.with_decl).With.co_interface with
+      match (List.hd iface.with_decls).With.co_interface with
 	  None -> Type.Internal
         | Some i -> Type.Basic i
 
@@ -911,21 +911,25 @@ module Program =
       else
 	Type.data
 
+    let domains_match_p ~program ~params ~args =
+      (** Check whether the actual arguments [args] match the domain
+	  [params] of a function or method. *)
+      try
+	List.for_all2 (fun s t -> subtype_p program empty s t)
+	  args params
+      with
+	  Invalid_argument _ -> false
+
     let find_functions ~program ~name ~domain =
       (** Find all definitions of functions called [name] in
 	  [program], whose formal parameters are compatible with
 	  [domain].  Returns the empty list if none is found. *)
       let filter opers =
-	let domains_match_p params =
-	try
-	  List.for_all2 (fun s t -> subtype_p program empty s t)
-	    domain
-	    (List.map (fun p -> p.VarDecl.var_type) params)
-	with
-	    Invalid_argument _ -> false
-	in
-	  List.filter (fun { Operation.name = n; parameters = p } ->
-	    (n = name) && domains_match_p p) opers
+	List.filter (fun { Operation.name = n; parameters = p } ->
+	  (n = name) &&
+	    (domains_match_p program (List.map (fun p -> p.VarDecl.var_type) p)
+		domain))
+	  opers
       in
 	(* Find the set of all operations with the appropriate name. *)
 	List.flatten
@@ -935,21 +939,37 @@ module Program =
 		| _ -> [])
 	      program)
 
-    let interface_find_all ~program ~iface ~name coiface inputs outputs =
+    let interface_find_methods ~program ~iface ~meth coiface ins outs =
       (** Find all definitions of a method called [name] that matches
 	  the signature [(coiface, inputs, outputs)] in [iface] and
 	  its super-interfaces.  *)
-      []
+      let rec find_methods_in_interface i =
+        let here =
+	  List.flatten
+	    (List.map
+	        (fun w ->
+		  List.filter (fun { Method.meth_name = m } -> m = meth)
+		    w.With.methods) 
+		(List.filter
+		    (function
+			{ With.co_interface = Some n } ->
+			  subtype_p program empty coiface (Type.Basic n)
+		      | _ -> false)
+		    i.Interface.with_decls))
+        and supers = List.map fst i.Interface.inherits
+        in
+	  List.fold_left
+            (fun r i ->
+              (find_methods_in_interface (find_interface program i))@r)
+            here supers
+    in
+      find_methods_in_interface iface
 
-    let interface_provides_p ~program ~iface ~name coiface inputs outputs =
+    let interface_provides_p ~program ~iface ~meth coiface ins outs =
       (** Check whether the interface [iface] or one of its
 	  superinterfaces provide a method matching the signature
 	  [(coiface, inputs, outputs)]. *)
-      (* FIXME: Take the signature into account. *)
-      List.exists
-	(fun w -> List.exists (fun m -> m.Method.meth_name = name)
-	  w.With.methods)
-	iface.Interface.with_decl
+      [] <> (interface_find_methods program iface meth coiface ins outs)
 
     let class_find_methods ~program ~cls meth ins outs =
       (** Find all definitions of a method called [name] that matches
