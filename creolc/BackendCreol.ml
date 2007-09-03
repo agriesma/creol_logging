@@ -381,6 +381,8 @@ let emit out_channel input =
     let rec print prec =
       function
 	  Expression.This _ -> output_string out_channel "this"
+	| Expression.QualifiedThis (_, t) ->
+	    output_string out_channel ("this as " ^ (Type.as_string t))
 	| Expression.Caller _ -> output_string out_channel "caller"
 	| Expression.Now _ -> output_string out_channel "now"
 	| Expression.Nil _ -> output_string out_channel "nil"

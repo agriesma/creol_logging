@@ -41,6 +41,7 @@ let emit options out_channel input =
   and of_expression =
     function
 	Expression.This _ -> output_string out_channel "\"this\""
+      | Expression.QualifiedThis _ -> output_string out_channel "\"this\""
       | Expression.Caller _ -> output_string out_channel "\"caller\""
       | Expression.Now _ -> output_string out_channel "now"
       | Expression.Nil _ -> output_string out_channel "list(emp)"

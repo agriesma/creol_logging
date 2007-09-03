@@ -429,42 +429,47 @@ let emit ~name ~tree =
   and creol_expression_to_xml =
     function
         Expression.This a -> 
-	  XmlTextWriter.start_element writer "creol:this" ; 
+	  XmlTextWriter.start_element writer "creol:this" ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Expression.QualifiedThis (a, t) -> 
+	  XmlTextWriter.start_element writer "creol:qualified-this" ;
+	  creol_type_to_xml t ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Caller a -> 
-	  XmlTextWriter.start_element writer "creol:caller" ; 
+	  XmlTextWriter.start_element writer "creol:caller" ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Now a -> 
-	  XmlTextWriter.start_element writer "creol:now" ; 
+	  XmlTextWriter.start_element writer "creol:now" ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Null a -> 
-	  XmlTextWriter.start_element writer "creol:null" ; 
+	  XmlTextWriter.start_element writer "creol:null" ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Nil a -> 
-	  XmlTextWriter.start_element writer "creol:nil" ; 
+	  XmlTextWriter.start_element writer "creol:nil" ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Bool (a, v) -> 
-	  XmlTextWriter.start_element writer "creol:bool" ; 
+	  XmlTextWriter.start_element writer "creol:bool" ;
 	  XmlTextWriter.write_attribute writer "value" (string_of_bool v) ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Int (a, v) -> 
-	  XmlTextWriter.start_element writer "creol:int" ; 
+	  XmlTextWriter.start_element writer "creol:int" ;
 	  XmlTextWriter.write_attribute writer "value" (string_of_int v) ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Float (a, v) -> 
-	  XmlTextWriter.start_element writer "creol:float" ; 
+	  XmlTextWriter.start_element writer "creol:float" ;
 	  XmlTextWriter.write_attribute writer "value" (string_of_float v) ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.String (a, v) -> 
-	  XmlTextWriter.start_element writer "creol:string" ; 
+	  XmlTextWriter.start_element writer "creol:string" ;
 	  XmlTextWriter.write_attribute writer "value" v ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer

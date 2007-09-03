@@ -431,6 +431,8 @@ expression:
 	{ Now (Expression.make_note $startpos) }
     | THIS
 	{ This (Expression.make_note $startpos) }
+    | THIS AS t = creol_type
+	{ QualifiedThis (Expression.make_note $startpos, t) }
     | NIL
 	{ Nil (Expression.make_note $startpos) }
     | NULL

@@ -123,6 +123,7 @@ module Expression =
 
     type t =
 	  This of note
+	| QualifiedThis of note * Type.t
 	| Caller of note
 	| Now of note
 	| Null of note
@@ -637,6 +638,13 @@ module Method =
         vars: VarDecl.t list;
         body: Statement.t option }
 
+    let build_type l =
+	Type.Tuple (List.map (fun v -> v.VarDecl.var_type) l)
+
+    let domain_type m = build_type m.inpars
+
+    let range_type m = build_type m.outpars
+
     let find_variable meth name =
       let find l = List.find (fun { VarDecl.name = n } -> n = name) l in
       try
@@ -751,6 +759,9 @@ module Operation =
       result_type: Type.t;
       body: Expression.t
     }
+
+    let domain_type o =
+      Type.Tuple (List.map (fun v -> v.VarDecl.var_type) o.parameters)
 
   end
 
@@ -939,24 +950,30 @@ module Program =
 		| _ -> [])
 	      program)
       in
-      let is_more_specific_p cand =
-	(* A candidate [cand] is more specific in [cands], if there
-	   exists one declaration [d] in [candidatess] such that that [cand]
-	   is strictly more specific than [d].  *)
+      let more_specific_p c d =
+	(* A candidate [c] is more specific than [d], if it
+	   cannot substitute for [d], i.e., it is less general.  *)
 	let get_type v = v.VarDecl.var_type in
-	  List.exists (fun d ->
-	    d <> cand &&
+	    c <> d &&
 	      (subtype_p program empty
-		  (Type.Tuple (List.map get_type cand.Operation.parameters))
-		  (Type.Tuple (List.map get_type d.Operation.parameters))))
-	    candidates
+		 (Operation.domain_type c)
+		 (Operation.domain_type d))
       in
-	match candidates with
-	    [c] -> [c]
-	  | _ -> 
-	      (* FIXME: This one is bogus, since it may throw out too many in
-		 some situations and to less in others. *)
-	      List.filter is_more_specific_p candidates
+      let rec filter_candidates res =
+	(* Filter the most specific elements from the candidate sets.
+	   The list [res] contains the current result set.  *)
+	function
+	    [] -> res
+	  | cand::r ->
+	      if List.exists (fun x -> more_specific_p x cand) res then
+	        filter_candidates res r
+	      else
+	        let re =
+		  List.filter (fun x -> not (more_specific_p x cand)) res
+		in
+	          filter_candidates (cand::re) r
+      in
+	filter_candidates [] candidates
 
     let interface_find_methods ~program ~iface ~meth coiface ins outs =
       (** Find all definitions of a method called [name] that matches
@@ -964,17 +981,14 @@ module Program =
 	  its super-interfaces.  *)
       let rec find_methods_in_interface i =
         let here =
-	  let get_type vl =
-	    Type.Tuple (List.map (fun v -> v.VarDecl.var_type) vl)
-	  in
 	  List.flatten
 	    (List.map
 	        (fun w ->
 		  List.filter
-		    (fun { Method.name = m; inpars = i; outpars = o } ->
-		      m = meth &&
-			(subtype_p program empty ins (get_type i)) &&
-			(subtype_p program empty (get_type o) outs))
+		    (fun m ->
+		      m.Method.name = meth &&
+			(subtype_p program empty ins (Method.domain_type m)) &&
+			(subtype_p program empty (Method.range_type m) outs))
 		    w.With.methods)
 		(List.filter
 		    (function
@@ -1003,17 +1017,14 @@ module Program =
 	  and its super-classes.  *)
       let rec find_methods_in_class c =
 	let here =
-	  let get_type vl =
-	    Type.Tuple (List.map (fun v -> v.VarDecl.var_type) vl)
-	  in
 	  List.flatten
 	    (List.map
 	        (fun w ->
 		  List.filter
-		    (fun { Method.name = m; inpars = i; outpars = o } ->
-		      m = meth &&
-			(subtype_p program empty ins (get_type i)) &&
-			(subtype_p program empty (get_type o) outs))
+		    (fun m ->
+		      m.Method.name = meth &&
+			(subtype_p program empty ins (Method.domain_type m)) &&
+			(subtype_p program empty (Method.range_type m) outs))
 		    w.With.methods)
 		(List.filter
 		    (function
