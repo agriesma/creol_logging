@@ -7,10 +7,10 @@
 interface Process
 begin
   with Process
-    op receive (in v: Nat)
+    op receive (in v: Int)
 end
 
-class Process(i: Init, u: Nat)
+class Process(i: Init, u: Int)
 contracts Process
 begin
   // unknown = 0 || null
@@ -24,7 +24,7 @@ begin
   op run == skip
 
   with Process
-    op receive(in v: Nat) ==
+    op receive(in v: Int) ==
 	if v > u
 	then !neighbor.receive(v)
 	else if v = u

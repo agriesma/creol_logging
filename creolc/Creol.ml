@@ -911,39 +911,29 @@ module Program =
       else
 	Type.data
 
-    let find_functions ~program ~name =
-      (** Find all definitions of a function called [name] in [program].
-	  Returns the empty list if none is found. *)
-      let all_operations =
-	List.flatten
-	  (List.map
-	      (function
-		  (Declaration.Datatype d) -> d.Datatype.operations
-		| _ -> [])
-	      program)
-      in
-	  List.filter (fun { Operation.name = n } -> (n = name))
-	    all_operations
-
-    exception Function_not_found of Operation.t list
-
-    let find_function ~program ~name ~domain =
-      (** Find the function [name] in [program], that matches
-	  arguments of type [domain] best. Raises [Not_found] if no
-	  such function can be found. *)
-      let candidates = find_functions program name in
-      let domains_match cand =
+    let find_functions ~program ~name ~domain =
+      (** Find all definitions of functions called [name] in
+	  [program], whose formal parameters are compatible with
+	  [domain].  Returns the empty list if none is found. *)
+      let filter opers =
+	let domains_match_p params =
 	try
 	  List.for_all2 (fun s t -> subtype_p program empty s t)
 	    domain
-	    (List.map (fun p -> p.VarDecl.var_type) cand.Operation.parameters)
+	    (List.map (fun p -> p.VarDecl.var_type) params)
 	with
 	    Invalid_argument _ -> false
+	in
+	  List.filter (fun { Operation.name = n; parameters = p } ->
+	    (n = name) && domains_match_p p) opers
       in
-	try
-          List.find domains_match candidates
-	with
-	    Not_found -> raise (Function_not_found candidates)
+	(* Find the set of all operations with the appropriate name. *)
+	List.flatten
+	  (List.map
+	      (function
+		  (Declaration.Datatype d) -> filter d.Datatype.operations
+		| _ -> [])
+	      program)
 
     let interface_find_all ~program ~iface ~name coiface inputs outputs =
       (** Find all definitions of a method called [name] that matches

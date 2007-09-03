@@ -31,6 +31,17 @@ exception TypeError of string * int * string
 let typecheck tree: Declaration.t list =
   let cnt = ref 0 in
   let fresh_name () = let _ = incr cnt in "_" ^ (string_of_int !cnt) in
+  let ambigous_msg thing name arg_t cands =
+    let cand_s { Operation.name = n; parameters = p; result_type = r } =
+      let oper_t =
+	Type.Function (List.map (fun v -> v.VarDecl.var_type) p, r)
+      in
+	name ^ (Type.as_string oper_t)
+    in
+      thing ^ " " ^ name ^ (Type.as_string arg_t) ^
+	" ambigous.\nPossible candidates are:\n" ^
+	(List.fold_left (fun c o -> c ^ "    " ^ (cand_s o) ^ "\n") "" cands)
+  in
   let rec type_check_expression (program: Program.t) (cls: Class.t) (meth: Method.t) coiface =
     function
 	This n ->
@@ -64,7 +75,7 @@ let typecheck tree: Declaration.t list =
 			raise (TypeError ((Expression.file n),
 					 (Expression.line n),
 					 "Identifier " ^ name ^
-					 " not declared"))
+					   " not declared"))
 	  in
 	    Id (set_type n res, name)
       | StaticAttr (n, name, (Type.Basic c)) ->
@@ -79,21 +90,22 @@ let typecheck tree: Declaration.t list =
 	  let narg =
 	    type_check_expression program cls meth coiface arg
 	  in
+	  let narg_t = List.map get_type [narg] in
 	  let restype =
-	    try
-	      (Program.find_function program (string_of_unaryop op)
-		  (List.map get_type [narg])).Operation.result_type
+	    match Program.find_functions program (string_of_unaryop op) narg_t
 	    with
-		Program.Function_not_found [] ->
+		[] ->
 		  raise (TypeError (Expression.file n, Expression.line n,
 				   "Unary operator " ^
 				     (string_of_unaryop op) ^
 				     " not defined"))
-	      | Program.Function_not_found l ->
+	      | [oper] -> oper.Operation.result_type
+	      | candidates ->
 		  raise (TypeError (Expression.file n, Expression.line n,
-				   "Unary operator " ^
-				     (string_of_unaryop op) ^
-				     " ambigous"))
+				   ambigous_msg "Unary operator "
+				     (string_of_unaryop op)
+				     (Type.Tuple narg_t)
+				     candidates))
 	  in
 	    Unary (set_type n restype, op, narg)
       | Binary (n, op, arg1, arg2) ->
@@ -102,21 +114,23 @@ let typecheck tree: Declaration.t list =
 	  and narg2 =
 	    type_check_expression program cls meth coiface arg2
 	  in
+	  let oper_n = string_of_binaryop op 
+	  and nargs_t = List.map get_type [narg1; narg2] in
 	  let restype =
-	    try
-	      (Program.find_function program (string_of_binaryop op)
-		  (List.map get_type [narg1; narg2])).Operation.result_type
-	    with
-		Program.Function_not_found [] ->
+	    match Program.find_functions program oper_n nargs_t with
+		[] ->
 		  raise (TypeError (Expression.file n, Expression.line n,
 				   "Binary operator " ^
 				     (string_of_binaryop op) ^
+				     (Type.as_string (Type.Tuple nargs_t)) ^
 				     " not defined"))
-	      | Program.Function_not_found l ->
+	      | [oper] -> oper.Operation.result_type
+	      | candidates ->
 		  raise (TypeError (Expression.file n, Expression.line n,
-				   "Binary operator " ^
-				     (string_of_binaryop op) ^
-				     " ambigous"))
+				   ambigous_msg "Binary operator "
+				     (string_of_binaryop op)
+				     (Type.Tuple nargs_t)
+				     candidates))
 	  in
 	    Binary (set_type n restype, op, narg1, narg2)
       | Expression.If (n, cond, iftrue, iffalse) ->
@@ -142,20 +156,16 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let nargs_t = List.map get_type nargs in
 	  let restype =
-	    try
-	      (Program.find_function program name
-		  nargs_t).Operation.result_type
-	    with
-		Program.Function_not_found [] ->
+	    match (Program.find_functions program name nargs_t) with
+		[] -> raise (TypeError (Expression.file n, Expression.line n,
+				       "Function " ^ name ^ " not defined"))
+	      | [oper] -> oper.Operation.result_type
+	      | candidates ->
 		  raise (TypeError (Expression.file n, Expression.line n,
-				   "Function " ^ name ^
-				     (Type.as_string (Type.Tuple nargs_t)) ^
-				     " not defined"))
-	      | Program.Function_not_found l ->
-		  raise (TypeError (Expression.file n, Expression.line n,
-				   "Function " ^ name ^
-				     (Type.as_string (Type.Tuple nargs_t)) ^
-				     " ambigous"))
+				   ambigous_msg "Function"
+				     name
+				     (Type.Tuple nargs_t)
+				     candidates))
 	  in
 	    FuncCall (set_type n restype, name, nargs)
       | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
@@ -185,8 +195,8 @@ let typecheck tree: Declaration.t list =
 				   "Class " ^ c ^ " not defined"))
 	  in
 	  let ctor_t = Type.Tuple
-		    (List.map (fun x -> x.VarDecl.var_type)
-			cls_n.Class.parameters)
+	    (List.map (fun x -> x.VarDecl.var_type)
+		cls_n.Class.parameters)
 	  in
 	    if
 	      Program.subtype_p program Program.empty args_t ctor_t
@@ -196,9 +206,9 @@ let typecheck tree: Declaration.t list =
 	    else
 	      raise (TypeError (Expression.file n, Expression.line n,
 			       "Arguments to new " ^ c ^
-			       " mismatch: expected " ^
-                               (Type.as_string ctor_t) ^ " but got " ^
-			       (Type.as_string args_t)))
+				 " mismatch: expected " ^
+				 (Type.as_string ctor_t) ^ " but got " ^
+				 (Type.as_string args_t)))
 
       | Expression.Extern _ -> assert false
       | SSAId (n, name, version) ->
@@ -214,7 +224,7 @@ let typecheck tree: Declaration.t list =
 			raise (TypeError ((Expression.file n),
 					 (Expression.line n),
 					 "Identifier " ^ name ^
-					 " not declared"))
+					   " not declared"))
 	  in
 	    SSAId (set_type n res, name, version)
       | Phi (n, args) ->
@@ -241,7 +251,7 @@ let typecheck tree: Declaration.t list =
 			raise (TypeError ((Expression.file n),
 					 (Expression.line n),
 					 "Identifier " ^ name ^
-					 " not declared"))
+					   " not declared"))
 	  in
 	    LhsVar (set_type n res, name)
       | LhsAttr (n, name, (Type.Basic c)) ->
@@ -267,7 +277,7 @@ let typecheck tree: Declaration.t list =
 			raise (TypeError ((Expression.file n),
 					 (Expression.line n),
 					 "Identifier " ^ name ^
-					 " not declared"))
+					   " not declared"))
 	  in
 	    LhsSSAId (set_type n res, name, version)
   and type_check_statement program cls meth coiface =
@@ -291,8 +301,8 @@ let typecheck tree: Declaration.t list =
 	    else
 	      raise (TypeError (file n, line n,
 			       "Type mismatch in assignment: Expected " ^
-			       (Type.as_string lhs_t) ^ " but got " ^
-			       (Type.as_string rhs_t)))
+				 (Type.as_string lhs_t) ^ " but got " ^
+				 (Type.as_string rhs_t)))
       | Await (n, e) ->
 	  Await (n, type_check_expression program cls meth coiface e)
       | Posit (n, e) ->
@@ -349,19 +359,19 @@ let typecheck tree: Declaration.t list =
 	      try
 	        Program.find_interface program (Type.as_string callee_t)
 	      with
-	        Not_found ->
+	          Not_found ->
 		    raise (TypeError (file n, line n,
-			   "Callee's interface " ^ (Type.as_string callee_t) ^
-			   " not defined"))
+				     "Callee's interface " ^ (Type.as_string callee_t) ^
+				       " not defined"))
 	    in
 	      try
 	        Interface.cointerface iface
 	      with
-		Failure _ ->
-		  raise (TypeError (file n, line n,
-				   "Method " ^ m ^
-				   " not provided in empty interface " ^
-				   iface.Interface.name))
+		  Failure _ ->
+		    raise (TypeError (file n, line n,
+				     "Method " ^ m ^
+				       " not provided in empty interface " ^
+				       iface.Interface.name))
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
@@ -463,24 +473,24 @@ let typecheck tree: Declaration.t list =
 	      try
 		Program.find_interface program (Type.as_string callee_t)
 	      with
-		Not_found -> 
+		  Not_found -> 
 		    raise (TypeError (file n, line n,
-			   "Callee's interface " ^ (Type.as_string callee_t) ^
-			   " not defined"))
+				     "Callee's interface " ^ (Type.as_string callee_t) ^
+				       " not defined"))
 	    in
 	      try
 	        Interface.cointerface iface
 	      with
-		Failure _ ->
-		  raise (TypeError (file n, line n,
-				   "Method " ^ m ^
-				   " not provided in empty interface " ^
-				   iface.Interface.name))
+		  Failure _ ->
+		    raise (TypeError (file n, line n,
+				     "Method " ^ m ^
+				       " not provided in empty interface " ^
+				       iface.Interface.name))
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
 	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-		
+	      
 	  in
 	    if (Class.contracts_p cls co) &&
 	      (Program.interface_provides_p program
@@ -496,7 +506,8 @@ let typecheck tree: Declaration.t list =
 	      begin
 		if not (Class.contracts_p cls co) then
 		  raise (TypeError (file n, line n,
-				   "Class does not contract interface " ^
+				   "Class " ^ cls.Class.name ^
+				     " does not contract interface " ^
 				     (Type.as_string co)))
 		else
 		  raise (TypeError (file n, line n,
@@ -520,7 +531,7 @@ let typecheck tree: Declaration.t list =
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
 	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-		
+	      
 	  in
 	    if (Class.contracts_p cls co) &&
 	      (Program.interface_provides_p program
@@ -556,7 +567,7 @@ let typecheck tree: Declaration.t list =
 	  let signature =
 	    (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
 	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-		
+	      
 	  in
 	    if
 	      Program.class_provides_method_p program cls m
@@ -566,7 +577,8 @@ let typecheck tree: Declaration.t list =
 	      LocalSyncCall (n, m, signature, lb, ub, nargs, nouts)
 	    else
 	      raise (TypeError (file n, line n,
-			       "Class does not provide method " ^ m))
+			       "Class " ^ cls.Class.name ^
+				 " does not provide method " ^ m))
       | AwaitLocalSyncCall (n, m, _, lb, ub, args, retvals) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
@@ -579,7 +591,7 @@ let typecheck tree: Declaration.t list =
 	  let signature =
 	    (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
 	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-		
+	      
 	  in
 	    if
 	      Program.class_provides_method_p program cls m
@@ -589,7 +601,8 @@ let typecheck tree: Declaration.t list =
 	      AwaitLocalSyncCall (n, m, signature, lb, ub, nargs, nouts)
 	    else
 	      raise (TypeError (file n, line n,
-			       "Class does not provide method " ^ m))
+			       "Class " ^ cls.Class.name ^
+				 " does not provide method " ^ m))
       | Tailcall _ -> assert false
       | If (n, cond, iftrue, iffalse) ->
 	  If (n, type_check_expression program cls meth coiface cond,
@@ -633,8 +646,8 @@ let typecheck tree: Declaration.t list =
   and type_check_class program cls =
     (* Compute the type environment within a class by adding first the class
        parameters to an empty hash table and then all attributes. *)
-      { cls with Class.with_defs =
-	  List.map (type_check_with_def program cls) cls.Class.with_defs }
+    { cls with Class.with_defs =
+	List.map (type_check_with_def program cls) cls.Class.with_defs }
   and type_check_declaration program =
     function
 	Declaration.Class c -> Declaration.Class (type_check_class program c)

@@ -28,10 +28,10 @@ end
 
 class SantaClausC implements SantaClaus
 begin
-  var ctRreindeers: Nat := 0
-  var waitRreindeers:List := nil
-  var harnessedReindeers:List := nil
-  var ctElves: Nat := 0
+  var ctReindeers: Int := 0
+  var waitReindeers: List[Reindeer] := nil
+  var harnessedReindeers: List[Reindeer] := nil
+  var ctElves: Int := 0
   var waitElves:List := nil
   var inofficeElves:List := nil
 
@@ -59,7 +59,7 @@ begin
 	harnessedReindeers := tail(harnessedReindeers)
 
 
-  op talkToelves ==
+  op talkToElves ==
 	ctElves := ctElves - 3; 
 	t1!head(waitElves).showIn();
 	inofficeElves := inofficeElves |- head(waitElves);
