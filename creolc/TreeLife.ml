@@ -39,7 +39,6 @@ let compute tree =
       | Tuple (a, l) -> List.iter (generate env) l
       | ListLit (a, l) -> List.iter (generate env) l
       | SetLit (a, l) -> List.iter (generate env) l
-      | FieldAccess (a, v, f) -> generate env v
       | Unary (a, o, e) -> generate env e
       | Binary (a, o, l, r) -> List.iter (generate env) [l; r]
       | Expression.If (a, c, t, f) -> List.iter (generate env) [c; t; f]

@@ -38,9 +38,10 @@ let typecheck tree: Declaration.t list =
       in
 	name ^ (Type.as_string oper_t) ^ ": " ^ (Type.as_string r)
     in
+      assert ((List.length cands) > 1) ;
       thing ^ " " ^ name ^ (Type.as_string arg_t) ^
-	" ambigous.\nPossible candidates are:\n" ^
-	(List.fold_left (fun c o -> c ^ "    " ^ (cand_s o) ^ "\n") "" cands)
+	" is ambigous. Possible candidates are: " ^
+	(List.fold_left (fun c o -> c ^ "  " ^ (cand_s o)) "" cands)
   in
   let rec type_check_expression program cls meth coiface =
     function
@@ -116,8 +117,9 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let oper_n = string_of_binaryop op 
 	  and nargs_t = List.map get_type [narg1; narg2] in
+	  let cands = Program.find_functions program oper_n nargs_t in
 	  let restype =
-	    match Program.find_functions program oper_n nargs_t with
+	    match  cands with
 		[] ->
 		  raise (TypeError (Expression.file n, Expression.line n,
 				   "Binary operator " ^

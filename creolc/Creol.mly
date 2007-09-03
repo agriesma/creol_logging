@@ -466,8 +466,6 @@ expression:
 	{ Unary((Expression.make_note $startpos), Length, e) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall((Expression.make_note $startpos), f, l) }
-    | e = expression DOT i = ID
-	{ FieldAccess ((Expression.make_note $startpos), e, i) }
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (Expression.make_note $startpos, c, t, f) }
 
@@ -511,14 +509,6 @@ creol_type:
 	{ Type.Variable v }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Tuple d }
-    | LBRACKS f = separated_nonempty_list(COMMA, field_decl) RBRACKS
-        { Type.Structure f }
-    | LBRACKV f = separated_nonempty_list(BAR, field_decl) RBRACKV
-        { Type.Variant f }
-
-field_decl:
-      i = ID COLON t = creol_type
-        { { Type.field_name = i; Type.field_type = t } }
 
 (* Assertions. *)
 

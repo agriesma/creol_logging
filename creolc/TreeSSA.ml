@@ -109,7 +109,6 @@ let into_ssa tree =
       | Tuple (a, l) -> Tuple (a, List.map (expression_to_ssa env) l)
       | ListLit (a, l) -> ListLit (a, List.map (expression_to_ssa env) l)
       | SetLit (a, l) -> SetLit (a, List.map (expression_to_ssa env) l)
-      | FieldAccess (a, v, f) -> FieldAccess (a, expression_to_ssa env v, f)
       | Unary (a, o, e) -> Unary (a, o, expression_to_ssa env e)
       | Binary (a, o, l, r) ->
 	  Binary (a, o, expression_to_ssa env l, expression_to_ssa env r)
@@ -360,7 +359,6 @@ let out_of_ssa tree =
       | Tuple (a, l) -> Tuple (a, List.map expression_of_ssa l)
       | ListLit (a, l) -> ListLit (a, List.map expression_of_ssa l)
       | SetLit (a, l) -> SetLit (a, List.map expression_of_ssa l)
-      | FieldAccess (a, v, f) -> FieldAccess (a, expression_of_ssa v, f)
       | Unary (a, o, e) -> Unary (a, o, expression_of_ssa e)
       | Binary (a, o, l, r) ->
 	  Binary (a, o, expression_of_ssa l, expression_of_ssa r)

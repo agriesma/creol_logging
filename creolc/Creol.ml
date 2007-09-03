@@ -44,10 +44,6 @@ module Type =
 	    (** A type application, e.g., [List[Int]]. *)
 	| Tuple of t list
 	    (** The type of a tuple. *)
-	| Structure of field list
-	    (** The type of a structure. *)
-	| Variant of field list
-	    (** The type of a variant. *)
 	| Intersection of t list
 	    (** The type is an intersection type.  Intersection types
 		do not have concrete syntax. Usually, an intersection
@@ -82,8 +78,6 @@ module Type =
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Tuple p ->
 	    "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Structure f -> "[# " ^ (string_of_field_list f) ^ " #]"
-	| Variant f -> "[+ " ^ (string_of_field_list f) ^ " +]"
 	| Intersection l -> "/* /\\ [" ^ (string_of_creol_type_list l) ^ "] */"
 	| Internal -> "/* Internal */"
     and string_of_creol_type_list =
@@ -142,7 +136,6 @@ module Expression =
 	| Tuple of note * t list
 	| ListLit of note * t list
 	| SetLit of note * t list
-        | FieldAccess of note * t * string
 	| Unary of note * unaryop * t
 	| Binary of note * binaryop * t * t
 	| If of note * t * t * t
@@ -269,7 +262,6 @@ module Expression =
 	| Tuple (a, _) -> a
 	| ListLit (a, _) -> a
 	| SetLit (a, _) -> a
-	| FieldAccess (a, _, _) -> a
 	| Unary (a, _, _) -> a
 	| Binary (a, _, _, _) -> a
 	| If (a, _, _, _) -> a
@@ -816,6 +808,18 @@ module Program =
 	    Declaration.Interface i -> i
 	  | _ -> assert false
 
+    let rec subinterface_p program s t =
+      (** Return true if s is a subinterface of [t] *)
+      try
+	let s_decl =
+	  find_interface program s
+	in
+	  (s = t) ||
+	    (List.exists (function u -> subinterface_p program u t)
+		(List.map fst s_decl.Interface.inherits))
+      with
+	  Not_found -> false
+
     let find_datatype ~program ~name =
       let datatype_with_name =
 	function
@@ -828,6 +832,18 @@ module Program =
 	match List.find datatype_with_name program with
 	    Declaration.Datatype d -> d
 	  | _ -> assert false
+
+    let rec sub_datatype_p program s t =
+      (** Return true if s is a sub-datatype of [t] *)
+      try
+	let s_decl =
+	  find_datatype program s
+	in
+	  (s = t) ||
+	    (List.exists (function u -> sub_datatype_p program u t)
+		(List.map Type.as_string s_decl.Datatype.supers))
+      with
+	  Not_found -> false
 
     let rec find_attr_decl program cls name =
       let rec find lst =
@@ -851,9 +867,12 @@ module Program =
       (* FIXME: For simplicity we define subtype relation to be structural
          equality *)
       match (s, t) with
-	  (_, Type.Basic "Data") -> true
+	  (_, Type.Basic "Data") ->
+	    (* Everything of kind * is a subtype of data *)
+	    (* FIXME: Check kinding of s *)
+	    true	    
 	| (Type.Basic st, Type.Basic tt) ->
-	    st = tt
+	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
 	    (subtype_p program gamma (Type.Basic sc) (Type.Basic tc)) &&
 	      begin
@@ -911,6 +930,7 @@ module Program =
 		domain))
 	  opers
       in
+      let candidates =
 	(* Find the set of all operations with the appropriate name. *)
 	List.flatten
 	  (List.map
@@ -918,6 +938,25 @@ module Program =
 		  (Declaration.Datatype d) -> filter d.Datatype.operations
 		| _ -> [])
 	      program)
+      in
+      let is_more_specific_p cand =
+	(* A candidate [cand] is more specific in [cands], if there
+	   exists one declaration [d] in [candidatess] such that that [cand]
+	   is strictly more specific than [d].  *)
+	let get_type v = v.VarDecl.var_type in
+	  List.exists (fun d ->
+	    d <> cand &&
+	      (subtype_p program empty
+		  (Type.Tuple (List.map get_type cand.Operation.parameters))
+		  (Type.Tuple (List.map get_type d.Operation.parameters))))
+	    candidates
+      in
+	match candidates with
+	    [c] -> [c]
+	  | _ -> 
+	      (* FIXME: This one is bogus, since it may throw out too many in
+		 some situations and to less in others. *)
+	      List.filter is_more_specific_p candidates
 
     let interface_find_methods ~program ~iface ~meth coiface ins outs =
       (** Find all definitions of a method called [name] that matches

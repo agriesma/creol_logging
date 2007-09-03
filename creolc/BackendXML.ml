@@ -535,12 +535,6 @@ let emit ~name ~tree =
           XmlTextWriter.end_element writer ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
-      | Expression.FieldAccess (a, e, f) ->
-	  XmlTextWriter.start_element writer "creol:fieldaccess" ; 
-	  XmlTextWriter.write_attribute writer "name" f ;
-	  creol_expression_to_xml e ;
-	  creol_expression_note_to_xml a ;
-          XmlTextWriter.end_element writer
       | Expression.Label (a, l) ->
 	  XmlTextWriter.start_element writer "creol:label" ;
 	  creol_expression_to_xml l ;
@@ -613,22 +607,6 @@ let emit ~name ~tree =
       | Type.Tuple l ->
 	  XmlTextWriter.start_element writer "creol:tuple" ; 
 	  List.iter creol_type_to_xml l;
-          XmlTextWriter.end_element writer
-      | Type.Structure fields ->
-	  XmlTextWriter.start_element writer "creol:structure-type" ; 
-	  List.iter (function x ->
-	    XmlTextWriter.start_element writer "creol:field" ;
-	    XmlTextWriter.write_attribute writer "name" x.Type.field_name ;
-	    creol_type_to_xml x.Type.field_type ;
-	    XmlTextWriter.end_element writer) fields ;
-          XmlTextWriter.end_element writer
-      | Type.Variant fields ->
-	  XmlTextWriter.start_element writer "creol:variabt-type" ; 
-	  List.iter (function x ->
-	    XmlTextWriter.start_element writer "creol:field" ;
-	    XmlTextWriter.write_attribute writer "name" x.Type.field_name ;
-	    creol_type_to_xml x.Type.field_type ;
-	    XmlTextWriter.end_element writer) fields ;
           XmlTextWriter.end_element writer
       | Type.Intersection p ->
 	  XmlTextWriter.start_element writer "creol:intersection" ; 

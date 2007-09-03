@@ -407,8 +407,6 @@ let emit out_channel input =
 	    output_string out_channel "{";
 	    pretty_print_expression_list a;
 	    output_string out_channel "}";
-	| Expression.FieldAccess(_, e, f) ->
-	    print 15 e; output_string out_channel ("`" ^ f)
 	| Expression.Unary (_, o, e) ->
 	    output_string out_channel (Expression.string_of_unaryop o ^ " ");
 	    print (Expression.prec_of_unaryop o) e
