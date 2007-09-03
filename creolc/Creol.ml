@@ -50,10 +50,9 @@ module Type =
 	    (** The type of a variant. *)
 	| Intersection of t list
 	    (** The type is an intersection type.  Intersection types
-		do not have concrete syntax. *)
-	| Union of t list
-	    (** The type is a union type.  Union types do not have
-		concrete syntax. *)
+		do not have concrete syntax. Usually, an intersection
+		type arises as the type of the expression {\c this},
+		and in very rare circumstances during type inference. *)
 	| Internal
 	    (** The co-interface of internal calls *)
     and field =
@@ -86,7 +85,6 @@ module Type =
 	| Structure f -> "[# " ^ (string_of_field_list f) ^ " #]"
 	| Variant f -> "[+ " ^ (string_of_field_list f) ^ " +]"
 	| Intersection l -> "/* /\\ [" ^ (string_of_creol_type_list l) ^ "] */"
-	| Union l -> "/* \\/ [" ^ (string_of_creol_type_list l) ^ "] */"
 	| Internal -> "/* Internal */"
     and string_of_creol_type_list =
       function
@@ -877,10 +875,6 @@ module Program =
 		(List.for_all (fun t -> subtype_p program gamma s t) ta)) sa
 	| (Type.Intersection sa, _) ->
 	    List.exists (fun s -> subtype_p program gamma s t) sa
-	| (Type.Union sa, Type.Union ta) -> assert false
-	| (Type.Union sa, Type.Intersection ta) -> assert false
-	| (Type.Union sa, _) ->
-	    List.for_all (fun s -> subtype_p program gamma s t) sa
 	| (Type.Internal, Type.Internal) -> true
 	| (Type.Internal, _) -> false
 	| (_, Type.Internal) -> false

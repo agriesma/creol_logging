@@ -634,10 +634,6 @@ let emit ~name ~tree =
 	  XmlTextWriter.start_element writer "creol:intersection" ; 
 	  List.iter creol_type_to_xml p ;
           XmlTextWriter.end_element writer
-      | Type.Union p ->
-	  XmlTextWriter.start_element writer "creol:union" ; 
-	  List.iter creol_type_to_xml p ;
-          XmlTextWriter.end_element writer
       | Type.Internal ->
 	  XmlTextWriter.start_element writer "creol:internal" ; 
           XmlTextWriter.end_element writer
