@@ -509,13 +509,8 @@ creol_type:
 	{ Type.Application (t, p) }
     | BACKTICK v = ID
 	{ Type.Variable v }
-    | LBRACK d = separated_nonempty_list(COMMA, creol_type)
-      r = ioption(preceded(ARROW, creol_type)) RBRACK
-	{ match r with
-	    None -> Type.Tuple d
-	  | Some rt -> Type.Function (d, rt) }
-    | LBRACK ARROW r = creol_type RBRACK
-	{ Type.Function ([], r) }
+    | LBRACK d = separated_nonempty_list(COMMA, creol_type) RBRACK
+	{ Type.Tuple d }
     | LBRACKS f = separated_nonempty_list(COMMA, field_decl) RBRACKS
         { Type.Structure f }
     | LBRACKV f = separated_nonempty_list(BAR, field_decl) RBRACKV

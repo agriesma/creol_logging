@@ -614,15 +614,6 @@ let emit ~name ~tree =
 	  XmlTextWriter.start_element writer "creol:tuple" ; 
 	  List.iter creol_type_to_xml l;
           XmlTextWriter.end_element writer
-      | Type.Function (dom, rng) ->
-	  XmlTextWriter.start_element writer "creol:function-type" ; 
-	  XmlTextWriter.start_element writer "creol:domain" ; 
-	  List.iter creol_type_to_xml dom ;
-          XmlTextWriter.end_element writer ;
-	  XmlTextWriter.start_element writer "creol:range" ; 
-	  creol_type_to_xml rng ;
-          XmlTextWriter.end_element writer ;
-          XmlTextWriter.end_element writer
       | Type.Structure fields ->
 	  XmlTextWriter.start_element writer "creol:structure-type" ; 
 	  List.iter (function x ->

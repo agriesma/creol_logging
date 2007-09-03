@@ -34,9 +34,9 @@ let typecheck tree: Declaration.t list =
   let ambigous_msg thing name arg_t cands =
     let cand_s { Operation.name = n; parameters = p; result_type = r } =
       let oper_t =
-	Type.Function (List.map (fun v -> v.VarDecl.var_type) p, r)
+	Type.Tuple (List.map (fun v -> v.VarDecl.var_type) p)
       in
-	name ^ (Type.as_string oper_t)
+	name ^ (Type.as_string oper_t) ^ ": " ^ (Type.as_string r)
     in
       thing ^ " " ^ name ^ (Type.as_string arg_t) ^
 	" ambigous.\nPossible candidates are:\n" ^

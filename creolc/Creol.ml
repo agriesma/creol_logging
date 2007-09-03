@@ -44,12 +44,6 @@ module Type =
 	    (** A type application, e.g., [List[Int]]. *)
 	| Tuple of t list
 	    (** The type of a tuple. *)
-	| Function of t list * t
-	    (** The type of a function.  The first component refers to
-		the annotation of the function tupe, the second
-		component is a tuple describing the domain and the
-		last component is the (unique) type of the function's
-		range. *)
 	| Structure of field list
 	    (** The type of a structure. *)
 	| Variant of field list
@@ -89,9 +83,6 @@ module Type =
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Tuple p ->
 	    "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Function (d, r) ->
-	    "[" ^ (string_of_creol_type_list d) ^ " -> " ^
-		(as_string r) ^ "]"
 	| Structure f -> "[# " ^ (string_of_field_list f) ^ " #]"
 	| Variant f -> "[+ " ^ (string_of_field_list f) ^ " +]"
 	| Intersection l -> "/* /\\ [" ^ (string_of_creol_type_list l) ^ "] */"
@@ -108,11 +99,6 @@ module Type =
 	| f::l -> (string_of_field f) ^ ", " ^ (string_of_field_list l)
 	| [] -> assert false
     and string_of_field f = f.field_name ^ ": " ^ (as_string f.field_type)
-
-    let result_type =
-      function
-	  Function (_, r) -> r
-	| _ -> assert false
 
     let get_from_label =
       function
