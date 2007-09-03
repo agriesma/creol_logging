@@ -127,14 +127,14 @@ let compute tree =
       | Extern (n, s) -> ()
   in
   let compute_in_method m =
-    match m.Method.meth_body with
+    match m.Method.body with
 	None -> ()
       | Some b ->
 	  (* The final return statement implies that the outparameters are
 	     life for the method body. *)
 	  let env = Hashtbl.create 32 in
 	  let _ = List.iter (function { VarDecl.name = n } ->
-	    Hashtbl.replace env n ()) m.Method.meth_outpars
+	    Hashtbl.replace env n ()) m.Method.outpars
 	  in compute_in_statement env b
   in
   let compute_in_with_def w =

@@ -57,7 +57,6 @@ rule token = parse
     | '\n' { update_loc lexbuf; token lexbuf }
     | '!' { BANG }
 	(* '"' *)
-    | "#]" { RBRACKS }
     | '#' { HASH }
     | '$' { DOLLAR }
     | '%' { PERCENT }
@@ -68,7 +67,6 @@ rule token = parse
     | ')' { RPAREN }
     | "**" { TIMESTIMES }
     | '*' { TIMES }
-    | "+]" { RBRACKV }
     | '+' { PLUS }
     | ',' { COMMA }
     | "->" { ARROW }
@@ -99,8 +97,6 @@ rule token = parse
     | '@' { AT }
 	(* Upper case letters *)
     | "[]" { BOX }
-    | "[#" { LBRACKS }
-    | "[+" { LBRACKV }
     | '[' { LBRACK }
     | "\\/" { VEE }
     | '\\' { BACKSLASH }

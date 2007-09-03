@@ -43,12 +43,12 @@ let optimize prg =
   and optimise_in_with w =
     { w with With.methods = List.map optimise_in_method w.With.methods }
   and optimise_in_method m =
-    match m.Method.meth_body with
+    match m.Method.body with
 	None -> m
       | Some body ->
-	  { m with Method.meth_body =
+	  { m with Method.body =
 	      Some ((optimise_in_statement
-			(List.map (function v -> v.VarDecl.name) m.Method.meth_outpars))
+			(List.map (function v -> v.VarDecl.name) m.Method.outpars))
 		       body) } 
   and optimise_in_statement outs s = s
   in

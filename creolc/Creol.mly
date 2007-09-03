@@ -11,8 +11,6 @@
 %token EXCEPTION
 %token EQEQ COMMA SEMI COLON DCOLON ASSIGN
 %token LBRACK RBRACK
-%token LBRACKS RBRACKS
-%token LBRACKV RBRACKV
 %token LPAREN RPAREN
 %token LBRACE RBRACE
 %token HASH QUESTION BANG DOTDOT DOT AT
@@ -50,7 +48,6 @@
 %left TIMES DIV PERCENT
 %left TIMESTIMES
 %right UMINUS HASH
-%left DOT
 
 %start <'a list> main
 
@@ -185,8 +182,8 @@ method_decl:
       ioption(preceded(ENSURES, assertion))
       {
 	match p with (ins, outs) ->
-	  { meth_name = i; meth_inpars = ins;
-	    meth_outpars = outs; meth_vars = []; meth_body = None} }
+	  { Method.name = i; inpars = ins;
+	    outpars = outs; vars = []; body = None} }
     | OP error
     | OP ID error
 	{ signal_error $startpos "syntax error in method declaration" }
@@ -214,12 +211,12 @@ with_def:
 method_def:
       d = method_decl EQEQ a = loption(terminated(attributes, SEMI))
 	s = statement
-    { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
-	meth_outpars = d.meth_outpars; meth_vars = a; meth_body = Some s} }
+    { { Method.name = d.Method.name; inpars = d.inpars;
+	outpars = d.outpars; vars = a; body = Some s} }
   |   d = method_decl EQEQ EXTERN s = STRING
-    { { meth_name = d.meth_name; meth_inpars = d.meth_inpars;
-	meth_outpars = d.meth_outpars; meth_vars = [];
-        meth_body = Some (Extern (Statement.make_note $startpos, s)) } }
+    { { Method.name = d.Method.name; inpars = d.inpars;
+	outpars = d.outpars; vars = [];
+        body = Some (Extern (Statement.make_note $startpos, s)) } }
 
 (* Interface Declaration *)
 

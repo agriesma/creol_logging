@@ -328,8 +328,8 @@ let typecheck tree: Declaration.t list =
 	      (Program.interface_provides_p program
 		  (Program.find_interface program
 		      (Type.as_string (Expression.get_type ncallee)))
-		  m co (List.map Expression.get_type nargs)
-		  [Type.data])
+		  m co (Type.Tuple (List.map Expression.get_type nargs))
+		  Type.data)
 	    then
 	      (* A label value of none implies that the type if that
 		 anonymous label is Label[Data]. *)
@@ -344,7 +344,9 @@ let typecheck tree: Declaration.t list =
 		else
 		  raise (TypeError (file n, line n,
 				   "Interface " ^ (Type.as_string callee_t) ^
-				     " does not provide method " ^ m))
+				     " does not provide method " ^ m ^
+				     " with inputs " ^
+				     (Type.as_string (Type.Tuple (List.map Expression.get_type nargs)))))
 	      end
       | AsyncCall (n, Some label, callee, m, _, args) ->
 	  let ncallee =
@@ -377,15 +379,14 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
-	    (Type.Tuple
-		(Type.get_from_label (Expression.get_lhs_type nlabel))))
+	    (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	  in
 	    if (Class.contracts_p cls co) &&
 	      (Program.interface_provides_p program
 		  (Program.find_interface program
 		      (Type.as_string callee_t))
 		  m co
-		  (List.map get_type nargs)
+		  (Type.Tuple (List.map get_type nargs))
 		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	    then
 	      AsyncCall (n, Some nlabel, ncallee, m, signature, nargs)
@@ -399,7 +400,11 @@ let typecheck tree: Declaration.t list =
 		else
 		  raise (TypeError (file n, line n,
 				   "Interface " ^ (Type.as_string callee_t) ^
-				     " does not provide method " ^ m))
+				     " does not provide method " ^ m  ^
+				     " with inputs " ^
+				     (Type.as_string (Type.Tuple (List.map Expression.get_type nargs))) ^
+				     " and outputs " ^
+				     (Type.as_string (Type.get_from_label (Expression.get_lhs_type nlabel)))))
 	      end
       | Reply (n, label, retvals) -> 
 	  let nlabel =
@@ -409,7 +414,7 @@ let typecheck tree: Declaration.t list =
 	  in
 	    if Program.subtype_p program Program.empty
 	      (Type.Tuple (List.map get_lhs_type nretvals))
-	      (Type.Tuple (Type.get_from_label (Expression.get_type nlabel)))
+	      (Type.get_from_label (Expression.get_type nlabel))
 	    then
 	      Reply (n, nlabel, nretvals)
 	    else
@@ -447,13 +452,11 @@ let typecheck tree: Declaration.t list =
 	  in
 	  let signature =
 	    (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
-	    (Type.Tuple
-		(Type.get_from_label (Expression.get_lhs_type nlabel))))
+	    (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	  in
 	    if Program.class_provides_method_p program cls m
 	      (Type.Tuple (List.map get_type nargs))
-	      (Type.Tuple
-		  (Type.get_from_label (Expression.get_lhs_type nlabel)))
+	      (Type.get_from_label (Expression.get_lhs_type nlabel))
 	    then
 	      LocalAsyncCall (n, Some nlabel, m, signature, lb, ub, nargs)
 	    else
@@ -500,8 +503,8 @@ let typecheck tree: Declaration.t list =
 		      (Type.as_string callee_t))
 		  m
 		  co
-		  (List.map get_type nargs)
-		  (List.map get_lhs_type nouts))
+		  (Type.Tuple (List.map get_type nargs))
+		  (Type.Tuple (List.map get_lhs_type nouts)))
 	    then
 	      SyncCall (n, ncallee, m, signature, nargs, nouts)
 	    else
@@ -541,8 +544,8 @@ let typecheck tree: Declaration.t list =
 		      (Type.as_string callee_t))
 		  m
 		  co
-		  (List.map get_type nargs)
-		  (List.map get_lhs_type nouts))
+		  (Type.Tuple (List.map get_type nargs))
+		  (Type.Tuple (List.map get_lhs_type nouts)))
 	    then
 	      AwaitSyncCall (n, ncallee, m, signature, nargs, nouts)
 	    else
@@ -630,8 +633,8 @@ let typecheck tree: Declaration.t list =
 		 type_check_statement program cls meth coiface s2)
       | Extern _ as s -> s
   and type_check_method program cls coiface meth =
-    { meth with Method.meth_body =
-	match meth.Method.meth_body with
+    { meth with Method.body =
+	match meth.Method.body with
 	    None -> None
 	  | Some s ->
 	      Some (type_check_statement program cls meth coiface s) }

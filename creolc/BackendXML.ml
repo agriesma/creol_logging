@@ -118,17 +118,17 @@ let emit ~name ~tree =
     ()
   and creol_method_to_xml m =
     XmlTextWriter.start_element writer "creol:method" ; 
-    XmlTextWriter.write_attribute writer "name" m.Method.meth_name;
+    XmlTextWriter.write_attribute writer "name" m.Method.name;
     XmlTextWriter.start_element writer "creol:inputs" ; 
-    List.iter (creol_vardecl_to_xml) m.Method.meth_inpars;
+    List.iter (creol_vardecl_to_xml) m.Method.inpars;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "creol:outputs" ; 
-    List.iter (creol_vardecl_to_xml) m.Method.meth_outpars;
+    List.iter (creol_vardecl_to_xml) m.Method.outpars;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "creol:variables" ; 
-    List.iter (creol_vardecl_to_xml) m.Method.meth_vars;
+    List.iter (creol_vardecl_to_xml) m.Method.vars;
     XmlTextWriter.end_element writer;
-    (match m.Method.meth_body with
+    (match m.Method.body with
 	None -> ()
       | Some s -> XmlTextWriter.start_element writer "creol:body" ; 
 	  creol_statement_to_xml s;

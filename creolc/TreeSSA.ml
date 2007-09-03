@@ -307,23 +307,23 @@ let into_ssa tree =
     Hashtbl.add tbl name { kind = k ; version = v } ; tbl
   in
   let method_to_ssa env m =
-    Messages.message 1 ("method_to_ssa: working in " ^ m.Method.meth_name) ;
-    match m.Method.meth_body with
+    Messages.message 1 ("method_to_ssa: working in " ^ m.Method.name) ;
+    match m.Method.body with
 	None -> m
       | Some b ->
 	  (* Make an environment which is specific to this method and
 	     then compute an SSA format for this method *)
 	  let e1 = 
 	    List.fold_left (add_all Input 1) (Hashtbl.copy env)
-	      m.Method.meth_inpars
+	      m.Method.inpars
 	  in
 	  let e2 =
-	    List.fold_left (add_all Output 0) e1 m.Method.meth_outpars
+	    List.fold_left (add_all Output 0) e1 m.Method.outpars
 	  in
 	  let e =
-	    List.fold_left (add_all Local 0) e2 m.Method.meth_vars
+	    List.fold_left (add_all Local 0) e2 m.Method.vars
 	  in
-	    { m with Method.meth_body = Some (statement_to_ssa e b) }
+	    { m with Method.body = Some (statement_to_ssa e b) }
   in
   let with_def_to_ssa env w =
     { w with With.methods = List.map (method_to_ssa env) w.With.methods }
@@ -472,11 +472,11 @@ let out_of_ssa tree =
       | Extern (n, s) -> Extern (n, s)
   in
   let method_of_ssa m =
-    Messages.message 1 ("method_of_ssa: working in " ^ m.Method.meth_name) ;
-    match m.Method.meth_body with
+    Messages.message 1 ("method_of_ssa: working in " ^ m.Method.name) ;
+    match m.Method.body with
 	None -> m
       | Some b ->
-	    { m with Method.meth_body =
+	    { m with Method.body =
 	      Some (Statement.remove_redundant_skips (statement_of_ssa b)) }
   in
   let with_def_of_ssa w =

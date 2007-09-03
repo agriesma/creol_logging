@@ -287,17 +287,17 @@ let emit options out_channel input =
       | n::l -> output_string out_channel ("\"" ^ n.VarDecl.name ^ "\" # ");
           of_method_return l
   and of_method cls m =
-    output_string out_channel ("\n  < \"" ^ m.Method.meth_name ^
+    output_string out_channel ("\n  < \"" ^ m.Method.name ^
 				  "\" : Mtdname | Param: ");
-    of_parameter_list m.Method.meth_inpars;
+    of_parameter_list m.Method.inpars;
     output_string out_channel ", Latt: " ;
-    of_class_attribute_list (m.Method.meth_inpars @ m.Method.meth_outpars @ m.Method.meth_vars);
+    of_class_attribute_list (m.Method.inpars @ m.Method.outpars @ m.Method.vars);
     output_string out_channel ", Code: " ;
-    ( match m.Method.meth_body with
+    ( match m.Method.body with
 	None -> output_string out_channel "skip"
       | Some s -> of_statement cls s ;
 	  output_string out_channel " ; return ( ";
-	  of_method_return m.Method.meth_outpars;
+	  of_method_return m.Method.outpars;
 	  output_string out_channel " )" ) ;
     output_string out_channel " >"
   and of_method_list cls =

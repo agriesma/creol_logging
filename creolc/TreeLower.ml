@@ -190,12 +190,12 @@ let pass input =
     (** Simplify a method definition. *)
     let _ = next_fresh_label := 0 (* Labels must only be unique per method. *)
     in
-      match m.Method.meth_body with
+      match m.Method.body with
 	  None -> m
 	| Some mb  ->
-	    let smv = lower_method_variables (Statement.note mb) m.Method.meth_vars in
-	      { m with Method.meth_vars = fst smv ;
-		meth_body = Some( if Statement.is_skip_p (snd smv) then
+	    let smv = lower_method_variables (Statement.note mb) m.Method.vars in
+	      { m with Method.vars = fst smv ;
+		body = Some( if Statement.is_skip_p (snd smv) then
 		  normalize_sequences (lower_statement mb)
 		  else
 		    Sequence(Statement.note mb, snd smv,

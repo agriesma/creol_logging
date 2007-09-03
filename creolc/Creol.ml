@@ -94,7 +94,7 @@ module Type =
 
     let get_from_label =
       function
-	  Application ("Label", args) -> args
+	  Application ("Label", args) -> Tuple args
 	| _ -> assert false
 
   end
@@ -631,22 +631,22 @@ module VarDecl =
 module Method =
   struct
     type t =
-      { meth_name: string;
-        meth_inpars: VarDecl.t list;
-        meth_outpars: VarDecl.t list;
-        meth_vars: VarDecl.t list;
-        meth_body: Statement.t option }
+      { name: string;
+        inpars: VarDecl.t list;
+        outpars: VarDecl.t list;
+        vars: VarDecl.t list;
+        body: Statement.t option }
 
     let find_variable meth name =
       let find l = List.find (fun { VarDecl.name = n } -> n = name) l in
       try
-	find meth.meth_vars
+	find meth.vars
       with
 	  Not_found ->
 	    try
-	      find meth.meth_inpars
+	      find meth.inpars
 	    with
-		Not_found -> find meth.meth_outpars
+		Not_found -> find meth.outpars
 
   end
 
@@ -964,11 +964,18 @@ module Program =
 	  its super-interfaces.  *)
       let rec find_methods_in_interface i =
         let here =
+	  let get_type vl =
+	    Type.Tuple (List.map (fun v -> v.VarDecl.var_type) vl)
+	  in
 	  List.flatten
 	    (List.map
 	        (fun w ->
-		  List.filter (fun { Method.meth_name = m } -> m = meth)
-		    w.With.methods) 
+		  List.filter
+		    (fun { Method.name = m; inpars = i; outpars = o } ->
+		      m = meth &&
+			(subtype_p program empty ins (get_type i)) &&
+			(subtype_p program empty (get_type o) outs))
+		    w.With.methods)
 		(List.filter
 		    (function
 			{ With.co_interface = Some n } ->
@@ -995,12 +1002,25 @@ module Program =
 	  the signature [(coiface, inputs, outputs)] in class [cls]
 	  and its super-classes.  *)
       let rec find_methods_in_class c =
-        let here =
+	let here =
+	  let get_type vl =
+	    Type.Tuple (List.map (fun v -> v.VarDecl.var_type) vl)
+	  in
 	  List.flatten
 	    (List.map
 	        (fun w ->
-		  List.filter (fun m -> m.Method.meth_name = meth)
-		    w.With.methods) c.Class.with_defs)
+		  List.filter
+		    (fun { Method.name = m; inpars = i; outpars = o } ->
+		      m = meth &&
+			(subtype_p program empty ins (get_type i)) &&
+			(subtype_p program empty (get_type o) outs))
+		    w.With.methods)
+		(List.filter
+		    (function
+			{ With.co_interface = Some n } ->
+			  subtype_p program empty Type.Internal (Type.Basic n)
+		      | _ -> true)
+		    c.Class.with_defs))
         and supers = List.map fst c.Class.inherits
         in
 	  List.fold_left

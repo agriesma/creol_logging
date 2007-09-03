@@ -3,7 +3,7 @@
 interface Sieve
 begin
 with Any
-  op send(in x: Nat; out r: Bool)
+  op send(in x: Int; out r: Bool)
 end
 
 class Generator
