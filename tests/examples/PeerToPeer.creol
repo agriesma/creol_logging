@@ -25,7 +25,7 @@ interface DB
 begin
   with ToServer
     op getFile(in fId: String; out file: List[List[Data]])
-    op getLength(in fId: String; out length: Nat)
+    op getLength(in fId: String; out length: Int)
     op storeFile(in fId: String, file: List[Data])
     op listFiles(out fList: List[String])
 end
@@ -36,7 +36,7 @@ begin
   with ToServer
     op enquire(out files: List[String]) ==
       await db.listFiles(; files)
-    op getLength(in fId: String; out lth: Nat) ==
+    op getLength(in fId: String; out lth: Int) ==
       await db.getLength(fId; lth)
     op getPack(in fId: String, pNbr: Int; out pack: List[Data]) ==
       var f: List[List[Data]];
@@ -57,7 +57,7 @@ begin
     op reqFile(in sId: ToServer, fId: String) ==
       var file: List[Data];
       var pack: List[Data];
-      var lth: Nat;
+      var lth: Int;
       await sId.getLength(fId, lth; pack);
       while (lth > 0) do
 	await sId.getPack(fId, lth; pack);
