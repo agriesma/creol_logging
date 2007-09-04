@@ -14,7 +14,7 @@ end
 
 class BoundedBuffer implements Buffer
 begin 
-  var buffer: List := empty
+  var buffer: List[Data] := nil
   var max: Int := 10
   var n: Int := 0
 

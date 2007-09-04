@@ -876,15 +876,17 @@ module Program =
 
     let rec subtype_p program gamma s t =
       (** Decides whether [s] is a subtype of [t] in [program]. *)
-      (* FIXME: For simplicity we define subtype relation to be structural
-         equality *)
       match (s, t) with
 	  (_, Type.Basic "Data") ->
 	    (* Everything of kind * is a subtype of data *)
 	    (* FIXME: Check kinding of s *)
-	    true	    
+	    true
 	| (Type.Basic st, Type.Basic tt) ->
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
+	| (Type.Basic _, Type.Intersection l) ->
+	    List.for_all (subtype_p program gamma s) l
+	| (Type.Basic _, Type.Variable _) -> assert false
+	| (Type.Basic _, _) -> false
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
 	    (subtype_p program gamma (Type.Basic sc) (Type.Basic tc)) &&
 	      begin
@@ -893,6 +895,8 @@ module Program =
 		with
 		    Invalid_argument _ -> false
 	      end
+	| (Type.Application _, Type.Variable _) -> assert false
+	| (Type.Application _, _) -> false
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	      try 
@@ -900,6 +904,8 @@ module Program =
 	      with
 		  Invalid_argument _ -> false
 	    end
+	| (Type.Tuple _, Type.Variable _) -> assert false
+	| (Type.Tuple _, _) -> false
 	| (Type.Intersection sa, Type.Intersection ta) ->
 	    List.exists
 	      (fun s ->
@@ -909,18 +915,84 @@ module Program =
 	| (Type.Internal, Type.Internal) -> true
 	| (Type.Internal, _) -> false
 	| (_, Type.Internal) -> false
-    and promote program gamma =
-      function
-	  Type.Variable v ->
-	      Hashtbl.find gamma v
-	| Type.Application (s, t) -> Type.Application(s, t)
-	| _ -> raise (Failure "promote")
+	| (Type.Variable _, _) -> assert false
 
     let meet ~program types =
       if (List.for_all (fun x -> (List.hd types) = x) types) then
 	(List.hd types)
       else
 	Type.data
+
+    let rec substitute v t =
+      function
+	  Type.Variable x when x = v -> t
+	| Type.Application (c, l) ->
+	    Type.Application(c, List.map (substitute v t) l)
+	| Type.Tuple l -> Type.Tuple (List.map (substitute v t) l)
+	| Type.Intersection l ->
+	    Type.Intersection (List.map (substitute v t) l)
+	| ty -> ty (* Internal and Basic *)
+
+    let rec apply_substitution subst =
+      function
+	  Type.Variable x -> List.assoc x subst
+	| Type.Application (c, l) ->
+	    Type.Application (c, List.map (apply_substitution subst) l)
+	| Type.Tuple l -> Type.Tuple (List.map (apply_substitution subst) l)
+	| Type.Intersection l ->
+	    Type.Intersection (List.map (apply_substitution subst) l)
+	| ty -> ty
+
+    let rec occurs_p v =
+      function
+	  Type.Variable x when v = x -> true
+	| Type.Application (_, l) -> List.exists (occurs_p v) l
+	| Type.Tuple l -> List.exists (occurs_p v) l
+	| Type.Intersection l -> List.exists (occurs_p v) l
+	| _ -> false
+
+    let generalize res s t =
+      (** In a result substitution, generalise s to t *)
+      List.map (fun (x, u) -> if u = s then (x, t) else (x, u)) res
+
+    let unify program c =
+      let rec do_unify c res =
+	(** Compute the most general unifier for a constraint set [c].
+	    The result is a mapping from variable names to types.
+	    
+	    The constraint set is usually a set of pair of types.  Such
+	    a constraint states that two types are equal in the current
+	    substitution. *)
+	if c = [] then
+	  res
+	else
+	  let s = fst (List.hd c)
+	  and t = snd (List.hd c)
+	  and d = List.tl c
+	  in
+	    match (s, t) with
+		(Type.Basic _, Type.Basic _) ->
+		  if subtype_p program empty s t then
+		    do_unify d (generalize res s t)
+		  else if subtype_p program empty t s then
+		    do_unify d (generalize res t s)
+		  else
+		    raise Not_found
+	      | (Type.Variable x, _) when not (occurs_p x t) ->
+		  do_unify
+		    (List.map
+			(fun (t1, t2) ->
+			  (substitute x t t1, substitute x t t2)) d)
+		    ((x, t)::res)
+	      | (_, Type.Variable x) when not (occurs_p x s) ->
+		  do_unify
+		      (List.map
+			  (fun (t1, t2) ->
+			    (substitute x s t1, substitute x s t2)) d)
+		    ((x, s)::res)
+	      | _ -> raise Not_found
+      in
+	  do_unify c []
 
     let find_functions ~program ~name ~args =
       (** Find all definitions of functions called [name] in
