@@ -91,7 +91,7 @@ let typecheck tree: Declaration.t list =
 	  let narg =
 	    type_check_expression program cls meth coiface arg
 	  in
-	  let narg_t = List.map get_type [narg] in
+	  let narg_t = Type.Tuple (List.map get_type [narg]) in
 	  let restype =
 	    match Program.find_functions program (string_of_unaryop op) narg_t
 	    with
@@ -105,7 +105,7 @@ let typecheck tree: Declaration.t list =
 		  raise (TypeError (Expression.file n, Expression.line n,
 				   ambigous_msg "Unary operator "
 				     (string_of_unaryop op)
-				     (Type.Tuple narg_t)
+				     narg_t
 				     candidates))
 	  in
 	    Unary (set_type n restype, op, narg)
@@ -116,7 +116,7 @@ let typecheck tree: Declaration.t list =
 	    type_check_expression program cls meth coiface arg2
 	  in
 	  let oper_n = string_of_binaryop op 
-	  and nargs_t = List.map get_type [narg1; narg2] in
+	  and nargs_t = Type.Tuple (List.map get_type [narg1; narg2]) in
 	  let cands = Program.find_functions program oper_n nargs_t in
 	  let restype =
 	    match  cands with
@@ -124,14 +124,14 @@ let typecheck tree: Declaration.t list =
 		  raise (TypeError (Expression.file n, Expression.line n,
 				   "Binary operator " ^
 				     (string_of_binaryop op) ^
-				     (Type.as_string (Type.Tuple nargs_t)) ^
+				     (Type.as_string nargs_t) ^
 				     " not defined"))
 	      | [oper] -> oper.Operation.result_type
 	      | candidates ->
 		  raise (TypeError (Expression.file n, Expression.line n,
 				   ambigous_msg "Binary operator "
 				     (string_of_binaryop op)
-				     (Type.Tuple nargs_t)
+				     nargs_t
 				     candidates))
 	  in
 	    Binary (set_type n restype, op, narg1, narg2)
@@ -156,17 +156,19 @@ let typecheck tree: Declaration.t list =
 	    List.map (type_check_expression program cls meth coiface)
 	      args
 	  in
-	  let nargs_t = List.map get_type nargs in
+	  let nargs_t = Type.Tuple (List.map get_type nargs) in
 	  let restype =
 	    match (Program.find_functions program name nargs_t) with
 		[] -> raise (TypeError (Expression.file n, Expression.line n,
-				       "Function " ^ name ^ " not defined"))
+				       "Function " ^ name ^
+					 (Type.as_string nargs_t) ^
+					 " not defined"))
 	      | [oper] -> oper.Operation.result_type
 	      | candidates ->
 		  raise (TypeError (Expression.file n, Expression.line n,
 				   ambigous_msg "Function"
 				     name
-				     (Type.Tuple nargs_t)
+				     nargs_t
 				     candidates))
 	  in
 	    FuncCall (set_type n restype, name, nargs)

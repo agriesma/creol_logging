@@ -250,6 +250,7 @@ module Expression =
     let note =
       function
 	  This a -> a
+	| QualifiedThis (a, _) -> a
 	| Caller a -> a
 	| Now a -> a
 	| Null a -> a
@@ -921,57 +922,47 @@ module Program =
       else
 	Type.data
 
-    let domains_match_p ~program ~params ~args =
-      (** Check whether the actual arguments [args] match the domain
-	  [params] of a function or method. *)
-      try
-	List.for_all2 (fun s t -> subtype_p program empty s t)
-	  args params
-      with
-	  Invalid_argument _ -> false
-
-    let find_functions ~program ~name ~domain =
+    let find_functions ~program ~name ~args =
       (** Find all definitions of functions called [name] in
 	  [program], whose formal parameters are compatible with
-	  [domain].  Returns the empty list if none is found. *)
-      let filter opers =
-	List.filter (fun { Operation.name = n; parameters = p } ->
-	  (n = name) &&
-	    (domains_match_p program (List.map (fun p -> p.VarDecl.var_type) p)
-		domain))
-	  opers
-      in
+	  [domain].  Only return the most specific matches.  Returns
+	  the empty list if none is found. *)
       let candidates =
 	(* Find the set of all operations with the appropriate name. *)
-	List.flatten
-	  (List.map
-	      (function
-		  (Declaration.Datatype d) -> filter d.Datatype.operations
-		| _ -> [])
-	      program)
-      in
-      let more_specific_p c d =
-	(* A candidate [c] is more specific than [d], if it
-	   cannot substitute for [d], i.e., it is less general.  *)
-	let get_type v = v.VarDecl.var_type in
-	    c <> d &&
-	      (subtype_p program empty
-		 (Operation.domain_type c)
-		 (Operation.domain_type d))
+	let filter opers =
+	  List.filter (fun o  ->
+	    (o.Operation.name = name) &&
+	      (subtype_p program empty args (Operation.domain_type o)))
+	    opers
+	in
+	  List.flatten
+	    (List.map
+		(function
+		    (Declaration.Datatype d) -> filter d.Datatype.operations
+		  | _ -> [])
+		program)
       in
       let rec filter_candidates res =
 	(* Filter the most specific elements from the candidate sets.
 	   The list [res] contains the current result set.  *)
-	function
-	    [] -> res
-	  | cand::r ->
-	      if List.exists (fun x -> more_specific_p x cand) res then
-	        filter_candidates res r
-	      else
-	        let re =
-		  List.filter (fun x -> not (more_specific_p x cand)) res
+	  function
+	      [] -> res
+	    | cand::r ->
+		let more_specific_p c d =
+		  (* A candidate [c] is more specific than [d], if it
+		     cannot substitute for [d], i.e., it is less general.  *)
+		  c <> d &&
+		    (subtype_p program empty
+			(Operation.domain_type c)
+			(Operation.domain_type d))
 		in
-	          filter_candidates (cand::re) r
+		  if List.exists (fun x -> more_specific_p x cand) res then
+	            filter_candidates res r
+		  else
+	            let re =
+		      List.filter (fun x -> not (more_specific_p cand x)) res
+		    in
+	              filter_candidates (cand::re) r
       in
 	filter_candidates [] candidates
 
