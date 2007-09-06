@@ -42,6 +42,11 @@ begin
              !loop()
 
   op deliverToys ==
+    var t1: Label[ ];
+    var t2: Label[ ];
+    var t3: Label[ ];
+    var t4: Label[ ];
+    var t5: Label[ ];
 	ctReindeers := 0;
 	t1!head(waitReindeers).harness(); 
 	harnessedReindeers := harnessedReindeers |- head(waitReindeers); 

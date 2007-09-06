@@ -345,7 +345,17 @@ let typecheck tree: Declaration.t list =
     in
     let (expr', constr', _) = type_recon_expression constr freshvargen expr
     in
-    let subst = Program.unify program constr'
+    let subst =
+      try
+	Program.unify program constr'
+      with
+	Failure "unify" ->
+	    let file = Expression.file (Expression.note expr)
+	    and line = string_of_int (Expression.line (Expression.note expr)) 
+	    in 
+	      prerr_endline (file ^ ":" ^ line ^ ": cannot satisfy constraints") ;
+	      Program.prerr_constraint_set constr' ;
+	      exit 1
     in
       substitute_types_in_expression subst expr'
   in

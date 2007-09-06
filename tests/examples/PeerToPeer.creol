@@ -42,15 +42,18 @@ begin
       var f: List[List[Data]];
       await db.getFile(fId; f);
       pack := at(f, pNbr)
+
   with Any
     op availFiles (in sList: List[ToServer];
 		   out files: List[[ToServer , List[Str]]]) ==
+      var l1: Label[ ] ;
+      var l2: Label[List[[ToServer, List[Str]]]] ;
       if (sList = nil) then files := nil
       else
-        l1!hd(sList).enquire();
-        l2!self.availFiles(tail(sList));
-	await l1 && l2;
-	l1?(fList);
+        l1!head(sList).enquire();
+        l2!this.availFiles(tail(sList));
+	await l1? && l2?;
+	l1?();
 	l2?(files)
       end
 

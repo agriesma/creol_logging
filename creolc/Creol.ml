@@ -86,7 +86,9 @@ module Type =
 	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
 	| Tuple p ->
 	    "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Intersection l -> "/* /\\ [" ^ (string_of_creol_type_list l) ^ "] */"
+	| Intersection l -> "/\\ [" ^ (string_of_creol_type_list l) ^ "]"
+	| Disjunction l -> "\\/ [" ^ (string_of_creol_type_list l) ^ "]"
+	| Function (s, t) -> "[" ^ (as_string s) ^ " -> " ^ (as_string t) ^ "]"
 	| Internal -> "/* Internal */"
     and string_of_creol_type_list =
       function
@@ -931,6 +933,12 @@ module Program =
       else
 	Type.data
 
+    let prerr_constraint_set constr =
+      let print_constr (s, t) =
+	prerr_endline ("  " ^ (Type.as_string s) ^ " <: " ^ (Type.as_string t))
+      in
+        List.iter print_constr constr
+
     let rec substitute v t =
       function
 	  Type.Variable x when x = v -> t
@@ -957,6 +965,8 @@ module Program =
 	| Type.Application (_, l) -> List.exists (occurs_p v) l
 	| Type.Tuple l -> List.exists (occurs_p v) l
 	| Type.Intersection l -> List.exists (occurs_p v) l
+	| Type.Disjunction l -> List.exists (occurs_p v) l
+	| Type.Function (s, t) -> (occurs_p v s) || (occurs_p v t)
 	| _ -> false
 
     let subst_more_specific_p program s t =
@@ -1003,14 +1013,16 @@ module Program =
 		  if subtype_p program empty s t then
 		    do_unify d res
 		  else
-		    raise Not_found
+		    raise (Failure "unify")
 	      | (Type.Tuple l1, Type.Tuple l2) ->
 		  if (List.length l1) = (List.length l2) then
 		    do_unify ((List.combine l1 l2)@d) res
 		  else
-		    raise Not_found
+		    raise (Failure "unify")
 	      | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
 		  do_unify ((d1, d2)::(r2, r1)::d) res
+	      | (Type.Application (s1, t1), Type.Application (s2, t2)) when s1 = s2 ->
+		  do_unify ((List.combine t1 t2)@d) res
 	      | (_, Type.Disjunction l) ->
 		  (* This case is essentially handling operator
 		     overloading, but we try to solve the general case,
@@ -1026,15 +1038,19 @@ module Program =
 		    with
 			(* We failed to unify and therefore, this solution
 			   is not applicable, so return the empty list. *)
-			Not_found -> []
+			Failure "unify" -> []
 		  in
 		    begin
 		      match List.flatten (List.map try_unify l) with
-			  [] -> raise Not_found
+			  [] -> raise (Failure "unify")
 			| [res] -> res
 			| cands ->
 			    (* The solution is ambigous, and we want to
-			       get the "best" solution. *)
+			       get the "best" solution.
+
+			       FIXME: If there is more than one best solution
+			       one solution is guessed, which is probably
+			       wrong. *)
 			    find_most_specific program cands
 		    end
 	      | (Type.Variable x, _) when not (occurs_p x t) ->
@@ -1049,7 +1065,7 @@ module Program =
 			(fun (t1, t2) ->
 			  (substitute x s t1, substitute x s t2)) d)
 		    ((x, s)::res)
-	      | _ -> raise Not_found
+	      | _ -> raise (Failure "unify")
       in
 	do_unify c []
 
