@@ -961,13 +961,10 @@ module Program =
 
     let subst_more_specific_p program s t =
       (* Substitutions s and t must have the same support. *)
-      if (List.length s) = (List.length t) then
-	let (keys, _) = List.split s in
-	  List.for_all
-	    (fun v -> subtype_p program empty (List.assoc v s) (List.assoc v t))
-	    keys
-      else
-	false
+      let (keys, _) = List.split s in
+        List.for_all
+          (fun v -> subtype_p program empty (List.assoc v s) (List.assoc v t))
+          keys
 
     let find_most_specific program (substs: ((string * Type.t) list) list) =
       List.fold_left
@@ -1008,7 +1005,10 @@ module Program =
 		  else
 		    raise Not_found
 	      | (Type.Tuple l1, Type.Tuple l2) ->
-		  do_unify ((List.combine l1 l2)@d) res
+		  if (List.length l1) = (List.length l2) then
+		    do_unify ((List.combine l1 l2)@d) res
+		  else
+		    raise Not_found
 	      | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
 		  do_unify ((d1, d2)::(r2, r1)::d) res
 	      | (_, Type.Disjunction l) ->
@@ -1022,14 +1022,14 @@ module Program =
 		     branch of the disjunction in sequence. *)
 		  let try_unify x =
 		    try
-		      do_unify ((s, x)::d) res
+		      [do_unify ((s, x)::d) res]
 		    with
 			(* We failed to unify and therefore, this solution
-			   is not applicable *)
+			   is not applicable, so return the empty list. *)
 			Not_found -> []
 		  in
 		    begin
-		      match List.map try_unify l with
+		      match List.flatten (List.map try_unify l) with
 			  [] -> raise Not_found
 			| [res] -> res
 			| cands ->
