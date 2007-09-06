@@ -27,220 +27,329 @@ open Statement
 
 exception TypeError of string * int * string
 
+type freshvar = FreshVar of Type.t * freshvargen
+and freshvargen = unit -> freshvar
+
+let freshvargen =
+  let rec f n () = FreshVar(Type.Variable ("_" ^ (string_of_int n)), f (n + 1))
+  in f 0
 
 let typecheck tree: Declaration.t list =
-  let cnt = ref 0 in
-  let fresh_name () = let _ = incr cnt in "_" ^ (string_of_int !cnt) in
-  let ambigous_msg thing name arg_t cands =
-    let cand_s { Operation.name = n; parameters = p; result_type = r } =
-      let oper_t =
-	Type.Tuple (List.map (fun v -> v.VarDecl.var_type) p)
-      in
-	name ^ (Type.as_string oper_t) ^ ": " ^ (Type.as_string r)
-    in
-      assert ((List.length cands) > 1) ;
-      thing ^ " " ^ name ^ (Type.as_string arg_t) ^
-	" is ambigous. Possible candidates are: " ^
-	(List.fold_left (fun c o -> c ^ "  " ^ (cand_s o)) "" cands)
-  in
-  let rec type_check_expression program cls meth coiface =
-    function
-	This n ->
-	  This (set_type n (Class.get_type cls))
-      | Caller n ->
-	  Caller (set_type n (Type.Basic coiface))
-      | Null n ->
-	  Null (set_type n (Type.Variable (fresh_name ())))
-      | Nil n ->
-	  Nil (set_type n (Type.Application ("List", [(Type.Variable (fresh_name ()))])))
-      | Now n ->
-	  Now (set_type n (Type.Basic "Time"))
-      | Bool (n, value) ->
-	  Bool (set_type n (Type.Basic "Bool"), value)
-      | Int (n, value) ->
-	  Int (set_type n (Type.Basic "Int"), value)
-      | Float (n, value) ->
-	  Float (set_type n (Type.Basic "Float"), value)
-      | String (n, value) ->
-	  String (set_type n (Type.Basic "String"), value)
-      | Id (n, name) ->
-	  let res =
-	    try
-	      (Method.find_variable meth name).VarDecl.var_type
-	    with
-		Not_found ->
-		  try
-		    (Program.find_attr_decl program cls name).VarDecl.var_type
-		  with
-		      Not_found ->
-			raise (TypeError ((Expression.file n),
-					 (Expression.line n),
-					 "Identifier " ^ name ^
-					   " not declared"))
-	  in
-	    Id (set_type n res, name)
-      | StaticAttr (n, name, (Type.Basic c)) ->
-	  (* FIXME: Here we should also check whether cls is the
-	     current class name or inherited by the current class. *)
-	  let res =
-	    Program.find_attr_decl program (Program.find_class program c) name
-	  in
-	    StaticAttr (set_type n res.VarDecl.var_type, name, (Type.Basic c))
-      | StaticAttr _ -> assert false
-      | Unary (n, op, arg) ->
-	  let narg =
-	    type_check_expression program cls meth coiface arg
-	  in
-	  let narg_t = Type.Tuple (List.map get_type [narg]) in
-	  let restype =
-	    match Program.find_functions program (string_of_unaryop op) narg_t
-	    with
-		[] ->
-		  raise (TypeError (Expression.file n, Expression.line n,
-				   "Unary operator " ^
-				     (string_of_unaryop op) ^
-				     " not defined"))
-	      | [oper] -> oper.Operation.result_type
-	      | candidates ->
-		  raise (TypeError (Expression.file n, Expression.line n,
-				   ambigous_msg "Unary operator "
-				     (string_of_unaryop op)
-				     narg_t
-				     candidates))
-	  in
-	    Unary (set_type n restype, op, narg)
-      | Binary (n, op, arg1, arg2) ->
-	  let narg1 =
-	    type_check_expression program cls meth coiface arg1
-	  and narg2 =
-	    type_check_expression program cls meth coiface arg2
-	  in
-	  let oper_n = string_of_binaryop op 
-	  and nargs_t = Type.Tuple (List.map get_type [narg1; narg2]) in
-	  let cands = Program.find_functions program oper_n nargs_t in
-	  let restype =
-	    match  cands with
-		[] ->
-		  raise (TypeError (Expression.file n, Expression.line n,
-				   "Binary operator " ^
-				     (string_of_binaryop op) ^
-				     (Type.as_string nargs_t) ^
-				     " not defined"))
-	      | [oper] -> oper.Operation.result_type
-	      | candidates ->
-		  raise (TypeError (Expression.file n, Expression.line n,
-				   ambigous_msg "Binary operator "
-				     (string_of_binaryop op)
-				     nargs_t
-				     candidates))
-	  in
-	    Binary (set_type n restype, op, narg1, narg2)
-      | Expression.If (n, cond, iftrue, iffalse) ->
-	  let ncond =
-	    type_check_expression program cls meth coiface cond
-	  and niftrue =
-	    type_check_expression program cls meth coiface iftrue
-	  and niffalse =
-	    type_check_expression program cls meth coiface iffalse
-	  in
-	    if (Expression.get_type ncond) = Type.boolean then
-	      let restype =
-		Program.meet program [get_type niftrue; get_type niffalse]
-	      in
-		Expression.If (set_type n restype, ncond, niftrue, niffalse)
-	    else
-	      raise (TypeError (Expression.file n, Expression.line n,
-			       "Condition must be boolean"))
-      | FuncCall (n, name, args) ->
-	  let nargs =
-	    List.map (type_check_expression program cls meth coiface)
-	      args
-	  in
-	  let nargs_t = Type.Tuple (List.map get_type nargs) in
-	  let restype =
-	    match (Program.find_functions program name nargs_t) with
-		[] -> raise (TypeError (Expression.file n, Expression.line n,
-				       "Function " ^ name ^
-					 (Type.as_string nargs_t) ^
-					 " not defined"))
-	      | [oper] -> oper.Operation.result_type
-	      | candidates ->
-		  raise (TypeError (Expression.file n, Expression.line n,
-				   ambigous_msg "Function"
-				     name
-				     nargs_t
-				     candidates))
-	  in
-	    FuncCall (set_type n restype, name, nargs)
-      | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
-	  let exists =
-	    try
-	      match Method.find_variable meth name with _ -> true
-	    with
-		Not_found -> false
-	  in
-	    if exists then
-	      Label (set_type n (Type.Basic "Bool"), l)
-	    else
-	      raise (TypeError (Expression.file n, Expression.line n,
-			       "Label " ^ name ^ " not declared"))
-      | New (n, Type.Basic c, args) ->
-	  let nargs =
-	    List.map (type_check_expression program cls meth coiface)
-	      args
-	  in
-          let args_t = Type.Tuple (List.map get_type nargs) in
-	  let cls_n =
-	    try
-	      Program.find_class program c
-	    with
-		Not_found ->
-		  raise (TypeError (Expression.file n, Expression.line n,
-				   "Class " ^ c ^ " not defined"))
-	  in
-	  let ctor_t = Type.Tuple
-	    (List.map (fun x -> x.VarDecl.var_type)
-		cls_n.Class.parameters)
-	  in
-	    if
-	      Program.subtype_p program Program.empty args_t ctor_t
-	    then
-	      New (set_type n (Class.get_type (Program.find_class program c)),
-		  Type.Basic c, nargs)
-	    else
-	      raise (TypeError (Expression.file n, Expression.line n,
-			       "Arguments to new " ^ c ^
-				 " mismatch: expected " ^
-				 (Type.as_string ctor_t) ^ " but got " ^
-				 (Type.as_string args_t)))
+  let type_check_expression program cls meth coiface constr expr =
+    (** Type check an expression [expr] in the environment
+	[program cls meth coiface] and the constraint set [constr] by
+	first reconstructing the types and then unification.
 
-      | Expression.Extern _ -> assert false
-      | SSAId (n, name, version) ->
-	  let res =
-	    try
-	      (Method.find_variable meth name).VarDecl.var_type
-	    with
-		Not_found ->
-		  try
-		    (Class.find_attr_decl cls name).VarDecl.var_type
-		  with
-		      Not_found ->
-			raise (TypeError ((Expression.file n),
-					 (Expression.line n),
-					 "Identifier " ^ name ^
-					   " not declared"))
-	  in
-	    SSAId (set_type n res, name, version)
-      | Phi (n, args) ->
-	  let nargs =
-	    List.map (type_check_expression program cls meth coiface)
-	      args
-	  in
-	  let nty =
-	    Program.meet program (List.map get_type nargs)
-	  in
-	    Phi (set_type n nty, nargs)
-  and type_check_lhs program (cls: Class.t) meth coiface =
+	For ML like type systems a constraint set is usually a set of
+	equalities on types, i.e., each constraint looks like [s = t].
+	Here, we use inequalities of the form [s <= t] to represent a
+	constraint in the set.  *)
+    let rec substitute_types_in_expression subst expr =
+      let subst_in_note subst note =
+	{ note with Expression.ty =
+	    Program.apply_substitution subst note.Expression.ty }
+      in
+	match expr with
+	    This n ->
+	      This (subst_in_note subst n)
+	  | QualifiedThis (n, t) ->
+	      QualifiedThis (subst_in_note subst n,
+			    Program.apply_substitution subst t)
+	  | Caller n ->
+	      Caller (subst_in_note subst n)
+	  | Null n ->
+	      Null (subst_in_note subst n)
+	  | Nil n ->
+	      Nil (subst_in_note subst n)
+	  | Now n ->
+	      Now (subst_in_note subst n)
+	  | Bool (n, value) ->
+	      Bool (subst_in_note subst n, value)
+	  | Int (n, value) ->
+	      Int (subst_in_note subst n, value)
+	  | Float (n, value) ->
+	      Float (subst_in_note subst n, value)
+	  | String (n, value) ->
+	      String (subst_in_note subst n, value)
+	  | Tuple (n, l) ->
+	      Tuple (subst_in_note subst n,
+		    List.map (substitute_types_in_expression subst) l)
+	  | ListLit (n, l) -> assert false
+	  | SetLit (n, l) -> assert false
+	  | Id (n, name) ->
+	      Id (subst_in_note subst n, name)
+	  | StaticAttr (n, name, t) ->
+	      StaticAttr (subst_in_note subst n, name, t)
+	  | Unary (n, op, arg) ->
+	      Unary (subst_in_note subst n, op,
+		    substitute_types_in_expression subst arg)
+	  | Binary (n, op, arg1, arg2) ->
+	      Binary (subst_in_note subst n, op,
+		     substitute_types_in_expression subst arg1,
+		     substitute_types_in_expression subst arg2)
+	  | Expression.If (n, cond, iftrue, iffalse) ->
+	      Expression.If (subst_in_note subst n,
+			    substitute_types_in_expression subst cond,
+			    substitute_types_in_expression subst iftrue,
+			    substitute_types_in_expression subst iffalse)
+	  | FuncCall (n, name, args) ->
+	      FuncCall (subst_in_note subst n, name,
+		       List.map (substitute_types_in_expression subst) args)
+	  | Label (n, l) ->
+	      Label (subst_in_note subst n,
+		    substitute_types_in_expression subst l)
+	  | New (n, t, args) ->
+	      New (subst_in_note subst n, Program.apply_substitution subst t,
+		  List.map (substitute_types_in_expression subst) args)
+	  | Expression.Extern _ -> assert false
+	  | SSAId (n, name, version) ->
+	      SSAId (subst_in_note subst n, name, version)
+	  | Phi (n, args) ->
+	      Phi (subst_in_note subst n,
+		  List.map (substitute_types_in_expression subst) args)
+    in
+    let rec type_recon_expression constr fresh_name =
+      (** Reconstruct the type of an expression.
+
+	  Return the expression with updated type annotations (in Pierce,
+	  this would be the type), the function generating a new fresh
+	  type variable, and the new constraint set.  *)
+      function
+	  This n ->
+	    (This (set_type n (Class.get_type cls)), constr, fresh_name)
+	| QualifiedThis (n, t) ->
+	    (QualifiedThis (set_type n t, t), constr, fresh_name)
+	| Caller n ->
+	    (Caller (set_type n (Type.Basic coiface)), constr, fresh_name)
+	| Null n ->
+	    let FreshVar (v, fresh_name') = fresh_name () in
+	      (Null (set_type n v), constr, fresh_name')
+	| Nil n ->
+	    let FreshVar (v, fresh_name') = fresh_name () in
+	      (Nil (set_type n (Type.Application ("List", [v]))), constr, fresh_name')
+	| Now n ->
+	    (Now (set_type n (Type.Basic "Time")), constr, fresh_name)
+	| Bool (n, value) ->
+	    (Bool (set_type n (Type.Basic "Bool"), value), constr, fresh_name)
+	| Int (n, value) ->
+	    (Int (set_type n (Type.Basic "Int"), value), constr, fresh_name)
+	| Float (n, value) ->
+	    (Float (set_type n (Type.Basic "Float"), value), constr, fresh_name)
+	| String (n, value) ->
+	    (String (set_type n (Type.Basic "String"), value), constr, fresh_name)
+	| Tuple (n, l) ->
+	    let (l', constr', fresh_name') =
+	      type_recon_expression_list constr fresh_name l
+	    in
+	      (Tuple (set_type n (Type.Tuple (List.map get_type l')), l'),
+	      constr', fresh_name')
+	| ListLit (n, l) -> assert false
+	| SetLit (n, l) -> assert false
+	| Id (n, name) ->
+	    let res =
+	      try
+		(Method.find_variable meth name).VarDecl.var_type
+	      with
+		  Not_found ->
+		    try
+		      (Program.find_attr_decl program cls name).VarDecl.var_type
+		    with
+			Not_found ->
+			  raise (TypeError ((Expression.file n),
+					   (Expression.line n),
+					   "Identifier " ^ name ^
+					     " not declared"))
+	    in
+	      (Id (set_type n res, name), constr, fresh_name)
+	| StaticAttr (n, name, (Type.Basic c)) ->
+	    (* FIXME: Here we should also check whether cls is the
+	       current class name or inherited by the current class. *)
+	    let res =
+	      Program.find_attr_decl program (Program.find_class program c) name
+	    in
+	      (StaticAttr (set_type n res.VarDecl.var_type, name, (Type.Basic c)), constr, fresh_name)
+	| StaticAttr _ -> assert false
+	| Unary (n, op, arg) ->
+	    let (arg', constr', fresh_name') =
+	      type_recon_expression constr fresh_name arg 
+	    in
+	    let name = string_of_unaryop op in
+	    let ty1 =
+	      match Program.find_functions program name with
+		  [] ->
+		    raise (TypeError (Expression.file n, Expression.line n,
+				     "Unary operator " ^ name ^
+				       " not defined"))
+		| [candidate] ->
+		    (* This is a small optimisation. *)
+		    Type.Function
+		      (Operation.domain_type candidate,
+		      candidate.Operation.result_type)
+		| candidates ->
+		    Type.Disjunction
+		      (List.map (fun o ->
+			Type.Function (Operation.domain_type o,
+				      o.Operation.result_type))
+			  candidates)
+	    in
+	    let ty2 = Type.Tuple [get_type arg'] in
+	    let FreshVar (v, fresh_name'') = fresh_name' () in
+	      (Unary (set_type n v, op, arg'),
+	      (Type.Function (ty2, v), ty1)::constr', fresh_name'')
+	| Binary (n, op, arg1, arg2) ->
+	    let (arg1', constr', fresh_name') =
+	      type_recon_expression constr fresh_name arg1
+	    in
+	    let (arg2', constr'', fresh_name'') =
+	      type_recon_expression constr' fresh_name' arg2 
+	    in
+	    let name = string_of_binaryop op in
+	    let ty1 =
+	      match Program.find_functions program name with
+		  [] ->
+		    raise (TypeError (Expression.file n, Expression.line n,
+				     "Binary operator " ^ name ^
+				       " not defined"))
+		| [candidate] ->
+		    (* This is a small optimisation. *)
+		    Type.Function
+		      (Operation.domain_type candidate,
+		      candidate.Operation.result_type)
+		| candidates ->
+		    Type.Disjunction
+		      (List.map (fun o ->
+			Type.Function (Operation.domain_type o,
+				      o.Operation.result_type))
+			  candidates)
+	    in
+	    let ty2 = Type.Tuple [get_type arg1'; get_type arg2'] in
+	    let FreshVar (v, fresh_name''') = fresh_name'' () in
+	      (Binary (set_type n v, op, arg1', arg2'),
+	      (Type.Function (ty2, v), ty1)::constr'', fresh_name''')
+	| Expression.If (n, cond, iftrue, iffalse) ->
+	    let (ncond, constr', fresh_name') =
+	      type_recon_expression constr fresh_name cond
+	    in let  (niftrue, constr'', fresh_name'') =
+	      type_recon_expression constr' fresh_name' iftrue
+	    in let (niffalse, constr''', fresh_name''') =
+	      type_recon_expression constr'' fresh_name'' iffalse
+	    in
+		 if (Expression.get_type ncond) = Type.boolean then
+		   let restype =
+		     Program.meet program [get_type niftrue; get_type niffalse]
+		   in
+		     (Expression.If (set_type n restype, ncond, niftrue, niffalse),
+		     constr''', fresh_name''')
+		 else
+		   raise (TypeError (Expression.file n, Expression.line n,
+				    "Condition must be boolean"))
+	| FuncCall (n, name, args) ->
+	    let (nargs, constr', fresh_name') =
+	      type_recon_expression_list constr fresh_name args 
+	    in
+	    let ty1 =
+	      match Program.find_functions program name with
+		  [] ->
+		    raise (TypeError (Expression.file n, Expression.line n,
+				     "Function " ^ name ^ " not defined"))
+		| [candidate] ->
+		    (* This is a small optimisation. *)
+		    Type.Function
+		      (Operation.domain_type candidate,
+		      candidate.Operation.result_type)
+		| candidates ->
+		    Type.Disjunction
+		      (List.map (fun o ->
+			Type.Function (Operation.domain_type o,
+				      o.Operation.result_type))
+			  candidates)
+	    in
+	    let ty2 = Type.Tuple (List.map get_type nargs) in
+	    let FreshVar (v, fresh_name'') = fresh_name' () in
+	      (FuncCall (set_type n v, name, nargs),
+	      (Type.Function (ty2, v), ty1)::constr', fresh_name'')
+	| Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
+	    let exists =
+	      try
+		match Method.find_variable meth name with _ -> true
+	      with
+		  Not_found -> false
+	    in
+	      if exists then
+		(Label (set_type n (Type.Basic "Bool"), l), constr, fresh_name)
+	      else
+		raise (TypeError (Expression.file n, Expression.line n,
+				 "Label " ^ name ^ " not declared"))
+	| Label _ -> assert false
+	| New (n, Type.Basic c, args) ->
+	    let (nargs, constr', fresh_name') =
+	      type_recon_expression_list constr fresh_name args
+	    in
+	    let args_t = Type.Tuple (List.map get_type nargs) in
+	    let cls_n =
+	      try
+		Program.find_class program c
+	      with
+		  Not_found ->
+		    raise (TypeError (Expression.file n, Expression.line n,
+				     "Class " ^ c ^ " not defined"))
+	    in
+	    let ctor_t = Type.Tuple
+	      (List.map (fun x -> x.VarDecl.var_type) cls_n.Class.parameters)
+	    in
+	      if
+		Program.subtype_p program Program.empty args_t ctor_t
+	      then
+		(* BOGUS *)
+		(New (set_type n (Class.get_type (Program.find_class program c)),
+		     Type.Basic c, nargs), constr', fresh_name')
+	      else
+		raise (TypeError (Expression.file n, Expression.line n,
+				 "Arguments to new " ^ c ^
+				   " mismatch: expected " ^
+				   (Type.as_string ctor_t) ^ " but got " ^
+				   (Type.as_string args_t)))
+	| New _ -> assert false
+	| Expression.Extern _ -> assert false
+	| SSAId (n, name, version) ->
+	    let res =
+	      try
+		(Method.find_variable meth name).VarDecl.var_type
+	      with
+		  Not_found ->
+		    try
+		      (Class.find_attr_decl cls name).VarDecl.var_type
+		    with
+			Not_found ->
+			  raise (TypeError ((Expression.file n),
+					   (Expression.line n),
+					   "Identifier " ^ name ^
+					     " not declared"))
+	    in
+	      (SSAId (set_type n res, name, version), constr, fresh_name)
+	| Phi (n, args) ->
+	    let (nargs, constr', fresh_name') =
+	      type_recon_expression_list constr fresh_name args
+	    in
+	    let nty =
+	      Program.meet program (List.map get_type nargs)
+	    in
+	      (Phi (set_type n nty, nargs), constr', fresh_name')
+    and type_recon_expression_list constr fresh_name =
+      function
+	  [] -> ([], constr, fresh_name)
+	| e::l ->
+	    let (e', c', f') = type_recon_expression constr fresh_name e in
+	    let (l', c'', f'') = type_recon_expression_list c' f' l in
+	      (e'::l', c'', f'')
+    in
+    let (expr', constr', _) = type_recon_expression constr freshvargen expr
+    in
+    let subst = Program.unify program constr'
+    in
+      substitute_types_in_expression subst expr'
+  in
+  let type_check_lhs program (cls: Class.t) meth coiface =
     function
 	LhsVar (n, name) ->
 	  let res =
@@ -284,17 +393,18 @@ let typecheck tree: Declaration.t list =
 					   " not declared"))
 	  in
 	    LhsSSAId (set_type n res, name, version)
-  and type_check_statement program cls meth coiface =
+  in
+  let rec type_check_statement program cls meth coiface =
     function
 	Skip n -> Skip n
       | Release n -> Release n
       | Assert (n, e) ->
-	  Assert (n, type_check_expression program cls meth coiface e)
+	  Assert (n, type_check_expression program cls meth coiface [] e)
       | Assign (n, lhs, rhs) ->
 	  let nlhs =
 	    List.map (type_check_lhs program cls meth coiface) lhs
 	  and nrhs =
-	    List.map (type_check_expression program cls meth coiface) rhs
+	    List.map (type_check_expression program cls meth coiface []) rhs
 	  in
 	  let lhs_t = Type.Tuple (List.map Expression.get_lhs_type nlhs)
 	  and rhs_t = Type.Tuple (List.map Expression.get_type nrhs)
@@ -308,14 +418,14 @@ let typecheck tree: Declaration.t list =
 				 (Type.as_string lhs_t) ^ " but got " ^
 				 (Type.as_string rhs_t)))
       | Await (n, e) ->
-	  Await (n, type_check_expression program cls meth coiface e)
+	  Await (n, type_check_expression program cls meth coiface [] e)
       | Posit (n, e) ->
-	  Posit (n, type_check_expression program cls meth coiface e)
+	  Posit (n, type_check_expression program cls meth coiface [] e)
       | AsyncCall (n, None, callee, m, _, args) ->
 	  let ncallee =
-	    type_check_expression program cls meth coiface callee
+	    type_check_expression program cls meth coiface [] callee
 	  and nargs =
-	    List.map (type_check_expression program cls meth coiface)
+	    List.map (type_check_expression program cls meth coiface [])
 	      args
 	  in
 	  let callee_t = (Expression.get_type ncallee) in
@@ -352,9 +462,9 @@ let typecheck tree: Declaration.t list =
 	      end
       | AsyncCall (n, Some label, callee, m, _, args) ->
 	  let ncallee =
-	    type_check_expression program cls meth coiface callee
+	    type_check_expression program cls meth coiface [] callee
 	  and nargs =
-	    List.map (type_check_expression program cls meth coiface)
+	    List.map (type_check_expression program cls meth coiface [])
 	      args
 	  and nlabel =
 	    type_check_lhs program cls meth coiface label
@@ -363,7 +473,7 @@ let typecheck tree: Declaration.t list =
 	  let co =
 	    let iface =
 	      try
-	        Program.find_interface program (Type.as_string callee_t)
+		Program.find_interface program (Type.as_string callee_t)
 	      with
 	          Not_found ->
 		    raise (TypeError (file n, line n,
@@ -371,7 +481,7 @@ let typecheck tree: Declaration.t list =
 				       " not defined"))
 	    in
 	      try
-	        Interface.cointerface iface
+		Interface.cointerface iface
 	      with
 		  Failure _ ->
 		    raise (TypeError (file n, line n,
@@ -410,7 +520,7 @@ let typecheck tree: Declaration.t list =
 	      end
       | Reply (n, label, retvals) -> 
 	  let nlabel =
-	    type_check_expression program cls meth coiface label
+	    type_check_expression program cls meth coiface [] label
 	  and nretvals =
 	    List.map (type_check_lhs program cls meth coiface) retvals
 	  in
@@ -426,8 +536,7 @@ let typecheck tree: Declaration.t list =
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program cls meth coiface)
-	      args
+	    List.map (type_check_expression program cls meth coiface []) args
 	  in
 	  let signature =
 	    (Type.Internal,
@@ -447,8 +556,7 @@ let typecheck tree: Declaration.t list =
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program cls meth coiface)
-	      args
+	    List.map (type_check_expression program cls meth coiface []) args
 	  and nlabel =
 	    type_check_lhs program cls meth coiface label
 	  in
@@ -467,10 +575,9 @@ let typecheck tree: Declaration.t list =
 				 " does not provide method " ^ m))
       | SyncCall (n, callee, m, _, args, retvals) ->
 	  let ncallee =
-	    type_check_expression program cls meth coiface callee
+	    type_check_expression program cls meth coiface [] callee
 	  and nargs =
-	    List.map (type_check_expression program cls meth coiface)
-	      args
+	    List.map (type_check_expression program cls meth coiface []) args
 	  and nouts =
 	    List.map (type_check_lhs program cls meth coiface) retvals
 	  in
@@ -486,7 +593,7 @@ let typecheck tree: Declaration.t list =
 				       " not defined"))
 	    in
 	      try
-	        Interface.cointerface iface
+		Interface.cointerface iface
 	      with
 		  Failure _ ->
 		    raise (TypeError (file n, line n,
@@ -523,9 +630,9 @@ let typecheck tree: Declaration.t list =
 	      end
       | AwaitSyncCall (n, callee, m, _, args, retvals) ->
 	  let ncallee =
-	    type_check_expression program cls meth coiface callee
+	    type_check_expression program cls meth coiface [] callee
 	  and nargs =
-	    List.map (type_check_expression program cls meth coiface)
+	    List.map (type_check_expression program cls meth coiface [])
 	      args
 	  and nouts =
 	    List.map (type_check_lhs program cls meth coiface) retvals
@@ -566,7 +673,7 @@ let typecheck tree: Declaration.t list =
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program cls meth coiface)
+	    List.map (type_check_expression program cls meth coiface [])
 	      args
 	  and nouts =
 	    List.map (type_check_lhs program cls meth coiface) retvals
@@ -590,7 +697,7 @@ let typecheck tree: Declaration.t list =
 	  (* FIXME:  Check the upper bound and lower bound constraints
 	     for static resolution *)
 	  let nargs =
-	    List.map (type_check_expression program cls meth coiface)
+	    List.map (type_check_expression program cls meth coiface [])
 	      args
 	  and nouts =
 	    List.map (type_check_lhs program cls meth coiface) retvals
@@ -612,16 +719,16 @@ let typecheck tree: Declaration.t list =
 				 " does not provide method " ^ m))
       | Tailcall _ -> assert false
       | If (n, cond, iftrue, iffalse) ->
-	  If (n, type_check_expression program cls meth coiface cond,
+	  If (n, type_check_expression program cls meth coiface [] cond,
 	     type_check_statement program cls meth coiface iftrue,
 	     type_check_statement program cls meth coiface iffalse)
       | While (n, cond, None, body) ->
-	  While (n, type_check_expression program cls meth coiface cond,
+	  While (n, type_check_expression program cls meth coiface [] cond,
 		None,
 		type_check_statement program cls meth coiface body)
       | While (n, cond, Some inv, body) ->
-	  While (n, type_check_expression program cls meth coiface cond,
-		Some (type_check_expression program cls meth coiface inv),
+	  While (n, type_check_expression program cls meth coiface [] cond,
+		Some (type_check_expression program cls meth coiface [] inv),
 		type_check_statement program cls meth coiface body)
       | Sequence (n, s1, s2) ->
 	  let ns1 = type_check_statement program cls meth coiface s1 in

@@ -36,7 +36,9 @@ module Type =
 
     type t =
 	(** The abstract syntax of types in Creol. *)
-	Basic of string
+	| Internal
+	  (** The co-interface of internal calls *)
+	| Basic of string
 	  (** A basic type. *)
 	| Variable of string
 	    (** A type variable. *)
@@ -49,8 +51,14 @@ module Type =
 		do not have concrete syntax. Usually, an intersection
 		type arises as the type of the expression {\c this},
 		and in very rare circumstances during type inference. *)
-	| Internal
-	    (** The co-interface of internal calls *)
+	| Disjunction of t list
+	    (** The type is an intersection type.  Intersection types
+		do not have concrete syntax. Usually, an intersection
+		type arises as the type of the expression {\c this},
+		and in very rare circumstances during type inference. *)
+	| Function of t * t
+	    (** The type of a function.  This type does not have a concrete
+		syntax, but is created during type checking. *)
     and field =
 	(** The declaration of a field of a structure or a variant. *)
 	{ field_name: string; (** Name of this field. *)
@@ -951,6 +959,22 @@ module Program =
 	| Type.Intersection l -> List.exists (occurs_p v) l
 	| _ -> false
 
+    let subst_more_specific_p program s t =
+      (* Substitutions s and t must have the same support. *)
+      if (List.length s) = (List.length t) then
+	let (keys, _) = List.split s in
+	  List.for_all
+	    (fun v -> subtype_p program empty (List.assoc v s) (List.assoc v t))
+	    keys
+      else
+	false
+
+    let find_most_specific program (substs: ((string * Type.t) list) list) =
+      List.fold_left
+	(fun s t -> if subst_more_specific_p program s t then s else t)
+	(List.hd substs)
+	(List.tl substs)
+
     let generalize res s t =
       (** In a result substitution, generalise s to t *)
       List.map (fun (x, u) -> if u = s then (x, t) else (x, u)) res
@@ -972,12 +996,47 @@ module Program =
 	  in
 	    match (s, t) with
 		(Type.Basic _, Type.Basic _) ->
-		  if subtype_p program empty s t then
+		  (*
+		    if subtype_p program empty s t then
 		    do_unify d (generalize res s t)
-		  else if subtype_p program empty t s then
+		    else if subtype_p program empty t s then
 		    do_unify d (generalize res t s)
+		    else
+		    raise Not_found *)
+		  if subtype_p program empty s t then
+		    do_unify d res
 		  else
 		    raise Not_found
+	      | (Type.Tuple l1, Type.Tuple l2) ->
+		  do_unify ((List.combine l1 l2)@d) res
+	      | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
+		  do_unify ((d1, d2)::(r2, r1)::d) res
+	      | (_, Type.Disjunction l) ->
+		  (* This case is essentially handling operator
+		     overloading, but we try to solve the general case,
+		     here, anyhow, because this is probably simpler.
+
+		     We find a solution to the constraint set if there
+		     is one solution to the problem.  We will
+		     therefore split the constraint set and try each
+		     branch of the disjunction in sequence. *)
+		  let try_unify x =
+		    try
+		      do_unify ((s, x)::d) res
+		    with
+			(* We failed to unify and therefore, this solution
+			   is not applicable *)
+			Not_found -> []
+		  in
+		    begin
+		      match List.map try_unify l with
+			  [] -> raise Not_found
+			| [res] -> res
+			| cands ->
+			    (* The solution is ambigous, and we want to
+			       get the "best" solution. *)
+			    find_most_specific program cands
+		    end
 	      | (Type.Variable x, _) when not (occurs_p x t) ->
 		  do_unify
 		    (List.map
@@ -986,57 +1045,27 @@ module Program =
 		    ((x, t)::res)
 	      | (_, Type.Variable x) when not (occurs_p x s) ->
 		  do_unify
-		      (List.map
-			  (fun (t1, t2) ->
-			    (substitute x s t1, substitute x s t2)) d)
+		    (List.map
+			(fun (t1, t2) ->
+			  (substitute x s t1, substitute x s t2)) d)
 		    ((x, s)::res)
 	      | _ -> raise Not_found
       in
-	  do_unify c []
+	do_unify c []
 
-    let find_functions ~program ~name ~args =
+    let find_functions ~program ~name =
       (** Find all definitions of functions called [name] in
 	  [program], whose formal parameters are compatible with
 	  [domain].  Only return the most specific matches.  Returns
 	  the empty list if none is found. *)
-      let candidates =
-	(* Find the set of all operations with the appropriate name. *)
-	let filter opers =
-	  List.filter (fun o  ->
-	    (o.Operation.name = name) &&
-	      (subtype_p program empty args (Operation.domain_type o)))
-	    opers
-	in
-	  List.flatten
-	    (List.map
-		(function
-		    (Declaration.Datatype d) -> filter d.Datatype.operations
-		  | _ -> [])
-		program)
-      in
-      let rec filter_candidates res =
-	(* Filter the most specific elements from the candidate sets.
-	   The list [res] contains the current result set.  *)
-	  function
-	      [] -> res
-	    | cand::r ->
-		let more_specific_p c d =
-		  (* A candidate [c] is more specific than [d], if it
-		     cannot substitute for [d], i.e., it is less general.  *)
-		  c <> d &&
-		    (subtype_p program empty
-			(Operation.domain_type c)
-			(Operation.domain_type d))
-		in
-		  if List.exists (fun x -> more_specific_p x cand) res then
-	            filter_candidates res r
-		  else
-	            let re =
-		      List.filter (fun x -> not (more_specific_p cand x)) res
-		    in
-	              filter_candidates (cand::re) r
-      in
-	filter_candidates [] candidates
+      List.flatten
+	(List.map
+	    (function
+		Declaration.Datatype d ->
+		  List.filter (fun o  ->
+		    o.Operation.name = name) d.Datatype.operations
+	      | _ -> [])
+	    program)
 
     let interface_find_methods ~program ~iface ~meth coiface ins outs =
       (** Find all definitions of a method called [name] that matches
