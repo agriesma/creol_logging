@@ -23,6 +23,4 @@
 
 open Creol
 
-exception TypeError of string * int * string
-
 val typecheck: Declaration.t list -> Declaration.t list

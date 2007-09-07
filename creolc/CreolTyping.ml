@@ -25,7 +25,7 @@ open Creol
 open Expression
 open Statement
 
-exception TypeError of string * int * string
+exception Type_error of string * int * string
 
 type freshvar = FreshVar of Type.t * freshvargen
 and freshvargen = unit -> freshvar
@@ -155,7 +155,7 @@ let typecheck tree: Declaration.t list =
 		      (Program.find_attr_decl program cls name).VarDecl.var_type
 		    with
 			Not_found ->
-			  raise (TypeError ((Expression.file n),
+			  raise (Type_error ((Expression.file n),
 					   (Expression.line n),
 					   "Identifier " ^ name ^
 					     " not declared"))
@@ -177,7 +177,7 @@ let typecheck tree: Declaration.t list =
 	    let ty1 =
 	      match Program.find_functions program name with
 		  [] ->
-		    raise (TypeError (Expression.file n, Expression.line n,
+		    raise (Type_error (Expression.file n, Expression.line n,
 				     "Unary operator " ^ name ^
 				       " not defined"))
 		| [candidate] ->
@@ -207,7 +207,7 @@ let typecheck tree: Declaration.t list =
 	    let ty1 =
 	      match Program.find_functions program name with
 		  [] ->
-		    raise (TypeError (Expression.file n, Expression.line n,
+		    raise (Type_error (Expression.file n, Expression.line n,
 				     "Binary operator " ^ name ^
 				       " not defined"))
 		| [candidate] ->
@@ -241,7 +241,7 @@ let typecheck tree: Declaration.t list =
 		     (Expression.If (set_type n restype, ncond, niftrue, niffalse),
 		     constr''', fresh_name''')
 		 else
-		   raise (TypeError (Expression.file n, Expression.line n,
+		   raise (Type_error (Expression.file n, Expression.line n,
 				    "Condition must be boolean"))
 	| FuncCall (n, name, args) ->
 	    let (nargs, constr', fresh_name') =
@@ -250,7 +250,7 @@ let typecheck tree: Declaration.t list =
 	    let ty1 =
 	      match Program.find_functions program name with
 		  [] ->
-		    raise (TypeError (Expression.file n, Expression.line n,
+		    raise (Type_error (Expression.file n, Expression.line n,
 				     "Function " ^ name ^ " not defined"))
 		| [candidate] ->
 		    (* This is a small optimisation. *)
@@ -278,7 +278,7 @@ let typecheck tree: Declaration.t list =
 	      if exists then
 		(Label (set_type n (Type.Basic "Bool"), l), constr, fresh_name)
 	      else
-		raise (TypeError (Expression.file n, Expression.line n,
+		raise (Type_error (Expression.file n, Expression.line n,
 				 "Label " ^ name ^ " not declared"))
 	| Label _ -> assert false
 	| New (n, Type.Basic c, args) ->
@@ -291,7 +291,7 @@ let typecheck tree: Declaration.t list =
 		Program.find_class program c
 	      with
 		  Not_found ->
-		    raise (TypeError (Expression.file n, Expression.line n,
+		    raise (Type_error (Expression.file n, Expression.line n,
 				     "Class " ^ c ^ " not defined"))
 	    in
 	    let ctor_t = Type.Tuple
@@ -304,7 +304,7 @@ let typecheck tree: Declaration.t list =
 		(New (set_type n (Class.get_type (Program.find_class program c)),
 		     Type.Basic c, nargs), constr', fresh_name')
 	      else
-		raise (TypeError (Expression.file n, Expression.line n,
+		raise (Type_error (Expression.file n, Expression.line n,
 				 "Arguments to new " ^ c ^
 				   " mismatch: expected " ^
 				   (Type.as_string ctor_t) ^ " but got " ^
@@ -321,7 +321,7 @@ let typecheck tree: Declaration.t list =
 		      (Class.find_attr_decl cls name).VarDecl.var_type
 		    with
 			Not_found ->
-			  raise (TypeError ((Expression.file n),
+			  raise (Type_error ((Expression.file n),
 					   (Expression.line n),
 					   "Identifier " ^ name ^
 					     " not declared"))
@@ -371,7 +371,7 @@ let typecheck tree: Declaration.t list =
 		    (Class.find_attr_decl cls name).VarDecl.var_type
 		  with
 		      Not_found ->
-			raise (TypeError ((Expression.file n),
+			raise (Type_error ((Expression.file n),
 					 (Expression.line n),
 					 "Identifier " ^ name ^
 					   " not declared"))
@@ -397,7 +397,7 @@ let typecheck tree: Declaration.t list =
 		    (Class.find_attr_decl cls name).VarDecl.var_type
 		  with
 		      Not_found ->
-			raise (TypeError ((Expression.file n),
+			raise (Type_error ((Expression.file n),
 					 (Expression.line n),
 					 "Identifier " ^ name ^
 					   " not declared"))
@@ -423,7 +423,7 @@ let typecheck tree: Declaration.t list =
 	    then
 	      Assign (n, nlhs, nrhs)
 	    else
-	      raise (TypeError (file n, line n,
+	      raise (Type_error (file n, line n,
 			       "Type mismatch in assignment: Expected " ^
 				 (Type.as_string lhs_t) ^ " but got " ^
 				 (Type.as_string rhs_t)))
@@ -446,7 +446,7 @@ let typecheck tree: Declaration.t list =
 	  let signature =
 	    (co, Type.Tuple (List.map Expression.get_type nargs), Type.data)
 	  in
-	    if (Class.contracts_p cls co) &&
+	    if (Program.contracts_p program cls co) &&
 	      (Program.interface_provides_p program
 		  (Program.find_interface program
 		      (Type.as_string (Expression.get_type ncallee)))
@@ -458,13 +458,13 @@ let typecheck tree: Declaration.t list =
 	      AsyncCall (n, None, ncallee, m, signature, nargs)
 	    else
 	      begin
-		if not (Class.contracts_p cls co) then
-		  raise (TypeError (file n, line n,
+		if not (Program.contracts_p program cls co) then
+		  raise (Type_error (file n, line n,
 				   "Class " ^ cls.Class.name ^
 				     " does not contract interface " ^
 				     (Type.as_string co)))
 		else
-		  raise (TypeError (file n, line n,
+		  raise (Type_error (file n, line n,
 				   "Interface " ^ (Type.as_string callee_t) ^
 				     " does not provide method " ^ m ^
 				     " with inputs " ^
@@ -486,7 +486,7 @@ let typecheck tree: Declaration.t list =
 		Program.find_interface program (Type.as_string callee_t)
 	      with
 	          Not_found ->
-		    raise (TypeError (file n, line n,
+		    raise (Type_error (file n, line n,
 				     "Callee's interface " ^ (Type.as_string callee_t) ^
 				       " not defined"))
 	    in
@@ -494,7 +494,7 @@ let typecheck tree: Declaration.t list =
 		Interface.cointerface iface
 	      with
 		  Failure _ ->
-		    raise (TypeError (file n, line n,
+		    raise (Type_error (file n, line n,
 				     "Method " ^ m ^
 				       " not provided in empty interface " ^
 				       iface.Interface.name))
@@ -503,7 +503,7 @@ let typecheck tree: Declaration.t list =
 	    (co, Type.Tuple (List.map Expression.get_type nargs),
 	    (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	  in
-	    if (Class.contracts_p cls co) &&
+	    if (Program.contracts_p program cls co) &&
 	      (Program.interface_provides_p program
 		  (Program.find_interface program
 		      (Type.as_string callee_t))
@@ -514,13 +514,13 @@ let typecheck tree: Declaration.t list =
 	      AsyncCall (n, Some nlabel, ncallee, m, signature, nargs)
 	    else
 	      begin
-		if not (Class.contracts_p cls co) then
-		  raise (TypeError (file n, line n,
+		if not (Program.contracts_p program cls co) then
+		  raise (Type_error (file n, line n,
 				   "Class " ^ cls.Class.name ^
 				     " does not contract interface " ^
 				     (Type.as_string co)))
 		else
-		  raise (TypeError (file n, line n,
+		  raise (Type_error (file n, line n,
 				   "Interface " ^ (Type.as_string callee_t) ^
 				     " does not provide method " ^ m  ^
 				     " with inputs " ^
@@ -540,7 +540,7 @@ let typecheck tree: Declaration.t list =
 	    then
 	      Reply (n, nlabel, nretvals)
 	    else
-	      raise (TypeError (file n, line n, "Type mismatch"))
+	      raise (Type_error (file n, line n, "Type mismatch"))
       | Free (n, args) -> assert false
       | LocalAsyncCall (n, None, m, _, lb, ub, args) ->
 	  (* FIXME:  Check the upper bound and lower bound constraints
@@ -559,7 +559,7 @@ let typecheck tree: Declaration.t list =
 	    then
 	      LocalAsyncCall (n, None, m, signature, lb, ub, nargs)
 	    else
-	      raise (TypeError (file n, line n,
+	      raise (Type_error (file n, line n,
 			       "Class " ^ cls.Class.name ^
 				 " does not provide method " ^ m))
       | LocalAsyncCall (n, Some label, m, _, lb, ub, args) ->
@@ -580,7 +580,7 @@ let typecheck tree: Declaration.t list =
 	    then
 	      LocalAsyncCall (n, Some nlabel, m, signature, lb, ub, nargs)
 	    else
-	      raise (TypeError (file n, line n,
+	      raise (Type_error (file n, line n,
 			       "Class " ^ cls.Class.name ^
 				 " does not provide method " ^ m))
       | SyncCall (n, callee, m, _, args, retvals) ->
@@ -598,7 +598,7 @@ let typecheck tree: Declaration.t list =
 		Program.find_interface program (Type.as_string callee_t)
 	      with
 		  Not_found -> 
-		    raise (TypeError (file n, line n,
+		    raise (Type_error (file n, line n,
 				     "Callee's interface " ^ (Type.as_string callee_t) ^
 				       " not defined"))
 	    in
@@ -606,7 +606,7 @@ let typecheck tree: Declaration.t list =
 		Interface.cointerface iface
 	      with
 		  Failure _ ->
-		    raise (TypeError (file n, line n,
+		    raise (Type_error (file n, line n,
 				     "Method " ^ m ^
 				       " not provided in empty interface " ^
 				       iface.Interface.name))
@@ -616,7 +616,7 @@ let typecheck tree: Declaration.t list =
 	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
 	      
 	  in
-	    if (Class.contracts_p cls co) &&
+	    if (Program.contracts_p program cls co) &&
 	      (Program.interface_provides_p program
 		  (Program.find_interface program
 		      (Type.as_string callee_t))
@@ -628,13 +628,13 @@ let typecheck tree: Declaration.t list =
 	      SyncCall (n, ncallee, m, signature, nargs, nouts)
 	    else
 	      begin
-		if not (Class.contracts_p cls co) then
-		  raise (TypeError (file n, line n,
+		if not (Program.contracts_p program cls co) then
+		  raise (Type_error (file n, line n,
 				   "Class " ^ cls.Class.name ^
 				     " does not contract interface " ^
 				     (Type.as_string co)))
 		else
-		  raise (TypeError (file n, line n,
+		  raise (Type_error (file n, line n,
 				   "Interface " ^ (Type.as_string callee_t) ^
 				     " does not provide method " ^ m))
 	      end
@@ -657,7 +657,7 @@ let typecheck tree: Declaration.t list =
 	    (Type.Tuple (List.map Expression.get_lhs_type nouts)))
 	      
 	  in
-	    if (Class.contracts_p cls co) &&
+	    if (Program.contracts_p program cls co) &&
 	      (Program.interface_provides_p program
 		  (Program.find_interface program
 		      (Type.as_string callee_t))
@@ -669,13 +669,13 @@ let typecheck tree: Declaration.t list =
 	      AwaitSyncCall (n, ncallee, m, signature, nargs, nouts)
 	    else
 	      begin
-		if not (Class.contracts_p cls co) then
-		  raise (TypeError (file n, line n,
+		if not (Program.contracts_p program cls co) then
+		  raise (Type_error (file n, line n,
 				   "Class " ^ cls.Class.name ^
 				     " does not contract interface " ^
 				     (Type.as_string co)))
 		else
-		  raise (TypeError (file n, line n,
+		  raise (Type_error (file n, line n,
 				   "Interface " ^ (Type.as_string callee_t) ^
 				     " does not provide method " ^ m))
 	      end	  
@@ -700,7 +700,7 @@ let typecheck tree: Declaration.t list =
 	    then
 	      LocalSyncCall (n, m, signature, lb, ub, nargs, nouts)
 	    else
-	      raise (TypeError (file n, line n,
+	      raise (Type_error (file n, line n,
 			       "Class " ^ cls.Class.name ^
 				 " does not provide method " ^ m))
       | AwaitLocalSyncCall (n, m, _, lb, ub, args, retvals) ->
@@ -724,7 +724,7 @@ let typecheck tree: Declaration.t list =
 	    then
 	      AwaitLocalSyncCall (n, m, signature, lb, ub, nargs, nouts)
 	    else
-	      raise (TypeError (file n, line n,
+	      raise (Type_error (file n, line n,
 			       "Class " ^ cls.Class.name ^
 				 " does not provide method " ^ m))
       | Tailcall _ -> assert false
@@ -777,4 +777,7 @@ let typecheck tree: Declaration.t list =
 	Declaration.Class c -> Declaration.Class (type_check_class program c)
       | _ as d -> d
   in
-    List.map (type_check_declaration tree) tree
+    try
+      List.map (type_check_declaration tree) tree
+    with
+      Type_error (file, line, msg) -> Messages.error file line msg ; exit 1

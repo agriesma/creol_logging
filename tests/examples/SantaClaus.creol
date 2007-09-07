@@ -22,18 +22,20 @@ interface Elf
 begin with SantaClausE
   op enterOffice
   op leaveOffice
+  op showIn
+  op showOut
 end
 
 
 
-class SantaClausC implements SantaClaus
+class SantaClausC contracts SantaClaus
 begin
   var ctReindeers: Int := 0
   var waitReindeers: List[Reindeer] := nil
   var harnessedReindeers: List[Reindeer] := nil
   var ctElves: Int := 0
-  var waitElves:List := nil
-  var inofficeElves:List := nil
+  var waitElves: List[Elf] := nil
+  var inofficeElves: List[Elf]  := nil
 
   op run == !loop()
 
@@ -65,6 +67,9 @@ begin
 
 
   op talkToElves ==
+        var t1: Label[ ];
+        var t2: Label[ ];
+        var t3: Label[ ];
 	ctElves := ctElves - 3; 
 	t1!head(waitElves).showIn();
 	inofficeElves := inofficeElves |- head(waitElves);
@@ -77,11 +82,11 @@ begin
 	waitElves := tail(waitElves);
 	await t1? && t2? && t3?;
 	// <Talk to elves>;
-	t1!head(inoffcieElves).showOut();
+	t1!head(inofficeElves).showOut();
 	inofficeElves := tail(inofficeElves);
-	t2!head(inoffcieElves).showOut();
+	t2!head(inofficeElves).showOut();
 	inofficeElves := tail(inofficeElves);
-	t3!head(inoffcieElves).showOut();
+	t3!head(inofficeElves).showOut();
 	inofficeElves := tail(inofficeElves);
 	await t1? && t2? && t3?
 
@@ -123,7 +128,7 @@ with SantaClausE
   op showOut == !work()
 end
 
-class LeaderElfC(sc:SantaClaus, elves: List)
+class LeaderElfC(sc:SantaClaus, elves: List[Elf])
 	implements Elf
 	inherits ElfC
 begin

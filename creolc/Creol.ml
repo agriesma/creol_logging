@@ -722,12 +722,6 @@ struct
 	  Not_found -> find cls.parameters
 
 
-  let contracts_p cls iface =
-    if iface <> Type.any then
-      List.exists (fun inh -> (fst inh) = (Type.as_string iface)) cls.contracts
-    else
-      true
-	  
 end
 
 
@@ -831,7 +825,7 @@ module Program =
 	  | _ -> assert false
 
     let rec subinterface_p program s t =
-      (** Return true if s is a subinterface of [t] *)
+      (** Return true if [s] is a subinterface of [t] *)
       try
 	let s_decl =
 	  find_interface program s
@@ -840,8 +834,17 @@ module Program =
 	    (List.exists (function u -> subinterface_p program u t)
 		(List.map fst s_decl.Interface.inherits))
       with
-	  Not_found -> false
+	  Not_found -> 
+	      if t = "Any" then true else false
 
+  let contracts_p program cls iface =
+    (** Return true if the class [cls] contracts the interface [iface] *)
+    if iface = Type.any then
+      true
+    else
+      let p i = subinterface_p program i (Type.as_string iface) in
+        List.exists p (List.map fst cls.Class.contracts)
+  
     let find_datatype ~program ~name =
       let datatype_with_name =
 	function
