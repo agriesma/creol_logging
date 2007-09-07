@@ -461,6 +461,57 @@ let typecheck tree: Declaration.t list =
 	  		    "Class " ^ cls.Class.name ^
 			      " does not contract interface " ^
 			      (Type.as_string co)))
+    and check_sync_method_call n callee m ins outs =
+      (* Check an asyncrhonous method call *)
+      let callee' =
+	type_check_expression program cls meth coiface [] callee
+      and ins' =
+	List.map (type_check_expression program cls meth coiface []) ins
+      and outs' =
+	List.map (type_check_lhs program cls meth coiface) outs
+      in
+      let callee_t = Expression.get_type callee'
+      and ins_t = Type.Tuple (List.map Expression.get_type ins')
+      and outs_t = Type.Tuple (List.map Expression.get_lhs_type outs')
+      in
+      let iface = 
+	try
+	  Program.find_interface program (Type.as_string callee_t)
+	with
+	    Not_found ->
+	      raise (Type_error (file n, line n,
+				"Interface " ^ (Type.as_string callee_t) ^
+				  " not defined."))
+      in
+      let co =
+	(* Find the cointerface of our methods. *)
+	let cands =
+	  Program.interface_find_methods program iface m (Class.get_type cls)
+	    ins_t outs_t
+	in
+	  match cands with
+	      [] -> raise (Type_error (file n, line n,
+				      "Interface " ^ (Type.as_string callee_t) ^
+					" does not provide a method " ^ m ^ 
+					" with inputs " ^
+					(Type.as_string ins_t) ^
+					" and outputs " ^
+					(Type.as_string outs_t)))
+	    | [meth] -> meth.Method.coiface
+	    | _ -> raise (Type_error (file n, line n,
+				     "Call to method " ^ m ^ " of interface " ^
+				       (Type.as_string callee_t) ^
+				       " is ambigous."))
+      in
+      let signature = (co, ins_t, outs_t)
+      in
+	if (Program.contracts_p program cls co) then
+	  (callee', signature, ins', outs')
+	else
+	  raise (Type_error (file n, line n,
+	  		    "Class " ^ cls.Class.name ^
+			      " does not contract interface " ^
+			      (Type.as_string co)))
     in
       function
 	  Skip n -> Skip n
@@ -576,101 +627,16 @@ let typecheck tree: Declaration.t list =
 	        raise (Type_error (file n, line n,
 			          "Class " ^ cls.Class.name ^
 				    " does not provide method " ^ m))
-        | SyncCall (n, callee, m, _, args, retvals) ->
-	    let ncallee =
-	      type_check_expression program cls meth coiface [] callee
-	    and nargs =
-	      List.map (type_check_expression program cls meth coiface []) args
-	    and nouts =
-	      List.map (type_check_lhs program cls meth coiface) retvals
+        | SyncCall (n, callee, m, _, ins, outs) ->
+	    let (callee', signature, ins', outs') =
+	      check_sync_method_call n callee m ins outs
 	    in
-	    let callee_t = (Expression.get_type ncallee) in
-	    let co =
-	      let iface =
-	        try
-		  Program.find_interface program (Type.as_string callee_t)
-	        with
-		    Not_found -> 
-		      raise (Type_error (file n, line n,
-					"Callee's interface " ^ (Type.as_string callee_t) ^
-				          " not defined"))
-	      in
-	        try
-		  Interface.cointerface iface
-	        with
-		    Failure _ ->
-		      raise (Type_error (file n, line n,
-					"Method " ^ m ^
-				          " not provided in empty interface " ^
-				          iface.Interface.name))
+	        SyncCall (n, callee', m, signature, ins', outs')
+        | AwaitSyncCall (n, callee, m, _, ins, outs) ->
+	    let (callee', signature, ins', outs') =
+	      check_sync_method_call n callee m ins outs
 	    in
-	    let signature =
-	      (co, Type.Tuple (List.map Expression.get_type nargs),
-	      (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-	    in
-	      if (Program.contracts_p program cls co) &&
-	        (Program.interface_provides_p program
-		    (Program.find_interface program
-		        (Type.as_string callee_t))
-		    m
-		    co
-		    (Type.Tuple (List.map get_type nargs))
-		    (Type.Tuple (List.map get_lhs_type nouts)))
-	      then
-	        SyncCall (n, ncallee, m, signature, nargs, nouts)
-	      else
-	        begin
-		  if not (Program.contracts_p program cls co) then
-		    raise (Type_error (file n, line n,
-				      "Class " ^ cls.Class.name ^
-					" does not contract interface " ^
-					(Type.as_string co)))
-		  else
-		    raise (Type_error (file n, line n,
-				      "Interface " ^ (Type.as_string callee_t) ^
-					" does not provide method " ^ m))
-	        end
-        | AwaitSyncCall (n, callee, m, _, args, retvals) ->
-	    let ncallee =
-	      type_check_expression program cls meth coiface [] callee
-	    and nargs =
-	      List.map (type_check_expression program cls meth coiface [])
-	        args
-	    and nouts =
-	      List.map (type_check_lhs program cls meth coiface) retvals
-	    in
-	    let callee_t = Expression.get_type ncallee in
-	    let co =
-	      Interface.cointerface (Program.find_interface program
-				        (Type.as_string callee_t))
-	    in
-	    let signature =
-	      (co, Type.Tuple (List.map Expression.get_type nargs),
-	      (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-	        
-	    in
-	      if (Program.contracts_p program cls co) &&
-	        (Program.interface_provides_p program
-		    (Program.find_interface program
-		        (Type.as_string callee_t))
-		    m
-		    co
-		    (Type.Tuple (List.map get_type nargs))
-		    (Type.Tuple (List.map get_lhs_type nouts)))
-	      then
-	        AwaitSyncCall (n, ncallee, m, signature, nargs, nouts)
-	      else
-	        begin
-		  if not (Program.contracts_p program cls co) then
-		    raise (Type_error (file n, line n,
-				      "Class " ^ cls.Class.name ^
-					" does not contract interface " ^
-					(Type.as_string co)))
-		  else
-		    raise (Type_error (file n, line n,
-				      "Interface " ^ (Type.as_string callee_t) ^
-					" does not provide method " ^ m))
-		end	  
+	        AwaitSyncCall (n, callee', m, signature, ins', outs')
 	| LocalSyncCall (n, m, _, lb, ub, args, retvals) ->
 	    (* FIXME:  Check the upper bound and lower bound constraints
 	       for static resolution *)

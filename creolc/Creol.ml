@@ -1027,14 +1027,11 @@ module Program =
 	  and d = List.tl c
 	  in
 	    match (s, t) with
-		(Type.Basic _, Type.Basic _) ->
-		  (*
-		    if subtype_p program empty s t then
-		    do_unify d (generalize res s t)
-		    else if subtype_p program empty t s then
-		    do_unify d (generalize res t s)
-		    else
-		    raise Not_found *)
+		(_, Type.Basic "Data") ->
+		  (* Every type is supposed to be a subtype of data,
+		     therefore this constraint is always true. *)
+		  do_unify d res
+	      | (Type.Basic _, Type.Basic _) ->
 		  if subtype_p program s t then
 		    do_unify d res
 		  else

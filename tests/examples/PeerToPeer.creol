@@ -13,8 +13,8 @@ interface Server
 begin
   with Server
     op enquire
-    op getLength
-    op getPack
+    op getLength(in fId: String; out lth: Int)
+    op getPack(in fId: String, pNbr: Int; out pack: Data)
 end
 
 interface Peer
@@ -39,7 +39,7 @@ begin
       await db.listFiles(; files)
     op getLength(in fId: String; out lth: Int) ==
       await db.getLength(fId; lth)
-    op getPack(in fId: String, pNbr: Int; out pack: List[Data]) ==
+    op getPack(in fId: String, pNbr: Int; out pack: Data) ==
       var f: List[List[Data]];
       await db.getFile(fId; f);
       pack := at(f, pNbr)
@@ -60,12 +60,12 @@ begin
 
     op reqFile(in sId: Server, fId: String) ==
       var file: List[Data];
-      var pack: List[Data];
+      var pack: Data;
       var lth: Int;
-      await sId.getLength(fId, lth; pack);
+      await sId.getLength(fId; lth);
       while (lth > 0) do
 	await sId.getPack(fId, lth; pack);
-	file := append(pack, file);
+	file := pack -| file;
 	lth := lth - 1
       end;
       !db.storeFile(fId, file)
