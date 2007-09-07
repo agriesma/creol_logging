@@ -180,10 +180,7 @@ method_decl:
       OP i = ID p = parameters_opt
       ioption(preceded(REQUIRES, assertion))
       ioption(preceded(ENSURES, assertion))
-      {
-	match p with (ins, outs) ->
-	  { Method.name = i; inpars = ins;
-	    outpars = outs; vars = []; body = None} }
+        { Method.make_decl i (fst p) (snd p) }
     | OP error
     | OP ID error
 	{ signal_error $startpos "syntax error in method declaration" }
@@ -205,32 +202,34 @@ anon_with_def:
     { { With.co_interface = None; With.methods = l; With.invariants = i } }
 
 with_def:
-      WITH m = CID l = nonempty_list(method_def) i = list(invariant)
-    { { With.co_interface = Some m; With.methods = l; With.invariants = i } }
+      WITH c = CID l = nonempty_list(method_def) i = list(invariant)
+    { { With.co_interface = Some c;
+	methods = List.map (Method.set_cointerface (Type.Basic c)) l;
+	invariants = i } }
 
 method_def:
       d = method_decl EQEQ a = loption(terminated(attributes, SEMI))
 	s = statement
-    { { Method.name = d.Method.name; inpars = d.inpars;
-	outpars = d.outpars; vars = a; body = Some s} }
+    { { d with Method.vars = a; body = Some s} }
   |   d = method_decl EQEQ EXTERN s = STRING
-    { { Method.name = d.Method.name; inpars = d.inpars;
-	outpars = d.outpars; vars = [];
-        body = Some (Extern (Statement.make_note $startpos, s)) } }
+    { { d with body = Some (Extern (Statement.make_note $startpos, s)) } }
 
 (* Interface Declaration *)
 
 interfacedecl:
       INTERFACE n = CID class_param_list
       i = inherits_list BEGIN w = list(with_decl) END
-    { { Interface.name = n; inherits = i; with_decls = w; hidden = false } }
+        { { Interface.name = n; inherits = i; with_decls = w;
+	    hidden = false } }
     | INTERFACE error
     | INTERFACE CID error
 	{ signal_error $startpos "syntax error in interface declaration" }
 
 with_decl:
-      WITH m = CID l = nonempty_list(method_decl) i = list(invariant)
-     { { With.co_interface = Some m; With.methods = l; With.invariants = i } }
+      WITH c = CID l = nonempty_list(method_decl) i = list(invariant)
+     { { With.co_interface = Some c;
+	 methods = List.map (Method.set_cointerface (Type.Basic c)) l;
+	 invariants = i } }
     | WITH error
     | WITH CID error
 	{ signal_error $startpos "syntax error in with block declaration" }

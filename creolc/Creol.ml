@@ -653,12 +653,20 @@ module VarDecl =
 
 module Method =
   struct
+
     type t =
       { name: string;
+        coiface: Type.t;
         inpars: VarDecl.t list;
         outpars: VarDecl.t list;
         vars: VarDecl.t list;
         body: Statement.t option }
+
+    let make_decl n inp outp =
+      { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
+	vars = []; body = None }
+
+    let set_cointerface cf m = { m with coiface = cf }
 
     let build_type l =
 	Type.Tuple (List.map (fun v -> v.VarDecl.var_type) l)
@@ -837,16 +845,17 @@ module Program =
 
     let rec subinterface_p program s t =
       (** Return true if [s] is a subinterface of [t] *)
-      try
-	let s_decl =
-	  find_interface program s
-	in
-	  (s = t) ||
-	    (List.exists (function u -> subinterface_p program u t)
-		(List.map fst s_decl.Interface.inherits))
-      with
-	  Not_found -> 
-	      if t = "Any" then true else false
+      if t = "Any" then
+	(* Everything is a sub-interface of [Any] *)
+	true
+      else
+	(s = t) ||
+	  try
+	    let s_decl = find_interface program s in
+	      (List.exists (fun u -> subinterface_p program u t)
+		  (List.map fst s_decl.Interface.inherits))
+	  with
+	      Not_found -> false
 
   let contracts_p program cls iface =
     (** Return true if the class [cls] contracts the interface [iface] *)
@@ -1106,30 +1115,31 @@ module Program =
 	  the signature [(coiface, inputs, outputs)] in [iface] and
 	  its super-interfaces.  *)
       let rec find_methods_in_interface i =
+        let candidate_p m =
+	  m.Method.name = meth &&
+	  (subtype_p program ins (Method.domain_type m)) &&
+	  (subtype_p program (Method.range_type m) outs)
+	in
         let here =
-	  List.flatten
-	    (List.map
-	        (fun w ->
-		  List.filter
-		    (fun m ->
-		      m.Method.name = meth &&
-			(subtype_p program ins (Method.domain_type m)) &&
-			(subtype_p program (Method.range_type m) outs))
-		    w.With.methods)
-		(List.filter
-		    (function
-			{ With.co_interface = Some n } ->
-			  subtype_p program coiface (Type.Basic n)
-		      | _ -> false)
-		    i.Interface.with_decls))
+	  let withs =
+	    let p =
+	      (function
+		  { With.co_interface = Some n } ->
+		    subtype_p program coiface (Type.Basic n)
+		| _ -> false)
+	    in
+	      List.filter p i.Interface.with_decls
+	  in
+	    List.flatten
+	      (List.map (fun w -> List.filter candidate_p w.With.methods) withs)
         and supers = List.map fst i.Interface.inherits
         in
 	  List.fold_left
             (fun r i ->
               (find_methods_in_interface (find_interface program i))@r)
             here supers
-    in
-      find_methods_in_interface iface
+      in
+	find_methods_in_interface iface
 
     let interface_provides_p ~program ~iface ~meth coiface ins outs =
       (** Check whether the interface [iface] or one of its

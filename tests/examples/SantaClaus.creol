@@ -13,9 +13,10 @@ begin
 end
 
 interface Reindeer
-begin with SantaClausR
-  op harness
-  op unharness
+begin
+  with SantaClausR
+    op harness
+    op unharness
 end
 
 interface Elf
@@ -28,7 +29,7 @@ end
 
 
 
-class SantaClausC contracts SantaClaus
+class SantaClaus contracts SantaClaus
 begin
   var ctReindeers: Int := 0
   var waitReindeers: List[Reindeer] := nil
@@ -49,22 +50,29 @@ begin
     var t3: Label[ ];
     var t4: Label[ ];
     var t5: Label[ ];
-	ctReindeers := 0;
-	t1!head(waitReindeers).harness(); 
-	harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
-	waitReindeers := tail(waitReindeers);
-	// ....;
-	t5!head(waitReindeers).harness(); 
-	harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
-	waitReindeers := tail(waitReindeers);
-	await t1? && t2? && t3? && t4? && t5?;
-	// <Deliver Toys>;
-	!head(harnessedReindeers).unharness();
-	harnessedReindeers := tail(harnessedReindeers);
-	// ....;
-	!head(harnessedReindeers).unharness();
-	harnessedReindeers := tail(harnessedReindeers)
-
+    ctReindeers := 0;
+    t1!head(waitReindeers).harness(); 
+    harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
+    waitReindeers := tail(waitReindeers);
+    t2!head(waitReindeers).harness(); 
+    harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
+    waitReindeers := tail(waitReindeers);
+    t3!head(waitReindeers).harness(); 
+    harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
+    waitReindeers := tail(waitReindeers);
+    t4!head(waitReindeers).harness(); 
+    harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
+    waitReindeers := tail(waitReindeers);
+    t5!head(waitReindeers).harness(); 
+    harnessedReindeers := harnessedReindeers |- head(waitReindeers); 
+    waitReindeers := tail(waitReindeers);
+    await t1? && t2? && t3? && t4? && t5?;
+    // <Deliver Toys>;
+    !head(harnessedReindeers).unharness();
+    harnessedReindeers := tail(harnessedReindeers);
+    // ....;
+    !head(harnessedReindeers).unharness();
+    harnessedReindeers := tail(harnessedReindeers)
 
   op talkToElves ==
         var t1: Label[ ];
@@ -102,23 +110,23 @@ with Elf
 end
 
 
-class ReindeerC(sc: Reindeer)
-  implements Reindeer
-  contracts SantaClausR
+class Reindeer(sc: SantaClaus)
+  contracts Reindeer
 begin
   op run == !holiday()
-  op holiday == // <go on holiday>;
-	!sc.backFromHoliday()
+
+  op holiday == /* <go on holiday>; */ !sc.backFromHoliday()
+
   op deliverToys == skip // <deliver Toys>
 
-with SantaClausR
-  op harness == !deliverToys()
-  op unharness == !holiday()
+  with SantaClausR
+    op harness == !deliverToys()
+    op unharness == !holiday()
 end
 
 
 
-class ElfC(sc:SantaClaus) implements Elf
+class Elf(sc:SantaClaus) contracts Elf
 begin 
   op run == !work()
   op work == // <do work>;
@@ -130,11 +138,10 @@ with SantaClausE
   op showOut == !work()
 end
 
-class LeaderElfC(sc:SantaClaus, elves: List[Elf])
-	implements Elf
-	inherits ElfC
+class LeaderElf(sc:SantaClaus, elves: List[Elf])
+	contracts Elf inherits Elf
 begin
-  op run == run:>ElfC(;)
+  op run == run:>Elf(;)
   op work ==
 	// (<Lead elves> ||| <Make toys>);
 	!sc.haveProblem()
@@ -143,10 +150,10 @@ end
 class Christmas
 begin
   op run == 
-	var sc:SantaC;
+	var sc:SantaClaus;
 	var r:Reindeer;
 	var e:Elf;
-	sc := new SantaClausClass();
+	sc := new SantaClaus();
 	r := new Reindeer(sc);
 	r := new Reindeer(sc);
 	r := new Reindeer(sc);

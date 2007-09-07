@@ -433,34 +433,34 @@ let typecheck tree: Declaration.t list =
 				  " not defined."))
       in
       let co =
-	try
-	  Interface.cointerface iface
-	with
-	    Not_found ->
-	      raise (Type_error (file n, line n,
-				"Interface " ^ (Type.as_string callee_t) ^
-				  " does not specify any co-interface."))
+	(* Find the cointerface of our methods. *)
+	let cands =
+	  Program.interface_find_methods program iface m (Class.get_type cls)
+	    ins_t outs_t
+	in
+	  match cands with
+	      [] -> raise (Type_error (file n, line n,
+				      "Interface " ^ (Type.as_string callee_t) ^
+					" does not provide a method " ^ m ^ 
+					" with inputs " ^
+					(Type.as_string ins_t) ^
+					" and outputs " ^
+					(Type.as_string outs_t)))
+	    | [meth] -> meth.Method.coiface
+	    | _ -> raise (Type_error (file n, line n,
+				     "Call to method " ^ m ^ " of interface " ^
+				       (Type.as_string callee_t) ^
+				       " is ambigous."))
       in
       let signature = (co, ins_t, outs_t)
       in
-	if (Program.contracts_p program cls co) &&
-	  (Program.interface_provides_p program iface m co ins_t outs_t)
-	then
+	if (Program.contracts_p program cls co) then
 	  (label', callee', signature, ins')
 	else
-	  begin
-	    if not (Program.contracts_p program cls co) then
-	      raise (Type_error (file n, line n,
-				"Class " ^ cls.Class.name ^
-				  " does not contract interface " ^
-				  (Type.as_string co)))
-	    else
-	      raise (Type_error (file n, line n,
-				"Interface " ^ (Type.as_string callee_t) ^
-				  " does not provide method " ^ m ^
-				  " with inputs " ^
-				  (Type.as_string ins_t)))
-	  end
+	  raise (Type_error (file n, line n,
+	  		    "Class " ^ cls.Class.name ^
+			      " does not contract interface " ^
+			      (Type.as_string co)))
     in
       function
 	  Skip n -> Skip n
