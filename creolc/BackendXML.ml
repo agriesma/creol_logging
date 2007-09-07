@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
+ * published by the Free Software Foundation; either version 3 of the
  * License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful, but
@@ -16,9 +16,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
 (** Read and write Creol Programs.
@@ -616,6 +614,15 @@ let emit ~name ~tree =
       | Type.Intersection p ->
 	  XmlTextWriter.start_element writer "creol:intersection" ; 
 	  List.iter creol_type_to_xml p ;
+          XmlTextWriter.end_element writer
+      | Type.Disjunction p ->
+	  XmlTextWriter.start_element writer "creol:disjunction" ; 
+	  List.iter creol_type_to_xml p ;
+          XmlTextWriter.end_element writer
+      | Type.Function (s, t) ->
+	  XmlTextWriter.start_element writer "creol:function" ; 
+	  creol_type_to_xml s ;
+	  creol_type_to_xml t ;
           XmlTextWriter.end_element writer
       | Type.Internal ->
 	  XmlTextWriter.start_element writer "creol:internal" ; 

@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
+ * published by the Free Software Foundation; either version 3 of the
  * License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful, but
@@ -16,9 +16,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
 open Creol
@@ -81,8 +79,8 @@ let into_ssa tree =
     (* A use of the SSA name.  We should be able to find the name in
        the environment. *)
     function
-	(This _ | Caller _ | Now _ | Null _ | Nil _ | Bool _ | Int _ |
-	 Float _ | String _) as e -> e
+	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
+         Bool _ | Int _ | Float _ | String _) as e -> e
       | Id (a, v) ->
 	  begin
 	    try
@@ -354,8 +352,8 @@ let out_of_ssa tree =
     (* A use of the SSA name.  We should be able to find the name in
        the environment. *)
     function
-	(This _ | Caller _ | Now _ | Null _ | Nil _ | Bool _ | Int _ |
-	    Float _ | String _ | Id _ | StaticAttr _ ) as e -> e
+	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
+         Bool _ | Int _ | Float _ | String _ | Id _ | StaticAttr _ ) as e -> e
       | Tuple (a, l) -> Tuple (a, List.map expression_of_ssa l)
       | ListLit (a, l) -> ListLit (a, List.map expression_of_ssa l)
       | SetLit (a, l) -> SetLit (a, List.map expression_of_ssa l)

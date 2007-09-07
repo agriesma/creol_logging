@@ -1,12 +1,13 @@
-(* Creol.ml -- Definition and manipulation of Creol AST
+(*
+ * Creol.ml -- Definition and manipulation of Creol AST
  *
- * This file is part of creolcomp
+ * This file is part of creoltools
  *
  * Written and Copyright (c) 2007 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
+ * published by the Free Software Foundation; either version 3 of the
  * License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful, but
@@ -15,9 +16,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
 (** Definition of the abstract syntax of Creol and a collection
@@ -943,10 +942,13 @@ module Program =
 		(List.for_all (fun t -> subtype_p program s t) ta)) sa
 	| (Type.Intersection sa, _) ->
 	    List.exists (fun s -> subtype_p program s t) sa
+	| (Type.Disjunction sa, _) ->
+	    List.for_all (fun s -> subtype_p program s t) sa
 	| (Type.Internal, Type.Internal) -> true
 	| (Type.Internal, _) -> false
 	| (_, Type.Internal) -> false
 	| (Type.Variable _, _) -> assert false
+	| (Type.Function _, _) -> assert false
 
     let meet ~program types =
       if (List.for_all (fun x -> (List.hd types) = x) types) then

@@ -1,4 +1,7 @@
-creoltools 0.0f (2007-08-2Y): alpha release.
+creoltools 0.0g (2007-09-08): alpha release.
+
+This version is now licensed under the terms of the GPLv3 or (at your
+option) later.  See COPYING for details.
 
 In the language:
 * Labels must be declared now.  A label type has the form
