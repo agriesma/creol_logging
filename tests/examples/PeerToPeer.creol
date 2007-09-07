@@ -1,29 +1,30 @@
 /*
  * 
  */
-interface ToClient
+interface Client
 begin
   with Any
-    op availFiles
+    op availFiles (in sList: List[Server];
+		   out files: List[[Server , List[Str]]])
     op reqFiles
 end
 
-interface ToServer
+interface Server
 begin
-  with ToServer
+  with Server
     op enquire
     op getLength
     op getPack
 end
 
 interface Peer
-  inherits ToClient, ToServer
+  inherits Client, Server
 begin
 end
 
 interface DB
 begin
-  with ToServer
+  with Server
     op getFile(in fId: String; out file: List[List[Data]])
     op getLength(in fId: String; out length: Int)
     op storeFile(in fId: String, file: List[Data])
@@ -31,9 +32,9 @@ begin
 end
 
 class Node(db: DB)
-  contracts Peer, ToServer
+  contracts Peer, Server
 begin
-  with ToServer
+  with Server
     op enquire(out files: List[String]) ==
       await db.listFiles(; files)
     op getLength(in fId: String; out lth: Int) ==
@@ -44,20 +45,20 @@ begin
       pack := at(f, pNbr)
 
   with Any
-    op availFiles (in sList: List[ToServer];
-		   out files: List[[ToServer , List[Str]]]) ==
+    op availFiles (in sList: List[Server];
+		   out files: List[[Server , List[Str]]]) ==
       var l1: Label[ ] ;
-      var l2: Label[List[[ToServer, List[Str]]]] ;
+      var l2: Label[List[[Server, List[Str]]]] ;
       if (sList = nil) then files := nil
       else
         l1!head(sList).enquire();
-        l2!this.availFiles(tail(sList));
+        l2!(this as Client).availFiles(tail(sList));
 	await l1? && l2?;
 	l1?();
 	l2?(files)
       end
 
-    op reqFile(in sId: ToServer, fId: String) ==
+    op reqFile(in sId: Server, fId: String) ==
       var file: List[Data];
       var pack: List[Data];
       var lth: Int;

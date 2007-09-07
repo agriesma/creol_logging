@@ -114,6 +114,7 @@ rule token = parse
     | '}' { RBRACE }
     | '~' { TILDE }
     | "assert" { ASSERT }
+    | "as" { AS }
     | "await" { AWAIT }
     | "begin" { BEGIN }
     | "by" { BY }

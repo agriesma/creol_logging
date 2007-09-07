@@ -1,5 +1,5 @@
 interface SantaClausR
-begin with ReinDeer
+begin with Reindeer
   op backFromHoliday
 end
 
@@ -102,7 +102,9 @@ with Elf
 end
 
 
-class ReindeerC(sc: ReinDeer) implements Reindeer
+class ReindeerC(sc: Reindeer)
+  implements Reindeer
+  contracts SantaClausR
 begin
   op run == !holiday()
   op holiday == // <go on holiday>;

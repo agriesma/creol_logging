@@ -5,19 +5,19 @@
 interface Buff
 begin
 with Any
-op put(in x : Data)
-op get(out x : Data)
+  op put(in x : Data)
+  op get(out x : Data)
 end
 
 class Buffer implements Buff
 begin
-var cell : Data
-var ctr : Int
-var next : Buff
+  var cell : Data
+  var ctr : Int
+  var next : Buff
 
-op init == ctr := 0
-op run == skip
-op put(in x : Data) ==
+  op init == ctr := 0
+  op run == skip
+  op put(in x : Data) ==
     if ctr = 0 then cell := x
     else if next = null then next := new Buffer() end; next.put(x;) end;
     ctr := ctr + 1

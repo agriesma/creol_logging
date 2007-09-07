@@ -102,6 +102,17 @@ module Type =
 	| [] -> assert false
     and string_of_field f = f.field_name ^ ": " ^ (as_string f.field_type)
 
+    let rec sentence_p =
+      function
+	  Basic _ -> true
+	| Variable _ -> false
+	| Application (_, p) -> List.for_all sentence_p p
+	| Tuple p -> List.for_all sentence_p p
+	| Intersection l -> List.for_all sentence_p l
+	| Disjunction l -> List.for_all sentence_p l
+	| Function (s, t) -> (sentence_p s) && (sentence_p t)
+	| Internal -> true
+
     let get_from_label =
       function
 	  Application ("Label", args) -> Tuple args
@@ -706,12 +717,10 @@ struct
 	with_defs: With.t list }
 
   let get_type cls =
-    let to_type inh = Type.Basic (fst inh) in
-    let ifaces = cls.implements @ cls.contracts in
-      if ifaces <> [] then
-	Type.Intersection (List.map to_type ifaces)
-      else
-	Type.any
+    match List.map fst (cls.implements @ cls.contracts) with
+	[] -> Type.any
+      | [t] -> Type.Basic t
+      | i -> Type.Intersection (List.map (fun t -> Type.Basic t) i)
 
   let find_attr_decl cls name =
     let find l = List.find (function { VarDecl.name = n } -> n = name) l
@@ -740,9 +749,11 @@ struct
 	hidden: bool }
 
   let cointerface iface =
-      match (List.hd iface.with_decls).With.co_interface with
-	  None -> Type.Internal
-        | Some i -> Type.Basic i
+    (* FIXME: Make something smarter *)
+    match iface.with_decls with
+	[] -> raise Not_found
+      | { With.co_interface = None}::_ -> Type.Internal
+      | { With.co_interface = Some i}::_ -> Type.Basic i
 
 end
 
@@ -885,9 +896,7 @@ module Program =
 	with
 	    Not_found -> find cls.Class.inherits
 
-    let empty: (string, Type.t) Hashtbl.t = Hashtbl.create 1
-
-    let rec subtype_p program gamma s t =
+    let rec subtype_p program s t =
       (** Decides whether [s] is a subtype of [t] in [program]. *)
       match (s, t) with
 	  (_, Type.Basic "Data") ->
@@ -897,14 +906,14 @@ module Program =
 	| (Type.Basic st, Type.Basic tt) ->
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
 	| (Type.Basic _, Type.Intersection l) ->
-	    List.for_all (subtype_p program gamma s) l
+	    List.for_all (subtype_p program s) l
 	| (Type.Basic _, Type.Variable _) -> assert false
 	| (Type.Basic _, _) -> false
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
-	    (subtype_p program gamma (Type.Basic sc) (Type.Basic tc)) &&
+	    (sc = tc) &&
 	      begin
 		try 
-		  List.for_all2 (subtype_p program gamma) sa ta
+		  List.for_all2 (subtype_p program) sa ta
 		with
 		    Invalid_argument _ -> false
 	      end
@@ -913,7 +922,7 @@ module Program =
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	      try 
-		(List.for_all2 (subtype_p program gamma) sa ta)
+		(List.for_all2 (subtype_p program) sa ta)
 	      with
 		  Invalid_argument _ -> false
 	    end
@@ -922,9 +931,9 @@ module Program =
 	| (Type.Intersection sa, Type.Intersection ta) ->
 	    List.exists
 	      (fun s ->
-		(List.for_all (fun t -> subtype_p program gamma s t) ta)) sa
+		(List.for_all (fun t -> subtype_p program s t) ta)) sa
 	| (Type.Intersection sa, _) ->
-	    List.exists (fun s -> subtype_p program gamma s t) sa
+	    List.exists (fun s -> subtype_p program s t) sa
 	| (Type.Internal, Type.Internal) -> true
 	| (Type.Internal, _) -> false
 	| (_, Type.Internal) -> false
@@ -954,7 +963,11 @@ module Program =
 
     let rec apply_substitution subst =
       function
-	  Type.Variable x -> List.assoc x subst
+	  Type.Variable x ->
+	    if List.mem_assoc x subst then
+	      List.assoc x subst
+	    else
+	      Type.Variable x
 	| Type.Application (c, l) ->
 	    Type.Application (c, List.map (apply_substitution subst) l)
 	| Type.Tuple l -> Type.Tuple (List.map (apply_substitution subst) l)
@@ -976,7 +989,7 @@ module Program =
       (* Substitutions s and t must have the same support. *)
       let (keys, _) = List.split s in
         List.for_all
-          (fun v -> subtype_p program empty (List.assoc v s) (List.assoc v t))
+          (fun v -> subtype_p program (List.assoc v s) (List.assoc v t))
           keys
 
     let find_most_specific program (substs: ((string * Type.t) list) list) =
@@ -1013,7 +1026,7 @@ module Program =
 		    do_unify d (generalize res t s)
 		    else
 		    raise Not_found *)
-		  if subtype_p program empty s t then
+		  if subtype_p program s t then
 		    do_unify d res
 		  else
 		    raise (Failure "unify")
@@ -1035,16 +1048,18 @@ module Program =
 		     is one solution to the problem.  We will
 		     therefore split the constraint set and try each
 		     branch of the disjunction in sequence. *)
-		  let try_unify x =
-		    try
-		      [do_unify ((s, x)::d) res]
-		    with
-			(* We failed to unify and therefore, this solution
-			   is not applicable, so return the empty list. *)
-			Failure "unify" -> []
+		  let rec try_unify_disjunctions =
+		    function
+			[] -> []
+		      | x::r ->
+			  try
+			    (do_unify ((s, x)::d) res) ::
+			      (try_unify_disjunctions r)
+			  with
+			      Failure "unify" -> (try_unify_disjunctions r)
 		  in
 		    begin
-		      match List.flatten (List.map try_unify l) with
+		      match try_unify_disjunctions l with
 			  [] -> raise (Failure "unify")
 			| [res] -> res
 			| cands ->
@@ -1098,13 +1113,13 @@ module Program =
 		  List.filter
 		    (fun m ->
 		      m.Method.name = meth &&
-			(subtype_p program empty ins (Method.domain_type m)) &&
-			(subtype_p program empty (Method.range_type m) outs))
+			(subtype_p program ins (Method.domain_type m)) &&
+			(subtype_p program (Method.range_type m) outs))
 		    w.With.methods)
 		(List.filter
 		    (function
 			{ With.co_interface = Some n } ->
-			  subtype_p program empty coiface (Type.Basic n)
+			  subtype_p program coiface (Type.Basic n)
 		      | _ -> false)
 		    i.Interface.with_decls))
         and supers = List.map fst i.Interface.inherits
@@ -1134,13 +1149,13 @@ module Program =
 		  List.filter
 		    (fun m ->
 		      m.Method.name = meth &&
-			(subtype_p program empty ins (Method.domain_type m)) &&
-			(subtype_p program empty (Method.range_type m) outs))
+			(subtype_p program ins (Method.domain_type m)) &&
+			(subtype_p program (Method.range_type m) outs))
 		    w.With.methods)
 		(List.filter
 		    (function
 			{ With.co_interface = Some n } ->
-			  subtype_p program empty Type.Internal (Type.Basic n)
+			  subtype_p program Type.Internal (Type.Basic n)
 		      | _ -> true)
 		    c.Class.with_defs))
         and supers = List.map fst c.Class.inherits
