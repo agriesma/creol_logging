@@ -58,7 +58,7 @@ This may indicate that your ocaml installation is faulty.
 ])
 fi
 
-AC_CHECK_PROG([MENHIR], [menhir], [menhir], ['${top_srcdir}/menhir-sh'])
+AC_CHECK_PROG([MENHIR], [menhir], [menhir], [''])
 if test -z "$MENHIR"
 then
     AC_MSG_ERROR([menhir was not found.
@@ -75,7 +75,7 @@ AC_CHECK_PROG([DOT], [dot], [dot], ['${top_srcdir}/missing dot'])
 
 dnl Check for maude.
 AC_CHECK_PROGS([MAUDE], [maude.linux maude.darwin maude],
-	       [${top_srcdir}/maude-sh])
+	       ['${top_srcdir}/maude-sh'])
 
 # Check whether the maude we found is usable.
 if (${MAUDE} --version >/dev/null 2>&1 || exit)

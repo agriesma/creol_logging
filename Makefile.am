@@ -28,4 +28,4 @@ MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
 			  depcomp elisp-comp missing install-sh
 
 bin_SCRIPTS		= creolshell creolbug
-dist_noinst_SCRIPTS	= maude-sh menhir-sh
+dist_noinst_SCRIPTS	= maude-sh
