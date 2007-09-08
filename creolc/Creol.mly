@@ -209,6 +209,8 @@ method_def:
     { { d with Method.vars = a; body = Some s} }
   |   d = method_decl EQEQ EXTERN s = STRING
     { { d with body = Some (Extern (Statement.make_note $startpos, s)) } }
+  |   d = method_decl EQEQ error
+    { signal_error $startpos "Syntax error in method body" }
 
 (* Interface Declaration *)
 
@@ -334,6 +336,8 @@ basic_statement:
 	{ Assign((Statement.make_note $startpos), t, e) }
     | AWAIT e = expression
 	{ Await ((Statement.make_note $startpos), e) }
+    | AWAIT error
+	{ signal_error $startpos "Syntax error in await condition" }
     | POSIT e = expression
 	{ Posit ((Statement.make_note $startpos), e) }
     | POSIT error
@@ -390,8 +394,6 @@ basic_statement:
 	{ Assert (Statement.make_note $startpos, a) }
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
-    | AWAIT error
-	{ signal_error $startpos "Syntax error in await condition" }
 
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:

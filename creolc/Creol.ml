@@ -101,6 +101,23 @@ module Type =
 	| [] -> assert false
     and string_of_field f = f.field_name ^ ": " ^ (as_string f.field_type)
 
+    let get_from_label =
+      function
+	  Application ("Label", args) -> Tuple args
+	| _ -> assert false
+
+    let rec occurs_p v =
+      (** Check if a variable named [v] occurs in the argument type. *)
+      function
+	  Internal -> false
+	| Basic _ -> false
+	| Variable x -> v = x
+	| Application (_, l) -> List.exists (occurs_p v) l
+	| Tuple l -> List.exists (occurs_p v) l
+	| Intersection l -> List.exists (occurs_p v) l
+	| Disjunction l -> List.exists (occurs_p v) l
+	| Function (s, t) -> (occurs_p v s) || (occurs_p v t)
+
     let rec sentence_p =
       function
 	  Basic _ -> true
@@ -112,10 +129,39 @@ module Type =
 	| Function (s, t) -> (sentence_p s) && (sentence_p t)
 	| Internal -> true
 
-    let get_from_label =
+    (* Substitution module *)
+    module Subst = Map.Make(String)
+    type subst = t Subst.t
+
+    let rec substitute v t =
+      (** Substitute each occurence of a type variable called [v] by
+	  the type [t] in the argument type. *)
       function
-	  Application ("Label", args) -> Tuple args
-	| _ -> assert false
+	  Internal -> Internal
+	| Basic b -> Basic b
+	| Variable x -> if x = v then t else Variable x
+	| Application (c, l) -> Application(c, List.map (substitute v t) l)
+	| Tuple l -> Tuple (List.map (substitute v t) l)
+	| Intersection l -> Intersection (List.map (substitute v t) l)
+	| Disjunction l -> Disjunction (List.map (substitute v t) l)
+	| Function (d, r) -> Function (substitute v t d, substitute v t r)
+
+    let rec apply_substitution s =
+      function
+	  Internal -> Internal
+	| Basic b -> Basic b
+	| Variable x ->
+	    if Subst.mem x s then Subst.find x s else Variable x
+	| Application (c, l) ->
+	    Application(c, List.map (apply_substitution s) l)
+	| Tuple l ->
+	    Tuple (List.map (apply_substitution s) l)
+	| Intersection l ->
+	    Intersection (List.map (apply_substitution s) l)
+	| Disjunction l ->
+	    Disjunction (List.map (apply_substitution s) l)
+	| Function (d, r) ->
+	    Function (apply_substitution s d, apply_substitution s r)
 
   end
 
@@ -929,7 +975,7 @@ module Program =
 	| (Type.Application _, _) -> false
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
-	      try 
+	     try 
 		(List.for_all2 (subtype_p program) sa ta)
 	      with
 		  Invalid_argument _ -> false
@@ -962,138 +1008,9 @@ module Program =
       in
         List.iter print_constr constr
 
-    let rec substitute v t =
-      function
-	  Type.Variable x when x = v -> t
-	| Type.Application (c, l) ->
-	    Type.Application(c, List.map (substitute v t) l)
-	| Type.Tuple l -> Type.Tuple (List.map (substitute v t) l)
-	| Type.Intersection l ->
-	    Type.Intersection (List.map (substitute v t) l)
-	| ty -> ty (* Internal and Basic *)
-
-    let rec apply_substitution subst =
-      function
-	  Type.Variable x ->
-	    if List.mem_assoc x subst then
-	      List.assoc x subst
-	    else
-	      Type.Variable x
-	| Type.Application (c, l) ->
-	    Type.Application (c, List.map (apply_substitution subst) l)
-	| Type.Tuple l -> Type.Tuple (List.map (apply_substitution subst) l)
-	| Type.Intersection l ->
-	    Type.Intersection (List.map (apply_substitution subst) l)
-	| ty -> ty
-
-    let rec occurs_p v =
-      function
-	  Type.Variable x when v = x -> true
-	| Type.Application (_, l) -> List.exists (occurs_p v) l
-	| Type.Tuple l -> List.exists (occurs_p v) l
-	| Type.Intersection l -> List.exists (occurs_p v) l
-	| Type.Disjunction l -> List.exists (occurs_p v) l
-	| Type.Function (s, t) -> (occurs_p v s) || (occurs_p v t)
-	| _ -> false
-
-    let subst_more_specific_p program s t =
-      (* Substitutions s and t must have the same support. *)
-      let (keys, _) = List.split s in
-        List.for_all
-          (fun v -> subtype_p program (List.assoc v s) (List.assoc v t))
-          keys
-
-    let find_most_specific program (substs: ((string * Type.t) list) list) =
-      List.fold_left
-	(fun s t -> if subst_more_specific_p program s t then s else t)
-	(List.hd substs)
-	(List.tl substs)
-
     let generalize res s t =
       (** In a result substitution, generalise s to t *)
       List.map (fun (x, u) -> if u = s then (x, t) else (x, u)) res
-
-    let unify program c =
-      let rec do_unify c res =
-	(** Compute the most general unifier for a constraint set [c].
-	    The result is a mapping from variable names to types.
-	    
-	    The constraint set is usually a set of pair of types.  Such
-	    a constraint states that two types are equal in the current
-	    substitution. *)
-	if c = [] then
-	  res
-	else
-	  let s = fst (List.hd c)
-	  and t = snd (List.hd c)
-	  and d = List.tl c
-	  in
-	    match (s, t) with
-		(_, Type.Basic "Data") ->
-		  (* Every type is supposed to be a subtype of data,
-		     therefore this constraint is always true. *)
-		  do_unify d res
-	      | (Type.Basic _, Type.Basic _) ->
-		  if subtype_p program s t then
-		    do_unify d res
-		  else
-		    raise (Failure "unify")
-	      | (Type.Tuple l1, Type.Tuple l2) ->
-		  if (List.length l1) = (List.length l2) then
-		    do_unify ((List.combine l1 l2)@d) res
-		  else
-		    raise (Failure "unify")
-	      | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
-		  do_unify ((d1, d2)::(r2, r1)::d) res
-	      | (Type.Application (s1, t1), Type.Application (s2, t2)) when s1 = s2 ->
-		  do_unify ((List.combine t1 t2)@d) res
-	      | (_, Type.Disjunction l) ->
-		  (* This case is essentially handling operator
-		     overloading, but we try to solve the general case,
-		     here, anyhow, because this is probably simpler.
-
-		     We find a solution to the constraint set if there
-		     is one solution to the problem.  We will
-		     therefore split the constraint set and try each
-		     branch of the disjunction in sequence. *)
-		  let rec try_unify_disjunctions =
-		    function
-			[] -> []
-		      | x::r ->
-			  try
-			    (do_unify ((s, x)::d) res) ::
-			      (try_unify_disjunctions r)
-			  with
-			      Failure "unify" -> (try_unify_disjunctions r)
-		  in
-		    begin
-		      match try_unify_disjunctions l with
-			  [] -> raise (Failure "unify")
-			| [res] -> res
-			| cands ->
-			    (* The solution is ambigous, and we want to
-			       get the "best" solution.
-
-			       FIXME: If there is more than one best solution
-			       one solution is guessed, which is probably
-			       wrong. *)
-			    find_most_specific program cands
-		    end
-	      | (Type.Variable x, _) when not (occurs_p x t) ->
-		  do_unify
-		    (List.map
-			(fun (t1, t2) ->
-			  (substitute x t t1, substitute x t t2)) d)
-		    ((x, t)::res)
-	      | (_, Type.Variable x) when not (occurs_p x s) ->
-		  do_unify
-		    (List.map
-			(fun (t1, t2) ->
-			  (substitute x s t1, substitute x s t2)) d)
-		    ((x, s)::res)
-	      | _ -> raise (Failure "unify")
-      in
-	do_unify c []
 
     let find_functions ~program ~name =
       (** Find all definitions of functions called [name] in

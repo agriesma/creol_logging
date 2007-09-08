@@ -32,18 +32,132 @@ let freshvargen =
   let rec f n () = FreshVar(Type.Variable ("_" ^ (string_of_int n)), f (n + 1))
   in f 0
 
+let subst_more_specific_p program s t =
+  (* Substitutions s and t must have the same support. *)
+  let keys = Type.Subst.fold (fun k _ a -> k::a) s [] in
+  let p k =
+    Program.subtype_p program (Type.Subst.find k s) (Type.Subst.find k t)
+  in
+    List.for_all p keys
+
+let find_most_specific program substs =
+  List.fold_left
+    (fun s t -> if subst_more_specific_p program s t then s else t)
+    (List.hd substs)
+    (List.tl substs)
+
+let unify ~program ~constraints =
+  let rec do_unify c (res: Type.t Type.Subst.t): Type.t Type.Subst.t =
+    (** Compute the most general unifier for a constraint set [c].
+	The result is a mapping from variable names to types.
+	
+	The constraint set is usually a set of pair of types.  Such
+	a constraint states that two types are equal in the current
+	substitution. *)
+    if c = [] then
+      res
+    else
+      let s = fst (List.hd c)
+      and t = snd (List.hd c)
+      and d = List.tl c
+      in
+	Messages.message 3 ("unify: " ^ (Type.as_string s) ^ " is subtype of " ^ (Type.as_string t)) ;
+	match (s, t) with
+	    (_, Type.Basic "Data") ->
+	      (* Every type is supposed to be a subtype of data,
+		 therefore this constraint is always true. *)
+	      do_unify d res
+	  | (Type.Basic _, Type.Basic _) when Program.subtype_p program s t ->
+		do_unify d res
+	  | (Type.Tuple l1, Type.Tuple l2) when (List.length l1) = (List.length l2) ->
+		do_unify ((List.combine l1 l2)@d) res
+	  | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
+	      do_unify ((d1, d2)::(r2, r1)::d) res
+	  | (Type.Application (s1, t1), Type.Application (s2, t2)) when s1 = s2 ->
+	      do_unify ((List.combine t1 t2)@d) res
+	  | (_, Type.Disjunction l) ->
+	      (* This case is essentially handling operator
+		 overloading, but we try to solve the general case,
+		 here, anyhow, because this is probably simpler.
+
+		 We find a solution to the constraint set if there
+		 is one solution to the problem.  We will
+		 therefore split the constraint set and try each
+		 branch of the disjunction in sequence. *)
+	      let rec try_unify_disjunctions =
+		function
+		    [] -> []
+		  | x::r ->
+		      try
+			(do_unify ((s, x)::d) res) ::
+			  (try_unify_disjunctions r)
+		      with
+			  Failure "unify" -> (try_unify_disjunctions r)
+	      in
+		begin
+		  match try_unify_disjunctions l with
+		      [] -> raise (Failure "unify")
+		    | [r] -> r
+		    | cands ->
+			(* The solution is ambigous, and we want to
+			   get the "best" solution.
+
+			   FIXME: If there is more than one best solution
+			   one solution is guessed, which is probably
+			   wrong. *)
+			find_most_specific program cands
+		end
+	  | (Type.Variable x, _) when not (Type.occurs_p x t) ->
+	      Messages.message 2 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t)) ;
+	      do_unify
+		(List.map
+		    (fun (t1, t2) ->
+		      (Type.substitute x t t1, Type.substitute x t t2)) d)
+		(Type.Subst.add x t res)
+	  | (_, Type.Variable x) when not (Type.occurs_p x s) ->
+	      let try_unify r =
+	        Messages.message 2 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
+	        do_unify
+		  (List.map
+		      (fun (t1, t2) ->
+		        (Type.substitute x r t1, Type.substitute x r t2)) d)
+		  (Type.Subst.add x r res)
+	      in
+		begin
+		  try
+		    try_unify s
+		  with
+		      Failure "unify" ->
+			  (* Try some supertype of s.
+
+			     FIXME: For now we just choose Data, the top type.
+			     We might try something smarter, however. *)
+	                  Messages.message 2
+			    ("try_unify: did not work, use Data for `" ^ x) ;
+	                  try_unify (Type.Basic "Data")
+		end
+	  | _ ->
+		Messages.message 2 ("unify: failed to unify " ^
+				    (Type.as_string s) ^ " as subtype of " ^
+				    (Type.as_string t)) ;
+		raise (Failure "unify")
+  in
+    Messages.message 2 "\n=== unify ===" ;
+    let res = do_unify constraints (Type.Subst.empty) in
+      Messages.message 2 "=== success ===\n" ; res
+
 let typecheck tree: Declaration.t list =
   let rec substitute_types_in_expression subst expr =
     let subst_in_note subst note =
       { note with Expression.ty =
-	  Program.apply_substitution subst note.Expression.ty }
+	  Type.apply_substitution subst note.Expression.ty }
     in
       match expr with
 	  This n ->
 	    This (subst_in_note subst n)
 	| QualifiedThis (n, t) ->
 	    QualifiedThis (subst_in_note subst n,
-			  Program.apply_substitution subst t)
+			  Type.apply_substitution subst t)
 	| Caller n ->
 	    Caller (subst_in_note subst n)
 	| Null n ->
@@ -88,7 +202,7 @@ let typecheck tree: Declaration.t list =
 	    Label (subst_in_note subst n,
 		  substitute_types_in_expression subst l)
 	| New (n, t, args) ->
-	    New (subst_in_note subst n, Program.apply_substitution subst t,
+	    New (subst_in_note subst n, Type.apply_substitution subst t,
 		List.map (substitute_types_in_expression subst) args)
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
@@ -345,7 +459,7 @@ let typecheck tree: Declaration.t list =
     in
     let subst =
       try
-	Program.unify program constr'
+	unify program constr'
       with
 	  Failure "unify" ->
 	    let file = Expression.file (Expression.note expr)
@@ -443,7 +557,9 @@ let typecheck tree: Declaration.t list =
 					" with inputs " ^
 					(Type.as_string ins_t) ^
 					" and outputs " ^
-					(Type.as_string outs_t)))
+					(Type.as_string outs_t) ^
+					" to " ^
+					(Type.as_string (Class.get_type cls))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> raise (Type_error (file n, line n,
 				     "Call to method " ^ m ^ " of interface " ^
@@ -494,7 +610,9 @@ let typecheck tree: Declaration.t list =
 					" with inputs " ^
 					(Type.as_string ins_t) ^
 					" and outputs " ^
-					(Type.as_string outs_t)))
+					(Type.as_string outs_t) ^
+					" to " ^
+					(Type.as_string (Class.get_type cls))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> raise (Type_error (file n, line n,
 				     "Call to method " ^ m ^ " of interface " ^
@@ -545,7 +663,7 @@ let typecheck tree: Declaration.t list =
 		else
 		  let s =
 		    try
-		      Program.unify program [(rhs_t, lhs_t)]
+		      unify program [(rhs_t, lhs_t)]
 		    with
 			Failure "unify" -> die ()
 		  in
@@ -629,12 +747,12 @@ let typecheck tree: Declaration.t list =
 	    let (callee', signature, ins', outs') =
 	      check_sync_method_call n callee m ins outs
 	    in
-	        SyncCall (n, callee', m, signature, ins', outs')
+	      SyncCall (n, callee', m, signature, ins', outs')
         | AwaitSyncCall (n, callee, m, _, ins, outs) ->
 	    let (callee', signature, ins', outs') =
 	      check_sync_method_call n callee m ins outs
 	    in
-	        AwaitSyncCall (n, callee', m, signature, ins', outs')
+	      AwaitSyncCall (n, callee', m, signature, ins', outs')
 	| LocalSyncCall (n, m, _, lb, ub, args, retvals) ->
 	    (* FIXME:  Check the upper bound and lower bound constraints
 	       for static resolution *)

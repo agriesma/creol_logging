@@ -114,6 +114,30 @@ begin
   op snd (a: [`a, `b]): `b == extern "snd"
 end
 
+datatype Time
+begin
+  op <(a: Time, b: Time): Bool == extern "<"
+  op <=(a: Time, b: Time): Bool == extern "<="
+  op >=(a: Time, b: Time): Bool == extern ">="
+  op >(a: Time, b: Time): Bool == extern ">"
+end
+
+datatype Duration
+begin
+  op dur(a: Real): Duration == extern "duration"
+  op +(a: Time, d: Duration): Time == extern "+"
+  op -(a: Time, d: Duration): Time == extern "-"
+  op +(a: Duration, d: Duration): Duration == extern "+"
+  op -(a: Duration, d: Duration): Duration == extern "-"
+  op *(a: Duration, s: Real): Duration == extern "*"
+  op *(a: Real, s: Duration): Duration == extern "*"
+  op /(a: Duration, s: Real): Duration == extern "/"
+  op <(a: Duration, b: Duration): Bool == extern "<"
+  op <=(a: Duration, b: Duration): Bool == extern "<="
+  op >=(a: Duration, b: Duration): Bool == extern ">="
+  op >(a: Duration, b: Duration): Bool == extern ">"
+end
+
 interface Any
 begin
 end

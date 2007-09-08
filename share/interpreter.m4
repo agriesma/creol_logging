@@ -152,6 +152,7 @@ fmod CREOL-STATEMENT is
   op _?(_)  : Vid VidList -> Stm [ctor prec 39] .
   op _?(_)  : Label VidList -> Stm [ctor prec 39] .
   op await_ : Expr -> SuspStm [ctor] .
+  op posit_ : Expr -> SuspStm [ctor] .
   op return : ExprList -> Stm [ctor `format' (c o)] .
   op bury : VidList -> Stm [ctor `format' (c o)] .
   op free : VidList -> Stm [ctor `format' (c o)] .
@@ -519,6 +520,7 @@ define(`READY', ready($1, $2, $3))'
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
   eq ENABLED((NeSL MERGER SL') ; SL'', S, MM, T) = ENABLED(NeSL, S, MM, T) .
   eq ENABLED(await E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+  eq ENABLED(posit E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
   eq ENABLED(NeSL, S, MM, T) = true [owise] .
 
   *** The ready predicate holds, if a statement is ready for execution,
@@ -826,7 +828,15 @@ CSTEP(dnl
 `< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
 EVALGUARD(G, (S # L), MM, T) asBool,
-`[label guard]')
+`[label await]')
+
+CSTEP(dnl
+`< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
+`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
+  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
+EVALGUARD(G, (S # L), MM, T) asBool,
+`[label posit]')
 
 
 

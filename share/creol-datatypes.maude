@@ -417,5 +417,6 @@ fmod CREOL-DATATYPES is
   extending CREOL-DATA-SET .
   extending CREOL-DATA-MAP .
   extending CREOL-DATA-PAIR .
+  extending CREOL-DATA-TIME .
 
 endfm

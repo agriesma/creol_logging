@@ -1,0 +1,85 @@
+
+/* Abstract the network and everything behind it. */
+interface Network
+begin
+  with Radio
+    op send (in data: Data)
+end
+
+interface Radio
+begin
+  with Network
+    op send (in data: Data)
+    op send (in update: Update)
+  with Controller
+    op write (in data: Data)
+    op read (out data: Data)
+    op setPower (in power: Int)
+    op setState (in state: Int)
+    op getChannelStatus (out status: Int)
+    op getError (out error: Int)
+end
+
+interface Controller
+begin
+end
+
+interface Sensor
+begin
+  with Controller
+    op setResolution (in res: Data)
+    op setEncodung (in encoding: Data)
+    op switchOn
+    op switchOff
+end
+
+interface PassiveSensor inherits Sensor
+begin
+  with Controller
+    op read(out value: Data)
+  with Radio
+    op setRate (in newRate: Duration)
+end
+
+interface ActiveSensor inherits Sensor
+begin
+  with Controller
+    op setRate(in rate: Duration)
+end
+
+class PassiveTempSensor inherits PassiveSensor
+begin
+  with Controller
+    op setResolution (in res: Data) == skip
+    op setEncoding (in encoding: Data) == skip
+    op switchOn == skip
+    op switchOff == skip
+    op read (out value: Data) == value := 37
+end
+
+class SimpleSensorNode(sensor: PassiveSensor, radio: Radio, size: Int,
+		       initialRate: Duration)
+  contracts Controller
+begin
+  var buffer: List[Data]
+  var slots: Int
+  var t0: Time
+  var rate: Duration
+
+  op init == buffer := nil; slots := size; rate := initialRate; t0 := now
+
+  op run == read(;); await now >= t0 + rate; posit now <= t0 + rate; t0 := now;
+    !run()
+
+  op read == var temp: Data; sensor.read(; temp); posit now <= t0;
+    await slots > 0; buffer := buffer |- temp; slots := slots - 1;
+    if slots = 0 then packAndSend(;) end
+
+  op packAndSend == radio.write(this -| now -| buffer;); buffer := nil;
+    slots := size
+
+  with Radio
+    op setRate(in newRate: Duration) ==
+      if newRate < rate && now > t0 + newRate then t0 := now; read(;) end;
+      rate := newRate; posit now < t0 + rate
+end
