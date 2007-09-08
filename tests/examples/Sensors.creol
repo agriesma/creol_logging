@@ -22,6 +22,8 @@ end
 
 interface Controller
 begin
+  with Sensor
+    op write (in value: Data)
 end
 
 interface Sensor
@@ -81,5 +83,65 @@ begin
   with Radio
     op setRate(in newRate: Duration) ==
       if newRate < rate && now > t0 + newRate then t0 := now; read(;) end;
+      rate := newRate; posit now < t0 + rate
+end
+
+class TwoSimpleSensorNode(sensor0: PassiveSensor, sensor1: PassiveSensor,
+		          radio: Radio, size: Int,
+		          initialRate0: Duration, initialRate1: Duration)
+  contracts Controller
+begin
+  var buffer: List[Data]
+  var slots: Int
+  var t0: Time
+  var t1: Time
+  var rate0: Duration
+  var rate1: Duration
+
+  op init ==
+    buffer, slots, rate0, rate1, t0, t1 :=
+      nil, size, initialRate0, initialRate1, now, now
+
+  op run == !run0() ||| !run1()
+
+  op run0 == read0(;); await now >= t0 + rate0; posit now <= t0 + rate0;
+    t0 := now; !run0()
+
+  op read0 == var temp: Data; sensor0.read(; temp); posit now <= t0;
+    await slots > 0; buffer := buffer |- temp; slots := slots - 1;
+    if slots = 0 then packAndSend(;) end
+
+  op run1 == read1(;); await now >= t1 + rate1; posit now <= t1 + rate1;
+    t1 := now; !run1()
+
+  op read1 == var temp: Data; sensor1.read(; temp); posit now <= t1;
+    await slots > 0; buffer := buffer |- temp; slots := slots - 1;
+    if slots = 0 then packAndSend(;) end
+
+  op packAndSend == radio.write(this -| now -| buffer;); buffer := nil;
+    slots := size
+
+  with Radio
+    op setRate(in newRate: Duration) ==
+      if newRate < rate0 && now > t0 + newRate then t0 := now; read0(;) end;
+      rate0 := newRate; posit now < t0 + rate0
+end
+
+class ActiveSensor(controller: Controller, initialRate: Duration)
+  contracts Sensor
+begin
+  var rate: Duration
+  var t0: Time
+
+  op init == rate, t0 := initialRate, now
+
+  op run == await now >= t0 + rate; controller.write(37;);
+    posit now <= t0 + rate; t0 := now
+
+  with Controller
+    op setRate(in newRate: Duration) ==
+      if newRate < rate && now > t0 + newRate then
+        controller.write(37;); t0 := now
+      end;
       rate := newRate; posit now < t0 + rate
 end

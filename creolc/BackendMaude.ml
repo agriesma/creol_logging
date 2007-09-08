@@ -147,7 +147,11 @@ let emit options out_channel input =
 	    output_string out_channel " )"
 	| Statement.Release _ -> output_string out_channel "release"
 	| Statement.Assign (_, i, e) ->
+	    if List.length i > 1 then
+	      output_string out_channel " ( " ;
 	    of_lhs_list i;
+	    if List.length i > 1 then
+	      output_string out_channel " ) " ;
 	    output_string out_channel " ::= " ;
 	    of_expression_list e
 	| Statement.SyncCall _ -> assert false

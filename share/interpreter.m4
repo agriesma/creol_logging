@@ -146,8 +146,8 @@ fmod CREOL-STATEMENT is
 
   op skip : -> Stm [ctor] .
   op release : -> Stm [ctor] .
-  op _::=_ : VidList ExprList -> Stm [ctor prec 39] .
-  op _::= new_(_) : Vid Cid ExprList -> Stm [ctor prec 37 `format' (d b d o d d d d)] .
+  op _::=_ : VidList ExprList -> Stm [ctor prec 35] .
+  op _::= new_(_) : Vid Cid ExprList -> Stm [ctor prec 35 `format' (d b d o d d d d)] .
   op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Vid VidList -> Stm [ctor prec 39] .
   op _?(_)  : Label VidList -> Stm [ctor prec 39] .
