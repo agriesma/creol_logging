@@ -46,6 +46,8 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Philosophers.maude examples/Philosophers.out \
 		  examples/SantaClaus.creol examples/SantaClaus.maude \
 		  examples/SantaClaus.out \
+		  examples/Sensors.creol examples/Sensors.maude \
+		  examples/Sensors.out \
 		  examples/Sieve.creol examples/Sieve.maude \
 		  examples/Sieve.out \
 		  examples/SingleCellBuffer.creol \
