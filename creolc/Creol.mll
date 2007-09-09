@@ -43,8 +43,8 @@ let reserved lexbuf =
 }
 let COMMENT = '/' '/' [ ^ '\n' ]*
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)
-let CID = [ 'A'-'Z' ][ 'a'-'z' 'A'-'Z' '0'-'9' ]*
-let ID =  [ 'a'-'z' ][ 'a'-'z' 'A'-'Z' '0'-'9' ]*
+let CID = [ 'A'-'Z' ] [ '_' 'a'-'z' 'A'-'Z' '0'-'9' ]*
+let ID =  [ '_' 'a'-'z' ] [ '_' 'a'-'z' 'A'-'Z' '0'-'9' ]* [ '\'' ] *
 let STRING = '"' [^ '\n' '"' ]* '"'
 rule token = parse
       [' ' '\t'] { token lexbuf }
@@ -54,27 +54,24 @@ rule token = parse
     | '!' { BANG }
 	(* '"' *)
     | '#' { HASH }
-    | '$' { DOLLAR }
+    | '$' { reserved lexbuf }
     | '%' { PERCENT }
     | "&&" { AMPAMP }
-    | '&' { AMP }
-    | '\'' { TICK }
+    | '&' { reserved lexbuf }
     | '(' { LPAREN }
     | ')' { RPAREN }
     | "**" { TIMESTIMES }
     | '*' { TIMES }
     | '+' { PLUS }
     | ',' { COMMA }
-    | "->" { ARROW }
+    | "->" { reserved lexbuf }
     | "-|" { PREPEND }
     | '-' { MINUS }
-    | ".." { DOTDOT }
     | '.' { DOT }
     | "/=" { NE }
     | "/\\" { WEDGE }
     | '/' { DIV }
 	(* Digits 0 to 9 *)
-    | "::" { DCOLON }
     | ":>" { SUPERTYPE }
     | ":=" { ASSIGN }
     | ':' { COLON }
@@ -140,7 +137,7 @@ rule token = parse
     | "nil" { NIL }
     | "now" { NOW }
     | "null" { NULL }
-    | "of" { OF }
+    | "of" { reserved lexbuf }
     | "op" { OP }
     | "out" { OUT }
     | "posit" { POSIT }

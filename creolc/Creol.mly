@@ -7,19 +7,20 @@
 %token WHILE VAR WITH OP IN OUT CONSTRUCTOR EXTERN
 %token REQUIRES ENSURES INV SOME FORALL EXISTS
 %token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
-%token OF AS BY DO
+%token AS BY DO
 %token EXCEPTION
-%token EQEQ COMMA SEMI COLON DCOLON ASSIGN
+%token EQEQ COMMA SEMI COLON ASSIGN
 %token LBRACK RBRACK
 %token LPAREN RPAREN
 %token LBRACE RBRACE
-%token HASH QUESTION BANG DOTDOT DOT AT
+%token HASH QUESTION BANG DOT AT
 %token SUBTYPE SUPERTYPE DLRARROW
-%token DOLLAR PERCENT TICK BACKTICK
+%token BACKTICK
 %token BOX DIAMOND MERGE
 %token PLUS MINUS
-%token TIMESTIMES TIMES ARROW DARROW DIV EQ NE LT LE GT GE
-%token AMP AMPAMP BAR BARBAR WEDGE VEE TILDE UNDERSCORE
+%token TIMESTIMES TIMES PERCENT DIV EQ NE LT LE GT GE
+%token AMPAMP BAR BARBAR WEDGE VEE DARROW TILDE
+%token UNDERSCORE
 %token HAT BACKSLASH ASSERT PROVE
 %token PREPEND CONCAT APPEND
 %token <string> CID ID STRING
@@ -174,8 +175,8 @@ vardecl:
 
 method_decl:
       OP i = ID p = parameters_opt
-      ioption(preceded(REQUIRES, assertion))
-      ioption(preceded(ENSURES, assertion))
+      ioption(preceded(REQUIRES, expression))
+      ioption(preceded(ENSURES, expression))
         { Method.make_decl i (fst p) (snd p) }
     | OP error
     | OP ID error
@@ -209,7 +210,7 @@ method_def:
     { { d with Method.vars = a; body = Some s} }
   |   d = method_decl EQEQ EXTERN s = STRING
     { { d with body = Some (Extern (Statement.make_note $startpos, s)) } }
-  |   d = method_decl EQEQ error
+  |   method_decl EQEQ error
     { signal_error $startpos "Syntax error in method body" }
 
 (* Interface Declaration *)
@@ -387,10 +388,12 @@ basic_statement:
         { If((Statement.make_note $startpos), e, t, f) }
     | IF e = expression THEN t = statement END
         { If((Statement.make_note $startpos), e, t, Skip (Statement.make_note $startpos)) }
-    | WHILE c = expression inv = ioption(preceded(INV, assertion)) DO
+    | WHILE c = expression inv = ioption(preceded(INV, expression)) DO
 	s = statement END
 	{ While (Statement.make_note $startpos, c, inv, s) }
-    | ASSERT a = assertion
+    | ASSERT a = expression
+	{ Assert (Statement.make_note $startpos, a) }
+    | PROVE a = expression
 	{ Assert (Statement.make_note $startpos, a) }
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
@@ -401,7 +404,7 @@ lhs:
 	{ match c with
 	      None -> LhsVar ((Expression.make_note $startpos), id)
 	    | Some cl -> LhsAttr ((Expression.make_note $startpos), id, cl) }
-    | UNDERSCORE t = ioption(preceded(COLON, creol_type))
+    | UNDERSCORE t = ioption(preceded(AS, creol_type))
 	{ LhsWildcard (Expression.make_note $startpos, t) }
 
 expression_or_new:
@@ -464,6 +467,14 @@ expression:
 	{ FuncCall((Expression.make_note $startpos), f, l) }
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (Expression.make_note $startpos, c, t, f) }
+(*
+    | SOME v = vardecl_no_init COLON e = expression
+	{ Choose (Expression.make_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
+    | FORALL v = vardecl_no_init COLON e = expression
+	{ Forall (Expression.make_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
+    | EXISTS v = vardecl_no_init COLON e = expression
+	{ Exists (Expression.make_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
+*)
 
 %inline binop:
       AMPAMP { And (* XXX *) }
@@ -509,11 +520,6 @@ creol_type:
 (* Assertions. *)
 
 invariant:
-    INV a = assertion { a }
-
-assertion:
-    e = expression { e }
-    | FORALL vardecl_no_init COLON a = assertion { a }
-    | EXISTS vardecl_no_init COLON a = assertion { a }
+    INV e = expression { e }
 
 %%

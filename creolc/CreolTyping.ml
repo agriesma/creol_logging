@@ -190,20 +190,32 @@ let typecheck tree: Declaration.t list =
 	    Binary (subst_in_note subst n, op,
 		   substitute_types_in_expression subst arg1,
 		   substitute_types_in_expression subst arg2)
+	| FuncCall (n, name, args) ->
+	    FuncCall (subst_in_note subst n, name,
+		     List.map (substitute_types_in_expression subst) args)
 	| Expression.If (n, cond, iftrue, iffalse) ->
 	    Expression.If (subst_in_note subst n,
 			  substitute_types_in_expression subst cond,
 			  substitute_types_in_expression subst iftrue,
 			  substitute_types_in_expression subst iffalse)
-	| FuncCall (n, name, args) ->
-	    FuncCall (subst_in_note subst n, name,
-		     List.map (substitute_types_in_expression subst) args)
 	| Label (n, l) ->
 	    Label (subst_in_note subst n,
 		  substitute_types_in_expression subst l)
 	| New (n, t, args) ->
 	    New (subst_in_note subst n, Type.apply_substitution subst t,
 		List.map (substitute_types_in_expression subst) args)
+	| Choose (n, i, t, e) ->
+	    Choose (subst_in_note subst n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
+	| Forall (n, i, t, e) ->
+	    Forall (subst_in_note subst n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
+	| Exists (n, i, t, e) ->
+	    Exists (subst_in_note subst n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    SSAId (subst_in_note subst n, name, version)
@@ -422,6 +434,7 @@ let typecheck tree: Declaration.t list =
 				    (Type.as_string ctor_t) ^ " but got " ^
 				    (Type.as_string args_t)))
 	| New _ -> assert false
+	| Choose _ | Forall _ | Exists _ -> assert false
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    let res =
@@ -634,6 +647,8 @@ let typecheck tree: Declaration.t list =
         | Release n -> Release n
         | Assert (n, e) ->
 	    Assert (n, type_check_expression program cls meth coiface [] e)
+        | Prove (n, e) ->
+	    Prove (n, type_check_expression program cls meth coiface [] e)
         | Assign (n, lhs, rhs) ->
 	    let lhs' =
 	      List.map (type_check_lhs program cls meth coiface) lhs

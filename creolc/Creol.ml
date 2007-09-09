@@ -205,10 +205,13 @@ module Expression =
 	| SetLit of note * t list
 	| Unary of note * unaryop * t
 	| Binary of note * binaryop * t * t
-	| If of note * t * t * t
 	| FuncCall of note * string * t list
+	| If of note * t * t * t
 	| Label of note * t
 	| New of note * Type.t * t list
+	| Choose of note * string * Type.t * t
+	| Forall of note * string * Type.t * t
+	| Exists of note * string * Type.t * t
 	| Extern of note * string
         | SSAId of note * string * int
         | Phi of note * t list
@@ -336,6 +339,9 @@ module Expression =
 	| FuncCall (a, _, _) -> a
 	| Label (a, _) -> a
 	| New (a, _, _) -> a
+	| Choose (a, _, _, _) -> a
+	| Forall (a, _, _, _) -> a
+	| Exists (a, _, _, _) -> a
 	| Extern (a, _) -> a
 	| SSAId (a, _, _) -> a
 	| Phi (a, _) -> a
@@ -560,6 +566,7 @@ module Statement =
 	Skip of note
 	| Release of note
 	| Assert of note * Expression.t
+	| Prove of note * Expression.t
 	| Assign of note * Expression.lhs list * Expression.t list
 	  (** A multiple assignment statement.  Requires that the two lists
 	      are of the same length. *)
@@ -595,6 +602,7 @@ module Statement =
       function
 	  Skip a -> a
 	| Assert (a, _) -> a
+	| Prove (a, _) -> a
 	| Assign (a, _, _) -> a
 	| Release a -> a
 	| Await (a, _) -> a
@@ -670,10 +678,10 @@ module Statement =
 
     let rec remove_redundant_skips =
       function
-	  (Release _ | Assert _ | Assign _ | Await _ | Posit _ | AsyncCall _ |
-	   Reply _ | Free _ | SyncCall _ | AwaitSyncCall _ | LocalAsyncCall _ |
-	   LocalSyncCall _ | AwaitLocalSyncCall _ | Tailcall _ |
-	   Extern _) as s -> s
+	  (Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _ |
+	   AsyncCall _ | Reply _ | Free _ | SyncCall _ | AwaitSyncCall _ |
+	   LocalAsyncCall _ | LocalSyncCall _ | AwaitLocalSyncCall _ |
+	   Tailcall _ | Extern _) as s -> s
 	| Skip note -> Skip note
 	| If (note, c, t, f) ->
 	    If (note, c, remove_redundant_skips t, remove_redundant_skips f)
