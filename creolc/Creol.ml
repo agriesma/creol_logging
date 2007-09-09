@@ -209,9 +209,9 @@ module Expression =
 	| If of note * t * t * t
 	| Label of note * t
 	| New of note * Type.t * t list
-	| Choose of note * string * Type.t * t
+(*	| Choose of note * string * Type.t * t
 	| Forall of note * string * Type.t * t
-	| Exists of note * string * Type.t * t
+	| Exists of note * string * Type.t * t *)
 	| Extern of note * string
         | SSAId of note * string * int
         | Phi of note * t list
@@ -339,9 +339,9 @@ module Expression =
 	| FuncCall (a, _, _) -> a
 	| Label (a, _) -> a
 	| New (a, _, _) -> a
-	| Choose (a, _, _, _) -> a
+(*	| Choose (a, _, _, _) -> a
 	| Forall (a, _, _, _) -> a
-	| Exists (a, _, _, _) -> a
+	| Exists (a, _, _, _) -> a *)
 	| Extern (a, _) -> a
 	| SSAId (a, _, _) -> a
 	| Phi (a, _) -> a

@@ -204,7 +204,7 @@ let typecheck tree: Declaration.t list =
 	| New (n, t, args) ->
 	    New (subst_in_note subst n, Type.apply_substitution subst t,
 		List.map (substitute_types_in_expression subst) args)
-	| Choose (n, i, t, e) ->
+(*	| Choose (n, i, t, e) ->
 	    Choose (subst_in_note subst n, i,
 		    Type.apply_substitution subst t,
 		    substitute_types_in_expression subst e)
@@ -215,7 +215,7 @@ let typecheck tree: Declaration.t list =
 	| Exists (n, i, t, e) ->
 	    Exists (subst_in_note subst n, i,
 		    Type.apply_substitution subst t,
-		    substitute_types_in_expression subst e)
+		    substitute_types_in_expression subst e) *)
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    SSAId (subst_in_note subst n, name, version)
@@ -434,7 +434,6 @@ let typecheck tree: Declaration.t list =
 				    (Type.as_string ctor_t) ^ " but got " ^
 				    (Type.as_string args_t)))
 	| New _ -> assert false
-	| Choose _ | Forall _ | Exists _ -> assert false
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    let res =
