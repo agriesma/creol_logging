@@ -1,4 +1,4 @@
-creoltools 0.0g (2007-09-08): alpha release.
+creoltools 0.0g (2007-09-10): alpha release.
 
 This version is now licensed under the terms of the GPLv3 or (at your
 option) later.  See COPYING for details.
@@ -9,10 +9,12 @@ In the language:
   types.  If a method does not have any outputs, the label type
   is Label[ ].  Observe that the white-space between the brackets
   is mandatory.
+* Identifiers and types may contain numbers and _ now.  Variable names
+  may contain ' characters.
 
 In the compiler:
-* The compiler includes a type checker now.  Please test and report
-  errors.
+* The compiler includes a type checker now.  The type checker should be
+  sound but it is not complete.  Please test and report errors.
 
 In the standard library:
 * Some functions and types have been added.
