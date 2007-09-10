@@ -129,6 +129,20 @@ module Type =
 	| Function (s, t) -> (sentence_p s) && (sentence_p t)
 	| Internal -> true
 
+    let free_variables t =
+      let rec compute res =
+	function
+	    Basic _ -> res
+	  | Variable x -> if List.mem x res then res else x::res
+	  | Application (_, p) -> List.fold_left (fun a -> compute a) res p
+	  | Tuple p -> List.fold_left (fun a -> compute a) res p
+	  | Intersection l -> List.fold_left (fun a -> compute a) res l
+	  | Disjunction l -> List.fold_left (fun a -> compute a) res l
+	  | Function (s, t) -> List.fold_left (fun a -> compute a) res [s; t]
+	  | Internal -> res
+      in
+	  compute [] t
+
     (* Substitution module *)
     module Subst = Map.Make(String)
     type subst = t Subst.t

@@ -24,6 +24,7 @@ open Expression
 open Statement
 
 exception Type_error of string * int * string
+exception Unify_failure of Type.t * Type.t
 
 type freshvar = FreshVar of Type.t * freshvargen
 and freshvargen = unit -> freshvar
@@ -92,11 +93,11 @@ let unify ~program ~constraints =
 			(do_unify ((s, x)::d) res) ::
 			  (try_unify_disjunctions r)
 		      with
-			  Failure "unify" -> (try_unify_disjunctions r)
+			  Unify_failure _ -> (try_unify_disjunctions r)
 	      in
 		begin
 		  match try_unify_disjunctions l with
-		      [] -> raise (Failure "unify")
+		      [] -> raise (Unify_failure (s, t))
 		    | [r] -> r
 		    | cands ->
 			(* The solution is ambigous, and we want to
@@ -127,7 +128,7 @@ let unify ~program ~constraints =
 		  try
 		    try_unify s
 		  with
-		      Failure "unify" ->
+		      Unify_failure _ ->
 			  (* Try some supertype of s.
 
 			     FIXME: For now we just choose Data, the top type.
@@ -140,7 +141,7 @@ let unify ~program ~constraints =
 		Messages.message 2 ("unify: failed to unify " ^
 				    (Type.as_string s) ^ " as subtype of " ^
 				    (Type.as_string t)) ;
-		raise (Failure "unify")
+		raise (Unify_failure (s, t))
   in
     Messages.message 2 "\n=== unify ===" ;
     let res = do_unify constraints (Type.Subst.empty) in
@@ -204,18 +205,18 @@ let typecheck tree: Declaration.t list =
 	| New (n, t, args) ->
 	    New (subst_in_note subst n, Type.apply_substitution subst t,
 		List.map (substitute_types_in_expression subst) args)
-(*	| Choose (n, i, t, e) ->
-	    Choose (subst_in_note subst n, i,
-		    Type.apply_substitution subst t,
-		    substitute_types_in_expression subst e)
-	| Forall (n, i, t, e) ->
-	    Forall (subst_in_note subst n, i,
-		    Type.apply_substitution subst t,
-		    substitute_types_in_expression subst e)
-	| Exists (n, i, t, e) ->
-	    Exists (subst_in_note subst n, i,
-		    Type.apply_substitution subst t,
-		    substitute_types_in_expression subst e) *)
+	      (*	| Choose (n, i, t, e) ->
+			Choose (subst_in_note subst n, i,
+			Type.apply_substitution subst t,
+			substitute_types_in_expression subst e)
+			| Forall (n, i, t, e) ->
+			Forall (subst_in_note subst n, i,
+			Type.apply_substitution subst t,
+			substitute_types_in_expression subst e)
+			| Exists (n, i, t, e) ->
+			Exists (subst_in_note subst n, i,
+			Type.apply_substitution subst t,
+			substitute_types_in_expression subst e) *)
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    SSAId (subst_in_note subst n, name, version)
@@ -232,6 +233,18 @@ let typecheck tree: Declaration.t list =
 	equalities on types, i.e., each constraint looks like [s = t].
 	Here, we use inequalities of the form [s <= t] to represent a
 	constraint in the set.  *)
+    let fresh_names_in_type fresh_name t =
+      let fv = Type.free_variables t in
+      let (fresh_name', s) =
+	List.fold_left
+	  (fun (fn, s) x ->
+	    let FreshVar (v, fn') = fn () in
+	      (fn', Type.Subst.add x v s))
+	  (fresh_name, Type.Subst.empty)
+	  fv
+      in
+	(fresh_name', Type.apply_substitution s t)
+    in
     let rec type_recon_expression constr fresh_name =
       (** Reconstruct the type of an expression.
 
@@ -298,7 +311,7 @@ let typecheck tree: Declaration.t list =
 	      type_recon_expression constr fresh_name arg 
 	    in
 	    let name = string_of_unaryop op in
-	    let ty1 =
+	    let (fresh_name'', ty1) =
 	      match Program.find_functions program name with
 		  [] ->
 		    raise (Type_error (Expression.file n, Expression.line n,
@@ -306,29 +319,39 @@ let typecheck tree: Declaration.t list =
 					" not defined"))
 		| [candidate] ->
 		    (* This is a small optimisation. *)
-		    Type.Function
-		      (Operation.domain_type candidate,
-		      candidate.Operation.result_type)
+		    let r =
+		      Type.Function
+			(Operation.domain_type candidate,
+			candidate.Operation.result_type)
+		    in
+		      fresh_names_in_type fresh_name' r
 		| candidates ->
-		    Type.Disjunction
-		      (List.map (fun o ->
-			Type.Function (Operation.domain_type o,
-				      o.Operation.result_type))
-			  candidates)
+		    let (fn'', t) =
+		      List.fold_left (fun (fn, t) o ->
+			let r =
+			  Type.Function (Operation.domain_type o,
+					o.Operation.result_type)
+			in
+			let (fn', sr) = fresh_names_in_type fn r in
+			  (fn', sr::t))
+			(fresh_name', [])
+			candidates
+		    in
+		      (fn'', Type.Disjunction t)
 	    in
 	    let ty2 = Type.Tuple [get_type arg'] in
-	    let FreshVar (v, fresh_name'') = fresh_name' () in
+	    let FreshVar (v, fresh_name''') = fresh_name'' () in
 	      (Unary (set_type n v, op, arg'),
-	      (Type.Function (ty2, v), ty1)::constr', fresh_name'')
+	      (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Binary (n, op, arg1, arg2) ->
 	    let (arg1', constr', fresh_name') =
 	      type_recon_expression constr fresh_name arg1
 	    in
 	    let (arg2', constr'', fresh_name'') =
-	      type_recon_expression constr' fresh_name' arg2 
+	      type_recon_expression constr' fresh_name' arg2
 	    in
 	    let name = string_of_binaryop op in
-	    let ty1 =
+	    let (fresh_name''', ty1) =
 	      match Program.find_functions program name with
 		  [] ->
 		    raise (Type_error (Expression.file n, Expression.line n,
@@ -336,20 +359,30 @@ let typecheck tree: Declaration.t list =
 					" not defined"))
 		| [candidate] ->
 		    (* This is a small optimisation. *)
-		    Type.Function
-		      (Operation.domain_type candidate,
-		      candidate.Operation.result_type)
+		    let r =
+		      Type.Function
+			(Operation.domain_type candidate,
+			candidate.Operation.result_type)
+		    in
+		      fresh_names_in_type fresh_name'' r
 		| candidates ->
-		    Type.Disjunction
-		      (List.map (fun o ->
-			Type.Function (Operation.domain_type o,
-				      o.Operation.result_type))
-			  candidates)
+		    let (fn'', t) =
+		      List.fold_left (fun (fn, t) o ->
+			let r =
+			  Type.Function (Operation.domain_type o,
+					o.Operation.result_type)
+			in
+			let (fn', sr) = fresh_names_in_type fn r in
+			  (fn', sr::t))
+			(fresh_name'', [])
+			candidates
+		    in
+		      (fn'', Type.Disjunction t)
 	    in
 	    let ty2 = Type.Tuple [get_type arg1'; get_type arg2'] in
-	    let FreshVar (v, fresh_name''') = fresh_name'' () in
+	    let FreshVar (v, fresh_name'''') = fresh_name''' () in
 	      (Binary (set_type n v, op, arg1', arg2'),
-	      (Type.Function (ty2, v), ty1)::constr'', fresh_name''')
+	      (Type.Function (ty2, v), ty1)::constr'', fresh_name'''')
 	| Expression.If (n, cond, iftrue, iffalse) ->
 	    let (ncond, constr', fresh_name') =
 	      type_recon_expression constr fresh_name cond
@@ -371,27 +404,37 @@ let typecheck tree: Declaration.t list =
 	    let (nargs, constr', fresh_name') =
 	      type_recon_expression_list constr fresh_name args 
 	    in
-	    let ty1 =
+	    let (fresh_name'', ty1) =
 	      match Program.find_functions program name with
 		  [] ->
 		    raise (Type_error (Expression.file n, Expression.line n,
 				      "Function " ^ name ^ " not defined"))
 		| [candidate] ->
 		    (* This is a small optimisation. *)
-		    Type.Function
-		      (Operation.domain_type candidate,
-		      candidate.Operation.result_type)
+		    let r =
+		      Type.Function
+			(Operation.domain_type candidate,
+			candidate.Operation.result_type)
+		    in
+		      fresh_names_in_type fresh_name' r
 		| candidates ->
-		    Type.Disjunction
-		      (List.map (fun o ->
-			Type.Function (Operation.domain_type o,
-				      o.Operation.result_type))
-			  candidates)
+		    let (fn'', t) =
+		      List.fold_left (fun (fn, t) o ->
+			let r =
+			  Type.Function (Operation.domain_type o,
+					o.Operation.result_type)
+			in
+			let (fn', sr) = fresh_names_in_type fn r in
+			  (fn', sr::t))
+			(fresh_name', [])
+			candidates
+		    in
+		      (fn'', Type.Disjunction t)
 	    in
 	    let ty2 = Type.Tuple (List.map get_type nargs) in
-	    let FreshVar (v, fresh_name'') = fresh_name' () in
+	    let FreshVar (v, fresh_name''') = fresh_name'' () in
 	      (FuncCall (set_type n v, name, nargs),
-	      (Type.Function (ty2, v), ty1)::constr', fresh_name'')
+	      (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
 	    let exists =
 	      try
@@ -473,11 +516,14 @@ let typecheck tree: Declaration.t list =
       try
 	unify program constr'
       with
-	  Failure "unify" ->
+	  Unify_failure (s, t) ->
 	    let file = Expression.file (Expression.note expr)
 	    and line = string_of_int (Expression.line (Expression.note expr)) 
 	    in 
-	      prerr_endline (file ^ ":" ^ line ^ ": cannot satisfy constraints") ;
+	      prerr_endline (file ^ ":" ^ line ^ ": expression has type " ^
+				(Type.as_string s) ^ " but expected is type " ^
+				(Type.as_string t) ^
+				".  Cannot satisfy constraints") ;
 	      Program.prerr_constraint_set constr' ;
 	      exit 1
     in
@@ -503,7 +549,8 @@ let typecheck tree: Declaration.t list =
 	    LhsVar (set_type n res, name)
       | LhsAttr (n, name, (Type.Basic c)) ->
 	  let res =
-	    (Program.find_attr_decl program (Program.find_class program c) name).VarDecl.var_type
+	    (Program.find_attr_decl program
+		(Program.find_class program c) name).VarDecl.var_type
 	  in
 	    LhsAttr (set_type n res, name, (Type.Basic c))
       | LhsAttr _ -> assert false
@@ -679,7 +726,7 @@ let typecheck tree: Declaration.t list =
 		    try
 		      unify program [(rhs_t, lhs_t)]
 		    with
-			Failure "unify" -> die ()
+			Unify_failure _ -> die ()
 		  in
 		    substitute_types_in_expression s rhs
 	    in
