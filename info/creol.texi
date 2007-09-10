@@ -13,10 +13,12 @@ semantics, yet.
 * Comments::                    Comments in Creol.
 * Literals and Expression::     The functional sub-language.
 * Statements::                  The object-oriented sub-language.
+* Variable Declaration::        Declaring variables and attributes.
+* Method Declaration::          Declaring and defining behaviour.
 * Interface Declaration::       Types for objects.
 * Class Declaration::           Implementation for types.
-* Datatype Declaration::
-* Exception Declaration::
+* Datatype Declaration::        Declaring data types.
+* Exception Declaration::       Declaring exceptions.
 * Creol Prelude::               Predefined functions.
 * Grammar::                     Creol grammar in EBNF.
 @end menu
@@ -244,6 +246,19 @@ Results are received by the statement @code{@var{l}?(@var{outs})},
 where @var{l} is a label name used for invoking the method, and
 @var{outs} is a list of variable names used to store the result.
 
+Observe that labels @emph{must} be declared.  @xref{Variable Declaration}.
+The type of a label is given by @code{Label[ @{ @var{type} , @} ]}.  For
+methods that do not return any value, the type of its label is
+@code{Label[ ]}, where the space between @code{[} and @code{]} is
+@emph{mandatory} (recall, that @code{[]} is composing statements and
+@code{var x: Label} may be parsed as a statement).
+
+It is not possible to define labels for any output arity.
+@code{var x: Label[Data]} expresses that x is a label for methods
+with @emph{exactly one output parameter}, regardless of its type, just as
+@code{var x: Label[Data, Data]} expresses, that the method should have
+two output parameters.
+
 
 @subsection Blocks
 
@@ -255,33 +270,6 @@ statement.
 @subsection Conditional Statement
 
 The usual @code{if ... then ... else ... end} statement.
-
-
-@subsection Type inspection using type cases
-
-Creol does not support casting.  Instead, we use a type case construct
-to execute code which depends on the type of an object.
-
-@example
-case @var{variable} when
-  @var{type} -> @var{statement}
-| @var{type} -> @var{statement}
-| @var{type} -> @var{statement}
-| _ -> @var{statement}
-end
-@end example
-
-The value of @var{variable} is tested to be an instance of the type
-given by the label @var{type} from left to right.  Only the first
-match is executed.
-
-Within the code following the type label the value of @var{variable}
-is typed by the type label.  Retyping does not happen in the default
-case, which is labeled by @code{_}, i.e., the type of @var{variable}
-is its declared type.
-
-A compile time error shall occur if a label is used which is not a
-subtype of the type of @var{variable}.
 
 
 @subsection Loop Statements
@@ -342,6 +330,36 @@ The operators @code{;}, @code{[]}, and @code{|||} are binary operators
 on statements.  All of them are @emph{left-associative}, @code{;}
 binds strongest and @code{|||} binds weakest.  Braces may be omitted
 in @code{@{ S; T @} [] U} but not in @code{S; @{ T [] U @}}.
+
+
+@node Variable Declaration
+@section Variable Declaration
+
+All variables and attributes in Creol must be declared.  A variable is
+declared using the syntax
+@code{var @var{name}: @var{type} [ := @var{init}]}.
+
+The identifier @var{name} is the name of the variable, @var{type} is
+the type of the variable and @var{init} is an expression used to
+initialize the variable.
+
+
+@node Method Declaration
+@section Method Declaration
+
+An operation definition has the form @code{op @var{name} (in
+@var{ins}; out @var{outs}) requires @var{precondition} ensures
+@var{postcondition} == @var{variables} @var{statement}}.  @var{ins} is
+a list of variable declarations describing the @emph{input}
+parameters.  @var{outs} is a list of variables describing the output
+parameters.  In principle, one should only read from input parameters
+and only write to output parameters.
+
+The precondition and postcondition are optional and their meaning can
+be easily defined using invariants.
+
+The body of a method consists of local variable definitions followed
+by a statement.
 
 
 @node Interface Declaration
@@ -429,20 +447,6 @@ definition}.  A with deginition has the format @code{with
 @var{interface} @var{operations} @var{invariants}}, where
 @code{with @var{interface}} specifies the co-interface.
 
-An operation definition has the form @code{op @var{name} (in
-@var{ins}; out @var{outs}) requires @var{precondition} ensures
-@var{postcondition} == @var{variables} @var{statement}}.  @var{ins} is
-a list of variable declarations describing the @emph{input}
-parameters.  @var{outs} is a list of variables describing the output
-parameters.  In principle, one should only read from input parameters
-and only write to output parameters.
-
-The precondition and postcondition are optional and their meaning can
-be easily defined using invariants.
-
-The body of a method consists of local variable definitions followed
-by a statement.
-
 
 @node Datatype Declaration
 @section Datatype Declarations
@@ -488,7 +492,7 @@ separator.  An optional symbol is enclosed in square brackets like
 this: @code{[ ... ]}.  Terminal symbols are printed like this:
 @strong{terminal}.  Finally, the symbol @var{id}, denoting method
 names, functions, and variables, refers to an identifier, which is any
-string that matches the regular expression @code{[a-z][_0-9A-Za-z]*},
+string that matches the regular expression @code{[_a-z][_'0-9A-Za-z]*},
 and @var{cid}, denoting class and type names, refers to any string
 that matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
 
@@ -504,10 +508,11 @@ assert      await       begin       by          caller      case
 class       contracts   ctor        datatype    do          else
 end         ensures     exception   exists      false       for
 forall      fun         history     if          implements  inherits
-interface   inv         in          new         nil         null
-not         of          op          out         raise       requires
-skip        some        then        this        to          true
-try         var         when        with
+interface   inv         in          new         nil         not
+now         null        of          op          out         posit
+prove       raise       requires    skip        some        then
+this        to          true        try         var         when
+with
 @end example
 
 The following symbols are used as operator symbols.  They are listed
@@ -523,10 +528,10 @@ as                              @r{left}
 =>                              @r{left}
 ^                               @r{left}
 || \/                           @r{left}
-&& /\                           @r{right}
+&& /\                           @r{left}
 ~                               @r{right, unary operator}
 = /=                            @r{non-associative}
-<= < > >=                       @r{left}
+<= < > >=                       @r{non-associative}
 \                               @r{left}
 |-|                             @r{left}
 -|                              @r{right}
@@ -535,41 +540,39 @@ as                              @r{left}
 * / %                           @r{left}
 **                              @r{left}
 - #                             @r{right, unary operators}
-`                               @r{left}
 @end example
 
 
 @subsection Grammar
 
 @format
-unit ::=
+main ::=
     @{ declaration @}
 
 declaration ::=
     class-decl
   | interface-decl
-  | exception-decl
   | datatype-decl
+  | exception-decl
 
 class-decl ::=
     @code{class} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]
-    [@code{implements} @{ cid @code{,} @} ]
-    [@code{contracts} @{ cid @code{,} @} ]
-    [@code{inherits} @{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} ]
+    @{ (@code{contracts} | @code{implements} | @code{inherits} )
+	@{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} @}
     @code{begin} @{ @code{var} var-decl @}
-    [ anon-with-def ] @{ with-def @}
+    [ internal-with-def ] @{ with-def @}
     @code{end}
 
 interface-decl ::=
-    @code{interface} id [@code{inherits} @{ id @code{,} @}]
+    @code{interface} id @{ @code{inherits} @{ id @code{,} @} @}
     @code{begin} @code{with} cid @{ op-decl @} @{ invariant @} @code{end}
-
-exception.decl ::=
-    @code{exception} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)} ]
 
 datatype-decl ::=
     @code{datatype} cid [ @code{by} @{ cid @code{,} @} ] @code{begin}
     @{ constructor @} @{ function @} @{ invariant @} @code{end}
+
+exception-decl ::=
+    @code{exception} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)} ]
 
 var-decl-no-init ::=
     @{ id @code{,} @} @code{:} type
@@ -627,26 +630,17 @@ expr ::=
   | @code{[} @{ expr @code{,} @} @code{]}
   | @code{@{} @{ expr @code{,} @} @code{@}}
   | @code{@{} id @code{:} expr @code{|} expr @code{@}}
-  | unaryop expr | expr binop expr
-  | id @code{(} @{ expr @code{,} @} @code{)} | expr @code{.} id
+  | unaryop expr | expr binop expr | id @code{(} @{ expr @code{,} @} @code{)}
   | @code{if} expr @code{then} expr @code{else} expr @code{end}
 
-unaryop ::= @code{not} | @code{-} | @code{#}
+unaryop ::= @code{~} | @code{-} | @code{#}
 
 binop ::=
     @code{+} | @code{-} | @code{*} | @code{/} | @code{=} | @code{<} | @code{>} |
-    @code{<=} | @code{>=} | @code{and} | @code{&} | @code{&&} | @code{/\} |
-    @code{or} | @code{|} | @code{||} | @code{\/} | @code{|-} | @code{|-|} | @code{-|} | @code{\}
+    @code{<=} | @code{>=} | @code{&&} | @code{/\} | @code{||} | @code{\/} | @code{|-} |
+    @code{|-|} | @code{-|} | @code{\}
 
 type ::=
     cid [ @code{[} @{ type , @} @code{]} ]
   | @code{`} id
-  | @code{[} @{ type , @} [ @code{->} type ] @code{]}
-  | @code{[#} @{ id @code{:} type @code{,} @} @code{#]}
-  | @code{[|} @{ id @code{:} type @code{|} @} @code{|]}
-
-assertion ::=
-    expr
-  | @code{forall} var-decl-no-init @code{:} assertion
-  | @code{exists} var-decl-no-init @code{:} assertion
 @end format

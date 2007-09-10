@@ -60,6 +60,7 @@ let compute tree =
     function
 	Skip n -> ()
       | Assert (n, e) -> generate env e
+      | Prove (n, e) -> generate env e
       | Assign (n, lhs, rhs) ->
 	  (** May be vice versa? *)
 	  let _ = List.iter (kill env) lhs in

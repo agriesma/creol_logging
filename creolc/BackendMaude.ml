@@ -139,6 +139,7 @@ let emit options out_channel input =
       function
 	  Statement.Skip _ -> output_string out_channel "skip"
 	| Statement.Assert (_, _) -> output_string out_channel "skip"
+	| Statement.Prove (_, _) -> output_string out_channel "skip"
 	| Statement.Await (_, e) -> output_string out_channel "( await ";
 	    of_expression e;
 	    output_string out_channel " )"

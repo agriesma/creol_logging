@@ -51,6 +51,7 @@ let pass input =
 	Skip _ as s -> s
       | Release _ as s -> s
       | Assert (a, e) -> Assert (a, lower_expression e)
+      | Prove (a, e) -> Prove (a, lower_expression e)
       | Assign (a, s, e) -> Assign (a, s, List.map lower_expression e)
       | Await (a, g) -> Await (a, lower_expression g)
       | Posit (a, g) -> Posit (a, lower_expression g)

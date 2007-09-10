@@ -204,6 +204,7 @@ let into_ssa tree =
     function
 	Skip n -> Skip n
       | Assert (n, e) -> Assert (n, expression_to_ssa env e)
+      | Prove (n, e) -> Prove (n, expression_to_ssa env e)
       | Assign (n, lhs, rhs) ->
 	  let nr = List.map (expression_to_ssa env) rhs in
 	  let nl = List.map (left_hand_side_to_ssa env) lhs in
@@ -395,6 +396,7 @@ let out_of_ssa tree =
     function
 	Skip n -> Skip n
       | Assert (n, e) -> Assert (n, expression_of_ssa e)
+      | Prove (n, e) -> Prove (n, expression_of_ssa e)
       | Assign (n, lhs, rhs) ->
 	  let nr = List.map expression_of_ssa rhs in
 	  let nl = List.map left_hand_side_of_ssa lhs in

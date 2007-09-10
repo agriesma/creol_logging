@@ -59,6 +59,7 @@ Software Foundation raise funds for GNU development.''
 * creolc::              How to use the @command{creolc} compiler.
 * creolshell::          How to use the @command{creolshell}.
 * FAQ::                 Frequently asked questions.
+* Release History::     Release history.
 * Licenses::            Your rights and freedoms.
 * Reporting Bugs::      How to write a good bug report.
 * Bibliography::        Further reading.
@@ -72,6 +73,17 @@ Software Foundation raise funds for GNU development.''
 @include creolc.texi
 @include creolshell.texi
 @include faq.texi
+
+
+@c The release history is maintained here to force an update of this file
+@c with each release.  This will set version and date in @file{version.texi}
+@c to its correct values.
+
+@node Release History
+@appendix Release History
+
+Version 0.0g was released on September 10, 2007.
+
 
 @node Licenses
 @appendix Licenses

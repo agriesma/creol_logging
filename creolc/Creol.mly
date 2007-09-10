@@ -35,12 +35,11 @@
 %left DLRARROW
 %left DARROW
 %left HAT
-(* %left AMP *)
 %left BARBAR VEE
 %left AMPAMP WEDGE
 %right TILDE
 %nonassoc EQ NE
-%left LE LT GT GE
+%nonassoc LE LT GT GE
 %left BACKSLASH
 %left CONCAT
 %right PREPEND
@@ -50,7 +49,7 @@
 %left TIMESTIMES
 %right UMINUS HASH
 
-%start <'a list> main
+%start <Creol.Declaration.t list> main
 
 %{
 (* A parser for Creol.
@@ -92,64 +91,84 @@ exception Error
 (** Print a short error message and abort *)
 let signal_error s m =
   Messages.error s.pos_fname s.pos_lnum m; raise Error
+
+(** We want to be more relaxed with contracts, implements, and inherits.
+    In principle, we could allow an arbitrary list of such declarations
+    and then sort it out later. *)
+
+type super_decl =
+    Contracts of Inherits.t list
+  | Implements of Inherits.t list
+  | Inherits of Inherits.t list
+
+let contracts l =
+  List.flatten
+    (List.fold_left (fun a -> function Contracts m -> m::a | _ -> a) [] l)
+
+let implements l =
+  List.flatten
+    (List.fold_left (fun a -> function Implements m -> m::a | _ -> a) [] l)
+
+let inherits l =
+  List.flatten
+    (List.fold_left (fun a -> function Inherits m -> m::a | _ -> a) [] l)
 %}
 %%
 
 main:
-      d = loption(declarations) EOF { d }
-
-declarations:
-      d = declaration { [d] }
-    | d = declaration l = declarations { d::l }
+      d = list(declaration) EOF { d }
 
 declaration:
       d = classdecl { Declaration.Class d }
     | d = interfacedecl	{ Declaration.Interface d }
-    | d = exceptiondecl { Declaration.Exception d }
     | d = datatypedecl { Declaration.Datatype d }
+    | d = exceptiondecl { Declaration.Exception d }
 
 classdecl:
-      CLASS n = CID p = class_param_list
-	j = implements_list c = contracts_list i = inherits_list
-	BEGIN a = loption(attributes)
-        aw = ioption(anon_with_def) m = list(with_def) END
-      {
-      { Class.name = n; Class.parameters = p; Class.inherits = i;
-	Class.contracts = c; Class.implements = j; Class.attributes = a;
-	Class.with_defs = match aw with None -> m | Some w -> w::m } }
+      CLASS n = CID p = class_param_list s = list(super_decl)
+	BEGIN a = loption(attributes) aw = ioption(anon_with_def)
+	m = list(with_def) END
+      { { Class.name = n; parameters = p; inherits = inherits s;
+	  contracts = contracts s; implements = implements s;
+	  attributes = a;
+	  with_defs = match aw with None -> m | Some w -> w::m } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }
     | CLASS CID error
 	{ signal_error $startpos "syntax error in class declaration" }
-    | CLASS CID class_param_list implements_list contracts_list inherits_list
-      BEGIN error
+    | CLASS CID class_param_list list(super_decl) BEGIN error
 	{ signal_error $startpos "syntax error in class body definition" }
 
-%inline class_param_list:
+class_param_list:
       l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, vardecl_no_init), RPAREN))
         { l }
     | LPAREN error
 	{ signal_error $startpos "syntax error in class/interface parameter list" }
 
-%inline implements_list:
-      l = loption(preceded(IMPLEMENTS, separated_nonempty_list(COMMA, inherits)))
-        { l }
-    | IMPLEMENTS error
-	{ signal_error $startpos "syntax error in implements declaration" }
+super_decl:
+      d = implements_decl { d }
+    | d = contracts_decl { d }
+    | d = inherits_decl { d }
 
-%inline contracts_list:
-      l = loption(preceded(CONTRACTS, separated_nonempty_list(COMMA, inherits)))
-        { l }
+contracts_decl:
+      CONTRACTS l = separated_nonempty_list(COMMA, inherits)
+        { (Contracts l) }
     | CONTRACTS error
 	{ signal_error $startpos "syntax error in contracts list" }
 
-%inline inherits_list:
-      l = loption(preceded(INHERITS, separated_nonempty_list(COMMA, inherits)))
-        { l }
+implements_decl:
+      IMPLEMENTS l = separated_nonempty_list(COMMA, inherits)
+        { (Implements l) }
+    | IMPLEMENTS error
+	{ signal_error $startpos "syntax error in implements declaration" }
+
+inherits_decl:
+      INHERITS l = separated_nonempty_list(COMMA, inherits)
+        { (Inherits l) }
     | INHERITS error
 	{ signal_error $startpos "syntax error in inherits list" }
 
-%inline inherits:
+inherits:
     i = CID e = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN))
         { (i, e) }
 
@@ -217,8 +236,8 @@ method_def:
 
 interfacedecl:
       INTERFACE n = CID class_param_list
-      i = inherits_list BEGIN w = list(with_decl) END
-        { { Interface.name = n; inherits = i; with_decls = w;
+      i = list(inherits_decl) BEGIN w = list(with_decl) END
+        { { Interface.name = n; inherits = inherits i; with_decls = w;
 	    hidden = false } }
     | INTERFACE error
     | INTERFACE CID error
@@ -268,7 +287,6 @@ functiondecl:
     { { Operation.name = n; parameters = p; result_type = t;
 	body = Expression.Extern (Expression.make_note $startpos, s) } }
   | OP error
-  | OP id_or_op
   | OP id_or_op error
   | OP id_or_op
     loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
@@ -335,6 +353,8 @@ basic_statement:
     | t = separated_nonempty_list(COMMA, lhs) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((Statement.make_note $startpos), t, e) }
+    | separated_nonempty_list(COMMA, lhs) ASSIGN error
+	{ signal_error $startpos "Syntax error in assignment" }
     | AWAIT e = expression
 	{ Await ((Statement.make_note $startpos), e) }
     | AWAIT error
@@ -395,6 +415,8 @@ basic_statement:
 	{ Assert (Statement.make_note $startpos, a) }
     | PROVE a = expression
 	{ Assert (Statement.make_note $startpos, a) }
+    | ASSERT error | PROVE error
+	{ signal_error $startpos "syntax error in assertion" }
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
 
@@ -517,9 +539,8 @@ creol_type:
     | LBRACK d = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Tuple d }
 
-(* Assertions. *)
+(* Invariants *)
 
 invariant:
     INV e = expression { e }
-
 %%

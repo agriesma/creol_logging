@@ -760,20 +760,22 @@ module With = struct
 end
 
 
+module Inherits =
+  struct
+    type t = string * Expression.t list
+  end
 
 
 
 module Class =
 struct
 
-  type inherits = string * Expression.t list
-
   type t =
       { name: string;
 	parameters: VarDecl.t list;
-	inherits: inherits list;
-	contracts: inherits list;
-	implements: inherits list;
+	inherits: Inherits.t list;
+	contracts: Inherits.t list;
+	implements: Inherits.t list;
 	attributes: VarDecl.t list;
 	with_defs: With.t list }
 
@@ -801,11 +803,9 @@ end
 module Interface =
 struct
 
-  type inherits = string * Expression.t list
-
   type  t =
       { name: string;
-	inherits: inherits list;
+	inherits: Inherits.t list;
 	with_decls: With.t list;
 	hidden: bool }
 

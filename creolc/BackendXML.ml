@@ -143,6 +143,11 @@ let emit ~name ~tree =
 	  creol_expression_to_xml e ;
 	  creol_statement_note_to_xml a ;
           XmlTextWriter.end_element writer
+      | Statement.Prove (a, e) ->
+	  XmlTextWriter.start_element writer "creol:prove" ; 
+	  creol_expression_to_xml e ;
+	  creol_statement_note_to_xml a ;
+          XmlTextWriter.end_element writer
       | Statement.Assign (a, vs, es) ->
 	  XmlTextWriter.start_element writer "creol:assign" ;
 	  XmlTextWriter.start_element writer "creol:targets" ;

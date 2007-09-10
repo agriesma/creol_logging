@@ -223,6 +223,8 @@ let emit out_channel input =
 	  Statement.Skip _ -> output_string out_channel "skip";
 	| Statement.Assert (_, e) ->
 	    output_string out_channel "assert " ; pretty_print_expression e
+	| Statement.Prove (_, e) ->
+	    output_string out_channel "prove " ; pretty_print_expression e
 	| Statement.Assign (_, i, e) ->
 	    pretty_print_lhs_list i;
 	    output_string out_channel " := ";

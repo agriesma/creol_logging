@@ -158,13 +158,14 @@ In this section we describe the pre-defined datatypes in the virtual
 machine, the operations defined on them, and their semantics.
 
 @menu
-* Boolean::     Booleans.
-* Integer::     Integers.
-* Float::       Floats.
-* String::      String.
-* List::        List.
-* Set::         Set.
-* Pair::        Pair.
+* Boolean::                     Booleans.
+* Integer::                     Integers.
+* Float::                       Floats.
+* String::                      String.
+* List::                        List.
+* Set::                         Set.
+* Pair::                        Pair.
+* Time and Duration::           Time and Duration.
 @end menu
 
 
@@ -344,6 +345,18 @@ Pairs are explained in the next section. @c
 @xref{User Defined Datatypes}.
 
 
+@node Time and Duration
+@subsubsection Time and Duration
+
+The module @code{CREOL-DATA-TIME} defines the semantics of the two types
+@code{Time} and @code{Duration}.  Currently, it defines an expression
+@code{now} for representing the current time.  The type @code{Duration}
+is interpreted by real numbers and reuses the module
+@code{CREOL-DATA-FLOAT}.
+
+If a model makes use of time, it has to be executed in the timed version
+of the interpreter.  The other versions will not advance the value of
+@code{now}, leading to deadlocks quickly.
 
 
 @node User Defined Datatypes
