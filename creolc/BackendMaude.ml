@@ -21,8 +21,10 @@
 
 open Creol
 
+type target = Interpreter | Modelchecker | Realtime
+
 type options = {
-  mutable modelchecker: bool;
+  mutable target: target;
   mutable red_init: bool;
   mutable main: string option;
 }
@@ -343,14 +345,19 @@ let emit options out_channel input =
     (** Convert an abstract syntax tree l of a creol program to a
 	representation for the Maude CMC and write the result to the
 	output channel out. *)
-    if options.modelchecker then
-      output_string out_channel "load creol-modelchecker\n"
-    else
-      output_string out_channel "load creol-interpreter\n";
     output_string out_channel
-      ("mod PROGRAM is\npr " ^ (if options.modelchecker then
-	"CREOL-MODEL-CHECKER" else "CREOL-INTERPRETER") ^
-	  " .\nop init : -> Configuration [ctor] .\neq init =\n") ;
+      (match options.target with
+          Interpreter -> "load creol-interpreter\n" 
+	| Modelchecker -> "load creol-modelchecker\n"
+	| Realtime -> "load creol-realtime\n") ;
+    output_string out_channel "mod PROGRAM is\n" ;
+    output_string out_channel 
+      (match options.target with
+           Interpreter -> "pr CREOL-INTERPRETER .\n"
+         | Modelchecker -> "pr CREOL-MODEL-CHECKER .\n"
+	 | Realtime -> "pr CREOL-MODELCHECKER .\n") ;
+    output_string out_channel
+      "op init : -> Configuration [ctor] .\neq init =\n" ;
     of_decl_list input ;
     begin
       match options.main with
@@ -359,7 +366,7 @@ let emit options out_channel input =
 	    output_string out_channel ("main( \"" ^ m ^ "\" , emp )\n")
     end ;
     output_string out_channel ".\nendm\n" ;
-    if options.modelchecker then
+    if options.target = Modelchecker then
       begin
 	output_string out_channel
 	  ("\n\nmod PROGRAM-CHECKER is\n" ^

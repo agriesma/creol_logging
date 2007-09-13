@@ -5,8 +5,9 @@ result Configuration:
     |-> null, "n" |-> null, Mtds:
   < "append" : Mtdname | Param: "d", Latt: "d" |-> null, Code: await "<"("n" #
     "max") ; "buffer" ::= "|-"("buffer" # "d") ; return(emp) > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
-    *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: (("buffer" @@
+    "BoundedBuffer"), ("max" @@ "BoundedBuffer"), ("n" @@ "BoundedBuffer")) ::=
+    list(emp) # int(10) # int(0) ; skip ; return(emp) > *
   < "remove" : Mtdname | Param: noVid, Latt: "d" |-> null, Code: await ">"("n"
     # int(0)) ; "d" ::= "head"("buffer") ; "buffer" ::= "tail"("buffer") ;
     return("d") > *

@@ -145,7 +145,6 @@ AC_CONFIG_SUBDIRS([creol-mode maude-mode])
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
-AC_CONFIG_FILES([creolc/Version.ml])
 AC_CONFIG_FILES([Makefile
 		 creolc/Makefile
 		 info/Makefile

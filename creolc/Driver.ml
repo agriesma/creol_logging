@@ -37,13 +37,14 @@ let add_input name = inputs := (!inputs)@[name]
 
 module Target =
   struct
-    type t = No | Creol | Maude | MaudeMC | XML
+    type t = No | Creol | Maude | XML
 
     let target = ref Maude
 
     let file = ref "creolc.out"
 
-    let options = { BackendMaude.modelchecker = false; red_init = false;
+    let options = { BackendMaude.target = BackendMaude.Interpreter;
+		    red_init = false;
 		    main = None }
 
     let set =
@@ -51,12 +52,15 @@ module Target =
 	    "none" -> target := No
 	  | "creol" -> target := Creol
 	  | "maude" ->
-	      options.BackendMaude.modelchecker <- false ;
+	      options.BackendMaude.target <- BackendMaude.Interpreter ;
 	      target := Maude
 	  | "maudemc" ->
-	      options.BackendMaude.modelchecker <- true ;
+	      options.BackendMaude.target <- BackendMaude.Modelchecker ;
 	      Passes.enable "tailcall" ;
-	      target := MaudeMC
+	      target := Maude
+	  | "maudert" ->
+	      options.BackendMaude.target <- BackendMaude.Realtime ;
+	      target := Maude
 	  | "xml" -> target := XML
 	  | s -> raise (Arg.Bad ("unknown target " ^ s))
 
@@ -66,7 +70,7 @@ module Target =
 	match !target with
 	    No -> ()
 	  | Creol -> BackendCreol.emit out tree
-	  | Maude | MaudeMC -> BackendMaude.emit options out tree
+	  | Maude -> BackendMaude.emit options out tree
 	  | XML -> BackendXML.emit !file tree
 	in
 	match !file with
@@ -75,17 +79,7 @@ module Target =
 
   end
 
-let from_file name =
-  (** Read the contents of a file and return an abstract syntax tree.
-
-      @since 0.0 *)
-  let lexbuf = Lexing.from_channel (open_in name) in
-    let pos = lexbuf.Lexing.lex_curr_p in
-      lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } ;
-      CreolParser.main CreolLex.token lexbuf
-
-let load_prelude prelude_name =
-  (** Try to find the prelude and load it. *)
+let search_path =
   let home =
     (* Try to find the directory in which the binary has been executed. *)
     let exec_name = Sys.executable_name in
@@ -106,20 +100,33 @@ let load_prelude prelude_name =
     with
 	Not_found -> []
   in
-  let places = library_path @ [ home ^ "/../share" ; home ; Sys.getcwd () ] in
-  let prelude =
-    (List.find (fun d -> Sys.file_exists (d ^ "/" ^ prelude_name)) places) ^
-      "/" ^ prelude_name
+    List.flatten [ library_path ;
+                   [ Version.datadir ;
+		     home ^ "/../share" ^ Version.package ;
+                     home ^ "/../share" ;
+                     home ] ]
+
+
+let from_file name =
+  (** Read the contents of a file and return an abstract syntax tree.
+
+      @since 0.0 *)
+  let exists_p d = Sys.file_exists (d ^ "/" ^ name) in
+  let file =
+    if ((Sys.file_exists name) || (String.contains name '/')) then
+      name
+    else
+      try
+        (List.find exists_p search_path) ^ "/" ^ name
+      with
+          Not_found -> prerr_endline ("cannot find " ^ name) ; exit 1
   in
-    Messages.message 1 ("Reading prelude from " ^ prelude) ;
-    List.map
-      (function
-	  Declaration.Datatype d ->
-	    Declaration.Datatype { d with Datatype.hidden = true }
-	| Declaration.Interface i ->
-	    Declaration.Interface { i with Interface.hidden = true }
-	| d -> d)
-      (from_file prelude)
+  let lexbuf = Lexing.from_channel (open_in file) in
+  let pos = lexbuf.Lexing.lex_curr_p in
+    Messages.message 1 ("Reading " ^ file) ;
+    lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = file } ;
+    CreolParser.main CreolLex.token lexbuf
+
 
 let rec from_files =
   (** Read the contents of a list of files and return an abstract syntax
@@ -205,9 +212,9 @@ let main () =
 	| ["-"] -> from_channel stdin
 	| _ ->  from_files !inputs
     in
-      Target.output (Passes.execute_passes !Target.file
-			((load_prelude "prelude.creol")@tree)) ;
-      if !times then Passes.report_timings();
-      exit 0 ;;
+      let prelude = List.map Declaration.hide (from_file "prelude.creol") in
+        Target.output (Passes.execute_passes !Target.file (prelude@tree)) ;
+        if !times then Passes.report_timings () ;
+        exit 0 ;;
 
 main()

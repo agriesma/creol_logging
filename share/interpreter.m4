@@ -454,7 +454,7 @@ define(`EVALGUARDSET', evalGuardSet($1, $2, $3, $4))dnl
 define(`EVALGUARDMAP', evalGuardMap($1, $2, $3, $4))dnl
 define(`ENABLED', enabled($1, $2, $3, $4))dnl
 define(`READY', ready($1, $2, $3, $4))'
-  op evalGuard : Expr Subst MMsg Float -> Bool .
+  op evalGuard : Expr Subst MMsg Float -> Data .
   op evalGuardList : ExprList Subst MMsg Float -> DataList .
   op evalGuardSet : ExprSet Subst MMsg Float -> DataSet .
   op evalGuardMap : ExprMap Subst MMsg Float -> DataMap .
@@ -520,7 +520,8 @@ define(`READY', ready($1, $2, $3))'
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
   eq ENABLED((NeSL MERGER SL') ; SL'', S, MM, T) = ENABLED(NeSL, S, MM, T) .
   eq ENABLED(await E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
-  eq ENABLED(posit E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+  eq ENABLED(posit E ; SL'', S, MM, T) =
+    ifdef(`TIME', EVALGUARD(E, S, MM, T) asBool, true) .
   eq ENABLED(NeSL, S, MM, T) = true [owise] .
 
   *** The ready predicate holds, if a statement is ready for execution,
@@ -835,7 +836,7 @@ CSTEP(dnl
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
 `< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
-EVALGUARD(G, (S # L), MM, T) asBool,
+ifdef(`TIME', EVALGUARD(G, (S # L), MM, T) asBool, true),
 `[label posit]')
 
 
@@ -1086,11 +1087,38 @@ eq
   .
 
 ifdef(`TIME',dnl
+*** The following formalises the tick rule for real-time Creol.  This rule
+*** is only enabled if and only if all posit constraints are satisfied in
+*** the global state at the new time.
+
+op posit(_,_,_) : Subst StmList Float -> Bool .
+eq posit((S # L), posit E ; SL, T) = EVAL(E,(S # L), T) asBool .
+eq posit((S # L), SL, T) = true [otherwise] .
+
+op posit(_,_,_) : Subst MProc Float -> Bool .
+eq posit(S, noProc, T) = true .
+eq posit(S, (L, SL) ++ W, T) = posit((S # L),SL,T) and posit(S, W, T) .
+
+op posit : State -> Bool .
+eq posit ({ clock(delta, T) }) = true .
+eq posit ({ c:Class cnf }) = posit ({ cnf }) .
+eq posit ({ c:Queue cnf }) = posit ({ cnf }) .
+eq posit ({ < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
+            cnf clock(delta, T) }) =
+  *** posit (S, W, T + delta) and
+    posit ({ cnf clock(delta, T) }) .
+eq posit ({ < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+            cnf clock(delta, T) }) =
+  posit((S # L), SL, T + delta) and *** posit (S, W, T + delta) and
+    posit ({ cnf clock(delta, T) }) .
+
 *** A very simple discrete time clock.
-rl
+crl
   { cnf clock(delta, T) } => { cnf clock(delta, T + delta) }
+  if posit ({ cnf clock(delta, T) })
   [label tick]
-  .)
+  .
+)dnl
 
 endm
 

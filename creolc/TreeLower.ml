@@ -209,8 +209,48 @@ let pass input =
 	[] -> []
       | i::l -> (lower_inherits i)::(lower_inherits_list l)
   and lower_class c =
-    { c with Class.inherits = lower_inherits_list c.Class.inherits;
-      Class.with_defs = List.map lower_with c.Class.with_defs }
+    (* Make an init method *)
+    let lhs n =
+      Expression.LhsAttr (Expression.dummy_note, n, Type.Basic c.Class.name)
+    in
+    let rec build =
+      function
+	  [] -> ([], [], [])
+	| ({ VarDecl.name = n; init = Some i } as v)::l ->
+	    let (v', n', i') = build l in
+              ({ v with VarDecl.init = None }::v', (lhs n)::n', i::i')
+	| v::l ->
+	    let (v', n', i') = build l in (v::v', n', i')
+    in
+    let (a', d', n') = build c.Class.attributes in
+    let with_defs' =
+      match (d', n') with
+	  ([], []) -> c.Class.with_defs
+	| _ ->
+	    let assign = Assign(Statement.dummy_note, d', n') in
+	    let upd_init =
+	      function
+		  { Method.name = "init"; inpars = []; outpars = [];
+		    body = None } as m ->
+		    { m with Method.body = Some assign }
+		| { Method.name = "init"; inpars = []; outpars = [];
+		    body = Some s } as m ->
+		    { m with Method.body =
+			Some (Sequence(Statement.dummy_note, assign, s)) }
+		| m -> m
+	    in
+	      List.map
+		(function
+		    { With.co_interface = None; methods = m } as w ->
+		      { w with With.methods = List.map upd_init m }
+		  | w -> w)
+		c.Class.with_defs
+    in
+    let add_init =
+      ()
+    in
+      { c with Class.inherits = lower_inherits_list c.Class.inherits;
+	with_defs = List.map lower_with with_defs' }
   and lower_interface i =
     i
   and lower_declaration =

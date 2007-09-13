@@ -195,6 +195,9 @@ module Expression =
 	ty = Type.data
       }
 
+    let dummy_note =
+      { file = "**dummy**"; line = 0; ty = Type.data }
+
     let file note = note.file
 
     let line note = note.line
@@ -570,6 +573,9 @@ module Statement =
       life = IdSet.empty 
     }
 
+    let dummy_note =
+      { file = "**dummy**"; line = 0; life = IdSet.empty }
+
     type signature = Type.t * Type.t * Type.t
 
     let default_sig = (Type.any, Type.data, Type.data)
@@ -883,6 +889,12 @@ struct
       | Datatype of Datatype.t
       | Exception of Exception.t
 
+  let hide =
+    function
+        Datatype d -> Datatype { d with Datatype.hidden = true }
+      | Interface i -> Interface { i with Interface.hidden = true }
+      | d -> d
+
 end
 
 
@@ -1023,12 +1035,6 @@ module Program =
 	(List.hd types)
       else
 	Type.data
-
-    let prerr_constraint_set constr =
-      let print_constr (s, t) =
-	prerr_endline ("  " ^ (Type.as_string s) ^ " <: " ^ (Type.as_string t))
-      in
-        List.iter print_constr constr
 
     let generalize res s t =
       (** In a result substitution, generalise s to t *)

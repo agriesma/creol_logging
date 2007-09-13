@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
+open Misc
 open Creol
 open Expression
 open Statement
@@ -26,12 +27,19 @@ open Statement
 exception Type_error of string * int * string
 exception Unify_failure of Type.t * Type.t
 
-type freshvar = FreshVar of Type.t * freshvargen
-and freshvargen = unit -> freshvar
+let fresh_var f =
+  let FreshName(n, f') = f () in
+    (Type.Variable n, f')
 
-let freshvargen =
-  let rec f n () = FreshVar(Type.Variable ("_" ^ (string_of_int n)), f (n + 1))
-  in f 0
+let rec string_of_constraint_set =
+    function
+        [] -> "none"
+      | [(s, t)] ->
+          (Type.as_string s) ^ " <: " ^ (Type.as_string t)
+      | (s, t)::l ->
+          (Type.as_string s) ^ " <: " ^ (Type.as_string t) ^ ", " ^
+	    (string_of_constraint_set l)
+
 
 let subst_more_specific_p program s t =
   (* Substitutions s and t must have the same support. *)
@@ -64,11 +72,7 @@ let unify ~program ~constraints =
       in
 	Messages.message 3 ("unify: " ^ (Type.as_string s) ^ " is subtype of " ^ (Type.as_string t)) ;
 	match (s, t) with
-	    (_, Type.Basic "Data") ->
-	      (* Every type is supposed to be a subtype of data,
-		 therefore this constraint is always true. *)
-	      do_unify d res
-	  | (Type.Basic _, Type.Basic _) when Program.subtype_p program s t ->
+	    (Type.Basic _, Type.Basic _) when Program.subtype_p program s t ->
 		do_unify d res
 	  | (Type.Tuple l1, Type.Tuple l2) when (List.length l1) = (List.length l2) ->
 		do_unify ((List.combine l1 l2)@d) res
@@ -137,6 +141,10 @@ let unify ~program ~constraints =
 			    ("try_unify: did not work, use Data for `" ^ x) ;
 	                  try_unify (Type.Basic "Data")
 		end
+	  | (_, Type.Basic "Data") ->
+	      (* Every type is supposed to be a subtype of data,
+		 therefore this constraint is always true. *)
+	      do_unify d res
 	  | _ ->
 		Messages.message 2 ("unify: failed to unify " ^
 				    (Type.as_string s) ^ " as subtype of " ^
@@ -238,7 +246,7 @@ let typecheck tree: Declaration.t list =
       let (fresh_name', s) =
 	List.fold_left
 	  (fun (fn, s) x ->
-	    let FreshVar (v, fn') = fn () in
+	    let (v, fn') = fresh_var fn in
 	      (fn', Type.Subst.add x v s))
 	  (fresh_name, Type.Subst.empty)
 	  fv
@@ -259,10 +267,10 @@ let typecheck tree: Declaration.t list =
 	| Caller n ->
 	    (Caller (set_type n (Type.Basic coiface)), constr, fresh_name)
 	| Null n ->
-	    let FreshVar (v, fresh_name') = fresh_name () in
+	    let (v, fresh_name') = fresh_var fresh_name in
 	      (Null (set_type n v), constr, fresh_name')
 	| Nil n ->
-	    let FreshVar (v, fresh_name') = fresh_name () in
+	    let (v, fresh_name') = fresh_var fresh_name in
 	      (Nil (set_type n (Type.Application ("List", [v]))), constr, fresh_name')
 	| Now n ->
 	    (Now (set_type n (Type.Basic "Time")), constr, fresh_name)
@@ -340,7 +348,7 @@ let typecheck tree: Declaration.t list =
 		      (fn'', Type.Disjunction t)
 	    in
 	    let ty2 = Type.Tuple [get_type arg'] in
-	    let FreshVar (v, fresh_name''') = fresh_name'' () in
+	    let (v, fresh_name''') = fresh_var fresh_name'' in
 	      (Unary (set_type n v, op, arg'),
 	      (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Binary (n, op, arg1, arg2) ->
@@ -380,7 +388,7 @@ let typecheck tree: Declaration.t list =
 		      (fn'', Type.Disjunction t)
 	    in
 	    let ty2 = Type.Tuple [get_type arg1'; get_type arg2'] in
-	    let FreshVar (v, fresh_name'''') = fresh_name''' () in
+	    let (v, fresh_name'''') = fresh_var fresh_name''' in
 	      (Binary (set_type n v, op, arg1', arg2'),
 	      (Type.Function (ty2, v), ty1)::constr'', fresh_name'''')
 	| Expression.If (n, cond, iftrue, iffalse) ->
@@ -432,7 +440,7 @@ let typecheck tree: Declaration.t list =
 		      (fn'', Type.Disjunction t)
 	    in
 	    let ty2 = Type.Tuple (List.map get_type nargs) in
-	    let FreshVar (v, fresh_name''') = fresh_name'' () in
+	    let (v, fresh_name''') = fresh_var fresh_name'' in
 	      (FuncCall (set_type n v, name, nargs),
 	      (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
@@ -510,7 +518,8 @@ let typecheck tree: Declaration.t list =
 	    let (l', c'', f'') = type_recon_expression_list c' f' l in
 	      (e'::l', c'', f'')
     in
-    let (expr', constr', _) = type_recon_expression constr freshvargen expr
+    let (expr', constr', _) =
+      type_recon_expression constr (fresh_name_gen "_") expr
     in
     let subst =
       try
@@ -521,10 +530,10 @@ let typecheck tree: Declaration.t list =
 	    and line = string_of_int (Expression.line (Expression.note expr)) 
 	    in 
 	      prerr_endline (file ^ ":" ^ line ^ ": expression has type " ^
-				(Type.as_string s) ^ " but expected is type " ^
-				(Type.as_string t) ^
-				".  Cannot satisfy constraints") ;
-	      Program.prerr_constraint_set constr' ;
+			       (Type.as_string s) ^ " but expected is type " ^
+			       (Type.as_string t) ^
+			       ".\n  Cannot satisfy constraints: " ^
+	                       (string_of_constraint_set constr')) ;
 	      exit 1
     in
       substitute_types_in_expression subst expr'

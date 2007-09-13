@@ -19,19 +19,8 @@
  * along with this program.   If not, see <http://www.gnu.org/licenses/>.
  *)
 
+open Misc
 open Creol
-
-let rec separated_list elt_fun sep_fun =
-  (** Helper function for outputting a separated list.
-      It will call [elt_fun] for each element of the list and
-      [sep_fun] between each element, *)
-  function
-      [] -> ()
-    | [s] -> elt_fun s
-    | s::r ->
-	elt_fun s;
-	sep_fun ();
-	separated_list elt_fun sep_fun r
 
 let emit out_channel input =
   (** Write a pretty-printed tree to [out_channel].

@@ -1,7 +1,28 @@
+creoltools 0.0g (2007-XX-XX): alpha release.
+
+In the language:
+*
+
+In the compiler:
+* An error in locating the prelude has been corrected.
+* The compiler can search in different places for files now.
+* Correct an error in the type checker which lost precision.
+* Attributes can be initialised directly now.
+
+In the standard library:
+*
+
+In the interpreter:
+* The real-time interpreter should be executable now, if the system is
+  initialised with a proper configuration and a ticking clock.
+
+Other:
+*
+
 creoltools 0.0g (2007-09-10): alpha release.
 
-This version is now licensed under the terms of the GPLv3 or (at your
-option) later.  See COPYING for details.
+This version and all successive versions are now licensed under the terms
+of the GPLv3 or (at your option) later.  See COPYING for details.
 
 In the language:
 * Labels must be declared now.  A label type has the form
