@@ -17,19 +17,20 @@ result Configuration:
 < "Consumer" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noVid, Latt: "y" |-> null, Code: "sync.0" ! "b" .
-    "remove"(emp) ; "sync.0" ?("y") ; ".anon" ! "this" . "run"(emp) ; free(
-    ".anon") ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
+    null, "y" |-> null, Code: "label:0" ! "b" . "remove"(emp) ; "label:0" ?(
+    "y") ; "label:1" ! "this" . "run"(emp) ; free("label:1") ; return(emp) >,
   Ocnt: 0 >
 
 < "Producer" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, Code: "sync.0" ! "b" .
-    "append"("i") ; "sync.0" ?(noVid) ; ".anon" ! "this" . "loop"("+"("i" #
-    int(1))) ; free(".anon") ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "this" .
-    "loop"(int(0)) ; free(".anon") ; return(emp) >,
+  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null, "label:0" |-> null,
+    "label:1" |-> null, Code: "label:0" ! "b" . "append"("i") ; "label:0" ?(
+    noVid) ; "label:1" ! "this" . "loop"("+"("i" # int(1))) ; free("label:1") ;
+    return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
+    "this" . "loop"(int(0)) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
 
 < "Starter" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:

@@ -4,9 +4,9 @@ result Class:
 < "Alarmclock" : Cl | Inh: noInh, Par: noVid, Att: "clock" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "clock" ::= int(0) ;
     return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "clock" ::= "+"(
-    "clock" # int(1)) ; ".anon" ! "this" . "run"(emp) ; free(".anon") ; return(
-    emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "clock" ::=
+    "+"("clock" # int(1)) ; "label:0" ! "this" . "run"(emp) ; free("label:0") ;
+    return(emp) > *
   < "wakeme" : Mtdname | Param: "n", Latt: "alarmsetting" |-> null, "n" |->
     null, Code: "alarmsetting" ::= "+"("clock" # "n") ; await ">="("clock" #
     "alarmsetting") ; return(emp) >,

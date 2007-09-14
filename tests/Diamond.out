@@ -12,16 +12,16 @@ result Configuration:
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
-    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
+  < "n" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null, Code:
+    "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" >, Par: "c", Att: "c" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
-    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
+  < "o" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null, Code:
+    "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
@@ -29,9 +29,9 @@ result Configuration:
     null, "y" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "this" .
-    "n"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "o"(emp) ; "sync.1" ?("y")
-    ; skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
+    null, Code: "label:0" ! "this" . "n"(emp) ; "label:0" ?("x") ; "label:1" !
+    "this" . "o"(emp) ; "label:1" ?("y") ; skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
 rewrite in PROGRAM : init
@@ -52,16 +52,16 @@ result Configuration:
 < "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
-    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
+  < "n" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null, Code:
+    "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" >, Par: "c", Att: "c" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "sync.0" ! "this" .
-    "m"(emp) ; "sync.0" ?("r") ; return("r") > *
+  < "o" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null, Code:
+    "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
@@ -69,9 +69,9 @@ result Configuration:
     null, "y" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "this" .
-    "n"(emp) ; "sync.0" ?("x") ; "sync.1" ! "this" . "o"(emp) ; "sync.1" ?("y")
-    ; skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
+    null, Code: "label:0" ! "this" . "n"(emp) ; "label:0" ?("x") ; "label:1" !
+    "this" . "o"(emp) ; "label:1" ?("y") ; skip ; return(emp) >,
   Ocnt: 1 >
 
 < ob("D0") : "D" | Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this"

@@ -11,16 +11,16 @@ eq init =
 < "B" : Cl | Inh: "A" < "b" > , Par: "b", Att: "b" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: ( "sync.0" ! "this" . "m" (emp ) )  ; ( "sync.0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" > , Par: "c", Att: "c" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: ( "sync.0" ! "this" . "m" (emp ) )  ; ( "sync.0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
+  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
 
 < "D" : Cl | Inh: "B" < int(1) >  ## "C" < int(2) > , Par: noVid, Att: "x" |-> null , "y" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ( "sync.0" ! "this" . "n" (emp ) )  ; ( "sync.0" ? ( "x" ) )  ; ( "sync.1" ! "this" . "o" (emp ) )  ; ( "sync.1" ? ( "y" ) )  ; skip ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "n" (emp ) )  ; ( "label:0" ? ( "x" ) )  ; ( "label:1" ! "this" . "o" (emp ) )  ; ( "label:1" ? ( "y" ) )  ; skip ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

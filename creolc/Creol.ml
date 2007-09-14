@@ -71,7 +71,7 @@ module Type =
 
     let boolean = Basic "Bool"
 
-    let label = "Label"
+    let label t = Application ("Label", t)
 
     (* These are the support functions for the abstract syntax tree. *)
 
@@ -579,6 +579,12 @@ module Statement =
     type signature = Type.t * Type.t * Type.t
 
     let default_sig = (Type.any, Type.data, Type.data)
+
+    let co_interface (c, _, _) = c
+
+    let domain (_, d, _) = d
+
+    let range (_, _, r) = r
 
     type t =
       (** Abstract syntax of statements in Creol.  The type parameter ['a]

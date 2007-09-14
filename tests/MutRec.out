@@ -2,8 +2,9 @@
 reduce in PROGRAM : init .
 result Configuration: 
 < "MutRec" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "doit" : Mtdname | Param: "other", Latt: "other" |-> null, Code: "sync.0" !
-    "other" . "doit"("this") ; "sync.0" ?(noVid) ; return(emp) > *
+  < "doit" : Mtdname | Param: "other", Latt: "label:0" |-> null, "other" |->
+    null, Code: "label:0" ! "other" . "doit"("this") ; "label:0" ?(noVid) ;
+    return(emp) > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
@@ -15,7 +16,7 @@ result Configuration:
     return(emp) > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "m1" ::= new
     "MutRec"(emp) ; "m2" ::= new "MutRec"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ".anon" ! "m1" .
-    "doit"("m2") ; free(".anon") ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
+    "m1" . "doit"("m2") ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
 Bye.

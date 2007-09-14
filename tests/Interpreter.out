@@ -10,7 +10,7 @@ result Configuration:
   Ocnt: 0 >
 
 < ob("main") : "NoClass" | Att: noSubst,
-  Pr: noSubst, "var" ::= new "Tailcall"(int(5)),
+  Pr: "var" |-> null, "var" ::= new "Tailcall"(int(5)),
   PrQ: noProc, Lcnt: 0 >
 ==========================================
 search in TEST-TAILCALL : init =>+ conf:Configuration

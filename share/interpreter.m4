@@ -392,7 +392,7 @@ ifdef(`MODELCHECK',dnl
   var E : ExprList .
   op main : Cid ExprList -> Configuration .
   eq main(C,E) = < ob("main") : "NoClass" | Att: noSubst, 
-                 Pr: (noSubst, ("var" ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
+                 Pr: ("var" |-> null, ("var" ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
                < ob("main") : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
@@ -626,11 +626,11 @@ ifdef(`DEVIRT', `dnl
   < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
     Lcnt: N >'
 , `dnl
-  if dom(a,S) then
-    < O : C | Att: insert(a, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
+  if dom(a, L) then
+    < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
   else
-    < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
+    < O : C | Att: insert(a, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
       Lcnt: N > 
   fi')
   [label do-assign] .

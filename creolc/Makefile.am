@@ -24,14 +24,14 @@ export OCAMLPATH
 # Subdirs
 MOSTLYCLEANFILES	= *~ *.aux *.log *.cmi *.cmo *.cmx *.cma *.cmxa *.o
 CLEANFILES		=
-DISTCLEANFILES		= html-stamp
-MAINTAINERCLEANFILES	= .depend $(BUILT_SOURCES)
+DISTCLEANFILES		= Version.ml
+MAINTAINERCLEANFILES	= .depend CreolLex.ml CreolParser.ml CreolParser.mli 
 
 EXTRA_DIST		= .depend Creol.mll Creol.mly
 
 bin_PROGRAMS		= creolc creolc.opt
 
-BUILT_SOURCES		= CreolLex.ml CreolParser.ml CreolParser.mli
+BUILT_SOURCES		= CreolLex.ml CreolParser.ml CreolParser.mli Version.ml
 
 creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
 			  CreolTyping.mli CreolTyping.ml \

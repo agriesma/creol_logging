@@ -28,12 +28,19 @@ let next_fresh_label = ref 0
 
 let fresh_label () =
   (* make a fresh label *)
-  let res = "sync." ^ (string_of_int !next_fresh_label) in
+  let res = "label:" ^ (string_of_int !next_fresh_label) in
     next_fresh_label := !next_fresh_label + 1 ; res
 
 let pass input =
   (** Normalise an abstract syntax tree by replacing all derived concepts
       with there basic equivalents *)
+  let label_decl l rng =
+    match rng with
+	Type.Tuple rng' ->
+          { VarDecl.name = l; var_type = Type.label rng' ; init = None }
+      | _ -> 
+          { VarDecl.name = l; var_type = Type.label [rng] ; init = None }
+  in
   let rec lower_expression =
     function
 	Unary(a, o, e) ->
@@ -46,31 +53,34 @@ let pass input =
       | FuncCall(a, f, args) -> FuncCall(a, f, List.map lower_expression args)
       | New (a, t, p) -> New (a, t, List.map lower_expression p)
       | t -> t
-  and lower_statement =
+  and lower_statement label_decls =
     function
-	Skip _ as s -> s
-      | Release _ as s -> s
-      | Assert (a, e) -> Assert (a, lower_expression e)
-      | Prove (a, e) -> Prove (a, lower_expression e)
-      | Assign (a, s, e) -> Assign (a, s, List.map lower_expression e)
-      | Await (a, g) -> Await (a, lower_expression g)
-      | Posit (a, g) -> Posit (a, lower_expression g)
-      | AsyncCall (a, None, e, n, s, p) ->
+	Skip _ as s -> (label_decls, s)
+      | Release _ as s -> (label_decls, s)
+      | Assert (a, e) -> (label_decls, Assert (a, lower_expression e))
+      | Prove (a, e) -> (label_decls, Prove (a, lower_expression e))
+      | Assign (a, s, e) ->
+	  (label_decls, Assign (a, s, List.map lower_expression e))
+      | Await (a, g) -> (label_decls, Await (a, lower_expression g))
+      | Posit (a, g) -> (label_decls, Posit (a, lower_expression g))
+      | AsyncCall (a, None, e, n, (co, dom, rng), p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
-	  Sequence (a, AsyncCall (a,
+	  let l = fresh_label () in
+	  ((label_decl l rng)::label_decls,
+	   Sequence (a, AsyncCall (a,
 				 Some (LhsVar (make_expr_note_from_stmt_note a,
-					      ".anon")),
-				 lower_expression e, n, s,
+					      l)),
+				 lower_expression e, n, (co, dom, rng),
 				 List.map lower_expression p),
-		   Free (a, [Id (make_expr_note_from_stmt_note a, ".anon")]))
+		   Free (a, [Id (make_expr_note_from_stmt_note a, l)])))
       | AsyncCall (a, Some l, e, n, s, p) ->
-	  AsyncCall (a, Some l, lower_expression e, n, s,
-		    List.map lower_expression p)
-      | Free _ as s -> s
-      | Reply _ as s -> s
-      | SyncCall (a, e, n, s, p, r) ->
+	  (label_decls, AsyncCall (a, Some l, lower_expression e, n, s,
+		    List.map lower_expression p))
+      | Free _ as s -> (label_decls, s)
+      | Reply _ as s -> (label_decls, s)
+      | SyncCall (a, e, n, (c, dom, rng), p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
 	     
@@ -81,36 +91,49 @@ let pass input =
 	  and np = List.map lower_expression p
 	  and l = fresh_label ()
           in
-	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, s, np),
-		     Reply (a, Id (make_expr_note_from_stmt_note a, l), r))
-      | AwaitSyncCall (a, e, n, s, p, r) ->
+	    ((label_decl l rng)::label_decls, Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, (c, dom, rng), np),
+		     Reply (a, Id (make_expr_note_from_stmt_note a, l), r)))
+      | AwaitSyncCall (a, e, n, (c, dom, rng), p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
 	     
 	     XXX: Usually, we nest a sequence into a sequence here, which is
 	     not very nice.  May be we want to have something smarter for
 	     sequences which avoids this nesting? *)
-	  let ne = lower_expression e
-	  and np = List.map lower_expression p
+	  let e' = lower_expression e
+	  and p' = List.map lower_expression p
 	  and l = fresh_label () in
-	  let nn = Expression.note ne
+	  let nn = Expression.note e'
 	  in
-	    Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, s, np),
+	    ((label_decl l rng)::label_decls,
+	     Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), e', n, (c, dom, rng), p'),
 		     Sequence(a,
 			     Await (a, Label (nn, Id (nn, l))),
-			     Reply (a, Id (make_expr_note_from_stmt_note a,
-					  l),
-				   r)))
-      | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
+			     Reply (a, Id (make_expr_note_from_stmt_note a, l),
+				   r))))
+      | LocalAsyncCall (a, None, m, (c, dom, rng), lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
-	  Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a, ".anon")), m, s, lb, ub,
+	  let l = fresh_label () in
+	  ((label_decl l rng)::label_decls, Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), m, (c, dom, rng), lb, ub,
 				     List.map lower_expression i),
-		   Free (a, [Id (make_expr_note_from_stmt_note a, ".anon")]))
+		   Free (a, [Id (make_expr_note_from_stmt_note a, l)])))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
-	  LocalAsyncCall (a, Some l, m, s, lb, ub, List.map lower_expression i)
-      | LocalSyncCall (a, m, s, l, u, i, o) ->
+	  (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, List.map lower_expression i))
+      | LocalSyncCall (a, m, (co, dom, rng), l, u, i, o) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.
+	     
+	     XXX: Usually, we nest a sequence into a sequence here, which is
+	     not very nice.  May be we want to have something smarter for
+	     sequences which avoids this nesting? *)
+	  let i' = List.map lower_expression i
+	  and lab = fresh_label ()
+	  in
+	    ((label_decl lab rng)::label_decls, Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, (co, dom, rng), l, u, i'),
+		     Reply (a, Id (make_expr_note_from_stmt_note a, lab), o)))
+      | AwaitLocalSyncCall (a, m, (co, dom, rng), l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.
 	     
@@ -120,43 +143,38 @@ let pass input =
 	  let ni = List.map lower_expression i
 	  and lab = fresh_label ()
 	  in
-	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, s, l, u, ni),
-		     Reply (a, Id (make_expr_note_from_stmt_note a, lab), o))
-      | AwaitLocalSyncCall (a, m, s, l, u, i, o) ->
-	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.
-	     
-	     XXX: Usually, we nest a sequence into a sequence here, which is
-	     not very nice.  May be we want to have something smarter for
-	     sequences which avoids this nesting? *)
-	  let ni = List.map lower_expression i
-	  and lab = fresh_label ()
-	  in
-	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, s, l, u, ni),
+	    ((label_decl lab rng)::label_decls, Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, (co, dom, rng), l, u, ni),
 		     Sequence (a, Await (a,
 					Label(make_expr_note_from_stmt_note a,
 					     Id (make_expr_note_from_stmt_note a, lab))),
 			      Reply (a, Id (make_expr_note_from_stmt_note a,
 					   lab),
-				    o)))
-      | Tailcall (a, m, s, l, u, i) ->
-	  Tailcall (a, m, s, l, u, List.map lower_expression i)
-      | If (a, c, t, f) -> If(a, lower_expression c, lower_statement t,
-			     lower_statement f)
+				    o))))
+      | Tailcall (a, m, (co, dom, rng), l, u, i) ->
+	  (label_decls, Tailcall (a, m, (co, dom, rng), l, u, List.map lower_expression i))
+      | If (a, c, t, f) ->
+	  let (label_decls', t') = lower_statement label_decls t in
+	  let (label_decls'', f') = lower_statement label_decls' f in
+	    (label_decls'', If(a, lower_expression c, t', f'))
       | While (a, c, None, b) ->
-	  While (a, lower_expression c, None, lower_statement b)
+	  let (label_decls', b') = lower_statement label_decls b in
+	    (label_decls', While (a, lower_expression c, None, b'))
       | While (a, c, Some i, b) ->
-	  While (a, lower_expression c, Some (lower_expression i),
-		lower_statement b)
+	  let (label_decls', b') = lower_statement label_decls b in
+	    (label_decls', While (a, lower_expression c, Some (lower_expression i), b'))
       | Sequence (a, s1, s2) ->
-	  let ls1 = lower_statement s1
-	  and ls2 = lower_statement s2 in
-	    Sequence (a, ls1, ls2)
-      | Merge (a, s1, s2) -> Merge (a, lower_statement s1,
-				   lower_statement s2)
-      | Choice (a, s1, s2) -> Choice (a, lower_statement s1,
-				     lower_statement s2)
-      | Extern _ as s -> s
+	  let (label_decls', s1') = lower_statement label_decls s1 in
+	  let (label_decls'', s2') = lower_statement label_decls' s2 in
+	    (label_decls'', Sequence (a, s1', s2'))
+      | Merge (a, s1, s2) ->
+	  let (label_decls', s1') = lower_statement label_decls s1 in
+	  let (label_decls'', s2') = lower_statement label_decls' s2 in
+	    (label_decls'', Merge (a, s1', s2'))
+      | Choice (a, s1, s2) ->
+	  let (label_decls', s1') = lower_statement label_decls s1 in
+	  let (label_decls'', s2') = lower_statement label_decls' s2 in
+	    (label_decls'', Merge (a, s1', s2'))
+      | Extern _ as s -> (label_decls, s)
   and lower_method_variables note vars =
     (** Compute a pair of a new list of local variable declarations
 	and a list of assignments used for initialisation.
@@ -192,13 +210,16 @@ let pass input =
       match m.Method.body with
 	  None -> m
 	| Some mb  ->
-	    let smv = lower_method_variables (Statement.note mb) m.Method.vars in
-	      { m with Method.vars = fst smv ;
-		body = Some( if Statement.is_skip_p (snd smv) then
-		  normalize_sequences (lower_statement mb)
+	    let (label_decls, mb') = lower_statement [] mb in
+	    let (vars', init) =
+	      lower_method_variables (Statement.note mb')
+		(label_decls @ m.Method.vars)
+	    in
+	      { m with Method.vars = vars' ;
+		body = Some (if Statement.is_skip_p init then
+		    normalize_sequences mb'
 		  else
-		    Sequence(Statement.note mb, snd smv,
-			    normalize_sequences (lower_statement mb))) }
+		    Sequence(Statement.note mb, init, normalize_sequences mb')) }
   and lower_with w =
     { w with With.methods = List.map lower_method w.With.methods }
   and lower_inherits =

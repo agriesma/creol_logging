@@ -13,12 +13,14 @@ result Configuration:
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "status" ::= int(0) ;
-    "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ; ".anon" !
-    "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
-  < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
-    # "u") th "status" ::= int(1) el skip fi fi ; return(emp) > *
+  < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
+    null, Code: "status" ::= int(0) ; "label:0" ! "i" . "getNeighbor"(emp) ;
+    "label:0" ?("neighbor") ; "label:1" ! "neighbor" . "receive"("u") ; free(
+    "label:1") ; return(emp) > *
+  < "receive" : Mtdname | Param: "v", Latt: "label:0" |-> null, "v" |-> null,
+    Code: if ">"("v" # "u") th "label:0" ! "neighbor" . "receive"("v") ; free(
+    "label:0") el if "="("v" # "u") th "status" ::= int(1) el skip fi fi ;
+    return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
@@ -47,12 +49,14 @@ result Configuration:
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "status" ::= int(0) ;
-    "sync.0" ! "i" . "getNeighbor"(emp) ; "sync.0" ?("neighbor") ; ".anon" !
-    "neighbor" . "receive"("u") ; free(".anon") ; return(emp) > *
-  < "receive" : Mtdname | Param: "v", Latt: "v" |-> null, Code: if ">"("v" #
-    "u") th ".anon" ! "neighbor" . "receive"("v") ; free(".anon") el if "="("v"
-    # "u") th "status" ::= int(1) el skip fi fi ; return(emp) > *
+  < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
+    null, Code: "status" ::= int(0) ; "label:0" ! "i" . "getNeighbor"(emp) ;
+    "label:0" ?("neighbor") ; "label:1" ! "neighbor" . "receive"("u") ; free(
+    "label:1") ; return(emp) > *
+  < "receive" : Mtdname | Param: "v", Latt: "label:0" |-> null, "v" |-> null,
+    Code: if ">"("v" # "u") th "label:0" ! "neighbor" . "receive"("v") ; free(
+    "label:0") el if "="("v" # "u") th "status" ::= int(1) el skip fi fi ;
+    return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >
 

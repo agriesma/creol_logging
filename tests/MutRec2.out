@@ -2,11 +2,11 @@
 reduce in PROGRAM : init .
 result Class: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "a" |-> null, Code: "a" ::= new
-    "Test"(emp) ; "sync.0" ! "a" . "m"(emp) ; "sync.0" ?(noVid) ; return(emp) >
-    *
-  < "m" : Mtdname | Param: noVid, Latt: noSubst, Code: "sync.0" ! "caller" .
-    "m"(emp) ; "sync.0" ?(noVid) ; return(emp) > *
+  < "init" : Mtdname | Param: noVid, Latt: "a" |-> null, "label:0" |-> null,
+    Code: "a" ::= new "Test"(emp) ; "label:0" ! "a" . "m"(emp) ; "label:0" ?(
+    noVid) ; return(emp) > *
+  < "m" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
+    "caller" . "m"(emp) ; "label:0" ?(noVid) ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 Bye.

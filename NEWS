@@ -8,6 +8,7 @@ In the compiler:
 * The compiler can search in different places for files now.
 * Correct an error in the type checker which lost precision.
 * Attributes can be initialised directly now.
+* All implicit labels will be initialised now.
 
 In the standard library:
 *
@@ -15,6 +16,9 @@ In the standard library:
 In the interpreter:
 * The real-time interpreter should be executable now, if the system is
   initialised with a proper configuration and a ticking clock.
+* Assignment order has been corrected with respect to shadowing.  This
+  change was made possible by the generation of declarations for
+  implicit labels as well as requiring declarations of all labels.
 
 Other:
 *
