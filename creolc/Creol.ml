@@ -79,6 +79,11 @@ module Type =
 
     let label t = Application ("Label", t)
 
+    let variable_p =
+      function
+	  Variable _ -> true
+	| _ -> false
+
     (* These are the support functions for the abstract syntax tree. *)
 
     let rec as_string =
@@ -1004,7 +1009,7 @@ module Program =
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
 	| (Type.Basic _, Type.Intersection l) ->
 	    List.for_all (subtype_p program s) l
-	| (Type.Basic _, Type.Variable _) -> false (* FIXME *)
+	| (Type.Basic _, Type.Variable _) -> assert false (* FIXME *)
 	| (Type.Basic _, _) -> false
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
 	    (sc = tc) &&
@@ -1036,7 +1041,7 @@ module Program =
 	| (Type.Internal, Type.Internal) -> true
 	| (Type.Internal, _) -> false
 	| (_, Type.Internal) -> false
-	| (Type.Variable _, _) -> false (* FIXME *)
+	| (Type.Variable _, _) -> assert false
 	| (Type.Function _, _) -> assert false
 
     let meet ~program lst =

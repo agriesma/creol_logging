@@ -118,8 +118,8 @@ let unify ~program ~constraints =
 		 be multiple constraints on x, and we need to choose the
 		 strongest one. *)
 	      let t' =
-		Program.meet program (List.map snd
-				       (List.filter (fun (v, _) -> (v = s)) c))
+		let p (v, w) = (v = s) && (not (Type.variable_p w)) in
+		  Program.meet program (List.map snd (List.filter p c))
 	      in
 	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
 				    (Type.as_string t')) ;
@@ -133,9 +133,9 @@ let unify ~program ~constraints =
 		 This constraint is trivially satisfied by t, but there may
 		 be multiple constraints on x, and we need to choose the
 		 strongest one. *)
-	      let t' = t
-		(* Program.join program (List.map snd
-			     (List.filter (fun (_, v) -> (v = t)) c)) *)
+	      let s' =
+		let p (v, w) = (w = t) && (not (Type.variable_p v)) in
+		  Program.join program (List.map fst (List.filter p c))
 	      in
 	      let try_unify r =
 	        Messages.message 2 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
@@ -147,7 +147,7 @@ let unify ~program ~constraints =
 	      in
 		begin
 		  try
-		    try_unify t'
+		    try_unify s'
 		  with
 		      Unify_failure _ ->
 			  (* Try some supertype of t.
