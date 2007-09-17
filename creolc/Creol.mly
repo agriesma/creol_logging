@@ -5,7 +5,7 @@
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
 %token WHILE VAR WITH OP IN OUT CONSTRUCTOR EXTERN
-%token REQUIRES ENSURES INV SOME FORALL EXISTS
+%token REQUIRES ENSURES INV SOME FORALL EXISTS HISTORY
 %token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
 %token AS BY DO
 %token EXCEPTION
@@ -459,6 +459,8 @@ expression:
 	{ Nil (Expression.make_note $startpos) }
     | NULL
 	{ Null (Expression.make_note $startpos) }
+    | HISTORY
+	{ History (Expression.make_note $startpos) }
     | id = ID c = ioption(preceded(AT, creol_type))
 	{ match c with
 	      None -> Id (Expression.make_note $startpos, id)
@@ -499,10 +501,10 @@ expression:
 *)
 
 %inline binop:
-      AMPAMP { And (* XXX *) }
-    | WEDGE { And (* XXX *) }
-    | BARBAR { Or (* XXX *) }
-    | VEE { Or (* XXX *) }
+      AMPAMP { And }
+    | WEDGE { Wedge }
+    | BARBAR { Or }
+    | VEE { Vee }
     | HAT { Xor }
     | DLRARROW { Iff }
     | DARROW { Implies }

@@ -126,7 +126,7 @@ rule token = parse
     | "extern" { EXTERN }
     | "false" { BOOL(false) }
     | "forall" { FORALL }
-    | "history" { ID("history") (* XXX: Should be special *) }
+    | "history" { HISTORY }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
     | "inherits" { INHERITS }

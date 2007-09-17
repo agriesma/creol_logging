@@ -82,11 +82,7 @@ let pass input =
       | Reply _ as s -> (label_decls, s)
       | SyncCall (a, e, n, (c, dom, rng), p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.
-	     
-	     XXX: Usually, we nest a sequence into a sequence here, which is
-	     not very nice.  May be we want to have something smarter for
-	     sequences which avoids this nesting? *)
+	     call followed by a reply.  This generates a fresh label name.  *)
           let ne = lower_expression e
 	  and np = List.map lower_expression p
 	  and l = fresh_label ()
@@ -95,11 +91,7 @@ let pass input =
 		     Reply (a, Id (make_expr_note_from_stmt_note a, l), r)))
       | AwaitSyncCall (a, e, n, (c, dom, rng), p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.
-	     
-	     XXX: Usually, we nest a sequence into a sequence here, which is
-	     not very nice.  May be we want to have something smarter for
-	     sequences which avoids this nesting? *)
+	     call followed by a reply.  This generates a fresh label name.  *)
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p
 	  and l = fresh_label () in
@@ -123,11 +115,7 @@ let pass input =
 	  (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, List.map lower_expression i))
       | LocalSyncCall (a, m, (co, dom, rng), l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.
-	     
-	     XXX: Usually, we nest a sequence into a sequence here, which is
-	     not very nice.  May be we want to have something smarter for
-	     sequences which avoids this nesting? *)
+	     call followed by a reply.  This generates a fresh label name.  *)
 	  let i' = List.map lower_expression i
 	  and lab = fresh_label ()
 	  in
@@ -135,11 +123,7 @@ let pass input =
 		     Reply (a, Id (make_expr_note_from_stmt_note a, lab), o)))
       | AwaitLocalSyncCall (a, m, (co, dom, rng), l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.
-	     
-	     XXX: Usually, we nest a sequence into a sequence here, which is
-	     not very nice.  May be we want to have something smarter for
-	     sequences which avoids this nesting? *)
+	     call followed by a reply.  This generates a fresh label name.  *)
 	  let ni = List.map lower_expression i
 	  and lab = fresh_label ()
 	  in

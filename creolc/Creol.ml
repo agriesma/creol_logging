@@ -67,9 +67,15 @@ module Type =
 
     let any = Basic "Any"
 
+    let any_p t = (t = Basic "Any")
+
     let data = Basic "Data"
 
+    let data_p t = (t = Basic "Data")
+
     let boolean = Basic "Bool"
+
+    let boolean_p t = (t = Basic "Bool")
 
     let label t = Application ("Label", t)
 
@@ -211,6 +217,7 @@ module Expression =
 	| Now of note
 	| Null of note
 	| Nil of note
+	| History of note
 	| Bool of note * bool
 	| Int of note * int
 	| Float of note * float
@@ -255,7 +262,9 @@ module Expression =
 	| Ge
 	| Gt
 	| And
+	| Wedge
 	| Or
+	| Vee
 	| Xor
 	| Implies
 	| Iff
@@ -472,8 +481,7 @@ module Expression =
 	function
 	    Binary (b, And, f, g) ->
 	      Binary (b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
-	  | FuncCall (b, "&&", [f; g]) ->
-	      (* XXX: Should check that this is boolean *)
+	  | FuncCall (b, "&&", [f; g]) when Type.boolean_p b.ty ->
 	      FuncCall (b, "&&", [to_cnf_from_nnf f; to_cnf_from_nnf g])
 	  | Binary(b, Or, f, g) ->
 	      (* Push or inside of and using distributive laws *)
@@ -481,13 +489,11 @@ module Expression =
 		match (left, right) with
 		    (Binary(lb, And, lf, lg), _) ->
 		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
-		  | (FuncCall (lb, "&&", [lf; lg]), _) ->
-	      	      (* XXX: Should check that this is boolean *)
+		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.boolean_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
 		  | (_, Binary(rb, And, rf, rg)) ->
 		      Binary (b, And, to_cnf_or left rf, to_cnf_or left rg)
-		  | (_, FuncCall (rb, "&&", [rf; rg])) ->
-	      	      (* XXX: Should check that this is boolean *)
+		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.boolean_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
 		  | _ ->
 		      (* neither subformula contains and *)
@@ -500,13 +506,11 @@ module Expression =
 		match (left, right) with
 		    (Binary(lb, And, lf, lg), _) ->
 		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
-		  | (FuncCall (lb, "&&", [lf; lg]), _) ->
-	      	      (* XXX: Should check that this is boolean *)
+		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.boolean_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
 		  | (_, Binary(rb, And, rf, rg)) ->
 		      Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
-		  | (_, FuncCall (rb, "&&", [rf; rg])) ->
-	      	      (* XXX: Should check that this is boolean *)
+		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.boolean_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
 		  | _ ->
 		      (* neither subformula contains and *)
@@ -540,8 +544,7 @@ module Expression =
 	    Unary (_, Not, Label _) -> false
 	  | Binary(_, (And | Or), left, right) ->
 	      (all_labels_positive left) && (all_labels_positive right)
-	  | FuncCall(_, ("&&" | "||"), [left; right]) ->
-	      (* XXX: Should check, whether the type is boolean. *)
+	  | FuncCall(n, ("&&" | "||"), [left; right]) when Type.boolean_p n.ty ->
 	      (all_labels_positive left) && (all_labels_positive right)
 	  | Binary(_, (Implies|Xor|Iff), f, g) ->
 	      assert false (* Input was assumed to be in NNF *)
@@ -1139,5 +1142,5 @@ module Program =
    of such a function and where we should put it. *)
 let make_expr_note_from_stmt_note s =
 	{ Expression.file = s.Statement.file;
-	  Expression.line = s.Statement.line;
+	  line = s.Statement.line;
 	  ty = Type.data }

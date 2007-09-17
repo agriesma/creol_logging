@@ -59,12 +59,21 @@ let emit options out_channel input =
 	  of_type c ;
 	  output_string out_channel "\" )"
       | Expression.Tuple (_, l) ->
-	  (* XXX: The CMC does not distinguish tuples from pairs.  On
-	     the other hand, this is also conceptually bogus.  Can't
-	     tuples and list be identified? *)
-	  output_string out_channel "pair(" ;
-	  of_expression_list l ;
-	  output_string out_channel ")" ;
+	  (* FIXME: The CMC does not distinguish tuples of length two
+	     from pairs.  On the other hand, this is also conceptually
+	     bogus.  Can't tuples and list be identified? *)
+	  if 2 = (List.length l) then
+	    begin
+	      output_string out_channel "pair(" ;
+	      of_expression_list l ;
+	      output_string out_channel ")"
+	    end
+	  else
+	    begin
+	      output_string out_channel "list(" ;
+	      of_expression_list l ;
+	      output_string out_channel ")"
+	    end
       | Expression.ListLit (_, l) ->
 	  output_string out_channel "list(" ;
 	  of_expression_list l ;
