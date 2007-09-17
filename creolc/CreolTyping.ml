@@ -902,10 +902,7 @@ let typecheck tree: Declaration.t list =
 	  | Some s ->
 	      Some (type_check_statement program cls meth coiface s) }
   and type_check_with_def program cls w =
-    let coiface =
-      match w.With.co_interface with
-	  None -> ""
-	| Some c -> c
+    let coiface = Type.as_string w.With.co_interface
     in
       { w with With.methods =
 	  List.map

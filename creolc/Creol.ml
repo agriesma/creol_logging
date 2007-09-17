@@ -778,10 +778,11 @@ module Method =
 
     A with clause consists of a co-interface name, a list of methods
     and a sequence of invariants. *)
+
 module With = struct
 
   type t = {
-    co_interface: string option;
+    co_interface: Type.t;
     methods: Method.t list;
     invariants: Expression.t list
   }
@@ -842,8 +843,7 @@ struct
     (* FIXME: Make something smarter *)
     match iface.with_decls with
 	[] -> raise Not_found
-      | { With.co_interface = None}::_ -> Type.Internal
-      | { With.co_interface = Some i}::_ -> Type.Basic i
+      | { With.co_interface = t }::_ -> t
 
 end
 
@@ -1076,10 +1076,7 @@ module Program =
         let here =
 	  let withs =
 	    let p =
-	      (function
-		  { With.co_interface = Some n } ->
-		    subtype_p program coiface (Type.Basic n)
-		| _ -> false)
+	      (fun w -> subtype_p program coiface w.With.co_interface)
 	    in
 	      List.filter p i.Interface.with_decls
 	  in
@@ -1115,12 +1112,8 @@ module Program =
 			(subtype_p program ins (Method.domain_type m)) &&
 			(subtype_p program (Method.range_type m) outs))
 		    w.With.methods)
-		(List.filter
-		    (function
-			{ With.co_interface = Some n } ->
-			  subtype_p program Type.Internal (Type.Basic n)
-		      | _ -> true)
-		    c.Class.with_defs))
+		(let p w = subtype_p program Type.Internal w.With.co_interface
+		 in List.filter p c.Class.with_defs))
         and supers = List.map fst c.Class.inherits
         in
 	  List.fold_left

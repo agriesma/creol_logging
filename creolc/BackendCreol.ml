@@ -127,14 +127,14 @@ let emit out_channel input =
 	output_string out_channel ")"
       end
   and pretty_print_with w =
-    let indent = if w.With.co_interface = None then 1 else 2
+    let indent = if w.With.co_interface = Type.Internal then 1 else 2
     in
       begin
 	match w.With.co_interface with
-	    None -> ()
-	  | Some c ->
-	      do_indent 1;
-	      output_string out_channel ("with " ^ c);
+	    Type.Internal -> ()
+	  | t ->
+		do_indent 1 ;
+		output_string out_channel ("with " ^ (Type.as_string t))
       end ;
       do_indent indent;
       separated_list

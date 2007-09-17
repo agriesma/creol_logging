@@ -246,7 +246,7 @@ let pass input =
 	    in
 	      List.map
 		(function
-		    { With.co_interface = None; methods = m } as w ->
+		    { With.co_interface = Type.Internal; methods = m } as w ->
 		      { w with With.methods = List.map upd_init m }
 		  | w -> w)
 		c.Class.with_defs

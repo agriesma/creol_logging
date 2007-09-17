@@ -97,13 +97,9 @@ let emit ~name ~tree =
     XmlTextWriter.end_element writer
   and creol_with_to_xml w =
     XmlTextWriter.start_element writer "creol:with";
-    begin
-      match w.With.co_interface with
-	  None -> XmlTextWriter.write_attribute writer "cointerface" "None"
-	| Some i -> XmlTextWriter.write_attribute writer "cointerface" i
-    end;
-    List.iter (creol_method_to_xml)
-      w.With.methods;
+      let co = Type.as_string w.With.co_interface in
+	XmlTextWriter.write_attribute writer "cointerface" co ;
+    List.iter (creol_method_to_xml) w.With.methods;
     XmlTextWriter.end_element writer
   and creol_inherits_to_xml (i, l) =
     XmlTextWriter.start_element writer "creol:inherits";
