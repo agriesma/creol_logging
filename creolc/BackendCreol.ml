@@ -137,13 +137,14 @@ let emit out_channel input =
 	      output_string out_channel ("with " ^ c);
       end ;
       do_indent indent;
-      pretty_print_methods indent w.With.methods
-	(* XXX: Take care of invariants later *)
-  and pretty_print_methods indent list =
-    separated_list
-      (pretty_print_method (indent + 1))
-      (function () -> do_indent indent)
-      list
+      separated_list
+        (pretty_print_method (indent + 1))
+        (function () -> do_indent indent)
+        w.With.methods ;
+      separated_list
+	(fun e -> output_string out_channel "inv " ; pretty_print_expression e)
+	(fun () -> do_indent (indent + 1))
+	w.With.invariants
   and pretty_print_method indent m =
     output_string out_channel ("op " ^ m.Method.name);
     if m.Method.inpars <> [] || m.Method.outpars <> [] then
