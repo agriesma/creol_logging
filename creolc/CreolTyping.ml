@@ -325,8 +325,6 @@ let typecheck tree: Declaration.t list =
 	    in
 	      (Id (set_type n res, name), constr, fresh_name)
 	| StaticAttr (n, name, (Type.Basic c)) ->
-	    (* FIXME: Here we should also check whether cls is the
-	       current class name or inherited by the current class. *)
 	    let res =
 	      Program.find_attr_decl program (Program.find_class program c) name
 	    in
