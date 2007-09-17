@@ -1004,7 +1004,7 @@ module Program =
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
 	| (Type.Basic _, Type.Intersection l) ->
 	    List.for_all (subtype_p program s) l
-	| (Type.Basic _, Type.Variable _) -> assert false
+	| (Type.Basic _, Type.Variable _) -> false (* FIXME *)
 	| (Type.Basic _, _) -> false
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
 	    (sc = tc) &&
@@ -1036,14 +1036,58 @@ module Program =
 	| (Type.Internal, Type.Internal) -> true
 	| (Type.Internal, _) -> false
 	| (_, Type.Internal) -> false
-	| (Type.Variable _, _) -> assert false
+	| (Type.Variable _, _) -> false (* FIXME *)
 	| (Type.Function _, _) -> assert false
 
-    let meet ~program types =
-      if (List.for_all (fun x -> (List.hd types) = x) types) then
-	(List.hd types)
-      else
-	Type.data
+    let meet ~program lst =
+      (* Return the greates lower bound of all types in [lst] in [program],
+	 i.e., a type t with
+	 (lower-bound) t <: s for all s in [lst] and with
+	 (maximality) s <: t for all types s with s <: u for some u in [lst].
+
+	 Formally, the greatest lower bound of an empty [lst] is the top
+	 type.
+
+	 The result may be an intersection types, which is caused by
+	 classes implementing multiple interfaces.  If this function
+	 returns an intersection, the solution is ambigous.  *)
+      let find_meet s t =
+	if subtype_p program s t then
+	  s
+	else if subtype_p program t s then
+	  t
+	else
+	  Type.data
+      in
+	match lst with
+	    [] -> Type.data
+	  | [t] -> t
+	  | _ -> List.fold_left find_meet Type.data lst
+
+    let join ~program lst =
+      (* Return the least upper bound of all types in [lst] in [program],
+	 i.e., a type t with
+	 (upper-bound) s <: t for all s in [lst] and with
+	 (minimality) t <: s for all types s with u <: s for some u in [lst].
+
+	 Formally, the least upper bound of an empty [lst] is the bottom
+	 type.  However, bottom need not exist, and the function will
+	 therefore fail.
+
+	 The result may be an intersection types, which is caused by
+	 classes implementing multiple interfaces.  If this function
+	 returns an intersection, the solution is ambigous.  *)
+      let find_join s t =
+	if subtype_p program s t then
+	  t
+	else
+	  s
+      in
+	match lst with
+	    [] -> assert false
+	  | [t] -> t
+	  | _ -> List.fold_left find_join Type.data lst
+
 
     let generalize res s t =
       (** In a result substitution, generalise s to t *)

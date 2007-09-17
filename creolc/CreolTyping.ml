@@ -113,13 +113,30 @@ let unify ~program ~constraints =
 			find_most_specific program cands
 		end
 	  | (Type.Variable x, _) when not (Type.occurs_p x t) ->
-	      Messages.message 2 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t)) ;
-	      do_unify
-		(List.map
-		    (fun (t1, t2) ->
-		      (Type.substitute x t t1, Type.substitute x t t2)) d)
-		(Type.Subst.add x t res)
+	      (* In this case, `x is a lower bound, i.e., `x <: t .
+		 This constraint is trivially satisfied by t, but there may
+		 be multiple constraints on x, and we need to choose the
+		 strongest one. *)
+	      let t' =
+		Program.meet program (List.map snd
+				       (List.filter (fun (v, _) -> (v = s)) c))
+	      in
+	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
+				    (Type.as_string t')) ;
+	        do_unify
+		  (List.map
+		      (fun (t1, t2) ->
+		        (Type.substitute x t t1, Type.substitute x t t2)) d)
+		  (Type.Subst.add x t res)
 	  | (_, Type.Variable x) when not (Type.occurs_p x s) ->
+	      (* In this case, `x is an upper bound, i.e., t <: `x .
+		 This constraint is trivially satisfied by t, but there may
+		 be multiple constraints on x, and we need to choose the
+		 strongest one. *)
+	      let t' = t
+		(* Program.join program (List.map snd
+			     (List.filter (fun (_, v) -> (v = t)) c)) *)
+	      in
 	      let try_unify r =
 	        Messages.message 2 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
 	        do_unify
@@ -130,10 +147,10 @@ let unify ~program ~constraints =
 	      in
 		begin
 		  try
-		    try_unify s
+		    try_unify t'
 		  with
 		      Unify_failure _ ->
-			  (* Try some supertype of s.
+			  (* Try some supertype of t.
 
 			     FIXME: For now we just choose Data, the top type.
 			     We might try something smarter, however. *)
