@@ -186,8 +186,12 @@ let typecheck tree: Declaration.t list =
 	| Tuple (n, l) ->
 	    Tuple (subst_in_note subst n,
 		  List.map (substitute_types_in_expression subst) l)
-	| ListLit (n, l) -> assert false
-	| SetLit (n, l) -> assert false
+	| ListLit (n, l) ->
+	    ListLit (subst_in_note subst n,
+		    List.map (substitute_types_in_expression subst) l)
+	| SetLit (n, l) ->
+	    SetLit (subst_in_note subst n,
+		   List.map (substitute_types_in_expression subst) l)
 	| Id (n, name) ->
 	    Id (subst_in_note subst n, name)
 	| StaticAttr (n, name, t) ->
@@ -288,8 +292,22 @@ let typecheck tree: Declaration.t list =
 	    in
 	      (Tuple (set_type n (Type.Tuple (List.map get_type l')), l'),
 	      constr', fresh_name')
-	| ListLit (n, l) -> assert false
-	| SetLit (n, l) -> assert false
+	| ListLit (n, l) -> 
+	    let (l', constr', fresh_name') = 
+	      type_recon_expression_list constr fresh_name l in
+	    let (v, fresh_name'') = fresh_var fresh_name' in
+	    let ty = Type.Application ("List", [v]) in
+	      (ListLit (set_type n ty, l'),
+	       (List.map (fun e -> (get_type e, v)) l') @ constr',
+	       fresh_name'')
+	| SetLit (n, l) ->
+	    let (l', constr', fresh_name') = 
+	      type_recon_expression_list constr fresh_name l in
+	    let (v, fresh_name'') = fresh_var fresh_name' in
+	    let ty = Type.Application ("Set", [v]) in
+	      (SetLit (set_type n ty, l'),
+	       (List.map (fun e -> (get_type e, v)) l') @ constr',
+	       fresh_name'')
 	| Id (n, name) ->
 	    let res =
 	      try
