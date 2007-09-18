@@ -70,7 +70,8 @@ let unify ~program ~constraints =
       and t = snd (List.hd c)
       and d = List.tl c
       in
-	Messages.message 3 ("unify: " ^ (Type.as_string s) ^ " is subtype of " ^ (Type.as_string t)) ;
+	Messages.message 3 ("unify: constraint " ^ (Type.as_string s) ^
+			    " <: " ^ (Type.as_string t)) ;
 	match (s, t) with
 	    (Type.Basic _, Type.Basic _) when Program.subtype_p program s t ->
 		do_unify d res
@@ -139,7 +140,7 @@ let unify ~program ~constraints =
 		      (fun (t1, t2) ->
 		        (Type.substitute x t t1, Type.substitute x t t2)) d)
 		  (Type.Subst.add x t res)
-	  | (_, Type.Variable x) when not (Type.occurs_p x s) ->
+	  | (_, Type.Variable x) when Type.sentence_p s ->
 	      (* In this case, `x is an upper bound, i.e., t <: `x .
 		 This constraint is trivially satisfied by t, but there may
 		 be multiple constraints on x, and we need to choose the
@@ -167,8 +168,18 @@ let unify ~program ~constraints =
 			     We might try something smarter, however. *)
 	                  Messages.message 2
 			    ("try_unify: did not work, use Data for `" ^ x) ;
-	                  try_unify (Type.Basic "Data")
+	                  try_unify Type.data
 		end
+	  | (_, Type.Variable x) when not (Type.occurs_p x s) ->
+		(* FIXME: s has free variables and x is a variable, so we
+		   cannot guess what has to be done here.  *)
+	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
+				    (Type.as_string s)) ;
+	        do_unify
+		  (List.map
+		      (fun (t1, t2) ->
+		        (Type.substitute x s t1, Type.substitute x s t2)) d)
+		  (Type.Subst.add x s res)
 	  | (_, Type.Basic "Data") ->
 	      (* Every type is supposed to be a subtype of data,
 		 therefore this constraint is always true. *)

@@ -296,7 +296,9 @@ module Expression =
 	| Ge -> ">="
 	| Gt -> ">"
 	| And -> "&&"
+	| Wedge -> "/\\"
 	| Or -> "||"
+	| Vee -> "\\/"
 	| Xor -> "^"
 	| Implies -> "=>"
 	| Iff -> "<=>"
@@ -317,13 +319,10 @@ module Expression =
 	| Power -> (29, 29)
 	| Eq -> (51, 51)
 	| Ne -> (51, 51)
-	| Le -> (37, 37)
-	| Lt -> (37, 37)
-	| Ge -> (37, 37)
-	| Gt -> (37, 37)
+	| (Le | Lt | Ge | Gt) -> (37, 37)
 	| In -> (53, 53)
-	| And -> (55, 55)
-	| Or -> (59, 59)
+	| (And | Wedge) -> (55, 55)
+	| (Or | Vee) -> (59, 59)
 	| Xor -> (57, 57)
 	| Implies -> (61, 61)
 	| Iff -> (61, 61)
@@ -1063,7 +1062,7 @@ module Program =
 	match lst with
 	    [] -> Type.data
 	  | [t] -> t
-	  | _ -> List.fold_left find_meet Type.data lst
+	  | hd::tl -> List.fold_left find_meet hd tl
 
     let join ~program lst =
       (* Return the least upper bound of all types in [lst] in [program],
@@ -1087,7 +1086,7 @@ module Program =
 	match lst with
 	    [] -> assert false
 	  | [t] -> t
-	  | _ -> List.fold_left find_join Type.data lst
+	  | hd::tl -> List.fold_left find_join hd tl
 
 
     let generalize res s t =

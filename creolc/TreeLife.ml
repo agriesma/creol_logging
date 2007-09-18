@@ -31,7 +31,7 @@ let compute tree =
   let rec generate env =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
-	 Bool _ | Int _ | Float _ | String _) -> ()
+	 Bool _ | Int _ | Float _ | String _ | History _) -> ()
       | Id (a, v) -> Hashtbl.replace env v ()
       | StaticAttr _ -> ()
       | Tuple (a, l) -> List.iter (generate env) l

@@ -5,7 +5,7 @@ interface Client
 begin
   with Any
     op availFiles (in sList: List[Server];
-		   out files: List[[Server , List[Str]]])
+		   out files: List[[Server, List[Str]]])
     op reqFiles
 end
 

@@ -80,7 +80,7 @@ let into_ssa tree =
        the environment. *)
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
-         Bool _ | Int _ | Float _ | String _) as e -> e
+         Bool _ | Int _ | Float _ | String _ | History _) as e -> e
       | Id (a, v) ->
 	  begin
 	    try
@@ -354,7 +354,8 @@ let out_of_ssa tree =
        the environment. *)
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
-         Bool _ | Int _ | Float _ | String _ | Id _ | StaticAttr _ ) as e -> e
+         Bool _ | Int _ | Float _ | String _ | History _ | Id _ |
+	 StaticAttr _ ) as e -> e
       | Tuple (a, l) -> Tuple (a, List.map expression_of_ssa l)
       | ListLit (a, l) -> ListLit (a, List.map expression_of_ssa l)
       | SetLit (a, l) -> SetLit (a, List.map expression_of_ssa l)

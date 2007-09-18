@@ -377,6 +377,7 @@ let emit out_channel input =
 	| Expression.Now _ -> output_string out_channel "now"
 	| Expression.Nil _ -> output_string out_channel "nil"
 	| Expression.Null _ -> output_string out_channel "null"
+	| Expression.History _ -> output_string out_channel "history"
 	| Expression.Int (_, i) -> output_string out_channel (string_of_int i)
 	| Expression.Float (_, f) ->
 	    output_string out_channel (string_of_float f)
