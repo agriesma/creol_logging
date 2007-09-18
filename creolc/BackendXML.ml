@@ -452,6 +452,10 @@ let emit ~name ~tree =
 	  XmlTextWriter.start_element writer "creol:nil" ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
+      | Expression.History a -> 
+	  XmlTextWriter.start_element writer "creol:history" ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
       | Expression.Bool (a, v) -> 
 	  XmlTextWriter.start_element writer "creol:bool" ;
 	  XmlTextWriter.write_attribute writer "value" (string_of_bool v) ;

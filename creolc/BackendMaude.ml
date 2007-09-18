@@ -43,9 +43,10 @@ let emit options out_channel input =
 	Expression.This _ -> output_string out_channel "\"this\""
       | Expression.QualifiedThis _ -> output_string out_channel "\"this\""
       | Expression.Caller _ -> output_string out_channel "\"caller\""
-      | Expression.Now _ -> output_string out_channel "now"
-      | Expression.Nil _ -> output_string out_channel "list(emp)"
       | Expression.Null _ -> output_string out_channel "null"
+      | Expression.Nil _ -> output_string out_channel "list(emp)"
+      | Expression.Now _ -> output_string out_channel "now"
+      | Expression.History _ -> assert false
       | Expression.Int (_, i) ->
 	  output_string out_channel ("int(" ^ (string_of_int i) ^ ")")
       | Expression.Float (_, f) -> assert false

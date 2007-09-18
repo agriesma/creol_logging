@@ -73,11 +73,29 @@ module Type =
 
     let data_p t = (t = Basic "Data")
 
-    let boolean = Basic "Bool"
+    let real = Basic "Real"
 
-    let boolean_p t = (t = Basic "Bool")
+    let real_p t = (t = real)
+
+    let int = Basic "Int"
+
+    let int_p t = (t = int)
+
+    let bool = Basic "Bool"
+
+    let bool_p t = (t = bool)
+
+    let string = Basic "String"
+
+    let string_p t = (t = string)
+
+    let history = Basic "Data"
+
+    let history_p t = (t = history)
 
     let label t = Application ("Label", t)
+
+    let list t = Application ("List", t)
 
     let variable_p =
       function
@@ -355,6 +373,7 @@ module Expression =
 	| Now a -> a
 	| Null a -> a
 	| Nil a -> a
+	| History a -> a
 	| Bool (a, _) -> a
 	| Int (a, _) -> a
 	| Float (a, _) -> a
@@ -486,7 +505,7 @@ module Expression =
 	function
 	    Binary (b, And, f, g) ->
 	      Binary (b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
-	  | FuncCall (b, "&&", [f; g]) when Type.boolean_p b.ty ->
+	  | FuncCall (b, "&&", [f; g]) when Type.bool_p b.ty ->
 	      FuncCall (b, "&&", [to_cnf_from_nnf f; to_cnf_from_nnf g])
 	  | Binary(b, Or, f, g) ->
 	      (* Push or inside of and using distributive laws *)
@@ -494,11 +513,11 @@ module Expression =
 		match (left, right) with
 		    (Binary(lb, And, lf, lg), _) ->
 		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
-		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.boolean_p b.ty ->
+		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
 		  | (_, Binary(rb, And, rf, rg)) ->
 		      Binary (b, And, to_cnf_or left rf, to_cnf_or left rg)
-		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.boolean_p b.ty ->
+		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
 		  | _ ->
 		      (* neither subformula contains and *)
@@ -511,11 +530,11 @@ module Expression =
 		match (left, right) with
 		    (Binary(lb, And, lf, lg), _) ->
 		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
-		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.boolean_p b.ty ->
+		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
 		  | (_, Binary(rb, And, rf, rg)) ->
 		      Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
-		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.boolean_p b.ty ->
+		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
 		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
 		  | _ ->
 		      (* neither subformula contains and *)
@@ -549,7 +568,7 @@ module Expression =
 	    Unary (_, Not, Label _) -> false
 	  | Binary(_, (And | Or), left, right) ->
 	      (all_labels_positive left) && (all_labels_positive right)
-	  | FuncCall(n, ("&&" | "||"), [left; right]) when Type.boolean_p n.ty ->
+	  | FuncCall(n, ("&&" | "||"), [left; right]) when Type.bool_p n.ty ->
 	      (all_labels_positive left) && (all_labels_positive right)
 	  | Binary(_, (Implies|Xor|Iff), f, g) ->
 	      assert false (* Input was assumed to be in NNF *)
@@ -1025,11 +1044,6 @@ module Program =
 	      with
 		  Invalid_argument _ -> false
 	    end
-	| (Type.Tuple _, _) -> false
-	| (Type.Intersection sa, Type.Intersection ta) ->
-	    List.exists
-	      (fun s ->
-		(List.for_all (fun t -> subtype_p program s t) ta)) sa
 	| (Type.Intersection sa, _) ->
 	    List.exists (fun s -> subtype_p program s t) sa
 	| (Type.Disjunction sa, _) ->
@@ -1061,7 +1075,6 @@ module Program =
       in
 	match lst with
 	    [] -> Type.data
-	  | [t] -> t
 	  | hd::tl -> List.fold_left find_meet hd tl
 
     let join ~program lst =
@@ -1085,7 +1098,6 @@ module Program =
       in
 	match lst with
 	    [] -> assert false
-	  | [t] -> t
 	  | hd::tl -> List.fold_left find_join hd tl
 
 

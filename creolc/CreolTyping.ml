@@ -212,6 +212,8 @@ let typecheck tree: Declaration.t list =
 	    Null (subst_in_note subst n)
 	| Nil n ->
 	    Nil (subst_in_note subst n)
+	| History n ->
+	    Nil (subst_in_note subst n)
 	| Now n ->
 	    Now (subst_in_note subst n)
 	| Bool (n, value) ->
@@ -306,7 +308,11 @@ let typecheck tree: Declaration.t list =
 	  This n ->
 	    (This (set_type n (Class.get_type cls)), constr, fresh_name)
 	| QualifiedThis (n, t) ->
-	    (QualifiedThis (set_type n t, t), constr, fresh_name)
+	    if Program.subtype_p program (Class.get_type cls) t then
+	      (QualifiedThis (set_type n t, t), constr, fresh_name)
+	    else
+	      raise (Type_error (Expression.file n, Expression.line n,
+			         "Cannot qualify this as " ^ (Type.as_string t)))
 	| Caller n ->
 	    (Caller (set_type n (Type.Basic coiface)), constr, fresh_name)
 	| Null n ->
@@ -315,16 +321,18 @@ let typecheck tree: Declaration.t list =
 	| Nil n ->
 	    let (v, fresh_name') = fresh_var fresh_name in
 	      (Nil (set_type n (Type.Application ("List", [v]))), constr, fresh_name')
+	| History n ->
+	    (History (set_type n Type.history), constr, fresh_name)
 	| Now n ->
 	    (Now (set_type n (Type.Basic "Time")), constr, fresh_name)
 	| Bool (n, value) ->
-	    (Bool (set_type n (Type.Basic "Bool"), value), constr, fresh_name)
+	    (Bool (set_type n Type.bool, value), constr, fresh_name)
 	| Int (n, value) ->
-	    (Int (set_type n (Type.Basic "Int"), value), constr, fresh_name)
+	    (Int (set_type n Type.int, value), constr, fresh_name)
 	| Float (n, value) ->
-	    (Float (set_type n (Type.Basic "Float"), value), constr, fresh_name)
+	    (Float (set_type n Type.real, value), constr, fresh_name)
 	| String (n, value) ->
-	    (String (set_type n (Type.Basic "String"), value), constr, fresh_name)
+	    (String (set_type n Type.string, value), constr, fresh_name)
 	| Tuple (n, l) ->
 	    let (l', constr', fresh_name') =
 	      type_recon_expression_list constr fresh_name l
@@ -454,7 +462,7 @@ let typecheck tree: Declaration.t list =
 	    in let (niffalse, constr''', fresh_name''') =
 	      type_recon_expression constr'' fresh_name'' iffalse
 	    in
-		 if (Expression.get_type ncond) = Type.boolean then
+		 if (Expression.get_type ncond) = Type.bool then
 		   let restype =
 		     Program.meet program [get_type niftrue; get_type niffalse]
 		   in
