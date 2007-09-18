@@ -109,18 +109,6 @@ You have to install ocaml-libxml2 from
 ])
 fi
 
-dnl Check for the programs needed by the test-suite.
-AC_ARG_WITH([included-maude-mode],
-    AS_HELP_STRING([--with-included-maude-mode],
-       [Whether to use the included maude mode for emacs]),
-    [if test "x$with_included_maude_mode" = "xyes" ; then 
-       MAUDE_MODE=maude-mode
-     else
-       MAUDE_MODE=
-     fi],
-[MAUDE_MODE=maude-mode])
-AC_SUBST([MAUDE_MODE])
-
 AC_ARG_WITH([included-creol-mode],
     AS_HELP_STRING([--with-included-creol-mode],
        [Whether to use the included creol mode for emacs]),
@@ -141,7 +129,7 @@ AC_SUBST([CREOL_VARIANTS])
 AC_CONFIG_TESTDIR(tests, creolc)
 
 dnl Configure the subdirectories.
-AC_CONFIG_SUBDIRS([creol-mode maude-mode])
+AC_CONFIG_SUBDIRS([creol-mode])
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
