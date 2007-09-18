@@ -1002,16 +1002,15 @@ module Program =
     let rec subtype_p program s t =
       (** Decides whether [s] is a subtype of [t] in [program]. *)
       match (s, t) with
-	  (_, Type.Basic "Data") ->
-	    (* Everything of kind * is a subtype of data *)
-	    (* FIXME: Check kinding of s *)
-	    true
+	  (_, Type.Basic "Data") when Type.sentence_p s ->
+	    true (* Everything type of kind * is a subtype of data *)
+	| (_, _) when s = t -> true (* Every type is a subtype of itself *)
 	| (Type.Basic st, Type.Basic tt) ->
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
-	| (Type.Basic _, Type.Intersection l) ->
+	| (_, Type.Intersection l) ->
 	    List.for_all (subtype_p program s) l
-	| (Type.Basic _, Type.Variable _) -> assert false (* FIXME *)
-	| (Type.Basic _, _) -> false
+	| (_, Type.Disjunction l) ->
+	    List.exists (subtype_p program s) l
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
 	    (sc = tc) &&
 	      begin
@@ -1020,8 +1019,6 @@ module Program =
 		with
 		    Invalid_argument _ -> false
 	      end
-	| (Type.Application _, Type.Variable _) -> assert false
-	| (Type.Application _, _) -> false
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	     try 
@@ -1029,7 +1026,6 @@ module Program =
 	      with
 		  Invalid_argument _ -> false
 	    end
-	| (Type.Tuple _, Type.Variable _) -> assert false
 	| (Type.Tuple _, _) -> false
 	| (Type.Intersection sa, Type.Intersection ta) ->
 	    List.exists
@@ -1040,10 +1036,9 @@ module Program =
 	| (Type.Disjunction sa, _) ->
 	    List.for_all (fun s -> subtype_p program s t) sa
 	| (Type.Internal, Type.Internal) -> true
-	| (Type.Internal, _) -> false
-	| (_, Type.Internal) -> false
-	| (Type.Variable _, _) -> assert false
-	| (Type.Function _, _) -> assert false
+	| ((Type.Internal, _) | (_, Type.Internal)) -> false
+	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
+	    (subtype_p program d1 d2) && (subtype_p program r2 r1)
 
     let meet ~program lst =
       (* Return the greates lower bound of all types in [lst] in [program],
