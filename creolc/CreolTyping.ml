@@ -112,17 +112,28 @@ let unify ~program ~constraints =
 			   wrong. *)
 			find_most_specific program cands
 		end
-	  | (Type.Variable x, _) when not (Type.occurs_p x t) ->
+	  | (Type.Variable x, _) when (Type.sentence_p t) ->
 	      (* In this case, `x is a lower bound, i.e., `x <: t .
 		 This constraint is trivially satisfied by t, but there may
 		 be multiple constraints on x, and we need to choose the
 		 strongest one. *)
 	      let t' =
-		let p (v, w) = (v = s) && (not (Type.variable_p w)) in
+		let p (v, w) = (v = s) && (Type.sentence_p w) in
 		  Program.meet program (List.map snd (List.filter p c))
 	      in
 	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
 				    (Type.as_string t')) ;
+	        do_unify
+		  (List.map
+		      (fun (t1, t2) ->
+		        (Type.substitute x t' t1, Type.substitute x t' t2)) d)
+		  (Type.Subst.add x t' res)
+	  | (Type.Variable x, _) when not (Type.occurs_p x t) ->
+	      (* In this case, `x is a lower bound, i.e., `x <: t, and t
+		 contains free variables.  This constraint is trivially
+		 satisfied by t and t des not have any meets in [program].  *)
+	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
+				    (Type.as_string t)) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->

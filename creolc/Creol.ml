@@ -130,6 +130,7 @@ module Type =
 	| Function (s, t) -> (occurs_p v s) || (occurs_p v t)
 
     let rec sentence_p =
+      (** Checks whether a type contains any (free) variables. *)
       function
 	  Basic _ -> true
 	| Variable _ -> false
