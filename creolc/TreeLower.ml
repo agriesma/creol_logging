@@ -275,8 +275,16 @@ let pass input =
 	      if List.exists p (List.hd w).With.methods then
 		[]
 	      else
-		let _ = Messages.warn Messages.MissingMethod "**" 0
-		  ("Class " ^ c.Class.name ^ " does not provide " ^ name)
+		let _ =
+		  let w =
+		    match name with
+		        "init" -> Messages.MissingInit
+		      | "run" -> Messages.MissingRun
+		      | _ -> assert false
+		  in
+		    Messages.warn w c.Class.file c.Class.line
+		    ("Class " ^ c.Class.name ^ " does not provide a " ^ name ^
+		       " method" )
 		in
 		  [ empty_method name ]
 	  in

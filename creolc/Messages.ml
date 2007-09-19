@@ -36,14 +36,16 @@ let error file line message =
 type warning =
     Unused
     | Undefined
-    | MissingMethod
+    | MissingInit
+    | MissingRun
 
 (** Map a warning to its name *)
 let string_of_warning =
   function
       Unused -> "unused"
     | Undefined -> "undefined"
-    | MissingMethod -> "missing"
+    | MissingInit -> "init"
+    | MissingRun -> "run"
 
 (** Map a string representing a warning name to a warning.  May raise
     a pattern matching exception. *)
@@ -51,7 +53,8 @@ let warning_of_string =
   function
       "usused" -> Unused
     | "undefined" -> Undefined
-    | "missing" -> MissingMethod
+    | "init" -> MissingInit
+    | "run" -> MissingRun
     | s -> raise (Arg.Bad ("unknown waring `" ^ s ^ "'"))
 
 
@@ -70,7 +73,7 @@ let enable arg =
       List.iter enable_warning (Str.split (Str.regexp "[, \t]+") arg)
     else
       (* Enable all *)
-      enabled := [ Unused ; Undefined ; MissingMethod ]
+      enabled := [ Unused ; Undefined ; MissingInit ; MissingRun ]
 
 let disable arg =
   let disable_warning s =

@@ -2,12 +2,12 @@
 class Weirdness
 implements Weirdness
 begin
-  var x: Int
-  op init == x := 0
+  var x: Int := 0
+
   /* In the old interpreter, we have x = 1 \/ x = 2 as run's post condition.
      But if we remove await wait, then post is always x = 1.
      With the new treatment of await wait, post is always x = 1.
      What do we want? */
-  op run == await wait ; begin x := 1 [] release ; x := 2 end
+  op run == release ; begin x := 1 [] release ; x := 2 end
 end
 

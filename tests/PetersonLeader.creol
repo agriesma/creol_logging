@@ -1,36 +1,45 @@
-class Process(i: Nat, p: Init)
+interface Process
+begin
+with Process
+  op get(in u: Int)
+  op advancePhase
+  op becomeRelay
+end
+
+class Process(i: Nat, p: Init) contracts Process
 begin
 
   var mode: Bool // true is active, false is relay
-  var status: Nat // 0 && null is unknown, 1 is chosen, 2 is reported
-  var uid1: Nat
-  var uid2: Nat
-  var uid3: Nat
+  var status: Int // 0 && null is unknown, 1 is chosen, 2 is reported
+  var uid1: Int
+  var uid2: Int
+  var uid3: Int
   var neighbor: Process
 
-  op get(in u: Nat) ==
-    if mode then
-      if uid2 = null then
-        uid2 := u;
-	!neighbor.get(uid2)
-      else
-	if uid3 = null then
-	  uid3 := u
-	else
-	  await false
-	end
+  with Process
+    op get(in u: Int) ==
+      if mode then
+        if uid2 = null then
+          uid2 := u;
+	  !neighbor.get(uid2)
+        else
+	  if uid3 = null then
+	    uid3 := u
+	  else
+	    await false
+	  end
+        end
+      else // The process is only acting as a relay
+        !neighbor.get(u)
       end
-    else // The process is only acting as a relay
-      !neighbor.get(u)
-    end
 
-  op becomeRelay ==
-    await mode && uid3 /= null && (uid2 <= uid1 || uid2 <= uid3);
-     mode := false
+    op becomeRelay ==
+      await mode && uid3 /= null && (uid2 <= uid1 || uid2 <= uid3);
+       mode := false
 
-  op advancePhase ==
-    await mode && uid3 /= null && (uid1 < uid2 && uid3 < uid2);
-    uid1, uid2, uid3:= uid2, null, null;
-    !neighbor.get(uid1)
+    op advancePhase ==
+      await mode && uid3 /= null && (uid1 < uid2 && uid3 < uid2);
+      uid1, uid2, uid3:= uid2, null, null;
+      !neighbor.get(uid1)
 
 end

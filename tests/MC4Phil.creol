@@ -10,7 +10,7 @@ begin
   with Phil op getNeighbor(out neighbor: Phil)
 end
 
-class Philosopher(butler: Butler) implements Phil 
+class Philosopher(butler: Butler) contracts Phil 
 begin 
   var hungry: Bool
   var chopstick: Bool

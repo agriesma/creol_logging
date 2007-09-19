@@ -7,8 +7,9 @@ In the compiler:
 * An error in locating the prelude has been corrected.
 * The compiler can search in different places for files now.
 * Correct an error in the type checker which lost precision.
-* Attributes can be initialised directly now.
-* All implicit labels will be initialised now.
+* Attributes can be initialised directly now.  A missing init
+  will be created.  Also, a missing run method will be created.
+* All implicit labels will be declared and initialised now.
 
 In the standard library:
 *

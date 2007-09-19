@@ -19,10 +19,10 @@ begin
 
   op run == !tick() ||| !sense()
 
-  op tick == x := x + 1; !tick(); release
+  op tick == clock := clock + 1; !tick(); release
 
   op sense ==
-	var ld: Data; var rd: Data;
+	var ld: Data; var rd: Data; var l: Label[Data]; var r: Label[Data];
 	await (clock % 10 = 0);  // Assume period of 10
 	begin l!left.read() ||| r!right.read() end ;
 	begin

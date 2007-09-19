@@ -89,8 +89,7 @@ open VarDecl
 exception Error
 
 (** Print a short error message and abort *)
-let signal_error s m =
-  Messages.error s.pos_fname s.pos_lnum m; raise Error
+let signal_error s m = Messages.error s.pos_fname s.pos_lnum m; exit 1
 
 (** We want to be more relaxed with contracts, implements, and inherits.
     In principle, we could allow an arbitrary list of such declarations
@@ -126,12 +125,12 @@ declaration:
 
 classdecl:
       CLASS n = CID p = class_param_list s = list(super_decl)
-	BEGIN a = loption(attributes) aw = ioption(anon_with_def)
+	BEGIN a = loption(attributes) aw = loption(anon_with_def)
 	m = list(with_def) END
       { { Class.name = n; parameters = p; inherits = inherits s;
 	  contracts = contracts s; implements = implements s;
-	  attributes = a;
-	  with_defs = match aw with None -> m | Some w -> w::m } }
+	  attributes = a; with_defs = aw @ m ;
+	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }
     | CLASS CID error
@@ -215,7 +214,7 @@ outputs:
 
 anon_with_def:
     l = nonempty_list(method_def) i = list(invariant)
-    { { With.co_interface = Type.Internal; methods = l; invariants = i } }
+    { [ { With.co_interface = Type.Internal; methods = l; invariants = i } ] }
 
 with_def:
       WITH c = creol_type l = nonempty_list(method_def) i = list(invariant)

@@ -831,7 +831,9 @@ struct
 	contracts: Inherits.t list;
 	implements: Inherits.t list;
 	attributes: VarDecl.t list;
-	with_defs: With.t list }
+	with_defs: With.t list;
+	file: string;
+	line: int }
 
   let get_type cls =
     match List.map fst (cls.implements @ cls.contracts) with
@@ -1025,6 +1027,7 @@ module Program =
 	| (_, _) when s = t -> true (* Every type is a subtype of itself *)
 	| (Type.Basic st, Type.Basic tt) ->
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
+	| (Type.Basic _, _) -> assert false (* But see above *)
 	| (_, Type.Intersection l) ->
 	    List.for_all (subtype_p program s) l
 	| (_, Type.Disjunction l) ->
@@ -1037,6 +1040,7 @@ module Program =
 		with
 		    Invalid_argument _ -> false
 	      end
+	| (Type.Application _, _) -> assert false (* But see above *)
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	     try 
@@ -1044,6 +1048,7 @@ module Program =
 	      with
 		  Invalid_argument _ -> false
 	    end
+	| (Type.Tuple _, _) -> assert false (* But see above *)
 	| (Type.Intersection sa, _) ->
 	    List.exists (fun s -> subtype_p program s t) sa
 	| (Type.Disjunction sa, _) ->
@@ -1052,6 +1057,8 @@ module Program =
 	| ((Type.Internal, _) | (_, Type.Internal)) -> false
 	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
 	    (subtype_p program d1 d2) && (subtype_p program r2 r1)
+	| (Type.Function _, _) -> assert false (* But see above *)
+	| (Type.Variable _, _) -> assert false (* But see reflexivity above *)
 
     let meet ~program lst =
       (* Return the greates lower bound of all types in [lst] in [program],
