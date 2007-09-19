@@ -71,6 +71,8 @@ LANGUAGE	= language/Inheritance.creol language/Inheritance.maude \
 		  language/Interleave.creol language/Interleave.maude \
 		  language/Interleave.out
 
+TYPECHECK	= typecheck/Nil.creol typecheck/ExprFailure.creol
+
 TESTFILES	= Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \
 		  Interpreter.maude Interpreter.out \
@@ -80,10 +82,8 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  MC4Phil.creol MC4Phil.maude MC4PhilTest.maude \
 		  MC5Phil.creol MC5Phil.maude MC5PhilTest.maude
 
-TESTPARTS	= 
-
 EXTRA_DIST	= ${srcdir}/atlocal.in ${srcdir}/testsuite.at maude.sed \
-		  package.m4 testsuite ${TESTPARTS} ${EXAMPLES} ${LANGUAGE} \
+		  package.m4 testsuite ${EXAMPLES} ${LANGUAGE} ${TYPECHECK} \
 		  ${TESTFILES} Signature.m4
 
 check-local: atconfig atlocal ${TESTSUITE} Signature.maude

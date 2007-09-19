@@ -1,0 +1,4 @@
+class Test
+begin
+  op init == var x: String; x := "Bla" + 5
+end

@@ -1,0 +1,7 @@
+class Nil
+begin
+  var a: List[List[Int]]
+
+  op init == a := nil |- nil
+end
+  

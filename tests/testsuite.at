@@ -85,6 +85,13 @@ m4_define([TEST_CREOLC_XML],[dnl
 AT_CHECK([creolc -target xml -P typecheck -o $1-pass1.xml ${abs_srcdir}/$2/$1.creol])
 ])
 
+m4_define([TEST_CREOLC_TYPECHECK],[dnl
+AT_SETUP([typecheck-$1])
+AT_CHECK([creolc -target none ${abs_srcdir}/typecheck/$1.creol],
+	 [$2], [$3], [$4])
+AT_CLEANUP
+])
+
 AT_INIT([creolc])
 AT_TESTED([creolc creolc.opt])
 
@@ -116,6 +123,8 @@ TEST_CREOLC_PP([MutRec2], [language])
 TEST_CREOLC_PP([Interleave], [language])
 TEST_CREOLC_PP([StackCheck], [language])
 TEST_CREOLC_PP([StackGarbage], [language])
+TEST_CREOLC_PP([Nil], [typecheck])
+TEST_CREOLC_PP([ExprFailure], [typecheck])
 TEST_CREOLC_PP([Alarmclock], [examples])
 TEST_CREOLC_PP([AsyncLCR], [examples])
 TEST_CREOLC_PP([AsyncSieveBuggy], [examples])
@@ -140,6 +149,8 @@ TEST_CREOLC_XML([MutRec2], [language])
 TEST_CREOLC_XML([Interleave], [language])
 TEST_CREOLC_XML([StackCheck], [language])
 TEST_CREOLC_XML([StackGarbage], [language])
+TEST_CREOLC_XML([Nil], [typecheck])
+TEST_CREOLC_XML([ExprFailure], [typecheck])
 TEST_CREOLC_XML([Alarmclock], [examples])
 TEST_CREOLC_XML([AsyncLCR], [examples])
 TEST_CREOLC_XML([AsyncSieveBuggy], [examples])
@@ -310,3 +321,7 @@ red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 ])
+
+dnl test cases for the type checker
+TEST_CREOLC_TYPECHECK([Nil], [0], [], [])
+TEST_CREOLC_TYPECHECK([ExprFailure], [1], [], ignore)
