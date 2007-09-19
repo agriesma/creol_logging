@@ -33,7 +33,7 @@ in Maude.
 
 %build
 # We have no need to hurry.
-%configure OCAMLOPT_FLAGS="-inline 2" --without-included-creol-mode --without-included-maude-mode
+%configure OCAMLOPT_FLAGS="-inline 10"
 make
 
 # Build the pdf, because most people seem to prefer hard copy stuff.

@@ -109,17 +109,6 @@ You have to install ocaml-libxml2 from
 ])
 fi
 
-AC_ARG_WITH([included-creol-mode],
-    AS_HELP_STRING([--with-included-creol-mode],
-       [Whether to use the included creol mode for emacs]),
-    [if test "x$with_included_maude_mode" = "xyes" ; then 
-       CREOL_MODE=creol-mode
-     else
-       CREOL_MODE=
-     fi],
-[CREOL_MODE=creol-mode])
-AC_SUBST([CREOL_MODE])
-
 AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])
 AC_SUBST([OCAMLOPT_FLAGS])
@@ -127,9 +116,6 @@ AC_SUBST([OCAMLFIND_FLAGS])
 AC_SUBST([CREOL_VARIANTS])
 
 AC_CONFIG_TESTDIR(tests, creolc)
-
-dnl Configure the subdirectories.
-AC_CONFIG_SUBDIRS([creol-mode])
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])

@@ -22,7 +22,7 @@ In the interpreter:
   implicit labels as well as requiring declarations of all labels.
 
 Other:
-*
+* The emacs lisp files have been removed.
 
 creoltools 0.0g (2007-09-10): alpha release.
 

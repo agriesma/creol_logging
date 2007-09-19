@@ -20,8 +20,8 @@
 DISTCHECK_CONFIGURE_FLAGS = --disable-make-install
 
 # Subdirs
-DIST_SUBDIRS		= creol-mode share info creolc tests
-SUBDIRS			= ${CREOL_MODE} share info creolc tests
+DIST_SUBDIRS		= share info creolc tests
+SUBDIRS			= share info creolc tests
 
 MOSTLYCLEANFILES	= *~
 MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
