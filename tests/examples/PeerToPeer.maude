@@ -4,6 +4,8 @@ pr CREOL-INTERPRETER .
 op init : -> Configuration [ctor] .
 eq init =
 < "Node" : Cl | Inh: noInh, Par: "db", Att: "db" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "enquire" : Mtdname | Param: noVid, Latt: "files" |-> null , "label:0" |-> null, Code: "label:0" ! "db" . "listFiles" ( emp ) ; ( await ( "label:0" ?? ) ) ; ( "label:0" ? ( "files" ) )  ; return ( "files" ) > *
   < "getLength" : Mtdname | Param: "fId", Latt: "fId" |-> null , "lth" |-> null , "label:0" |-> null, Code: "label:0" ! "db" . "getLength" ( "fId" ) ; ( await ( "label:0" ?? ) ) ; ( "label:0" ? ( "lth" ) )  ; return ( "lth" ) > *
   < "getPack" : Mtdname | Param: "fId" , "pNbr", Latt: "fId" |-> null , "pNbr" |-> null , "pack" |-> null , "label:0" |-> null , "f" |-> null, Code: "label:0" ! "db" . "getFile" ( "fId" ) ; ( await ( "label:0" ?? ) ) ; ( "label:0" ? ( "f" ) )  ; "pack" ::= "at" ( "f" # "pNbr" ) ; return ( "pack" ) > *

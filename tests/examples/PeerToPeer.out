@@ -17,6 +17,8 @@ result Class:
     null, "label:0" |-> null, "pNbr" |-> null, "pack" |-> null, Code: "label:0"
     ! "db" . "getFile"("fId") ; await ("label:0" ??) ; "label:0" ?("f") ;
     "pack" ::= "at"("f" # "pNbr") ; return("pack") > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
+    *
   < "reqFile" : Mtdname | Param: "sId", "fId", Latt: "fId" |-> null, "file" |->
     null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, "lth" |->
     null, "pack" |-> null, "sId" |-> null, Code: "label:0" ! "sId" .
@@ -24,6 +26,7 @@ result Class:
     "lth" # int(0)) do "label:1" ! "sId" . "getPack"("fId" # "lth") ; await (
     "label:1" ??) ; "label:1" ?("pack") ; "file" ::= "-|"("pack" # "file") ;
     "lth" ::= "-"("lth" # int(1)) od ; "label:2" ! "db" . "storeFile"("fId" #
-    "file") ; free("label:2") ; return(emp) >,
+    "file") ; free("label:2") ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 Bye.

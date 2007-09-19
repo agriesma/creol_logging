@@ -251,11 +251,48 @@ let pass input =
 		  | w -> w)
 		c.Class.with_defs
     in
-    let add_init =
-      ()
+    let add_init_and_run w =
+      let empty_method name =
+	{ Method.name = name; coiface = Type.Internal;
+	  inpars = []; outpars = []; vars = [];
+	  body = Some (Skip Statement.dummy_note) }
+      in
+      (* We use the invariant that each class declaration has at most one
+	 with-block with the internal co-interface and that it is always
+	 the first in the list. *)
+        if (0 < (List.length w)) &&
+	   ((List.hd w).With.co_interface = Type.Internal)
+	then
+	  (* We have an internal with block.  It should be the first, 
+	     so we try to locate it and add the two methods. *)
+	  let mk name =
+	    let p =
+	      function
+	        { Method.name = n; coiface = Type.Internal; inpars = [];
+		  outpars = [] } when n = name -> true
+	        | _ -> false
+	    in
+	      if List.exists p (List.hd w).With.methods then
+		[]
+	      else
+		let _ = Messages.warn Messages.MissingMethod "**" 0
+		  ("Class " ^ c.Class.name ^ " does not provide " ^ name)
+		in
+		  [ empty_method name ]
+	  in
+	    let m' =
+	      (mk "init") @ (mk "run") @ ((List.hd w).With.methods)
+	    in
+	      { (List.hd w) with With.methods = m' }::(List.tl w)
+        else
+	  (* Since we do not have an internal with block we can both an init
+	     and a run method to the class. *)
+	  { With.co_interface = Type.Internal;
+	    methods = [ empty_method "init" ; empty_method "run" ];
+	    invariants = [] } :: w
     in
       { c with Class.inherits = lower_inherits_list c.Class.inherits;
-	with_defs = List.map lower_with with_defs' }
+	with_defs = List.map lower_with (add_init_and_run with_defs') }
   and lower_interface i =
     i
   and lower_declaration =

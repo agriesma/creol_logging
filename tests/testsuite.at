@@ -20,7 +20,7 @@ dnl model and the output of maude is again compared to some expected
 dnl results.
 m4_define([TEST_CREOLC], [dnl
 AT_SETUP([$1])
-AT_CHECK([creolc -target maude ${abs_srcdir}/$2/$1.creol -o $1.maude])
+AT_CHECK([creolc -target maude -W all ${abs_srcdir}/$2/$1.creol -o $1.maude])
 AT_CHECK([diff -aNu ${abs_srcdir}/$2/$1.maude $1.maude])
 AT_DATA([test.maude],
 [

@@ -19,8 +19,11 @@ result Configuration:
 
 < "PassiveTempSensor" : Cl | Inh: "PassiveSensor" < emp >, Par: noVid, Att:
     noSubst, Mtds:
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
+    *
   < "read" : Mtdname | Param: noVid, Latt: "value" |-> null, Code: "value" ::=
     int(37) ; return("value") > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) > *
   < "setEncoding" : Mtdname | Param: "encoding", Latt: "encoding" |-> null,
     Code: skip ; return(emp) > *
   < "setResolution" : Mtdname | Param: "res", Latt: "res" |-> null, Code: skip

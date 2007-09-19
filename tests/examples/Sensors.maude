@@ -4,6 +4,8 @@ pr CREOL-MODEL-CHECKER .
 op init : -> Configuration [ctor] .
 eq init =
 < "PassiveTempSensor" : Cl | Inh: "PassiveSensor" < emp > , Par: noVid, Att: noSubst, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "setResolution" : Mtdname | Param: "res", Latt: "res" |-> null, Code: skip ; return ( emp ) > *
   < "setEncoding" : Mtdname | Param: "encoding", Latt: "encoding" |-> null, Code: skip ; return ( emp ) > *
   < "switchOn" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *

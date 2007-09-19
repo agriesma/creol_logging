@@ -8,7 +8,8 @@ result Configuration:
     el "p" ::= "p2" fi fi ; return("p") > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new
     "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
-    ::= new "Process"("this" # int(3)) ; return(emp) >,
+    ::= new "Process"("this" # int(3)) ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
@@ -44,7 +45,8 @@ result Configuration:
     el "p" ::= "p2" fi fi ; return("p") > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new
     "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
-    ::= new "Process"("this" # int(3)) ; return(emp) >,
+    ::= new "Process"("this" # int(3)) ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 1 >
 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
