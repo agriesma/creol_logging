@@ -31,6 +31,14 @@ let fresh_label () =
   let res = "label:" ^ (string_of_int !next_fresh_label) in
     next_fresh_label := !next_fresh_label + 1 ; res
 
+(* FIXME: This is a very ugly hack, but I need to discuss with Ingrid how
+   I can get a hook into the type checker for a correct implementation
+   of such a function and where we should put it. *)
+let make_expr_note_from_stmt_note s =
+        { Expression.file = s.Statement.file;
+          line = s.Statement.line;
+          ty = Type.data }
+
 let pass input =
   (** Normalise an abstract syntax tree by replacing all derived concepts
       with there basic equivalents *)

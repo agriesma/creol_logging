@@ -865,12 +865,6 @@ struct
 	with_decls: With.t list;
 	hidden: bool }
 
-  let cointerface iface =
-    (* FIXME: Make something smarter *)
-    match iface.with_decls with
-	[] -> raise Not_found
-      | { With.co_interface = t }::_ -> t
-
 end
 
 module Exception =
@@ -1190,13 +1184,3 @@ module Program =
       [] <> (class_find_methods program cls meth ins outs)
 
   end
-
-
-
-(* XXX: This is a very ugly hack, but I need to discuss with Ingrid how
-   I can get a hook into the type checker for a correct implementation
-   of such a function and where we should put it. *)
-let make_expr_note_from_stmt_note s =
-	{ Expression.file = s.Statement.file;
-	  line = s.Statement.line;
-	  ty = Type.data }

@@ -467,11 +467,9 @@ expression:
     | l = ID QUESTION { Label (Expression.make_note $startpos,
 			       Id (Expression.make_note $startpos, l)) }
     | LPAREN l = separated_list(COMMA, expression) RPAREN 
-	{ (* let n = Note.make $startpos in *)
-	    match l with
-		[] -> Nil (Expression.make_note $startpos) (* XXX: Should be unit *)
-	      | [e] -> e
-	      | _ -> Tuple (Expression.make_note $startpos, l) }
+	{ match l with
+	      [e] -> e
+	    | _ -> Tuple (Expression.make_note $startpos, l) }
     | LBRACK l = separated_list(COMMA, expression) RBRACK
 	{ ListLit (Expression.make_note $startpos, l) }
     | LBRACE e = separated_list(COMMA, expression) RBRACE
