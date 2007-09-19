@@ -50,6 +50,11 @@ let subst_more_specific_p program s t =
     List.for_all p keys
 
 let find_most_specific program substs =
+    (** Find the "most specific solution" of a set of possible solutions.
+
+        FIXME: If there is more than one best solution one solution is
+	guessed, which is probably wrong.  Instead, we ought to report
+	a type error. *)
   List.fold_left
     (fun s t -> if subst_more_specific_p program s t then s else t)
     (List.hd substs)
@@ -66,8 +71,9 @@ let unify ~program ~constraints =
     if c = [] then
       res
     else
-      let s = fst (List.hd c)
-      and t = snd (List.hd c)
+      (* May be we can get better results if we can select the next constraint
+         in a smarter manner. *)
+      let (s, t) = List.hd c
       and d = List.tl c
       in
 	Messages.message 3 ("unify: constraint " ^ (Type.as_string s) ^
@@ -106,11 +112,7 @@ let unify ~program ~constraints =
 		    | [r] -> r
 		    | cands ->
 			(* The solution is ambigous, and we want to
-			   get the "best" solution.
-
-			   FIXME: If there is more than one best solution
-			   one solution is guessed, which is probably
-			   wrong. *)
+			   get the "best" solution. *)
 			find_most_specific program cands
 		end
 	  | (Type.Variable x, _) when (Type.sentence_p t) ->
@@ -171,15 +173,28 @@ let unify ~program ~constraints =
 	                  try_unify Type.data
 		end
 	  | (_, Type.Variable x) when not (Type.occurs_p x s) ->
-		(* FIXME: s has free variables and x is a variable, so we
-		   cannot guess what has to be done here.  *)
-	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
-				    (Type.as_string s)) ;
+		(* If s has free variables and x does not occur in s, then we
+		   choose x to be s, and if this failes, we try Any and then
+		   Data, since we cannot guess something better. *)
+	      let try_unify r =
+	        Messages.message 2 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
-		        (Type.substitute x s t1, Type.substitute x s t2)) d)
-		  (Type.Subst.add x s res)
+		        (Type.substitute x r t1, Type.substitute x r t2)) d)
+		  (Type.Subst.add x r res)
+	      in
+		begin
+		  try
+		    try_unify s
+		  with
+		      Unify_failure _ ->
+			  try
+	                    try_unify Type.any
+			  with
+		            Unify_failure _ ->
+			      try_unify Type.data
+		end
 	  | (_, Type.Basic "Data") ->
 	      (* Every type is supposed to be a subtype of data,
 		 therefore this constraint is always true. *)

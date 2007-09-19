@@ -109,11 +109,13 @@ TEST_MAUDE([ModelChecker], ${abs_srcdir}/ModelChecker.maude, [.])
 AT_CLEANUP
 
 AT_SETUP([PrettyPrinter])
-TEST_CREOLC_PP([Inheritance], [.])
-TEST_CREOLC_PP([Diamond], [.])
-TEST_CREOLC_PP([MutRec], [.])
-TEST_CREOLC_PP([MutRec2], [.])
-TEST_CREOLC_PP([Interleave], [.])
+TEST_CREOLC_PP([Inheritance], [language])
+TEST_CREOLC_PP([Diamond], [language])
+TEST_CREOLC_PP([MutRec], [language])
+TEST_CREOLC_PP([MutRec2], [language])
+TEST_CREOLC_PP([Interleave], [language])
+TEST_CREOLC_PP([StackCheck], [language])
+TEST_CREOLC_PP([StackGarbage], [language])
 TEST_CREOLC_PP([Alarmclock], [examples])
 TEST_CREOLC_PP([AsyncLCR], [examples])
 TEST_CREOLC_PP([AsyncSieveBuggy], [examples])
@@ -131,11 +133,13 @@ TEST_CREOLC_PP([MC5Phil], [.])
 AT_CLEANUP
 
 AT_SETUP([XML-output])
-TEST_CREOLC_XML([Inheritance], [.])
-TEST_CREOLC_XML([Diamond], [.])
-TEST_CREOLC_XML([MutRec], [.])
-TEST_CREOLC_XML([MutRec2], [.])
-TEST_CREOLC_XML([Interleave], [.])
+TEST_CREOLC_XML([Inheritance], [language])
+TEST_CREOLC_XML([Diamond], [language])
+TEST_CREOLC_XML([MutRec], [language])
+TEST_CREOLC_XML([MutRec2], [language])
+TEST_CREOLC_XML([Interleave], [language])
+TEST_CREOLC_XML([StackCheck], [language])
+TEST_CREOLC_XML([StackGarbage], [language])
 TEST_CREOLC_XML([Alarmclock], [examples])
 TEST_CREOLC_XML([AsyncLCR], [examples])
 TEST_CREOLC_XML([AsyncSieveBuggy], [examples])
@@ -160,43 +164,56 @@ AT_CHECK([diff prelude-pp1.creol prelude-pp2.creol])
 AT_CHECK([creolc -target xml -o prelude-pass1.xml ${top_srcdir}/share/prelude.creol])
 AT_CLEANUP
 
-TEST_CREOLC([Inheritance], [.], [dnl
+TEST_CREOLC([Inheritance], [language], [dnl
 red init .
 rew init main("B", int(1)) .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("B", int(1))), 0, 1) .
 ])
 
-TEST_CREOLC([Diamond], [.], [dnl
+TEST_CREOLC([Diamond], [language], [dnl
 red init .
 rew init main("D", emp) .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("D", emp)), 0, 1) .
 ])
 
-TEST_CREOLC([Deadlock], [.], [dnl
+TEST_CREOLC([Deadlock], [language], [dnl
 red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 ])
 
-TEST_CREOLC([MutRec], [.], [dnl
+TEST_CREOLC([MutRec], [language], [dnl
 red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
 ])
 
-TEST_CREOLC([MutRec2], [.], [dnl
+TEST_CREOLC([MutRec2], [language], [dnl
 red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
 ])
 
-TEST_CREOLC([Interleave], [.], [dnl
+TEST_CREOLC([Interleave], [language], [dnl
 red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
 ])
+
+TEST_CREOLC([StackCheck], [language], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
+])
+
+TEST_CREOLC([StackGarbage], [language], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
+])
+
 
 dnl This set of tests is testing our existing programs.
 dnl

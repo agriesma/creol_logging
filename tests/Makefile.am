@@ -1,8 +1,8 @@
 ## Makefile.am - Use automake to create Makefile.in
 #
-# This file is part of oclvp
+# This file is part of creoltools
 #
-# Written and Copyright (c) 2005 by Marcel Kyas
+# Written and Copyright (c) 2007 by Marcel Kyas
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -54,17 +54,28 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/SingleCellBuffer.maude \
 		  examples/SingleCellBuffer.out
 
+LANGUAGE	= language/Inheritance.creol language/Inheritance.maude \
+		  language/Inheritance.out \
+		  language/Diamond.creol language/Diamond.maude \
+		  language/Diamond.out \
+		  language/Deadlock.creol language/Deadlock.maude \
+		  language/Deadlock.out \
+		  language/MutRec.creol language/MutRec.maude \
+		  language/MutRec.out \
+		  language/MutRec2.creol language/MutRec2.maude \
+		  language/MutRec2.out \
+		  language/StackCheck.creol language/StackCheck.maude \
+		  language/StackCheck.out \
+		  language/StackGarbage.creol language/StackGarbage.maude \
+		  language/StackGarbage.out \
+		  language/Interleave.creol language/Interleave.maude \
+		  language/Interleave.out
+
 TESTFILES	= Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \
 		  Interpreter.maude Interpreter.out \
 		  MetaExec.maude MetaExec.out \
 		  ModelChecker.maude ModelChecker.out \
-		  Inheritance.creol Inheritance.maude Inheritance.out \
-		  Diamond.creol Diamond.maude Diamond.out \
-		  Deadlock.creol Deadlock.maude Deadlock.out \
-		  MutRec.creol MutRec.maude MutRec.out \
-		  MutRec2.creol MutRec2.maude MutRec2.out \
-		  Interleave.creol Interleave.maude Interleave.out \
 		  MC3Phil.creol MC3Phil.maude MC3Phil.out MC3PhilTest.maude \
 		  MC4Phil.creol MC4Phil.maude MC4PhilTest.maude \
 		  MC5Phil.creol MC5Phil.maude MC5PhilTest.maude
@@ -72,8 +83,8 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 TESTPARTS	= 
 
 EXTRA_DIST	= ${srcdir}/atlocal.in ${srcdir}/testsuite.at maude.sed \
-		  package.m4 testsuite ${TESTPARTS} $(EXAMPLES) ${TESTFILES} \
-		  Signature.m4
+		  package.m4 testsuite ${TESTPARTS} ${EXAMPLES} ${LANGUAGE} \
+		  ${TESTFILES} Signature.m4
 
 check-local: atconfig atlocal ${TESTSUITE} Signature.maude
 	$(SHELL) $(TESTSUITE)

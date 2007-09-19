@@ -1,0 +1,12 @@
+load creol-interpreter
+mod PROGRAM is
+pr CREOL-INTERPRETER .
+op init : -> Configuration [ctor] .
+eq init =
+< "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "r" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( emp ) > *
+  < "m" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null, Code: ( ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; "r" ::= "+" ( "r" # int(1) ) ||| "r" ::= int(1) ) ; return ( "r" ) >, Ocnt: 0 >
+
+.
+endm
