@@ -63,18 +63,19 @@ let emit options out_channel input =
 	  (* FIXME: The CMC does not distinguish tuples of length two
 	     from pairs.  On the other hand, this is also conceptually
 	     bogus.  Can't tuples and list be identified? *)
-	  if 2 = (List.length l) then
-	    begin
-	      output_string out_channel "pair(" ;
-	      of_expression_list l ;
-	      output_string out_channel ")"
-	    end
-	  else
-	    begin
-	      output_string out_channel "list(" ;
-	      of_expression_list l ;
-	      output_string out_channel ")"
-	    end
+	  begin
+	    match l with
+		[x; y] ->
+	          output_string out_channel "pair(" ;
+	          of_expression x ;
+	          output_string out_channel " , " ;
+	          of_expression y ;
+	          output_string out_channel ")"
+	      | _ ->
+		  output_string out_channel "list(" ;
+		  of_expression_list l ;
+		  output_string out_channel ")"
+	  end
       | Expression.ListLit (_, l) ->
 	  output_string out_channel "list(" ;
 	  of_expression_list l ;
@@ -100,13 +101,13 @@ let emit options out_channel input =
 	  of_expression_list a ;
 	  output_string out_channel " )"
       | Expression.If (_, c, t, f) ->
-	output_string out_channel "(if " ;
-	of_expression c ;
-	output_string out_channel " th " ;
-	of_expression t ;
-	output_string out_channel " el " ;
-	of_expression f ;
-	output_string out_channel " fi)" ;
+	  output_string out_channel "(if " ;
+	  of_expression c ;
+	  output_string out_channel " th " ;
+	  of_expression t ;
+	  output_string out_channel " el " ;
+	  of_expression f ;
+	  output_string out_channel " fi)" ;
       | Expression.Extern _ -> assert false
       | Expression.SSAId _ -> assert false
       | Expression.Phi _ -> assert false
@@ -140,8 +141,8 @@ let emit options out_channel input =
     function
 	[] ->
 	  output_string out_channel "noVid"
-       | [l] -> of_lhs l
-       | l::r -> of_lhs l ; output_string out_channel ", " ; of_lhs_list r
+      | [l] -> of_lhs l
+      | l::r -> of_lhs l ; output_string out_channel ", " ; of_lhs_list r
   and of_statement cls stmt =
     let open_paren prec op_prec =
       if prec < op_prec then output_string out_channel "( " ;
@@ -363,9 +364,9 @@ let emit options out_channel input =
     output_string out_channel "mod PROGRAM is\n" ;
     output_string out_channel 
       (match options.target with
-           Interpreter -> "pr CREOL-INTERPRETER .\n"
-         | Modelchecker -> "pr CREOL-MODEL-CHECKER .\n"
-	 | Realtime -> "pr CREOL-MODELCHECKER .\n") ;
+          Interpreter -> "pr CREOL-INTERPRETER .\n"
+        | Modelchecker -> "pr CREOL-MODEL-CHECKER .\n"
+	| Realtime -> "pr CREOL-MODELCHECKER .\n") ;
     output_string out_channel
       "op init : -> Configuration [ctor] .\neq init =\n" ;
     of_decl_list input ;
