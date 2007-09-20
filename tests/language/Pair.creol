@@ -1,0 +1,4 @@
+class Test
+begin
+  op init == var x: [Int, Int]; x := (1, 2)
+end

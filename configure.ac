@@ -25,7 +25,7 @@ AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_PROG_MAKE_SET
 
 dnl Record the date of release
-RELEASE_DATE='2007-07-09'
+RELEASE_DATE='2007-XX-YY'
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.

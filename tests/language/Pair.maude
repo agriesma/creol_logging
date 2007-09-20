@@ -1,0 +1,11 @@
+load creol-interpreter
+mod PROGRAM is
+pr CREOL-INTERPRETER .
+op init : -> Configuration [ctor] .
+eq init =
+< "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: "x" |-> null, Code: "x" ::= pair(int(1) , int(2)) ; return ( emp ) >, Ocnt: 0 >
+
+.
+endm

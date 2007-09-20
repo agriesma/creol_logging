@@ -54,7 +54,8 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/SingleCellBuffer.maude \
 		  examples/SingleCellBuffer.out
 
-LANGUAGE	= language/Inheritance.creol language/Inheritance.maude \
+LANGUAGE	= language/Pair.creol language/Pair.maude language/Pair.out \
+		  language/Inheritance.creol language/Inheritance.maude \
 		  language/Inheritance.out \
 		  language/Diamond.creol language/Diamond.maude \
 		  language/Diamond.out \
