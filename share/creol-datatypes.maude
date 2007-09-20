@@ -332,6 +332,7 @@ fmod CREOL-DATA-PAIR is
   extending CREOL-DATA-SIG .
 
   op pair : Data Data -> Data [ctor] .
+  op pair : Expr Expr -> Expr .
 
   vars D D' : Data .
 
