@@ -327,7 +327,7 @@ let typecheck tree: Declaration.t list =
 	      (QualifiedThis (set_type n t, t), constr, fresh_name)
 	    else
 	      raise (Type_error (Expression.file n, Expression.line n,
-			         "Cannot qualify this as " ^ (Type.as_string t)))
+			        "Cannot qualify this as " ^ (Type.as_string t)))
 	| Caller n ->
 	    (Caller (set_type n (Type.Basic coiface)), constr, fresh_name)
 	| Null n ->
@@ -360,16 +360,16 @@ let typecheck tree: Declaration.t list =
 	    let (v, fresh_name'') = fresh_var fresh_name' in
 	    let ty = Type.Application ("List", [v]) in
 	      (ListLit (set_type n ty, l'),
-	       (List.map (fun e -> (get_type e, v)) l') @ constr',
-	       fresh_name'')
+	      (List.map (fun e -> (get_type e, v)) l') @ constr',
+	      fresh_name'')
 	| SetLit (n, l) ->
 	    let (l', constr', fresh_name') = 
 	      type_recon_expression_list constr fresh_name l in
 	    let (v, fresh_name'') = fresh_var fresh_name' in
 	    let ty = Type.Application ("Set", [v]) in
 	      (SetLit (set_type n ty, l'),
-	       (List.map (fun e -> (get_type e, v)) l') @ constr',
-	       fresh_name'')
+	      (List.map (fun e -> (get_type e, v)) l') @ constr',
+	      fresh_name'')
 	| Id (n, name) ->
 	    let res =
 	      try
@@ -608,10 +608,10 @@ let typecheck tree: Declaration.t list =
 	    and line = string_of_int (Expression.line (Expression.note expr)) 
 	    in 
 	      prerr_endline (file ^ ":" ^ line ^ ": expression has type " ^
-			       (Type.as_string s) ^ " but expected is type " ^
-			       (Type.as_string t) ^
-			       ".\n  Cannot satisfy constraints: " ^
-	                       (string_of_constraint_set constr')) ;
+				(Type.as_string s) ^ " but expected is type " ^
+				(Type.as_string t) ^
+				".\n  Cannot satisfy constraints: " ^
+				(string_of_constraint_set constr')) ;
 	      exit 1
     in
       substitute_types_in_expression subst expr'
@@ -901,54 +901,48 @@ let typecheck tree: Declaration.t list =
 	      check_sync_method_call n callee m ins outs
 	    in
 	      AwaitSyncCall (n, callee', m, signature, ins', outs')
-	| LocalSyncCall (n, m, _, lb, ub, args, retvals) ->
+	| LocalSyncCall (n, m, _, lb, ub, ins, outs) ->
+            (* FIXME:  Check the upper bound and lower bound constraints
+               for static resolution *)
+            let ins' =
+              List.map (type_check_expression program cls meth coiface []) ins
+            and outs' =
+              List.map (type_check_lhs program cls meth coiface) outs
+            in
+            let in_t = Type.Tuple (List.map get_type ins')
+            and out_t = Type.Tuple (List.map get_lhs_type outs') in
+            let signature = (Type.Internal, in_t, out_t) in
+              if
+                Program.class_provides_method_p program cls m in_t out_t
+              then
+                LocalSyncCall (n, m, signature, lb, ub, ins', outs')
+              else
+                raise (Type_error (file n, line n,
+                                  "Class " ^ cls.Class.name ^
+                                    " does not provide internal method " ^ m ^
+                                    " with inputs " ^ (Type.as_string in_t) ^
+                                    " and outputs " ^ (Type.as_string out_t)))
+	| AwaitLocalSyncCall (n, m, _, lb, ub, ins, outs) ->
 	    (* FIXME:  Check the upper bound and lower bound constraints
 	       for static resolution *)
-	    let nargs =
-	      List.map (type_check_expression program cls meth coiface [])
-		args
-	    and nouts =
-	      List.map (type_check_lhs program cls meth coiface) retvals
+	    let ins' =
+	      List.map (type_check_expression program cls meth coiface []) ins
+	    and outs' =
+	      List.map (type_check_lhs program cls meth coiface) outs
 	    in
-	    let signature =
-	      (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
-	      (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-		
-	    in
+	    let in_t = Type.Tuple (List.map get_type ins')
+	    and out_t = Type.Tuple (List.map get_lhs_type outs') in
+	    let signature = (Type.Internal, in_t, out_t) in
 	      if
-		Program.class_provides_method_p program cls m
-		  (Type.Tuple (List.map get_type nargs))
-		  (Type.Tuple (List.map get_lhs_type nouts))
+		Program.class_provides_method_p program cls m in_t out_t
 	      then
-		LocalSyncCall (n, m, signature, lb, ub, nargs, nouts)
+		AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	      else
 		raise (Type_error (file n, line n,
 				  "Class " ^ cls.Class.name ^
-				    " does not provide method " ^ m))
-	| AwaitLocalSyncCall (n, m, _, lb, ub, args, retvals) ->
-	    (* FIXME:  Check the upper bound and lower bound constraints
-	       for static resolution *)
-	    let nargs =
-	      List.map (type_check_expression program cls meth coiface [])
-		args
-	    and nouts =
-	      List.map (type_check_lhs program cls meth coiface) retvals
-	    in
-	    let signature =
-	      (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
-	      (Type.Tuple (List.map Expression.get_lhs_type nouts)))
-		
-	    in
-	      if
-		Program.class_provides_method_p program cls m
-		  (Type.Tuple (List.map get_type nargs))
-		  (Type.Tuple (List.map get_lhs_type nouts))
-	      then
-		AwaitLocalSyncCall (n, m, signature, lb, ub, nargs, nouts)
-	      else
-		raise (Type_error (file n, line n,
-				  "Class " ^ cls.Class.name ^
-				    " does not provide method " ^ m))
+				    " does not provide internal method " ^ m ^
+				    " with inputs " ^ (Type.as_string in_t) ^
+				    " and outputs " ^ (Type.as_string out_t)))
 	| Tailcall _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
 	    If (n, type_check_expression program cls meth coiface [] cond,
