@@ -109,8 +109,14 @@ let emit options out_channel input =
 	  of_expression f ;
 	  output_string out_channel " fi)" ;
       | Expression.Extern _ -> assert false
-      | Expression.SSAId _ -> assert false
-      | Expression.Phi _ -> assert false
+      | Expression.SSAId (_, n, v) -> 
+	  output_string out_channel ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")") ;
+      | Expression.Phi (_, i::l) ->
+	  of_expression i;
+	  output_string out_channel " ***( Phi(";
+	  of_expression_list (i::l) ;
+	  output_string out_channel ")";
+      | Expression.Phi (_, []) -> assert false
   and of_expression_list =
     (** Compile a list of expressions into the Creol Maude Machine. *)
     function
@@ -134,7 +140,8 @@ let emit options out_channel input =
 	  of_type c ;
 	  output_string out_channel "\" )"
       | Expression.LhsWildcard _ -> assert false
-      | Expression.LhsSSAId _ -> assert false
+      | Expression.LhsSSAId (_, n, v) -> 
+	  output_string out_channel ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")") ;
   and of_lhs_list =
     (** Translate a list of left hand side expressions a list of
 	Attribute identifiers. *)
