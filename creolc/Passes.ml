@@ -103,7 +103,7 @@ let rec enable arg =
       List.iter enable_pass (Str.split (Str.regexp "[, \t]+") arg)
     else
       (* Enable all *)
-      List.iter (fun (_, p) -> p.dump <- true) passes
+      List.iter (fun (_, p) -> p.needed <- true) passes
 
 
 (** Disable passes.
@@ -154,17 +154,7 @@ let dump_after arg =
 
 
 let execute_dump name pass tree =
-  let basename s =
-    try
-      let n = String.rindex name '.' in
-	if "creol" == (String.sub s (n + 1) ((String.length name) - 1)) then
-	  (String.sub s 1 (n - 1))
-	else
-	  s
-    with
-	Not_found -> s
-  in
-  let file = ((basename name)  ^ "." ^ pass) in
+  let file = (name  ^ "." ^ pass) in
     Messages.message 1 ("Writing dump to " ^ file) ;
     BackendXML.emit file tree ;
     Messages.message 1 ("Finished writing dump to " ^ file)
