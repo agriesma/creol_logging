@@ -37,7 +37,7 @@ let add_input name = inputs := (!inputs)@[name]
 
 module Target =
   struct
-    type t = No | Creol | Maude | XML
+    type t = Null | Creol | Maude | XML
 
     let target = ref Maude
 
@@ -49,7 +49,7 @@ module Target =
 
     let set =
 	function
-	    "none" -> target := No
+	    "none" -> target := Null
 	  | "creol" -> target := Creol
 	  | "maude" ->
 	      options.BackendMaude.target <- BackendMaude.Interpreter ;
@@ -68,14 +68,16 @@ module Target =
       let do_output out =
 	Messages.message 1 "Emitting tree" ;
 	match !target with
-	    No -> ()
+	    Null -> assert false
 	  | Creol -> BackendCreol.emit out tree
 	  | Maude -> BackendMaude.emit options out tree
 	  | XML -> BackendXML.emit !file tree
 	in
-	match !file with
-          | "-" -> do_output stdout
-          | s -> let out = open_out s in do_output out ; close_out out
+	if !target <> Null then
+	  match !file with
+	      "" -> assert false
+            | "-" -> do_output stdout
+            | s -> let out = open_out s in do_output out ; close_out out
 
   end
 
