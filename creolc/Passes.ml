@@ -165,7 +165,9 @@ let dump_after arg =
 
 
 let execute_dump name pass tree =
-  let file = (name  ^ "." ^ pass) in
+  let file =
+    if name <> "" || name <> "-" then name else "creolc.out" ^ "." ^ pass
+  in
   let f () =
     Messages.message 1 ("Writing dump to " ^ file) ;
     BackendXML.emit file tree ;
