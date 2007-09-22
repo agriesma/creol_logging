@@ -28,8 +28,7 @@ let message lvl msg = if !verbose >= lvl then prerr_endline msg
 
 (** Write an error message. *)
 let error file line message =
-  prerr_endline (file ^ ":" ^ (string_of_int line) ^ ": " ^ message) ;
-  flush stderr
+  prerr_endline (file ^ ":" ^ (string_of_int line) ^ ": " ^ message)
 
 
 (** The different kinds of warning we want to have *)
