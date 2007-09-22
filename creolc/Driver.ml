@@ -72,12 +72,19 @@ module Target =
 	  | Creol -> BackendCreol.emit out tree
 	  | Maude -> BackendMaude.emit options out tree
 	  | XML -> BackendXML.emit !file tree
-	in
+      in
 	if !target <> Null then
 	  match !file with
 	      "" -> assert false
-            | "-" -> do_output stdout
-            | s -> let out = open_out s in do_output out ; close_out out
+            | "-" ->
+		let (_, elapsed) = Misc.measure (fun () -> do_output stdout) in
+		  Passes.time_emit := !Passes.time_emit +. elapsed
+            | s ->
+		let out = open_out s in
+		let (_, elapsed) = Misc.measure (fun () -> do_output out)
+		in
+		  close_out out ;
+		  Passes.time_emit := !Passes.time_emit +. elapsed
 
   end
 
@@ -130,14 +137,14 @@ let from_file name =
     CreolParser.main CreolLex.token lexbuf
 
 
-let rec from_files =
+let from_files files =
   (** Read the contents of a list of files and return an abstract syntax
       tree.
 
       @since 0.0 *)
-  function
-      [] -> []
-    | name::rest -> (from_file name)@(from_files rest)
+  let parse () = List.fold_left (fun a n -> (from_file n)@a) [] files in
+  let (result, elapsed) = Misc.measure parse in
+    Passes.time_parse := !Passes.time_parse +. elapsed; result
 
 
 

@@ -32,6 +32,17 @@ type pass = {
 
 let id x = x
 
+(* Measure the times of some pseude passes *)
+(** Time needed for parsing. *)
+let time_parse = ref 0.0
+
+(** Total time spend with writing XML dumps. *)
+let time_dump = ref 0.0
+
+(** Time spent in emitting the result. *)
+let time_emit = ref 0.0
+
+
 (** An association list collecting the passes in order. *)
 let passes = [
   ( "typecheck" ,
@@ -155,10 +166,14 @@ let dump_after arg =
 
 let execute_dump name pass tree =
   let file = (name  ^ "." ^ pass) in
+  let f () =
     Messages.message 1 ("Writing dump to " ^ file) ;
     BackendXML.emit file tree ;
     Messages.message 1 ("Finished writing dump to " ^ file)
-
+  in
+  let (_, elapsed) = Misc.measure f in
+    time_dump := !time_dump +. elapsed ;
+    ()
 
 let execute_passes filename tree =
   let rec execute tree =
@@ -168,12 +183,13 @@ let execute_passes filename tree =
   and run p tree =
     if (snd p).needed then
       begin
-	let now = ref (Unix.gettimeofday ()) in
-	let _ = Messages.message 1 ("Executing " ^ (fst p)) in
-	let result =  ((snd p).pass tree) in
-	let _ = Messages.message 1 ("Finished executing " ^ (fst p)) in
-	let elapsed =
-	  (floor (((Unix.gettimeofday ()) -. !now) *. 1000000.0)) /. 1000.0
+	let pass () =
+	  let _ = Messages.message 1 ("Executing " ^ (fst p)) in
+          let result = (snd p).pass tree in
+	  let _ = Messages.message 1 ("Finished executing " ^ (fst p)) in
+	    result
+	in
+	let (result, elapsed) = Misc.measure pass
 	in
 	  (snd p).elapsed <- (snd p).elapsed +. elapsed ;
 	  if (snd p).dump then execute_dump filename (fst p) result ;
@@ -191,16 +207,21 @@ let execute_passes filename tree =
     this code. *)
 let report_timings () =
   let total = ref 0.0 in
-  let rec report =
-    function
-	[] -> prerr_endline ("Total: ................................. " ^
-			     (string_of_float !total) ^ " ms\n");
-      | p::r ->
-	  if (snd p).needed then
-	    prerr_endline ((fst p) ^ ": " ^
-			   (String.make (38 - String.length (fst p)) '.') ^
-			   " " ^ (string_of_float (snd p).elapsed) ^ " ms");
-	  total := !total +. (snd p).elapsed ; report r
+  let report p =
+    if (snd p).needed then
+      prerr_endline ((fst p) ^ ": " ^
+			(String.make (38 - String.length (fst p)) '.') ^
+			" " ^ (string_of_float (snd p).elapsed) ^ " ms");
+    total := !total +. (snd p).elapsed
   in
-    report passes ;
-    flush stderr
+    prerr_endline ("Parsing: ............................... " ^
+		      (string_of_float !time_parse) ^ " ms");
+    List.iter report passes ;
+    prerr_endline ("Dumps: ................................. " ^
+		      (string_of_float !time_dump) ^ " ms");
+    prerr_endline ("Emit: .................................. " ^
+		      (string_of_float !time_emit) ^ " ms");
+    prerr_endline ("Total: ................................. " ^
+		      (string_of_float
+			  (!total +. !time_parse +. !time_dump +. !time_emit)) ^
+		      " ms\n")

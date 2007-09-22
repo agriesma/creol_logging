@@ -47,3 +47,10 @@ and freshvarname = unit -> freshname
 let fresh_name_gen p =
   let rec f n () = FreshName(p ^ (string_of_int n), f (n + 1))
   in f 0
+
+let measure f =
+  let now = Unix.gettimeofday () in
+  let result = f () in
+  let now' = Unix.gettimeofday () in
+  let elapsed = (floor ((now' -. now) *. 1000000.0)) /. 1000.0 in
+    (result, elapsed)
