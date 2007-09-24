@@ -20,7 +20,7 @@ dnl model and the output of maude is again compared to some expected
 dnl results.
 m4_define([TEST_CREOLC], [dnl
 AT_SETUP([$1])
-AT_CHECK([creolc -target maude -W all ${abs_srcdir}/$2/$1.creol -o $1.maude])
+AT_CHECK([${CREOLC} -target maude -W all ${abs_srcdir}/$2/$1.creol -o $1.maude])
 AT_CHECK([diff -aNu ${abs_srcdir}/$2/$1.maude $1.maude])
 AT_DATA([test.maude],
 [
@@ -48,7 +48,7 @@ AT_CLEANUP
 
 m4_define([TEST_CREOLMC], [dnl
 AT_SETUP([$1])
-AT_CHECK([creolc -target maudemc ${abs_srcdir}/$2/$1.creol -o $1.maude])
+AT_CHECK([${CREOLC} -target maudemc ${abs_srcdir}/$2/$1.creol -o $1.maude])
 AT_CHECK([diff -adNu ${abs_srcdir}/$2/$1.maude $1.maude])
 AT_DATA([test.maude],
 [
@@ -75,19 +75,19 @@ AT_CLEANUP
 ])
 
 m4_define([TEST_CREOLC_PP],[dnl
-AT_CHECK([creolc -target creol -P typecheck,lower -o $1-pp1.creol ${abs_srcdir}/$2/$1.creol])
-AT_CHECK([creolc -target creol -P typecheck,lower -o $1-pp2.creol $1-pp1.creol])
+AT_CHECK([${CREOLC} -target creol -P typecheck,lower -o $1-pp1.creol ${abs_srcdir}/$2/$1.creol])
+AT_CHECK([${CREOLC} -target creol -P typecheck,lower -o $1-pp2.creol $1-pp1.creol])
 AT_CHECK([diff $1-pp1.creol $1-pp2.creol])
 ])
 
 dnl test the xml export.
 m4_define([TEST_CREOLC_XML],[dnl
-AT_CHECK([creolc -target xml -P typecheck -o $1-pass1.xml ${abs_srcdir}/$2/$1.creol])
+AT_CHECK([${CREOLC} -target xml -P typecheck -o $1-pass1.xml ${abs_srcdir}/$2/$1.creol])
 ])
 
 m4_define([TEST_CREOLC_TYPECHECK],[dnl
 AT_SETUP([typecheck-$1])
-AT_CHECK([creolc -target none ${abs_srcdir}/typecheck/$1.creol],
+AT_CHECK([${CREOLC} -target none ${abs_srcdir}/typecheck/$1.creol],
 	 [$2], [$3], [$4])
 AT_CLEANUP
 ])
@@ -171,10 +171,10 @@ AT_CLEANUP
 
 dnl Test the prelude.  Currently, we only try to parse and pretty-print it.
 AT_SETUP([Prelude])
-AT_CHECK([creolc -target creol -o prelude-pp1.creol ${top_srcdir}/share/prelude.creol])
-AT_CHECK([creolc -target creol -o prelude-pp2.creol prelude-pp1.creol])
+AT_CHECK([${CREOLC} -target creol -o prelude-pp1.creol ${top_srcdir}/share/prelude.creol])
+AT_CHECK([${CREOLC} -target creol -o prelude-pp2.creol prelude-pp1.creol])
 AT_CHECK([diff prelude-pp1.creol prelude-pp2.creol])
-AT_CHECK([creolc -target xml -o prelude-pass1.xml ${top_srcdir}/share/prelude.creol])
+AT_CHECK([${CREOLC} -target xml -o prelude-pass1.xml ${top_srcdir}/share/prelude.creol])
 AT_CLEANUP
 
 TEST_CREOLC([Pair], [language], [dnl
