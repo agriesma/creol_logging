@@ -42,6 +42,7 @@ creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
 			  CreolLex.ml CreolLex.mli \
 			  CreolParser.mli CreolParser.ml \
 			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
+			  BackendDot.ml \
 			  Passes.ml \
 			  Driver.ml
 

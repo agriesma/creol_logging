@@ -64,6 +64,11 @@ module Type =
 	  field_type: t (** Type of this field *)
 	}
 
+    let name =
+      function
+        Basic n -> n
+      | Application (n, _) -> n
+      | _ -> assert false
 
     let any = Basic "Any"
 
