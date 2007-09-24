@@ -1,6 +1,6 @@
 ## Makefile.am - Use automake to create Makefile.in
 #
-# This file is part of oclvp
+# This file is part of creoltools
 #
 # Written and Copyright (c) 2005 by Marcel Kyas
 #

@@ -1,7 +1,7 @@
 (*
  * CreolTyping.mli -- Interface to the type analysis for Creol.
  *
- * This file is part of creolcomp
+ * This file is part of creoltools
  *
  * Written and Copyright (c) 2007
  *

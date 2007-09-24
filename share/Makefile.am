@@ -1,6 +1,6 @@
 ## Makefile.am - Use automake to create Makefile.in
 #
-# This file is part of creolcomp
+# This file is part of creoltools
 #
 # Written and Copyright (c) 2007 by Marcel Kyas
 #

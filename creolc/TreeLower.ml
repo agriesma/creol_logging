@@ -126,24 +126,6 @@ let pass input =
 	     Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
 		          Sequence(a, Await (a, Label (a'', Id (a', l))),
 			              Reply (a, Id (a', l), r))))
-      | AwaitSyncCall (a, e, n, s, p, o) ->
-	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.
-	     We cannot give a correct type to the label,
-             hopefully because the type checker has been disabled.  If we
-             did run the type checker and we get to this case, there is an
-             error in the type checker.  *)
-	  let e' = lower_expression e
-	  and p' = List.map lower_expression p
-	  and l = fresh_label () 
-	  and lt = Type.label (List.map get_lhs_type o) in
-	  let a' = make_expr_note_from_stmt_note a lt
-	  and a'' = make_expr_note_from_stmt_note a Type.bool
-	  in
-	    ((label_decl l Type.data)::label_decls,
-	     Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
-		          Sequence(a, Await (a, Label (a'', Id (a', l))),
-			              Reply (a, Id (a', l), o))))
       | LocalAsyncCall (a, None, m, ((c, dom, Some rng) as s), lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this

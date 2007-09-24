@@ -1,7 +1,7 @@
 (*
  * Driver.ml -- The main routine.
  *
- * This file is part of creolcomp
+ * This file is part of creoltools
  *
  * Written and Copyright (c) 2007 by Marcel Kyas
  *
