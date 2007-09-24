@@ -41,16 +41,17 @@ let reserved lexbuf =
     let tok = Lexing.lexeme lexbuf in
       raise (Reserved (pos.pos_fname, pos.pos_lnum, tok))
 }
-let COMMENT = '/' '/' [ ^ '\n' ]*
+let NEWLINE = '\n' | '\r' | ( '\r' '\n' )
+let COMMENT = '/' '/' [ ^ '\n' '\r' ]*
 let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)
 let CID = [ 'A'-'Z' ] [ '_' 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let ID =  [ '_' 'a'-'z' ] [ '_' '\'' 'a'-'z' 'A'-'Z' '0'-'9' ]*
-let STRING = '"' [^ '\n' '"' ]* '"'
+let STRING = '"' [^ '\n' '\r' '"' ]* '"'
 rule token = parse
       [' ' '\t'] { token lexbuf }
     | COMMENT { token lexbuf }
     | "/*" { c_style_comment lexbuf }
-    | '\n' { update_loc lexbuf; token lexbuf }
+    | NEWLINE { update_loc lexbuf; token lexbuf }
     | '!' { BANG }
 	(* '"' *)
     | '#' { HASH }
@@ -161,6 +162,6 @@ rule token = parse
     | eof { EOF }
 and c_style_comment = parse
       "*/"	{ token lexbuf }
-    | '\n' { update_loc lexbuf; c_style_comment lexbuf }
+    | NEWLINE { update_loc lexbuf; c_style_comment lexbuf }
     | '*' { c_style_comment lexbuf }
-    | [ ^ '\n' '*'] * { c_style_comment lexbuf }
+    | [ ^ '\n' '\r' '*'] * { c_style_comment lexbuf }
