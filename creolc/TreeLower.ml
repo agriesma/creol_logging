@@ -43,12 +43,8 @@ let make_expr_note_from_stmt_note ~stmt t =
 let pass input =
   (** Normalise an abstract syntax tree by replacing all derived concepts
       with there basic equivalents *)
-  let label_decl l rng =
-    match rng with
-	Type.Tuple rng' ->
-          { VarDecl.name = l; var_type = Type.label rng' ; init = None }
-      | _ -> 
-          { VarDecl.name = l; var_type = Type.label [rng] ; init = None }
+  let label_decl l t =
+     { VarDecl.name = l; var_type = t; init = None }
   in
   let rec lower_expression =
     function
