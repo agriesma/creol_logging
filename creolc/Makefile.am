@@ -34,23 +34,47 @@ bin_PROGRAMS		= creolc creolc.opt
 BUILT_SOURCES		= CreolLex.ml CreolParser.ml CreolParser.mli Version.ml
 
 creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
-			  CreolTyping.mli CreolTyping.ml \
-			  TreeLower.mli TreeLower.ml \
+			  CreolTyping.ml \
+			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \
 			  TreeTailcall.ml \
 			  CreolLex.ml CreolLex.mli \
-			  CreolParser.mli CreolParser.ml \
+			  CreolParser.ml CreolParser.mli \
 			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
 			  BackendDot.ml \
 			  Passes.ml \
 			  Driver.ml
 
+creolc_cmi		= CreolLex.cmi CreolParser.cmi
+
+creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
+			  CreolTyping.cmo TreeLower.cmo TreeSSA.cmo \
+			  TreeLife.cmo TreeTailcall.cmo \
+			  CreolLex.cmo CreolParser.cmo \
+			  BackendCreol.cmo BackendMaude.cmo BackendXML.cmo \
+			  BackendDot.cmo \
+			  Passes.cmo Driver.cmo
+
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
+creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
+			  CreolTyping.cmx TreeLower.cmx TreeSSA.cmx \
+			  TreeLife.cmx TreeTailcall.cmx \
+			  CreolLex.cmx CreolParser.cmx \
+			  BackendCreol.cmx BackendMaude.cmx BackendXML.cmx \
+			  BackendDot.cmx \
+			  Passes.cmx Driver.cmx
+
 # This is the subset for which we want to generate documentation.
-creolc_DOCSOURCES	= Version.ml Messages.ml Creol.ml \
-			  BackendMaude.ml BackendXML.ml \
+creolc_DOCSOURCES	= Version.ml Misc.ml Messages.ml Creol.ml \
+			  CreolTyping.ml \
+			  TreeLower.ml \
+			  TreeSSA.ml \
+			  TreeLife.ml \
+			  TreeTailcall.ml \
+			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
+			  BackendDot.ml \
 			  Passes.ml \
 			  Driver.ml
 
@@ -58,13 +82,13 @@ OCAMLC_FLAGS		+= -g
 OCAMLOPT_FLAGS		+= -w a
 OCAMLFIND_FLAGS		+= -package "unix libxml2 str"
 
-SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx .cma .cmax
+SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
 
-creolc: $(patsubst %.ml, %.cmo, $(patsubst %.mli, %.cmi, $(creolc_SOURCES)))
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -linkpkg -o $@ $(filter %.cmo, $^)
+creolc: $(creolc_cmi) $(creolc_cmo)
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -linkpkg -o $@ $(creolc_cmo)
 
-creolc.opt: $(patsubst %.ml, %.cmx, $(patsubst %.mli, %.cmi, $(creolc_SOURCES)))
-	$(OCAMLFIND) ocamlopt $(OCAMLFIND_FLAGS) $(OCAMLOPT_FLAGS) -linkpkg -o $@ $(filter %.cmx, $^)
+creolc.opt: $(creolc_cmi) $(creolc_cmx)
+	$(OCAMLFIND) ocamlopt $(OCAMLFIND_FLAGS) $(OCAMLOPT_FLAGS) -linkpkg -o $@ $(creolc_cmx)
 
 .PRECIOUS: *.cmo *.cmi *.cmx
 .ml.cmo:
@@ -96,8 +120,8 @@ CreolLex.ml: Creol.mll
 distclean-local:
 	test ! -d html || rm -rf html
 
-.depend: ${srcdir}/Makefile.am $(creolc_SOURCES) $(BUILT_SOURCES)
-	$(OCAMLFIND) ocamldep $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(filter %.mli, $^) $(filter %.ml, $^) > $@
+.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
+	$(OCAMLFIND) ocamldep $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(creolc_SOURCES) > $@
 
 html-local: ${srcdir}/Makefile.am $(creolc_DOCSOURCES)
 	test ! -d html || rm -rf html

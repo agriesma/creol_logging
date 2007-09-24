@@ -42,8 +42,22 @@ let make_expr_note_from_stmt_note ~stmt t =
           ty = t }
 
 let pass input =
-  (** Normalise an abstract syntax tree by replacing all derived concepts
-      with there basic equivalents *)
+  (** Lower a Creol program to the "Core Creol" language.
+
+      This function will destroy some statement and expression
+      annotations.  Therefore, all semantic analysis performed before
+      this function should be repeated after calling this function.
+
+      This should only concern type inference, because all other
+      analysis should be performed after this function.
+
+      The following two invariant holds for this function:
+
+      * A type correct program remains type correct and the
+      annotations of unchanged statements are the same after
+      reconstruction.
+
+      * lower (lower tree) == lower tree *)
   let label_decl l t =
      { VarDecl.name = l; var_type = t; init = None }
   in
