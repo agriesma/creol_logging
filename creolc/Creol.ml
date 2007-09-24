@@ -366,10 +366,10 @@ module Expression =
 	| Power -> (29, 29)
 	| Eq -> (51, 51)
 	| Ne -> (51, 51)
-	| (Le | Lt | Ge | Gt) -> (37, 37)
+	| Le | Lt | Ge | Gt -> (37, 37)
 	| In -> (53, 53)
-	| (And | Wedge) -> (55, 55)
-	| (Or | Vee) -> (59, 59)
+	| And | Wedge -> (55, 55)
+	| Or | Vee -> (59, 59)
 	| Xor -> (57, 57)
 	| Implies -> (61, 61)
 	| Iff -> (61, 61)
@@ -1135,30 +1135,32 @@ module Program =
 	      | _ -> [])
 	    program)
 
+    let find_method_in_with ~program ~name ~signature w =
+      let (coiface, ins, outs) = signature in
+      let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
+      let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
+      let p m =
+	m.Method.name = name &&
+	  (subtype_p program dom (Method.domain_type m)) &&
+	  (subtype_p program (Method.range_type m) rng)
+      in List.filter p w.With.methods
+
     let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
       (** Find all definitions of a method called [name] that matches
 	  the signature [(coiface, inputs, outputs)] in [iface] and
 	  its super-interfaces.  *)
-      let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
-      let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
       let rec find_methods_in_interface i =
-        let p m =
-	  m.Method.name = name &&
-	  (subtype_p program dom (Method.domain_type m)) &&
-	  (subtype_p program (Method.range_type m) rng)
-	and q w = subtype_p program coiface w.With.co_interface
-	in
+        let q w = subtype_p program coiface w.With.co_interface in
+        let withs = List.filter q i.Interface.with_decls in
         let here =
-	  let withs = List.filter q i.Interface.with_decls
-	  in
-	    List.flatten
-	      (List.map (fun w -> List.filter p w.With.methods) withs)
+	  List.fold_left
+	    (fun a w -> (find_method_in_with program name (coiface, ins, outs) w)@a) [] withs
         and supers = List.map fst i.Interface.inherits
         in
 	  List.fold_left
             (fun r i ->
               (find_methods_in_interface (find_interface program i))@r)
-            here supers
+           here supers
       in
 	find_methods_in_interface iface
 
@@ -1168,22 +1170,15 @@ module Program =
 	  [(coiface, inputs, outputs)]. *)
       [] <> (interface_find_methods program iface meth signature)
 
-    let class_find_methods ~program ~cls meth (coiface, ins, outs) =
+    let class_find_methods ~program ~cls ~name (coiface, ins, outs) =
       (** Find all definitions of a method called [name] that matches
 	  the signature [(coiface, inputs, outputs)] in class [cls]
 	  and its super-classes.  *)
-      let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
-      let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
       let rec find_methods_in_class c =
-	let p m =
-	  m.Method.name = meth &&
-	  (subtype_p program dom (Method.domain_type m)) &&
-	  (subtype_p program (Method.range_type m) rng)
-	and q w = subtype_p program coiface w.With.co_interface in
+	let q w = subtype_p program coiface w.With.co_interface in
+	let withs = List.filter q c.Class.with_defs in
 	let here =
-	  let withs = List.filter q c.Class.with_defs in
-	    List.flatten
-	      (List.map (fun w -> List.filter p w.With.methods) withs)
+	  List.fold_left (fun a w -> (find_method_in_with program name (coiface, ins, outs) w)@a) [] withs
         and supers = List.map fst c.Class.inherits
         in
 	  List.fold_left
