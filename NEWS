@@ -7,12 +7,20 @@ In the compiler:
 * An error in locating the prelude has been corrected.
 * The compiler can search in different places for files now.
 * Correct an error in the type checker which lost precision.
+* Really check lower bounds on internal method calls.
 * Attributes can be initialised directly now.  A missing init
   will be created.  Also, a missing run method will be created.
-* All implicit labels will be declared and initialised now.
+* Lowering trees to core creol has been reworked and corrected.
+  All generated labels will be declared and initialised now.
+* Searching for methods in interfaces and classes should be slightly
+  faster and the implementation has been corrected for some corner
+  cases.
+* Added a backend to dot, allowing to visualise some aspects of
+  a creol model/program.  Currently, only relations between classes
+  and types.
 
 In the standard library:
-*
+* An error in the pair module has been corrected.
 
 In the interpreter:
 * The real-time interpreter should be executable now, if the system is

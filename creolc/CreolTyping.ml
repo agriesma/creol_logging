@@ -845,8 +845,7 @@ let typecheck tree: Declaration.t list =
 	        raise (Type_error (file n, line n, "Type mismatch"))
         | Free (n, args) -> assert false
         | LocalAsyncCall (n, None, m, _, lb, ub, args) ->
-	    (* FIXME:  Check the upper bound and lower bound constraints
-	       for static resolution *)
+	    (* FIXME:  Check upper bound constraint for static resolution *)
 	    let nargs =
 	      List.map (type_check_expression program cls meth coiface []) args
 	    in
@@ -854,17 +853,28 @@ let typecheck tree: Declaration.t list =
 	      (Type.Internal,
 	      Some (List.map Expression.get_type nargs), None)
 	    in
+	    let c' =
+	      match lb with
+	          None -> cls
+	        | Some x ->
+		    if Program.subclass_p program cls.Class.name x then
+		      Program.find_class program x
+		    else
+	              raise (Type_error (file n, line n,
+			                 "Class " ^ x ^
+					 " is not a subclass of " ^
+					 cls.Class.name))
+	    in
 	      (* A label value of none implies that the type if that
 	         anonymous label is Label[Data]. *)
-	      if Program.class_provides_method_p program cls m signature then
+	      if Program.class_provides_method_p program c' m signature then
 	        LocalAsyncCall (n, None, m, signature, lb, ub, nargs)
 	      else
 	        raise (Type_error (file n, line n,
-			          "Class " ^ cls.Class.name ^
+			          "Class " ^ c'.Class.name ^
 				    " does not provide method " ^ m))
         | LocalAsyncCall (n, Some label, m, _, lb, ub, args) ->
-	    (* FIXME:  Check the upper bound and lower bound constraints
-	       for static resolution *)
+	    (* FIXME:  Check upper bound constraint for static resolution *)
 	    let nargs =
 	      List.map (type_check_expression program cls meth coiface []) args
 	    and nlabel =
@@ -874,11 +884,23 @@ let typecheck tree: Declaration.t list =
 	      (Type.Internal, Some (List.map Expression.get_type nargs),
 	      (Some (Type.get_from_label (Expression.get_lhs_type nlabel))))
 	    in
-	      if Program.class_provides_method_p program cls m signature then
+	    let c' =
+	      match lb with
+	          None -> cls
+	        | Some x ->
+		    if Program.subclass_p program cls.Class.name x then
+		      Program.find_class program x
+		    else
+	              raise (Type_error (file n, line n,
+			                 "Class " ^ x ^
+					 " is not a subclass of " ^
+					 cls.Class.name))
+	    in
+	      if Program.class_provides_method_p program c' m signature then
 	        LocalAsyncCall (n, Some nlabel, m, signature, lb, ub, nargs)
 	      else
 	        raise (Type_error (file n, line n,
-			          "Class " ^ cls.Class.name ^
+			          "Class " ^ c'.Class.name ^
 				    " does not provide method " ^ m ^
 				    " with signature " ^
 				    (Type.string_of_sig signature)))
@@ -893,8 +915,7 @@ let typecheck tree: Declaration.t list =
 	    in
 	      AwaitSyncCall (n, callee', m, signature, ins', outs')
 	| LocalSyncCall (n, m, _, lb, ub, ins, outs) ->
-            (* FIXME:  Check the upper bound and lower bound constraints
-               for static resolution *)
+            (* FIXME:  Check upper bound constraint for static resolution *)
             let ins' =
               List.map (type_check_expression program cls meth coiface []) ins
             and outs' =
@@ -903,17 +924,28 @@ let typecheck tree: Declaration.t list =
             let in_t = List.map get_type ins'
             and out_t = List.map get_lhs_type outs' in
             let signature = (Type.Internal, Some in_t, Some out_t) in
-              if Program.class_provides_method_p program cls m signature then
+	    let c' =
+	      match lb with
+	          None -> cls
+	        | Some x ->
+		    if Program.subclass_p program cls.Class.name x then
+		      Program.find_class program x
+		    else
+	              raise (Type_error (file n, line n,
+			                 "Class " ^ x ^
+					 " is not a subclass of " ^
+					 cls.Class.name))
+	    in
+              if Program.class_provides_method_p program c' m signature then
                 LocalSyncCall (n, m, signature, lb, ub, ins', outs')
               else
                 raise (Type_error (file n, line n,
-                                  "Class " ^ cls.Class.name ^
+                                  "Class " ^ c'.Class.name ^
                                     " does not provide internal method " ^ m ^
                                     " with signature " ^
 				    (Type.string_of_sig signature)))
 	| AwaitLocalSyncCall (n, m, _, lb, ub, ins, outs) ->
-	    (* FIXME:  Check the upper bound and lower bound constraints
-	       for static resolution *)
+	    (* FIXME:  Check upper bound constraint for static resolution *)
 	    let ins' =
 	      List.map (type_check_expression program cls meth coiface []) ins
 	    and outs' =
@@ -922,11 +954,23 @@ let typecheck tree: Declaration.t list =
 	    let in_t = List.map get_type ins'
 	    and out_t = List.map get_lhs_type outs' in
 	    let signature = (Type.Internal, Some in_t, Some out_t) in
-	      if Program.class_provides_method_p program cls m signature then
+	    let c' =
+	      match lb with
+	          None -> cls
+	        | Some x ->
+		    if Program.subclass_p program cls.Class.name x then
+		      Program.find_class program x
+		    else
+	              raise (Type_error (file n, line n,
+			                 "Class " ^ x ^
+					 " is not a subclass of " ^
+					 cls.Class.name))
+	    in
+	      if Program.class_provides_method_p program c' m signature then
 		AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	      else
 		raise (Type_error (file n, line n,
-				  "Class " ^ cls.Class.name ^
+				  "Class " ^ c'.Class.name ^
 				    " does not provide internal method " ^ m ^
 				    " with signature " ^
 				    (Type.string_of_sig signature)))

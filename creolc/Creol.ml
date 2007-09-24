@@ -960,6 +960,17 @@ module Program =
 	    Declaration.Class cls -> cls
 	  | _ -> assert false
 
+    let subclass_p ~program s t =
+      (** Return true if [s] is a subclass of [t] *)
+      let rec search s =
+	(s = t) ||
+	  try
+	    let s' = find_class program s in
+	      (List.exists (fun u -> search u) (List.map fst s'.Class.inherits))
+	  with
+	      Not_found -> false
+      in search s
+
     let find_interface ~program ~name =
       let interface_with_name =
 	function
@@ -970,19 +981,21 @@ module Program =
 	    Declaration.Interface i -> i
 	  | _ -> assert false
 
-    let rec subinterface_p program s t =
+    let subinterface_p ~program s t =
       (** Return true if [s] is a subinterface of [t] *)
       if t = "Any" then
 	(* Everything is a sub-interface of [Any] *)
 	true
       else
-	(s = t) ||
-	  try
-	    let s_decl = find_interface program s in
-	      (List.exists (fun u -> subinterface_p program u t)
-		  (List.map fst s_decl.Interface.inherits))
-	  with
-	      Not_found -> false
+	let rec search s =
+	  (s = t) ||
+	    try
+	      let s' = find_interface program s in
+	        (List.exists (fun u -> search u) (List.map fst s'.Interface.inherits))
+	    with
+	        Not_found -> false
+	in
+	  search s
 
   let contracts_p program cls iface =
     (** Return true if the class [cls] contracts the interface [iface] *)
