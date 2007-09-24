@@ -93,7 +93,7 @@ module Type =
 
     let history_p t = (t = history)
 
-    let label t = Application ("Label", t)
+    let label l = Application ("Label", l)
 
     let list t = Application ("List", t)
 
@@ -132,7 +132,7 @@ module Type =
 
     let get_from_label =
       function
-	  Application ("Label", args) -> Tuple args
+	  Application ("Label", args) -> args
 	| _ -> assert false
 
     let rec occurs_p v =
@@ -206,6 +206,30 @@ module Type =
 	    Disjunction (List.map (apply_substitution s) l)
 	| Function (d, r) ->
 	    Function (apply_substitution s d, apply_substitution s r)
+
+    type signature = t * t list option * t list option
+
+    let default_sig = (any, None, None)
+
+    let co_interface (c, _, _) = c
+
+    let domain (_, d, _) = d
+
+    let range (_, _, r) = r
+
+    let string_of_sig =
+      function
+	  (co, None, None) ->
+	    "[ " ^ (as_string co) ^ " | unknown -> unknown ]"
+	| (co, Some d, None) ->
+	    "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
+	      " -> unknown ]"
+	| (co, None, Some r) ->
+	    "[ " ^ (as_string co) ^ " | unknown -> " ^
+	      (string_of_creol_type_list r) ^ " ]"
+	| (co, Some d, Some r) ->
+	    "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
+	      " -> " ^ (string_of_creol_type_list r) ^ " ]"
 
   end
 
@@ -594,24 +618,14 @@ module Statement =
 
     let line note = note.line
 
+    let dummy_note =
+      { file = "**dummy**"; line = 0; life = IdSet.empty }
+
     let make_note pos = {
       file = pos.Lexing.pos_fname ;
       line = pos.Lexing.pos_lnum ;
       life = IdSet.empty 
     }
-
-    let dummy_note =
-      { file = "**dummy**"; line = 0; life = IdSet.empty }
-
-    type signature = Type.t * Type.t * Type.t
-
-    let default_sig = (Type.any, Type.data, Type.data)
-
-    let co_interface (c, _, _) = c
-
-    let domain (_, d, _) = d
-
-    let range (_, _, r) = r
 
     type t =
       (** Abstract syntax of statements in Creol.  The type parameter ['a]
@@ -628,20 +642,20 @@ module Statement =
 	  (** A posit statement, which is used to define {i true} properties
               about time in a model. *)
 	| AsyncCall of note * Expression.lhs option * Expression.t * string *
-	   signature *  Expression.t list
+	   Type.signature *  Expression.t list
 	| Reply of note * Expression.t * Expression.lhs list
 	| Free of note * Expression.t list
-	| SyncCall of note * Expression.t * string * signature *
+	| SyncCall of note * Expression.t * string * Type.signature *
 	    Expression.t list * Expression.lhs list
-	| AwaitSyncCall of note * Expression.t * string * signature *
+	| AwaitSyncCall of note * Expression.t * string * Type.signature *
 	    Expression.t list * Expression.lhs list
 	| LocalAsyncCall of note * Expression.lhs option * string *
-	    signature * string option * string option * Expression.t list
-	| LocalSyncCall of note * string * signature * string option *
+	    Type.signature * string option * string option * Expression.t list
+	| LocalSyncCall of note * string * Type.signature * string option *
 	    string option * Expression.t list * Expression.lhs list
-	| AwaitLocalSyncCall of note * string * signature * string option *
+	| AwaitLocalSyncCall of note * string * Type.signature * string option *
 	    string option * Expression.t list * Expression.lhs list
-	| Tailcall of note * string * signature * string option *
+	| Tailcall of note * string * Type.signature * string option *
 	    string option * Expression.t list
 	| If of note * Expression.t * t * t
 	| While of note * Expression.t * Expression.t option *
@@ -1102,10 +1116,6 @@ module Program =
 	  | hd::tl -> List.fold_left find_join hd tl
 
 
-    let generalize res s t =
-      (** In a result substitution, generalise s to t *)
-      List.map (fun (x, u) -> if u = s then (x, t) else (x, u)) res
-
     let find_functions ~program ~name =
       (** Find all definitions of functions called [name] in
 	  [program], whose formal parameters are compatible with
@@ -1120,15 +1130,17 @@ module Program =
 	      | _ -> [])
 	    program)
 
-    let interface_find_methods ~program ~iface ~meth coiface ins outs =
+    let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
       (** Find all definitions of a method called [name] that matches
 	  the signature [(coiface, inputs, outputs)] in [iface] and
 	  its super-interfaces.  *)
+      let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
+      let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
       let rec find_methods_in_interface i =
         let candidate_p m =
-	  m.Method.name = meth &&
-	  (subtype_p program ins (Method.domain_type m)) &&
-	  (subtype_p program (Method.range_type m) outs)
+	  m.Method.name = name &&
+	  (subtype_p program dom (Method.domain_type m)) &&
+	  (subtype_p program (Method.range_type m) rng)
 	in
         let here =
 	  let withs =
@@ -1152,7 +1164,7 @@ module Program =
       (** Check whether the interface [iface] or one of its
 	  superinterfaces provide a method matching the signature
 	  [(coiface, inputs, outputs)]. *)
-      [] <> (interface_find_methods program iface meth coiface ins outs)
+      [] <> (interface_find_methods program iface meth (coiface, ins, outs))
 
     let class_find_methods ~program ~cls meth ins outs =
       (** Find all definitions of a method called [name] that matches

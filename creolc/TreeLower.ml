@@ -31,13 +31,14 @@ let fresh_label () =
   let res = "label:" ^ (string_of_int !next_fresh_label) in
     next_fresh_label := !next_fresh_label + 1 ; res
 
-(* FIXME: This is a very ugly hack, but I need to discuss with Ingrid how
-   I can get a hook into the type checker for a correct implementation
-   of such a function and where we should put it. *)
-let make_expr_note_from_stmt_note s =
-        { Expression.file = s.Statement.file;
-          line = s.Statement.line;
-          ty = Type.data }
+(** Create a note for an expression from the information provided by
+    a statement and type information.
+
+    Called during splitting of statements. *)
+let make_expr_note_from_stmt_note ~stmt t =
+        { Expression.file = stmt.Statement.file;
+          line = stmt.Statement.line;
+          ty = t }
 
 let pass input =
   (** Normalise an abstract syntax tree by replacing all derived concepts
@@ -71,33 +72,59 @@ let pass input =
 	  (label_decls, Assign (a, s, List.map lower_expression e))
       | Await (a, g) -> (label_decls, Await (a, lower_expression g))
       | Posit (a, g) -> (label_decls, Posit (a, lower_expression g))
-      | AsyncCall (a, None, e, n, (co, dom, rng), p) ->
+      | AsyncCall (a, None, e, n, (co, dom, Some rng), p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
 	  let l = fresh_label () in
-	  ((label_decl l rng)::label_decls,
-	   Sequence (a, AsyncCall (a,
-				 Some (LhsVar (make_expr_note_from_stmt_note a,
-					      l)),
-				 lower_expression e, n, (co, dom, rng),
+	  ((label_decl l (Type.label rng))::label_decls,
+	   Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a (Type.label rng), l)),
+				 lower_expression e, n,
+				 (co, dom, Some rng),
 				 List.map lower_expression p),
-		   Free (a, [Id (make_expr_note_from_stmt_note a, l)])))
+		   Free (a, [Id (make_expr_note_from_stmt_note a (Type.label rng), l)])))
+      | AsyncCall (a, None, e, n, (co, dom, None), p) ->
+	  (* If a label name is not given, we assign a new one and free it
+	     afterwards.    We cannot give a correct type to the label,
+             hopefully because the type checker has been disabled.  If we
+             did run the type checker and we get to this case, there is an
+             error in the type checker.  *)
+	  let l = fresh_label () in
+	  ((label_decl l Type.data)::label_decls,
+	   Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a Type.data, l)),
+				 lower_expression e, n,
+				 (co, dom, None),
+				 List.map lower_expression p),
+		   Free (a, [Id (make_expr_note_from_stmt_note a Type.data, l)])))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  (label_decls, AsyncCall (a, Some l, lower_expression e, n, s,
 		    List.map lower_expression p))
       | Free _ as s -> (label_decls, s)
       | Reply _ as s -> (label_decls, s)
-      | SyncCall (a, e, n, (c, dom, rng), p, r) ->
+      | SyncCall (a, e, n, (c, dom, Some rng), p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)
           let ne = lower_expression e
 	  and np = List.map lower_expression p
 	  and l = fresh_label ()
           in
-	    ((label_decl l rng)::label_decls, Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), ne, n, (c, dom, rng), np),
-		     Reply (a, Id (make_expr_note_from_stmt_note a, l), r)))
-      | AwaitSyncCall (a, e, n, (c, dom, rng), p, r) ->
+	    ((label_decl l (Type.label rng))::label_decls, Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a (Type.label rng), l)), ne, n, (c, dom, Some rng), np),
+		     Reply (a, Id (make_expr_note_from_stmt_note a (Type.label rng), l), r)))
+      | SyncCall (a, e, n, s, p, r) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.
+	       We cannot give a correct type to the label,
+             hopefully because the type checker has been disabled.  If we
+             did run the type checker and we get to this case, there is an
+             error in the type checker.  *)
+          let ne = lower_expression e
+	  and np = List.map lower_expression p
+	  and l = fresh_label ()
+          in
+	    ((label_decl l Type.data)::label_decls,
+	     Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a Type.data, l)), ne, n, s, np),
+		     Reply (a, Id (make_expr_note_from_stmt_note a Type.data, l), r)))
+      | AwaitSyncCall (a, e, n, (c, dom, Some rng), p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)
 	  let e' = lower_expression e
@@ -105,41 +132,98 @@ let pass input =
 	  and l = fresh_label () in
 	  let nn = Expression.note e'
 	  in
-	    ((label_decl l rng)::label_decls,
-	     Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), e', n, (c, dom, rng), p'),
+	    ((label_decl l (Type.label rng))::label_decls,
+	     Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a (Type.label rng), l)), e', n, (c, dom, Some rng), p'),
 		     Sequence(a,
 			     Await (a, Label (nn, Id (nn, l))),
-			     Reply (a, Id (make_expr_note_from_stmt_note a, l),
+			     Reply (a, Id (make_expr_note_from_stmt_note a (Type.label rng), l),
 				   r))))
-      | LocalAsyncCall (a, None, m, (c, dom, rng), lb, ub, i) ->
+      | AwaitSyncCall (a, e, n, s, p, r) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.
+	     We cannot give a correct type to the label,
+             hopefully because the type checker has been disabled.  If we
+             did run the type checker and we get to this case, there is an
+             error in the type checker.  *)
+	  let e' = lower_expression e
+	  and p' = List.map lower_expression p
+	  and l = fresh_label () in
+	  let nn = Expression.note e'
+	  in
+	    ((label_decl l Type.data)::label_decls,
+	     Sequence (a, AsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a Type.data, l)), e', n, s, p'),
+		     Sequence(a,
+			     Await (a, Label (nn, Id (nn, l))),
+			     Reply (a, Id (make_expr_note_from_stmt_note a Type.data, l),
+				   r))))
+      | LocalAsyncCall (a, None, m, (c, dom, Some rng), lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
 	     we need smarter semantic analysis. *)
 	  let l = fresh_label () in
-	  ((label_decl l rng)::label_decls, Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a, l)), m, (c, dom, rng), lb, ub,
+	  ((label_decl l (Type.label rng))::label_decls, Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a (Type.label rng), l)), m, (c, dom, Some rng), lb, ub,
 				     List.map lower_expression i),
-		   Free (a, [Id (make_expr_note_from_stmt_note a, l)])))
+		   Free (a, [Id (make_expr_note_from_stmt_note a (Type.label rng), l)])))
+      | LocalAsyncCall (a, None, m, (c, dom, None), lb, ub, i) ->
+	  (* If a label name is not given, we assign a new one and free it
+	     afterwards.  We cannot give a correct type to the label,
+	     hopefully because the type checker has been disabled.  If we
+	     did run the type checker and we get to this case, there is an
+	     error in the type checker.  *)
+	  let l = fresh_label () in
+	  ((label_decl l (Type.data))::label_decls,
+	   Sequence (a, LocalAsyncCall(a, Some (LhsVar (make_expr_note_from_stmt_note a Type.data, l)), m, (c, dom, None), lb, ub,
+				     List.map lower_expression i),
+		   Free (a, [Id (make_expr_note_from_stmt_note a Type.data, l)])))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
-	  (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, List.map lower_expression i))
-      | LocalSyncCall (a, m, (co, dom, rng), l, u, i, o) ->
+	  (label_decls,
+	   LocalAsyncCall (a, Some l, m, s, lb, ub, List.map lower_expression i))
+      | LocalSyncCall (a, m, (co, dom, Some rng), l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)
 	  let i' = List.map lower_expression i
 	  and lab = fresh_label ()
 	  in
-	    ((label_decl lab rng)::label_decls, Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, (co, dom, rng), l, u, i'),
-		     Reply (a, Id (make_expr_note_from_stmt_note a, lab), o)))
-      | AwaitLocalSyncCall (a, m, (co, dom, rng), l, u, i, o) ->
+	    ((label_decl lab (Type.label rng))::label_decls, Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a (Type.label rng), lab)), m, (co, dom, Some rng), l, u, i'),
+		     Reply (a, Id (make_expr_note_from_stmt_note a (Type.label rng), lab), o)))
+      | LocalSyncCall (a, m, s, l, u, i, o) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.  
+	     We cannot give a correct type to the label,
+             hopefully because the type checker has been disabled.  If we
+             did run the type checker and we get to this case, there is an
+             error in the type checker.  *)
+	  let i' = List.map lower_expression i
+	  and lab = fresh_label ()
+	  in
+	    ((label_decl lab Type.data)::label_decls,
+	     Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a Type.data, lab)), m, s, l, u, i'),
+		     Reply (a, Id (make_expr_note_from_stmt_note a Type.data, lab), o)))
+      | AwaitLocalSyncCall (a, m, (co, dom, Some rng), l, u, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)
 	  let ni = List.map lower_expression i
 	  and lab = fresh_label ()
 	  in
-	    ((label_decl lab rng)::label_decls, Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a, lab)), m, (co, dom, rng), l, u, ni),
+	    ((label_decl lab (Type.label rng))::label_decls, Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a (Type.label rng), lab)), m, (co, dom, Some rng), l, u, ni),
 		     Sequence (a, Await (a,
-					Label(make_expr_note_from_stmt_note a,
-					     Id (make_expr_note_from_stmt_note a, lab))),
-			      Reply (a, Id (make_expr_note_from_stmt_note a,
+					Label(make_expr_note_from_stmt_note a (Type.label rng),
+					     Id (make_expr_note_from_stmt_note a (Type.label rng), lab))),
+			      Reply (a, Id (make_expr_note_from_stmt_note a (Type.label rng),
+					   lab),
+				    o))))
+      | AwaitLocalSyncCall (a, m, s, l, u, i, o) ->
+	  (* Replace the synchronous call by the sequence of an asynchronous
+	     call followed by a reply.  This generates a fresh label name.  *)
+	  let ni = List.map lower_expression i
+	  and lab = fresh_label ()
+	  in
+	    ((label_decl lab Type.data)::label_decls,
+	     Sequence (a, LocalAsyncCall (a, Some (LhsVar (make_expr_note_from_stmt_note a Type.data, lab)), m, s, l, u, ni),
+		     Sequence (a, Await (a,
+					Label(make_expr_note_from_stmt_note a Type.data,
+					     Id (make_expr_note_from_stmt_note a Type.data, lab))),
+			      Reply (a, Id (make_expr_note_from_stmt_note a Type.data,
 					   lab),
 				    o))))
       | Tailcall (a, m, (co, dom, rng), l, u, i) ->

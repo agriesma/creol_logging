@@ -120,16 +120,17 @@ let unify ~program ~constraints =
 		 This constraint is trivially satisfied by t, but there may
 		 be multiple constraints on x, and we need to choose the
 		 strongest one. *)
+	      let p (v, w) = (v = s) && (Type.sentence_p w) in
 	      let t' =
-		let p (v, w) = (v = s) && (Type.sentence_p w) in
-		  Program.meet program (List.map snd (List.filter p c))
+		  Program.meet program (t::(List.map snd (List.filter p d)))
+	      and d' = List.filter (fun x -> not (p x)) d
 	      in
 	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
 				    (Type.as_string t')) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
-		        (Type.substitute x t' t1, Type.substitute x t' t2)) d)
+		        (Type.substitute x t' t1, Type.substitute x t' t2)) d')
 		  (Type.Subst.add x t' res)
 	  | (Type.Variable x, _) when not (Type.occurs_p x t) ->
 	      (* In this case, `x is a lower bound, i.e., `x <: t, and t
@@ -675,11 +676,11 @@ let typecheck tree: Declaration.t list =
 	  | Some lab -> Some (type_check_lhs program cls meth coiface lab)
       in
       let callee_t = Expression.get_type callee'
-      and ins_t = Type.Tuple (List.map Expression.get_type ins')
+      and ins_t = Some (List.map Expression.get_type ins')
       and outs_t =
 	match label' with
-	    None -> Type.data
-	  | Some lab' -> Type.get_from_label (Expression.get_lhs_type lab')
+	    None -> None
+	  | Some lab' -> Some (Type.get_from_label (Expression.get_lhs_type lab'))
       in
       let iface = 
 	try
@@ -693,19 +694,16 @@ let typecheck tree: Declaration.t list =
       let co =
 	(* Find the cointerface of our methods. *)
 	let cands =
-	  Program.interface_find_methods program iface m (Class.get_type cls)
-	    ins_t outs_t
+	  Program.interface_find_methods program iface m
+	    ((Class.get_type cls), ins_t, outs_t)
 	in
 	  match cands with
 	      [] -> raise (Type_error (file n, line n,
 				      "Interface " ^ (Type.as_string callee_t) ^
 					" does not provide a method " ^ m ^ 
-					" with inputs " ^
-					(Type.as_string ins_t) ^
-					" and outputs " ^
-					(Type.as_string outs_t) ^
-					" to " ^
-					(Type.as_string (Class.get_type cls))))
+					" with signature " ^
+					(Type.string_of_sig 
+	    ((Class.get_type cls), ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> raise (Type_error (file n, line n,
 				     "Call to method " ^ m ^ " of interface " ^
@@ -731,8 +729,8 @@ let typecheck tree: Declaration.t list =
 	List.map (type_check_lhs program cls meth coiface) outs
       in
       let callee_t = Expression.get_type callee'
-      and ins_t = Type.Tuple (List.map Expression.get_type ins')
-      and outs_t = Type.Tuple (List.map Expression.get_lhs_type outs')
+      and ins_t = Some (List.map Expression.get_type ins')
+      and outs_t = Some (List.map Expression.get_lhs_type outs')
       in
       let iface = 
 	try
@@ -746,19 +744,15 @@ let typecheck tree: Declaration.t list =
       let co =
 	(* Find the cointerface of our methods. *)
 	let cands =
-	  Program.interface_find_methods program iface m (Class.get_type cls)
-	    ins_t outs_t
+	  Program.interface_find_methods program iface m
+	    ((Class.get_type cls), ins_t, outs_t)
 	in
 	  match cands with
 	      [] -> raise (Type_error (file n, line n,
 				      "Interface " ^ (Type.as_string callee_t) ^
 					" does not provide a method " ^ m ^ 
-					" with inputs " ^
-					(Type.as_string ins_t) ^
-					" and outputs " ^
-					(Type.as_string outs_t) ^
-					" to " ^
-					(Type.as_string (Class.get_type cls))))
+					" with signature " ^
+	    (Type.string_of_sig ((Class.get_type cls), ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> raise (Type_error (file n, line n,
 				     "Call to method " ^ m ^ " of interface " ^
@@ -844,7 +838,7 @@ let typecheck tree: Declaration.t list =
 	    in
 	      if Program.subtype_p program
 	        (Type.Tuple (List.map get_lhs_type nretvals))
-	        (Type.get_from_label (Expression.get_type nlabel))
+	        (Type.Tuple (Type.get_from_label (Expression.get_type nlabel)))
 	      then
 	        Reply (n, nlabel, nretvals)
 	      else
@@ -858,7 +852,7 @@ let typecheck tree: Declaration.t list =
 	    in
 	    let signature =
 	      (Type.Internal,
-	      Type.Tuple (List.map Expression.get_type nargs), Type.data)
+	      Some (List.map Expression.get_type nargs), None)
 	    in
 	      (* A label value of none implies that the type if that
 	         anonymous label is Label[Data]. *)
@@ -879,18 +873,20 @@ let typecheck tree: Declaration.t list =
 	      type_check_lhs program cls meth coiface label
 	    in
 	    let signature =
-	      (Type.Internal, Type.Tuple (List.map Expression.get_type nargs),
-	      (Type.get_from_label (Expression.get_lhs_type nlabel)))
+	      (Type.Internal, Some (List.map Expression.get_type nargs),
+	      (Some (Type.get_from_label (Expression.get_lhs_type nlabel))))
 	    in
 	      if Program.class_provides_method_p program cls m
 	        (Type.Tuple (List.map get_type nargs))
-	        (Type.get_from_label (Expression.get_lhs_type nlabel))
+	        (Type.Tuple (Type.get_from_label (Expression.get_lhs_type nlabel)))
 	      then
 	        LocalAsyncCall (n, Some nlabel, m, signature, lb, ub, nargs)
 	      else
 	        raise (Type_error (file n, line n,
 			          "Class " ^ cls.Class.name ^
-				    " does not provide method " ^ m))
+				    " does not provide method " ^ m ^
+				    " with signature " ^
+				    (Type.string_of_sig signature)))
         | SyncCall (n, callee, m, _, ins, outs) ->
 	    let (callee', signature, ins', outs') =
 	      check_sync_method_call n callee m ins outs
@@ -909,19 +905,19 @@ let typecheck tree: Declaration.t list =
             and outs' =
               List.map (type_check_lhs program cls meth coiface) outs
             in
-            let in_t = Type.Tuple (List.map get_type ins')
-            and out_t = Type.Tuple (List.map get_lhs_type outs') in
-            let signature = (Type.Internal, in_t, out_t) in
+            let in_t = List.map get_type ins'
+            and out_t = List.map get_lhs_type outs' in
+            let signature = (Type.Internal, Some in_t, Some out_t) in
               if
-                Program.class_provides_method_p program cls m in_t out_t
+                Program.class_provides_method_p program cls m (Type.Tuple in_t) (Type.Tuple out_t)
               then
                 LocalSyncCall (n, m, signature, lb, ub, ins', outs')
               else
                 raise (Type_error (file n, line n,
                                   "Class " ^ cls.Class.name ^
                                     " does not provide internal method " ^ m ^
-                                    " with inputs " ^ (Type.as_string in_t) ^
-                                    " and outputs " ^ (Type.as_string out_t)))
+                                    " with signature " ^
+				    (Type.string_of_sig signature)))
 	| AwaitLocalSyncCall (n, m, _, lb, ub, ins, outs) ->
 	    (* FIXME:  Check the upper bound and lower bound constraints
 	       for static resolution *)
@@ -930,19 +926,19 @@ let typecheck tree: Declaration.t list =
 	    and outs' =
 	      List.map (type_check_lhs program cls meth coiface) outs
 	    in
-	    let in_t = Type.Tuple (List.map get_type ins')
-	    and out_t = Type.Tuple (List.map get_lhs_type outs') in
-	    let signature = (Type.Internal, in_t, out_t) in
+	    let in_t = List.map get_type ins'
+	    and out_t = List.map get_lhs_type outs' in
+	    let signature = (Type.Internal, Some in_t, Some out_t) in
 	      if
-		Program.class_provides_method_p program cls m in_t out_t
+		Program.class_provides_method_p program cls m (Type.Tuple in_t) (Type.Tuple out_t)
 	      then
 		AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	      else
 		raise (Type_error (file n, line n,
 				  "Class " ^ cls.Class.name ^
 				    " does not provide internal method " ^ m ^
-				    " with inputs " ^ (Type.as_string in_t) ^
-				    " and outputs " ^ (Type.as_string out_t)))
+				    " with signature " ^
+				    (Type.string_of_sig signature)))
 	| Tailcall _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
 	    If (n, type_check_expression program cls meth coiface [] cond,

@@ -374,15 +374,22 @@ let emit ~name ~tree =
 	  creol_statement_note_to_xml a ;
 	  XmlTextWriter.end_element writer
   and creol_signature_to_xml (co, it, ot) =
+    let creol_type_option_to_xml =
+      function
+	 None ->
+    	   XmlTextWriter.start_element writer "creol:unknown" ;
+	   XmlTextWriter.end_element writer
+       | Some l -> List.iter creol_type_to_xml l
+    in
     	  XmlTextWriter.start_element writer "creol:signature" ;
     	  XmlTextWriter.start_element writer "creol:cointerface" ;
 	  creol_type_to_xml co ;
 	  XmlTextWriter.end_element writer ;
     	  XmlTextWriter.start_element writer "creol:input-parameters" ;
-	  creol_type_to_xml it ;
+	  creol_type_option_to_xml it ;
 	  XmlTextWriter.end_element writer ;
     	  XmlTextWriter.start_element writer "creol:output-parameters" ;
-	  creol_type_to_xml ot ;
+	  creol_type_option_to_xml ot ;
 	  XmlTextWriter.end_element writer ;
 	  XmlTextWriter.end_element writer
   and creol_statement_note_to_xml note =
