@@ -703,7 +703,7 @@ let typecheck tree: Declaration.t list =
 					" does not provide a method " ^ m ^ 
 					" with signature " ^
 					(Type.string_of_sig 
-	    ((Class.get_type cls), ins_t, outs_t))))
+					    ((Class.get_type cls), ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> raise (Type_error (file n, line n,
 				     "Call to method " ^ m ^ " of interface " ^
@@ -752,7 +752,7 @@ let typecheck tree: Declaration.t list =
 				      "Interface " ^ (Type.as_string callee_t) ^
 					" does not provide a method " ^ m ^ 
 					" with signature " ^
-	    (Type.string_of_sig ((Class.get_type cls), ins_t, outs_t))))
+					(Type.string_of_sig ((Class.get_type cls), ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> raise (Type_error (file n, line n,
 				     "Call to method " ^ m ^ " of interface " ^
@@ -856,9 +856,7 @@ let typecheck tree: Declaration.t list =
 	    in
 	      (* A label value of none implies that the type if that
 	         anonymous label is Label[Data]. *)
-	      if Program.class_provides_method_p program cls m
-	        (Type.Tuple (List.map get_type nargs)) Type.data
-	      then
+	      if Program.class_provides_method_p program cls m signature then
 	        LocalAsyncCall (n, None, m, signature, lb, ub, nargs)
 	      else
 	        raise (Type_error (file n, line n,
@@ -876,10 +874,7 @@ let typecheck tree: Declaration.t list =
 	      (Type.Internal, Some (List.map Expression.get_type nargs),
 	      (Some (Type.get_from_label (Expression.get_lhs_type nlabel))))
 	    in
-	      if Program.class_provides_method_p program cls m
-	        (Type.Tuple (List.map get_type nargs))
-	        (Type.Tuple (Type.get_from_label (Expression.get_lhs_type nlabel)))
-	      then
+	      if Program.class_provides_method_p program cls m signature then
 	        LocalAsyncCall (n, Some nlabel, m, signature, lb, ub, nargs)
 	      else
 	        raise (Type_error (file n, line n,
@@ -908,9 +903,7 @@ let typecheck tree: Declaration.t list =
             let in_t = List.map get_type ins'
             and out_t = List.map get_lhs_type outs' in
             let signature = (Type.Internal, Some in_t, Some out_t) in
-              if
-                Program.class_provides_method_p program cls m (Type.Tuple in_t) (Type.Tuple out_t)
-              then
+              if Program.class_provides_method_p program cls m signature then
                 LocalSyncCall (n, m, signature, lb, ub, ins', outs')
               else
                 raise (Type_error (file n, line n,
@@ -929,9 +922,7 @@ let typecheck tree: Declaration.t list =
 	    let in_t = List.map get_type ins'
 	    and out_t = List.map get_lhs_type outs' in
 	    let signature = (Type.Internal, Some in_t, Some out_t) in
-	      if
-		Program.class_provides_method_p program cls m (Type.Tuple in_t) (Type.Tuple out_t)
-	      then
+	      if Program.class_provides_method_p program cls m signature then
 		AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	      else
 		raise (Type_error (file n, line n,
