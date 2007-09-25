@@ -4,7 +4,7 @@
 
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END INTERFACE DATATYPE
-%token WHILE VAR WITH OP IN OUT CONSTRUCTOR EXTERN
+%token WHILE VAR WITH OP IN OUT CONSTRUCTOR FUN EXTERN
 %token REQUIRES ENSURES INV SOME FORALL EXISTS HISTORY
 %token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
 %token AS BY DO
@@ -126,6 +126,7 @@ declaration:
     | d = interfacedecl	{ Declaration.Interface d }
     | d = datatypedecl { Declaration.Datatype d }
     | d = exceptiondecl { Declaration.Exception d }
+    | d = functiondecl { Declaration.Function d }
 
 classdecl:
       CLASS n = CID p = class_param_list s = list(super_decl)
@@ -134,6 +135,7 @@ classdecl:
       { { Class.name = n; parameters = p; inherits = inherits s;
 	  contracts = contracts s; implements = implements s;
 	  attributes = a; with_defs = upd_method_locs n (aw @ m) ;
+	  hidden = false;
 	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }
@@ -261,7 +263,7 @@ with_decl:
 exceptiondecl:
       EXCEPTION n = CID
         p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-	{ { Exception.name = n; Exception.parameters = p } }
+	{ { Exception.name = n; Exception.parameters = p; hidden = false } }
 
 
 (* Data type declaration *)
@@ -269,27 +271,27 @@ exceptiondecl:
 datatypedecl:
     DATATYPE t = creol_type
       s = loption(preceded(BY, separated_list(COMMA, creol_type)))
-    BEGIN
-      o = list(functiondecl) list(invariant)
-    END
-    { { Datatype.name = t; supers = s; operations = o; hidden = false } }
+    loption(delimited(BEGIN, list(invariant), END))
+    { { Datatype.name = t; supers = s; hidden = false } }
 
 functiondecl:
-    OP n = id_or_op
+    FUN n = id_or_op
     p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON t = creol_type EQEQ e = expression
-    { { Operation.name = n; parameters = p; result_type = t; body = e } }
-  | OP n = id_or_op
+    { { Function.name = n; parameters = p; result_type = t; body = e;
+	hidden = false } }
+  | FUN n = id_or_op
     p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON t = creol_type EQEQ EXTERN s = STRING
-    { { Operation.name = n; parameters = p; result_type = t;
-	body = Expression.Extern (Expression.make_note $startpos, s) } }
-  | OP error
-  | OP id_or_op error
-  | OP id_or_op
+    { { Function.name = n; parameters = p; result_type = t;
+	body = Expression.Extern (Expression.make_note $startpos, s);
+	hidden = false } }
+  | FUN error
+  | FUN id_or_op error
+  | FUN id_or_op
     loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON error
-  | OP id_or_op
+  | FUN id_or_op
     loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON creol_type EQEQ error
     { signal_error $startpos "Syntax error in function declaration" }

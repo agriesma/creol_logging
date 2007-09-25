@@ -30,12 +30,16 @@ let emit out_channel input =
       debugging. *)
   let rec pretty_print_declaration =
     function
-	Declaration.Class c -> pretty_print_class c
+	Declaration.Class c when not c.Class.hidden ->
+	  pretty_print_class c
       | Declaration.Interface i when not i.Interface.hidden ->
 	  pretty_print_iface i
-      | Declaration.Exception e -> pretty_print_exception e
+      | Declaration.Exception e when not e.Exception.hidden ->
+	  pretty_print_exception e
       | Declaration.Datatype d when not d.Datatype.hidden ->
           pretty_print_datatype d
+      | Declaration.Function f when not f.Function.hidden ->
+	  pretty_print_function f
       | _ -> ()
   and pretty_print_datatype d =
     output_string out_channel ("datatype " ^ (Type.as_string d.Datatype.name));
@@ -47,19 +51,15 @@ let emit out_channel input =
 	  (function () -> output_string out_channel ", ") d.Datatype.supers
       end ;
     output_string out_channel "\nbegin\n" ;
-    List.iter pretty_print_operation d.Datatype.operations ;
     output_string out_channel "end\n"
-  and pretty_print_operation o =
-    output_string out_channel ("  op " ^ o.Operation.name) ;
-    if o.Operation.parameters <> [] then
-      begin
-        output_string out_channel " (" ;
-	pretty_print_vardecls 0 "" ", " "" o.Operation.parameters ;
-        output_string out_channel ")"
-      end ;
+  and pretty_print_function f =
+    output_string out_channel ("  fun " ^ f.Function.name) ;
+    output_string out_channel " (" ;
+    pretty_print_vardecls 0 "" ", " "" f.Function.parameters ;
+    output_string out_channel ")" ;
     output_string out_channel
-      (" : " ^ (Type.as_string o.Operation.result_type) ^ " == ") ;
-    pretty_print_expression o.Operation.body ;
+      (" : " ^ (Type.as_string f.Function.result_type) ^ " == ") ;
+    pretty_print_expression f.Function.body ;
     output_string out_channel "\n"
   and pretty_print_exception e =
     output_string out_channel ("exception " ^ e.Exception.name) ;

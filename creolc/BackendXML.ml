@@ -37,6 +37,7 @@ let emit ~name ~tree =
       | Declaration.Interface i -> creol_interface_to_xml i
       | Declaration.Datatype d -> creol_datatype_to_xml d
       | Declaration.Exception e -> creol_exception_to_xml e
+      | Declaration.Function f -> creol_function_to_xml f
   and creol_exception_to_xml e =
     XmlTextWriter.start_element writer "creol:exception";
     XmlTextWriter.write_attribute writer "name" e.Exception.name;
@@ -54,19 +55,18 @@ let emit ~name ~tree =
     XmlTextWriter.start_element writer "creol:supertypes";
     List.iter creol_type_to_xml d.Datatype.supers;
     XmlTextWriter.end_element writer ;
-    List.iter creol_operation_to_xml d.Datatype.operations;
     XmlTextWriter.end_element writer
-  and creol_operation_to_xml o =
-    XmlTextWriter.start_element writer "creol:operation";
-    XmlTextWriter.write_attribute writer "name" o.Operation.name;
+  and creol_function_to_xml o =
+    XmlTextWriter.start_element writer "creol:function";
+    XmlTextWriter.write_attribute writer "name" o.Function.name;
     XmlTextWriter.start_element writer "creol:parameters";
-    List.iter (creol_vardecl_to_xml) o.Operation.parameters;
+    List.iter (creol_vardecl_to_xml) o.Function.parameters;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "creol:resulttype";
-    creol_type_to_xml o.Operation.result_type ;
+    creol_type_to_xml o.Function.result_type ;
     XmlTextWriter.end_element writer;
     XmlTextWriter.start_element writer "creol:body";
-    creol_expression_to_xml o.Operation.body ;
+    creol_expression_to_xml o.Function.body ;
     XmlTextWriter.end_element writer;
     XmlTextWriter.end_element writer
   and creol_class_to_xml c =

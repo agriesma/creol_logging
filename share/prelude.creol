@@ -19,124 +19,129 @@
 
 datatype Data
 begin
-  op = (a: Data, b: Data): Bool == extern "="
-  op /= (a: Data, b: Data): Bool == extern "/="
 end
+
+fun = (a: Data, b: Data): Bool == extern "="
+fun /= (a: Data, b: Data): Bool == extern "/="
 
 datatype Bool by Data
 begin
-  op ~ (a: Bool) : Bool == extern "~"
-  op && (a: Bool, b: Bool): Bool == extern "&&"
-  op || (a: Bool, b: Bool): Bool == extern "||"
-  op => (a: Bool, b: Bool): Bool == extern "=>"
-  op ^ (a: Bool, b: Bool): Bool == extern "^"
-  op <=> (a: Bool, b: Bool): Bool == extern "<=>"
 end
+
+fun ~ (a: Bool) : Bool == extern "~"
+fun && (a: Bool, b: Bool): Bool == extern "&&"
+fun || (a: Bool, b: Bool): Bool == extern "||"
+fun => (a: Bool, b: Bool): Bool == extern "=>"
+fun ^ (a: Bool, b: Bool): Bool == extern "^"
+fun <=> (a: Bool, b: Bool): Bool == extern "<=>"
 
 datatype Real by Data
 begin
-  op - (a: Real): Real == extern "-"
-  op - (a: Real): Real == extern "-"
-  op + (a: Real, b: Real): Real == extern "+"
-  op - (a: Real, b: Real): Real == extern "-"
-  op * (a: Real, b: Real): Real == extern "*"
-  op / (a: Real, b: Real): Real == extern "/"
-  op % (a: Real, b: Real): Real == extern "%"
-  op ** (a: Real, b: Real): Real == extern "**"
-
-  op < (a: Real, b: Real): Bool == extern "<"
-  op <= (a: Real, b: Real): Bool == extern "<="
-  op > (a: Real, b: Real): Bool == extern ">"
-  op >= (a: Real, b: Real): Bool == extern ">="
 end
+
+fun - (a: Real): Real == extern "-"
+fun + (a: Real, b: Real): Real == extern "+"
+fun - (a: Real, b: Real): Real == extern "-"
+fun * (a: Real, b: Real): Real == extern "*"
+fun / (a: Real, b: Real): Real == extern "/"
+fun % (a: Real, b: Real): Real == extern "%"
+fun ** (a: Real, b: Real): Real == extern "**"
+
+fun < (a: Real, b: Real): Bool == extern "<"
+fun <= (a: Real, b: Real): Bool == extern "<="
+fun > (a: Real, b: Real): Bool == extern ">"
+fun >= (a: Real, b: Real): Bool == extern ">="
 
 datatype Int by Real
 begin
-  op - (a: Int): Int == extern "-"
-  op - (a: Int): Int == extern "-"
-  op + (a: Int, b: Int): Int == extern "+"
-  op - (a: Int, b: Int): Int == extern "-"
-  op * (a: Int, b: Int): Int == extern "*"
-  op / (a: Int, b: Int): Int == extern "/"
-  op % (a: Int, b: Int): Int == extern "%"
-  op ** (a: Int, b: Int): Int == extern "**"
-
-  op < (a: Int, b: Int): Bool == extern "<"
-  op <= (a: Int, b: Int): Bool == extern "<="
-  op > (a: Int, b: Int): Bool == extern ">"
-  op >= (a: Int, b: Int): Bool == extern ">="
 end
+
+fun - (a: Int): Int == extern "-"
+fun - (a: Int): Int == extern "-"
+fun + (a: Int, b: Int): Int == extern "+"
+fun - (a: Int, b: Int): Int == extern "-"
+fun * (a: Int, b: Int): Int == extern "*"
+fun / (a: Int, b: Int): Int == extern "/"
+fun % (a: Int, b: Int): Int == extern "%"
+fun ** (a: Int, b: Int): Int == extern "**"
+
+fun < (a: Int, b: Int): Bool == extern "<"
+fun <= (a: Int, b: Int): Bool == extern "<="
+fun > (a: Int, b: Int): Bool == extern ">"
+fun >= (a: Int, b: Int): Bool == extern ">="
 
 datatype String by Data
 begin
-  op |- (a: String, b: String): String == extern "|-"
-  op -| (a: String, b: String): String == extern "-|"
-  op |-| (a: String, b: String): String == extern "|-|"
-  op # (a: String): Int == extern "#"
-
-  op < (a: String, b: String): Bool == extern "<"
-  op <= (a: String, b: String): Bool == extern "<="
-  op > (a: String, b: String): Bool == extern ">"
-  op >= (a: String, b: String): Bool == extern ">="
 end
+
+fun |- (a: String, b: String): String == extern "|-"
+fun -| (a: String, b: String): String == extern "-|"
+fun |-| (a: String, b: String): String == extern "|-|"
+fun # (a: String): Int == extern "#"
+
+fun < (a: String, b: String): Bool == extern "<"
+fun <= (a: String, b: String): Bool == extern "<="
+fun > (a: String, b: String): Bool == extern ">"
+fun >= (a: String, b: String): Bool == extern ">="
 
 datatype List[`a]
 begin
-
-  op head(l: List[`a]): `a == extern "head"
-  op tail(l: List[`a]): List[`a] == extern "tail"
-  op last(l: List[`a]): `a == extern "last"
-  op rest(l: List[`a]): List[`a] == extern "rest"
-  op at(l: List[`a], p: Int): `a == extern "at"
-  op remove(l: List[`a], e: `a): List[`a] == extern "remove"
-  op -|(e: `a, l: List[`a]): List[`a] == extern "-|"
-  op |-(l: List[`a], e: `a): List[`a] == extern "|-"
-  op |-|(l: List[`a], m: List[`a]): List[`a] == extern "|-|"
-  op #(l: List[`a]): Int == extern "length"
-  op length(l: List[`a]): Int == extern "length"
-  op isempty(l: List[`a]): Bool == extern "isempty"
-
-  // More to come.
-
 end
+
+fun head(l: List[`a]): `a == extern "head"
+fun tail(l: List[`a]): List[`a] == extern "tail"
+fun last(l: List[`a]): `a == extern "last"
+fun rest(l: List[`a]): List[`a] == extern "rest"
+fun at(l: List[`a], p: Int): `a == extern "at"
+fun remove(l: List[`a], e: `a): List[`a] == extern "remove"
+fun -|(e: `a, l: List[`a]): List[`a] == extern "-|"
+fun |-(l: List[`a], e: `a): List[`a] == extern "|-"
+fun |-|(l: List[`a], m: List[`a]): List[`a] == extern "|-|"
+fun #(l: List[`a]): Int == extern "length"
+fun length(l: List[`a]): Int == extern "length"
+fun isempty(l: List[`a]): Bool == extern "isempty"
+
+// More to come.
 
 datatype Set[`a]
 begin
-
-  // More to come.
-
 end
+
+// More to come.
+
 
 datatype Pair
 begin
-  op pair(a: `a, b: `b): [`a, `b] == extern "pair"
-  op fst (a: [`a, `b]): `a == extern "fst"
-  op snd (a: [`a, `b]): `b == extern "snd"
 end
+
+fun fst (a: [`a, `b]): `a == extern "fst"
+fun snd (a: [`a, `b]): `b == extern "snd"
 
 datatype Time
 begin
-  op <(a: Time, b: Time): Bool == extern "<"
-  op <=(a: Time, b: Time): Bool == extern "<="
-  op >=(a: Time, b: Time): Bool == extern ">="
-  op >(a: Time, b: Time): Bool == extern ">"
 end
+
+fun <(a: Time, b: Time): Bool == extern "<"
+fun <=(a: Time, b: Time): Bool == extern "<="
+fun >=(a: Time, b: Time): Bool == extern ">="
+fun >(a: Time, b: Time): Bool == extern ">"
 
 datatype Duration
 begin
-  op dur(a: Real): Duration == extern "duration"
-  op +(a: Time, d: Duration): Time == extern "+"
-  op -(a: Time, d: Duration): Time == extern "-"
-  op +(a: Duration, d: Duration): Duration == extern "+"
-  op -(a: Duration, d: Duration): Duration == extern "-"
-  op *(a: Duration, s: Real): Duration == extern "*"
-  op *(a: Real, s: Duration): Duration == extern "*"
-  op /(a: Duration, s: Real): Duration == extern "/"
-  op <(a: Duration, b: Duration): Bool == extern "<"
-  op <=(a: Duration, b: Duration): Bool == extern "<="
-  op >=(a: Duration, b: Duration): Bool == extern ">="
-  op >(a: Duration, b: Duration): Bool == extern ">"
 end
+
+fun dur(a: Real): Duration == extern "duration"
+fun +(a: Time, d: Duration): Time == extern "+"
+fun -(a: Time, d: Duration): Time == extern "-"
+fun +(a: Duration, d: Duration): Duration == extern "+"
+fun -(a: Duration, d: Duration): Duration == extern "-"
+fun *(a: Duration, s: Real): Duration == extern "*"
+fun *(a: Real, s: Duration): Duration == extern "*"
+fun /(a: Duration, s: Real): Duration == extern "/"
+fun <(a: Duration, b: Duration): Bool == extern "<"
+fun <=(a: Duration, b: Duration): Bool == extern "<="
+fun >=(a: Duration, b: Duration): Bool == extern ">="
+fun >(a: Duration, b: Duration): Bool == extern ">"
 
 interface Any
 begin

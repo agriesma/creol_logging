@@ -408,16 +408,16 @@ let typecheck tree: Declaration.t list =
 		    (* This is a small optimisation. *)
 		    let r =
 		      Type.Function
-			(Operation.domain_type candidate,
-			candidate.Operation.result_type)
+			(Function.domain_type candidate,
+			candidate.Function.result_type)
 		    in
 		      fresh_names_in_type fresh_name' r
 		| candidates ->
 		    let (fn'', t) =
 		      List.fold_left (fun (fn, t) o ->
 			let r =
-			  Type.Function (Operation.domain_type o,
-					o.Operation.result_type)
+			  Type.Function (Function.domain_type o,
+					o.Function.result_type)
 			in
 			let (fn', sr) = fresh_names_in_type fn r in
 			  (fn', sr::t))
@@ -448,16 +448,16 @@ let typecheck tree: Declaration.t list =
 		    (* This is a small optimisation. *)
 		    let r =
 		      Type.Function
-			(Operation.domain_type candidate,
-			candidate.Operation.result_type)
+			(Function.domain_type candidate,
+			candidate.Function.result_type)
 		    in
 		      fresh_names_in_type fresh_name'' r
 		| candidates ->
 		    let (fn'', t) =
 		      List.fold_left (fun (fn, t) o ->
 			let r =
-			  Type.Function (Operation.domain_type o,
-					o.Operation.result_type)
+			  Type.Function (Function.domain_type o,
+					o.Function.result_type)
 			in
 			let (fn', sr) = fresh_names_in_type fn r in
 			  (fn', sr::t))
@@ -500,16 +500,16 @@ let typecheck tree: Declaration.t list =
 		    (* This is a small optimisation. *)
 		    let r =
 		      Type.Function
-			(Operation.domain_type candidate,
-			candidate.Operation.result_type)
+			(Function.domain_type candidate,
+			candidate.Function.result_type)
 		    in
 		      fresh_names_in_type fresh_name' r
 		| candidates ->
 		    let (fn'', t) =
 		      List.fold_left (fun (fn, t) o ->
 			let r =
-			  Type.Function (Operation.domain_type o,
-					o.Operation.result_type)
+			  Type.Function (Function.domain_type o,
+					o.Function.result_type)
 			in
 			let (fn', sr) = fresh_names_in_type fn r in
 			  (fn', sr::t))

@@ -343,6 +343,7 @@ let into_ssa tree =
       | Declaration.Interface i -> Declaration.Interface i
       | Declaration.Exception e -> Declaration.Exception e
       | Declaration.Datatype d -> Declaration.Datatype d
+      | Declaration.Function f -> Declaration.Function f
   in
     List.map declaration_to_ssa tree
 
@@ -494,5 +495,6 @@ let out_of_ssa tree =
       | Declaration.Interface i -> Declaration.Interface i
       | Declaration.Exception e -> Declaration.Exception e
       | Declaration.Datatype d -> Declaration.Datatype d
+      | Declaration.Function f -> Declaration.Function f
   in
     List.map declaration_of_ssa tree

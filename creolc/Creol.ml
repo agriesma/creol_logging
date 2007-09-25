@@ -857,6 +857,7 @@ struct
 	implements: Inherits.t list;
 	attributes: VarDecl.t list;
 	with_defs: With.t list;
+	hidden: bool;
 	file: string;
 	line: int }
 
@@ -894,21 +895,22 @@ end
 
 module Exception =
 struct
-  type t = { name: string; parameters: VarDecl.t list }
+  type t = { name: string; parameters: VarDecl.t list; hidden: bool }
 end
 
 
 
 
 
-module Operation =
+module Function =
   struct
 
     type t = {
       name: string;
       parameters: VarDecl.t list;
       result_type: Type.t;
-      body: Expression.t
+      body: Expression.t;
+      hidden: bool
     }
 
     let domain_type o =
@@ -923,7 +925,6 @@ module Datatype =
     type t = {
       name: Type.t;
       supers: Type.t list;
-      operations: Operation.t list;
       hidden: bool
 	(** Hide from output.  Set for datatypes defined in the prelude. *)
     }
@@ -942,12 +943,15 @@ struct
       | Interface of Interface.t
       | Datatype of Datatype.t
       | Exception of Exception.t
+      | Function of Function.t
 
   let hide =
     function
-        Datatype d -> Datatype { d with Datatype.hidden = true }
+	Class c -> Class { c with Class.hidden = true }
       | Interface i -> Interface { i with Interface.hidden = true }
-      | d -> d
+      | Datatype d -> Datatype { d with Datatype.hidden = true }
+      | Exception e -> Exception { e with Exception.hidden = true }
+      | Function f -> Function { f with Function.hidden = true }
 
 end
 
@@ -1035,6 +1039,18 @@ module Program =
 		(List.map Type.as_string s_decl.Datatype.supers))
       with
 	  Not_found -> false
+
+    let find_functions ~program ~name =
+      (** Find all definitions of functions called [name] in
+	  [program], whose formal parameters are compatible with
+	  [domain].  Only return the most specific matches.  Returns
+	  the empty list if none is found. *)
+      let f a =
+	function
+	    Declaration.Function f when f.Function.name  = name -> f::a
+	  | _ -> a
+      in
+        List.fold_left f [] program
 
     let rec find_attr_decl program cls name =
       let rec find lst =
@@ -1139,20 +1155,6 @@ module Program =
 	    [] -> assert false
 	  | hd::tl -> List.fold_left find_join hd tl
 
-
-    let find_functions ~program ~name =
-      (** Find all definitions of functions called [name] in
-	  [program], whose formal parameters are compatible with
-	  [domain].  Only return the most specific matches.  Returns
-	  the empty list if none is found. *)
-      List.flatten
-	(List.map
-	    (function
-		Declaration.Datatype d ->
-		  List.filter (fun o  ->
-		    o.Operation.name = name) d.Datatype.operations
-	      | _ -> [])
-	    program)
 
     let find_method_in_with ~program ~name ~signature w =
       let (coiface, ins, outs) = signature in

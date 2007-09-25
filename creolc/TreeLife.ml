@@ -148,5 +148,6 @@ let compute tree =
       | Declaration.Interface _ -> ()
       | Declaration.Exception _ -> ()
       | Declaration.Datatype _ -> ()
+      | Declaration.Function _ -> ()
   in
     List.iter compute_in_declaration tree ; tree

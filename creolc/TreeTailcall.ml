@@ -36,6 +36,7 @@ let optimize prg =
     | Declaration.Interface i -> Declaration.Interface i
     | Declaration.Exception e -> Declaration.Exception e
     | Declaration.Datatype d -> Declaration.Datatype d
+    | Declaration.Function f -> Declaration.Function f
   and optimise_in_class c =
     { c with Class.with_defs = List.map optimise_in_with c.Class.with_defs }
   and optimise_in_with w =

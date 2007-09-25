@@ -371,7 +371,6 @@ endfm
 
 fmod CREOL-DATA-TIME is
   extending CREOL-DATA-SIG .
-  --- extending CREOL-DATA-INT .
   extending CREOL-DATA-FLOAT .
 
   *** The central problem will be to evaluate this "expression", since the

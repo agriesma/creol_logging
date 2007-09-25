@@ -366,5 +366,6 @@ let pass input =
       | Declaration.Interface i -> Declaration.Interface (lower_interface i)
       | Declaration.Exception e -> Declaration.Exception e
       | Declaration.Datatype d -> Declaration.Datatype d
+      | Declaration.Function f -> Declaration.Function f
   in
     List.map lower_declaration input

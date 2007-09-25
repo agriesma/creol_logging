@@ -127,6 +127,7 @@ rule token = parse
     | "extern" { EXTERN }
     | "false" { BOOL(false) }
     | "forall" { FORALL }
+    | "fun" { FUN }
     | "history" { HISTORY }
     | "if" { IF }
     | "implements" { IMPLEMENTS }

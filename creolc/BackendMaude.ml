@@ -348,12 +348,14 @@ let emit options out_channel input =
   and of_interface i = ()
   and of_exception e = ()
   and of_datatype d = ()
+  and of_function f = ()
   and of_declaration =
     function
 	Declaration.Class c -> of_class c
       | Declaration.Interface i -> of_interface i
       | Declaration.Exception e -> of_exception e
       | Declaration.Datatype d -> of_datatype d
+      | Declaration.Function f -> of_function f
   and of_decl_list =
     function
 	[] -> output_string out_channel "noConf\n"
