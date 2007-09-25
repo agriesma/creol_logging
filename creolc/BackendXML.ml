@@ -113,6 +113,8 @@ let emit ~name ~tree =
   and creol_method_to_xml m =
     XmlTextWriter.start_element writer "creol:method" ; 
     XmlTextWriter.write_attribute writer "name" m.Method.name;
+    if m.Method.location <> "" then
+      XmlTextWriter.write_attribute writer "location" m.Method.location;
     XmlTextWriter.start_element writer "creol:inputs" ; 
     List.iter (creol_vardecl_to_xml) m.Method.inpars;
     XmlTextWriter.end_element writer;

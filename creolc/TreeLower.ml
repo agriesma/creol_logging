@@ -312,7 +312,7 @@ let pass input =
       let empty_method name =
 	{ Method.name = name; coiface = Type.Internal;
 	  inpars = []; outpars = []; vars = [];
-	  body = Some (Skip Statement.dummy_note) }
+	  body = Some (Skip Statement.dummy_note); location = c.Class.name }
       in
       (* We use the invariant that each class declaration has at most one
 	 with-block with the internal co-interface and that it is always

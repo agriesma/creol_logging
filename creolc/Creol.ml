@@ -785,11 +785,17 @@ module Method =
         inpars: VarDecl.t list;
         outpars: VarDecl.t list;
         vars: VarDecl.t list;
-        body: Statement.t option }
+        body: Statement.t option;
+	location: string
+	  (** The class or interface in which this method
+	      declaration/definition is defined.  We use the fact that
+	      body = None for interfaces only to distinguish the name
+	      spaces. *)
+	}
 
     let make_decl n inp outp =
       { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
-	vars = []; body = None }
+	vars = []; body = None; location = "" }
 
     let set_cointerface cf m = { m with coiface = cf }
 

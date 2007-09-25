@@ -111,6 +111,10 @@ let implements l =
 let inherits l =
   List.flatten
     (List.fold_left (fun a -> function Inherits m -> m::a | _ -> a) [] l)
+
+let upd_method_locs n w =
+  List.map (fun x -> { x with With.methods =
+      List.map (fun y -> { y with Method.location = n }) x.With.methods }) w
 %}
 %%
 
@@ -129,7 +133,7 @@ classdecl:
 	m = list(with_def) END
       { { Class.name = n; parameters = p; inherits = inherits s;
 	  contracts = contracts s; implements = implements s;
-	  attributes = a; with_defs = aw @ m ;
+	  attributes = a; with_defs = upd_method_locs n (aw @ m) ;
 	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }
@@ -236,8 +240,8 @@ method_def:
 interfacedecl:
       INTERFACE n = CID class_param_list
       i = list(inherits_decl) BEGIN w = list(with_decl) END
-        { { Interface.name = n; inherits = inherits i; with_decls = w;
-	    hidden = false } }
+        { { Interface.name = n; inherits = inherits i;
+	    with_decls = upd_method_locs n w; hidden = false } }
     | INTERFACE error
     | INTERFACE CID error
 	{ signal_error $startpos "syntax error in interface declaration" }
