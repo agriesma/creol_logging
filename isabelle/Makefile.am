@@ -29,3 +29,6 @@ EXTRA_DIST		= README \
 			  Creol/ROOT.ML \
 			  Creol/Creol.thy \
 			  Creol/document/root.tex
+
+all-local:
+	${ISATOOL} make
