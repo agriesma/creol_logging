@@ -70,9 +70,9 @@ fmod CREOL-DATA-SIG is
   op _,_ : NeVidList VidList -> NeVidList [ctor ditto] .
   op _,_ : VidList NeVidList -> NeVidList [ctor ditto] .
 
-  op _(_) : String DataList -> Data [format (! o d d d) prec 12] .
-  op _(_) : String ExprList -> Expr [ctor ditto] .
-  op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
+  op _(_) : String DataList -> Data [prec 12 format (! o d d d)] .
+  op _(_) : String ExprList -> Expr [prec 12 format (! o d d d)] .
+  op if_th_el_fi : Expr Expr Expr -> Expr [ctor strat (1 0 2 3 0)] .
   op _??  : Vid -> Expr [ctor] .
   op _??  : Label -> Expr [ctor] .
   op _@@_ : String String -> Vid [ctor] .

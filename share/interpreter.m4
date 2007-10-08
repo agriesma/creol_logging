@@ -180,8 +180,8 @@ fmod CREOL-STM-LIST is
 			  op nil : -> List{Stm} to noStm,
 			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_ [`format' (d r o d)]) .
 
-  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor] . 
-  op while_do_od : Expr NeStmList -> Stm [ctor] .
+  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor strat (1 0 2 3 0)] . 
+  op while_do_od : Expr NeStmList -> Stm [ctor strat (1 0 2 0)] .
   op _[]_  : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 45 `format' (d r d o d)] .
   op _|||_ : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 47 `format' (d r o d)] .
   op _MERGER_  : StmList StmList -> Stm [assoc] .
@@ -304,7 +304,7 @@ fmod CREOL-COMMUNICATION is
 
   *** INVOCATION and REPLY
   op invoc(_,_,_,_) : *** Nat Oid 
-  Oid Label Mid DataList -> Body [ctor `format' (! o o o o o o o o o o)] .  
+    Oid Label Mid DataList -> Body [ctor `format' (! o o o o o o o o o o)] .  
   op comp(_,_) : Label DataList -> Body [ctor `format' (! o o o o o o)] .  
 
   --- Messages.  Messages have at least a receiver.
@@ -455,9 +455,9 @@ define(`EVALGUARDMAP', evalGuardMap($1, $2, $3, $4))dnl
 define(`ENABLED', enabled($1, $2, $3, $4))dnl
 define(`READY', ready($1, $2, $3, $4))'
   op evalGuard : Expr Subst MMsg Float -> Data .
-  op evalGuardList : ExprList Subst MMsg Float -> DataList .
-  op evalGuardSet : ExprSet Subst MMsg Float -> DataSet .
-  op evalGuardMap : ExprMap Subst MMsg Float -> DataMap .
+  op evalGuardList : ExprList Subst MMsg Float -> DataList [strat (1 0 0 0 0)] .
+  op evalGuardSet : ExprSet Subst MMsg Float -> DataSet [strat (1 0 0 0 0)] .
+  op evalGuardMap : ExprMap Subst MMsg Float -> DataMap [strat (1 0 0 0 0)] .
   op enabled : NeStmList Subst MMsg Float -> Bool .
   op ready : NeStmList Subst MMsg Float -> Bool .
 ,dnl Untimed:
@@ -468,9 +468,9 @@ define(`EVALGUARDMAP', evalGuardMap($1, $2, $3))dnl
 define(`ENABLED', enabled($1, $2, $3))dnl
 define(`READY', ready($1, $2, $3))'
   op evalGuard : Expr Subst MMsg -> Data .
-  op evalGuardList : ExprList Subst MMsg -> DataList .
-  op evalGuardSet : ExprSet Subst MMsg -> DataSet .
-  op evalGuardMap : ExprMap Subst MMsg -> DataMap .
+  op evalGuardList : ExprList Subst MMsg -> DataList [strat (1 0 0 0)] .
+  op evalGuardSet : ExprSet Subst MMsg -> DataSet [strat (1 0 0 0)] .
+  op evalGuardMap : ExprMap Subst MMsg -> DataMap [strat (1 0 0 0)] .
   op enabled : NeStmList Subst MMsg -> Bool .
   op ready : NeStmList Subst MMsg -> Bool .
 )dnl
