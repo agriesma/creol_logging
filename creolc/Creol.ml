@@ -254,8 +254,10 @@ module Expression =
 	ty = Type.data
       }
 
-    let dummy_note =
-      { file = "**dummy**"; line = 0; ty = Type.data }
+    let typed_dummy_note t =
+      { file = "**dummy**"; line = 0; ty = t }
+
+    let dummy_note = typed_dummy_note Type.data
 
     let file note = note.file
 
@@ -649,7 +651,12 @@ module Statement =
 	| AsyncCall of note * Expression.lhs option * Expression.t * string *
 	   Type.signature *  Expression.t list
 	| Reply of note * Expression.t * Expression.lhs list
-	| Free of note * Expression.t list
+	| Free of note * Expression.lhs list
+	| Bury of note * Expression.lhs list
+	    (** Bury represents a special form of assignment, setting all
+		its arguments to null.  It does not affect life ranges
+		of its arguments and assumes that all argument names are
+		already dead at that position. *)
 	| SyncCall of note * Expression.t * string * Type.signature *
 	    Expression.t list * Expression.lhs list
 	| AwaitSyncCall of note * Expression.t * string * Type.signature *
@@ -682,6 +689,7 @@ module Statement =
 	| AsyncCall (a, _, _, _, _, _) -> a
 	| Reply (a, _, _) -> a
 	| Free (a, _) -> a
+	| Bury (a, _) -> a
 	| SyncCall (a, _, _, _, _, _) -> a
 	| AwaitSyncCall (a, _, _, _, _, _) -> a
 	| LocalAsyncCall (a, _, _, _, _, _, _) -> a
@@ -690,10 +698,10 @@ module Statement =
 	| Tailcall (a, _, _, _, _, _) -> a
 	| If (a, _, _, _) -> a
 	| While (a, _, _, _) -> a
-	| Sequence(a, _, _) -> a
-	| Merge(a, _, _) -> a
-	| Choice(a, _, _) -> a
-	| Extern(a, _) -> a
+	| Sequence (a, _, _) -> a
+	| Merge (a, _, _) -> a
+	| Choice (a, _, _) -> a
+	| Extern (a, _) -> a
 
     let is_skip_p =
       (** Test, whether the statement is a skip statement. *)
@@ -751,9 +759,9 @@ module Statement =
     let rec remove_redundant_skips =
       function
 	  (Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _ |
-	   AsyncCall _ | Reply _ | Free _ | SyncCall _ | AwaitSyncCall _ |
-	   LocalAsyncCall _ | LocalSyncCall _ | AwaitLocalSyncCall _ |
-	   Tailcall _ | Extern _) as s -> s
+	   AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _ |
+	   AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ | 
+	   AwaitLocalSyncCall _ | Tailcall _ | Extern _) as s -> s
 	| Skip note -> Skip note
 	| If (note, c, t, f) ->
 	    If (note, c, remove_redundant_skips t, remove_redundant_skips f)
@@ -766,6 +774,15 @@ module Statement =
 		     remove_redundant_skips stmt2)
 	| Merge (note, l, r) -> Merge (note, l, r)
 	| Choice (note, l, r) -> Choice (note, l, r)
+
+    let assignment_of_bury =
+      function
+	  Bury (a, (_::_ as l)) ->
+	    let null v =
+	      let t = Expression.get_lhs_type v in
+		Expression.Null (Expression.typed_dummy_note t) in
+	      Assign (a, l, List.map null l)
+	| _ -> assert false
   end
 
 (** The abstract syntax of Creol *)

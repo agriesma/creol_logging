@@ -201,7 +201,12 @@ let emit ~name ~tree =
           XmlTextWriter.end_element writer
       | Statement.Free (a, l) ->
 	  XmlTextWriter.start_element writer "creol:free" ;
-	  List.iter creol_expression_to_xml l ;
+	  List.iter creol_lhs_to_xml l ;
+	  creol_statement_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Statement.Bury (a, l) ->
+	  XmlTextWriter.start_element writer "creol:bury" ;
+	  List.iter creol_lhs_to_xml l ;
 	  creol_statement_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Statement.SyncCall (a, c, m, s, es, is) ->

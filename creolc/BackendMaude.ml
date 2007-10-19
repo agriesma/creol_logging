@@ -193,8 +193,10 @@ let emit options out_channel input =
 	    output_string out_channel " ) ) "
 	| Statement.Free (_, l) ->
 	    output_string out_channel "free( " ;
-	    of_expression_list l ;
+	    of_lhs_list l ;
 	    output_string out_channel " )"
+	| Statement.Bury _ as s ->
+	      print prec (Statement.assignment_of_bury s)
 	| Statement.LocalSyncCall _ -> assert false
 	| Statement.AwaitLocalSyncCall _ -> assert false
 	| Statement.LocalAsyncCall (_, None, _, _, _, _, _) -> assert false
@@ -371,13 +373,8 @@ let emit options out_channel input =
 	| Modelchecker -> "load creol-modelchecker\n"
 	| Realtime -> "load creol-realtime\n") ;
     output_string out_channel "mod PROGRAM is\n" ;
-    output_string out_channel 
-      (match options.target with
-          Interpreter -> "pr CREOL-INTERPRETER .\n"
-        | Modelchecker -> "pr CREOL-MODEL-CHECKER .\n"
-	| Realtime -> "pr CREOL-MODELCHECKER .\n") ;
-    output_string out_channel
-      "op init : -> Configuration [ctor] .\neq init =\n" ;
+    output_string out_channel ("protecting CREOL-SIMULATOR .\n" ^
+      "op init : -> Configuration [ctor] .\n" ^ "eq init =\n") ;
     of_decl_list input ;
     begin
       match options.main with

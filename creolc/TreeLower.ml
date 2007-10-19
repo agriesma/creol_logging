@@ -94,7 +94,7 @@ let pass input =
 	  let n' = make_expr_note_from_stmt_note a lt in
 	  ((label_decl l lt)::label_decls,
 	   Sequence (a, AsyncCall (a, Some (LhsVar (n', l)), e', n, s, p'),
-		        Free (a, [Id (n', l)])))
+		        Free (a, [LhsVar (n', l)])))
       | AsyncCall (a, None, e, n, s, p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.    We cannot give a correct type to the label,
@@ -107,12 +107,13 @@ let pass input =
 	  let a' = make_expr_note_from_stmt_note a Type.data in
 	  ((label_decl l Type.data)::label_decls,
 	   Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
-		        Free (a, [Id (a', l)])))
+		        Free (a, [LhsVar (a', l)])))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p in
 	  (label_decls, AsyncCall (a, Some l, e', n, s, p'))
       | Free _ as s -> (label_decls, s)
+      | Bury _ as s -> (label_decls, s)
       | Reply _ as s -> (label_decls, s)
       | SyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
@@ -151,7 +152,7 @@ let pass input =
 	  ((label_decl l (Type.label rng))::label_decls,
 	   Sequence (a,
 		     LocalAsyncCall(a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
-		     Free (a, [Id (a', l)])))
+		     Free (a, [LhsVar (a', l)])))
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  We cannot give a correct type to the label,
@@ -163,7 +164,7 @@ let pass input =
 	  let a' = make_expr_note_from_stmt_note a Type.data in
 	  ((label_decl l Type.data)::label_decls,
 	   Sequence (a, LocalAsyncCall(a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
-	             Free (a, [Id (a', l)])))
+	             Free (a, [LhsVar (a', l)])))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
 	  let i' = List.map lower_expression i in
 	  (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))

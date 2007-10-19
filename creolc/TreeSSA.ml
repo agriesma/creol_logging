@@ -222,7 +222,8 @@ let into_ssa tree =
 	  let nl = expression_to_ssa env l in
 	  let np = List.map (left_hand_side_to_ssa env) p in
 	    Reply (n, nl, np)
-      | Free (n, v) -> Free (n, List.map (expression_to_ssa env) v)
+      | Free (n, v) -> Free (n, List.map (left_hand_side_to_ssa env) v)
+      | Bury (n, v) -> Bury (n, List.map (left_hand_side_to_ssa env) v)
       | SyncCall (n, c, m, s, ins, outs) ->
 	  let nc = expression_to_ssa env c in
 	  let ni = List.map (expression_to_ssa env) ins in
@@ -418,7 +419,8 @@ let out_of_ssa tree =
 	  let nl = expression_of_ssa l in
 	  let np = List.map left_hand_side_of_ssa p in
 	    Reply (n, nl, np)
-      | Free (n, v) -> Free (n, List.map expression_of_ssa v)
+      | Free (n, v) -> Free (n, List.map left_hand_side_of_ssa v)
+      | Bury (n, v) -> Bury (n, List.map left_hand_side_of_ssa v)
       | SyncCall (n, c, m, s, ins, outs) ->
 	  let nc = expression_of_ssa c in
 	  let ni = List.map expression_of_ssa ins in

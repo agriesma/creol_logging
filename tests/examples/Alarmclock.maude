@@ -1,6 +1,6 @@
 load creol-interpreter
 mod PROGRAM is
-pr CREOL-INTERPRETER .
+protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Alarmclock" : Cl | Inh: noInh, Par: noVid, Att: "clock" |-> null, Mtds: 

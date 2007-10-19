@@ -900,6 +900,7 @@ let typecheck tree: Declaration.t list =
 	      else
 	        raise (Type_error (file n, line n, "Type mismatch"))
         | Free (n, args) -> assert false
+        | Bury (n, args) -> assert false
         | LocalAsyncCall (n, None, m, _, lb, ub, args) ->
 	    let (signature, args') =
 	      check_local_async_call n m lb ub args None

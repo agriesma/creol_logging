@@ -1,6 +1,6 @@
 load creol-interpreter
 mod PROGRAM is
-pr CREOL-INTERPRETER .
+protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Buffer" : Cl | Inh: noInh, Par: noVid, Att: "cell" |-> null , "ctr" |-> null , "next" |-> null, Mtds: 

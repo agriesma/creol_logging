@@ -1,6 +1,6 @@
 load creol-modelchecker
 mod PROGRAM is
-pr CREOL-MODEL-CHECKER .
+protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null, Mtds: 

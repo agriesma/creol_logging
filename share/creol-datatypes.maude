@@ -1,5 +1,5 @@
 ***
-*** Datatypes for Creol
+*** creol-datatypes.maude -- Datatypes for Creol ($Revision$)
 ***
 *** Copyright (c) 2007
 ***
@@ -22,6 +22,9 @@ fmod CREOL-DATA-SIG is
   protecting META-LEVEL .
   protecting STRING .
   protecting NAT .
+
+  op datarev : -> String [ctor] .
+  eq datarev = "$Revision$" .
 
   sorts   Expr Data Vid Oid .
   subsort Oid < Data < Expr .

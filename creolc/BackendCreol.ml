@@ -240,9 +240,13 @@ let emit out_channel input =
 	    output_string out_channel "?(";
 	    pretty_print_lhs_list o;
 	    output_string out_channel ")";
-	| Statement.Free(_, l) ->
+	| Statement.Free (_, l) ->
 	    output_string out_channel "/* free(" ;
-	    pretty_print_expression_list l ;
+	    pretty_print_lhs_list l ;
+	    output_string out_channel ") */"
+	| Statement.Bury (_, l) ->
+	    output_string out_channel "/* bury(" ;
+	    pretty_print_lhs_list l ;
 	    output_string out_channel ") */"
 	| Statement.SyncCall (_, c, m, _, a, r) ->
 	    pretty_print_expression c ;

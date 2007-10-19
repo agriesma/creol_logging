@@ -15,6 +15,8 @@ In the compiler:
 * Searching for methods in interfaces and classes should be slightly
   faster and the implementation has been corrected for some corner
   cases.
+* Revise the implementation of the bury statement by expressing them
+  as assignments.
 * Added a backend to dot, allowing to visualise some aspects of
   a creol model/program.  Currently, only relations between classes
   and types.
@@ -28,6 +30,8 @@ In the interpreter:
 * Assignment order has been corrected with respect to shadowing.  This
   change was made possible by the generation of declarations for
   implicit labels as well as requiring declarations of all labels.
+* The bury statement has been removed, because it is not safe anymore.
+  It is replaced by an assignment to [null].
 
 Other:
 * The emacs lisp files have been removed.

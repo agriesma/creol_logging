@@ -1,6 +1,6 @@
 load creol-interpreter
 mod PROGRAM is
-pr CREOL-INTERPRETER .
+protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null , "next" |-> null, Mtds: 

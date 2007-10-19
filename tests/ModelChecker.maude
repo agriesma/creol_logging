@@ -24,7 +24,7 @@ set show advise off .
 load creol-modelchecker .
 
 mod TEST-TAILCALL is
-  pr CREOL-MODEL-CHECKER .
+  protecting CREOL-SIMULATOR .
   op init : -> Configuration .
   eq init =
 

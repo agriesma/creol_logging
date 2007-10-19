@@ -24,7 +24,7 @@ set show advise off .
 load creol-interpreter .
 
 mod PROGRAM is
-  protecting CREOL-INTERPRETER .
+  protecting CREOL-SIMULATOR .
   op init : -> Configuration .
   eq init = noConf .
 endm

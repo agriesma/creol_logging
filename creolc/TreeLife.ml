@@ -75,6 +75,9 @@ let compute tree =
       | Reply (n, l, p) -> List.iter (kill env) p
       | Free (n, v) -> ()
 	  (* List.iter (kill env) v (* FIXME: Ugh! should be rhs *) *)
+      | Bury (n, v) -> ()
+	  (* This statement must not affect the life range of any value,
+	     and all its arguments must be dead at that point. *)
       | SyncCall (n, c, m, s, ins, outs) ->
 	  let _ = List.iter (generate env) (c::ins) in
 	  let _ = List.iter (kill env) outs in
