@@ -38,6 +38,7 @@ creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \
+			  TreeDeadvar.ml \
 			  TreeTailcall.ml \
 			  CreolLex.ml CreolLex.mli \
 			  CreolParser.ml CreolParser.mli \
@@ -50,7 +51,7 @@ creolc_cmi		= CreolLex.cmi CreolParser.cmi
 
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 			  CreolTyping.cmo TreeLower.cmo TreeSSA.cmo \
-			  TreeLife.cmo TreeTailcall.cmo \
+			  TreeLife.cmo TreeDeadvar.cmo TreeTailcall.cmo \
 			  CreolLex.cmo CreolParser.cmo \
 			  BackendCreol.cmo BackendMaude.cmo BackendXML.cmo \
 			  BackendDot.cmo \
@@ -60,7 +61,7 @@ creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  CreolTyping.cmx TreeLower.cmx TreeSSA.cmx \
-			  TreeLife.cmx TreeTailcall.cmx \
+			  TreeLife.cmx TreeDeadvar.cmx TreeTailcall.cmx \
 			  CreolLex.cmx CreolParser.cmx \
 			  BackendCreol.cmx BackendMaude.cmx BackendXML.cmx \
 			  BackendDot.cmx \
@@ -68,11 +69,13 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Driver.ml Passes.ml Misc.ml Messages.ml \
+			  Creol.mll Creol.mly \
 			  Creol.ml \
 			  CreolTyping.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \
+			  TreeDeadvar.ml \
 			  TreeTailcall.ml \
 			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
 			  BackendDot.ml

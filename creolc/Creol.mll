@@ -1,9 +1,8 @@
-{
-(* A lexer for Creol.
+(*i A lexer for Creol.
  *
  * This file has been generated from Creol.mll
  *
- * Ceol.mll is part of creoltools.
+ * Creol.mll is part of creoltools.
  *
  * Copyright (c) 2007 Marcel Kyas
  *
@@ -24,8 +23,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *)
+i*)
 
+(*s Creol's lexer.
+*)
+{
 open CreolParser
 open Lexing
 
@@ -53,7 +55,7 @@ rule token = parse
     | "/*" { c_style_comment lexbuf }
     | NEWLINE { update_loc lexbuf; token lexbuf }
     | '!' { BANG }
-	(* '"' *)
+	(*i '"' i*)
     | '#' { HASH }
     | '$' { reserved lexbuf }
     | '%' { PERCENT }
@@ -72,7 +74,7 @@ rule token = parse
     | "/=" { NE }
     | "/\\" { WEDGE }
     | '/' { DIV }
-	(* Digits 0 to 9 *)
+	(*i Digits 0 to 9 i*)
     | ":>" { SUPERTYPE }
     | ":=" { ASSIGN }
     | ':' { COLON }
@@ -89,7 +91,7 @@ rule token = parse
     | ">" { GT }
     | '?' { QUESTION }
     | '@' { AT }
-	(* Upper case letters *)
+	(*i Upper case letters i*)
     | "[]" { BOX }
     | '[' { LBRACK }
     | "\\/" { VEE }
@@ -98,7 +100,7 @@ rule token = parse
     | '^' { HAT }
     | '_' { UNDERSCORE }
     | '`' { BACKTICK }
-	(* lower case letters *)
+	(*i Lower case letters i*)
     | '{' { LBRACE }
     | "|||" { MERGE }
     | "|-|" { CONCAT }
