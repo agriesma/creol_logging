@@ -19,13 +19,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(** Read and write Creol Programs.
+(*s Read and write Creol Programs.
 
-    @author Marcel Kyas
-    @version 0.0
-    @since   0.0
-
-  *)
+*)
 
 open Creol
 

@@ -19,6 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
+
+(*s
+
+*)
 open Creol
 
 type target = Interpreter | Modelchecker | Realtime
@@ -82,7 +86,7 @@ let emit options out_channel input =
 	  output_string out_channel ")" ;
       | Expression.SetLit (_, l) ->
 	  output_string out_channel "list(" ;
-	  of_expression_list l ; (* Hope to overload # for set in maude *)
+	  of_expression_list l ; (* Hope to overload \# for set in maude *)
 	  output_string out_channel ")" ;
       | Expression.FuncCall(_, f, a) ->
 	  output_string out_channel ("\"" ^ f ^ "\" ( " );

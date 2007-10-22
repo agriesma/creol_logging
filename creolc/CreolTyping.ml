@@ -19,6 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
+(*s Type checking of creol.
+
+*)
+
 open Misc
 open Creol
 open Expression
@@ -274,7 +278,7 @@ let typecheck tree: Declaration.t list =
 	| New (n, t, args) ->
 	    New (subst_in_note subst n, Type.apply_substitution subst t,
 		List.map (substitute_types_in_expression subst) args)
-	      (*	| Choose (n, i, t, e) ->
+	      (*i	| Choose (n, i, t, e) ->
 			Choose (subst_in_note subst n, i,
 			Type.apply_substitution subst t,
 			substitute_types_in_expression subst e)
@@ -285,7 +289,7 @@ let typecheck tree: Declaration.t list =
 			| Exists (n, i, t, e) ->
 			Exists (subst_in_note subst n, i,
 			Type.apply_substitution subst t,
-			substitute_types_in_expression subst e) *)
+			substitute_types_in_expression subst e) i*)
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    SSAId (subst_in_note subst n, name, version)

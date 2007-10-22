@@ -27,7 +27,7 @@ CLEANFILES		=
 DISTCLEANFILES		= Version.ml
 MAINTAINERCLEANFILES	= .depend CreolLex.ml CreolParser.ml CreolParser.mli 
 
-EXTRA_DIST		= .depend Creol.mll Creol.mly
+EXTRA_DIST		= .depend Creol.mll Creol.mly creolc.tex
 
 bin_PROGRAMS		= creolc creolc.opt
 
@@ -67,16 +67,15 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  Passes.cmx Driver.cmx
 
 # This is the subset for which we want to generate documentation.
-creolc_DOCSOURCES	= Version.ml Misc.ml Messages.ml Creol.ml \
+creolc_DOCSOURCES	= Driver.ml Passes.ml Misc.ml Messages.ml \
+			  Creol.ml \
 			  CreolTyping.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \
 			  TreeTailcall.ml \
 			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
-			  BackendDot.ml \
-			  Passes.ml \
-			  Driver.ml
+			  BackendDot.ml
 
 OCAMLC_FLAGS		+= -g
 OCAMLOPT_FLAGS		+= -w a
@@ -135,6 +134,16 @@ Version.ml: Makefile
 	echo "let package = \"${PACKAGE}\"" >> $@
 	echo "let datadir = \"${pkgdatadir}\"" >> $@
 	echo "let reldate = \"${RELEASE_DATE}\"" >> $@
+
+# Literate programming, for documenting and explaining the compiler.
+pdf-local: creolc.pdf
+
+creolc.pdf: creolc.tex code.tex
+	${PDFLATEX} creolc
+	${PDFLATEX} creolc
+
+code.tex: ${srcdir}/Makefile.am ${creolc_DOCSOURCES}
+	${OCAMLWEB} --no-preamble ${creolc_DOCSOURCES} -o $@
 
 CreolLex.cmo: CreolParser.cmi
 -include ${srcdir}/.depend

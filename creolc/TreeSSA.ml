@@ -19,6 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
+(*s
+
+*)
+
 open Creol
 open Expression
 open Statement
@@ -120,12 +124,12 @@ let into_ssa tree =
       | New (a, c, l) -> New (a, c, List.map (expression_to_ssa env) l)
       | Expression.Extern _ as e -> e
       | SSAId (a, v, n) ->
-	  (* We seem to rerun to_ssa, and then we just recompute all
-	     assignments. *)
+	  (* We seem to rerun \ocwlowerid{to\_ssa}, and then we just recompute
+             all assignments. *)
 	  SSAId (a, v, (Hashtbl.find env v).version)
       | Phi (a, l) ->
-	  (* We seem to rerun to_ssa, and then we just recompute all
-	     assignments. *)
+	  (* We seem to rerun \ocwlowerid{to\_ssa}, and then we just recompute
+	     all $\Phi$s. *)
 	  Phi (a, List.map (expression_to_ssa env) l)
   in
   let left_hand_side_to_ssa env =
@@ -266,9 +270,9 @@ let into_ssa tree =
 	  let env_pre = Hashtbl.copy env in
 	  let nb = statement_to_ssa env b in
 	    (* Phi is computed like this, since we have one incoming
-	       branch (env_pre), one branch if the loop is executed once,
-	       and one exit branch [env].  We use the incoming branch,
-	       pretending that in this case the loop has never been
+	       branch (\ocwlowerid{env\_pre}), one branch if the loop is
+	       executed once, and one exit branch [env].  We use the incoming
+	       branch, pretending that in this case the loop has never been
 	       executed.   [phi2] is a copy of phi1, but updated for the
 	       exit of the loop; it is actually redundant, if we compute
 	       a control flow graph.

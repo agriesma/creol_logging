@@ -1,4 +1,4 @@
-(*
+(*i
  * Misc.ml -- Different auxiluary functions.
  *
  * This file is part of creoltools
@@ -17,7 +17,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.   If not, see <http://www.gnu.org/licenses/>.
- *)
+i*)
+
+(*s
+
+
+*)
 
 let rec separated_list elt_fun sep_fun =
   (** Helper function for outputting a separated list.

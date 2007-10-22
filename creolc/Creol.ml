@@ -1,4 +1,4 @@
-(*
+(*i
  * Creol.ml -- Definition and manipulation of Creol AST
  *
  * This file is part of creoltools
@@ -17,16 +17,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *)
+i*)
 
-(** Definition of the abstract syntax of Creol and a collection
+(*s Definition of the abstract syntax of Creol and a collection
     of functions for its manipulation.
 
-    @author Marcel Kyas
-    @version 0.0
-    @since   0.0
-
- *)
+*)
 
 
 (** Types *)
@@ -288,9 +284,9 @@ module Expression =
 	| If of note * t * t * t
 	| Label of note * t
 	| New of note * Type.t * t list
-(*	| Choose of note * string * Type.t * t
+(*i	| Choose of note * string * Type.t * t
 	| Forall of note * string * Type.t * t
-	| Exists of note * string * Type.t * t *)
+	| Exists of note * string * Type.t * t i*)
 	| Extern of note * string
         | SSAId of note * string * int
         | Phi of note * t list
@@ -420,9 +416,9 @@ module Expression =
 	| FuncCall (a, _, _) -> a
 	| Label (a, _) -> a
 	| New (a, _, _) -> a
-(*	| Choose (a, _, _, _) -> a
+(*i	| Choose (a, _, _, _) -> a
 	| Forall (a, _, _, _) -> a
-	| Exists (a, _, _, _) -> a *)
+	| Exists (a, _, _, _) -> a i*)
 	| Extern (a, _) -> a
 	| SSAId (a, _, _) -> a
 	| Phi (a, _) -> a
@@ -677,30 +673,19 @@ module Statement =
 	| Choice of note * t * t
         | Extern of note * string
 
-    let note =
-      function
-	  Skip a -> a
-	| Assert (a, _) -> a
-	| Prove (a, _) -> a
-	| Assign (a, _, _) -> a
-	| Release a -> a
-	| Await (a, _) -> a
-	| Posit (a, _) -> a
-	| AsyncCall (a, _, _, _, _, _) -> a
-	| Reply (a, _, _) -> a
-	| Free (a, _) -> a
-	| Bury (a, _) -> a
-	| SyncCall (a, _, _, _, _, _) -> a
-	| AwaitSyncCall (a, _, _, _, _, _) -> a
-	| LocalAsyncCall (a, _, _, _, _, _, _) -> a
-	| LocalSyncCall (a, _, _, _, _, _, _) -> a
-	| AwaitLocalSyncCall (a, _, _, _, _, _, _) -> a
-	| Tailcall (a, _, _, _, _, _) -> a
-	| If (a, _, _, _) -> a
-	| While (a, _, _, _) -> a
-	| Sequence (a, _, _) -> a
-	| Merge (a, _, _) -> a
-	| Choice (a, _, _) -> a
+    let note = function
+	| Skip a | Assert (a, _) | Prove (a, _) | Assign (a, _, _)
+	| Release a | Await (a, _) | Posit (a, _)
+	| AsyncCall (a, _, _, _, _, _) | Reply (a, _, _)
+	| Free (a, _) | Bury (a, _)
+	| SyncCall (a, _, _, _, _, _)
+	| AwaitSyncCall (a, _, _, _, _, _)
+	| LocalAsyncCall (a, _, _, _, _, _, _)
+	| LocalSyncCall (a, _, _, _, _, _, _)
+	| AwaitLocalSyncCall (a, _, _, _, _, _, _)
+	| Tailcall (a, _, _, _, _, _)
+	| If (a, _, _, _) | While (a, _, _, _)
+	| Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
 	| Extern (a, _) -> a
 
     let is_skip_p =

@@ -1,4 +1,4 @@
-(*
+(*i
  * Driver.ml -- The main routine.
  *
  * This file is part of creoltools
@@ -17,14 +17,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *)
+i*)
 
-(** Main program.
-
-    @author Marcel Kyas
-    @version 0.0
-    @since   0.0
- *)
+(*s
+Parse command line arguments, locate support files, and start each of the
+phases.
+*)
 
 open Creol
 open Arg
@@ -159,14 +157,17 @@ let from_channel channel =
       lexbuf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = "*channel*" } ;
       CreolParser.main CreolLex.token lexbuf
 
+let license =
+  "Copyright (c) 2007 Marcel Kyas\n" ^
+  "This is free software; see the source for copying conditions.\n" ^
+  "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n" ^
+  "PARTICULAR PURPOSE.\n"
+
 let show_version () =
   (** Show the name and the version of the program and exit. *)
   print_string (Version.package ^ " " ^ Version.version ^ " (" ^
 		   Version.reldate ^ ")\n" );
-  print_string "Copyright (c) 2007 Marcel Kyas\n";
-  print_string "This is free software; see the source for copying conditions.\n";
-  print_string "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n";
-  print_string "PARTICULAR PURPOSE.\n";
+  print_string license ;
   exit 0
 
 let main () =
