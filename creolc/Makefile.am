@@ -68,7 +68,7 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  Passes.cmx Driver.cmx
 
 # This is the subset for which we want to generate documentation.
-creolc_DOCSOURCES	= Driver.ml Passes.ml Misc.ml Messages.ml \
+creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
 			  Creol.mll Creol.mly \
 			  Creol.ml \
 			  CreolTyping.ml \
@@ -78,7 +78,8 @@ creolc_DOCSOURCES	= Driver.ml Passes.ml Misc.ml Messages.ml \
 			  TreeDeadvar.ml \
 			  TreeTailcall.ml \
 			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
-			  BackendDot.ml
+			  BackendDot.ml \
+			  Misc.ml
 
 OCAMLC_FLAGS		+= -g
 OCAMLOPT_FLAGS		+= -w a

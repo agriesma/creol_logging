@@ -19,11 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s Type checking of creol.
+(*s This file implements the type checker for Creol.
 
 *)
 
-open Misc
 open Creol
 open Expression
 open Statement
@@ -32,7 +31,7 @@ exception Type_error of string * int * string
 exception Unify_failure of Type.t * Type.t
 
 let fresh_var f =
-  let FreshName(n, f') = f () in
+  let Misc.FreshName(n, f') = f () in
     (Type.Variable n, f')
 
 let rec string_of_constraint_set =
@@ -602,7 +601,7 @@ let typecheck tree: Declaration.t list =
 	      (e'::l', c'', f'')
     in
     let (expr', constr', _) =
-      type_recon_expression constr (fresh_name_gen "_") expr
+      type_recon_expression constr (Misc.fresh_name_gen "_") expr
     in
     let subst =
       try

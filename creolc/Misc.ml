@@ -45,6 +45,26 @@ let fold_with_sep f s a l =
   in
     work l
 
+
+(* Try to find the home directory of this binary, first by looking at
+   the executable name and then by searching through the \texttt{PATH}
+   environment variable.
+*)
+let home () =
+  let exec_name = Sys.executable_name in
+    if String.contains exec_name '/' then
+      begin
+        let lastsep = String.rindex exec_name '/' in
+	  String.sub exec_name 0 lastsep
+      end
+    else
+      begin
+	(* Try to find us somewhere in the path *)
+	  let path = (Str.split (Str.regexp ":") (Sys.getenv "PATH")) in
+	    List.find (fun p -> Sys.file_exists (p ^ "/" ^ exec_name)) path
+	end
+
+
 (** Fresh variable names. *)
 type freshname = FreshName of string * freshvarname
 and freshvarname = unit -> freshname
