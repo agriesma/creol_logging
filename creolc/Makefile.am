@@ -111,7 +111,9 @@ creolc.opt: $(creolc_cmi) $(creolc_cmx)
 # Nonetheless, we depend on the source files, since type inference needs
 # to be redone after those files have been changed.
 #
-Parser.ml Parser.mli: Parser.mly Creol.cmo Messages.cmo Misc.cmo Version.cmo
+Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Messages.ml
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.ml
 	rm -f Parser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --infer $<
 
