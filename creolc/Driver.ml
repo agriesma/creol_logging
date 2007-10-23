@@ -171,11 +171,11 @@ let main () =
   let tree =
     match !inputs with
 	[] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
-      | [""] | ["-"] -> Parser.parse_from_channel "*stdin*" stdin
-      | _ ->  Parser.parse_from_files !inputs
+      | [""] | ["-"] -> Passes.parse_from_channel "*stdin*" stdin
+      | _ ->  Passes.parse_from_files !inputs
   in
   let prelude =
-    List.map Declaration.hide (Parser.parse_from_file "prelude.creol")
+    List.map Declaration.hide (Passes.parse_from_file "prelude.creol")
   in
     Target.output (Passes.execute_passes !Target.file (prelude@tree)) ;
     if !times then Passes.report_timings () ;

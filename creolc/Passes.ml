@@ -21,26 +21,25 @@
 
 (*s A simple pass manager.
 
-The pass manager maintains a list of passes and whether they are
-enabled or not.  Individual passes can be enabled and disabled from
-the command line.  The pass manager tries to maintain all dependencies
-between passes.
-
+  The pass manager maintains a list of passes and whether they are
+  enabled or not.  Individual passes can be enabled and disabled from
+  the command line.  The pass manager tries to maintain all dependencies
+  between passes.
 *)
 
 open Creol
 
-(*
-Defines the type of a pass.  \ocwlowerid{help} represents the help
-message for that pass.  \ocwlowerid{dependencies} is a string containing
-a comma-separated list of passes this pass depends on.  \ocwlowerid{pass}
-is the function representing the program transformation performed by the
-pass.  \ocwlowerid{elapsed} is the time needed for executing that pass.
-\ocwlowerid{enabled} is a predicate stating whether the pass is enabled.
-Finally, \ocwlowerid{dump} is a variable which is true iff the user
-requested an XML dump \emph{after} that pass.
+(* Defines the type of a pass.  \ocwlowerid{help} represents the help
+   message for that pass.  \ocwlowerid{dependencies} is a string
+   containing a comma-separated list of passes this pass depends on.
+   \ocwlowerid{pass} is the function representing the program
+   transformation performed by the pass.  \ocwlowerid{elapsed} is the
+   time needed for executing that pass.  \ocwlowerid{enabled} is a
+   predicate stating whether the pass is enabled.  Finally,
+   \ocwlowerid{dump} is a variable which is true iff the user requested
+   an XML dump \emph{after} that pass.
 *)
- 
+  
 type pass = {
   help: string;
   dependencies: string;
@@ -50,26 +49,29 @@ type pass = {
   mutable dump: bool
 }
 
-(*
-The variable \ocwlowerid{time\_emit} measures the time spent for emitting
-the result, i.e., the complete time spent in the backend.
+(* The variable \ocwlowerid{time\_parse} measures the time spent for
+   lexing and parsing a program.  It accumulates the time spent in the
+   front end.
+*)
+let time_parse = ref 0.0
+
+(* The variable \ocwlowerid{time\_emit} measures the time spent for
+   emitting the result, i.e., the complete time spent in the backend.
 *)
 let time_emit = ref 0.0
 
-(*
-The variable \ocwlowerid{time\_dump} accumulates the time spend for
-emitting state dumps to XML trees.  We think that the time spent here
-is not very important, and we cannot reasonably speed it up.
+(* The variable \ocwlowerid{time\_dump} accumulates the time spend for
+   emitting state dumps to XML trees.  We think that the time spent
+   here is not very important, and we cannot reasonably speed it up.
 *)
 
 let time_dump = ref 0.0
 
 
-(*
-This association list maintains all passes known to the compiler.
-The list \emph{must} be topologically sorted, i.e., if a pass depends
-on other passes, then this pass must occur after its dependent passes
-in the list.
+(* This association list maintains all passes known to the compiler.
+   The list \emph{must} be topologically sorted, i.e., if a pass
+   depends on other passes, then this pass must occur after its
+   dependent passes in the list.
 *)
 let passes = [
   ( "typecheck" ,
@@ -109,8 +111,7 @@ let passes = [
     elapsed = 0.0; enabled = false; dump = false } ) ;
 ]
 
-(*
-Compute a help string from the list of passes.
+(* Compute a help string from the list of passes.
 *)
 let help () =
   let pass_help_line current ps =
@@ -125,13 +126,12 @@ let help () =
       "    all        all passes mentioned above."
 
 
-(*
-Enable passes.
+(* Enable passes.
 
-Accepts a list of strings, separated by comma or whitespace, and
-enables each pass in this list, as well as its dependencies.
+   Accepts a list of strings, separated by comma or whitespace, and
+   enables each pass in this list, as well as its dependencies.
 
-May raise Arg.Bad if an undefined pass is provided.
+   May raise Arg.Bad if an undefined pass is provided.
 *)
 let rec enable arg =
   let enable_pass s =
@@ -149,16 +149,15 @@ let rec enable arg =
       List.iter (fun (_, p) -> p.enabled <- true) passes
 
 
-(*
-Disable passes.
+(* Disable passes.
 
-Accepts a list of strings, separated by comma or whitespace, and
-enables each pass in this list, as well as its dependencies.
+   Accepts a list of strings, separated by comma or whitespace, and
+   enables each pass in this list, as well as its dependencies.
 
-May raise Arg.Bad if an undefined pass is provided.
+   May raise Arg.Bad if an undefined pass is provided.
 
-This function will not try to maintain dependencies, so use at your
-own risk.
+   This function will not try to maintain dependencies, so use at your
+   own risk.
 *)
 let disable arg =
   let disable_pass s =
@@ -172,14 +171,13 @@ let disable arg =
     List.iter disable_pass (Str.split (Str.regexp "[, \t]+") arg)
 
 
-(*
-Enable dumping after a pass.
+(* Enable dumping after a pass.
 
-Accepts a list of strings, separated by comma or whitespace, and
-enables dumping after each pass in this list.  If the string is
-"all", then all passes are enabled.
+   Accepts a list of strings, separated by comma or whitespace, and
+   enables dumping after each pass in this list.  If the string is
+   "all", then all passes are enabled.
 
-Raises Arg.Bad if an undefined pass is provided.
+   Raises Arg.Bad if an undefined pass is provided.
 *)
 let dump_after arg =
   let dump_pass s =
@@ -196,12 +194,76 @@ let dump_after arg =
       (* Enable all *)
       List.iter (fun (_, p) -> p.dump <- true) passes
 
-(*
-The following function is called to execute a dump to XML and to
-accumulate the time spent for dumping.  \ocwlowerid{filename} is the
-name of the input file.  \ocwlowerid{pass} is the name of the
-pass after which the tree is emitted.  \ocwlowerid{tree} is the
-abstract syntax tree to emit.
+
+(*s The following functions comprise the front-end of the compiler.
+  The purpose of the front-end is to perform lexical analysis and
+  parsing of the input programs.
+
+  Read the contents from a channel and return a abstract syntax tree
+  and measure the time used for it.
+*)
+let parse_from_channel (name: string) (channel: in_channel) =
+  let buf = Lexing.from_channel channel in
+  let pos = buf.Lexing.lex_curr_p in
+  let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in
+  let _ = Messages.message 1 ("Reading " ^ name) in
+  let do_parse = fun () -> Parser.main Lexer.token buf in
+  let (result, elapsed) = Misc.measure do_parse in
+    time_parse := !time_parse +. elapsed ;
+    result
+
+
+(* Construct a search path for locating the prelude files and other
+   source files.
+*)
+let search_path =
+  let home = Misc.home ()
+  and library_path =
+    try
+      (Str.split (Str.regexp ":") (Sys.getenv "CREOL_LIBRARY_PATH"))
+    with
+	Not_found -> []
+  in
+    library_path @
+      [ Version.datadir ;
+	home ^ "/../share" ^ Version.package ;
+        home ^ "/../share" ;
+        home ]
+
+
+(* Read the contents of a file and return an abstract syntax tree.
+*)
+let parse_from_file (name: string) =
+  let exists_p d = Sys.file_exists (d ^ "/" ^ name) in
+  let file =
+    if ((Sys.file_exists name) || (String.contains name '/')) then
+      name
+    else
+      try
+        (List.find exists_p search_path) ^ "/" ^ name
+      with
+          Not_found -> prerr_endline ("cannot find " ^ name) ; exit 1
+  in
+    parse_from_channel file (open_in file)
+
+
+(* Read the contents of a list of files and return an abstract syntax
+   tree.
+*)
+let parse_from_files: string list -> Declaration.t list =
+  function files ->
+    List.fold_left (fun (a: Declaration.t list) (n: string) -> (parse_from_file n)@a) [] files
+
+
+(*s The following functions comprise the \emph{middle end} of the
+  compiler.  The middle end will perform semantic analysis and
+  transformations on the level of the abstract syntax tree.
+
+  The following function is called to execute a dump to XML and to
+  accumulate the time spent for dumping.  \ocwlowerid{filename} is the
+  name of the input file.  \ocwlowerid{pass} is the name of the pass
+  after which the tree is emitted.  \ocwlowerid{tree} is the abstract
+  syntax tree to emit.
 *)
 let execute_dump ~filename ~pass ~tree =
   let file =
@@ -218,12 +280,11 @@ let execute_dump ~filename ~pass ~tree =
     time_dump := !time_dump +. elapsed ;
     ()
 
-(*
-The following function accepts an abstract syntax \ocwlowerid{tree},
-return by the parser, and applies each enabled pass to that
-\ocwlowerid{tree} in order.  If dumping the \ocwlowerid{tree} is
-requested after a pass, this function will do so.  Finally, the time
-spent for each pass is measured.
+(* The following function accepts an abstract syntax
+   \ocwlowerid{tree}, return by the parser, and applies each enabled
+   pass to that \ocwlowerid{tree} in order.  If dumping the
+   \ocwlowerid{tree} is requested after a pass, this function will do
+   so.  Finally, the time spent for each pass is measured.
 *)
 let execute_passes filename tree =
   let rec execute tree =
@@ -250,11 +311,9 @@ let execute_passes filename tree =
   in
     execute tree passes
 
-(*
-This function writes the time measurements to standard error.
-The report is written to standard error, because the actual code
-can be written to standard output, and the report is not part of
-this code.
+(* This function writes the time measurements to standard error.  The
+   report is written to standard error, because the actual code can be
+   written to standard output, and the report is not part of this code.
 *)
 let report_timings () =
   let total = ref 0.0 in
@@ -266,7 +325,7 @@ let report_timings () =
     total := !total +. (snd p).elapsed
   in
     prerr_endline ("Parsing: ............................... " ^
-		      (string_of_float !Parser.time) ^ " ms");
+		      (string_of_float !time_parse) ^ " ms");
     List.iter report passes ;
     prerr_endline ("Dumps: ................................. " ^
 		      (string_of_float !time_dump) ^ " ms");
@@ -274,5 +333,5 @@ let report_timings () =
 		      (string_of_float !time_emit) ^ " ms");
     prerr_endline ("Total: ................................. " ^
 		      (string_of_float
-			  (!total +. !Parser.time +. !time_dump +. !time_emit)) ^
+			  (!total +. !time_parse +. !time_dump +. !time_emit)) ^
 		      " ms\n")
