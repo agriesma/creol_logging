@@ -11,6 +11,7 @@ semantics, yet.
 
 @menu
 * Comments::                    Comments in Creol.
+* Types::                       Type specifications.
 * Literals and Expression::     The functional sub-language.
 * Statements::                  The object-oriented sub-language.
 * Variable Declaration::        Declaring variables and attributes.
@@ -35,6 +36,18 @@ following linebreak.
 
 The second kind starts with @code{/*} and extends until the first
 following @code{*/}.  Comments of this kind do not nest.
+
+
+@node Types
+@section Types
+
+All expressions in Creol are typed.  All variables and attributes must
+declare a type.  A type is either a data type, where the types
+@code{Int}, @code{Bool}, and @code{String} are pre-defined, a type
+variable, written as @code{`@var{a}}, or a type expression.  Type
+expressions can be applications, e.g., the type of a list of integers is
+denoted by @code{List[Int]}, or the type of a tuple, written as @code{[
+@{ @var{type} , @} ]}, e.g., @code{[Int, Int]} for a pair of integers.
 
 
 @node Literals and Expression
@@ -642,5 +655,6 @@ binop ::=
 
 type ::=
     cid [ @code{[} @{ type , @} @code{]} ]
+  | @code{[} @{ type , @} @code{]}
   | @code{`} id
 @end format
