@@ -551,17 +551,20 @@ invariant:
     INV e = expression { e }
 %%
 
+(* Measure the time needed for parsing.  This is used as an accumulator. *)
+let time = ref 0.0
+
 (* Read the contents from a channel and return a abstract syntax tree and
    measure the time used for it.
 *)
-let parse_from_channel name channel =
-  let buf: Lexing.lexbuf = Lexing.from_channel channel in
+let parse_from_channel (name: string) (channel: in_channel) =
+  let buf = Lexing.from_channel channel in
   let pos = buf.Lexing.lex_curr_p in
   let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in
   let _ = Messages.message 1 ("Reading " ^ name) in
   let do_parse = fun () -> main (* CreolLex.token buf *) in
   let (result, elapsed) = Misc.measure do_parse in
-    Passes.time_parse := !Passes.time_parse +. elapsed ;
+    time := !time +. elapsed ;
     result
 
 
@@ -585,7 +588,7 @@ let search_path =
 
 (* Read the contents of a file and return an abstract syntax tree.
 *)
-let parse_from_file name =
+let parse_from_file (name: string) =
   let exists_p d = Sys.file_exists (d ^ "/" ^ name) in
   let file =
     if ((Sys.file_exists name) || (String.contains name '/')) then
@@ -602,5 +605,6 @@ let parse_from_file name =
 (* Read the contents of a list of files and return an abstract syntax
    tree.
 *)
-let parse_from_files files =
-  List.fold_left (fun a n -> (parse_from_file n)@a) [] files
+let parse_from_files: string list -> Declaration.t list =
+  function files ->
+    List.fold_left (fun (a: Declaration.t list) (n: string) -> (parse_from_file n)@a) [] files

@@ -28,7 +28,7 @@ i*)
 (*s Creol's lexer.
 *)
 {
-open CreolParser
+open Parser
 open Lexing
 
 exception Reserved of string * int * string

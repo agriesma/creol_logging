@@ -46,4 +46,4 @@ exception Reserved of string * int * string
 
     @raise Reserved if the next token is reserved but not yet handled by
     the parser defined in {i Creol.mly} *)
-val token : Lexing.lexbuf -> CreolParser.token
+val token : Lexing.lexbuf -> Parser.token

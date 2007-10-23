@@ -25,13 +25,13 @@ export OCAMLPATH
 MOSTLYCLEANFILES	= *~ *.aux *.log *.cmi *.cmo *.cmx *.cma *.cmxa *.o
 CLEANFILES		=
 DISTCLEANFILES		= Version.ml
-MAINTAINERCLEANFILES	= .depend CreolLex.ml CreolParser.ml CreolParser.mli 
+MAINTAINERCLEANFILES	= .depend Lexer.ml Parser.ml Parser.mli 
 
-EXTRA_DIST		= .depend Creol.mll Creol.mly creolc.tex
+EXTRA_DIST		= .depend Lexer.mll Parser.mly creolc.tex
 
 bin_PROGRAMS		= creolc creolc.opt
 
-BUILT_SOURCES		= CreolLex.ml CreolParser.ml CreolParser.mli Version.ml
+BUILT_SOURCES		= Lexer.ml Parser.ml Parser.mli Version.ml
 
 creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
 			  CreolTyping.ml \
@@ -40,19 +40,19 @@ creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
 			  TreeLife.ml \
 			  TreeDeadvar.ml \
 			  TreeTailcall.ml \
-			  CreolLex.ml CreolLex.mli \
-			  CreolParser.ml CreolParser.mli \
+			  Lexer.ml Lexer.mli \
+			  Parser.ml Parser.mli \
 			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
 			  BackendDot.ml \
 			  Passes.ml \
 			  Driver.ml
 
-creolc_cmi		= CreolLex.cmi CreolParser.cmi
+creolc_cmi		= Lexer.cmi Parser.cmi
 
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 			  CreolTyping.cmo TreeLower.cmo TreeSSA.cmo \
 			  TreeLife.cmo TreeDeadvar.cmo TreeTailcall.cmo \
-			  CreolLex.cmo CreolParser.cmo \
+			  Lexer.cmo Parser.cmo \
 			  BackendCreol.cmo BackendMaude.cmo BackendXML.cmo \
 			  BackendDot.cmo \
 			  Passes.cmo Driver.cmo
@@ -62,14 +62,14 @@ creolc_opt_SOURCES	= $(creolc_SOURCES)
 creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  CreolTyping.cmx TreeLower.cmx TreeSSA.cmx \
 			  TreeLife.cmx TreeDeadvar.cmx TreeTailcall.cmx \
-			  CreolLex.cmx CreolParser.cmx \
+			  Lexer.cmx Parser.cmx \
 			  BackendCreol.cmx BackendMaude.cmx BackendXML.cmx \
 			  BackendDot.cmx \
 			  Passes.cmx Driver.cmx
 
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
-			  Creol.mll Creol.mly \
+			  Lexer.mll Parser.mly \
 			  Creol.ml \
 			  CreolTyping.ml \
 			  TreeLower.ml \
@@ -103,21 +103,19 @@ creolc.opt: $(creolc_cmi) $(creolc_cmx)
 .ml.cmx:
 	$(OCAMLFIND) ocamlopt $(OCAMLFIND_FLAGS) $(OCAMLOPT_FLAGS) -o $@ -c $<
 
-# We must make sure that Creol.cmi is build before CreolParser.ml, but we
-# do not want that CreolParser.ml depends on Creol.cmi, because then the
+# We must make sure that Creol.cmi is build before Parser.ml, but we
+# do not want that Parser.ml depends on Creol.cmi, because then the
 # end user needs to have menhir installed in order to rebuild the parser
 # sources.  We build Creol.cmi by hand here.  Same goes for Messages.cmi.
 #
 # Nonetheless, we depend on the source files, since type inference needs
 # to be redone after those files have been changed.
 #
-CreolParser.ml CreolParser.mli: Creol.mly Creol.ml Messages.ml
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.ml
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Messages.ml
-	rm -f CreolParser.conflicts
-	$(MENHIR) $(MENHIR_FLAGS) --base CreolParser --infer $<
+Parser.ml Parser.mli: Parser.mly Creol.cmo Messages.cmo Misc.cmo Version.cmo
+	rm -f Parser.conflicts
+	$(MENHIR) $(MENHIR_FLAGS) --infer $<
 
-CreolLex.ml: Creol.mll
+Lexer.ml: Lexer.mll
 	$(OCAMLLEX) -o $@ $<
 
 distclean-local:
@@ -149,5 +147,5 @@ creolc.pdf: creolc.tex code.tex
 code.tex: ${srcdir}/Makefile.am ${creolc_DOCSOURCES}
 	${OCAMLWEB} --no-preamble ${creolc_DOCSOURCES} -o $@
 
-CreolLex.cmo: CreolParser.cmi
+Lexer.cmo: Parser.cmi
 -include ${srcdir}/.depend

@@ -51,18 +51,6 @@ type pass = {
 }
 
 (*
-Some passes are not represented by the above structure.  Most of the
-time, the type of their implementation does not match the type of a
-pass.  Additionally, parsing is always enabled, and whether the compiler
-emits something is controlled by choosing the \texttt{null} backend.
-
-The variable \ocwlowerid{time_parse} measures the time spent in the
-lexer and parser.
-*)
-
-let time_parse = ref 0.0
-
-(*
 The variable \ocwlowerid{time\_emit} measures the time spent for emitting
 the result, i.e., the complete time spent in the backend.
 *)
@@ -278,7 +266,7 @@ let report_timings () =
     total := !total +. (snd p).elapsed
   in
     prerr_endline ("Parsing: ............................... " ^
-		      (string_of_float !time_parse) ^ " ms");
+		      (string_of_float !Parser.time) ^ " ms");
     List.iter report passes ;
     prerr_endline ("Dumps: ................................. " ^
 		      (string_of_float !time_dump) ^ " ms");
@@ -286,5 +274,5 @@ let report_timings () =
 		      (string_of_float !time_emit) ^ " ms");
     prerr_endline ("Total: ................................. " ^
 		      (string_of_float
-			  (!total +. !time_parse +. !time_dump +. !time_emit)) ^
+			  (!total +. !Parser.time +. !time_dump +. !time_emit)) ^
 		      " ms\n")
