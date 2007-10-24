@@ -140,11 +140,9 @@ html-local: ${srcdir}/Makefile.am $(creolc_DOCSOURCES)
 	$(OCAMLFIND) ocamldoc $(OCAMLFIND_FLAGS) -html -d html -m A $(creolc_DOCSOURCES)
 	date > $@
 
-all-local:
-	make version-tmp
+all-local: version-tmp
 
-Version.ml:
-	make version-tmp
+Version.ml: version-tmp
 
 # Actually makes the file Version.ml
 .PHONY: version-tmp
@@ -154,7 +152,8 @@ version-tmp:
 	 echo "let package = \"${PACKAGE}\"" ; \
 	 echo "let datadir = \"${pkgdatadir}\"" ; \
 	 echo "let reldate = \"${RELEASE_DATE}\"" ) > $@
-	@cmp -s $@ Version.ml || (echo "Updating Version.ml" ; cp $@ Version.ml)
+	@cmp -s $@ Version.ml || \
+	    (echo "Updating Version.ml" ; cp $@ Version.ml)
 	@rm -f $@
 
 # Literate programming, for documenting and explaining the compiler.
