@@ -17,12 +17,12 @@ begin
 
   op init == ctr := 0
   op run == skip
-  op put(in x : Data) ==
+  with Any op put(in x : Data) ==
     if ctr = 0 then cell := x
     else if next = null then next := new Buffer() end; next.put(x;) end;
     ctr := ctr + 1
 
-op get(out x : Data) ==
+  with Any op get(out x : Data) ==
     await (ctr > 0) ;
     if cell /= null then
       x := cell

@@ -147,12 +147,13 @@ let unify ~program ~constraints =
 		        (Type.substitute x t t1, Type.substitute x t t2)) d)
 		  (Type.Subst.add x t res)
 	  | (_, Type.Variable x) when Type.sentence_p s ->
+
 	      (* In this case, `x is an upper bound, i.e., t <: `x .
 		 This constraint is trivially satisfied by t, but there may
 		 be multiple constraints on x, and we need to choose the
 		 strongest one. *)
 	      let s' =
-		let p (v, w) = (w = t) && (not (Type.variable_p v)) in
+		let p (v, w) = (w = t) && (Type.sentence_p v) in
 		  Program.join program (List.map fst (List.filter p c))
 	      in
 	      let try_unify r =
@@ -177,9 +178,11 @@ let unify ~program ~constraints =
 	                  try_unify Type.data
 		end
 	  | (_, Type.Variable x) when not (Type.occurs_p x s) ->
-		(* If s has free variables and x does not occur in s, then we
-		   choose x to be s, and if this failes, we try Any and then
-		   Data, since we cannot guess something better. *)
+
+	      (* If s has free variables and x does not occur in s,
+		 then we choose x to be s, and if this failes, we
+		 try Any and then Data, since we cannot guess
+		 something better. *)
 	      let try_unify r =
 	        Messages.message 2 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
 	        do_unify
@@ -193,9 +196,9 @@ let unify ~program ~constraints =
 		    try_unify s
 		  with
 		      Unify_failure _ ->
-			  try
-	                    try_unify Type.any
-			  with
+			try
+	                  try_unify Type.any
+			with
 		            Unify_failure _ ->
 			      try_unify Type.data
 		end
@@ -278,17 +281,17 @@ let typecheck tree: Declaration.t list =
 	    New (subst_in_note subst n, Type.apply_substitution subst t,
 		List.map (substitute_types_in_expression subst) args)
 	      (*i	| Choose (n, i, t, e) ->
-			Choose (subst_in_note subst n, i,
-			Type.apply_substitution subst t,
-			substitute_types_in_expression subst e)
-			| Forall (n, i, t, e) ->
-			Forall (subst_in_note subst n, i,
-			Type.apply_substitution subst t,
-			substitute_types_in_expression subst e)
-			| Exists (n, i, t, e) ->
-			Exists (subst_in_note subst n, i,
-			Type.apply_substitution subst t,
-			substitute_types_in_expression subst e) i*)
+		Choose (subst_in_note subst n, i,
+		Type.apply_substitution subst t,
+		substitute_types_in_expression subst e)
+		| Forall (n, i, t, e) ->
+		Forall (subst_in_note subst n, i,
+		Type.apply_substitution subst t,
+		substitute_types_in_expression subst e)
+		| Exists (n, i, t, e) ->
+		Exists (subst_in_note subst n, i,
+		Type.apply_substitution subst t,
+		substitute_types_in_expression subst e) i*)
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    SSAId (subst_in_note subst n, name, version)
@@ -605,7 +608,12 @@ let typecheck tree: Declaration.t list =
     in
     let subst =
       try
-	unify program constr'
+	let file = Expression.file (Expression.note expr)
+	and line = string_of_int (Expression.line (Expression.note expr)) 
+	in 
+	  Messages.message 2
+	    ("Unify expression in " ^ file ^ ":" ^ line) ;
+	  unify program constr'
       with
 	  Unify_failure (s, t) ->
 	    let file = Expression.file (Expression.note expr)
@@ -973,14 +981,84 @@ let typecheck tree: Declaration.t list =
 	  List.map
 	    (fun m -> type_check_method program cls coiface m)
 	    w.With.methods }
+
+  (* A class is well typed, if it provides methods for all the
+     interfaces it claims to implement, if the initialisation of all
+     attributes are well-typed, and if all with-declarations are
+     well-typed.
+
+     Type checking a class starts with checking, whether the class
+     provides a method for each interface it declared.  *)
+	
   and type_check_class program cls =
-    (* Compute the type environment within a class by adding first the class
-       parameters to an empty hash table and then all attributes. *)
-    { cls with Class.with_defs =
-	List.map (type_check_with_def program cls) cls.Class.with_defs }
+
+    (* Count the number of message definitions missing for an interface. *)
+    let methods_missing_for_iface i =
+      let report m =
+	Messages.error cls.Class.file cls.Class.line
+	  (cls.Class.name ^ " does not provide a method " ^ m ^
+	      " declared in " ^ i.Interface.name)
+      in
+      let methods_missing_for_with w = 
+	let p m =
+	  let s =
+	    let d =
+	      match Method.domain_type m with
+		  Type.Tuple x -> x
+		| _ -> assert false
+	    in
+	    let r = match Method.range_type m with 
+		Type.Tuple x -> x 
+	      | _ -> assert false
+	    in
+	      (w.With.co_interface, Some d, Some r)
+	  in
+	  let r =
+	    Program.class_provides_method_p program cls m.Method.name s
+	  in
+	    if not r then report (m.Method.name ^ (Type.string_of_sig s)) ;
+	    r
+	in
+	  List.fold_left (fun a m -> if (p m) then a else a + 1) 0
+	    w.With.methods
+      in
+	List.fold_left (fun a w -> a + (methods_missing_for_with w)) 0
+	  i.Interface.with_decls
+    in
+      try
+	ignore (Program.superclasses program cls.Class.name) ;
+	let methods_missing =
+	  let c n =
+	    try
+	      methods_missing_for_iface (Program.find_interface program n)
+	    with
+		Not_found ->
+		  Messages.error cls.Class.file cls.Class.line
+		    ("No interface " ^ n ^ " defined") ;
+		  1
+	  in
+	    List.fold_left (fun a n -> a + (c n)) 0
+	      (Program.class_implements program cls)
+	in
+	  if (methods_missing = 0) then
+	    { cls with Class.with_defs =
+		List.map (type_check_with_def program cls)
+		  cls.Class.with_defs }
+	  else
+	    exit 1
+      with
+	  Program.Class_not_found (f, l, c) ->
+	    Messages.error f l ("Class " ^ c ^ " not defined") ;
+	    exit 1
+
+  and type_check_interface program iface =
+    iface
   and type_check_declaration program =
     function
-	Declaration.Class c -> Declaration.Class (type_check_class program c)
+	Declaration.Class c ->
+	  Declaration.Class (type_check_class program c)
+      | Declaration.Interface i ->
+	  Declaration.Interface (type_check_interface program i)
       | _ as d -> d
   in
     try

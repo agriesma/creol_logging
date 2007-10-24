@@ -5,14 +5,14 @@ interface Client
 begin
   with Any
     op availFiles (in sList: List[Server];
-		   out files: List[[Server, List[Str]]])
-    op reqFiles
+		   out files: List[[Server, List[String]]])
+    // op reqFiles
 end
 
 interface Server
 begin
   with Server
-    op enquire
+    op enquire(out files: List[String])
     op getLength(in fId: String; out lth: Int)
     op getPack(in fId: String, pNbr: Int; out pack: Data)
 end
@@ -46,16 +46,19 @@ begin
 
   with Any
     op availFiles (in sList: List[Server];
-		   out files: List[[Server , List[Str]]]) ==
-      var l1: Label[ ] ;
-      var l2: Label[List[[Server, List[Str]]]] ;
-      if (sList = nil) then files := nil
+		   out files: List[[Server , List[String]]]) ==
+      var l1: Label[List[String]] ;
+      var l2: Label[List[[Server, List[String]]]] ;
+      var fList: List[String] ;
+      if (sList = nil)
+      then files := nil
       else
         l1!head(sList).enquire();
         l2!(this as Client).availFiles(tail(sList));
 	await l1? && l2?;
-	l1?();
-	l2?(files)
+	l1?(fList);
+	l2?(files);
+	files := files |- (head(sList), fList)
       end
 
     op reqFile(in sId: Server, fId: String) ==

@@ -21,8 +21,8 @@ end
 
 interface Elf
 begin with SantaClausE
-  op enterOffice
-  op leaveOffice
+  // op enterOffice
+  // op leaveOffice
   op showIn
   op showOut
 end

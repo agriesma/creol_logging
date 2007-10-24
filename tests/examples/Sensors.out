@@ -10,15 +10,22 @@ result Configuration:
     now # "+"("t0" # "rate")) ; "label:0" ! "controller" . "write"(int(37)) ;
     "label:0" ?(noVid) ; posit "<="(now # "+"("t0" # "rate")) ; "t0" ::= now ;
     return(emp) > *
+  < "setEncoding" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip
+    ; return(emp) > *
   < "setRate" : Mtdname | Param: "newRate", Latt: "label:0" |-> null, "newRate"
     |-> null, Code: if "&&"("<"("newRate" # "rate") # ">"(now # "+"("t0" #
     "newRate"))) th "label:0" ! "controller" . "write"(int(37)) ; "label:0" ?(
     noVid) ; "t0" ::= now el skip fi ; "rate" ::= "newRate" ; posit "<"(now #
-    "+"("t0" # "rate")) ; return(emp) >,
+    "+"("t0" # "rate")) ; return(emp) > *
+  < "setResolution" : Mtdname | Param: "data", Latt: "data" |-> null, Code:
+    skip ; return(emp) > *
+  < "switchOff" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(
+    emp) > *
+  < "switchOn" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(
+    emp) >,
   Ocnt: 0 >
 
-< "PassiveTempSensor" : Cl | Inh: "PassiveSensor" < emp >, Par: noVid, Att:
-    noSubst, Mtds:
+< "PassiveTempSensor" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "read" : Mtdname | Param: noVid, Latt: "value" |-> null, Code: "value" ::=
@@ -26,6 +33,8 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) > *
   < "setEncoding" : Mtdname | Param: "encoding", Latt: "encoding" |-> null,
     Code: skip ; return(emp) > *
+  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null, Code:
+    skip ; return(emp) > *
   < "setResolution" : Mtdname | Param: "res", Latt: "res" |-> null, Code: skip
     ; return(emp) > *
   < "switchOff" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(
@@ -60,7 +69,9 @@ result Configuration:
     |-> null, Code: if "&&"("<"("newRate" # "rate") # ">"(now # "+"("t0" #
     "newRate"))) th "t0" ::= now ; "label:0" ! "this" . "read"(emp) ; "label:0"
     ?(noVid) el skip fi ; "rate" ::= "newRate" ; posit "<"(now # "+"("t0" #
-    "rate")) ; return(emp) >,
+    "rate")) ; return(emp) > *
+  < "write" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ;
+    return(emp) >,
   Ocnt: 0 >
 
 < "TwoSimpleSensorNode" : Cl | Inh: noInh, Par: "sensor0", "sensor1", "radio",
@@ -104,6 +115,8 @@ result Configuration:
     |-> null, Code: if "&&"("<"("newRate" # "rate0") # ">"(now # "+"("t0" #
     "newRate"))) th "t0" ::= now ; "label:0" ! "this" . "read0"(emp) ;
     "label:0" ?(noVid) el skip fi ; "rate0" ::= "newRate" ; posit "<"(now #
-    "+"("t0" # "rate0")) ; return(emp) >,
+    "+"("t0" # "rate0")) ; return(emp) > *
+  < "write" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ;
+    return(emp) >,
   Ocnt: 0 >
 Bye.

@@ -1,0 +1,4 @@
+
+class A inherits B begin end
+
+class B inherits C begin end

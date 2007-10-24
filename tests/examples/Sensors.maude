@@ -3,21 +3,23 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
-< "PassiveTempSensor" : Cl | Inh: "PassiveSensor" < emp > , Par: noVid, Att: noSubst, Mtds: 
+< "PassiveTempSensor" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "setResolution" : Mtdname | Param: "res", Latt: "res" |-> null, Code: skip ; return ( emp ) > *
   < "setEncoding" : Mtdname | Param: "encoding", Latt: "encoding" |-> null, Code: skip ; return ( emp ) > *
   < "switchOn" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "switchOff" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "read" : Mtdname | Param: noVid, Latt: "value" |-> null, Code: "value" ::= int(37) ; return ( "value" ) >, Ocnt: 0 >
+  < "read" : Mtdname | Param: noVid, Latt: "value" |-> null, Code: "value" ::= int(37) ; return ( "value" ) > *
+  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null, Code: skip ; return ( emp ) >, Ocnt: 0 >
 
 < "SimpleSensorNode" : Cl | Inh: noInh, Par: "sensor" , "radio" , "size" , "initialRate", Att: "sensor" |-> null , "radio" |-> null , "size" |-> null , "initialRate" |-> null , "buffer" |-> null , "slots" |-> null , "t0" |-> null , "rate" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "buffer" ::= list(emp) ; "slots" ::= "size" ; "rate" ::= "initialRate" ; "t0" ::= now ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "read" (emp ) )  ; ( "label:0" ? ( noVid ) )  ; ( await ">=" ( now # "+" ( "t0" # "rate" ) ) ) ; ( posit "<=" ( now # "+" ( "t0" # "rate" ) ) ) ; "t0" ::= now ; ( "label:1" ! "this" . "run" (emp ) )  ; free( "label:1" ) ; return ( emp ) > *
   < "read" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "temp" |-> null, Code: "label:0" ! "sensor" . "read" ( emp ) ; ( "label:0" ? ( "temp" ) )  ; ( posit "<=" ( now # "t0" ) ) ; ( await ">" ( "slots" # int(0) ) ) ; "buffer" ::= "|-" ( "buffer" # "temp" ) ; "slots" ::= "-" ( "slots" # int(1) ) ; if "=" ( "slots" # int(0) ) th ( "label:1" ! "this" . "packAndSend" (emp ) )  ; ( "label:1" ? ( noVid ) )  el skip fi ; return ( emp ) > *
   < "packAndSend" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" ! "radio" . "write" ( "-|" ( "this" # "-|" ( now # "buffer" ) ) ) ; ( "label:0" ? ( noVid ) )  ; "buffer" ::= list(emp) ; "slots" ::= "size" ; return ( emp ) > *
-  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null , "label:0" |-> null, Code: if "&&" ( "<" ( "newRate" # "rate" ) # ">" ( now # "+" ( "t0" # "newRate" ) ) ) th "t0" ::= now ; ( "label:0" ! "this" . "read" (emp ) )  ; ( "label:0" ? ( noVid ) )  el skip fi ; "rate" ::= "newRate" ; ( posit "<" ( now # "+" ( "t0" # "rate" ) ) ) ; return ( emp ) >, Ocnt: 0 >
+  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null , "label:0" |-> null, Code: if "&&" ( "<" ( "newRate" # "rate" ) # ">" ( now # "+" ( "t0" # "newRate" ) ) ) th "t0" ::= now ; ( "label:0" ! "this" . "read" (emp ) )  ; ( "label:0" ? ( noVid ) )  el skip fi ; "rate" ::= "newRate" ; ( posit "<" ( now # "+" ( "t0" # "rate" ) ) ) ; return ( emp ) > *
+  < "write" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ; return ( emp ) >, Ocnt: 0 >
 
 < "TwoSimpleSensorNode" : Cl | Inh: noInh, Par: "sensor0" , "sensor1" , "radio" , "size" , "initialRate0" , "initialRate1", Att: "sensor0" |-> null , "sensor1" |-> null , "radio" |-> null , "size" |-> null , "initialRate0" |-> null , "initialRate1" |-> null , "buffer" |-> null , "slots" |-> null , "t0" |-> null , "t1" |-> null , "rate0" |-> null , "rate1" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code:  ( "buffer", "slots", "rate0", "rate1", "t0", "t1" )  ::= list(emp) # "size" # "initialRate0" # "initialRate1" # now # now ; return ( emp ) > *
@@ -27,12 +29,17 @@ eq init =
   < "run1" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "read1" (emp ) )  ; ( "label:0" ? ( noVid ) )  ; ( await ">=" ( now # "+" ( "t1" # "rate1" ) ) ) ; ( posit "<=" ( now # "+" ( "t1" # "rate1" ) ) ) ; "t1" ::= now ; ( "label:1" ! "this" . "run1" (emp ) )  ; free( "label:1" ) ; return ( emp ) > *
   < "read1" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "temp" |-> null, Code: "label:0" ! "sensor1" . "read" ( emp ) ; ( "label:0" ? ( "temp" ) )  ; ( posit "<=" ( now # "t1" ) ) ; ( await ">" ( "slots" # int(0) ) ) ; "buffer" ::= "|-" ( "buffer" # "temp" ) ; "slots" ::= "-" ( "slots" # int(1) ) ; if "=" ( "slots" # int(0) ) th ( "label:1" ! "this" . "packAndSend" (emp ) )  ; ( "label:1" ? ( noVid ) )  el skip fi ; return ( emp ) > *
   < "packAndSend" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" ! "radio" . "write" ( "-|" ( "this" # "-|" ( now # "buffer" ) ) ) ; ( "label:0" ? ( noVid ) )  ; "buffer" ::= list(emp) ; "slots" ::= "size" ; return ( emp ) > *
-  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null , "label:0" |-> null, Code: if "&&" ( "<" ( "newRate" # "rate0" ) # ">" ( now # "+" ( "t0" # "newRate" ) ) ) th "t0" ::= now ; ( "label:0" ! "this" . "read0" (emp ) )  ; ( "label:0" ? ( noVid ) )  el skip fi ; "rate0" ::= "newRate" ; ( posit "<" ( now # "+" ( "t0" # "rate0" ) ) ) ; return ( emp ) >, Ocnt: 0 >
+  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null , "label:0" |-> null, Code: if "&&" ( "<" ( "newRate" # "rate0" ) # ">" ( now # "+" ( "t0" # "newRate" ) ) ) th "t0" ::= now ; ( "label:0" ! "this" . "read0" (emp ) )  ; ( "label:0" ? ( noVid ) )  el skip fi ; "rate0" ::= "newRate" ; ( posit "<" ( now # "+" ( "t0" # "rate0" ) ) ) ; return ( emp ) > *
+  < "write" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ; return ( emp ) >, Ocnt: 0 >
 
 < "ActiveSensor" : Cl | Inh: noInh, Par: "controller" , "initialRate", Att: "controller" |-> null , "initialRate" |-> null , "rate" |-> null , "t0" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code:  ( "rate", "t0" )  ::= "initialRate" # now ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: ( await ">=" ( now # "+" ( "t0" # "rate" ) ) ) ; "label:0" ! "controller" . "write" ( int(37) ) ; ( "label:0" ? ( noVid ) )  ; ( posit "<=" ( now # "+" ( "t0" # "rate" ) ) ) ; "t0" ::= now ; return ( emp ) > *
-  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null , "label:0" |-> null, Code: if "&&" ( "<" ( "newRate" # "rate" ) # ">" ( now # "+" ( "t0" # "newRate" ) ) ) th "label:0" ! "controller" . "write" ( int(37) ) ; ( "label:0" ? ( noVid ) )  ; "t0" ::= now el skip fi ; "rate" ::= "newRate" ; ( posit "<" ( now # "+" ( "t0" # "rate" ) ) ) ; return ( emp ) >, Ocnt: 0 >
+  < "setRate" : Mtdname | Param: "newRate", Latt: "newRate" |-> null , "label:0" |-> null, Code: if "&&" ( "<" ( "newRate" # "rate" ) # ">" ( now # "+" ( "t0" # "newRate" ) ) ) th "label:0" ! "controller" . "write" ( int(37) ) ; ( "label:0" ? ( noVid ) )  ; "t0" ::= now el skip fi ; "rate" ::= "newRate" ; ( posit "<" ( now # "+" ( "t0" # "rate" ) ) ) ; return ( emp ) > *
+  < "setResolution" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ; return ( emp ) > *
+  < "setEncoding" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ; return ( emp ) > *
+  < "switchOn" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "switchOff" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

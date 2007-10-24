@@ -28,15 +28,17 @@ begin
   var next: Sieve
   op init == skip
   op run == skip
-  op send(in n: Int; out res: Bool) ==
-    var d: Int := n / p, r: Int := n - d * p;
-    if r = 0
-    then res := false
-    else if next /= null
-         then
+  with Any
+    op send(in n: Int; out res: Bool) ==
+      var d: Int := n / p, r: Int := n - d * p;
+      if r = 0
+      then res := false
+      else
+        if next /= null
+          then
 	   await next.send(n; res)
          else
 	   next := new Sieve(n); res := true
          end
-    end
+      end
 end

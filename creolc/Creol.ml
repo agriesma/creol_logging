@@ -960,8 +960,24 @@ end
 
 module Program =
   struct
+
+    (* The type of a program.  This is currently just a list of
+       declarations. *)
     type t = Declaration.t list
 
+    (* Generally, if a class or an interface is not found in the
+       program, we raise a \ocwupperid{Not\_found} exception.  But if
+       the context of the class or the interface is known, one of the
+       two following exceptions is raised. *)
+    exception Class_not_found of string * int * string
+
+    exception Interface_not_found of string * int * string
+
+
+    (* Find a class of name \ocwlowerid{name} in
+       \ocwlowerid{program}. This function raises
+       \ocwupperid{Not\_found} if no class has the name
+       \ocwlowerid{name} in the program. *)
     let find_class ~program ~name =
       let class_with_name =
 	function
@@ -971,6 +987,30 @@ module Program =
 	match List.find class_with_name program with
 	    Declaration.Class cls -> cls
 	  | _ -> assert false
+
+
+    (* Find all super-classes of a class \ocwlowerid{name} in
+       \ocwlowerid{program}.  Raises a \ocwupperid{Class\_not\_found}
+       exception in the context of the class from which the class is
+       supposed to be inherited. A \ocwupperid{Not\_found} exception
+       is raised if \ocwlowerid{name} does not exist in the
+       program. *)
+    let superclasses ~program name =
+      let rec fold cls =
+	List.fold_left (fun a (n, _) -> a@(work cls n)) [] cls.Class.inherits
+      and work super n =
+	let cls =
+	  try
+	    find_class program n
+	  with
+	      Not_found ->
+		raise (Class_not_found (super.Class.file ,
+				       super.Class.line, n))
+	in
+	  fold cls
+      in
+	fold (find_class program name)
+
 
     let subclass_p ~program s t =
       (** Return true if [s] is a subclass of [t] *)
@@ -982,6 +1022,7 @@ module Program =
 	  with
 	      Not_found -> false
       in search s
+
 
     let find_interface ~program ~name =
       let interface_with_name =
@@ -1069,6 +1110,33 @@ module Program =
 	with
 	    Not_found -> find cls.Class.inherits
 
+    (* Return a list of all interfaces which are implemented by a
+       class.  These interfaces are either directly claimed to be
+       implemented, contracted by the class itself, or contracted by
+       one of the super classes. *)
+    let class_implements ~program cls =
+      let rec work result =
+	function
+	    [] -> result
+	  | (n, _)::l when List.mem n result -> work result l
+	  | (n, _)::l ->
+	      let i =
+		try
+		  find_interface program n
+		with 
+		    Not_found ->
+		      raise (Interface_not_found
+				(cls.Class.file, cls.Class.line, n))
+	      in
+		work (n::result) (l@i.Interface.inherits)
+      in
+      let rec contracts cls =
+	let f a (n, _) = a@(contracts (find_class program n)) in
+	  List.fold_left f cls.Class.contracts cls.Class.inherits
+      in
+	work [] ((contracts cls) @ cls.Class.implements)
+
+
     let rec subtype_p program s t =
       (** Decides whether [s] is a subtype of [t] in [program]. *)
       match (s, t) with
@@ -1077,7 +1145,6 @@ module Program =
 	| (_, _) when s = t -> true (* Every type is a subtype of itself *)
 	| (Type.Basic st, Type.Basic tt) ->
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
-	| (Type.Basic _, _) -> assert false (* But see above *)
 	| (_, Type.Intersection l) ->
 	    List.for_all (subtype_p program s) l
 	| (_, Type.Disjunction l) ->
@@ -1109,19 +1176,21 @@ module Program =
 	    (subtype_p program d1 d2) && (subtype_p program r2 r1)
 	| (Type.Function _, _) -> assert false (* But see above *)
 	| (Type.Variable _, _) -> assert false (* But see reflexivity above *)
+	| (Type.Basic _, _) -> assert false (* But see above *)
 
+
+    (* Return the greates lower bound of all types in [lst] in
+       [program], i.e., a type t with (lower-bound) t <: s for all s
+       in [lst] and with (maximality) s <: t for all types s with s
+       <: u for some u in [lst].
+
+       Formally, the greatest lower bound of an empty [lst] is the top
+       type.
+
+       The result may be an intersection types, which is caused by
+       classes implementing multiple interfaces.  If this function
+       returns an intersection, the solution is ambigous.  *)
     let meet ~program lst =
-      (* Return the greates lower bound of all types in [lst] in [program],
-	 i.e., a type t with
-	 (lower-bound) t <: s for all s in [lst] and with
-	 (maximality) s <: t for all types s with s <: u for some u in [lst].
-
-	 Formally, the greatest lower bound of an empty [lst] is the top
-	 type.
-
-	 The result may be an intersection types, which is caused by
-	 classes implementing multiple interfaces.  If this function
-	 returns an intersection, the solution is ambigous.  *)
       let find_meet s t =
 	if subtype_p program s t then
 	  s
@@ -1134,19 +1203,20 @@ module Program =
 	    [] -> Type.data
 	  | hd::tl -> List.fold_left find_meet hd tl
 
+
+    (* Return the least upper bound of all types in [lst] in
+       [program], i.e., a type t with (upper-bound) s <: t for all s
+       in [lst] and with (minimality) t <: s for all types s with u
+       <: s for some u in [lst].
+
+       Formally, the least upper bound of an empty [lst] is the bottom
+       type.  However, bottom need not exist, and the function will
+       therefore fail.
+
+       The result may be an intersection types, which is caused by
+       classes implementing multiple interfaces.  If this function
+       returns an intersection, the solution is ambigous.  *)
     let join ~program lst =
-      (* Return the least upper bound of all types in [lst] in [program],
-	 i.e., a type t with
-	 (upper-bound) s <: t for all s in [lst] and with
-	 (minimality) t <: s for all types s with u <: s for some u in [lst].
-
-	 Formally, the least upper bound of an empty [lst] is the bottom
-	 type.  However, bottom need not exist, and the function will
-	 therefore fail.
-
-	 The result may be an intersection types, which is caused by
-	 classes implementing multiple interfaces.  If this function
-	 returns an intersection, the solution is ambigous.  *)
       let find_join s t =
 	if subtype_p program s t then
 	  t
@@ -1166,12 +1236,14 @@ module Program =
 	m.Method.name = name &&
 	  (subtype_p program dom (Method.domain_type m)) &&
 	  (subtype_p program (Method.range_type m) rng)
-      in List.filter p w.With.methods
+      in
+	List.filter p w.With.methods
 
+
+    (* Find all definitions of a method called [name] that matches the
+       signature [(coiface, inputs, outputs)] in [iface] and its
+       super-interfaces.  *)
     let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
-      (** Find all definitions of a method called [name] that matches
-	  the signature [(coiface, inputs, outputs)] in [iface] and
-	  its super-interfaces.  *)
       let rec find_methods_in_interface i =
         let q w = subtype_p program coiface w.With.co_interface in
         let withs = List.filter q i.Interface.with_decls in
@@ -1183,7 +1255,7 @@ module Program =
 	  List.fold_left
             (fun r i ->
               (find_methods_in_interface (find_interface program i))@r)
-           here supers
+            here supers
       in
 	find_methods_in_interface iface
 
