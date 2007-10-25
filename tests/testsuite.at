@@ -6,7 +6,7 @@ dnl First parameter is the name of the test, second parameter is the maude
 dnl script to execute for the text.  Number of rewrites will be filtered.
 m4_define([TEST_MAUDE], [dnl
 AT_CHECK([$MAUDE -no-banner -no-advise -batch $2 dnl
-  | sed -f ${abs_srcdir}/maude.sed > $1.out])
+  | $SED -f ${abs_srcdir}/maude.sed > $1.out])
 AT_CHECK([diff -adu $1.out ${abs_srcdir}/$3/$1.out])
 ])
 

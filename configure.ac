@@ -22,16 +22,15 @@ AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.ml])
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
-AC_PROG_MAKE_SET
 
 dnl Record the date of release
 RELEASE_DATE='2007-XX-YY'
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.
+AC_PROG_SED
 AC_PATH_PROG([M4], m4)
 AC_PATH_PROG([AUTOM4TE], autom4te)
-AC_PATH_PROG([DIFF], diff)
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [])
@@ -69,16 +68,6 @@ INSTALL on obtaining and installing menhir.
 ])
 fi
 
-dnl check for ocamlweb and latex for literate programming.
-AC_CHECK_PROG([OCAMLWEB], [ocamlweb], [ocamlweb],
-	      ['${top_srcdir}/missing ocamlweb])
-AC_CHECK_PROG([LATEX], [latex], [latex],
-	      ['${top_srcdir}/missing latex])
-AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex],
-	      ['${top_srcdir}/missing pdflatex])
-
-dnl For documentation.
-AC_CHECK_PROG([DOT], [dot], [dot], ['${top_srcdir}/missing dot'])
 
 dnl Check for maude.
 AC_CHECK_PROGS([MAUDE], [maude.linux maude.darwin maude],
@@ -101,12 +90,11 @@ If you are sure that you have maude installed, rerun $as_me with
 ])
 fi
 
-AC_MSG_CHECKING([for ocaml-libxml2 bindings])
+AC_MSG_CHECKING([for ocaml-libxml2])
 ocamllibxml2=`$OCAMLFIND query libxml2 2>/dev/null`
 if test "$?" = "0"
 then
   AC_MSG_RESULT([yes])
-  AC_MSG_NOTICE([Found XML library at $ocamllibxml2])
 else
   AC_MSG_RESULT([no])
   AC_MSG_ERROR([ocaml-libxml2 cannot be found.
@@ -115,6 +103,15 @@ You have to install ocaml-libxml2 from
 <http://heim.ifi.uio.no/~kyas/creoltools/> to compile the creoltools.
 ])
 fi
+
+dnl check for ocamlweb and latex for literate programming.
+AC_CHECK_PROG([DOT], [dot], [dot], ['${top_srcdir}/missing dot'])
+AC_CHECK_PROG([OCAMLWEB], [ocamlweb], [ocamlweb],
+	      ['${top_srcdir}/missing ocamlweb])
+AC_CHECK_PROG([LATEX], [latex], [latex],
+	      ['${top_srcdir}/missing latex])
+AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex],
+	      ['${top_srcdir}/missing pdflatex])
 
 AC_SUBST([MENHIR_FLAGS])
 AC_SUBST([OCAMLC_FLAGS])

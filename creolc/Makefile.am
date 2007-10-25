@@ -111,13 +111,13 @@ creolc.opt: $(creolc_cmi) $(creolc_cmx)
 
 .PRECIOUS: *.cmo *.cmi *.cmx
 .ml.cmo:
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o $@ -c $<
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c $< -o $@
 
 .mli.cmi:
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -o $@ -c $<
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c $< -o $@ 
 
 .ml.cmx:
-	$(OCAMLFIND) ocamlopt $(OCAMLFIND_FLAGS) $(OCAMLOPT_FLAGS) -o $@ -c $<
+	$(OCAMLFIND) ocamlopt $(OCAMLFIND_FLAGS) $(OCAMLOPT_FLAGS) -c $< -o $@ 
 
 # We must make sure that Creol.cmi is build before Parser.ml, but we
 # do not want that Parser.ml depends on Creol.cmi, because then the
@@ -128,8 +128,8 @@ creolc.opt: $(creolc_cmi) $(creolc_cmx)
 # to be redone after those files have been changed.
 #
 Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Messages.ml
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.ml
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Messages.ml -o Messages.cmo
+	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.ml -o Creol.cmo
 	rm -f Parser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --infer $<
 
@@ -140,7 +140,8 @@ distclean-local:
 	test ! -d html || rm -rf html
 
 .depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
-	$(OCAMLFIND) ocamldep $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(creolc_SOURCES) > $@
+	@echo Updating dependencies.
+	@$(OCAMLFIND) ocamldep $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(creolc_SOURCES) > $@
 
 html-local: ${srcdir}/Makefile.am $(creolc_DOCSOURCES)
 	test ! -d html || rm -rf html

@@ -1,10 +1,10 @@
 Summary:	Environment for the Creol Language
 Name:		creoltools
-Version:	0.0f
+Version:	0.0g
 Release:	0%{?dist}
 Vendor:		Universitetet i Oslo
 URL:		http://creol.berlios.de/
-License:	GPLv2+
+License:	GPLv3+
 Group:		Development/Languages
 BuildRoot:	%{_tmppath}/%{name}-root
 Source0:	%{name}-%{version}.tar.bz2
@@ -12,16 +12,10 @@ Source0:	%{name}-%{version}.tar.bz2
 BuildRequires: ocaml >= 3.09
 BuildRequires: ocaml-findlib
 BuildRequires: /usr/bin/texi2pdf
-BuildRequires: libxml2-devel >= 2.6.16
-BuildRequires: libxslt-devel >= 1.1.11
-Requires: libxml2 >= 2.6.16
-Requires: libxslt >= 1.1.11
-Requires: maude >= 2.3
+BuildRequires: ocaml-libxml2
+Requires: maude >= 2.2
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
-
-%define ocamllib %(ocamlc -where)
-%define sitelib %{ocamllib}/site-lib
 
 %description
 The creol tools currently provide an emacs mode for writing Creol programs,
@@ -57,9 +51,6 @@ done
 
 # install-info dumps a dir file
 rm -f %{buildroot}%{_infodir}/dir
-
-# We do not want the xml stuff
-rm -rf %{buildroot}%{ocamllib}
 
 # Now generate the fedora specific configuration.
 mkdir -p %{buildroot}%{_sysconfdir}/profile.d
