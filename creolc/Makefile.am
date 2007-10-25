@@ -88,7 +88,7 @@ OCAMLFIND_FLAGS		+= -package "unix libxml2 str"
 SVNVERSION = \
 	if test -d ${top_srcdir}/.svn ; \
 	then \
-	    env LANG=C svn info | env LANG=C LC_ALL=C ${AWK} -F':' '($$1 == "Last Changed Rev") { printf "${VERSION}, svn revision %d", $$2 ; }' ; \
+	    env LANG=C svn info ${top_srcdir} | env LANG=C LC_ALL=C ${AWK} 'BEGIN { FS=":" } ($$1 == "Last Changed Rev") { printf "${VERSION}, svn revision %d", $$2 ; }' ; \
 	else \
 	    echo -n "${VERSION}, release" ; \
 	fi
@@ -96,7 +96,7 @@ SVNVERSION = \
 SVNDATE = \
 	if test -d ${top_srcdir}/.svn ; \
 	then \
-	    env LANG=C svn info | env LANG=C LC_ALL=C ${AWK} 'BEGIN { FS=":" } ($$1 == "Last Changed Date") { s = $$2; sub(/ /, "", s) ; sub(/ .+/, "", s); print s }' ; \
+	    env LANG=C svn info ${top_srcdir} | env LANG=C LC_ALL=C ${AWK} 'BEGIN { FS=":" } ($$1 == "Last Changed Date") { s = $$2; sub(/ /, "", s) ; sub(/ .+/, "", s); print s }' ; \
 	else \
 	    echo -n "${RELEASE_DATE}" ; \
 	fi
