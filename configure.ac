@@ -28,7 +28,6 @@ RELEASE_DATE='2007-XX-YY'
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.
-AC_PROG_SED
 AC_PATH_PROG([M4], m4)
 AC_PATH_PROG([AUTOM4TE], autom4te)
 
