@@ -88,9 +88,17 @@ OCAMLFIND_FLAGS		+= -package "unix libxml2 str"
 SVNVERSION = \
 	if test -d ${top_srcdir}/.svn ; \
 	then \
-	    env LANG=C svn info | ${AWK} -F: '($$1 == "Last Changed Rev") { printf "${VERSION} (svn-rev %d)", $$2 ; }' ; \
+	    env LANG=C svn info | env LANG=C LC_ALL=C ${AWK} -F':' '($$1 == "Last Changed Rev") { printf "${VERSION}, svn revision %d", $$2 ; }' ; \
 	else \
-	    echo -n "${VERSION} (release)" ; \
+	    echo -n "${VERSION}, release" ; \
+	fi
+
+SVNDATE = \
+	if test -d ${top_srcdir}/.svn ; \
+	then \
+	    env LANG=C svn info | env LANG=C LC_ALL=C ${AWK} 'BEGIN { FS=":" } ($$1 == "Last Changed Date") { s = $$2; sub(/ /, "", s) ; sub(/ .+/, "", s); print s }' ; \
+	else \
+	    echo -n "${RELEASE_DATE}" ; \
 	fi
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
@@ -151,7 +159,7 @@ version-tmp:
 	 echo "let version = \"`${SVNVERSION}`\"" ; \
 	 echo "let package = \"${PACKAGE}\"" ; \
 	 echo "let datadir = \"${pkgdatadir}\"" ; \
-	 echo "let reldate = \"${RELEASE_DATE}\"" ) > $@
+	 echo "let reldate = \"`${SVNDATE}`\"" ) > $@
 	@cmp -s $@ Version.ml || \
 	    (echo "Updating Version.ml" ; cp $@ Version.ml)
 	@rm -f $@
