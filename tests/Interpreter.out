@@ -9,7 +9,7 @@ result Configuration:
     th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 0 >
 
-< ob("main") : "NoClass" | Att: noSubst,
+< ob("main") : "" | Att: noSubst,
   Pr: "var" |-> null, "var" ::= new "Tailcall"(int(5)),
   PrQ: noProc, Lcnt: 0 >
 ==========================================
@@ -32,7 +32,7 @@ conf:Configuration -->
     th "x" ::= "-"("x" # int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
 
-< ob("main") : "NoClass" | Att: noSubst,
+< ob("main") : "" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
@@ -60,7 +60,7 @@ result Configuration:
   Pr: idle,
   PrQ: noProc, Lcnt: 3 >
 
-< ob("main") : "NoClass" | Att: noSubst,
+< ob("main") : "" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 Bye.

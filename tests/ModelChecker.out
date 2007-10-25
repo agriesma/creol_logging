@@ -21,7 +21,7 @@ result Configuration:
     ob("Tailcall0"), ob("Tailcall0"), "init", emp) ?(noVid) ; ".anon" ! "run"(
     emp) ; ".anon" ?(noVid), Lcnt: 1 >
 
-< ob("main") : "NoClass" | Att: noSubst,
+< ob("main") : "" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 ==========================================
@@ -47,7 +47,7 @@ result Configuration:
     "Tailcall0")), if "<"(int(0) # "x") th "x" ::= "-"("x" # int(1)) ; tailcall
     "run"(emp) el return(emp) fi, Lcnt: 1 >
 
-< ob("main") : "NoClass" | Att: noSubst,
+< ob("main") : "" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 ==========================================
@@ -68,7 +68,7 @@ result Configuration:
   Pr: idle,
   PrQ: noProc, Lcnt: 1 >
 
-< ob("main") : "NoClass" | Att: noSubst,
+< ob("main") : "" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 Bye.

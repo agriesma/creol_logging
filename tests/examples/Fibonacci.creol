@@ -4,7 +4,7 @@ begin
     op fibonacci(in n: Int; out f: Int)
 end
 
-class Fibonacci(n:Int)
+class Fibonacci(n:Int) implements Fibonacci
 begin
   op init == skip
 
@@ -22,10 +22,10 @@ with Any
   op fibonacci(in n:Int; out f:Int) == var t:Label[Int]; t!fib(n); t?(f)
 end
 
-class FibTester(f: Fibonacci, n: Int)
+class FibTester(n: Int)
 begin
-	op init == skip
-	op run ==
-	 	var res:Int;
- 		f.fibonacci(n; res)
+	var f: Fibonacci
+	var res:Int
+	op init == f := new Fibonacci(n)
+	op run == f.fibonacci(n; res)
 end

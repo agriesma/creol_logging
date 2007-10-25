@@ -36,7 +36,7 @@ result Configuration:
   Pr: idle,
   PrQ: noProc, Lcnt: 4 >
 
-< ob("main") : "NoClass" | Att: noSubst,
+< ob("main") : "" | Att: noSubst,
   Pr: idle,
   PrQ: noProc, Lcnt: 0 >
 Bye.

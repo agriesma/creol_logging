@@ -9,9 +9,9 @@ eq init =
   < "fib" : Mtdname | Param: "n", Latt: "n" |-> null , "f" |-> null , "a" |-> null , "b" |-> null , "s" |-> null , "t" |-> null, Code: if "=" ( "n" # int(0) ) th "f" ::= int(1) el if "=" ( "n" # int(1) ) th "f" ::= int(1) el ( "s" ! "this" . "fib" ("-" ( "n" # int(1) ) ) )  ; ( "t" ! "this" . "fib" ("-" ( "n" # int(2) ) ) )  ; ( "s" ? ( "a" ) )  ; ( "t" ? ( "b" ) )  ; "f" ::= "+" ( "a" # "b" ) fi fi ; return ( "f" ) > *
   < "fibonacci" : Mtdname | Param: "n", Latt: "n" |-> null , "f" |-> null , "t" |-> null, Code: ( "t" ! "this" . "fib" ("n" ) )  ; ( "t" ? ( "f" ) )  ; return ( "f" ) >, Ocnt: 0 >
 
-< "FibTester" : Cl | Inh: noInh, Par: "f" , "n", Att: "f" |-> null , "n" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "res" |-> null, Code: "label:0" ! "f" . "fibonacci" ( "n" ) ; ( "label:0" ? ( "res" ) )  ; return ( emp ) >, Ocnt: 0 >
+< "FibTester" : Cl | Inh: noInh, Par: "n", Att: "n" |-> null , "f" |-> null , "res" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "f" ::= new "Fibonacci" ( "n" ) ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" ! "f" . "fibonacci" ( "n" ) ; ( "label:0" ? ( "res" ) )  ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

@@ -268,7 +268,7 @@ fmod CREOL-CLASS is
 
   op emptyClass : -> Class .
   eq emptyClass =
-    < "NoClass" : Cl | Inh: noInh , Par: noVid, Att: noSubst, Mtds: noMtd ,
+    < "" : Cl | Inh: noInh , Par: noVid, Att: noSubst, Mtds: noMtd ,
       Ocnt: 0 > .
 
   --- fetches pair (code, vars) to bind call to process.
@@ -393,7 +393,7 @@ ifdef(`MODELCHECK',dnl
   var C : Cid .
   var E : ExprList .
   op main : Cid ExprList -> Configuration .
-  eq main(C,E) = < ob("main") : "NoClass" | Att: noSubst, 
+  eq main(C,E) = < ob("main") : "" | Att: noSubst, 
                  Pr: ("var" |-> null, ("var" ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
                < ob("main") : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
 

@@ -1,13 +1,12 @@
 ==========================================
 reduce in PROGRAM : init .
 result Configuration: 
-< "FibTester" : Cl | Inh: noInh, Par: "f", "n", Att: "f" |-> null, "n" |->
-    null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
-    *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "res" |-> null,
-    Code: "label:0" ! "f" . "fibonacci"("n") ; "label:0" ?("res") ; return(emp)
-    >,
+< "FibTester" : Cl | Inh: noInh, Par: "n", Att: "f" |-> null, "n" |-> null,
+    "res" |-> null, Mtds:
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "f" ::= new
+    "Fibonacci"("n") ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
+    "f" . "fibonacci"("n") ; "label:0" ?("res") ; return(emp) >,
   Ocnt: 0 >
 
 < "Fibonacci" : Cl | Inh: noInh, Par: "n", Att: "n" |-> null, Mtds:
