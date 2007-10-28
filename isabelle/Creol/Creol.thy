@@ -27,4 +27,29 @@ theory Creol
   imports Main
 begin
 
+datatype variable = V
+
+datatype name = N
+
+datatype expression = E
+
+datatype statement =
+    Skip
+  | Release
+  | Assert expression
+  | Prove expression
+  | Assign "variable list" "expression list"
+  | Await expression
+  | Posit expression
+  | AsyncCall variable expression name "expression list"
+  | LocalAsyncCall variable name "expression list"
+  | LocalSyncCall variable name "expression list"
+  | Reply "variable list"
+  | Free "variable list"
+  | If expression statement statement
+  | While expression expression statement
+  | Sequence statement statement
+  | Choice statement statement
+  | Merge statement statement
+
 end

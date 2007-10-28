@@ -30,5 +30,8 @@ EXTRA_DIST		= README \
 			  Creol/Creol.thy \
 			  Creol/document/root.tex
 
-all-local:
+all-local: creol
+
+.PHONY: creol
+creol:
 	${ISATOOL} make
