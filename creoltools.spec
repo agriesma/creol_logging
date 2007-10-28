@@ -27,7 +27,7 @@ in Maude.
 
 %build
 # We have no need to hurry.
-%configure OCAMLOPT_FLAGS="-inline 10"
+%configure OCAMLOPT_FLAGS="-inline 10 -noassert -unsafe"
 make
 
 # Build the pdf, because most people seem to prefer hard copy stuff.
