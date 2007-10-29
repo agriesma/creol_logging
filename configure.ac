@@ -113,7 +113,7 @@ AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex],
 	      [${top_srcdir}/missing pdflatex])
 
 # if we have ocamlweb, build the documentation.
-if test "$OCAMLWEB" = "ocamlweb"
+if test "$OCAMLWEB" = "ocamlweb" -a "$PDFLATEX" = "pdflatex"
 then
     CREOLC_PDF=creolc.pdf
 fi
