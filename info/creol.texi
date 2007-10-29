@@ -438,12 +438,45 @@ class and provide the signature of the @emph{only} constructor.
 A class can inherit from a list of super-classes, which are defined in
 an @code{inherits} specification.
 
-A class can declare to @emph{implement} a set of interfaces.  These
+A class can declare to @emph{implements} a set of interfaces.  These
 interfaces are @emph{not} inherited.
 
-A class can declare to @emph{contract} a set of interfaces.  This
+A class can declare to @emph{contracts} a set of interfaces.  This
 clause is similar to an @code{implements} clause, but in addition it
 requires each @emph{sub-class} to implement these interfaces, too.
+
+A class has to contract an interface, if that interface is needed
+to satsify a co-interface constraint for calling an external method.
+This requirement is imposed, because a method can call the caller of
+a method using the co-interface.  If a class calls a method of an object
+it may only do so if it satisfies the co-interface requirement.  Because
+that method may be inherited, the class must contract the interface
+to keep the method type safe for all sub-classes.
+
+@example
+interface Foo
+begin
+  with Bar
+    op foo
+end
+
+interface Bar
+begin
+  with Foo
+    op bar
+end
+
+class Foo implements Foo
+begin
+  with Bar op foo == skip
+end
+
+class Bar contracts Bar
+begin
+  with Foo op bar == caller.foo
+end
+@end example
+
 
 If an object calls methods of itself, which are specified in an
 interface, we suggest that the class should @emph{contract} the
