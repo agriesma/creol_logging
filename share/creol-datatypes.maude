@@ -240,9 +240,9 @@ fmod CREOL-DATA-LIST is
   eq "-|" (D # list(L)) = list(D # L) .
   eq "|-" (list(L) # D) = list(L # D) .
 
-  eq "has" (list(emp)# E ) = bool(false) .
-  eq "has" (list(E # L) # E) = bool(true) .
-  eq "has" (list(E # L) # E') = "has" (list(L) # E') [otherwise] .
+  eq "has" (list(emp) # E ) = bool(false) .
+  eq "has" (list(E # L) # E') =
+    if E == E' then bool(true) else "has" (list(L) # E') fi .
 
   ***index starts at 1
   eq "after" (list(emp) # int(N))    = null . 
