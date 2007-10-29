@@ -32,6 +32,9 @@ linux distributions may provide the needed packages, too.
 maude <http://maude.cs.uiuc.edu/> is useful to execute the result of
 the compilation.  A version of the Creol interpreter is included.
 
+ocamlweb <http://> is useful to create a nice latex document of the
+source code, but it is not mandatory.
+
 If you checked the project out of the subversion repository, please
 read README-svn carefully for an explanation on how to set up the
 project.

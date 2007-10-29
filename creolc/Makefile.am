@@ -166,7 +166,7 @@ version-tmp:
 	@rm -f $@
 
 # Literate programming, for documenting and explaining the compiler.
-pdf-local: creolc.pdf
+pdf-local: ${CREOLC_PDF}
 
 creolc.pdf: creolc.tex code.tex
 	${PDFLATEX} creolc
