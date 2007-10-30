@@ -428,63 +428,142 @@ much closer to @code{contracts}, or is it not?
 @node Class Declaration
 @section Class Declarations
 
-A class provides the implementation of an object.
+A class provides the implementation of an object and defines
+implementations to interfaces.
 
-A class declaration specifies the name of the class, which must start
-with an upper-case letter, and optionally a list of @emph{class
+@menu
+* Class Parameters::    Parameters given to classes.
+* Inherits::            Inheriting code from other classes.
+* Implements::          Implementing interfaces.
+* Contracts::           Contracting interfaces.
+* Class Attributes::    Attributes of classes.
+* Class Methods::       Methods of classes.
+* Class Invariants::    Class invariants.
+@end menu
+
+
+@node Class Parameters
+@subsection Class Parameters
+
+A class declaration specifies the name of the class, which must
+start with an upper-case letter, and optionally a list of @emph{class
 parameters}.  These parameters are like read-only attributes of the
 class and provide the signature of the @emph{only} constructor.
+
+
+@node Inherits
+@subsection Inheritance
 
 A class can inherit from a list of super-classes, which are defined in
 an @code{inherits} specification.
 
-A class can declare to @emph{implements} a set of interfaces.  These
-interfaces are @emph{not} inherited.
 
-A class can declare to @emph{contracts} a set of interfaces.  This
-clause is similar to an @code{implements} clause, but in addition it
-requires each @emph{sub-class} to implement these interfaces, too.
+@node Implements
+@subsection Implementing Interfaces
 
-A class has to contract an interface, if that interface is needed
-to satsify a co-interface constraint for calling an external method.
-This requirement is imposed, because a method can call the caller of
-a method using the co-interface.  If a class calls a method of an object
-it may only do so if it satisfies the co-interface requirement.  Because
-that method may be inherited, the class must contract the interface
-to keep the method type safe for all sub-classes.
+For a class to be able to call other methods and to be calledby other
+objects it must define the interfaces it implements.  Creol knows
+about two distinct ways to implement classes.  The first and weaker
+version is by declaring the interfaces using the @code{implements}
+keyword.  A class claiming to implement an interface must implement
+all methods specified in this interface.  Since interfaces also
+specify behaviour for methods, the method implementation must
+implement the specified behaviour.@footnote{Whether a class implements
+an interface cannot be determined statically, therefore the compiler
+does not check this}.  Unlike in the Java Programming Language, the
+information on implementing interfaces is @emph{not} inherited by
+other classes.  This supports code reuse without affecting reasoning
+control.
+
+
+@node Contracts
+@subsection Contracting Interfaces
+
+Additonally, a class can @emph{contract} an interface using the
+@code{contracts} keyword instead of @code{implements}.  The
+differences between implements and contracts are subtle.  Contracts
+imposes all obligations on a class that are imposed on the class using
+the @code{implements} keyword.  It will place one additional
+obligation on the system: All future subclasses of this class are also
+contracting (and therefore implementing) that interface.  The
+@code{contracts} keyword behaves like the corresponding implements
+keyword in the Java Programming Language.
+
+An interface @code{I} needs to be contracted, if the class uses that
+interface to satisfy a co-interface requirement.  This means, that a
+method in a class is calling a method, which requires @code{I} as a
+co-interface.  This requirement is imposed, because a method can call
+the caller of a method using the co-interface.  If a class calls a
+method of an object it may only do so if it satisfies the co-interface
+requirement.  Because that method may be inherited, the class must
+contract the interface to keep the method type safe for all
+sub-classes.  Consider the following example:
 
 @example
 interface Foo
 begin
-  with Bar
-    op foo
+  with Bar op foo
 end
 
 interface Bar
 begin
-  with Foo
-    op bar
+  with Foo op bar
+end
+
+interface Baz
+begin
+  with Foo op bar
 end
 
 class Foo implements Foo
 begin
-  with Bar op foo == skip
+  with Bar op foo == caller.bar
 end
 
-class Bar contracts Bar
+class Bar implements Bar
 begin
   with Foo op bar == caller.foo
 end
+
+class Baz implements Baz inherits Bar
+begin
+end
 @end example
 
+This example is @emph{not} type-safe.  Consider the method @code{bar}.
+It is well-typed for instances of class @code{Bar}, since @code{Bar}
+implements the @code{Bar} interface, and the call in @code{foo} is
+well-typed.  Now @code{Baz} inherits that implementation from class
+@code{Bar}, but since the @code{Bar} interface is not inherited, the
+call-back in @code{foo} is ill-typed for instances of @code{Baz}.
 
-If an object calls methods of itself, which are specified in an
-interface, we suggest that the class should @emph{contract} the
-interface, in order to make sure that the call will succeed if the
-methods are inherited, and especially, if the subclass overrides the
-method's definition.
+Classes must contract interfaces which are used to satisfy
+co-interface requirements to ensure, that method calls remain
+well-typed when inherited.
 
-A class may specify a list of attributes or class variables.
+
+@node Class Attributes
+@subsection Class Attributes
+
+A class may specify a list of attributes or class variables.  These
+attributes store the persistent state of an object.  An attribute
+declaration has the form @code{op @var{name}: @var{type}} and may also
+be initialised in that statement, i.e., @code{op @var{name}:
+@var{type} := @var{expression}}.
+
+The expression may be any constant expression or it may refer to the
+parameters of the current class, the super classes, and the super
+classes attributes, but not to the attributes of the current class.
+
+The programmer may not assume any order in which these initialisations
+are evaluated.  If such an order is necessary, then the initialisation
+has to be done in the init method.  However, the direct initialisation
+of class parameters is executed before the body of the init method is
+executed.
+
+
+@node Class Methods
+@subsection Methods
 
 A class may then specify a list of private methods.
 
@@ -492,6 +571,11 @@ A class may specify a list of public methods by using a @emph{with
 definition}.  A with deginition has the format @code{with
 @var{interface} @var{operations} @var{invariants}}, where
 @code{with @var{interface}} specifies the co-interface.
+
+@node Class Invariants
+@subsection Class Invariants
+
+TBD
 
 
 @node Datatype Declaration
