@@ -1,8 +1,8 @@
+%{
 (*s The grammar of Creol.
 
-This is the input file is for use with the Menhir parser generator.
+  This is the input file is for use with the Menhir parser generator.
 *)
-%{
 (*i
  * Creol.mly -- A parser for Creol.
  *
@@ -131,27 +131,27 @@ declaration:
       d = classdecl { Declaration.Class d }
     | d = interfacedecl	{ Declaration.Interface d }
     | d = datatypedecl { Declaration.Datatype d }
-    | d = exceptiondecl { Declaration.Exception d }
     | d = functiondecl { Declaration.Function d }
 
 classdecl:
-      CLASS n = CID p = class_param_list s = list(super_decl)
-	BEGIN a = loption(attributes) aw = loption(anon_with_def)
+      CLASS n = CID p = loption(class_params) s = list(super_decl)
+	BEGIN a = list(attribute) aw = loption(anon_with_def)
 	m = list(with_def) END
       { { Class.name = n; parameters = p; inherits = inherits s;
 	  contracts = contracts s; implements = implements s;
-	  attributes = a; with_defs = upd_method_locs n (aw @ m) ;
+	  attributes = List.flatten a;
+          with_defs = upd_method_locs n (aw @ m);
 	  hidden = false;
 	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }
     | CLASS CID error
 	{ signal_error $startpos "syntax error in class declaration" }
-    | CLASS CID class_param_list list(super_decl) BEGIN error
+    | CLASS CID loption(class_params) list(super_decl) BEGIN error
 	{ signal_error $startpos "syntax error in class body definition" }
 
-class_param_list:
-      l = loption(delimited(LPAREN, separated_nonempty_list(COMMA, vardecl_no_init), RPAREN))
+class_params:
+      LPAREN l= separated_nonempty_list(COMMA, vardecl_no_init) RPAREN
         { l }
     | LPAREN error
 	{ signal_error $startpos "syntax error in class/interface parameter list" }
@@ -183,9 +183,9 @@ inherits:
     i = CID e = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN))
         { (i, e) }
 
-attributes:
-      VAR l = separated_nonempty_list(COMMA, vardecl) { l }
-    | l1 = attributes ioption(SEMI) VAR l2 = separated_nonempty_list(COMMA, vardecl) { l1 @ l2 }
+attribute:
+      VAR l = separated_nonempty_list(COMMA, vardecl)
+        { l }
     | VAR error
 	{ signal_error $startpos "syntax error in attribute declaration" }
 
@@ -235,18 +235,18 @@ with_def:
 	invariants = i } }
 
 method_def:
-      d = method_decl EQEQ a = loption(terminated(attributes, SEMI))
+      d = method_decl EQEQ a = list(terminated(attribute, SEMI))
 	s = statement
-    { { d with Method.vars = a; body = Some s} }
+        { { d with Method.vars = List.flatten a; body = Some s} }
   |   d = method_decl EQEQ EXTERN s = STRING
-    { { d with body = Some (Extern (Statement.make_note $startpos, s)) } }
+        { { d with body = Some (Extern (Statement.make_note $startpos, s)) } }
   |   method_decl EQEQ error
-    { signal_error $startpos "Syntax error in method body" }
+        { signal_error $startpos "Syntax error in method body" }
 
 (* Interface Declaration *)
 
 interfacedecl:
-      INTERFACE n = CID class_param_list
+      INTERFACE n = CID loption(class_params)
       i = list(inherits_decl) BEGIN w = list(with_decl) END
         { { Interface.name = n; inherits = inherits i;
 	    with_decls = upd_method_locs n w; hidden = false } }
@@ -262,14 +262,6 @@ with_decl:
     | WITH error
     | WITH CID error
 	{ signal_error $startpos "syntax error in with block declaration" }
-
-
-(* Exception declaration *)
-
-exceptiondecl:
-      EXCEPTION n = CID
-        p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-	{ { Exception.name = n; Exception.parameters = p; hidden = false } }
 
 
 (* Data type declaration *)

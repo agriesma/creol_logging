@@ -688,10 +688,10 @@ module Statement =
 	| Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
 	| Extern (a, _) -> a
 
-    let is_skip_p =
-      (** Test, whether the statement is a skip statement. *)
+    (* Test, whether the statement is a skip statement. *)
+    let skip_p =
       function
-	Skip _ -> true
+	  Skip _ -> true
 	| _ -> false
 
     let rec normalize_sequences stmt =

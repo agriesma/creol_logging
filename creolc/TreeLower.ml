@@ -1,5 +1,5 @@
 (*
- * TreeLower.ml -- Transform a tree into core creol.
+ * TreeLower.ml -- Transform a tree into core Creol.
  *
  * This file is part of creoltools
  *
@@ -19,51 +19,54 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s
-
+(*s Lower a tree by expanding all abbreviations.  The result will be a
+  tree which is suitable for the back-ends and other passes of the
+  system.
 *)
 
 open Creol
 open Expression
 open Statement
 
-(** A counter used to generate the next fresh label *)
+(* A counter used to generate the next fresh label *)
 let next_fresh_label = ref 0
 
+
+(* Mke a fresh label *)
 let fresh_label () =
-  (* make a fresh label *)
   let res = "label:" ^ (string_of_int !next_fresh_label) in
   let () = incr next_fresh_label in
     res
 
-(** Create a note for an expression from the information provided by
-    a statement and type information.
+(* Create a note for an expression from the information provided by a
+   statement and type information.
 
-    Called during splitting of statements. *)
+   Called during splitting of statements. *)
 let make_expr_note_from_stmt_note ~stmt t =
         { Expression.file = stmt.Statement.file;
           line = stmt.Statement.line;
           ty = t }
 
+(* Lower a Creol program to the "Core Creol" language.
+   
+   This function will destroy some statement and expression
+   annotations.  Therefore, all semantic analysis performed before
+   this function should be repeated after calling this function.
+
+   This should only concern type inference, because all other
+   analysis should be performed after this function.
+
+   The following two invariant holds for this function:
+   \begin{itemize}
+   \item A type correct program remains type correct and the
+     annotations of unchanged statements are the same after
+     reconstruction.
+   \item [lower (lower tree) == lower tree]
+   \end{itemize}
+*)
 let pass input =
-  (** Lower a Creol program to the "Core Creol" language.
-
-      This function will destroy some statement and expression
-      annotations.  Therefore, all semantic analysis performed before
-      this function should be repeated after calling this function.
-
-      This should only concern type inference, because all other
-      analysis should be performed after this function.
-
-      The following two invariant holds for this function:
-
-      * A type correct program remains type correct and the
-      annotations of unchanged statements are the same after
-      reconstruction.
-
-      * lower (lower tree) == lower tree *)
   let label_decl l t =
-     { VarDecl.name = l; var_type = t; init = None }
+    { VarDecl.name = l; var_type = t; init = None }
   in
   let rec lower_expression =
     function
@@ -96,9 +99,9 @@ let pass input =
 	  and l = fresh_label ()
 	  and lt = Type.label rng in
 	  let n' = make_expr_note_from_stmt_note a lt in
-	  ((label_decl l lt)::label_decls,
-	   Sequence (a, AsyncCall (a, Some (LhsVar (n', l)), e', n, s, p'),
-		        Free (a, [LhsVar (n', l)])))
+	    ((label_decl l lt)::label_decls,
+	    Sequence (a, AsyncCall (a, Some (LhsVar (n', l)), e', n, s, p'),
+		     Free (a, [LhsVar (n', l)])))
       | AsyncCall (a, None, e, n, s, p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.    We cannot give a correct type to the label,
@@ -109,13 +112,13 @@ let pass input =
 	  and p' = List.map lower_expression p
 	  and l = fresh_label () in
 	  let a' = make_expr_note_from_stmt_note a Type.data in
-	  ((label_decl l Type.data)::label_decls,
-	   Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
-		        Free (a, [LhsVar (a', l)])))
+	    ((label_decl l Type.data)::label_decls,
+	    Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
+		     Free (a, [LhsVar (a', l)])))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p in
-	  (label_decls, AsyncCall (a, Some l, e', n, s, p'))
+	    (label_decls, AsyncCall (a, Some l, e', n, s, p'))
       | Free _ as s -> (label_decls, s)
       | Bury _ as s -> (label_decls, s)
       | Reply _ as s -> (label_decls, s)
@@ -128,8 +131,8 @@ let pass input =
 	  and lt = Type.label (List.map get_lhs_type r) in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	     Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
-		          Reply (a, Id (a', l), r)))
+	    Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
+		     Reply (a, Id (a', l), r)))
       | AwaitSyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)
@@ -142,9 +145,9 @@ let pass input =
 	  and a'' = make_expr_note_from_stmt_note a Type.bool
 	  in
 	    ((label_decl l lt)::label_decls,
-	     Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
-		          Sequence(a, Await (a, Label (a'', Id (a', l))),
-			              Reply (a, Id (a', l), r))))
+	    Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
+		     Sequence(a, Await (a, Label (a'', Id (a', l))),
+			     Reply (a, Id (a', l), r))))
       | LocalAsyncCall (a, None, m, ((c, dom, Some rng) as s), lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  It may be better to insert free later, but for this
@@ -153,8 +156,8 @@ let pass input =
 	  and l = fresh_label ()
 	  and lt = Type.label rng in
 	  let a' = make_expr_note_from_stmt_note a lt in
-	  ((label_decl l (Type.label rng))::label_decls,
-	   Sequence (a,
+	    ((label_decl l (Type.label rng))::label_decls,
+	    Sequence (a,
 		     LocalAsyncCall(a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
 		     Free (a, [LhsVar (a', l)])))
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
@@ -166,12 +169,12 @@ let pass input =
 	  let i' = List.map lower_expression i
 	  and l = fresh_label () in
 	  let a' = make_expr_note_from_stmt_note a Type.data in
-	  ((label_decl l Type.data)::label_decls,
-	   Sequence (a, LocalAsyncCall(a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
+	    ((label_decl l Type.data)::label_decls,
+	    Sequence (a, LocalAsyncCall(a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
 	             Free (a, [LhsVar (a', l)])))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
 	  let i' = List.map lower_expression i in
-	  (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
+	    (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
       | LocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)
@@ -181,8 +184,8 @@ let pass input =
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	     Sequence (a, LocalAsyncCall (a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
-		          Reply (a, Id (a', l), o)))
+	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
+		     Reply (a, Id (a', l), o)))
       | AwaitLocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)
@@ -193,9 +196,9 @@ let pass input =
 	  let a' = make_expr_note_from_stmt_note a lt 
 	  and a'' = make_expr_note_from_stmt_note a Type.bool in
 	    ((label_decl l lt)::label_decls,
-	     Sequence (a, LocalAsyncCall (a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
+	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
 		     Sequence (a, Await (a, Label(a'', Id (a', l))),
-			          Reply (a, Id (a', l), o))))
+			      Reply (a, Id (a', l), o))))
       | Tailcall (a, m, (co, dom, rng), l, u, i) ->
 	  (label_decls, Tailcall (a, m, (co, dom, rng), l, u, List.map lower_expression i))
       | If (a, c, t, f) ->
@@ -262,8 +265,8 @@ let pass input =
 		(label_decls @ m.Method.vars)
 	    in
 	      { m with Method.vars = vars' ;
-		body = Some (if Statement.is_skip_p init then
-		    normalize_sequences mb'
+		body = Some (if Statement.skip_p init then
+		  normalize_sequences mb'
 		  else
 		    Sequence(Statement.note mb, init, normalize_sequences mb')) }
   and lower_with w =
@@ -275,63 +278,93 @@ let pass input =
     function
 	[] -> []
       | i::l -> (lower_inherits i)::(lower_inherits_list l)
+
+  (* Rewrite the class into a lowered form.  This entails lowering of
+     all sub-parts of the class, but also moving the direct initialisation
+     of attributes into the init method and creating of a suitable init
+     method and run method for that class. *)
+
   and lower_class c =
-    (* Make an init method *)
-    let lhs n =
-      Expression.LhsAttr (Expression.dummy_note, n, Type.Basic c.Class.name)
+
+    (* Make an assignment for all direct assignments of the attribute
+       list.  If no assignment is needed, the function returns a skip
+       statement. *)
+    let (a', assignment) =
+      let rec build =
+	function
+	    [] -> ([], [], [])
+	  | ({ VarDecl.name = n; init = Some i } as v)::l ->
+	      let lhs n = Expression.LhsAttr (Expression.dummy_note, n,
+					     Type.Basic c.Class.name)
+	      and (v', n', i') = build l
+	      in
+		({ v with VarDecl.init = None }::v', (lhs n)::n', i::i')
+	  | v::l ->
+	      let (v', n', i') = build l in (v::v', n', i')
+      in
+	match build c.Class.attributes with
+	    (a', [], []) ->
+	      (a', Skip Statement.dummy_note)
+	  | (a', d', n') when List.length d' = List.length n' ->
+	      (a', Assign (Statement.dummy_note, d', n'))
+	  | _ ->
+	      assert false
     in
-    let rec build =
-      function
-	  [] -> ([], [], [])
-	| ({ VarDecl.name = n; init = Some i } as v)::l ->
-	    let (v', n', i') = build l in
-              ({ v with VarDecl.init = None }::v', (lhs n)::n', i::i')
-	| v::l ->
-	    let (v', n', i') = build l in (v::v', n', i')
-    in
-    let (a', d', n') = build c.Class.attributes in
     let with_defs' =
-      match (d', n') with
-	  ([], []) -> c.Class.with_defs
-	| _ ->
-	    let assign = Assign(Statement.dummy_note, d', n') in
-	    let upd_init =
-	      function
-		  { Method.name = "init"; inpars = []; outpars = [];
-		    body = None } as m ->
-		    { m with Method.body = Some assign }
-		| { Method.name = "init"; inpars = []; outpars = [];
-		    body = Some s } as m ->
-		    { m with Method.body =
-			Some (Sequence(Statement.dummy_note, assign, s)) }
-		| m -> m
-	    in
-	      List.map
-		(function
-		    { With.co_interface = Type.Internal; methods = m } as w ->
-		      { w with With.methods = List.map upd_init m }
-		  | w -> w)
-		c.Class.with_defs
+      if Statement.skip_p assignment then
+	c.Class.with_defs
+      else
+	begin
+	  let upd_init =
+	    function
+		{ Method.name = "init"; inpars = []; outpars = [];
+		  body = None } as m ->
+		  { m with Method.body = Some assignment }
+	      | { Method.name = "init"; inpars = []; outpars = [];
+		  body = Some s } as m ->
+		  { m with Method.body =
+		      Some (Sequence(Statement.dummy_note, assignment, s)) }
+	      | m -> m
+	  in
+	    List.map
+	      (function
+		  { With.co_interface = Type.Internal; methods = m } as w ->
+		    { w with With.methods = List.map upd_init m }
+		| w -> w)
+	      c.Class.with_defs
+	end
     in
+
+    (* Add the init an run method to the body if it does not exist
+       yet. *)
+
     let add_init_and_run w =
-      let empty_method name =
+
+      (* Make a method which is called [name] and which has [stmt] as
+	 its body. *)
+
+      let make_method name stmt =
 	{ Method.name = name; coiface = Type.Internal;
 	  inpars = []; outpars = []; vars = [];
-	  body = Some (Skip Statement.dummy_note); location = c.Class.name }
+	  body = Some stmt; location = c.Class.name }
       in
-      (* We use the invariant that each class declaration has at most one
-	 with-block with the internal co-interface and that it is always
-	 the first in the list. *)
+
+	(* We use the invariant that each class declaration has at
+	   most one with-block with the internal co-interface and that
+	   it is always the first in the list. *)
+
         if (0 < (List.length w)) &&
-	   ((List.hd w).With.co_interface = Type.Internal)
+	  ((List.hd w).With.co_interface = Type.Internal)
 	then
-	  (* We have an internal with block.  It should be the first, 
+
+	  (* We have an internal with block.  It should be the first,
 	     so we try to locate it and add the two methods. *)
-	  let mk name =
+
+	  let mk name stmt =
 	    let p =
 	      function
-	        { Method.name = n; coiface = Type.Internal; inpars = [];
-		  outpars = [] } when n = name -> true
+	          { Method.name = n; coiface = Type.Internal; inpars = [];
+		    outpars = [] } when n = name -> true
 	        | _ -> false
 	    in
 	      if List.exists p (List.hd w).With.methods then
@@ -345,23 +378,29 @@ let pass input =
 		      | _ -> assert false
 		  in
 		    Messages.warn w c.Class.file c.Class.line
-		    ("Class " ^ c.Class.name ^ " does not provide a " ^ name ^
-		       " method" )
+		      ("Class " ^ c.Class.name ^ " does not provide a " ^ name ^
+			  " method" )
 		in
-		  [ empty_method name ]
+		  [ make_method name stmt ]
 	  in
-	    let m' =
-	      (mk "init") @ (mk "run") @ ((List.hd w).With.methods)
-	    in
-	      { (List.hd w) with With.methods = m' }::(List.tl w)
+	  let m' =
+	    List.concat [(mk "init" assignment);
+			 (mk "run" (Skip Statement.dummy_note));
+			 ((List.hd w).With.methods)]
+	  in
+	    { (List.hd w) with With.methods = m' }::(List.tl w)
         else
-	  (* Since we do not have an internal with block we can both an init
-	     and a run method to the class. *)
+
+	  (* Since we do not have an internal with block we can both
+	     an init and a run method to the class. *)
+
 	  { With.co_interface = Type.Internal;
-	    methods = [ empty_method "init" ; empty_method "run" ];
+	    methods = [ make_method "init" assignment ;
+			make_method "run" (Skip Statement.dummy_note)];
 	    invariants = [] } :: w
     in
       { c with Class.inherits = lower_inherits_list c.Class.inherits;
+	attributes = a';
 	with_defs = List.map lower_with (add_init_and_run with_defs') }
   and lower_interface i =
     i

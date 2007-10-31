@@ -84,8 +84,11 @@ result Configuration:
   < "haveProblem" : Mtdname | Param: noVid, Latt: noSubst, Code: "ctElves" ::=
     "+"("ctElves" # int(1)) ; "waitElves" ::= "|-"("waitElves" # "caller") ;
     return(emp) > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
-    *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: (("ctReindeers" @@
+    "SantaClaus"), ("waitReindeers" @@ "SantaClaus"), ("harnessedReindeers" @@
+    "SantaClaus"), ("ctElves" @@ "SantaClaus"), ("waitElves" @@ "SantaClaus"),
+    ("inofficeElves" @@ "SantaClaus")) ::= int(0) # list(emp) # list(emp) #
+    int(0) # list(emp) # list(emp) ; return(emp) > *
   < "loop" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, "label:2" |-> null, Code: (await "&&"("<="(int(3) # "ctElves") # "~"(
     "="("ctReindeers" # int(9)))) ; "label:1" ! "this" . "talkToElves"(emp) ;
