@@ -1,3 +1,68 @@
 @node Creol Tutorial
 @chapter A Tutorial Introduction to Creol
 
+This chapter is intended to be an introduction into the concepts of
+the Creol language by giving examples.
+
+@menu
+* First Creol Program::         A first Creol program
+@end menu
+
+
+@node First Creol Program
+@section A First Creol Program
+
+Usually, the first program presented in tutorials on programming
+languages is a program that outputs ``hello, world''.  Creol does not
+have a notion of output or console, because it is a language for
+describing @emph{distributed systems} using objet-oriented
+techniques.
+
+A distribtuted system ...
+
+Since Creol does not provide any output, we shall in all examples
+indicate where the results are stored.  In the following example we
+have two classes and one interface.
+
+Whereas traditionally classes are the type of objects, objects in
+Creol are typed by interfaces only.  The interface describes what
+methods are available to other objects.  Additionally, one can specify
+@emph{co-interfaces}.  A method is only available to objects which are
+typed by the co-interface.
+
+Below, objects of type @code{Hello} export a method @code{hello} to
+all objects which are an instance of @code{Any}.  The interface
+@code{Any} is the implicit supertype of all objects.  No methods are
+specified in @code{Any}.
+
+Classes provide implementation for objects.  The class @code{Hello}
+implements the interface @code{Hello} and provides an implementation
+to the @code{hello} method.
+
+The class @code{Main} does not declare to implement any interface, but
+all classes implicitely implement the @code{Any} interface.  Each
+instance of @code{Main} will create an instance of @code{Hello} during
+initialisation in the @code{init} method and will as its only activity
+call the method @code{hello} of that instance and store the result
+value in the attribute @code{result}.
+
+@example
+interface Hello
+begin
+  with Any op hello(out result: String)
+end
+
+class Hello implements Hello
+begin
+  with Any op hello(out result: String) == result := "Hello, world"
+end
+
+class Main
+begin
+  var result: String
+  var hello: Hello
+  op init == hello := new Hello
+  op run == hello.hello(; result)
+end
+@end example
+
