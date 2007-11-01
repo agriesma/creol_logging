@@ -87,8 +87,7 @@ AT_CHECK([${CREOLC} -target xml -P typecheck -o $1-pass1.xml ${abs_srcdir}/$2/$1
 
 m4_define([TEST_CREOLC_TYPECHECK],[dnl
 AT_SETUP([typecheck-$1])
-AT_CHECK([${CREOLC} -target none ${abs_srcdir}/typecheck/$1.creol],
-	 [$2], [$3], [$4])
+AT_CHECK([${CREOLC} -target none ${abs_srcdir}/typecheck/$1.creol 2>&1 | sed s,${abs_srcdir}/typecheck/,,], [0], [$2], [])
 AT_CLEANUP
 ])
 
@@ -332,5 +331,11 @@ red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 ])
 
 dnl test cases for the type checker
-TEST_CREOLC_TYPECHECK([Nil], [0], [], [])
-TEST_CREOLC_TYPECHECK([ExprFailure], [1], [], ignore)
+TEST_CREOLC_TYPECHECK([Nil], [], [])
+TEST_CREOLC_TYPECHECK([ExprFailure],
+[[ExprFailure.creol:3: expression has type [[String, Int] -> `_0] but expected is type \/ [[[Real, Real] -> Real], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]
+  Cannot satisfy constraints: [[String, Int] -> `_0] <: \/ [[[Real, Real] -> Real], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]
+]])
+TEST_CREOLC_TYPECHECK([Contracts],
+[Contracts.creol:16: Class Bar does not contract interface Bar
+])

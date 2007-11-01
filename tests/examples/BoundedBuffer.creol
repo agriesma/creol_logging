@@ -22,10 +22,10 @@ begin
   op run == skip
 
   with Producer
-    op append(in d:Data) == await n < max; buffer := buffer |- d
+    op append(in d:Data) == await n < max; buffer, n := buffer |- d, n + 1
   with Consumer
     op remove(out d:Data) ==
-      await n > 0; d := head(buffer); buffer := tail(buffer)
+      await n > 0; d := head(buffer); buffer, n := tail(buffer), n - 1
 end
 
 

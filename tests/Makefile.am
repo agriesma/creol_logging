@@ -32,9 +32,6 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/AsyncSieveBuggy.creol \
 		  examples/AsyncSieveBuggy.maude \
 		  examples/AsyncSieveBuggy.out \
-		  examples/AuthorisationPolicies.creol \
-		  examples/AuthorisationPolicies.maude \
-		  examples/AuthorisationPolicies.out \
 		  examples/BoundedBuffer.creol \
 		  examples/BoundedBuffer.maude \
 		  examples/BoundedBuffer.out \
