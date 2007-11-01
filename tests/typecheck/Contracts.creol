@@ -1,0 +1,27 @@
+interface Foo begin with Bar op foo end
+
+interface Bar begin with Any op bar end
+
+interface Baz begin with Any op bar end
+
+class Foo implements Foo
+begin
+  with Bar op foo == caller.bar(;)
+end
+
+class Bar implements Bar
+begin
+  var foo: Foo
+  op init == foo := new Foo
+  with Any op bar == foo.foo(;)
+end
+
+class Baz implements Baz inherits Bar begin end
+
+class Main
+begin
+  var baz: Baz
+  op init == baz := new Baz
+  op run == baz.bar(;)
+end
+
