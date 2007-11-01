@@ -5,7 +5,7 @@ This chapter describes the concrete syntax of Creol.  It also gives an
 informal semantics.
 
 This chapter is not yet finished.  Some constructs described in this
-chapter need not be implemented by the compiler or the maude
+chapter need not be implemented by the compiler or the Maude
 semantics, yet.
 
 
@@ -15,7 +15,7 @@ semantics, yet.
 * Literals and Expression::     The functional sub-language.
 * Statements::                  The object-oriented sub-language.
 * Variable Declaration::        Declaring variables and attributes.
-* Method Declaration::          Declaring and defining behaviour.
+* Method Declaration::          Declaring and defining behavior.
 * Interface Declaration::       Types for objects.
 * Class Declaration::           Implementation for types.
 * Datatype Declaration::        Declaring data types.
@@ -32,7 +32,7 @@ Creol supports too kinds of comments, both have been inspired by C++
 and Java.
 
 The first kind begins with @code{//} and extends until the first
-following linebreak.
+following line-break.
 
 The second kind starts with @code{/*} and extends until the first
 following @code{*/}.  Comments of this kind do not nest.
@@ -76,7 +76,7 @@ The null-reference is represented by the literal @code{null}.
 
 The self-reference is represented by the keyword @code{this}.
 
-In method bodys, the identity of the caller is represented by the
+In method bodies, the identity of the caller is represented by the
 keyword @code{caller}.
 
 
@@ -123,7 +123,7 @@ The arithmetic expressions are:
 
 @code{@var{expression} + @var{expression}} for addition.
 
-@code{@var{expression} - @var{expression}} for substraction.
+@code{@var{expression} - @var{expression}} for subtraction.
 
 
 @subsection Strings
@@ -215,7 +215,7 @@ A single assignment may be written as @code{@var{x} := @var{e}}, where
 @var{x} is the name of an attribute or a local variable and @var{e}
 is an expression.
 
-A multiple assingment is written as
+A multiple assignment is written as
 @code{@var{x},@var{y},...,@var{z} := @var{e},@var{f},...,@var{g}},
 where the left hand side is a tuple of variable names and the right
 hand side is a tuple of expressions.  Both tuples should have the same
@@ -296,7 +296,7 @@ is greater or equal to @var{lower} until it is greater or equal to
 @var{statement}.
 
 A loop may be annotated by a @emph{loop invariant}.
-The invariant is a proof obligation which must hoold at the beginning
+The invariant is a proof obligation which must hold at the beginning
 of a loop, the end of a loop, @emph{and} every processor release-point
 within the loop body.  It is therefore advisable, that the loop
 invariant restricted to instance variables is @emph{implied} by the
@@ -381,9 +381,9 @@ by a statement.
 All objects in Creol are typed by interface.
 
 Each class is assumed to implement the empty interface @code{Any}.
-This interface is the implicit superinterface of all other interfaces.
+This interface is the implicit super-interface of all other interfaces.
 
-An interace may inherit from other interfaces, making an instance of
+An interface may inherit from other interfaces, making an instance of
 this interface also an instance of all super-interfaces.
 
 An interface has a unique name.  It declares a @emph{co-interface},
@@ -415,8 +415,8 @@ the other hand, one might feel that both blocks form a unit and should
 not be used separately.
 
 @item
-One might be tempted to introduce type-parameterised interfaces or
-value-parameterised interfaces.  But a concrete use case is needed,
+One might be tempted to introduce type-parameterized interfaces or
+value-parameterized interfaces.  But a concrete use case is needed,
 first.
 
 @item
@@ -461,13 +461,13 @@ an @code{inherits} specification.
 @node Implements
 @subsection Implementing Interfaces
 
-For a class to be able to call other methods and to be calledby other
+For a class to be able to call other methods and to be called by other
 objects it must define the interfaces it implements.  Creol knows
 about two distinct ways to implement classes.  The first and weaker
 version is by declaring the interfaces using the @code{implements}
 keyword.  A class claiming to implement an interface must implement
 all methods specified in this interface.  Since interfaces also
-specify behaviour for methods, the method implementation must
+specify behavior for methods, the method implementation must
 implement the specified behaviour.@footnote{Whether a class implements
 an interface cannot be determined statically, therefore the compiler
 does not check this}.  Unlike in the Java Programming Language, the
@@ -479,7 +479,7 @@ control.
 @node Contracts
 @subsection Contracting Interfaces
 
-Additonally, a class can @emph{contract} an interface using the
+Additionally, a class can @emph{contract} an interface using the
 @code{contracts} keyword instead of @code{implements}.  The
 differences between implements and contracts are subtle.  Contracts
 imposes all obligations on a class that are imposed on the class using
@@ -500,20 +500,11 @@ contract the interface to keep the method type safe for all
 sub-classes.  Consider the following example:
 
 @example
-interface Foo
-begin
-  with Bar op foo
-end
+interface Foo begin with Bar op foo end
 
-interface Bar
-begin
-  with Foo op bar
-end
+interface Bar begin with Any op bar end
 
-interface Baz
-begin
-  with Foo op bar
-end
+interface Baz begin with Any op bar end
 
 class Foo implements Foo
 begin
@@ -522,24 +513,57 @@ end
 
 class Bar implements Bar
 begin
-  with Foo op bar == caller.foo
+  var foo: Foo
+  op init == foo := new Foo
+  with Any op bar == foo.foo
 end
 
 class Baz implements Baz inherits Bar
 begin
 end
+
+class Main
+begin
+  var baz: Baz
+  op init == baz := new Baz
+  op run == baz.bar
+end
 @end example
 
-This example is @emph{not} type-safe.  Consider the method @code{bar}.
-It is well-typed for instances of class @code{Bar}, since @code{Bar}
-implements the @code{Bar} interface, and the call in @code{foo} is
-well-typed.  Now @code{Baz} inherits that implementation from class
-@code{Bar}, but since the @code{Bar} interface is not inherited, the
-call-back in @code{foo} is ill-typed for instances of @code{Baz}.
+This example is @emph{not} type-safe, more specifically, the call
+@code{caller.bar} is not well-typed.  The trace which violates the
+well-typedness rules of Creol is the following one:
+@enumerate
+@item
+Create an instance of @code{Main}, which will create one instance of
+@code{Baz} during the initialization.  In the run method, we can the
+@code{bar} method of @code{baz}.  This call is well-typed, since all
+instances of @code{Baz} implement the @code{Baz} interface which
+exports this method to all objects.
 
-Classes must contract interfaces which are used to satisfy
-co-interface requirements to ensure, that method calls remain
-well-typed when inherited.
+@item
+In the @code{bar} method, which the class @code{Baz} inherits from
+@code{Bar}, we call the method @code{foo} of @code{Bar}'s @code{foo}
+object.
+
+@item
+In the @code{foo} method, we call the @code{bar} method of the
+@code{caller}.  In this method, the caller is believed to be an
+instance of a class implementing the @code{Bar} interface.  But the
+caller is really an instance of class @code{Baz}, which does not
+implement the @code{Bar} interface, causing a run-time type error.
+@end enumerate
+
+What went wrong?  Observe, that the code of the method @code{bar} in
+class @code{Bar} is well-typed for classes implementing the interface
+@code{Bar}.  This interface is a co-interface requirement of the
+method @code{foo} in class @code{Foo}.  But the use of
+@code{implements} does @emph{not} imply that future sub-classes of
+@code{Bar} have the type @code{Bar} as well.  The way to correct this
+error is to @code{contract Bar} in the definition of class @code{Bar}.
+This will ensure, that @code{Bar} is also the type of all sub-classes
+of @code{Bar}, among others @code{Baz}.
+
 
 
 @node Class Attributes
@@ -548,16 +572,16 @@ well-typed when inherited.
 A class may specify a list of attributes or class variables.  These
 attributes store the persistent state of an object.  An attribute
 declaration has the form @code{op @var{name}: @var{type}} and may also
-be initialised in that statement, i.e., @code{op @var{name}:
+be initialized in that statement, i.e., @code{op @var{name}:
 @var{type} := @var{expression}}.
 
 The expression may be any constant expression or it may refer to the
 parameters of the current class, the super classes, and the super
 classes attributes, but not to the attributes of the current class.
 
-The programmer may not assume any order in which these initialisations
-are evaluated.  If such an order is necessary, then the initialisation
-has to be done in the init method.  However, the direct initialisation
+The programmer may not assume any order in which these initializations
+are evaluated.  If such an order is necessary, then the initialization
+has to be done in the init method.  However, the direct initialization
 of class parameters is executed before the body of the init method is
 executed.
 
@@ -568,7 +592,7 @@ executed.
 A class may then specify a list of private methods.
 
 A class may specify a list of public methods by using a @emph{with
-definition}.  A with deginition has the format @code{with
+definition}.  A with definition has the format @code{with
 @var{interface} @var{operations} @var{invariants}}, where
 @code{with @var{interface}} specifies the co-interface.
 
@@ -775,3 +799,5 @@ type ::=
   | @code{[} @{ type , @} @code{]}
   | @code{`} id
 @end format
+
+@c  LocalWords:  Creol Datatype
