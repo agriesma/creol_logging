@@ -1,0 +1,18 @@
+
+/** Setup code **/
+
+class Main
+begin
+  var rt: RoutingTable
+  var sk: SinkNode
+  var n1: SensorNode
+  var n2: SensorNode
+
+  op run ==
+    rt := new SimpleRoutingTable;
+    sk := new SimpleSinkNode (rt);
+    n1 := new SimpleSensorNode (rt);
+    n2 := new SimpleSensorNode (rt);
+    rt.registerRoute(n1,n2;)
+
+end
