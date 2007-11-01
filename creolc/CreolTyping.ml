@@ -27,50 +27,73 @@ open Creol
 open Expression
 open Statement
 
+(* The type checker raises an [Type_error (file, line, reason)]
+   exception if it has deduced that an expression is not well-typed.  The
+   first two arguments refer to the file and line in which the error is
+   occurring.  The third argument indicates the reason of the type
+   error. *)
+
 exception Type_error of string * int * string
+
+(* This exception is raised by the unifier.  The argument is the
+   constrained which cannot be resolved. *)
+
 exception Unify_failure of Type.t * Type.t
+
+
+(* Generate a new fresh variable name. *)
 
 let fresh_var f =
   let Misc.FreshName(n, f') = f () in
     (Type.Variable n, f')
 
-let rec string_of_constraint_set =
-    function
-        [] -> "none"
-      | [(s, t)] ->
-          (Type.as_string s) ^ " <: " ^ (Type.as_string t)
-      | (s, t)::l ->
-          (Type.as_string s) ^ " <: " ^ (Type.as_string t) ^ ", " ^
-	    (string_of_constraint_set l)
+(* Pretty-print a constraint set. *)
 
+let rec string_of_constraint_set =
+  function
+      [] -> "none"
+    | [(s, t)] ->
+        (Type.as_string s) ^ " <: " ^ (Type.as_string t)
+    | (s, t)::l ->
+        (Type.as_string s) ^ " <: " ^ (Type.as_string t) ^ ", " ^
+	  (string_of_constraint_set l)
+
+
+(* Determine whether a substitution is more specific than another one.
+   A substitution $s$ is more specific than a substitution $t$, if $s$
+   and $t$ have the same support (i.e., they substitute the same
+   variables), and that for each $v$ in this support, we have $s<:t$.
+*)
 
 let subst_more_specific_p program s t =
-  (* Substitutions s and t must have the same support. *)
   let keys = Type.Subst.fold (fun k _ a -> k::a) s [] in
   let p k =
     Program.subtype_p program (Type.Subst.find k s) (Type.Subst.find k t)
   in
     List.for_all p keys
 
-let find_most_specific program substs =
-    (** Find the "most specific solution" of a set of possible solutions.
 
-        FIXME: If there is more than one best solution one solution is
-	guessed, which is probably wrong.  Instead, we ought to report
-	a type error. *)
+
+(* Find the "most specific solution" of a set of possible solutions.
+
+   FIXME: If there is more than one best solution one solution is
+   guessed, which is probably wrong.  Instead, we ought to report
+   a type error. *)
+let find_most_specific program substs =
   List.fold_left
     (fun s t -> if subst_more_specific_p program s t then s else t)
     (List.hd substs)
     (List.tl substs)
 
+
+(* Compute the most general unifier for a constraint set [c].  The
+   result is a mapping from variable names to types.
+   
+   The constraint set is usually a set of pair of types.  Such
+   a constraint states that two types are equal in the current
+   substitution. *)
 let unify ~program ~constraints =
   let rec do_unify c (res: Type.t Type.Subst.t): Type.t Type.Subst.t =
-    (** Compute the most general unifier for a constraint set [c].
-	The result is a mapping from variable names to types.
-	
-	The constraint set is usually a set of pair of types.  Such
-	a constraint states that two types are equal in the current
-	substitution. *)
     if c = [] then
       res
     else
@@ -215,6 +238,9 @@ let unify ~program ~constraints =
     Messages.message 2 "\n=== unify ===" ;
     let res = do_unify constraints (Type.Subst.empty) in
       Messages.message 2 "=== success ===\n" ; res
+
+
+(* Type check a tree. *)
 
 let typecheck tree: Declaration.t list =
   let rec substitute_types_in_expression subst expr =
@@ -622,7 +648,7 @@ let typecheck tree: Declaration.t list =
 	      prerr_endline (file ^ ":" ^ line ^ ": expression has type " ^
 				(Type.as_string s) ^ " but expected is type " ^
 				(Type.as_string t) ^
-				".\n  Cannot satisfy constraints: " ^
+				"\n  Cannot satisfy constraints: " ^
 				(string_of_constraint_set constr')) ;
 	      exit 1
     in
@@ -792,6 +818,10 @@ let typecheck tree: Declaration.t list =
 			          "Class " ^ x ^ " is not a subclass of " ^
 				    cls.Class.name))
       in
+        (* FIXME: We check for an internal method only, but in the
+	   paper "A Dynamic Binding Strategy ..." and the authorisation
+           policy example this mechanism is used to access any method
+           internally. *)
 	match ub with
 	    None -> 
 	      if Program.class_provides_method_p program c' m signature then
@@ -799,7 +829,8 @@ let typecheck tree: Declaration.t list =
 	      else
 		raise (Type_error (file n, line n,
 				  "Class " ^ c'.Class.name ^
-				    " does not provide method " ^ m))
+				    " does not provide method " ^ m ^
+				    (Type.string_of_sig signature)))
 	  | Some y ->
 	      let cands =
 		Program.class_find_methods program c' m signature
@@ -1037,8 +1068,14 @@ let typecheck tree: Declaration.t list =
 		    ("No interface " ^ n ^ " defined") ;
 		  1
 	  in
-	    List.fold_left (fun a n -> a + (c n)) 0
-	      (Program.class_implements program cls)
+	    try
+	      List.fold_left (fun a n -> a + (c n)) 0 
+                 (Program.class_implements program cls)
+	    with
+	        Program.Interface_not_found (file, line, iface) ->
+		    Messages.error file line ("Interface " ^ iface ^
+						" not found") ;
+		    1
 	in
 	  if (methods_missing = 0) then
 	    { cls with Class.with_defs =

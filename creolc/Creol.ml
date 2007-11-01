@@ -25,40 +25,19 @@ i*)
 *)
 
 
-(** Types *)
+(* Types *)
 module Type =
   struct
 
     type t =
-	(** The abstract syntax of types in Creol. *)
 	| Internal
-	  (** The co-interface of internal calls *)
 	| Basic of string
-	  (** A basic type. *)
 	| Variable of string
-	    (** A type variable. *)
 	| Application of string * t list
-	    (** A type application, e.g., [List[Int]]. *)
 	| Tuple of t list
-	    (** The type of a tuple. *)
 	| Intersection of t list
-	    (** The type is an intersection type.  Intersection types
-		do not have concrete syntax. Usually, an intersection
-		type arises as the type of the expression {\c this},
-		and in very rare circumstances during type inference. *)
 	| Disjunction of t list
-	    (** The type is an intersection type.  Intersection types
-		do not have concrete syntax. Usually, an intersection
-		type arises as the type of the expression {\c this},
-		and in very rare circumstances during type inference. *)
 	| Function of t * t
-	    (** The type of a function.  This type does not have a concrete
-		syntax, but is created during type checking. *)
-    and field =
-	(** The declaration of a field of a structure or a variant. *)
-	{ field_name: string; (** Name of this field. *)
-	  field_type: t (** Type of this field *)
-	}
 
     let name =
       function
@@ -124,12 +103,6 @@ module Type =
 	  [] -> ""
 	| [t] -> as_string t
 	| t::l -> (as_string t) ^ ", " ^ (string_of_creol_type_list l)
-    and string_of_field_list =
-      function
-	  [f] -> string_of_field f
-	| f::l -> (string_of_field f) ^ ", " ^ (string_of_field_list l)
-	| [] -> assert false
-    and string_of_field f = f.field_name ^ ": " ^ (as_string f.field_type)
 
     let get_from_label =
       function
@@ -137,7 +110,7 @@ module Type =
 	| _ -> assert false
 
     let rec occurs_p v =
-      (** Check if a variable named [v] occurs in the argument type. *)
+      (* Check if a variable named [v] occurs in the argument type. *)
       function
 	  Internal -> false
 	| Basic _ -> false
@@ -149,7 +122,7 @@ module Type =
 	| Function (s, t) -> (occurs_p v s) || (occurs_p v t)
 
     let rec sentence_p =
-      (** Checks whether a type contains any (free) variables. *)
+      (* Checks whether a type contains any (free) variables. *)
       function
 	  Basic _ -> true
 	| Variable _ -> false
@@ -179,7 +152,7 @@ module Type =
     type subst = t Subst.t
 
     let rec substitute v t =
-      (** Substitute each occurence of a type variable called [v] by
+      (* Substitute each occurence of a type variable called [v] by
 	  the type [t] in the argument type. *)
       function
 	  Internal -> Internal
@@ -251,7 +224,7 @@ module Expression =
       }
 
     let typed_dummy_note t =
-      { file = "**dummy**"; line = 0; ty = t }
+      { file = "*dummy*"; line = 0; ty = t }
 
     let dummy_note = typed_dummy_note Type.data
 
@@ -325,7 +298,7 @@ module Expression =
 	| Project
 	| In
 
-    (** Get the textual representation of a binary operator. *)
+    (* Get the textual representation of a binary operator. *)
     let string_of_binaryop =
       function
 	  Plus -> "+"
@@ -353,7 +326,7 @@ module Expression =
 	| Project -> "\\"
 	| In -> "in"
 
-    (** Precedence of binary operators. *)
+    (* Precedence of binary operators. *)
     let prec_of_binaryop =
       function
 	  Plus -> (33, 33)
@@ -376,14 +349,14 @@ module Expression =
 	| Concat -> (33, 33)
 	| Project -> (35, 35)
 
-    (** Get the textual representation of a unary operator *)
+    (* Get the textual representation of a unary operator *)
     let string_of_unaryop =
       function
 	  Not -> "~"
 	| UMinus -> "-"
 	| Length -> "#"
 
-    (** Return the precedence of a unary operator.  Only needed for pretty
+    (* Return the precedence of a unary operator.  Only needed for pretty
 	printing. *)
     let prec_of_unaryop =
       function
@@ -391,7 +364,7 @@ module Expression =
 	| UMinus -> 15
 	| Length -> 15
 
-    (** Extract the annotation of an expression *)
+    (* Extract the annotation of an expression *)
     let note =
       function
 	  This a -> a
@@ -439,7 +412,7 @@ module Expression =
 	| LhsWildcard _ -> "_"
 	| LhsSSAId (_, n, _) -> n
 
-    (** Whether an expression contains a label *)
+    (* Whether an expression contains a label *)
     let rec contains_label_p =
 	function
 	  Label _ -> true
@@ -453,14 +426,14 @@ module Expression =
 	    List.fold_left (fun a b -> a || (contains_label_p b)) false args
 	| _ -> false
 
-    (** Whether an expression is a binary expression with a specific
+    (* Whether an expression is a binary expression with a specific
         operator *)
     let binary_op_p op =
 	function
 	    Binary(_, o, _, _) when o = op -> true
 	  | _ -> false
 
-    (** Determines, whether a term is a boolean atom.
+    (* Determines, whether a term is a boolean atom.
 
         An atom is either an atomic proposition or the negation of an
         atom.  Strictly speaking, only a and ~a are atoms, and not
@@ -471,7 +444,7 @@ module Expression =
           | Binary(_, (And|Or|Implies|Xor|Iff), _, _) -> false
 	  | _ -> true
 
-    (** Determines, whether a term is already in DNF *)
+    (* Determines, whether a term is already in DNF *)
     let rec dnf_p =
 	function
 	    Unary(_, Not, e) -> not (dnf_p e)
@@ -482,7 +455,7 @@ module Expression =
 		else not (binary_op_p Or e) && not (binary_op_p Or f)
 	  | _ -> true
 
-    (** Negate a boolean formula. *)
+    (* Negate a boolean formula. *)
     let rec negate =
       function
 	  Bool(b, v) -> Bool(b, not v)
@@ -498,7 +471,7 @@ module Expression =
 
 
 
-    (** Rewrite a boolean expression to negation normal form (NNF).
+    (* Rewrite a boolean expression to negation normal form (NNF).
 
 	A formula is called in negation normal form, if and only if
 	all negation operators are applied to atoms, and the only
@@ -520,7 +493,7 @@ module Expression =
                      Binary (b, And, negate ae, negate af))
 	| e -> e
 
-    (** Convert a boolean expression into {i conjunctive normal form}.
+    (* Convert a boolean expression into {i conjunctive normal form}.
 
 	The resulting formula may be exponentially longer.
 
@@ -576,7 +549,7 @@ module Expression =
       in
 	to_cnf_from_nnf (to_nnf f)
 
-    (** Convert a boolean expression into {i disjunctive normal form}.
+    (* Convert a boolean expression into {i disjunctive normal form}.
 
         Assumes, that the expression is well-typed, that all operators have
 	their standard meaning, and that the expression is not lowered to
@@ -584,7 +557,7 @@ module Expression =
     let to_dnf exp =
       to_nnf (negate (to_cnf (to_nnf (negate exp))))
 
-    (** Check whether all occurences of labels are positive in a formula
+    (* Check whether all occurences of labels are positive in a formula
 	f.  Assume, that a label value does not occur as the argument of
 	a function call! *)
     let all_labels_positive_p expr =
@@ -631,25 +604,25 @@ module Statement =
     }
 
     type t =
-      (** Abstract syntax of statements in Creol.  The type parameter ['a]
+      (* Abstract syntax of statements in Creol.  The type parameter ['a]
 	  refers to the type of possible annotations. *)
 	Skip of note
 	| Release of note
 	| Assert of note * Expression.t
 	| Prove of note * Expression.t
 	| Assign of note * Expression.lhs list * Expression.t list
-	  (** A multiple assignment statement.  Requires that the two lists
+	  (* A multiple assignment statement.  Requires that the two lists
 	      are of the same length. *)
 	| Await of note * Expression.t
 	| Posit of note * Expression.t
-	  (** A posit statement, which is used to define {i true} properties
+	  (* A posit statement, which is used to define {i true} properties
               about time in a model. *)
 	| AsyncCall of note * Expression.lhs option * Expression.t * string *
 	   Type.signature *  Expression.t list
 	| Reply of note * Expression.t * Expression.lhs list
 	| Free of note * Expression.lhs list
 	| Bury of note * Expression.lhs list
-	    (** Bury represents a special form of assignment, setting all
+	    (* Bury represents a special form of assignment, setting all
 		its arguments to null.  It does not affect life ranges
 		of its arguments and assumes that all argument names are
 		already dead at that position. *)
@@ -695,12 +668,12 @@ module Statement =
 	| _ -> false
 
     let rec normalize_sequences stmt =
-      (** Transform an arbitrary statement [stmt] into a statement in
+      (* Transform an arbitrary statement [stmt] into a statement in
 	  which all sequences are right-threaded, i.e., the first (or
 	  left) part of a sequence statement is always a non-sequence
 	  statement. *)
       let rec append_to_sequence stm1 stm2 =
-	(** Append the sequence of statement [stm2] to the sequence
+	(* Append the sequence of statement [stm2] to the sequence
 	    [stm1].  Assumes that both statement sequences are
 	    right-threaded. *)
 	match stm1 with
@@ -770,7 +743,7 @@ module Statement =
 	| _ -> assert false
   end
 
-(** The abstract syntax of Creol *)
+(* The abstract syntax of Creol *)
 
 module VarDecl =
   struct
@@ -789,7 +762,7 @@ module Method =
         vars: VarDecl.t list;
         body: Statement.t option;
 	location: string
-	  (** The class or interface in which this method
+	  (* The class or interface in which this method
 	      declaration/definition is defined.  We use the fact that
 	      body = None for interfaces only to distinguish the name
 	      spaces. *)
@@ -825,7 +798,7 @@ module Method =
 
 
 
-(** Abstract syntax of a with clause.
+(* Abstract syntax of a with clause.
 
     A with clause consists of a co-interface name, a list of methods
     and a sequence of invariants. *)
@@ -928,7 +901,7 @@ module Datatype =
       name: Type.t;
       supers: Type.t list;
       hidden: bool
-	(** Hide from output.  Set for datatypes defined in the prelude. *)
+	(* Hide from output.  Set for datatypes defined in the prelude. *)
     }
 
   end
@@ -1012,8 +985,8 @@ module Program =
 	fold (find_class program name)
 
 
+    (* Return true if [s] is a subclass of [t]. *)
     let subclass_p ~program s t =
-      (** Return true if [s] is a subclass of [t] *)
       let rec search s =
 	(s = t) ||
 	  try
@@ -1027,15 +1000,19 @@ module Program =
     let find_interface ~program ~name =
       let interface_with_name =
 	function
-	    Declaration.Interface { Interface.name = n } when n = name -> true
-	  | _ -> false
+	    Declaration.Interface { Interface.name = n } when n = name ->
+	      true
+	  | _ ->
+	      false
       in
 	match List.find interface_with_name program with
-	    Declaration.Interface i -> i
-	  | _ -> assert false
+	    Declaration.Interface i ->
+	      i
+	  | _ ->
+	      assert false
 
     let subinterface_p ~program s t =
-      (** Return true if [s] is a subinterface of [t] *)
+      (* Return true if [s] is a subinterface of [t] *)
       if t = "Any" then
 	(* Everything is a sub-interface of [Any] *)
 	true
@@ -1044,14 +1021,15 @@ module Program =
 	  (s = t) ||
 	    try
 	      let s' = find_interface program s in
-	        (List.exists (fun u -> search u) (List.map fst s'.Interface.inherits))
+	        (List.exists (fun u -> search u)
+		    (List.map fst s'.Interface.inherits))
 	    with
 	        Not_found -> false
 	in
 	  search s
 
   let contracts_p program cls iface =
-    (** Return true if the class [cls] contracts the interface [iface] *)
+    (* Return true if the class [cls] contracts the interface [iface] *)
     if iface = Type.any then
       true
     else
@@ -1072,7 +1050,7 @@ module Program =
 	  | _ -> assert false
 
     let rec sub_datatype_p program s t =
-      (** Return true if s is a sub-datatype of [t] *)
+      (* Return true if s is a sub-datatype of [t] *)
       try
 	let s_decl =
 	  find_datatype program s
@@ -1084,7 +1062,7 @@ module Program =
 	  Not_found -> false
 
     let find_functions ~program ~name =
-      (** Find all definitions of functions called [name] in
+      (* Find all definitions of functions called [name] in
 	  [program], whose formal parameters are compatible with
 	  [domain].  Only return the most specific matches.  Returns
 	  the empty list if none is found. *)
@@ -1110,10 +1088,11 @@ module Program =
 	with
 	    Not_found -> find cls.Class.inherits
 
-    (* Return a list of all interfaces which are implemented by a
-       class.  These interfaces are either directly claimed to be
-       implemented, contracted by the class itself, or contracted by
-       one of the super classes. *)
+(* Return a list of all interfaces which are implemented by a class.
+   These interfaces are either directly claimed to be implemented,
+   contracted by the class itself, or contracted by one of the
+   super classes. *)
+
     let class_implements ~program cls =
       let rec work result =
 	function
@@ -1136,53 +1115,62 @@ module Program =
       in
 	work [] ((contracts cls) @ cls.Class.implements)
 
+(* Compute the interface of a class, i.e., the set of all method it
+   implements. We call this interface the \emph{full descriptor.} *)
 
-    let rec subtype_p program s t =
-      (** Decides whether [s] is a subtype of [t] in [program]. *)
-      match (s, t) with
-	  (_, Type.Basic "Data") when Type.sentence_p s ->
-	    true (* Everything type of kind * is a subtype of data *)
-	| (_, _) when s = t -> true (* Every type is a subtype of itself *)
-	| (Type.Basic st, Type.Basic tt) ->
-	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
-	| (_, Type.Intersection l) ->
-	    List.for_all (subtype_p program s) l
-	| (_, Type.Disjunction l) ->
-	    List.exists (subtype_p program s) l
-	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
-	    (sc = tc) &&
+    let full_class_descriptor ~program ~cls =
+      []
+
+
+(* Decides whether [s] is a subtype of [t] in [program]. *)
+
+    let subtype_p ~program s t =
+      let rec work =
+	function 
+	    (_, Type.Basic "Data") when Type.sentence_p s -> true 
+	  | (_, _) when s = t -> true
+	  | (Type.Basic st, Type.Basic tt) ->
+	      (sub_datatype_p program st tt) || (subinterface_p program st tt)
+	  | (_, Type.Intersection l) ->
+	      List.for_all (fun t -> work (s, t)) l
+	  | (_, Type.Disjunction l) ->
+	      List.exists (fun t -> work (s, t)) l
+	  | (Type.Application (sc, sa), Type.Application (tc, ta)) ->
+	      (sc = tc) &&
+		begin
+		  try 
+		    List.for_all2 (fun s t -> work (s, t)) sa ta
+		  with
+		      Invalid_argument _ -> false
+		end
+	  | (Type.Application _, _) -> assert false (* But see above *)
+	  | (Type.Tuple sa, Type.Tuple ta) ->
 	      begin
 		try 
-		  List.for_all2 (subtype_p program) sa ta
+		  (List.for_all2 (fun s t -> work (s, t)) sa ta)
 		with
 		    Invalid_argument _ -> false
 	      end
-	| (Type.Application _, _) -> assert false (* But see above *)
-	| (Type.Tuple sa, Type.Tuple ta) ->
-	    begin
-	     try 
-		(List.for_all2 (subtype_p program) sa ta)
-	      with
-		  Invalid_argument _ -> false
-	    end
-	| (Type.Tuple _, _) -> assert false (* But see above *)
-	| (Type.Intersection sa, _) ->
-	    List.exists (fun s -> subtype_p program s t) sa
-	| (Type.Disjunction sa, _) ->
-	    List.for_all (fun s -> subtype_p program s t) sa
-	| (Type.Internal, Type.Internal) -> true
-	| ((Type.Internal, _) | (_, Type.Internal)) -> false
-	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
-	    (subtype_p program d1 d2) && (subtype_p program r2 r1)
-	| (Type.Function _, _) -> assert false (* But see above *)
-	| (Type.Variable _, _) -> assert false (* But see reflexivity above *)
-	| (Type.Basic _, _) -> assert false (* But see above *)
+	  | (Type.Tuple _, _) -> assert false (* But see above *)
+	  | (Type.Intersection sa, _) ->
+	      List.exists (fun s -> work (s, t)) sa
+	  | (Type.Disjunction sa, _) ->
+	      List.for_all (fun s -> work (s, t)) sa
+	  | (Type.Internal, Type.Internal) -> true
+	  | ((Type.Internal, _) | (_, Type.Internal)) -> false
+	  | (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
+	      (work (d1, d2)) && (work (r2, r1))
+	  | (Type.Function _, _) -> assert false
+	  | (Type.Variable _, _) -> assert false
+	  | (Type.Basic _, _) -> assert false
+      in
+	work (s, t)
 
 
     (* Return the greates lower bound of all types in [lst] in
-       [program], i.e., a type t with (lower-bound) t <: s for all s
-       in [lst] and with (maximality) s <: t for all types s with s
-       <: u for some u in [lst].
+       [program], i.e., a type $t$ with (lower-bound) $t <: s$ for all
+       $s$ in [lst] and with (maximality) $s <: t$ for all types $s$
+       with $s <: u$ for some $u$ in [lst].
 
        Formally, the greatest lower bound of an empty [lst] is the top
        type.
@@ -1190,6 +1178,7 @@ module Program =
        The result may be an intersection types, which is caused by
        classes implementing multiple interfaces.  If this function
        returns an intersection, the solution is ambigous.  *)
+
     let meet ~program lst =
       let find_meet s t =
 	if subtype_p program s t then
@@ -1205,9 +1194,9 @@ module Program =
 
 
     (* Return the least upper bound of all types in [lst] in
-       [program], i.e., a type t with (upper-bound) s <: t for all s
-       in [lst] and with (minimality) t <: s for all types s with u
-       <: s for some u in [lst].
+       [program], i.e., a type $t$ with (upper-bound) $s <: t$ for all
+       $s$ in [lst] and with (minimality) $t <: s$ for all types $s$
+       with $u <: s$ for some $u$ in [lst].
 
        Formally, the least upper bound of an empty [lst] is the bottom
        type.  However, bottom need not exist, and the function will
@@ -1216,6 +1205,7 @@ module Program =
        The result may be an intersection types, which is caused by
        classes implementing multiple interfaces.  If this function
        returns an intersection, the solution is ambigous.  *)
+
     let join ~program lst =
       let find_join s t =
 	if subtype_p program s t then
@@ -1241,7 +1231,7 @@ module Program =
 
 
     (* Find all definitions of a method called [name] that matches the
-       signature [(coiface, inputs, outputs)] in [iface] and its
+       signature [(coiface, ins, outs)] in [iface] and its
        super-interfaces.  *)
     let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
       let rec find_methods_in_interface i =
@@ -1249,7 +1239,9 @@ module Program =
         let withs = List.filter q i.Interface.with_decls in
         let here =
 	  List.fold_left
-	    (fun a w -> (find_method_in_with program name (coiface, ins, outs) w)@a) [] withs
+	    (fun a w ->
+	      (find_method_in_with program name (coiface, ins, outs) w)@a)
+	    [] withs
         and supers = List.map fst i.Interface.inherits
         in
 	  List.fold_left
@@ -1259,21 +1251,27 @@ module Program =
       in
 	find_methods_in_interface iface
 
+
+    (* Check whether the interface [iface] or one of its
+       superinterfaces provide a method matching the [signature]. *)
+
     let interface_provides_p ~program ~iface ~meth signature =
-      (** Check whether the interface [iface] or one of its
-	  superinterfaces provide a method matching the signature
-	  [(coiface, inputs, outputs)]. *)
       [] <> (interface_find_methods program iface meth signature)
 
+
+    (* Find all definitions of a method called [name] that matches the
+       signature [(coiface, ins, outs)] in class [cls] and its
+       super-classes.  *)
+
     let class_find_methods ~program ~cls ~name (coiface, ins, outs) =
-      (** Find all definitions of a method called [name] that matches
-	  the signature [(coiface, inputs, outputs)] in class [cls]
-	  and its super-classes.  *)
       let rec find_methods_in_class c =
 	let q w = subtype_p program coiface w.With.co_interface in
 	let withs = List.filter q c.Class.with_defs in
 	let here =
-	  List.fold_left (fun a w -> (find_method_in_with program name (coiface, ins, outs) w)@a) [] withs
+	  List.fold_left
+	    (fun a w ->
+	      (find_method_in_with program name (coiface, ins, outs) w)@a)
+	    [] withs
         and supers = List.map fst c.Class.inherits
         in
 	  List.fold_left
@@ -1282,6 +1280,10 @@ module Program =
             here supers
       in
 	find_methods_in_class cls
+
+
+    (* Check whether the class [cls] or one of its superclasses
+       provide a method called [meth] matching the [signature]. *)
 
     let class_provides_method_p ~program ~cls meth signature =
       [] <> (class_find_methods program cls meth signature)

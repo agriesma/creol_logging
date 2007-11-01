@@ -1,8 +1,10 @@
-%{
 (*s The grammar of Creol.
 
-  This is the input file is for use with the Menhir parser generator.
-*)
+    This is the input file is for use with the Menhir parser generator.
+ *)
+
+%{
+
 (*i
  * Creol.mly -- A parser for Creol.
  *

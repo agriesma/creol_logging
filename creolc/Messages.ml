@@ -19,30 +19,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s
-
+(*s Write messages to the error stream.  These are all logging
+  messages, warnings and error messages.  Also provides functions for
+  enabling and disabling the printing of such messages.
 *)
 
-(** The amount of noise the user wants to see. *)
+(*s A very simple logging facility.  
+
+  The variable [verbose] controls how much logging the compiler will
+  actually print. *)
+
 let verbose = ref 0
 
-(** Print a message, if the compiler is instructed to be noisy. *)
+(* The function [message] prints a logging message. *)
+
 let message lvl msg = if !verbose >= lvl then prerr_endline msg
 
 
-(** Write an error message. *)
+(*s Write an error message.
+
+  This function is used to print error messages using a common
+  format. *)
+
 let error file line message =
   prerr_endline (file ^ ":" ^ (string_of_int line) ^ ": " ^ message)
 
 
-(** The different kinds of warning we want to have *)
+(*s Print a warning message if applicable. *)
+
+(* The different kinds of warning we want to have *)
 type warning =
     Unused
     | Undefined
     | MissingInit
     | MissingRun
 
-(** Map a warning to its name *)
+(* Map a warning to its name *)
 let string_of_warning =
   function
       Unused -> "unused"
@@ -50,8 +62,8 @@ let string_of_warning =
     | MissingInit -> "init"
     | MissingRun -> "run"
 
-(** Map a string representing a warning name to a warning.  May raise
-    a pattern matching exception. *)
+(* Map a string representing a warning name to a warning.  May raise a
+   pattern matching exception. *)
 let warning_of_string =
   function
       "usused" -> Unused
@@ -61,11 +73,12 @@ let warning_of_string =
     | s -> raise (Arg.Bad ("unknown waring `" ^ s ^ "'"))
 
 
-(** A list of enabled warnings. *)
+(* A list of enabled warnings. *)
 let enabled = ref []
 
 
-(** Enable a list of warnings *)
+(* Enable a list of warnings *)
+
 let enable arg =
   let enable_warning s =
     let w = warning_of_string s in
@@ -78,6 +91,8 @@ let enable arg =
       (* Enable all *)
       enabled := [ Unused ; Undefined ; MissingInit ; MissingRun ]
 
+(* Disbale a warning *)
+
 let disable arg =
   let disable_warning s =
     let w = warning_of_string s in
@@ -89,6 +104,8 @@ let disable arg =
     else
       (* Disable all *)
       enabled := []
+
+(* Print a warning *)
 
 let warn name file line message =
   if List.mem name !enabled then

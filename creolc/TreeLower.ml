@@ -289,6 +289,7 @@ let pass input =
     (* Make an assignment for all direct assignments of the attribute
        list.  If no assignment is needed, the function returns a skip
        statement. *)
+
     let (a', assignment) =
       let rec build =
 	function
@@ -370,7 +371,10 @@ let pass input =
 	      if List.exists p (List.hd w).With.methods then
 		[]
 	      else
-		let _ =
+
+		(* Print a warning if either init or run are missing. *)
+
+		let () =
 		  let w =
 		    match name with
 		        "init" -> Messages.MissingInit
@@ -383,6 +387,10 @@ let pass input =
 		in
 		  [ make_method name stmt ]
 	  in
+
+	  (* Update the list of methods by adding or changing the
+	     method if found. *)
+
 	  let m' =
 	    List.concat [(mk "init" assignment);
 			 (mk "run" (Skip Statement.dummy_note));
@@ -391,14 +399,22 @@ let pass input =
 	    { (List.hd w) with With.methods = m' }::(List.tl w)
         else
 
-	  (* Since we do not have an internal with block we can both
-	     an init and a run method to the class. *)
+	  (* We do not have a with declaration with the internal
+	     co-interface.  In this case we just create a new with block
+	     with the two missing methods and prepend it to the class. *)
 
 	  { With.co_interface = Type.Internal;
 	    methods = [ make_method "init" assignment ;
 			make_method "run" (Skip Statement.dummy_note)];
 	    invariants = [] } :: w
     in
+
+      (* To lower a class, we add an init and a run method if it is
+	 missing, moe all direct attribute initialisations to the init
+	 method and lower the list of inherits declarations and method
+	 definitions.  Observe that the result of [add_init_and_run] is
+	 not yet lowered to normal form. *)
+
       { c with Class.inherits = lower_inherits_list c.Class.inherits;
 	attributes = a';
 	with_defs = List.map lower_with (add_init_and_run with_defs') }
