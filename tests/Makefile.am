@@ -69,7 +69,8 @@ LANGUAGE	= language/Pair.creol language/Pair.maude language/Pair.out \
 		  language/Interleave.creol language/Interleave.maude \
 		  language/Interleave.out
 
-TYPECHECK	= typecheck/Nil.creol typecheck/ExprFailure.creol
+TYPECHECK	= typecheck/Nil.creol typecheck/ExprFailure.creol \
+		  typecheck/Contracts.creol
 
 TESTFILES	= Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \
