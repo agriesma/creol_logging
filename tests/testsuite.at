@@ -128,7 +128,6 @@ TEST_CREOLC_PP([ExprFailure], [typecheck])
 TEST_CREOLC_PP([Alarmclock], [examples])
 TEST_CREOLC_PP([AsyncLCR], [examples])
 TEST_CREOLC_PP([AsyncSieveBuggy], [examples])
-TEST_CREOLC_PP([AuthorisationPolicies], [examples])
 TEST_CREOLC_PP([BoundedBuffer], [examples])
 TEST_CREOLC_PP([Sieve], [examples])
 TEST_CREOLC_PP([Fibonacci], [examples])
@@ -155,7 +154,6 @@ TEST_CREOLC_XML([ExprFailure], [typecheck])
 TEST_CREOLC_XML([Alarmclock], [examples])
 TEST_CREOLC_XML([AsyncLCR], [examples])
 TEST_CREOLC_XML([AsyncSieveBuggy], [examples])
-TEST_CREOLC_XML([AuthorisationPolicies], [examples])
 TEST_CREOLC_XML([BoundedBuffer], [examples])
 TEST_CREOLC_XML([Sieve], [examples])
 TEST_CREOLC_XML([Fibonacci], [examples])
@@ -242,14 +240,6 @@ red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Alarmclock", emp)), 0, 1) .
 ])
-
-dnl AuthorisationPolicies currently fails to run in Maude.  We must reconsider
-dnl the binding strategy for the interpreter.
-dnl TEST_CREOLC([AuthorisationPolicies], [examples], [dnl
-dnl red init .
-dnl ],[
-dnl red simulate('PROGRAM, upTerm(init main("Init", emp)), 0, 1) .
-dnl ])
 
 TEST_CREOLC([AsyncLCR], [examples], [dnl
 red init .
