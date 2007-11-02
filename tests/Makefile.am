@@ -37,6 +37,8 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/BoundedBuffer.out \
 		  examples/Fibonacci.creol examples/Fibonacci.maude \
 		  examples/Fibonacci.out \
+		  examples/Hello.creol examples/Hello.maude \
+		  examples/Hello.out \
 		  examples/PeerToPeer.creol examples/PeerToPeer.maude \
 		  examples/PeerToPeer.out \
 		  examples/Philosophers.creol \

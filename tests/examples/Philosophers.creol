@@ -1,3 +1,37 @@
+/*
+ * Philosophers.creol -- The dining philosophers example.
+ *
+ * This file is part of creoltools
+ *
+ * Written and Copyright (c) 2007 by Marcel Kyas
+ *
+ * Adapted from:
+ *
+ * @InProceedings{johnsen03nik,
+ *   author =	 {Einar Broch Johnsen and Olaf Owe and Marte Arnestad},
+ *   title =	 {Combining Active and Reactive Behavior in Concurrent
+ *                Objects},
+ *   editor =    {Dag Langmyhr},
+ *   booktitle = {Proc. of the Norwegian Informatics Conference (NIK'03)},
+ *   year =	 2003,
+ *   month =	 nov,
+ *   pages =     {193--204},
+ *   publisher = {Tapir Academic Publisher}
+ * }
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 interface Phil
 begin
   with Phil

@@ -1,5 +1,5 @@
 /*
- * StackCheck.creol -- Corner cases of the Creol semantics.
+ * Contracts.creol -- Corner cases of the creol semantics.
  *
  * This file is part of creoltools
  *
@@ -19,14 +19,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Test
-begin
-  var depth : Int := 0
-  var max : Int := 3
+interface Foo begin with Bar op foo end
 
-  op run == test(;)
-  op test ==
-    var temp: Int; depth := depth + 1; temp := depth;
-    if depth <= max then test(;) end;
-    await depth = temp; depth := depth - 1
+interface Bar begin with Any op bar end
+
+interface Baz begin with Any op bar end
+
+class Foo implements Foo
+begin
+  with Bar op foo == caller.bar(;)
 end
+
+class Bar contracts Bar
+begin
+  var foo: Foo
+  op init == foo := new Foo
+  with Any op bar == foo.foo(;)
+end
+
+class Baz implements Baz inherits Bar begin end
+
+class Main
+begin
+  var baz: Baz
+  op init == baz := new Baz
+  op run == baz.bar(;)
+end
+

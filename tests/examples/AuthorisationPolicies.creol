@@ -1,3 +1,40 @@
+/*
+ * AuthorisationPolicies.creol -- Authorisation policies example.
+ *
+ * This file is part of creoltools
+ *
+ * Written and Copyright (c) 2007 by Marcel Kyas
+ * Derived from an original version by Ivar Alm, published in:
+ *
+ * @inproceedings{johnsen05fmco,
+ *   author =    {Einar Broch Johnsen and Olaf Owe},
+ *   title =     {A Dynamic Binding Strategy for Multiple Inheritance
+ *                and Asynchronously Communicating Objects},
+ *   booktitle = {Proc. 3rd International Symposium on Formal Methods for
+ *                Components and Objects ({FMCO} 2004)},
+ *   editor =	 {Frank S. de Boer and Marcello M. Bonsangue and
+ *                Susanne Graf and Willem-Paul de Roever},
+ *   series =	 {Lecture Notes in Computer Science},
+ *   volume =	 3657,
+ *   publisher = {Springer-Verlag},
+ *   pages =	 {274--295},
+ *   year =	 2005
+ * }
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 interface Agent
 begin
 end
