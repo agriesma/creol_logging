@@ -275,11 +275,10 @@ fmod CREOL-CLASS is
   op get : String MMtd Oid Label ExprList -> Process .
   var Lab : Label .
   eq get(Q, noMtd, O, Lab, EL) = noProc .
-  eq get(Q, MM * < Q' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, EL) =
-    if Q == Q'
-    then (insert("caller", O, insert(".label", Lab, S)), (AL ::= EL) ; SL)
-    else get(Q, MM, O, Lab, EL)
-    fi .
+  eq get(Q, MM * < Q : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, EL) =
+    (insert("caller", O, insert(".label", Lab, S)), (AL ::= EL) ; SL) .
+  eq  get(Q, MM * < Q' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, EL) =
+    get(Q, MM, O, Lab, EL) [otherwise] .
 
 endfm
 
@@ -921,11 +920,11 @@ eq
   bindMtd(O, O', Lab, M, EL, (C < EL' >) `##' I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
-  if get(M, MS, O', Lab, EL) =/= noProc then
-    boundMtd(O,get(M, MS, O', Lab, EL))
-  else
+  if get(M, MS, O', Lab, EL) == noProc then
     bindMtd(O, O', Lab, M, EL, I `##' I')
-  fi 
+  else
+    boundMtd(O,get(M, MS, O', Lab, EL))
+  fi
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   .
 
