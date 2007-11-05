@@ -27,134 +27,226 @@ open Creol
 open Expression
 open Statement
 
+(* Log messages for lifeness analysis *)
 
-(** Compute the liveness of variables.
+let log l = Messages.message (l + 0)
 
-    This is a backwards analysis. *)
-let compute tree =
-  let rec generate env =
+(* Compute the generate sets of a method body by traversing it forward. *)
+
+let compute_generates ~program ~cls ~meth =
+  let () = Messages.message 2 ("Compute generates in " ^ meth.Method.name) in
+  let add f s e = IdSet.union (f e) s in
+  let rec generate =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
-	 Bool _ | Int _ | Float _ | String _ | History _) -> ()
-      | Id (a, v) -> Hashtbl.replace env v ()
-      | StaticAttr _ -> ()
-      | Tuple (a, l) -> List.iter (generate env) l
-      | ListLit (a, l) -> List.iter (generate env) l
-      | SetLit (a, l) -> List.iter (generate env) l
-      | Unary (a, o, e) -> generate env e
-      | Binary (a, o, l, r) -> List.iter (generate env) [l; r]
-      | Expression.If (a, c, t, f) -> List.iter (generate env) [c; t; f]
-      | FuncCall (a, f, l) -> List.iter (generate env) l
-      | Expression.Label (a, l) -> generate env l
-      | New (a, c, l) -> List.iter (generate env) l
-      | Expression.Extern _ -> ()
-      | SSAId (a, v, n) -> Hashtbl.replace env v ()
-      | Phi (a, l) -> List.iter (generate env) l
+	    Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
+      | Id (a, v) ->
+	  IdSet.singleton v
+      | StaticAttr _ ->
+	  IdSet.empty
+      | Tuple (a, l) ->
+	  List.fold_left (add generate) IdSet.empty l
+      | ListLit (a, l) ->
+	  List.fold_left (add generate) IdSet.empty l
+      | SetLit (a, l) ->
+	  List.fold_left (add generate) IdSet.empty l
+      | Unary (a, o, e) ->
+	  generate e
+      | Binary (a, o, l, r) ->
+	  IdSet.union (generate l) (generate r)
+      | Expression.If (a, c, t, f) ->
+	  List.fold_left (add generate) IdSet.empty [c; t; f]
+      | FuncCall (a, f, l) ->
+	  List.fold_left (add generate) IdSet.empty l
+      | Expression.Label (a, l) ->
+	  generate l
+      | New (a, c, l) ->
+	  List.fold_left (add generate) IdSet.empty l
+      | Expression.Extern _ ->
+	  IdSet.empty
+      | SSAId (a, v, n) ->
+	  IdSet.singleton v
+      | Phi (a, l) ->
+	  List.fold_left (add generate) IdSet.empty l
   in
-  let kill env =
+  let kill =
     (* This function is used to create a new SSA name, because we
        define a new value for that variable. *)
     function
-	LhsVar (n, i) -> Hashtbl.remove env i
-      | LhsAttr (n, s, t) -> ()
-      | LhsWildcard (n, t) -> ()
-      | LhsSSAId (n, i, v) -> Hashtbl.remove env i
+	LhsVar (n, i) -> IdSet.singleton i
+      | LhsAttr (n, s, t) -> IdSet.empty
+      | LhsWildcard (n, t) -> IdSet.empty
+      | LhsSSAId (n, i, v) -> IdSet.singleton i
   in
-  let rec compute_in_statement env =
+  let rec compute_in_statement pre =
     function
-	Skip n -> ()
-      | Assert (n, e) -> generate env e
-      | Prove (n, e) -> generate env e
+	Skip n ->
+	  Skip { n with life = pre }
+      | Assert (n, e) ->
+	  let n' = { n with life = IdSet.union pre (generate e) } in
+	    Assert (n', e)
+      | Prove (n, e) ->
+	  let n' = { n with life = IdSet.union pre (generate e) } in
+	    Prove (n', e)
       | Assign (n, lhs, rhs) ->
 	  (** May be vice versa? *)
-	  let _ = List.iter (kill env) lhs in
-	  let _ = List.iter (generate env) rhs in
-	    ()
-      | Await (n, g) -> generate env g
-      | Posit (n, g) -> generate env g
-      | Release n -> ()
-      | AsyncCall (n, None, c, m, s, a) -> List.iter (generate env) (c::a)
+	  let k = List.fold_left (add kill) IdSet.empty lhs
+	  and g = List.fold_left (add generate) IdSet.empty rhs in
+	  let n' = { n with life = IdSet.diff (IdSet.union pre g) k } in
+	    Assign (n', lhs, rhs)
+      | Await (n, g) ->
+	  let n' = { n with life = IdSet.union pre (generate g) } in
+	    Await (n', g)
+      | Posit (n, g) ->
+	  let n' = { n with life = IdSet.union pre (generate g) } in
+	    Posit (n', g)
+      | Release n ->
+	  Release { n with life = pre }
+      | AsyncCall (n, None, c, m, s, a) ->
+	  let g = 
+	    IdSet.union pre (List.fold_left (add generate) IdSet.empty (c::a))
+	  in
+	    AsyncCall ({ n with life = g }, None, c, m, s, a)
       | AsyncCall (n, Some l, c, m, s, a) ->
-	  List.iter (generate env) (c::a) ; kill env l
-      | Reply (n, l, p) -> List.iter (kill env) p
-      | Free (n, v) -> ()
-	  (* List.iter (kill env) v (* FIXME: Ugh! should be rhs *) *)
-      | Bury (n, v) -> ()
+	  let g = List.fold_left (add generate) IdSet.empty (c::a)
+	  and k =  kill l in
+	  let n' = { n with life = IdSet.diff (IdSet.union pre g) k} in
+	    AsyncCall (n', Some l, c, m, s, a)
+      | Reply (n, l, p) ->
+	  let k = List.fold_left (add kill) IdSet.empty p in
+	  let n' = { n with life = IdSet.diff pre k } in
+	    Reply (n', l, p)
+      | Free (n, v) ->
+	  let k = List.fold_left (add kill) IdSet.empty v in
+	  let n' = { n with life = IdSet.diff pre k } in
+	    Free (n', v)
+      | Bury (n, v) ->
 	  (* This statement must not affect the life range of any value,
 	     and all its arguments must be dead at that point. *)
+	  let k = List.fold_left (add kill) IdSet.empty v in
+	  let n' = { n with life = IdSet.diff pre k } in
+	    Bury (n', v)
       | SyncCall (n, c, m, s, ins, outs) ->
-	  let _ = List.iter (generate env) (c::ins) in
-	  let _ = List.iter (kill env) outs in
-	    ()
+	  let g = List.fold_left (add generate) IdSet.empty (c::ins)
+	  and k = List.fold_left (add kill) IdSet.empty outs in
+	  let n' = { n with life = IdSet.diff (IdSet.union pre g) k } in
+	    SyncCall (n', c, m, s, ins, outs)
       | AwaitSyncCall (n, c, m, s, ins, outs) ->
-	  let _ = List.iter (generate env) (c::ins) in
-	  let _ = List.iter (kill env) outs in
-	    ()
+	  let g = List.fold_left (add generate) IdSet.empty (c::ins)
+	  and k = List.fold_left (add kill) IdSet.empty outs in
+	  let n' = { n with life = IdSet.diff (IdSet.union pre g) k } in
+	    AwaitSyncCall (n', c, m, s, ins, outs)
       | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
-	  let _ = List.iter (generate env) i in
-	    ()
+	  let g = List.fold_left (add generate) IdSet.empty i in
+	  let n' = { n with life = IdSet.union pre g } in
+	    LocalAsyncCall (n', None, m, s, ub, lb, i)
       | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
-	  let _ = List.iter (generate env) i in
-	  let _ = kill env l in
-	    ()
-      | LocalSyncCall (n, m, s, u, l, ins, outs) ->
-	  let _ = List.iter (generate env) ins in
-	  let _ = List.iter (kill env) outs in
-	    ()
-      | AwaitLocalSyncCall (n, m, s, u, l, ins, outs) ->
-	  let _ = List.iter (generate env) ins in
-	  let _ = List.iter (kill env) outs in
-	    ()
+	  let g = List.fold_left (add generate) IdSet.empty i
+	  and k = kill l in
+	  let n' = { n with life = IdSet.diff (IdSet.union pre g) k } in
+	    LocalAsyncCall (n', Some l, m, s, ub, lb, i)
+      | LocalSyncCall (n, m, s, u, l, i, o) ->
+	  let g = List.fold_left (add generate) IdSet.empty i
+	  and k = List.fold_left (add kill) IdSet.empty o in
+	  let n' = { n with life = IdSet.diff (IdSet.union pre g) k }
+	  in
+	    LocalSyncCall (n', m, s, u, l, i, o)
+      | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
+	  let g = List.fold_left (add generate) IdSet.empty i
+	  and k = List.fold_left (add kill) IdSet.empty o in
+	  let n' = { n with life = IdSet.diff (IdSet.union pre g) k } in
+	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
       | Tailcall (n, m, s, u, l, ins) ->
-	  let _ = List.iter (generate env) ins in
-	    ()
+	  let g =
+	    IdSet.union pre (List.fold_left (add generate) IdSet.empty ins)
+	  in
+	  let n' = { n with life = IdSet.union pre g } in
+	    Tailcall (n', m, s, u, l, ins)
       | If (n, c, l, r) ->
-	  let _ = compute_in_statement env l in
-	  let _ = compute_in_statement env r in
-	  let _ = generate env c in
-	    ()
+	  let c' = IdSet.union pre (generate c) in
+	  let l' = compute_in_statement c' l
+	  and r' = compute_in_statement c' r in
+	  let n' =
+	    { n with life = IdSet.union (note l').life (note r').life }
+	  in
+	    If (n', c, l', r')
       | While (n, c, i, b) ->
-	  let _ = compute_in_statement env b in
-	  let _ = match i with None -> () | Some inv -> generate env inv in
-	  let _ = generate env c in
-	    ()
+	  let c' = IdSet.union pre (generate c) in
+	  let i' =
+ 	    match i with
+		None -> c'
+	      | Some inv -> IdSet.union c' (generate inv)
+	  in
+	  let b' = compute_in_statement i' b in
+	  let n' = { n with life = (note b').life } in
+	    While (n', c, i, b')
       | Sequence (n, s1, s2) ->
-	  let _ = compute_in_statement env s2 in
-	  let _ = compute_in_statement env s1 in
-	    ()
-      | Merge (n, l, r) -> 
-	  let _ = compute_in_statement env r in
-	  let _ = compute_in_statement env l in
-	    ()
-      | Choice (n, l, r) -> 
-	  let _ = compute_in_statement env r in
-	  let _ = compute_in_statement env l in
-	    ()
-      | Extern (n, s) -> ()
+	  let s1' = compute_in_statement pre s1 in
+	  let s2' = compute_in_statement (note s1').life s2 in
+	  let n' = { n with life = (note s2').life } in
+	    Sequence (n', s1', s2')
+      | Merge (n, s1, s2) -> 
+	  let s1' = compute_in_statement pre s1
+	  and s2' = compute_in_statement pre s2 in
+	  let n' =
+	    { n with life = IdSet.union (note s1').life (note s2').life }
+	  in
+	    Merge (n', s1', s2')
+      | Choice (n, s1, s2) -> 
+	  let s1' = compute_in_statement pre s1
+	  and s2' = compute_in_statement pre s2 in
+	  let n' =
+	    { n with life = IdSet.union (note s1').life (note s2').life }
+	  in
+	    Choice (n', s1', s2')
+      | Extern (n, s) ->
+	  Extern ({ n with life = pre }, s)
   in
-  let compute_in_method m =
-    match m.Method.body with
-	None -> ()
+    match meth.Method.body with
+	None -> meth
       | Some b ->
-	  (* The final return statement implies that the outparameters are
-	     life for the method body. *)
-	  let env = Hashtbl.create 32 in
-	  let _ = List.iter (function { VarDecl.name = n } ->
-	    Hashtbl.replace env n ()) m.Method.outpars
-	  in compute_in_statement env b
+	  let add s v = IdSet.add v.VarDecl.name s in
+	  let ins = List.fold_left add IdSet.empty meth.Method.inpars
+	  (* and outs = List.fold_left add IdSet.empty meth.Method.outpars *) in
+	    { meth with Method.body = Some (compute_in_statement ins b) }
+
+(* Compute the kill sets of a method body by traversing it backwards.
+   This pass is necessary for programs which are not in SSA form.  For
+   all other programs, this pass will do nothing.  It hsould be
+   reasonably fast, so this should not cost too much.  *)
+
+let compute_kills ~program ~cls ~meth =
+  let () = Messages.message 2 ("Compute kills in " ^ meth.Method.name) in
+    meth
+
+let compute_in_method ~program ~cls ~meth =
+  let () = Messages.message 2
+    ("Compute life ranges in " ^ cls.Class.name ^ "::" ^ meth.Method.name)
   in
-  let compute_in_with_def w =
-    List.iter compute_in_method w.With.methods
+    match meth.Method.body with
+	None -> meth
+      | Some b ->
+	  compute_kills program cls (compute_generates program cls meth)
+
+(* Compute life ranges in a program by mapping the above functions
+   through the declarations in the tree. [analyse] is the main
+   function to call from outside. *)
+
+let analyse program =
+  let compute_in_declaration d =
+    let compute_in_class cls =
+      let compute_in_with_def w =
+	{ w with With.methods =
+	    List.map (fun m -> compute_in_method program cls m) w.With.methods }
+      in
+	{ cls with Class.with_defs =
+	    List.map compute_in_with_def cls.Class.with_defs }
+    in
+      match d with
+	  Declaration.Class c -> Declaration.Class (compute_in_class c)
+	| Declaration.Interface _ -> d
+	| Declaration.Exception _ -> d
+	| Declaration.Datatype _ -> d
+	| Declaration.Function _ -> d
   in
-  let compute_in_class cls =
-    List.iter compute_in_with_def cls.Class.with_defs
-  in
-  let compute_in_declaration =
-    function
-	Declaration.Class c -> compute_in_class c
-      | Declaration.Interface _ -> ()
-      | Declaration.Exception _ -> ()
-      | Declaration.Datatype _ -> ()
-      | Declaration.Function _ -> ()
-  in
-    List.iter compute_in_declaration tree ; tree
+    List.map compute_in_declaration program

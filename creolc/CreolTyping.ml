@@ -86,6 +86,9 @@ let find_most_specific program substs =
     (List.tl substs)
 
 
+(* Report messages from the unifier *)
+let log l = Messages.message (l + 2)
+
 (* Compute the most general unifier for a constraint set [c].  The
    result is a mapping from variable names to types.
    
@@ -102,8 +105,8 @@ let unify ~program ~constraints =
       let (s, t) = List.hd c
       and d = List.tl c
       in
-	Messages.message 3 ("unify: constraint " ^ (Type.as_string s) ^
-			    " <: " ^ (Type.as_string t)) ;
+	log 2 ("unify: constraint " ^ (Type.as_string s) ^ " <: " ^
+		  (Type.as_string t)) ;
 	match (s, t) with
 	    (Type.Basic _, Type.Basic _) when Program.subtype_p program s t ->
 		do_unify d res
@@ -151,8 +154,7 @@ let unify ~program ~constraints =
 		  Program.meet program (t::(List.map snd (List.filter p d)))
 	      and d' = List.filter (fun x -> not (p x)) d
 	      in
-	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
-				    (Type.as_string t')) ;
+	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t')) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -162,8 +164,7 @@ let unify ~program ~constraints =
 	      (* In this case, `x is a lower bound, i.e., `x <: t, and t
 		 contains free variables.  This constraint is trivially
 		 satisfied by t and t des not have any meets in [program].  *)
-	        Messages.message 2 ("unify: chose " ^ x ^ " as " ^
-				    (Type.as_string t)) ;
+	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t)) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -180,7 +181,7 @@ let unify ~program ~constraints =
 		  Program.join program (List.map fst (List.filter p c))
 	      in
 	      let try_unify r =
-	        Messages.message 2 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
+	        log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -196,7 +197,7 @@ let unify ~program ~constraints =
 
 			     FIXME: For now we just choose Data, the top type.
 			     We might try something smarter, however. *)
-	                  Messages.message 2
+	                  log 1
 			    ("try_unify: did not work, use Data for `" ^ x) ;
 	                  try_unify Type.data
 		end
@@ -207,7 +208,7 @@ let unify ~program ~constraints =
 		 try Any and then Data, since we cannot guess
 		 something better. *)
 	      let try_unify r =
-	        Messages.message 2 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
+	        log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -230,14 +231,14 @@ let unify ~program ~constraints =
 		 therefore this constraint is always true. *)
 	      do_unify d res
 	  | _ ->
-		Messages.message 2 ("unify: failed to unify " ^
+		log 1 ("unify: failed to unify " ^
 				    (Type.as_string s) ^ " as subtype of " ^
 				    (Type.as_string t)) ;
 		raise (Unify_failure (s, t))
   in
-    Messages.message 2 "\n=== unify ===" ;
+    log 1 "\n=== unify ===" ;
     let res = do_unify constraints (Type.Subst.empty) in
-      Messages.message 2 "=== success ===\n" ; res
+      log 1 "=== success ===\n" ; res
 
 
 (* Type check a tree. *)

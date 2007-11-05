@@ -92,7 +92,7 @@ let passes = [
   ( "life-vars" ,
   { help = "Compute data flow." ;
     dependencies = "lower";
-    pass = TreeLife.compute ;
+    pass = TreeLife.analyse ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "dead-vars" ,
   { help = "Eliminate dead variables and values." ;

@@ -400,6 +400,12 @@ let emit ~name ~tree =
     XmlTextWriter.write_attribute writer "file" note.Statement.file ;
     XmlTextWriter.write_attribute writer "line"
       (string_of_int note.Statement.line) ;
+    Statement.IdSet.iter
+	(fun s ->
+	    XmlTextWriter.start_element writer "creol:life-var" ;
+	    XmlTextWriter.write_attribute writer "name" s ;
+	    XmlTextWriter.end_element writer)
+	note.Statement.life ;
     XmlTextWriter.end_element writer
   and creol_vardecl_to_xml v =
     XmlTextWriter.start_element writer "creol:vardecl";
