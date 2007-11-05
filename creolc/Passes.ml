@@ -75,7 +75,7 @@ let time_dump = ref 0.0
 *)
 let passes = [
   ( "typecheck" ,
-  { help = "Check for type consistency" ;
+  { help = "Undocumented." ;
     dependencies = "";
     pass = CreolTyping.typecheck;
     elapsed = 0.0; enabled = true; dump = false } );

@@ -7,10 +7,16 @@ The @emph{Creol tools} provide a compiler from the Creol language,
 @emph{Creol Machine Code}, @pxref{CMC}.  In this chapter we describe
 how one may use the compiler.
 
-The compiler @command{creolc} is a command-line tool.  Its user
-interface follows the @emph{Unix}-tradition: it can be integrated into
-pipes, and will not output anything except to report errors or if
-explicitly requested to.
+The compiler is a command-line tool.  Its user interface follows the
+@emph{Unix}-tradition: it can be integrated into pipes, and will not
+output anything except to report errors or if explicitly requested to.
+
+Traditionally, two versions are generated: @code{creolc} and
+@code{creolc.opt}.  The first one is an OCaml byte code script, and
+the second one is a natively compiled version.  The most important
+differences between the two versions are, that the byte code version
+is slower than the native one but gives better error messages in
+certain situations.
 
 @menu
 * Invoking creolc::           Command line arguments.
@@ -56,6 +62,19 @@ A Creol program that must be compiled.
 
 Other options are:
 @table @option
+@item -help
+Print (on standard output) a description of the command line options
+understood by @command{creolc}.
+
+@item -version
+Print (on standard output) the version number and copyrights of the
+invoked @command{creolc} compiler.
+
+@item -v
+Print (on standard error) some information on the passes applied to
+the input program.  If this option is given multiple times, then more
+information is printed.
+
 @item -o FILE
 Place the output in file @option{FILE}.  This applies regardless to
 whatever sort of output is being produced.
@@ -71,17 +90,6 @@ it may be overwritten.
 The file name @file{-} instructs the compiler to write the file to the
 standard output.  This allows processing of the output by other tools.
 
-@item -v
-Print (on standard error) some information on the passes applied to
-the input program.
-
-@item -help
-Print (on standard output) a description of the command line options
-understood by @command{creolc}.
-
-@item -version
-Print (on standard output) the version number and copyrights of the
-invoked @command{creolc} compiler.
 @end table
 
 
@@ -97,6 +105,24 @@ The warnings currently understood are:
 @table @option
 @item all
 Enables/disables all the warnings listen below.
+
+@item unused
+Warn if a variable is declared but if it is never used.  This warning
+only applies to local variables of methods.  No warning will be
+emitted if an input variable is never read.
+
+@item undefined
+Warn if a variable is used before it is defined.  This will also warn
+if there is an output variable to which no assignment has been made
+within a method and if an attribute is left unassigned to in the init
+method.
+
+@item init
+Warn if the class does not provide an internal init method.
+
+@item run
+Warn if the class does not define an internal run method.
+
 @end table
 
 
@@ -111,13 +137,14 @@ spent for what.  However, these options are of little use for normal
 users.
 
 @table @option
-@item -dump @var{name}
+@item -d @var{name}
 Write the tree returned after the pass @var{name} to the file
 @file{out.@var{name}} as an XML document.  @xref{Pass Options}.
 
 @item -times
 Measure the time used for a pass and print a summary of time spent for
 each pass after finishing the compilation.
+
 @end table
 
 
@@ -139,15 +166,26 @@ of the compiler is undefined.
 @item all
 Enables all passes.
 
-@item liveness
+@item lower
+Expand statements and expressions to Core Creol statements.
+
+@item into-ssa
+Rewrite a Creol program into @emph{static single assignment} format.
+
+@item life-vars
 Compute live ranges of labels and variables.
 
-@item deadvars
-Insert instructions which remove dead variables from the state.
-Depends on @option{liveness}.
+@item dead-vars
+Insert instructions which reset dead variables from the state.
+Depends on @option{life-vars}.
 
 @item tailcall
 Perform tailcall optimisations.
+
+@item outof-ssa
+Rewrite a Core Creol program in static single assignment form into its
+normal form by merging variables.  Depends on @option{into-ssa} and
+@option{life-vars}
 
 @end table
 
@@ -156,7 +194,7 @@ Perform tailcall optimisations.
 @subsection Target Options
 
 The @command{creolc} compiler can output the result of its passes into
-many output formats.  A target option has the form @option{-target
+many output formats.  A target option has the form @option{-T
 @var{NAME}}, where @var{NAME} is of the list given below.  If multiple
 target options are provided, only the latest one is effective, except
 an unknown target is provided.  In that case, the compiler will abort
@@ -178,6 +216,9 @@ Comments which occurred in the source file are @emph{not} written into
 the output, because the compiler ignores comments in the source files
 and discards them during parsing.
 
+@item dot
+Generate diagrams in dot format, suitable for rendering with graphviz.
+
 @item maude
 Output the transformed program as Creol Machine Code.  In this mode,
 the resulting maude file uses the @emph{interpreter} for Creol.
@@ -186,13 +227,15 @@ the resulting maude file uses the @emph{interpreter} for Creol.
 Output the transformed program as Creol Machine Code.  In this mode,
 the resulting maude file uses the @emph{model checker} for Creol.
 
+@item maudert
+Output the transformed program as Creol Machine Code.  In this mode,
+the resulting maude file uses the @emph{timed simulator} for Creol.
+
 @item xml
 Output the transformed program as an XML document.  The resulting XML
 file is equivalent to the debugging dump after the final pass, but its
 name is determined by the @option{-o} option.
 @end table
-
-
 
 If the target is either @option{maude} or @option{maudemc}, the
 following options are respected:

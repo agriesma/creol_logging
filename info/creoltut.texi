@@ -66,3 +66,106 @@ begin
 end
 @end example
 
+In order to execute this program, it has first be compiled to a
+version suitable for execution.  One possibility would be to compile
+the program into the @emph{Maude format}, which is currently the main
+execution and analysis environment for Creol.  This can be achieved by
+storing the example program into a file @file{Hello.creol} and then
+executing the command @command{creolc -o Hello.maude Hello.creol}.
+This results in the Maude model of the following example:
+
+@example
+load creol-interpreter
+mod PROGRAM is
+protecting CREOL-SIMULATOR .
+op init : -> Configuration [ctor] .
+eq init =
+< "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
+    return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
+    return ( emp ) > *
+  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code:
+    "result" ::= str("Hello, world") ; return ( "result" ) >, Ocnt: 0 >
+
+< "Main" : Cl | Inh: noInh, Par: noVid, Att: "result" |-> null ,
+  "hello" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code:
+    "hello" ::= new "Hello" ( emp ) ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
+    "label:0" ! "hello" . "hello" ( emp ) ; ( "label:0" ? ( "result" ) ) ;
+    return ( emp ) >, Ocnt: 0 >
+
+.
+endm
+@end example
+
+As one can see, the differences from the source program to the
+representation in Maude is not too significant.  Most notably,
+information on how instances of a class are to be constructed,
+replacement of statements by counterparts on the lower level, and
+adding auxiluary statements to mark the end of a method are
+introduced. This example may be executed in Maude, as shown in the
+following session:
+
+@example
+$ maude Hello.maude
+                     \||||||||||||||||||/
+                   --- Welcome to Maude ---
+                     /||||||||||||||||||\
+            Maude 2.3 built: Feb 14 2007 17:53:50
+            Copyright 1997-2007 SRI International
+                   Mon Nov  5 11:37:32 2007
+Maude> rew init main("Main", emp) .
+rewrite in PROGRAM : init
+main("Main", emp) .
+rewrites: 225 in 3ms cpu (3ms real) (75000 rewrites/second)
+result Configuration:
+< ob("Hello0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
+
+< ob("Main0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
+
+< ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
+
+< "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
+  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code:
+    "result" ::= str("Hello, world") ; return("result") > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
+    return(emp) >
+    *
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
+    return(emp) >,
+  Ocnt: 1 >
+
+< "Main" : Cl | Inh: noInh, Par: noVid, Att: "hello" |-> null, "result" |->
+    null, Mtds:
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hello" ::= new
+    "Hello"(emp) ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
+    "label:0" ! "hello" . "hello"(emp) ; "label:0" ?("result") ;
+    return(emp) >,
+  Ocnt: 1 >
+
+< ob("Hello0") : "Hello" | Att: "this" |-> ob("Hello0"),
+  Pr: idle,
+  PrQ: noProc, Lcnt: 3 >
+
+< ob("Main0") : "Main" | Att: "hello" |-> ob("Hello0"), "result" |-> str(
+    "Hello, world"), "this" |-> ob("Main0"),
+  Pr: idle,
+  PrQ: noProc, Lcnt: 4 >
+
+< ob("main") : "" | Att: noSubst,
+  Pr: idle,
+  PrQ: noProc, Lcnt: 0 >
+Maude> quit .
+@end example
+
+The command @command{rew init main("Main", emp) .} instructs the Maude
+interpreter to rewrite the program text @code{init} and a first object
+@code{main("Main", emp)}, which is an instance of class @code{"Main"}
+and which is created without class paramenters.  Maude responds with
+the a term repeating the input program and a collection of queues and
+objects.  We observe that all activites have terminated and that the
+object @code{ob("Main0")} has stored the string @code{"Hello, world"}
+in its attribute @code{"result"}.

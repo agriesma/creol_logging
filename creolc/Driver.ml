@@ -44,29 +44,50 @@ struct
 
   let target = ref Maude
 
-  let file = ref "creolc.out"
-
   let options = { BackendMaude.target = BackendMaude.Interpreter;
 		  red_init = false;
 		  main = None }
 
-  let set =
-    function
-	"none" -> target := Null
-      | "creol" -> target := Creol
-      | "dot" -> target := Dot
-      | "maude" ->
-	  options.BackendMaude.target <- BackendMaude.Interpreter ;
-	  target := Maude
-      | "maudemc" ->
-	  options.BackendMaude.target <- BackendMaude.Modelchecker ;
-	  Passes.enable "tailcall" ;
-	  target := Maude
-      | "maudert" ->
-	  options.BackendMaude.target <- BackendMaude.Realtime ;
-	  target := Maude
-      | "xml" -> target := XML
-      | s -> raise (Arg.Bad ("unknown target " ^ s))
+  let targets =
+    [ ("none", (fun () -> target := Null), "Do not generate any results.");
+      ("creol", (fun () -> target := Creol), "Generate a Creol program");
+      ("dot", (fun () -> target := Dot), "Generate diagrams in dot format");
+      ("maude", (fun () ->
+	options.BackendMaude.target <- BackendMaude.Interpreter ;
+	target := Maude),
+      "Generate a Maude file suitable for the interpreter");
+      ("maudemc",
+      (fun () ->
+	options.BackendMaude.target <- BackendMaude.Modelchecker ;
+	Passes.enable "tailcall" ;
+	target := Maude),
+      "Generate a Maude file optimized for model checking");
+      ("maudert",
+      (fun () ->
+	options.BackendMaude.target <- BackendMaude.Realtime ;
+	target := Maude),
+      "Generate a Maude file optimized for real-time simulation");
+      ("xml", (fun () -> target := XML), "Generate an XML document") ]
+
+  let set s =
+    let (_, f, _) =
+      try
+	List.find (fun (x, _, _) -> s = x) targets
+      with
+	  Not_found -> raise (Arg.Bad ("unknown target " ^ s))
+    in
+      f ()
+
+  let file = ref "creolc.out"
+
+  let help () =
+    let line current (name, _, help) =
+      current ^ "\n    " ^ name ^
+	(String.make (11 - String.length name) ' ') ^
+	help
+    in
+      List.fold_left line "" targets
+
 
   let output tree =
     let do_output out =
@@ -127,11 +148,10 @@ let options = [
   "  Print some information while processing");
   ("-w",
   Arg.String Messages.enable,
-  "[name]   Enable warning:\n" ^
-    "    all        Enable all warnings");
+  "{name, }  Enable warning:\n" ^ (Messages.help_warnings ()));
   ("-W",
   Arg.String Messages.disable,
-  " [name]   Disable the warning.  [name]s are the same as for `-w'");
+  "{name, }  Disable the warning.  Names are the same as for `-w'");
   ("-p",
   Arg.String Passes.enable,
   "{name ,}  Enable passes:\n" ^ (Passes.help ()));
@@ -144,20 +164,15 @@ let options = [
   ("-times",
   Arg.Unit (function () -> times := true),
   "  Print timing information");
-  ("-target",
+  ("-T",
   Arg.String Target.set,
-  "[name]   Provides the target of the translation:\n" ^
-    "    none       Do not generate any result\n" ^
-    "    creol      Write out a creol program\n" ^
-    "    maude      Write a maude file suitable for the interpreter\n" ^
-    "    maudemc    Write a maude file suitable for the model checker\n" ^
-    "    xml        Write the final tree as an XML file.");
+  "[name]   Provides the target of the translation:" ^ (Target.help ()));
   ("-main",
   Arg.String (function s -> Target.options.BackendMaude.main <- Some s),
-  "  Compile the files for model checking and write the result to [file]");
+  "  Declare a main class (must not have class parameters)");
   ("-red-init",
   Arg.Unit (function () ->  Target.options.BackendMaude.red_init <- true),
-  "  Generate an output that will reduce init as first step.");
+  "  Generate an output that will reduce init as first step");
   ("-V", Unit show_version, "  Show the version and exit");
   ("-version", Unit show_version, "  Show the version and exit");
   ("--version", Unit show_version, "  Show the version and exit")]

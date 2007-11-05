@@ -54,23 +54,37 @@ type warning =
     | MissingInit
     | MissingRun
 
+let warnings =
+  [("unused", Unused, "Warn if a variable is declared but not unused");
+   ("undefined", Undefined, "Warn if a variable is used before it is defined");
+   ("init", MissingInit, "Warn if the init method is not defined");
+   ("run", MissingRun, "Warn if the run method is not defined");
+  ]
+
+let help_warnings () =
+  let line current (name, _, help) =
+    current ^ "    " ^ name ^
+      (String.make (11 - String.length name) ' ') ^
+      help ^ "\n"
+  in
+    (List.fold_left line "" warnings) ^
+      "    all        all passes mentioned above."
+
+
 (* Map a warning to its name *)
-let string_of_warning =
-  function
-      Unused -> "unused"
-    | Undefined -> "undefined"
-    | MissingInit -> "init"
-    | MissingRun -> "run"
+let string_of_warning w =
+  let (r, _, _) = List.find (fun (_, i, _) -> w = i) warnings in r
 
 (* Map a string representing a warning name to a warning.  May raise a
    pattern matching exception. *)
-let warning_of_string =
-  function
-      "usused" -> Unused
-    | "undefined" -> Undefined
-    | "init" -> MissingInit
-    | "run" -> MissingRun
-    | s -> raise (Arg.Bad ("unknown waring `" ^ s ^ "'"))
+let warning_of_string s =
+  let (_, r, _) =
+    try
+      List.find (fun (n, _, _) -> n = s) warnings
+    with
+	Not_found -> raise (Arg.Bad ("Warning " ^ s ^ " not defined"))
+  in
+    r
 
 
 (* A list of enabled warnings. *)

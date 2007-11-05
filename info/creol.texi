@@ -315,6 +315,15 @@ on statements, i.e., it is not a statement terminator.
 
 TBD
 
+The non-deterministic merge statement should best be avoided, since it
+may cause an exponential increase of the state space to be analysed.
+It sometimes triggers exponential space requirements in the compiler.
+If the compiler or the interpreter run out of memory, try to replace
+non-deterministic merge statements by a sequential composition of
+those statements@footnote{Maybe the compiler will be able to perform
+such transformations automatically.  This may be an instance of
+partial order reduction.}.
+
 
 @subsection Non-deterministic choice
 
