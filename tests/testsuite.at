@@ -331,9 +331,9 @@ red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 dnl test cases for the type checker
 TEST_CREOLC_TYPECHECK([Nil], [], [])
 TEST_CREOLC_TYPECHECK([ExprFailure],
-[[ExprFailure.creol:3: expression has type [[String, Int] -> `_0] but expected is type \/ [[[Real, Real] -> Real], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]
+[[ExprFailure.creol:24: expression has type [[String, Int] -> `_0] but expected is type \/ [[[Real, Real] -> Real], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]
   Cannot satisfy constraints: [[String, Int] -> `_0] <: \/ [[[Real, Real] -> Real], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]
 ]])
 TEST_CREOLC_TYPECHECK([Contracts],
-[Contracts.creol:16: Class Bar does not contract interface Bar
+[Contracts.creol:37: Class Bar does not contract interface Bar
 ])
