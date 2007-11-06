@@ -48,6 +48,22 @@ struct
 		  red_init = false;
 		  main = None }
 
+  let setup () =
+    match !target with
+	Null -> ()
+      | Creol ->
+	  Passes.conflicts (BackendCreol.conflicts ()) ;
+	  Passes.requires (BackendCreol.requires ())
+      | Dot ->
+	  Passes.conflicts (BackendDot.conflicts ()) ;
+	  Passes.requires (BackendDot.requires ())
+      | Maude ->
+	  Passes.conflicts (BackendMaude.conflicts options) ;
+	  Passes.requires (BackendMaude.requires options)
+      | XML ->
+	  Passes.conflicts (BackendXML.conflicts ()) ;
+	  Passes.requires (BackendXML.requires ())
+
   let targets =
     [ ("none", (fun () -> target := Null), "Do not generate any results.");
       ("creol", (fun () -> target := Creol), "Generate a Creol program");
@@ -192,6 +208,7 @@ let main () =
   let prelude =
     List.map Declaration.hide (Passes.parse_from_file "prelude.creol")
   in
+    Target.setup () ;
     Target.output (Passes.execute_passes !Target.file (prelude@tree)) ;
     if !times then Passes.report_timings () ;
     exit 0 ;;

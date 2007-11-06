@@ -33,9 +33,28 @@ type options = {
   mutable main: string option;
 }
 
-(** Write a Creol program as a maude term. If the program is parsable
-    but not semantically correct, this function will only produce
-    garbage. *)
+let requires =
+  function
+      { target = Interpreter } ->
+	["lower"]
+    | { target = Modelchecker } -> 
+	["lower"; "free"; "tailcall"]
+    | { target = Realtime } ->
+	["lower"]
+
+let conflicts =
+  function
+      { target = Interpreter } ->
+	[]
+    | { target = Modelchecker } -> 
+	[]
+    | { target = Realtime } ->
+	[]
+
+
+(* Write a Creol program as a maude term. If the program is parsable
+   but not semantically correct, this function will only produce
+   garbage. *)
 let emit options out_channel input =
   let rec of_type =
     function

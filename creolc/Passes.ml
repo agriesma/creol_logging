@@ -94,10 +94,15 @@ let passes = [
     dependencies = "";
     pass = TreeLife.analyse ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
-  ( "dead-vars" ,
-  { help = "Eliminate dead variables and values." ;
+  ( "free" ,
+  { help = "Insert statements to free labels" ;
     dependencies = "life-vars" ;
-    pass = TreeDeadvar.optimize ;
+    pass = TreeFree.optimize ;
+    elapsed = 0.0; enabled = false; dump = false } ) ;
+  ( "bury" ,
+  { help = "Insert statements to reset dead variables" ;
+    dependencies = "life-vars" ;
+    pass = TreeBury.optimize ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "tailcall" ,
   { help = "Optimise tail-calls." ;
@@ -111,8 +116,8 @@ let passes = [
     elapsed = 0.0; enabled = false; dump = false } ) ;
 ]
 
-(* Compute a help string from the list of passes.
-*)
+
+(* Compute a help string from the list of passes. *)
 let help () =
   let pass_help_line current ps =
     let name = fst ps
@@ -126,27 +131,60 @@ let help () =
       "    all        all passes mentioned above."
 
 
+
 (* Enable passes.
 
    Accepts a list of strings, separated by comma or whitespace, and
    enables each pass in this list, as well as its dependencies.
 
-   May raise Arg.Bad if an undefined pass is provided.
-*)
+   May raise Arg.Bad if an undefined pass is provided. *)
+
 let rec enable arg =
-  let enable_pass s =
-    let slot = try
-	List.assoc s passes
-      with
-	  Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
-    in
-      slot.enabled <- true ; enable slot.dependencies
+  if arg <> "all" then
+    List.iter enable_pass (Str.split (Str.regexp "[, \t]+") arg)
+  else
+    (* Enable all *)
+    List.iter (fun (_, p) -> p.enabled <- true) passes
+and enable_pass s =
+  let slot = try
+      List.assoc s passes
+    with
+	Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
   in
-    if arg <> "all" then
-      List.iter enable_pass (Str.split (Str.regexp "[, \t]+") arg)
-    else
-      (* Enable all *)
-      List.iter (fun (_, p) -> p.enabled <- true) passes
+    slot.enabled <- true ; enable slot.dependencies
+
+let requires passes =
+  let doit p =
+    Messages.message 1
+      ("Enabling pass " ^ p ^ ", it is required by the backend") ;
+    enable_pass p
+  in
+    List.iter doit passes
+
+
+
+
+
+(* Disable a single pass. *)
+
+let disable_pass s =
+  let slot = try
+      List.assoc s passes
+  with
+      Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
+  in
+    slot.enabled <- false
+
+
+(* Disable a list of passes. *)
+
+let conflicts passes =
+  let doit p =
+    Messages.message 1
+      ("Disabling pass " ^ p ^ ", it conflicts with the backend") ;
+    disable_pass p
+  in
+    List.iter doit passes
 
 
 (* Disable passes.
@@ -160,14 +198,6 @@ let rec enable arg =
    own risk.
 *)
 let disable arg =
-  let disable_pass s =
-    let slot = try
-	List.assoc s passes
-      with
-	  Not_found -> raise (Arg.Bad ("unknown pass `" ^ s ^ "'"))
-    in
-      slot.enabled <- false
-  in
     List.iter disable_pass (Str.split (Str.regexp "[, \t]+") arg)
 
 

@@ -25,6 +25,10 @@
 
 open Creol
 
+let requires _ = []
+
+let conflicts _ = []
+
 let emit out_channel input =
   let c n = "C_" ^ n in
   let i n = "I_" ^ n in

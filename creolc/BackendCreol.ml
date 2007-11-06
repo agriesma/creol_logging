@@ -19,12 +19,18 @@
  * along with this program.   If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s
-
-*)
+(*s Emit a tree as a Creol program. *)
 
 open Misc
 open Creol
+
+(* These passes are required by this backend. *)
+
+let requires _ = []
+
+(* These passes must not be enabled for this backend. *)
+
+let conflicts _ = ["lower"]
 
 let emit out_channel input =
   (** Write a pretty-printed tree to [out_channel].

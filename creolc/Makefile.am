@@ -38,7 +38,7 @@ creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \
-			  TreeDeadvar.ml \
+			  TreeFree.ml TreeBury.ml \
 			  TreeTailcall.ml \
 			  Lexer.ml Lexer.mli \
 			  Parser.ml Parser.mli \
@@ -51,7 +51,8 @@ creolc_cmi		= Lexer.cmi Parser.cmi
 
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 			  CreolTyping.cmo TreeLower.cmo TreeSSA.cmo \
-			  TreeLife.cmo TreeDeadvar.cmo TreeTailcall.cmo \
+			  TreeLife.cmo TreeFree.cmo TreeBury.cmo \
+			  TreeTailcall.cmo \
 			  Lexer.cmo Parser.cmo \
 			  BackendCreol.cmo BackendMaude.cmo BackendXML.cmo \
 			  BackendDot.cmo \
@@ -61,7 +62,8 @@ creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  CreolTyping.cmx TreeLower.cmx TreeSSA.cmx \
-			  TreeLife.cmx TreeDeadvar.cmx TreeTailcall.cmx \
+			  TreeLife.cmx TreeFree.cmx TreeBury.cmx \
+			  TreeTailcall.cmx \
 			  Lexer.cmx Parser.cmx \
 			  BackendCreol.cmx BackendMaude.cmx BackendXML.cmx \
 			  BackendDot.cmx \
@@ -75,7 +77,8 @@ creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \
-			  TreeDeadvar.ml \
+			  TreeFree.ml \
+			  TreeBury.ml \
 			  TreeTailcall.ml \
 			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
 			  BackendDot.ml \
