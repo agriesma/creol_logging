@@ -86,12 +86,12 @@ let passes = [
     elapsed = 0.0; enabled = true; dump = false } );
   ( "into-ssa" ,
   { help = "Compute data flow." ;
-    dependencies = "lower";
+    dependencies = "";
     pass = TreeSSA.into_ssa ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "life-vars" ,
   { help = "Compute data flow." ;
-    dependencies = "lower";
+    dependencies = "";
     pass = TreeLife.analyse ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "dead-vars" ,

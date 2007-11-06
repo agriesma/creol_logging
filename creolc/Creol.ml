@@ -754,6 +754,15 @@ module VarDecl =
 module Method =
   struct
 
+   (* Abstract syntax tree node of a method declaration or method definition.
+      If [body] is [None], then the node represents a declaration.  If it
+      is not [None], the node represents a method definition.
+
+      The member [location] indicates the class or interface in which this
+      method declaration or definition is defined.  The fact that
+      [body = None] is used to distinguish class names from interface
+      names.  *)
+
     type t =
       { name: string;
         coiface: Type.t;
@@ -762,11 +771,7 @@ module Method =
         vars: VarDecl.t list;
         body: Statement.t option;
 	location: string
-	  (* The class or interface in which this method
-	      declaration/definition is defined.  We use the fact that
-	      body = None for interfaces only to distinguish the name
-	      spaces. *)
-	}
+      }
 
     let make_decl n inp outp =
       { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
@@ -774,23 +779,72 @@ module Method =
 
     let set_cointerface cf m = { m with coiface = cf }
 
+    (* Internal helper function to build a type signature from a list
+       [l] of variable declarations. *)
     let build_type l =
-	Type.Tuple (List.map (fun v -> v.VarDecl.var_type) l)
+      Type.Tuple (List.map (fun v -> v.VarDecl.var_type) l)
 
     let domain_type m = build_type m.inpars
 
     let range_type m = build_type m.outpars
 
+    (* Build a method signature type from the declaration. *)
+    let signature m: Type.signature =
+      (m.coiface,
+      Some (List.map (fun v -> v.VarDecl.var_type) m.inpars),
+      Some (List.map (fun v -> v.VarDecl.var_type) m.outpars))
+
+    (* This predicate holds if the method is a definition of the init
+       method. *)
+    let init_p =
+      function
+	  { name = "init"; coiface = Type.Internal; inpars = [];
+            outpars = []; body = Some _ } -> true
+	| _ -> false
+
+    (* This predicate holds if the method is a definition of the run
+       method. *)
+    let run_p =
+      function
+	  { name = "run"; coiface = Type.Internal; inpars = [];
+            outpars = []; body = Some _ } -> true
+	| _ -> false
+
+
+    (* Find the declaration of the variable [name] by first searching
+       the local attributes, then searching the input parameters and
+       finally searching the output paramenters.  Raises [Not_found]
+       if the variable is not found. *)
     let find_variable meth name =
-      let find l = List.find (fun { VarDecl.name = n } -> n = name) l in
-      try
-	find meth.vars
-      with
-	  Not_found ->
-	    try
-	      find meth.inpars
-	    with
-		Not_found -> find meth.outpars
+      let p { VarDecl.name = n } = (n = name) in
+	try
+	  List.find p meth.vars
+	with
+	    Not_found ->
+	      try
+		List.find p meth.inpars
+	      with
+		  Not_found -> List.find p meth.outpars
+
+    (* Determine whether [name] is the name of an input parameter to
+       [meth]. *)
+    let input_p meth name =
+      List.exists (fun { VarDecl.name = n } -> n = name) meth.inpars
+
+    (* Determine whether [name] is the name of an output parameter to
+       [meth]. *)
+    let output_p meth name =
+      List.exists (fun { VarDecl.name = n } -> n = name) meth.outpars
+
+    (* Indicate whether the variable [name] is local to the method. *)
+    let var_p meth name =
+      List.exists (fun { VarDecl.name = n } -> n = name) meth.vars
+
+    (* Indicate whether the variable [name] is local to the method,
+       i.e., defined as a local attribute, an input parameter, or an
+       output parameter. *)
+    let local_p meth name =
+      var_p meth name || input_p meth name || output_p meth name
 
   end
 
@@ -800,8 +854,8 @@ module Method =
 
 (* Abstract syntax of a with clause.
 
-    A with clause consists of a co-interface name, a list of methods
-    and a sequence of invariants. *)
+   A with clause consists of a co-interface name, a list of methods
+   and a sequence of invariants. *)
 
 module With = struct
 

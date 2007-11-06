@@ -19,15 +19,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s
+(*s Compute a Creol program in \emph{static single assignment form} from
+  a Creol program.
 
+  
 *)
 
 open Creol
 open Expression
 open Statement
 
-(** The information we want to collect about variables during analysis *)
+(* The information we want to collect about variables during analysis *)
 
 type kind = Attribute | Input | Output | Local | Label
 
@@ -36,49 +38,55 @@ type info = {
   version: int ;
 }
 
+
+(* Convert a Creol tree into \emph{static single assignment} form.
+
+   Static single assignment form is a form that encodes dataflow
+   information syntactically.
+
+   The algorithm used follows Marc M. Brandis and Hanspeter
+   Mössenböck {i Single-Pass Generation of Static Single Assignment
+   Foerm for Structured Languages}, ACM Transactions on Programming
+   Languages and Systems 16(6), November 1994, p. 1684--1698.
+
+   In contrast to the cited version, our SSA transformation does not
+   compute a control-flow graph (may be later versions do).  This
+   does not matter for most cases, but this algorithm must duplicate
+   Phi-nodes for while statements.  See below on how this is done.
+
+   This version is much simpler, since we only need to cover if
+   statements and while loops and we do not compute dominators, and
+   we operate on tree-level.  This function also treats choice
+   statements.
+
+   \textbf{BUG}: We need to find out how we can come up with a clever
+   implementation for merge statements.  We may need to expand the
+   merge statements into choice statements.  For now, we assume
+   that there is {i no} assignment to local variables within merge
+   statements, if they are also used within the merge
+   statement.
+
+   The current code breaks on this:
+
+   \begin{verbatim}
+   begin x := a; release; a := x end |||
+   begin a := x; release; x:= a end
+   \end{verbatim}
+
+   This will result in
+
+   \begin{verbatim}
+   begin x1 := a0; release; a1 := x1 end |||
+   begin a2 := x0; release; x2 := a2 end
+   \end{verbatim}
+
+   But we are missing some phi nodes here, since the interleaving
+   would make something like x1 := phi(a0, a2) and a2 := phi(x0,
+   x1), a1 := phi(x1, x2), and x2 := phi(a0, a2).  How we can come
+   up with something like this, and have some of these statements
+   become join nodes has to be worked out.  *)
+
 let into_ssa tree =
-  (** Convert a creol tree into static single assignment form.
-
-      Static single assignment form is a form that encodes dataflow
-      information syntactically.
-
-      The algorithm used follows Marc M. Brandis and Hanspeter
-      Mössenböck {i Single-Pass Generation of Static Single Assignment
-      Foerm for Structured Languages}, ACM Transactions on Programming
-      Languages and Systems 16(6), November 1994, p. 1684--1698.
-
-      In contrast to the cited version, our SSA transformation does not
-      compute a control-flow graph (may be later versions do).  This
-      does not matter for most cases, but this algorithm must duplicate
-      Phi-nodes for while statements.  See below on how this is done.
-
-      This version is much simpler, since we only need to cover if
-      statements and while loops and we do not compute dominators, and
-      we operate on tree-level.  This function also treats choice
-      statements.
-
-      {b BUG}: We need to find out how we can come up with a clever
-      implementation for merge statements.  We may need to expand the
-      merge statements into choice statements.  For now, we assume
-      that there is {i no} assignment to local variables within merge
-      statements, if they are also used within the merge
-      statement.
-
-      The current code breaks on this:
-
-      begin x := a; release; a := x end |||
-      begin a := x; release; x:= a end
-
-      This will result in
-
-      begin x1 := a0; release; a1 := x1 end |||
-      begin a2 := x0; release; x2 := a2 end
-
-      But we are missing some phi nodes here, since the interleaving
-      would make something like x1 := phi(a0, a2) and a2 := phi(x0,
-      x1), a1 := phi(x1, x2), and x2 := phi(a0, a2).  How we can come
-      up with something like this, and have some of these statements
-      become join nodes has to be worked out.  *)
   let rec expression_to_ssa env =
     (* A use of the SSA name.  We should be able to find the name in
        the environment. *)
