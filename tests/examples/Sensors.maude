@@ -1,4 +1,4 @@
-load creol-modelchecker
+load creol-interpreter
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
@@ -42,11 +42,4 @@ eq init =
   < "switchOff" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) >, Ocnt: 0 >
 
 .
-endm
-
-
-mod PROGRAM-CHECKER is
-  protecting MODEL-CHECKER .
-  protecting PROGRAM .
-  protecting CREOL-PREDICATES .
 endm

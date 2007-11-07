@@ -316,7 +316,7 @@ red init .
 red simulate('PROGRAM, upTerm(init main("Christmas", emp)), 0, 1) .
 ])
 
-TEST_CREOLMC([Sensors], [examples], [dnl
+TEST_CREOLC([Sensors], [examples], [dnl
 red init .
 ],[dnl
 red simulate('PROGRAM, upTerm(init main("Network", emp)), 0, 1) .

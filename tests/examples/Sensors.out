@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM-CHECKER : init .
+reduce in PROGRAM : init .
 result Configuration: 
 < "ActiveSensor" : Cl | Inh: noInh, Par: "controller", "initialRate", Att:
     "controller" |-> null, "initialRate" |-> null, "rate" |-> null, "t0" |->
