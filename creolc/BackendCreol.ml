@@ -454,7 +454,7 @@ let emit out_channel input =
       (function () -> output_string out_channel ", ") l
   and pretty_print_lhs =
       function
-	  Expression.LhsVar (_, n) -> output_string out_channel n
+	  Expression.LhsId (_, n) -> output_string out_channel n
 	| Expression.LhsAttr(_, n, c) -> output_string out_channel
 	    (n ^ "@" ^ (Type.as_string c))
 	| Expression.LhsWildcard (_, None) -> output_string out_channel "_"

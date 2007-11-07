@@ -38,7 +38,7 @@ let requires =
       { target = Interpreter } ->
 	["lower"]
     | { target = Modelchecker } -> 
-	["lower"; "free"; "tailcall"]
+	["lower"; "bury"; "tailcall"]
     | { target = Realtime } ->
 	["lower"]
 
@@ -157,14 +157,15 @@ let emit options out_channel input =
 	  of_identifier_list l
   and of_lhs =
     function
-	Expression.LhsVar(_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
-      | Expression.LhsAttr(_, i, c) ->
+	Expression.LhsId (_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
+      | Expression.LhsAttr (_, i, c) ->
 	  output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
 	  of_type c ;
 	  output_string out_channel "\" )"
       | Expression.LhsWildcard _ -> assert false
       | Expression.LhsSSAId (_, n, v) -> 
-	  output_string out_channel ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")") ;
+	  output_string out_channel
+	    ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")")
   and of_lhs_list =
     (** Translate a list of left hand side expressions a list of
 	Attribute identifiers. *)

@@ -657,7 +657,7 @@ let typecheck tree: Declaration.t list =
   in
   let type_check_lhs program (cls: Class.t) meth coiface =
     function
-	LhsVar (n, name) ->
+	LhsId (n, name) ->
 	  let res =
 	    try
 	      (Method.find_variable meth name).VarDecl.var_type
@@ -672,7 +672,7 @@ let typecheck tree: Declaration.t list =
 					  "Identifier " ^ name ^
 					    " not declared"))
 	  in
-	    LhsVar (set_type n res, name)
+	    LhsId (set_type n res, name)
       | LhsAttr (n, name, (Type.Basic c)) ->
 	  let res =
 	    (Program.find_attr_decl program

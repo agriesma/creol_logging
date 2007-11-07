@@ -82,11 +82,9 @@ let compute_generates ~program ~cls ~meth =
 	  List.fold_left (add generate) IdSet.empty l
   in
   let kill =
-    (* This function is used to create a new SSA name, because we
-       define a new value for that variable. *)
     function
-	LhsVar (n, i) when Method.local_p meth i -> IdSet.singleton i
-      | LhsVar (n, i) -> IdSet.empty
+	LhsId (n, i) when Method.local_p meth i -> IdSet.singleton i
+      | LhsId (n, i) -> IdSet.empty
       | LhsAttr (n, s, t) -> IdSet.empty
       | LhsWildcard (n, t) -> IdSet.empty
       | LhsSSAId (n, i, v) -> assert (Method.local_p meth i); IdSet.singleton i

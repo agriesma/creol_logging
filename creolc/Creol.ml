@@ -21,561 +21,579 @@ i*)
 
 (*s Definition of the abstract syntax of Creol and a collection
     of functions for its manipulation.
-
 *)
-
 
 (* Types *)
 module Type =
-  struct
+struct
 
-    type t =
-	| Internal
-	| Basic of string
-	| Variable of string
-	| Application of string * t list
-	| Tuple of t list
-	| Intersection of t list
-	| Disjunction of t list
-	| Function of t * t
+  type t =
+      | Internal
+      | Basic of string
+      | Variable of string
+      | Application of string * t list
+      | Tuple of t list
+      | Intersection of t list
+      | Disjunction of t list
+      | Function of t * t
 
-    let name =
-      function
+  let name =
+    function
         Basic n -> n
       | Application (n, _) -> n
       | _ -> assert false
 
-    let any = Basic "Any"
+  let any = Basic "Any"
 
-    let any_p t = (t = Basic "Any")
+  let any_p t = (t = Basic "Any")
 
-    let data = Basic "Data"
+  let data = Basic "Data"
 
-    let data_p t = (t = Basic "Data")
+  let data_p t = (t = Basic "Data")
 
-    let real = Basic "Real"
+  let real = Basic "Real"
 
-    let real_p t = (t = real)
+  let real_p t = (t = real)
 
-    let int = Basic "Int"
+  let int = Basic "Int"
 
-    let int_p t = (t = int)
+  let int_p t = (t = int)
 
-    let bool = Basic "Bool"
+  let bool = Basic "Bool"
+  
+  let bool_p t = (t = bool)
 
-    let bool_p t = (t = bool)
+  let string = Basic "String"
 
-    let string = Basic "String"
+  let string_p t = (t = string)
 
-    let string_p t = (t = string)
+  let history = Basic "Data"
 
-    let history = Basic "Data"
+  let history_p t = (t = history)
 
-    let history_p t = (t = history)
+  let label l = Application ("Label", l)
 
-    let label l = Application ("Label", l)
+  let label_p t = match t with Application("Label", _) -> true | _ -> false
 
-    let list t = Application ("List", t)
+  let list t = Application ("List", t)
 
-    let variable_p =
+  let variable_p =
+    function
+	Variable _ -> true
+      | _ -> false
+
+  (* These are the support functions for the abstract syntax tree. *)
+
+  let rec as_string =
+    function
+	Basic s -> s
+      | Variable s -> "`" ^ s
+      | Application (s, []) ->
+	  s ^ "[ ]"
+      | Application (s, p) ->
+	  s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
+      | Tuple p ->
+	  "[" ^ (string_of_creol_type_list p) ^ "]"
+      | Intersection l -> "/\\ [" ^ (string_of_creol_type_list l) ^ "]"
+      | Disjunction l -> "\\/ [" ^ (string_of_creol_type_list l) ^ "]"
+      | Function (s, t) -> "[" ^ (as_string s) ^ " -> " ^ (as_string t) ^ "]"
+      | Internal -> "/* Internal */"
+  and string_of_creol_type_list =
+    function
+	[] -> ""
+      | [t] -> as_string t
+      | t::l -> (as_string t) ^ ", " ^ (string_of_creol_type_list l)
+
+  let get_from_label =
+    function
+	Application ("Label", args) -> args
+      | _ -> assert false
+
+
+  (* Check if a variable named [v] occurs in the argument type. *)
+  let rec occurs_p v =
+    function
+	Internal -> false
+      | Basic _ -> false
+      | Variable x -> v = x
+      | Application (_, l) -> List.exists (occurs_p v) l
+      | Tuple l -> List.exists (occurs_p v) l
+      | Intersection l -> List.exists (occurs_p v) l
+      | Disjunction l -> List.exists (occurs_p v) l
+      | Function (s, t) -> (occurs_p v s) || (occurs_p v t)
+
+  (* Checks whether a type contains any (free) variables. *)
+  let rec sentence_p =
+    function
+	Basic _ -> true
+      | Variable _ -> false
+      | Application (_, p) -> List.for_all sentence_p p
+      | Tuple p -> List.for_all sentence_p p
+      | Intersection l -> List.for_all sentence_p l
+      | Disjunction l -> List.for_all sentence_p l
+      | Function (s, t) -> (sentence_p s) && (sentence_p t)
+      | Internal -> true
+
+  let free_variables t =
+    let rec compute res =
       function
-	  Variable _ -> true
-	| _ -> false
+	  Basic _ -> res
+	| Variable x -> if List.mem x res then res else x::res
+	| Application (_, p) -> List.fold_left (fun a -> compute a) res p
+	| Tuple p -> List.fold_left (fun a -> compute a) res p
+	| Intersection l -> List.fold_left (fun a -> compute a) res l
+	| Disjunction l -> List.fold_left (fun a -> compute a) res l
+	| Function (s, t) -> List.fold_left (fun a -> compute a) res [s; t]
+	| Internal -> res
+    in
+      compute [] t
 
-    (* These are the support functions for the abstract syntax tree. *)
+  (* Substitution module *)
+  module Subst = Map.Make(String)
+  type subst = t Subst.t
 
-    let rec as_string =
-      function
-	  Basic s -> s
-	| Variable s -> "`" ^ s
-	| Application (s, []) ->
-	    s ^ "[ ]"
-	| Application (s, p) ->
-	    s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Tuple p ->
-	    "[" ^ (string_of_creol_type_list p) ^ "]"
-	| Intersection l -> "/\\ [" ^ (string_of_creol_type_list l) ^ "]"
-	| Disjunction l -> "\\/ [" ^ (string_of_creol_type_list l) ^ "]"
-	| Function (s, t) -> "[" ^ (as_string s) ^ " -> " ^ (as_string t) ^ "]"
-	| Internal -> "/* Internal */"
-    and string_of_creol_type_list =
-      function
-	  [] -> ""
-	| [t] -> as_string t
-	| t::l -> (as_string t) ^ ", " ^ (string_of_creol_type_list l)
 
-    let get_from_label =
-      function
-	  Application ("Label", args) -> args
-	| _ -> assert false
+  (* Substitute each occurence of a type variable called [v] by the
+     type [t] in the argument type. *)
+  let rec substitute v t =
+    function
+	Internal -> Internal
+      | Basic b -> Basic b
+      | Variable x -> if x = v then t else Variable x
+      | Application (c, l) -> Application(c, List.map (substitute v t) l)
+      | Tuple l -> Tuple (List.map (substitute v t) l)
+      | Intersection l -> Intersection (List.map (substitute v t) l)
+      | Disjunction l -> Disjunction (List.map (substitute v t) l)
+      | Function (d, r) -> Function (substitute v t d, substitute v t r)
 
-    let rec occurs_p v =
-      (* Check if a variable named [v] occurs in the argument type. *)
-      function
-	  Internal -> false
-	| Basic _ -> false
-	| Variable x -> v = x
-	| Application (_, l) -> List.exists (occurs_p v) l
-	| Tuple l -> List.exists (occurs_p v) l
-	| Intersection l -> List.exists (occurs_p v) l
-	| Disjunction l -> List.exists (occurs_p v) l
-	| Function (s, t) -> (occurs_p v s) || (occurs_p v t)
+  let rec apply_substitution s =
+    function
+	Internal -> Internal
+      | Basic b -> Basic b
+      | Variable x ->
+	  if Subst.mem x s then Subst.find x s else Variable x
+      | Application (c, l) ->
+	  Application(c, List.map (apply_substitution s) l)
+      | Tuple l ->
+	  Tuple (List.map (apply_substitution s) l)
+      | Intersection l ->
+	  Intersection (List.map (apply_substitution s) l)
+      | Disjunction l ->
+	  Disjunction (List.map (apply_substitution s) l)
+      | Function (d, r) ->
+	  Function (apply_substitution s d, apply_substitution s r)
 
-    let rec sentence_p =
-      (* Checks whether a type contains any (free) variables. *)
-      function
-	  Basic _ -> true
-	| Variable _ -> false
-	| Application (_, p) -> List.for_all sentence_p p
-	| Tuple p -> List.for_all sentence_p p
-	| Intersection l -> List.for_all sentence_p l
-	| Disjunction l -> List.for_all sentence_p l
-	| Function (s, t) -> (sentence_p s) && (sentence_p t)
-	| Internal -> true
+  type signature = t * t list option * t list option
 
-    let free_variables t =
-      let rec compute res =
-	function
-	    Basic _ -> res
-	  | Variable x -> if List.mem x res then res else x::res
-	  | Application (_, p) -> List.fold_left (fun a -> compute a) res p
-	  | Tuple p -> List.fold_left (fun a -> compute a) res p
-	  | Intersection l -> List.fold_left (fun a -> compute a) res l
-	  | Disjunction l -> List.fold_left (fun a -> compute a) res l
-	  | Function (s, t) -> List.fold_left (fun a -> compute a) res [s; t]
-	  | Internal -> res
-      in
-	  compute [] t
+  let default_sig = (any, None, None)
 
-    (* Substitution module *)
-    module Subst = Map.Make(String)
-    type subst = t Subst.t
+  let co_interface (c, _, _) = c
 
-    let rec substitute v t =
-      (* Substitute each occurence of a type variable called [v] by
-	  the type [t] in the argument type. *)
-      function
-	  Internal -> Internal
-	| Basic b -> Basic b
-	| Variable x -> if x = v then t else Variable x
-	| Application (c, l) -> Application(c, List.map (substitute v t) l)
-	| Tuple l -> Tuple (List.map (substitute v t) l)
-	| Intersection l -> Intersection (List.map (substitute v t) l)
-	| Disjunction l -> Disjunction (List.map (substitute v t) l)
-	| Function (d, r) -> Function (substitute v t d, substitute v t r)
+  let domain (_, d, _) = d
 
-    let rec apply_substitution s =
-      function
-	  Internal -> Internal
-	| Basic b -> Basic b
-	| Variable x ->
-	    if Subst.mem x s then Subst.find x s else Variable x
-	| Application (c, l) ->
-	    Application(c, List.map (apply_substitution s) l)
-	| Tuple l ->
-	    Tuple (List.map (apply_substitution s) l)
-	| Intersection l ->
-	    Intersection (List.map (apply_substitution s) l)
-	| Disjunction l ->
-	    Disjunction (List.map (apply_substitution s) l)
-	| Function (d, r) ->
-	    Function (apply_substitution s d, apply_substitution s r)
+  let range (_, _, r) = r
 
-    type signature = t * t list option * t list option
+  let string_of_sig =
+    function
+	(co, None, None) ->
+	  "[ " ^ (as_string co) ^ " | unknown -> unknown ]"
+      | (co, Some d, None) ->
+	  "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
+	    " -> unknown ]"
+      | (co, None, Some r) ->
+	  "[ " ^ (as_string co) ^ " | unknown -> " ^
+	    (string_of_creol_type_list r) ^ " ]"
+      | (co, Some d, Some r) ->
+	  "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
+	    " -> " ^ (string_of_creol_type_list r) ^ " ]"
 
-    let default_sig = (any, None, None)
+end
 
-    let co_interface (c, _, _) = c
 
-    let domain (_, d, _) = d
+(* Define the abstract syntax of a name of a variable or an
+   attribute. This module defines a linear order on these names.  *)
+module Name =
+struct
 
-    let range (_, _, r) = r
+  type t =
+      | Id of string
+      | Attr of string * Type.t
+      | Wildcard of Type.t option
+      | SSAId of string * int
 
-    let string_of_sig =
-      function
-	  (co, None, None) ->
-	    "[ " ^ (as_string co) ^ " | unknown -> unknown ]"
-	| (co, Some d, None) ->
-	    "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
-	      " -> unknown ]"
-	| (co, None, Some r) ->
-	    "[ " ^ (as_string co) ^ " | unknown -> " ^
-	      (string_of_creol_type_list r) ^ " ]"
-	| (co, Some d, Some r) ->
-	    "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
-	      " -> " ^ (string_of_creol_type_list r) ^ " ]"
+  let compare x y = assert false
 
-  end
+end
+
 
 module Expression =
-  struct
+struct
 
-    type note = {
-	file: string;
-	line: int;
-	ty: Type.t
+  type note = {
+    file: string;
+    line: int;
+    ty: Type.t
+  }
+
+  let make_note pos =
+    {
+      file = pos.Lexing.pos_fname ;
+      line = pos.Lexing.pos_lnum ;
+      ty = Type.data
     }
 
-    let make_note pos =
-      {
-	file = pos.Lexing.pos_fname ;
-	line = pos.Lexing.pos_lnum ;
-	ty = Type.data
-      }
+  let typed_dummy_note t =
+    { file = "*dummy*"; line = 0; ty = t }
 
-    let typed_dummy_note t =
-      { file = "*dummy*"; line = 0; ty = t }
+  let dummy_note = typed_dummy_note Type.data
 
-    let dummy_note = typed_dummy_note Type.data
+  let file note = note.file
 
-    let file note = note.file
+  let line note = note.line
 
-    let line note = note.line
+  let set_type note t = { note with ty = t }
 
-    let set_type note t = { note with ty = t }
-
-    type t =
-	  This of note
-	| QualifiedThis of note * Type.t
-	| Caller of note
-	| Now of note
-	| Null of note
-	| Nil of note
-	| History of note
-	| Bool of note * bool
-	| Int of note * int
-	| Float of note * float
-	| String of note * string
-	| Id of note * string
-        | StaticAttr of note * string * Type.t
-	| Tuple of note * t list
-	| ListLit of note * t list
-	| SetLit of note * t list
-	| Unary of note * unaryop * t
-	| Binary of note * binaryop * t * t
-	| FuncCall of note * string * t list
-	| If of note * t * t * t
-	| Label of note * t
-	| New of note * Type.t * t list
-(*i	| Choose of note * string * Type.t * t
-	| Forall of note * string * Type.t * t
-	| Exists of note * string * Type.t * t i*)
-	| Extern of note * string
-        | SSAId of note * string * int
-        | Phi of note * t list
+  type t =
+      This of note
+      | QualifiedThis of note * Type.t
+      | Caller of note
+      | Now of note
+      | Null of note
+      | Nil of note
+      | History of note
+      | Bool of note * bool
+      | Int of note * int
+      | Float of note * float
+      | String of note * string
+      | Id of note * string
+      | StaticAttr of note * string * Type.t
+      | Tuple of note * t list
+      | ListLit of note * t list
+      | SetLit of note * t list
+      | Unary of note * unaryop * t
+      | Binary of note * binaryop * t * t
+      | FuncCall of note * string * t list
+      | If of note * t * t * t
+      | Label of note * t
+      | New of note * Type.t * t list
+	  (*i	| Choose of note * string * Type.t * t
+	    | Forall of note * string * Type.t * t
+	    | Exists of note * string * Type.t * t i*)
+      | Extern of note * string
+      | SSAId of note * string * int
+      | Phi of note * t list
   and lhs =
-          LhsVar of note * string
-        | LhsAttr of note * string * Type.t
-        | LhsWildcard of note * Type.t option
-        | LhsSSAId of note * string * int
-    and unaryop =
-	Not
-	| UMinus
-	| Length
-    and binaryop =
-	Plus
-	| Minus
-	| Times
-	| Div
-	| Modulo
-	| Power
-	| Eq
-	| Ne
-	| Le
-	| Lt
-	| Ge
-	| Gt
-	| And
-	| Wedge
-	| Or
-	| Vee
-	| Xor
-	| Implies
-	| Iff
-	| Prepend
-	| Append
-	| Concat
-	| Project
-	| In
+      LhsId of note * string
+      | LhsAttr of note * string * Type.t
+      | LhsWildcard of note * Type.t option
+      | LhsSSAId of note * string * int
+  and unaryop =
+      Not
+      | UMinus
+      | Length
+  and binaryop =
+      Plus
+      | Minus
+      | Times
+      | Div
+      | Modulo
+      | Power
+      | Eq
+      | Ne
+      | Le
+      | Lt
+      | Ge
+      | Gt
+      | And
+      | Wedge
+      | Or
+      | Vee
+      | Xor
+      | Implies
+      | Iff
+      | Prepend
+      | Append
+      | Concat
+      | Project
+      | In
 
-    (* Get the textual representation of a binary operator. *)
-    let string_of_binaryop =
+  (* Get the textual representation of a binary operator. *)
+  let string_of_binaryop =
+    function
+	Plus -> "+"
+      | Minus -> "-"
+      | Times -> "*"
+      | Div -> "/"
+      | Modulo -> "%"
+      | Power -> "**"
+      | Eq -> "="
+      | Ne -> "/="
+      | Le -> "<="
+      | Lt -> "<"
+      | Ge -> ">="
+      | Gt -> ">"
+      | And -> "&&"
+      | Wedge -> "/\\"
+      | Or -> "||"
+      | Vee -> "\\/"
+      | Xor -> "^"
+      | Implies -> "=>"
+      | Iff -> "<=>"
+      | Prepend -> "-|"
+      | Append -> "|-"
+      | Concat -> "|-|"
+      | Project -> "\\"
+      | In -> "in"
+
+  (* Precedence of binary operators. *)
+  let prec_of_binaryop =
+    function
+	Plus -> (33, 33)
+      | Minus -> (33, 33)
+      | Times -> (31, 31)
+      | Div -> (31, 31)
+      | Modulo -> (31, 31)
+      | Power -> (29, 29)
+      | Eq -> (51, 51)
+      | Ne -> (51, 51)
+      | Le | Lt | Ge | Gt -> (37, 37)
+      | In -> (53, 53)
+      | And | Wedge -> (55, 55)
+      | Or | Vee -> (59, 59)
+      | Xor -> (57, 57)
+      | Implies -> (61, 61)
+      | Iff -> (61, 61)
+      | Prepend -> (33, 33)
+      | Append -> (33, 33)
+      | Concat -> (33, 33)
+      | Project -> (35, 35)
+
+  (* Get the textual representation of a unary operator *)
+  let string_of_unaryop =
+    function
+	Not -> "~"
+      | UMinus -> "-"
+      | Length -> "#"
+
+  (* Return the precedence of a unary operator.  Only needed for
+     pretty printing. *)
+  let prec_of_unaryop =
+    function
+	Not -> 53
+      | UMinus -> 15
+      | Length -> 15
+
+  (* Extract the annotation of an expression *)
+  let note =
+    function
+	This a -> a
+      | QualifiedThis (a, _) -> a
+      | Caller a -> a
+      | Now a -> a
+      | Null a -> a
+      | Nil a -> a
+      | History a -> a
+      | Bool (a, _) -> a
+      | Int (a, _) -> a
+      | Float (a, _) -> a
+      | String (a, _) -> a
+      | Id (a, _) -> a
+      | StaticAttr(a, _, _) -> a
+      | Tuple (a, _) -> a
+      | ListLit (a, _) -> a
+      | SetLit (a, _) -> a
+      | Unary (a, _, _) -> a
+      | Binary (a, _, _, _) -> a
+      | If (a, _, _, _) -> a
+      | FuncCall (a, _, _) -> a
+      | Label (a, _) -> a
+      | New (a, _, _) -> a
+	  (*i	| Choose (a, _, _, _) -> a
+	    | Forall (a, _, _, _) -> a
+	    | Exists (a, _, _, _) -> a i*)
+      | Extern (a, _) -> a
+      | SSAId (a, _, _) -> a
+      | Phi (a, _) -> a
+
+  let get_type expr = (note expr).ty
+
+  let get_lhs_type =
+    function
+	LhsId(n, _) -> n.ty
+      | LhsAttr(n, _, _) -> n.ty
+      | LhsWildcard (n, _) -> n.ty
+      | LhsSSAId (n, _, _) -> n.ty
+
+  let name =
+    function
+	LhsId(_, n) -> n
+      | LhsAttr(_, n, _) -> n
+      | LhsWildcard _ -> "_"
+      | LhsSSAId (_, n, _) -> n
+
+  (* Whether an expression contains a label *)
+  let rec contains_label_p =
+    function
+	Label _ -> true
+      | Unary (_, _, e) -> contains_label_p e
+      | Binary (_, _, e, f) -> (contains_label_p e) || (contains_label_p f)
+      | If (_, c, t, f) -> (contains_label_p c) || (contains_label_p t) ||
+	  (contains_label_p f)
+      | FuncCall(_, _, args) ->
+	  List.fold_left (fun a b -> a || (contains_label_p b)) false args
+      | New (_, _, args) ->
+	  List.fold_left (fun a b -> a || (contains_label_p b)) false args
+      | _ -> false
+
+  (* Whether an expression is a binary expression with a specific
+     operator *)
+  let binary_op_p op =
+    function
+	Binary(_, o, _, _) when o = op -> true
+      | _ -> false
+
+  (* Determines, whether a term is a boolean atom.
+
+     An atom is either an atomic proposition or the negation of an
+     atom.  Strictly speaking, only a and ~a are atoms, and not
+     ~~a or ~~~a, but we need not make this distinction. *)
+  let rec atom_p =
+    function
+	Unary(_, Not, e) -> atom_p e
+      | Binary(_, (And|Or|Implies|Xor|Iff), _, _) -> false
+      | _ -> true
+
+  (* Determines, whether a term is already in DNF *)
+  let rec dnf_p =
+    function
+	Unary(_, Not, e) -> not (dnf_p e)
+      | Binary(_, Or, e, f) -> 
+	  (dnf_p e) && (dnf_p f)
+      | Binary(_, (And|Implies|Xor|Iff), e, f) ->
+	  if not (dnf_p e) || not (dnf_p f) then false
+	  else not (binary_op_p Or e) && not (binary_op_p Or f)
+      | _ -> true
+
+  (* Negate a boolean formula. *)
+  let rec negate =
+    function
+	Bool(b, v) -> Bool(b, not v)
+      | Unary (b, Not, e) -> e
+      | Binary(b, Eq, l, r) -> Binary(b, Ne, l, r)
+      | Binary(b, Ne, l, r) -> Binary(b, Eq, l, r)
+      | Binary (b, And, e, f) -> Binary (b, Or, negate e, negate f)
+      | Binary (b, Or, e, f) -> Binary (b, And, negate e, negate f)
+      | Binary (b, Implies, e, f) -> Binary (b, And, e, negate f)
+      | Binary (b, Xor, e, f) -> Binary (b, Iff, e, f)
+      | Binary (b, Iff, e, f) -> Binary (b, Xor, e, f)
+      | e -> Unary (note e, Not, e)
+
+
+
+  (* Rewrite a boolean expression to negation normal form (NNF).
+
+     A formula is called in negation normal form, if and only if
+     all negation operators are applied to atoms, and the only
+     occuring binary connectives are [&&] and [||].  *)
+  let rec to_nnf =
+    function
+	Unary (b, Not, e) -> negate (to_nnf e)
+      | Binary (b, And, e, f) -> Binary (b, And, to_nnf e, to_nnf f)
+      | Binary (b, Or, e, f) -> Binary (b, Or, to_nnf e, to_nnf f)
+      | Binary (b, Implies, e, f) ->
+	  Binary (b, Or, negate (to_nnf e), to_nnf f)
+      | Binary (b, Xor, e, f) ->
+	  let ae = to_nnf e and af = to_nnf f in
+	    Binary (b, Or, Binary (b, And, ae, negate af),
+                   Binary (b, And, negate ae, af))
+      | Binary (b, Iff, e, f) ->
+	  let ae = to_nnf e and af = to_nnf f in
+	    Binary (b, Or, Binary (b, And, ae, af),
+                   Binary (b, And, negate ae, negate af))
+      | e -> e
+
+  (* Convert a boolean expression into {i conjunctive normal form}.
+
+     The resulting formula may be exponentially longer.
+
+     Assumes, that the expression is well-typed, that all operators
+     have their standard meaning, and that the expression is {i
+     not} lowered to Core Creol. *)
+  let to_cnf f =
+    let rec to_cnf_from_nnf =
       function
-	  Plus -> "+"
-	| Minus -> "-"
-	| Times -> "*"
-	| Div -> "/"
-	| Modulo -> "%"
-	| Power -> "**"
-	| Eq -> "="
-	| Ne -> "/="
-	| Le -> "<="
-	| Lt -> "<"
-	| Ge -> ">="
-	| Gt -> ">"
-	| And -> "&&"
-	| Wedge -> "/\\"
-	| Or -> "||"
-	| Vee -> "\\/"
-	| Xor -> "^"
-	| Implies -> "=>"
-	| Iff -> "<=>"
-	| Prepend -> "-|"
-	| Append -> "|-"
-	| Concat -> "|-|"
-	| Project -> "\\"
-	| In -> "in"
-
-    (* Precedence of binary operators. *)
-    let prec_of_binaryop =
-      function
-	  Plus -> (33, 33)
-	| Minus -> (33, 33)
-	| Times -> (31, 31)
-	| Div -> (31, 31)
-	| Modulo -> (31, 31)
-	| Power -> (29, 29)
-	| Eq -> (51, 51)
-	| Ne -> (51, 51)
-	| Le | Lt | Ge | Gt -> (37, 37)
-	| In -> (53, 53)
-	| And | Wedge -> (55, 55)
-	| Or | Vee -> (59, 59)
-	| Xor -> (57, 57)
-	| Implies -> (61, 61)
-	| Iff -> (61, 61)
-	| Prepend -> (33, 33)
-	| Append -> (33, 33)
-	| Concat -> (33, 33)
-	| Project -> (35, 35)
-
-    (* Get the textual representation of a unary operator *)
-    let string_of_unaryop =
-      function
-	  Not -> "~"
-	| UMinus -> "-"
-	| Length -> "#"
-
-    (* Return the precedence of a unary operator.  Only needed for pretty
-	printing. *)
-    let prec_of_unaryop =
-      function
-	  Not -> 53
-	| UMinus -> 15
-	| Length -> 15
-
-    (* Extract the annotation of an expression *)
-    let note =
-      function
-	  This a -> a
-	| QualifiedThis (a, _) -> a
-	| Caller a -> a
-	| Now a -> a
-	| Null a -> a
-	| Nil a -> a
-	| History a -> a
-	| Bool (a, _) -> a
-	| Int (a, _) -> a
-	| Float (a, _) -> a
-	| String (a, _) -> a
-	| Id (a, _) -> a
-	| StaticAttr(a, _, _) -> a
-	| Tuple (a, _) -> a
-	| ListLit (a, _) -> a
-	| SetLit (a, _) -> a
-	| Unary (a, _, _) -> a
-	| Binary (a, _, _, _) -> a
-	| If (a, _, _, _) -> a
-	| FuncCall (a, _, _) -> a
-	| Label (a, _) -> a
-	| New (a, _, _) -> a
-(*i	| Choose (a, _, _, _) -> a
-	| Forall (a, _, _, _) -> a
-	| Exists (a, _, _, _) -> a i*)
-	| Extern (a, _) -> a
-	| SSAId (a, _, _) -> a
-	| Phi (a, _) -> a
-
-    let get_type expr = (note expr).ty
-
-    let get_lhs_type =
-      function
-	  LhsVar(n, _) -> n.ty
-	| LhsAttr(n, _, _) -> n.ty
-	| LhsWildcard (n, _) -> n.ty
-	| LhsSSAId (n, _, _) -> n.ty
-
-    let name =
-      function
-	  LhsVar(_, n) -> n
-	| LhsAttr(_, n, _) -> n
-	| LhsWildcard _ -> "_"
-	| LhsSSAId (_, n, _) -> n
-
-    (* Whether an expression contains a label *)
-    let rec contains_label_p =
-	function
-	  Label _ -> true
-	| Unary (_, _, e) -> contains_label_p e
-	| Binary (_, _, e, f) -> (contains_label_p e) || (contains_label_p f)
-	| If (_, c, t, f) -> (contains_label_p c) || (contains_label_p t) ||
-	    (contains_label_p f)
-	| FuncCall(_, _, args) ->
-	    List.fold_left (fun a b -> a || (contains_label_p b)) false args
-	| New (_, _, args) ->
-	    List.fold_left (fun a b -> a || (contains_label_p b)) false args
-	| _ -> false
-
-    (* Whether an expression is a binary expression with a specific
-        operator *)
-    let binary_op_p op =
-	function
-	    Binary(_, o, _, _) when o = op -> true
-	  | _ -> false
-
-    (* Determines, whether a term is a boolean atom.
-
-        An atom is either an atomic proposition or the negation of an
-        atom.  Strictly speaking, only a and ~a are atoms, and not
-	~~a or ~~~a, but we need not make this distinction. *)
-    let rec atom_p =
-        function
-	    Unary(_, Not, e) -> atom_p e
-          | Binary(_, (And|Or|Implies|Xor|Iff), _, _) -> false
-	  | _ -> true
-
-    (* Determines, whether a term is already in DNF *)
-    let rec dnf_p =
-	function
-	    Unary(_, Not, e) -> not (dnf_p e)
-	  | Binary(_, Or, e, f) -> 
-		(dnf_p e) && (dnf_p f)
-	  | Binary(_, (And|Implies|Xor|Iff), e, f) ->
-		if not (dnf_p e) || not (dnf_p f) then false
-		else not (binary_op_p Or e) && not (binary_op_p Or f)
-	  | _ -> true
-
-    (* Negate a boolean formula. *)
-    let rec negate =
-      function
-	  Bool(b, v) -> Bool(b, not v)
-	| Unary (b, Not, e) -> e
-	| Binary(b, Eq, l, r) -> Binary(b, Ne, l, r)
-	| Binary(b, Ne, l, r) -> Binary(b, Eq, l, r)
-	| Binary (b, And, e, f) -> Binary (b, Or, negate e, negate f)
-	| Binary (b, Or, e, f) -> Binary (b, And, negate e, negate f)
-	| Binary (b, Implies, e, f) -> Binary (b, And, e, negate f)
-	| Binary (b, Xor, e, f) -> Binary (b, Iff, e, f)
-	| Binary (b, Iff, e, f) -> Binary (b, Xor, e, f)
-	| e -> Unary (note e, Not, e)
-
-
-
-    (* Rewrite a boolean expression to negation normal form (NNF).
-
-	A formula is called in negation normal form, if and only if
-	all negation operators are applied to atoms, and the only
-	occuring binary connectives are [&&] and [||].  *)
-    let rec to_nnf =
-      function
-	  Unary (b, Not, e) -> negate (to_nnf e)
-        | Binary (b, And, e, f) -> Binary (b, And, to_nnf e, to_nnf f)
-        | Binary (b, Or, e, f) -> Binary (b, Or, to_nnf e, to_nnf f)
-        | Binary (b, Implies, e, f) ->
-	    Binary (b, Or, negate (to_nnf e), to_nnf f)
-        | Binary (b, Xor, e, f) ->
-	    let ae = to_nnf e and af = to_nnf f in
-	      Binary (b, Or, Binary (b, And, ae, negate af),
-                     Binary (b, And, negate ae, af))
-        | Binary (b, Iff, e, f) ->
-	    let ae = to_nnf e and af = to_nnf f in
-	      Binary (b, Or, Binary (b, And, ae, af),
-                     Binary (b, And, negate ae, negate af))
+	  Binary (b, And, f, g) ->
+	    Binary (b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
+	| FuncCall (b, "&&", [f; g]) when Type.bool_p b.ty ->
+	    FuncCall (b, "&&", [to_cnf_from_nnf f; to_cnf_from_nnf g])
+	| Binary(b, Or, f, g) ->
+	    (* Push or inside of and using distributive laws *)
+	    let rec to_cnf_or left right =
+	      match (left, right) with
+		  (Binary(lb, And, lf, lg), _) ->
+		    Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
+		| (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
+		    FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
+		| (_, Binary(rb, And, rf, rg)) ->
+		    Binary (b, And, to_cnf_or left rf, to_cnf_or left rg)
+		| (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
+		    FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
+		| _ ->
+		    (* neither subformula contains and *)
+		    Binary(b, Or, to_cnf_from_nnf f, to_cnf_from_nnf g)
+	    in
+	      to_cnf_or f g
+	| FuncCall (b, "||", [f; g]) ->
+	    (* Push or inside of and using distributive laws *)
+	    let rec to_cnf_or left right =
+	      match (left, right) with
+		  (Binary(lb, And, lf, lg), _) ->
+		    Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
+		| (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
+		    FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
+		| (_, Binary(rb, And, rf, rg)) ->
+		    Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
+		| (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
+		    FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
+		| _ ->
+		    (* neither subformula contains and *)
+		    FuncCall (b, "||", [to_cnf_from_nnf f; to_cnf_from_nnf g])
+	    in
+	      to_cnf_or f g
+	| Binary (_, (Implies|Xor|Iff), _, _) ->
+	    assert false (* Input was assumed to be in NNF *)
+	| FuncCall (_, ("=>" | "^" | "<=>"), [_; _]) ->
+	    assert false (* Input was assumed to be in NNF *)
 	| e -> e
+    in
+      to_cnf_from_nnf (to_nnf f)
 
-    (* Convert a boolean expression into {i conjunctive normal form}.
+  (* Convert a boolean expression into {i disjunctive normal form}.
 
-	The resulting formula may be exponentially longer.
+     Assumes, that the expression is well-typed, that all operators have
+     their standard meaning, and that the expression is not lowered to
+     Core Creol. *)
+  let to_dnf exp = to_nnf (negate (to_cnf (to_nnf (negate exp))))
 
-        Assumes, that the expression is well-typed, that all operators
-	have their standard meaning, and that the expression is {i
-	not} lowered to Core Creol. *)
-    let to_cnf f =
-      let rec to_cnf_from_nnf =
-	function
-	    Binary (b, And, f, g) ->
-	      Binary (b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
-	  | FuncCall (b, "&&", [f; g]) when Type.bool_p b.ty ->
-	      FuncCall (b, "&&", [to_cnf_from_nnf f; to_cnf_from_nnf g])
-	  | Binary(b, Or, f, g) ->
-	      (* Push or inside of and using distributive laws *)
-	      let rec to_cnf_or left right =
-		match (left, right) with
-		    (Binary(lb, And, lf, lg), _) ->
-		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
-		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
-		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
-		  | (_, Binary(rb, And, rf, rg)) ->
-		      Binary (b, And, to_cnf_or left rf, to_cnf_or left rg)
-		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
-		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
-		  | _ ->
-		      (* neither subformula contains and *)
-		      Binary(b, Or, to_cnf_from_nnf f, to_cnf_from_nnf g)
-	      in
-		to_cnf_or f g
-	  | FuncCall (b, "||", [f; g]) ->
-	      (* Push or inside of and using distributive laws *)
-	      let rec to_cnf_or left right =
-		match (left, right) with
-		    (Binary(lb, And, lf, lg), _) ->
-		      Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
-		  | (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
-		      FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
-		  | (_, Binary(rb, And, rf, rg)) ->
-		      Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
-		  | (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
-		      FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
-		  | _ ->
-		      (* neither subformula contains and *)
-		      FuncCall (b, "||", [to_cnf_from_nnf f; to_cnf_from_nnf g])
-	      in
-		to_cnf_or f g
-	  | Binary (_, (Implies|Xor|Iff), _, _) ->
-	      assert false (* Input was assumed to be in NNF *)
-	  | FuncCall (_, ("=>" | "^" | "<=>"), [_; _]) ->
-	      assert false (* Input was assumed to be in NNF *)
-	  | e -> e
-      in
-	to_cnf_from_nnf (to_nnf f)
-
-    (* Convert a boolean expression into {i disjunctive normal form}.
-
-        Assumes, that the expression is well-typed, that all operators have
-	their standard meaning, and that the expression is not lowered to
-	Core Creol. *)
-    let to_dnf exp =
-      to_nnf (negate (to_cnf (to_nnf (negate exp))))
-
-    (* Check whether all occurences of labels are positive in a formula
-	f.  Assume, that a label value does not occur as the argument of
-	a function call! *)
-    let all_labels_positive_p expr =
-      let rec all_labels_positive =
-	(* Check whether all labels are positive assuming negation normal
-	   form *)
-        function
-	    Unary (_, Not, Label _) -> false
-	  | Binary(_, (And | Or), left, right) ->
-	      (all_labels_positive left) && (all_labels_positive right)
-	  | FuncCall(n, ("&&" | "||"), [left; right]) when Type.bool_p n.ty ->
-	      (all_labels_positive left) && (all_labels_positive right)
-	  | Binary(_, (Implies|Xor|Iff), f, g) ->
-	      assert false (* Input was assumed to be in NNF *)
-          | _ -> true
-      in
-	all_labels_positive (to_nnf expr)
-  end
+  (* Check whether all occurences of labels are positive in a formula
+     f.  Assume, that a label value does not occur as the argument
+     of a function call! *)
+  let all_labels_positive_p expr =
+    let rec all_labels_positive =
+      (* Check whether all labels are positive assuming negation normal
+	 form *)
+      function
+	  Unary (_, Not, Label _) -> false
+	| Binary(_, (And | Or), left, right) ->
+	    (all_labels_positive left) && (all_labels_positive right)
+	| FuncCall(n, ("&&" | "||"), [left; right]) when Type.bool_p n.ty ->
+	    (all_labels_positive left) && (all_labels_positive right)
+	| Binary(_, (Implies|Xor|Iff), f, g) ->
+	    assert false (* Input was assumed to be in NNF *)
+        | _ -> true
+    in
+      all_labels_positive (to_nnf expr)
+end
 
 module Statement =
   struct
@@ -661,6 +679,8 @@ module Statement =
 	| Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
 	| Extern (a, _) -> a
 
+    let life s = (note s).life
+
     (* Test, whether the statement is a skip statement. *)
     let skip_p =
       function
@@ -704,7 +724,7 @@ module Statement =
           Assign (note, lhs, rhs) ->
             let needed =
 	      function
-	          (LhsVar (a, v), Id (b, w)) when v = w -> false
+	          (LhsId (a, v), Id (b, w)) when v = w -> false
                 | _ -> true
             in
 	    begin

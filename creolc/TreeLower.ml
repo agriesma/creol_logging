@@ -100,8 +100,8 @@ let pass input =
 	  and lt = Type.label rng in
 	  let n' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsVar (n', l)), e', n, s, p'),
-		     Free (a, [LhsVar (n', l)])))
+	    Sequence (a, AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'),
+		     Free (a, [LhsId (n', l)])))
       | AsyncCall (a, None, e, n, s, p) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.    We cannot give a correct type to the label,
@@ -113,8 +113,8 @@ let pass input =
 	  and l = fresh_label () in
 	  let a' = make_expr_note_from_stmt_note a Type.data in
 	    ((label_decl l Type.data)::label_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
-		     Free (a, [LhsVar (a', l)])))
+	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
+		     Free (a, [LhsId (a', l)])))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p in
@@ -131,7 +131,7 @@ let pass input =
 	  and lt = Type.label (List.map get_lhs_type r) in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
+	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
 		     Reply (a, Id (a', l), r)))
       | AwaitSyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
@@ -145,7 +145,7 @@ let pass input =
 	  and a'' = make_expr_note_from_stmt_note a Type.bool
 	  in
 	    ((label_decl l lt)::label_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsVar (a', l)), e', n, s, p'),
+	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
 		     Sequence(a, Await (a, Label (a'', Id (a', l))),
 			     Reply (a, Id (a', l), r))))
       | LocalAsyncCall (a, None, m, ((c, dom, Some rng) as s), lb, ub, i) ->
@@ -158,8 +158,8 @@ let pass input =
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l (Type.label rng))::label_decls,
 	    Sequence (a,
-		     LocalAsyncCall(a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
-		     Free (a, [LhsVar (a', l)])))
+		     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'),
+		     Free (a, [LhsId (a', l)])))
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
 	     afterwards.  We cannot give a correct type to the label,
@@ -170,8 +170,8 @@ let pass input =
 	  and l = fresh_label () in
 	  let a' = make_expr_note_from_stmt_note a Type.data in
 	    ((label_decl l Type.data)::label_decls,
-	    Sequence (a, LocalAsyncCall(a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
-	             Free (a, [LhsVar (a', l)])))
+	    Sequence (a, LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'),
+	             Free (a, [LhsId (a', l)])))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
 	  let i' = List.map lower_expression i in
 	    (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
@@ -184,7 +184,7 @@ let pass input =
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
+	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i'),
 		     Reply (a, Id (a', l), o)))
       | AwaitLocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
@@ -196,7 +196,7 @@ let pass input =
 	  let a' = make_expr_note_from_stmt_note a lt 
 	  and a'' = make_expr_note_from_stmt_note a Type.bool in
 	    ((label_decl l lt)::label_decls,
-	    Sequence (a, LocalAsyncCall (a, Some (LhsVar (a', l)), m, s, lb, ub, i'),
+	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i'),
 		     Sequence (a, Await (a, Label(a'', Id (a', l))),
 			      Reply (a, Id (a', l), o))))
       | Tailcall (a, m, (co, dom, rng), l, u, i) ->
@@ -239,7 +239,7 @@ let pass input =
       function 
           ({ VarDecl.name = n ; var_type = _ ; init = Some i } as v) ->
 	    ([{ v with VarDecl.init = None }],
-	    Assign(note, [LhsVar(Expression.note i, n)], [lower_expression i]))
+	    Assign(note, [LhsId(Expression.note i, n)], [lower_expression i]))
         | v -> ([v], Skip note)
     in
       match vars with

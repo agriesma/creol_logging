@@ -368,7 +368,7 @@ basic_statement:
 	{ AsyncCall ((Statement.make_note $startpos), 
 		     (match l with
                           None -> None
-			| Some lab -> Some (LhsVar (Expression.make_note $startpos, lab))),
+			| Some lab -> Some (LhsId (Expression.make_note $startpos, lab))),
                     callee, m, Type.default_sig, i) }
     | l = ioption(ID) BANG m = ID
 	lb = ioption(preceded(SUPERTYPE, CID)) 
@@ -377,7 +377,7 @@ basic_statement:
 	{ LocalAsyncCall ((Statement.make_note $startpos), 
 			 (match l with
                               None -> None
-			    | Some lab -> Some (LhsVar (Expression.make_note $startpos, lab))),
+			    | Some lab -> Some (LhsId (Expression.make_note $startpos, lab))),
 			  m, Type.default_sig, lb, ub, i) }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
 	{ Reply (Statement.make_note $startpos,
@@ -424,7 +424,7 @@ basic_statement:
 lhs:
       id = ID c = ioption(preceded(AT, creol_type))
 	{ match c with
-	      None -> LhsVar ((Expression.make_note $startpos), id)
+	      None -> LhsId ((Expression.make_note $startpos), id)
 	    | Some cl -> LhsAttr ((Expression.make_note $startpos), id, cl) }
     | UNDERSCORE t = ioption(preceded(AS, creol_type))
 	{ LhsWildcard (Expression.make_note $startpos, t) }

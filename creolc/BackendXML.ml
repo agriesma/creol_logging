@@ -19,9 +19,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s Read and write Creol Programs.
+(*s Read and write Creol modes as XML files.
 
-*)
+  The XML format is used mainly for debugging dumps. *)
 
 open Creol
 
@@ -97,10 +97,10 @@ let emit ~name ~tree =
     XmlTextWriter.end_element writer
   and creol_with_to_xml w =
     XmlTextWriter.start_element writer "creol:with";
-      let co = Type.as_string w.With.co_interface in
-	XmlTextWriter.write_attribute writer "cointerface" co ;
-    List.iter (creol_method_to_xml) w.With.methods;
-    XmlTextWriter.end_element writer
+    let co = Type.as_string w.With.co_interface in
+      XmlTextWriter.write_attribute writer "cointerface" co ;
+      List.iter (creol_method_to_xml) w.With.methods;
+      XmlTextWriter.end_element writer
   and creol_inherits_to_xml (i, l) =
     XmlTextWriter.start_element writer "creol:inherits";
     XmlTextWriter.write_attribute writer "name" i;
@@ -383,33 +383,33 @@ let emit ~name ~tree =
   and creol_signature_to_xml (co, it, ot) =
     let creol_type_option_to_xml =
       function
-	 None ->
-    	   XmlTextWriter.start_element writer "creol:unknown" ;
-	   XmlTextWriter.end_element writer
-       | Some l -> List.iter creol_type_to_xml l
+	  None ->
+    	    XmlTextWriter.start_element writer "creol:unknown" ;
+	    XmlTextWriter.end_element writer
+	| Some l -> List.iter creol_type_to_xml l
     in
-    	  XmlTextWriter.start_element writer "creol:signature" ;
-    	  XmlTextWriter.start_element writer "creol:cointerface" ;
-	  creol_type_to_xml co ;
-	  XmlTextWriter.end_element writer ;
-    	  XmlTextWriter.start_element writer "creol:input-parameters" ;
-	  creol_type_option_to_xml it ;
-	  XmlTextWriter.end_element writer ;
-    	  XmlTextWriter.start_element writer "creol:output-parameters" ;
-	  creol_type_option_to_xml ot ;
-	  XmlTextWriter.end_element writer ;
-	  XmlTextWriter.end_element writer
+      XmlTextWriter.start_element writer "creol:signature" ;
+      XmlTextWriter.start_element writer "creol:cointerface" ;
+      creol_type_to_xml co ;
+      XmlTextWriter.end_element writer ;
+      XmlTextWriter.start_element writer "creol:input-parameters" ;
+      creol_type_option_to_xml it ;
+      XmlTextWriter.end_element writer ;
+      XmlTextWriter.start_element writer "creol:output-parameters" ;
+      creol_type_option_to_xml ot ;
+      XmlTextWriter.end_element writer ;
+      XmlTextWriter.end_element writer
   and creol_statement_note_to_xml note =
     XmlTextWriter.start_element writer "creol:statement-note" ;
     XmlTextWriter.write_attribute writer "file" note.Statement.file ;
     XmlTextWriter.write_attribute writer "line"
       (string_of_int note.Statement.line) ;
     Statement.IdSet.iter
-	(fun s ->
-	    XmlTextWriter.start_element writer "creol:life-var" ;
-	    XmlTextWriter.write_attribute writer "name" s ;
-	    XmlTextWriter.end_element writer)
-	note.Statement.life ;
+      (fun s ->
+	XmlTextWriter.start_element writer "creol:life-var" ;
+	XmlTextWriter.write_attribute writer "name" s ;
+	XmlTextWriter.end_element writer)
+      note.Statement.life ;
     XmlTextWriter.end_element writer
   and creol_vardecl_to_xml v =
     XmlTextWriter.start_element writer "creol:vardecl";
@@ -425,26 +425,26 @@ let emit ~name ~tree =
     XmlTextWriter.end_element writer
   and creol_lhs_to_xml =
     function
-        Expression.LhsVar (_, v) -> 
-        XmlTextWriter.start_element writer "creol:variable" ;
-        XmlTextWriter.write_attribute writer "name" v ;
-        XmlTextWriter.end_element writer
+        Expression.LhsId (_, v) -> 
+          XmlTextWriter.start_element writer "creol:identifier" ;
+          XmlTextWriter.write_attribute writer "name" v ;
+          XmlTextWriter.end_element writer
       | Expression.LhsAttr (_, n, c) ->
-        XmlTextWriter.start_element writer "creol:attribute" ;
-        XmlTextWriter.write_attribute writer "name" n ;
-        XmlTextWriter.end_element writer
+          XmlTextWriter.start_element writer "creol:attribute" ;
+          XmlTextWriter.write_attribute writer "name" n ;
+          XmlTextWriter.end_element writer
       | Expression.LhsWildcard (_, None) ->
-        XmlTextWriter.start_element writer "creol:wildcard" ;
-        XmlTextWriter.end_element writer
+          XmlTextWriter.start_element writer "creol:wildcard" ;
+          XmlTextWriter.end_element writer
       | Expression.LhsWildcard (_, Some c) ->
-        XmlTextWriter.start_element writer "creol:wildcard" ;
-	creol_type_to_xml c ;
-        XmlTextWriter.end_element writer
+          XmlTextWriter.start_element writer "creol:wildcard" ;
+	  creol_type_to_xml c ;
+          XmlTextWriter.end_element writer
       | Expression.LhsSSAId (_, i, v) ->
-        XmlTextWriter.start_element writer "creol:ssa-name" ;
-        XmlTextWriter.write_attribute writer "name" i ;
-        XmlTextWriter.write_attribute writer "version" (string_of_int v) ;
-        XmlTextWriter.end_element writer
+          XmlTextWriter.start_element writer "creol:ssa-name" ;
+          XmlTextWriter.write_attribute writer "name" i ;
+          XmlTextWriter.write_attribute writer "version" (string_of_int v) ;
+          XmlTextWriter.end_element writer
   and creol_expression_to_xml =
     function
         Expression.This a -> 

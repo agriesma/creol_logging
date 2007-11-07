@@ -144,12 +144,12 @@ let into_ssa tree =
     (* This function is used to create a new SSA name, because we
        define a new value for that variable. *)
     function
-	LhsVar (n, i) ->
+	LhsId (n, i) ->
 	  begin
 	    try 
 	      let info = Hashtbl.find env i in
 	        match info.kind with
-	            Attribute -> LhsVar (n, i) (* Attributes are unversioned *)
+	            Attribute -> LhsId (n, i) (* Attributes are unversioned *)
 	          | Input ->
 		      assert false (* No assignment to input variables. *)
 	          | (Output | Local) ->
@@ -195,7 +195,7 @@ let into_ssa tree =
 	if lv >= 0 && rv >= 0 && lv <> rv then
 	  begin
             let lhs = left_hand_side_to_ssa right
-	      (LhsVar (Expression.dummy_note, v))
+	      (LhsId (Expression.dummy_note, v))
             in
 	      (lhs :: l,
               Phi (Expression.dummy_note,
@@ -402,10 +402,10 @@ let out_of_ssa tree =
     (* This function is used to create a new SSA name, because we
        define a new value for that variable. *)
     function
-	LhsVar _ as l -> l
+	LhsId _ as l -> l
       | LhsAttr (n, s, t) -> LhsAttr (n, s, t)
       | LhsWildcard (n, t) -> LhsWildcard (n, t)
-      | LhsSSAId (n, i, v) -> LhsVar (n, i)
+      | LhsSSAId (n, i, v) -> LhsId (n, i)
   in
   let rec statement_of_ssa =
     function
