@@ -295,7 +295,7 @@ let pass input =
 	function
 	    [] -> ([], [], [])
 	  | ({ VarDecl.name = n; init = Some i } as v)::l ->
-	      let lhs n = Expression.LhsAttr (Expression.dummy_note, n,
+	      let lhs n = Expression.LhsAttr (Expression.make_note (), n,
 					     Type.Basic c.Class.name)
 	      and (v', n', i') = build l
 	      in
@@ -305,9 +305,9 @@ let pass input =
       in
 	match build c.Class.attributes with
 	    (a', [], []) ->
-	      (a', Skip Statement.dummy_note)
+	      (a', Skip (Statement.make_note ()))
 	  | (a', d', n') when List.length d' = List.length n' ->
-	      (a', Assign (Statement.dummy_note, d', n'))
+	      (a', Assign (Statement.make_note (), d', n'))
 	  | _ ->
 	      assert false
     in
@@ -324,7 +324,7 @@ let pass input =
 	      | { Method.name = "init"; inpars = []; outpars = [];
 		  body = Some s } as m ->
 		  { m with Method.body =
-		      Some (Sequence(Statement.dummy_note, assignment, s)) }
+		      Some (Sequence(Statement.make_note (), assignment, s)) }
 	      | m -> m
 	  in
 	    List.map
@@ -393,7 +393,7 @@ let pass input =
 
 	  let m' =
 	    List.concat [(mk "init" assignment);
-			 (mk "run" (Skip Statement.dummy_note));
+			 (mk "run" (Skip (Statement.make_note ())));
 			 ((List.hd w).With.methods)]
 	  in
 	    { (List.hd w) with With.methods = m' }::(List.tl w)
@@ -405,7 +405,7 @@ let pass input =
 
 	  { With.co_interface = Type.Internal;
 	    methods = [ make_method "init" assignment ;
-			make_method "run" (Skip Statement.dummy_note)];
+			make_method "run" (Skip (Statement.make_note ()))];
 	    invariants = [] } :: w
     in
 

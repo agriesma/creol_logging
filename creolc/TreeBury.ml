@@ -54,7 +54,7 @@ let optimize prg =
 	      else
 		let k' =
 		  IdSet.fold
-		    (fun e a -> (LhsId (Expression.dummy_note, e))::a)
+		    (fun e a -> (LhsId (Expression.make_note (), e))::a)
 		    k []
 		in
 		  Sequence (n, s1',

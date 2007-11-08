@@ -195,12 +195,12 @@ let into_ssa tree =
 	if lv >= 0 && rv >= 0 && lv <> rv then
 	  begin
             let lhs = left_hand_side_to_ssa right
-	      (LhsId (Expression.dummy_note, v))
+	      (LhsId (Expression.make_note (), v))
             in
 	      (lhs :: l,
-              Phi (Expression.dummy_note,
-	          [SSAId (Expression.dummy_note, v, lv);
-	           SSAId (Expression.dummy_note, v, rv)]) :: r)
+              Phi (Expression.make_note (),
+	          [SSAId (Expression.make_note (), v, lv);
+	           SSAId (Expression.make_note (), v, rv)]) :: r)
 	  end
 	else
 	  (l, r)

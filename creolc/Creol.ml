@@ -235,17 +235,8 @@ struct
     ty: Type.t
   }
 
-  let make_note pos =
-    {
-      file = pos.Lexing.pos_fname ;
-      line = pos.Lexing.pos_lnum ;
-      ty = Type.data
-    }
-
-  let typed_dummy_note t =
-    { file = "*dummy*"; line = 0; ty = t }
-
-  let dummy_note = typed_dummy_note Type.data
+  let make_note ?(file = "**dummy**") ?(line = 0) ?(ty = Type.data) () =
+    { file = file ; line = line ; ty = ty }
 
   let file note = note.file
 
@@ -605,20 +596,21 @@ module Statement =
     type note = {
 	file: string;
 	line: int;
-	life: IdSet.t
+	life: IdSet.t;
+	freed: IdSet.t;
+	buried: IdSet.t;
     }
 
     let file note = note.file
 
     let line note = note.line
 
-    let dummy_note =
-      { file = "**dummy**"; line = 0; life = IdSet.empty }
-
-    let make_note pos = {
-      file = pos.Lexing.pos_fname ;
-      line = pos.Lexing.pos_lnum ;
-      life = IdSet.empty 
+    let make_note ?(file = "**dummy**") ?(line = 0) () = {
+      file = file;
+      line = line;
+      life = IdSet.empty;
+      freed = IdSet.empty;
+      buried = IdSet.empty;
     }
 
     type t =
@@ -758,7 +750,7 @@ module Statement =
 	  Bury (a, (_::_ as l)) ->
 	    let null v =
 	      let t = Expression.get_lhs_type v in
-		Expression.Null (Expression.typed_dummy_note t) in
+		Expression.Null (Expression.make_note ~ty:t ()) in
 	      Assign (a, l, List.map null l)
 	| _ -> assert false
   end
