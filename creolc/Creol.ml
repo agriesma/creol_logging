@@ -656,7 +656,8 @@ module Statement =
 	| Choice of note * t * t
         | Extern of note * string
 
-    let note = function
+    let note =
+      function
 	| Skip a | Assert (a, _) | Prove (a, _) | Assign (a, _, _)
 	| Release a | Await (a, _) | Posit (a, _)
 	| AsyncCall (a, _, _, _, _, _) | Reply (a, _, _)
@@ -671,7 +672,50 @@ module Statement =
 	| Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
 	| Extern (a, _) -> a
 
+    let set_note stmt n =
+      match stmt with
+	| Skip _ -> Skip n
+        | Assert (_, e) -> Assert (n, e)
+        | Prove (_, e) -> Prove (n, e)
+        | Assign (_, vs, es) -> Assign (n, vs, es)
+	| Release _ -> Release n
+        | Await (_, c) -> Await (n, c)
+        | Posit (_, c) -> Posit (n, c)
+	| AsyncCall (_, l, x, m, s, i) -> AsyncCall (n, l, x, m, s, i)
+        | Reply (_, l, vs) -> Reply (n, l, vs)
+	| Free (_, ls) -> Free (n, ls)
+        | Bury (_, vs) -> Bury (n, vs)
+	| SyncCall (_, x, m, s, i, o) -> SyncCall (n, x, m, s, i, o)
+	| AwaitSyncCall (_, x, m, s, i, o) -> AwaitSyncCall (n, x, m, s, i, o)
+	| LocalAsyncCall (_, lab, m, s, l, u, i) ->
+	    LocalAsyncCall (n, lab, m, s, l, u, i)
+	| LocalSyncCall (_, m, s, l, u, i, o) ->
+            LocalSyncCall (n, m, s, l, u, i, o)
+	| AwaitLocalSyncCall (_, m, s, l, u, i, o) ->
+            AwaitLocalSyncCall (n, m, s, l, u, i, o)
+	| Tailcall (_, a, b, c, d, e) -> Tailcall (n, a, b, c, d, e)
+	| If (_, c, s1, s2) -> If (n, c, s1, s2)
+        | While (_, c, i, s) -> While (n, c, i, s)
+	| Sequence (_, s1, s2) -> Sequence (n, s1, s2)
+        | Merge (_, s1, s2) -> Merge (n, s1, s2)
+        | Choice (_, s1, s2) -> Choice (n, s1, s2)
+	| Extern (_, s) -> Extern(n, s)
+
+
     let life s = (note s).life
+
+    let set_life s l =
+      let note' = { (note s) with life = l } in set_note s note'
+
+    let freed s = (note s).freed
+
+    let set_freed s f =
+      let note' = { (note s) with freed = f } in set_note s note'
+
+    let buried s = (note s).buried
+
+    let set_buried s f =
+      let note' = { (note s) with buried = f } in set_note s note'
 
     (* Test, whether the statement is a skip statement. *)
     let skip_p =

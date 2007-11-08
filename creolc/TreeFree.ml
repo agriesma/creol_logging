@@ -43,18 +43,24 @@ let optimize prg =
     let rec work free =
       function
 	| AsyncCall (_, Some l, _, _, _, _) as s ->
-	    (IdSet.remove (name l) free, s)
+	    let free' = IdSet.remove (name l) free in
+	      (free', set_freed s free')
 	| LocalAsyncCall (_, Some l, _, _, _, _, _) as s ->
-	    (IdSet.remove (name l) free, s)
-	| Free (_, l) as s ->
-	    (List.fold_left (fun a e -> IdSet.add (name e) a) free l, s)
+	    let free' = IdSet.remove (name l) free in
+	      (free', set_freed s free')
+	| Free (n, l) ->
+	    let free' =
+	      List.fold_left (fun a e -> IdSet.add (name e) a) free l
+	    in
+	      (free', Free ({ n with freed = free'}, l))
 	| If (n, c, s1, s2) ->
 	    let (free', s1') = work free s1 in
 	    let (free'', s2') = work free' s2 in
-	      assert (IdSet.equal free' free''); (free'', If (n, c, s1', s2'))
+	      (*i assert (IdSet.equal free' free''); i*)
+	      (free'', If ({n with freed = free'' }, c, s1', s2'))
 	| While (n, c, i, s) ->
 	    let (free', s') = work free s in
-	      (free', While (n, c, i, s'))
+	      (free', While ({ n with freed = free' }, c, i, s'))
 	| Sequence (n, s1, s2) ->
 	    let (free', s1') = work free s1 in
 	    let (free'', s2') = work free' s2 in
@@ -65,29 +71,29 @@ let optimize prg =
 		(IdSet.diff (life s1) (life s2))
 	    in
 	      if IdSet.is_empty k then
-		(free'', Sequence (n, s1', s2'))
+		(free'', Sequence ({ n with freed = free'' }, s1', s2'))
 	      else
 		let k' =
 		  IdSet.fold
 		    (fun e a -> (LhsId (Expression.make_note (), e))::a)
 		    k []
 		in
-		  (IdSet.diff free'' k, Sequence (n, s1',
+		  (IdSet.diff free'' k, Sequence ({ n with freed = free'' }, s1',
 			       Sequence (note s2, Free (note s2, k'), s2')))
 	| Choice (n, s1, s2) ->
-	    let (f1, s1') = work free s1
-	    and (f2, s2') = work free s2
-	    in
-	      assert (IdSet.equal f1 f2) ; (f2, Choice (n, s1', s2'))
+	    let (f1, s1') = work free s1 and (f2, s2') = work free s2 in
+            let free' = IdSet.union f1 f2 in
+	      (*i assert (IdSet.equal f1 f2) ; i*)
+	      (free', Choice ({ n with freed = free' }, s1', s2'))
 	| Merge (n, s1, s2) ->
-	    let (f1, s1') = work free s1
-	    and (f2, s2') = work free s2
-	    in
-	      assert (IdSet.equal f1 f2) ; (f2, Merge (n, s1', s2'))
-	| s -> (free, s)
+	    let (f1, s1') = work free s1 and (f2, s2') = work free s2 in
+	    let free' = IdSet.union f1 f2 in
+	      (*i assert (IdSet.equal f1 f2) ; i*)
+	      (free', Merge ({ n with freed = free' }, s1', s2'))
+	| s -> (free, set_freed s free)
     in
     let (free', body') = work IdSet.empty stmt in
-      assert (IdSet.is_empty free'); body'
+      (* assert (IdSet.is_empty free'); *) body'
   in
   let optimise_in_method meth =
     match meth.Method.body with
