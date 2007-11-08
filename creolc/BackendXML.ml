@@ -400,17 +400,22 @@ let emit ~name ~tree =
       XmlTextWriter.end_element writer ;
       XmlTextWriter.end_element writer
   and creol_statement_note_to_xml note =
-    XmlTextWriter.start_element writer "creol:statement-note" ;
-    XmlTextWriter.write_attribute writer "file" note.Statement.file ;
-    XmlTextWriter.write_attribute writer "line"
-      (string_of_int note.Statement.line) ;
-    Statement.IdSet.iter
-      (fun s ->
-	XmlTextWriter.start_element writer "creol:life-var" ;
-	XmlTextWriter.write_attribute writer "name" s ;
-	XmlTextWriter.end_element writer)
-      note.Statement.life ;
-    XmlTextWriter.end_element writer
+    let emit_idset elt set =
+      Statement.IdSet.iter
+        (fun s ->
+	  XmlTextWriter.start_element writer elt ;
+	  XmlTextWriter.write_attribute writer "name" s ;
+	  XmlTextWriter.end_element writer)
+        set
+    in
+      XmlTextWriter.start_element writer "creol:statement-note" ;
+      XmlTextWriter.write_attribute writer "file" note.Statement.file ;
+      XmlTextWriter.write_attribute writer "line"
+        (string_of_int note.Statement.line) ;
+      emit_idset "creol:life-var" note.Statement.life ;
+      emit_idset "creol:freed-var" note.Statement.freed ;
+      emit_idset "creol:buried-var" note.Statement.buried ;
+      XmlTextWriter.end_element writer
   and creol_vardecl_to_xml v =
     XmlTextWriter.start_element writer "creol:vardecl";
     XmlTextWriter.write_attribute writer "name" v.VarDecl.name;
