@@ -21,15 +21,24 @@ Notice, that the RPM will only install the native version under the name
 @command{creolc}.
 
 
-Q: When I run @command{creolc}, I get the error message ``Fatal error:
-cannot load shared library dllxml Reason: dllxml.so: cannot open shared
-object file: No such file or directory''
+Q: @command{creolc} fails to work after upgrading ocaml.
 
-A: This means that you try to execute a bytecode version which is linked
-against uninstalled libxml2 bindings.  We can offer two solutions to
-this problem: Install the xml bindings by changing into the directory
-@file{xml} and executing make install as root, and then recompile the
-compiler.
+A: Versions of libraries are not compatible between different versions of
+OCaml.  It is therefore necessary to recompile and reinstall all libraries
+on which creolc is depending and to recompile creolc after these steps,
+if you change your version of ocaml.
 
-Under Linux you can also set the variable @env{LD_LIBRARY_PATH} to
-include the absolut path of the directory @file{xml}.
+Alternatively, you can use @command{creolc.opt}.
+
+
+Q: @command{creolc} fails to work after upgrading my Linux distribution.
+
+A: Sometimes a distribution upgrade will also upgrade the version of
+ocaml.  Sometimes the upgrade will also overwrite configuration files of
+ocamlfind or ocaml, such that @command{creolc} fails to work.  Such
+upgrades often affect @command{creolc.opt}, too.
+
+You should uninstall all dependend libraries which are not provided by
+the distribution before you upgrade the Linux distribution, upgrade the
+distribution, and then recompile and reinstall the depended libraries.
+After this, you have to recompile and reinstall @command{creolc}.
