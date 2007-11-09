@@ -1,3 +1,7 @@
+# top source directory
+abs_top_srcdir=@abs_top_srcdir@
+export abs_top_srcdir
+
 # Set the path to a good sed.
 if test -z "$SED"
 then

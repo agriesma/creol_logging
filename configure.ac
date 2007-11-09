@@ -70,7 +70,7 @@ fi
 
 dnl Check for maude.
 AC_CHECK_PROGS([MAUDE], [maude.linux maude.darwin maude],
-	       ['${top_srcdir}/maude-sh'])
+	       [[\${abs_top_srcdir}/maude-sh]])
 
 # Check whether the maude we found is usable.
 if (${MAUDE} --version >/dev/null 2>&1 || exit)
