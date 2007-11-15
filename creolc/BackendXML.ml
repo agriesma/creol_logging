@@ -33,11 +33,17 @@ let emit ~name ~tree =
   let writer = XmlTextWriter.to_file name 0 in
   let rec creol_declaration_to_xml =
     function
-	Declaration.Class c -> creol_class_to_xml c
-      | Declaration.Interface i -> creol_interface_to_xml i
-      | Declaration.Datatype d -> creol_datatype_to_xml d
-      | Declaration.Exception e -> creol_exception_to_xml e
-      | Declaration.Function f -> creol_function_to_xml f
+	Declaration.Class c when not c.Class.hidden ->
+	  creol_class_to_xml c
+      | Declaration.Interface i when not i.Interface.hidden ->
+	  creol_interface_to_xml i
+      | Declaration.Datatype d when not d.Datatype.hidden ->
+	  creol_datatype_to_xml d
+      | Declaration.Exception e when not e.Exception.hidden ->
+	  creol_exception_to_xml e
+      | Declaration.Function f when not f.Function.hidden ->
+	  creol_function_to_xml f
+      | _ -> ()
   and creol_exception_to_xml e =
     XmlTextWriter.start_element writer "creol:exception";
     XmlTextWriter.write_attribute writer "name" e.Exception.name;
@@ -661,6 +667,7 @@ let emit ~name ~tree =
     XmlTextWriter.set_indent writer true;
     XmlTextWriter.start_document writer None None None;
     XmlTextWriter.start_element writer "creol:creol";
+    XmlTextWriter.write_attribute writer "xmlns:creol" "http://www.creol.org/";
     XmlTextWriter.write_attribute writer "version" "0.0";
     XmlTextWriter.write_attribute writer "exporter"
       (Version.package ^ " " ^ Version.version);
