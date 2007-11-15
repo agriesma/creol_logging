@@ -1,20 +1,25 @@
-creolcomp
 
-Compiles creol programs to the Maude machine.
+                               creoltools
+                               ==========
 
-[ If you do not understand what this means, then this compiler is not
-  (yet) for you. ]
+These are the creoltools, toolw for writing, simulating, and analysing
+Creol programs.
 
-Usage:  creolc bla.creol -o bla.maude
+Creol is a formal language for modelling (and eventually
+programming) distributed, object-oriented systems.  Creol supports
+inter-object communication using asynchronous communication, multiple
+inheritance, and active objects.
 
-To send the result to standard output, use - as a filename, i.e.,
+This package contains:
 
-creolc bla.creol -o -
+  * An interpreter for Creol models, written in Maude.
 
-Initial documentation is provided in info.  It may be build using the
-rule `make pdf'.  Since this is a very early release it may contain
-errors and inaccuracys.
+  * A compiler from the surface language into the representation of the
+    interpreter.
 
-==============================================================================
-This small project serves as a prototyping environment for the compiler
-and the type checker for Creol.
+Installation instructions can be found in the file `INSTALL'.
+
+Documentation can be found in the `info' subdirectory.  It is provided
+in info format.  Try `info -f info/creoltools.info' to browse it online,
+or `make pdf' to format the documentation as a pdf document
+`creoltools.pdf' for printing.

@@ -46,6 +46,7 @@ right.
 * Debugging Options::         Tables, measurements, and debugging dumps.
 * Pass Options::              Which passes should be applied?
 * Target Options::            What should be output?
+* Environment Variables::     Environment variables.
 @end menu
 
 
@@ -251,3 +252,41 @@ causing the creation of an instance of @var{NAME} while reducing the
 initial configuration.
 @end table
 
+
+@node Environment Variables
+@subsection Environment Variables
+
+The @command{creolc} compiler searches for input files in a list of
+directories, if the file cannot be found in the current working
+directory.  The environment variable @env{CREOL_LIBRARY_PATH} can be
+set to a colon-separated list of directories in which the compiler
+searches for missing files.
+
+If the name of an input file is given by an absolute path name, the
+compiler will not search for that file in the search path.
+
+The search path of the compiler is constructed as follows:
+@enumerate
+@item
+Try to locate the file in the current working directory.
+
+@item
+Search the directories specified in @env{CREOL_LIBRARY_PATH} from left
+to right.
+
+@item
+Search in the compiler's data directory.  This directory is determined
+at compile time and is usually set to
+@file{@env{$datadir}/creoltools}, where @env{$datadir} usually
+evaluates to @file{/usr/local/share}.  Please check with your local
+system administrator on the value of that variable.
+
+@item
+The compiler tries to locate its own executable, which we denote by
+@env{execdir}, and search in the following directories relative to
+that location: @file{@env{$execdir}/../share/creoltools},
+@file{@env{$execdir}/../share}, and @file{@env{$execdir}}.
+@end enumerate
+
+If a file is not mentioned in either of these directories, the
+compiler will report an error.
