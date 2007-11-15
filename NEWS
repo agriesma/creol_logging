@@ -34,7 +34,9 @@ In the interpreter:
   It is replaced by an assignment to [null].
 
 Other:
-* The emacs lisp files have been removed.
+* The emacs lisp files have been removed and form their own projects
+  now.
+
 
 creoltools 0.0g (2007-09-10): alpha release.
 

@@ -978,6 +978,10 @@ struct
 
 end
 
+
+
+
+
 module Exception =
 struct
   type t = { name: string; parameters: VarDecl.t list; hidden: bool }
@@ -988,33 +992,33 @@ end
 
 
 module Function =
-  struct
+struct
 
-    type t = {
-      name: string;
-      parameters: VarDecl.t list;
-      result_type: Type.t;
-      body: Expression.t;
-      hidden: bool
-    }
+  type t = {
+    name: string;
+    parameters: VarDecl.t list;
+    result_type: Type.t;
+    body: Expression.t;
+    hidden: bool
+  }
 
-    let domain_type o =
-      Type.Tuple (List.map (fun v -> v.VarDecl.var_type) o.parameters)
+  let domain_type o =
+    Type.Tuple (List.map (fun v -> v.VarDecl.var_type) o.parameters)
 
-  end
+end
 
 
 module Datatype =
-  struct
+struct
 
-    type t = {
-      name: Type.t;
-      supers: Type.t list;
-      hidden: bool
-	(* Hide from output.  Set for datatypes defined in the prelude. *)
-    }
+  type t = {
+    name: Type.t;
+    supers: Type.t list;
+    hidden: bool
+      (* Hide from output.  Set for datatypes defined in the prelude. *)
+  }
 
-  end
+end
 
 
 
@@ -1030,6 +1034,7 @@ struct
       | Exception of Exception.t
       | Function of Function.t
 
+
   let hide =
     function
 	Class c -> Class { c with Class.hidden = true }
@@ -1038,364 +1043,389 @@ struct
       | Exception e -> Exception { e with Exception.hidden = true }
       | Function f -> Function { f with Function.hidden = true }
 
+
+  let show =
+    function
+	Class c -> Class { c with Class.hidden = false }
+      | Interface i -> Interface { i with Interface.hidden = false }
+      | Datatype d -> Datatype { d with Datatype.hidden = false }
+      | Exception e -> Exception { e with Exception.hidden = false }
+      | Function f -> Function { f with Function.hidden = false }
+
 end
 
 
+(*s Defines an abstract syntax of a program. *)
+
 module Program =
-  struct
+struct
 
-    (* The type of a program.  This is currently just a list of
-       declarations. *)
-    type t = Declaration.t list
+  (* The type of a program.  This is currently just a list of
+     declarations. *)
 
-    (* Generally, if a class or an interface is not found in the
-       program, we raise a \ocwupperid{Not\_found} exception.  But if
-       the context of the class or the interface is known, one of the
-       two following exceptions is raised. *)
-    exception Class_not_found of string * int * string
-
-    exception Interface_not_found of string * int * string
+  type t = Declaration.t list
 
 
-    (* Find a class of name \ocwlowerid{name} in
-       \ocwlowerid{program}. This function raises
-       \ocwupperid{Not\_found} if no class has the name
-       \ocwlowerid{name} in the program. *)
-    let find_class ~program ~name =
-      let class_with_name =
-	function
-	    Declaration.Class { Class.name = n } -> n = name
-	  | _ -> false
+  (* Generally, if a class or an interface is not found in the
+     program, a [Not_found] exception is raised.  But if the context
+     of the class or the interface is known, one of the two following
+     exceptions is raised. *)
+
+  exception Class_not_found of string * int * string
+
+  exception Interface_not_found of string * int * string
+
+
+  (* Take a list [l] of declarations and make a program structure out
+     of it. *)
+
+  let make l = l
+
+
+  (* Find a class of name [name] in [program]. This function raises
+     [Not_found] if no class has the name [name] in the program. *)
+  let find_class ~program ~name =
+    let class_with_name =
+      function
+	  Declaration.Class { Class.name = n } -> n = name
+	| _ -> false
+    in
+      match List.find class_with_name program with
+	  Declaration.Class cls -> cls
+	| _ -> assert false
+
+
+  (* Find all super-classes of a class [name] in [program].  Raises a
+     [Class_not_found] exception in the context of the class from
+     which the class is supposed to be inherited. A [Not_found]
+     exception is raised if [name] does not exist in the program. *)
+
+  let superclasses ~program name =
+    let rec fold cls =
+      List.fold_left (fun a (n, _) -> a@(work cls n)) [] cls.Class.inherits
+    and work super n =
+      let cls =
+	try
+	  find_class program n
+	with
+	    Not_found ->
+	      raise (Class_not_found (super.Class.file ,
+				      super.Class.line, n))
       in
-	match List.find class_with_name program with
-	    Declaration.Class cls -> cls
-	  | _ -> assert false
+	fold cls
+    in
+      fold (find_class program name)
 
 
-    (* Find all super-classes of a class \ocwlowerid{name} in
-       \ocwlowerid{program}.  Raises a \ocwupperid{Class\_not\_found}
-       exception in the context of the class from which the class is
-       supposed to be inherited. A \ocwupperid{Not\_found} exception
-       is raised if \ocwlowerid{name} does not exist in the
-       program. *)
-    let superclasses ~program name =
-      let rec fold cls =
-	List.fold_left (fun a (n, _) -> a@(work cls n)) [] cls.Class.inherits
-      and work super n =
-	let cls =
-	  try
-	    find_class program n
-	  with
-	      Not_found ->
-		raise (Class_not_found (super.Class.file ,
-				       super.Class.line, n))
-	in
-	  fold cls
-      in
-	fold (find_class program name)
+  (* Return true if [s] is a subclass of [t]. *)
+
+  let subclass_p ~program s t =
+    let rec search s =
+      (s = t) ||
+	try
+	  let s' = find_class program s in
+	    (List.exists (fun u -> search u) (List.map fst s'.Class.inherits))
+	with
+	    Not_found -> false
+    in search s
 
 
-    (* Return true if [s] is a subclass of [t]. *)
-    let subclass_p ~program s t =
+  let find_interface ~program ~name =
+    let interface_with_name =
+      function
+	  Declaration.Interface { Interface.name = n } -> name = n
+	| _ -> false
+    in
+      match List.find interface_with_name program with
+	  Declaration.Interface i -> i
+	| _ -> assert false
+
+
+  (* Return true if [s] is a subinterface of [t]. *)
+
+  let subinterface_p ~program s t =
+    if t = "Any" then (* Everything is a sub-interface of [Any]. *)
+      true
+    else
       let rec search s =
 	(s = t) ||
 	  try
-	    let s' = find_class program s in
-	      (List.exists (fun u -> search u) (List.map fst s'.Class.inherits))
+	    let s' = find_interface program s in
+	      (List.exists (fun u -> search u)
+		 (List.map fst s'.Interface.inherits))
 	  with
 	      Not_found -> false
-      in search s
-
-
-    let find_interface ~program ~name =
-      let interface_with_name =
-	function
-	    Declaration.Interface { Interface.name = n } when n = name ->
-	      true
-	  | _ ->
-	      false
       in
-	match List.find interface_with_name program with
-	    Declaration.Interface i ->
-	      i
-	  | _ ->
-	      assert false
+	search s
 
-    let subinterface_p ~program s t =
-      (* Return true if [s] is a subinterface of [t] *)
-      if t = "Any" then
-	(* Everything is a sub-interface of [Any] *)
-	true
-      else
-	let rec search s =
-	  (s = t) ||
-	    try
-	      let s' = find_interface program s in
-	        (List.exists (fun u -> search u)
-		    (List.map fst s'.Interface.inherits))
-	    with
-	        Not_found -> false
-	in
-	  search s
+
+  (* Return true if the class [cls] contracts the interface [iface]. *)
 
   let contracts_p program cls iface =
-    (* Return true if the class [cls] contracts the interface [iface] *)
     if iface = Type.any then
       true
     else
       let p i = subinterface_p program i (Type.as_string iface) in
         List.exists p (List.map fst cls.Class.contracts)
-  
-    let find_datatype ~program ~name =
-      let datatype_with_name =
-	function
-	    Declaration.Datatype { Datatype.name = Type.Basic n }
-	      when n = name -> true
-	  | Declaration.Datatype { Datatype.name = Type.Application (n, _) }
-	      when n = name -> true
-	  | _ -> false
-      in
-	match List.find datatype_with_name program with
-	    Declaration.Datatype d -> d
-	  | _ -> assert false
 
-    let rec sub_datatype_p program s t =
-      (* Return true if s is a sub-datatype of [t] *)
+	  
+  let find_datatype ~program ~name =
+    let datatype_with_name =
+      function
+	  Declaration.Datatype { Datatype.name = Type.Basic n }
+	    when n = name -> true
+	| Declaration.Datatype { Datatype.name = Type.Application (n, _) }
+	    when n = name -> true
+	| _ -> false
+    in
+      match List.find datatype_with_name program with
+	  Declaration.Datatype d -> d
+	| _ -> assert false
+
+
+  (* Return true if [s] is a sub-datatype of [t] *)
+
+  let rec sub_datatype_p program s t =
+    try
+      let s_decl =
+	find_datatype program s
+      in
+	(s = t) ||
+	  (List.exists (function u -> sub_datatype_p program u t)
+	     (List.map Type.as_string s_decl.Datatype.supers))
+    with
+	Not_found -> false
+
+
+  (* Find all definitions of functions called [name] in [program],
+     whose formal parameters are compatible with [domain].  Only
+     return the most specific matches.  Returns the empty list if none
+     is found. *)
+
+  let find_functions ~program ~name =
+    let f a =
+      function
+	  Declaration.Function f when f.Function.name  = name -> f::a
+	| _ -> a
+    in
+      List.fold_left f [] program
+
+
+  let rec find_attr_decl program cls name =
+    let rec find lst =
+      match lst with
+	  [] -> raise Not_found
+	| i::r ->
+	    try
+	      find_attr_decl program (find_class program (fst i)) name
+	    with
+		Not_found -> find r
+    in
       try
-	let s_decl =
-	  find_datatype program s
-	in
-	  (s = t) ||
-	    (List.exists (function u -> sub_datatype_p program u t)
-		(List.map Type.as_string s_decl.Datatype.supers))
+	Class.find_attr_decl cls name
       with
-	  Not_found -> false
+	  Not_found -> find cls.Class.inherits
 
-    let find_functions ~program ~name =
-      (* Find all definitions of functions called [name] in
-	  [program], whose formal parameters are compatible with
-	  [domain].  Only return the most specific matches.  Returns
-	  the empty list if none is found. *)
-      let f a =
-	function
-	    Declaration.Function f when f.Function.name  = name -> f::a
-	  | _ -> a
-      in
-        List.fold_left f [] program
 
-    let rec find_attr_decl program cls name =
-      let rec find lst =
-	match lst with
-	    [] -> raise Not_found
-	  | i::r ->
+  (* Return a list of all interfaces which are implemented by a class.
+     These interfaces are either directly claimed to be implemented,
+     contracted by the class itself, or contracted by one of the
+     super classes. *)
+
+  let class_implements ~program cls =
+    let rec work result =
+      function
+	  [] -> result
+	| (n, _)::l when List.mem n result -> work result l
+	| (n, _)::l ->
+	    let i =
 	      try
-		find_attr_decl program (find_class program (fst i)) name
-	      with
-		  Not_found -> find r
-      in
-	try
-	  Class.find_attr_decl cls name
-	with
-	    Not_found -> find cls.Class.inherits
-
-(* Return a list of all interfaces which are implemented by a class.
-   These interfaces are either directly claimed to be implemented,
-   contracted by the class itself, or contracted by one of the
-   super classes. *)
-
-    let class_implements ~program cls =
-      let rec work result =
-	function
-	    [] -> result
-	  | (n, _)::l when List.mem n result -> work result l
-	  | (n, _)::l ->
-	      let i =
-		try
-		  find_interface program n
-		with 
-		    Not_found ->
-		      raise (Interface_not_found
-				(cls.Class.file, cls.Class.line, n))
-	      in
-		work (n::result) (l@i.Interface.inherits)
-      in
-      let rec contracts cls =
-	let f a (n, _) = a@(contracts (find_class program n)) in
-	  List.fold_left f cls.Class.contracts cls.Class.inherits
-      in
-	work [] ((contracts cls) @ cls.Class.implements)
+		find_interface program n
+	      with 
+		  Not_found ->
+		    raise (Interface_not_found
+			     (cls.Class.file, cls.Class.line, n))
+	    in
+	      work (n::result) (l@i.Interface.inherits)
+    in
+    let rec contracts cls =
+      let f a (n, _) = a@(contracts (find_class program n)) in
+	List.fold_left f cls.Class.contracts cls.Class.inherits
+    in
+      work [] ((contracts cls) @ cls.Class.implements)
 
 (* Compute the interface of a class, i.e., the set of all method it
    implements. We call this interface the \emph{full descriptor.} *)
 
-    let full_class_descriptor ~program ~cls =
-      []
+  let full_class_descriptor ~program ~cls =
+    []
 
 
 (* Decides whether [s] is a subtype of [t] in [program]. *)
 
-    let subtype_p ~program s t =
-      let rec work =
-	function 
-	    (_, Type.Basic "Data") when Type.sentence_p s -> true 
-	  | (_, _) when s = t -> true
-	  | (Type.Basic st, Type.Basic tt) ->
-	      (sub_datatype_p program st tt) || (subinterface_p program st tt)
-	  | (_, Type.Intersection l) ->
-	      List.for_all (fun t -> work (s, t)) l
-	  | (_, Type.Disjunction l) ->
-	      List.exists (fun t -> work (s, t)) l
-	  | (Type.Application (sc, sa), Type.Application (tc, ta)) ->
-	      (sc = tc) &&
-		begin
-		  try 
-		    List.for_all2 (fun s t -> work (s, t)) sa ta
-		  with
-		      Invalid_argument _ -> false
-		end
-	  | (Type.Application _, _) -> assert false (* But see above *)
-	  | (Type.Tuple sa, Type.Tuple ta) ->
+  let subtype_p ~program s t =
+    let rec work =
+      function 
+	  (_, Type.Basic "Data") when Type.sentence_p s -> true 
+	| (_, _) when s = t -> true
+	| (Type.Basic st, Type.Basic tt) ->
+	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
+	| (_, Type.Intersection l) ->
+	    List.for_all (fun t -> work (s, t)) l
+	| (_, Type.Disjunction l) ->
+	    List.exists (fun t -> work (s, t)) l
+	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
+	    (sc = tc) &&
 	      begin
 		try 
-		  (List.for_all2 (fun s t -> work (s, t)) sa ta)
+		  List.for_all2 (fun s t -> work (s, t)) sa ta
 		with
 		    Invalid_argument _ -> false
 	      end
-	  | (Type.Tuple _, _) -> assert false (* But see above *)
-	  | (Type.Intersection sa, _) ->
-	      List.exists (fun s -> work (s, t)) sa
-	  | (Type.Disjunction sa, _) ->
-	      List.for_all (fun s -> work (s, t)) sa
-	  | (Type.Internal, Type.Internal) -> true
-	  | ((Type.Internal, _) | (_, Type.Internal)) -> false
-	  | (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
-	      (work (d1, d2)) && (work (r2, r1))
-	  | (Type.Function _, _) -> assert false
-	  | (Type.Variable _, _) -> assert false
-	  | (Type.Basic _, _) -> assert false
+	| (Type.Application _, _) -> assert false (* But see above *)
+	| (Type.Tuple sa, Type.Tuple ta) ->
+	    begin
+	      try 
+		(List.for_all2 (fun s t -> work (s, t)) sa ta)
+	      with
+		  Invalid_argument _ -> false
+	    end
+	| (Type.Tuple _, _) -> assert false (* But see above *)
+	| (Type.Intersection sa, _) ->
+	    List.exists (fun s -> work (s, t)) sa
+	| (Type.Disjunction sa, _) ->
+	    List.for_all (fun s -> work (s, t)) sa
+	| (Type.Internal, Type.Internal) -> true
+	| ((Type.Internal, _) | (_, Type.Internal)) -> false
+	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
+	    (work (d1, d2)) && (work (r2, r1))
+	| (Type.Function _, _) -> assert false
+	| (Type.Variable _, _) -> assert false
+	| (Type.Basic _, _) -> assert false
+    in
+      work (s, t)
+
+
+  (* Return the greates lower bound of all types in [lst] in
+     [program], i.e., a type $t$ with (lower-bound) $t <: s$ for all
+     $s$ in [lst] and with (maximality) $s <: t$ for all types $s$
+     with $s <: u$ for some $u$ in [lst].
+
+     Formally, the greatest lower bound of an empty [lst] is the top
+     type.
+
+     The result may be an intersection types, which is caused by
+     classes implementing multiple interfaces.  If this function
+     returns an intersection, the solution is ambigous.  *)
+
+  let meet ~program lst =
+    let find_meet s t =
+      if subtype_p program s t then
+	s
+      else if subtype_p program t s then
+	t
+      else
+	Type.data
+    in
+      match lst with
+	  [] -> Type.data
+	| hd::tl -> List.fold_left find_meet hd tl
+
+
+  (* Return the least upper bound of all types in [lst] in [program],
+     i.e., a type $t$ with (upper-bound) $s <: t$ for all $s$ in
+     [lst] and with (minimality) $t <: s$ for all types $s$ with $u
+     <: s$ for some $u$ in [lst].
+
+     Formally, the least upper bound of an empty [lst] is the bottom
+     type.  However, bottom need not exist, and the function will
+     therefore fail.
+
+     The result may be an intersection types, which is caused by
+     classes implementing multiple interfaces.  If this function
+     returns an intersection, the solution is ambigous.  *)
+
+  let join ~program lst =
+    let find_join s t =
+      if subtype_p program s t then
+	t
+      else
+	s
+    in
+      match lst with
+	  [] -> assert false
+	| hd::tl -> List.fold_left find_join hd tl
+
+
+  let find_method_in_with ~program ~name ~signature w =
+    let (coiface, ins, outs) = signature in
+    let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
+    let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
+    let p m =
+      m.Method.name = name &&
+      (subtype_p program dom (Method.domain_type m)) &&
+      (subtype_p program (Method.range_type m) rng)
+    in
+      List.filter p w.With.methods
+
+
+  (* Find all definitions of a method called [name] that matches the
+     signature [(coiface, ins, outs)] in [iface] and its
+     super-interfaces.  *)
+
+  let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
+    let rec find_methods_in_interface i =
+      let q w = subtype_p program coiface w.With.co_interface in
+      let withs = List.filter q i.Interface.with_decls in
+      let here =
+	List.fold_left
+	  (fun a w ->
+	     (find_method_in_with program name (coiface, ins, outs) w)@a)
+	  [] withs
+      and supers = List.map fst i.Interface.inherits
       in
-	work (s, t)
+	List.fold_left
+          (fun r i ->
+             (find_methods_in_interface (find_interface program i))@r)
+          here supers
+    in
+      find_methods_in_interface iface
 
 
-    (* Return the greates lower bound of all types in [lst] in
-       [program], i.e., a type $t$ with (lower-bound) $t <: s$ for all
-       $s$ in [lst] and with (maximality) $s <: t$ for all types $s$
-       with $s <: u$ for some $u$ in [lst].
+  (* Check whether the interface [iface] or one of its
+     superinterfaces provide a method matching the [signature]. *)
 
-       Formally, the greatest lower bound of an empty [lst] is the top
-       type.
+  let interface_provides_p ~program ~iface ~meth signature =
+    [] <> (interface_find_methods program iface meth signature)
 
-       The result may be an intersection types, which is caused by
-       classes implementing multiple interfaces.  If this function
-       returns an intersection, the solution is ambigous.  *)
 
-    let meet ~program lst =
-      let find_meet s t =
-	if subtype_p program s t then
-	  s
-	else if subtype_p program t s then
-	  t
-	else
-	  Type.data
+  (* Find all definitions of a method called [name] that matches the
+     signature [(coiface, ins, outs)] in class [cls] and its
+     super-classes.  *)
+
+  let class_find_methods ~program ~cls ~name (coiface, ins, outs) =
+    let rec find_methods_in_class c =
+      let q w = subtype_p program coiface w.With.co_interface in
+      let withs = List.filter q c.Class.with_defs in
+      let here =
+	List.fold_left
+	  (fun a w ->
+	     (find_method_in_with program name (coiface, ins, outs) w)@a)
+	  [] withs
+      and supers = List.map fst c.Class.inherits
       in
-	match lst with
-	    [] -> Type.data
-	  | hd::tl -> List.fold_left find_meet hd tl
+	List.fold_left
+          (fun r i ->
+             (find_methods_in_class (find_class program i))@r)
+          here supers
+    in
+      find_methods_in_class cls
 
 
-    (* Return the least upper bound of all types in [lst] in
-       [program], i.e., a type $t$ with (upper-bound) $s <: t$ for all
-       $s$ in [lst] and with (minimality) $t <: s$ for all types $s$
-       with $u <: s$ for some $u$ in [lst].
+  (* Check whether the class [cls] or one of its superclasses provide
+     a method called [meth] matching the [signature]. *)
 
-       Formally, the least upper bound of an empty [lst] is the bottom
-       type.  However, bottom need not exist, and the function will
-       therefore fail.
+  let class_provides_method_p ~program ~cls meth signature =
+    [] <> (class_find_methods program cls meth signature)
 
-       The result may be an intersection types, which is caused by
-       classes implementing multiple interfaces.  If this function
-       returns an intersection, the solution is ambigous.  *)
-
-    let join ~program lst =
-      let find_join s t =
-	if subtype_p program s t then
-	  t
-	else
-	  s
-      in
-	match lst with
-	    [] -> assert false
-	  | hd::tl -> List.fold_left find_join hd tl
-
-
-    let find_method_in_with ~program ~name ~signature w =
-      let (coiface, ins, outs) = signature in
-      let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
-      let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
-      let p m =
-	m.Method.name = name &&
-	  (subtype_p program dom (Method.domain_type m)) &&
-	  (subtype_p program (Method.range_type m) rng)
-      in
-	List.filter p w.With.methods
-
-
-    (* Find all definitions of a method called [name] that matches the
-       signature [(coiface, ins, outs)] in [iface] and its
-       super-interfaces.  *)
-    let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
-      let rec find_methods_in_interface i =
-        let q w = subtype_p program coiface w.With.co_interface in
-        let withs = List.filter q i.Interface.with_decls in
-        let here =
-	  List.fold_left
-	    (fun a w ->
-	      (find_method_in_with program name (coiface, ins, outs) w)@a)
-	    [] withs
-        and supers = List.map fst i.Interface.inherits
-        in
-	  List.fold_left
-            (fun r i ->
-              (find_methods_in_interface (find_interface program i))@r)
-            here supers
-      in
-	find_methods_in_interface iface
-
-
-    (* Check whether the interface [iface] or one of its
-       superinterfaces provide a method matching the [signature]. *)
-
-    let interface_provides_p ~program ~iface ~meth signature =
-      [] <> (interface_find_methods program iface meth signature)
-
-
-    (* Find all definitions of a method called [name] that matches the
-       signature [(coiface, ins, outs)] in class [cls] and its
-       super-classes.  *)
-
-    let class_find_methods ~program ~cls ~name (coiface, ins, outs) =
-      let rec find_methods_in_class c =
-	let q w = subtype_p program coiface w.With.co_interface in
-	let withs = List.filter q c.Class.with_defs in
-	let here =
-	  List.fold_left
-	    (fun a w ->
-	      (find_method_in_with program name (coiface, ins, outs) w)@a)
-	    [] withs
-        and supers = List.map fst c.Class.inherits
-        in
-	  List.fold_left
-            (fun r i ->
-              (find_methods_in_class (find_class program i))@r)
-            here supers
-      in
-	find_methods_in_class cls
-
-
-    (* Check whether the class [cls] or one of its superclasses
-       provide a method called [meth] matching the [signature]. *)
-
-    let class_provides_method_p ~program ~cls meth signature =
-      [] <> (class_find_methods program cls meth signature)
-
-  end
+end
