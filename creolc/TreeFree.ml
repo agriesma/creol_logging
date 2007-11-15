@@ -93,7 +93,7 @@ let optimize prg =
 	| s -> (free, set_freed s free)
     in
     let (free', body') = work IdSet.empty stmt in
-      (* assert (IdSet.is_empty free'); *) body'
+      (*i assert (IdSet.is_empty free'); i*) body'
   in
   let optimise_in_method meth =
     match meth.Method.body with

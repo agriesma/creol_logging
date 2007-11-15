@@ -282,7 +282,8 @@ let parse_from_file (name: string) =
 *)
 let parse_from_files: string list -> Declaration.t list =
   function files ->
-    List.fold_left (fun (a: Declaration.t list) (n: string) -> (parse_from_file n)@a) [] files
+    List.fold_left (fun (a: Declaration.t list) (n: string) ->
+      (parse_from_file n)@a) [] files
 
 
 (*s The following functions comprise the \emph{middle end} of the
@@ -309,6 +310,7 @@ let execute_dump ~filename ~pass ~tree =
   let ((), elapsed) = Misc.measure f in
     time_dump := !time_dump +. elapsed ;
     ()
+
 
 (* The following function accepts an abstract syntax
    \ocwlowerid{tree}, return by the parser, and applies each enabled
@@ -340,6 +342,7 @@ let execute_passes filename tree =
       tree
   in
     execute tree passes
+
 
 (* This function writes the time measurements to standard error.  The
    report is written to standard error, because the actual code can be

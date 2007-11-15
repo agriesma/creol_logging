@@ -191,7 +191,9 @@ inherits_decl:
 	{ signal_error $startpos "syntax error in inherits list" }
 
 inherits:
-    i = CID e = loption(delimited(LPAREN, separated_nonempty_list(COMMA, expression), RPAREN))
+    i = CID e = loption(delimited(LPAREN,
+				 separated_nonempty_list(COMMA, expression),
+				 RPAREN))
         { (i, e) }
 
 attribute:
@@ -285,13 +287,14 @@ datatypedecl:
 
 functiondecl:
     FUN n = id_or_op
-    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-    COLON t = creol_type EQEQ e = expression
+    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init),
+			 RPAREN)) COLON t = creol_type EQEQ e = expression
     { { Function.name = n; parameters = p; result_type = t; body = e;
 	hidden = false } }
   | FUN n = id_or_op
-    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-    COLON t = creol_type EQEQ EXTERN s = STRING
+    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init),
+			 RPAREN)) COLON t = creol_type
+    EQEQ EXTERN s = STRING
     { { Function.name = n; parameters = p; result_type = t;
 	body = Expression.Extern (expression_note $startpos, s);
 	hidden = false } }
@@ -383,11 +386,14 @@ basic_statement:
 	lb = ioption(preceded(SUPERTYPE, CID)) 
 	ub = ioption(preceded(SUBTYPE, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
-	{ LocalAsyncCall ((statement_note $startpos), 
-			 (match l with
-                              None -> None
-			    | Some lab -> Some (LhsId (expression_note $startpos, lab))),
-			  m, Type.default_sig, lb, ub, i) }
+        { let l' =
+	  match l with
+              None -> None
+	    | Some lab -> Some (LhsId (expression_note $startpos, lab))
+	  in
+	    LocalAsyncCall ((statement_note $startpos), l', m,
+			   Type.default_sig, lb, ub, i)
+	}
     | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
 	{ Reply (statement_note $startpos,
 		 Id (expression_note $startpos, l), o) }

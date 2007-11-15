@@ -792,10 +792,10 @@ module Statement =
     let assignment_of_bury =
       function
 	  Bury (a, (_::_ as l)) ->
-	    let null v =
+	    let nul v =
 	      let t = Expression.get_lhs_type v in
 		Expression.Null (Expression.make_note ~ty:t ()) in
-	      Assign (a, l, List.map null l)
+	      Assign (a, l, List.map nul l)
 	| _ -> assert false
   end
 

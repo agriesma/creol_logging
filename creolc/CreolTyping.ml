@@ -422,9 +422,11 @@ let typecheck tree: Declaration.t list =
 	      (Id (set_type n res, name), constr, fresh_name)
 	| StaticAttr (n, name, (Type.Basic c)) ->
 	    let res =
-	      Program.find_attr_decl program (Program.find_class program c) name
+	      Program.find_attr_decl program (Program.find_class program c)
+		name
 	    in
-	      (StaticAttr (set_type n res.VarDecl.var_type, name, (Type.Basic c)), constr, fresh_name)
+	      (StaticAttr (set_type n res.VarDecl.var_type, name,
+			  (Type.Basic c)), constr, fresh_name)
 	| StaticAttr _ -> assert false
 	| Unary (n, op, arg) ->
 	    let (arg', constr', fresh_name') =
@@ -786,16 +788,20 @@ let typecheck tree: Declaration.t list =
 	    ((Class.get_type cls), ins_t, outs_t)
 	in
 	  match cands with
-	      [] -> raise (Type_error (file n, line n,
-				      "Interface " ^ (Type.as_string callee_t) ^
-					" does not provide a method " ^ m ^ 
-					" with signature " ^
-					(Type.string_of_sig ((Class.get_type cls), ins_t, outs_t))))
+	      [] ->
+		let t =
+		  Type.string_of_sig ((Class.get_type cls), ins_t, outs_t)
+		in
+		  raise (Type_error (file n, line n,
+				    "Interface " ^ (Type.as_string callee_t) ^
+				      " does not provide a method " ^ m ^ 
+				      " with signature " ^ t))
 	    | [meth] -> meth.Method.coiface
-	    | _ -> raise (Type_error (file n, line n,
-				     "Call to method " ^ m ^ " of interface " ^
-				       (Type.as_string callee_t) ^
-				       " is ambigous."))
+	    | _ ->
+		raise (Type_error (file n, line n,
+				  "Call to method " ^ m ^ " of interface " ^
+				    (Type.as_string callee_t) ^
+				    " is ambigous."))
       in
       let signature = (co, ins_t, outs_t)
       in
@@ -819,10 +825,12 @@ let typecheck tree: Declaration.t list =
 			          "Class " ^ x ^ " is not a subclass of " ^
 				    cls.Class.name))
       in
+
         (* FIXME: We check for an internal method only, but in the
-	   paper "A Dynamic Binding Strategy ..." and the authorisation
-           policy example this mechanism is used to access any method
-           internally. *)
+	   paper \emph{A Dynamic Binding Strategy ...} and the
+	   authorisation policy example this mechanism is used to
+	   access any method internally. *)
+
 	match ub with
 	    None -> 
 	      if Program.class_provides_method_p program c' m signature then
@@ -1071,12 +1079,12 @@ let typecheck tree: Declaration.t list =
 	  in
 	    try
 	      List.fold_left (fun a n -> a + (c n)) 0 
-                 (Program.class_implements program cls)
+                (Program.class_implements program cls)
 	    with
 	        Program.Interface_not_found (file, line, iface) ->
-		    Messages.error file line ("Interface " ^ iface ^
-						" not found") ;
-		    1
+		  Messages.error file line ("Interface " ^ iface ^
+					       " not found") ;
+		  1
 	in
 	  if (methods_missing = 0) then
 	    { cls with Class.with_defs =

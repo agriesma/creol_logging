@@ -161,7 +161,9 @@ rule token = parse
     | ['0'-'9']+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
     | CID { CID(Lexing.lexeme lexbuf) }
     | ID { ID(Lexing.lexeme lexbuf) }
-    | STRING { let s = Lexing.lexeme lexbuf in STRING(String.sub s 1 ((String.length s) - 2)) }
+    | STRING
+	{ let s = Lexing.lexeme lexbuf in
+	    STRING(String.sub s 1 ((String.length s) - 2)) }
     | eof { EOF }
 and c_style_comment = parse
       "*/"	{ token lexbuf }
