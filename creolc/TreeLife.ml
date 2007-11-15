@@ -123,8 +123,9 @@ let compute_generates ~program ~cls ~meth =
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
 	    AsyncCall (n', Some l, c, m, s, a)
       | Reply (n, l, p) ->
+	  let g = generate l in
 	  let k = List.fold_left (add kill) IdSet.empty p in
-	  let n' = { n with life = IdSet.diff outs k } in
+	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
 	    Reply (n', l, p)
       | Free (n, v) ->
 	  let k = List.fold_left (add kill) IdSet.empty v in

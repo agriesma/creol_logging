@@ -415,6 +415,14 @@ struct
       | LhsWildcard (n, _) -> n.ty
       | LhsSSAId (n, _, _) -> n.ty
 
+  (* Extract the annotation of an expression *)
+  let variable =
+    function
+        Id (_, n) -> n
+      | StaticAttr (_, n, _) -> n
+      | SSAId (_, n, _) -> n
+      | _ -> assert false
+
   let name =
     function
 	LhsId(_, n) -> n

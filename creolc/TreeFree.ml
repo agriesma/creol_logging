@@ -48,10 +48,24 @@ let optimize prg =
 	| LocalAsyncCall (_, Some l, _, _, _, _, _) as s ->
 	    let free' = IdSet.remove (name l) free in
 	      (free', set_freed s free')
-	| Free (n, l) ->
+	| Reply (n, l, v) ->
 	    let free' =
-	      List.fold_left (fun a e -> IdSet.add (name e) a) free l
+	      let nm = variable l in
+	        Messages.message 1
+		  ("Variable " ^ nm ^ " freed (consumed) at " ^ (file n) ^
+		    ": " ^ (string_of_int (line n)));
+		  IdSet.add nm free
 	    in
+	      (free', Reply ({ n with freed = free'}, l, v))
+	| Free (n, l) ->
+	    let f a e =
+	      let nm = name e in
+	        Messages.message 1
+		  ("Variable " ^ nm ^ " freed at " ^ (file n) ^ ": " ^
+		    (string_of_int (line n)));
+		IdSet.add nm a
+	    in
+	    let free' = List.fold_left f free l in
 	      (free', Free ({ n with freed = free'}, l))
 	| If (n, c, s1, s2) ->
 	    let (free', s1') = work free s1 in
@@ -74,9 +88,13 @@ let optimize prg =
 		(free'', Sequence ({ n with freed = free'' }, s1', s2'))
 	      else
 		let k' =
-		  IdSet.fold
-		    (fun e a -> (LhsId (Expression.make_note (), e))::a)
-		    k []
+		  let f e a =
+		    Messages.message 1
+		      ("Freeing " ^ e ^ " at " ^ (file (note s2)) ^ ": " ^
+			(string_of_int (line (note s2)))) ;
+		    (LhsId (Expression.make_note (), e))::a
+		  in
+		    IdSet.fold f k []
 		in
 		  (IdSet.diff free'' k, Sequence ({ n with freed = free'' }, s1',
 			       Sequence (note s2, Free (note s2, k'), s2')))
