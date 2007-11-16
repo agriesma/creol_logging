@@ -710,6 +710,32 @@ module Statement =
 	| Extern (_, s) -> Extern(n, s)
 
 
+    let to_string =
+      function
+	| Skip _ -> "skip"
+	| Assert (_, _) -> "assert _"
+	| Prove (_, _) -> "prove _"
+	| Assign (_, _, _) -> "_ := _"
+	| Release _ -> "release"
+	| Await (_, _) -> "await _"
+	| Posit (_, _) -> "release _"
+	| AsyncCall (_, _, _, _, _, _) -> " _!_._(_)"
+	| Reply (_, _, _) -> "_?(_)"
+	| Free (_, _) -> "free _"
+	| Bury (_, _) -> "bury _"
+	| SyncCall (_, _, _, _, _, _) -> "_._(_;_)"
+	| AwaitSyncCall (_, _, _, _, _, _) -> "await _._(_;_)"
+	| LocalAsyncCall (_, _, _, _, _, _, _) -> "_!_<:_:>_(_)"
+	| LocalSyncCall (_, _, _, _, _, _, _) -> "_<:_:>_(_;_)"
+	| AwaitLocalSyncCall (_, _, _, _, _, _, _) -> "await _<:_:>_(_;_)"
+	| Tailcall (_, _, _, _, _, _) -> "tailcall _<:_:>_(_)"
+	| If (_, _, _, _) -> "if _ then _ else _ end"
+	| While (_, _, _, _) -> "while _ do _ end"
+	| Sequence (_, _, _) -> "_;_"
+	| Merge (_, _, _) -> "_|||_"
+	| Choice (_, _, _) -> "_[]_"
+	| Extern (_, s) -> "extern \"" ^ s ^ "\""
+
     let life s = (note s).life
 
     let set_life s l =
@@ -857,6 +883,13 @@ module Method =
       (m.coiface,
       Some (List.map (fun v -> v.VarDecl.var_type) m.inpars),
       Some (List.map (fun v -> v.VarDecl.var_type) m.outpars))
+
+
+    (* String representation of a method name. *)
+
+    let name_as_string meth =
+      meth.location ^ "::" ^ meth.name ^ (Type.string_of_sig (signature meth))
+      
 
     (* This predicate holds if the method is a definition of the init
        method. *)

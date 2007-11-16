@@ -28,6 +28,7 @@
   a statement, which usually happens only by expressions.  The
   function [kill] computes the set of variables \emph{written to} in a
   statement.
+
 *)
 
 open Creol
@@ -38,18 +39,36 @@ open Statement
 (* Log messages for lifeness analysis *)
 let log l = Messages.message (l + 0)
 
-
 (* Add a set of variables to the current result set. *)
 let add f s e = IdSet.union (f e) s
 
 
+(* Write the input and output set of a statement. *)
+
+let logio stmt i o =
+  if !Messages.verbose > 0 then (* Avoid this if no output is requested. *)
+    let g s =
+      let rec h =
+	function
+	    [] -> ""
+	  | [e] -> e
+	  | e::r -> e ^ ", " ^ (h r)
+      in
+	h (IdSet.fold (fun e a -> e :: a) s [])
+    in
+    let w = (file (note stmt)) ^ ": " ^ (string_of_int (line (note stmt))) in
+      log 1 ("Live at " ^ w ^ " [" ^ (Statement.to_string  stmt) ^
+	       "]: in = {" ^ (g i) ^ "}, out = {" ^ (g o) ^ "}")
+
+
 (* Compute the generate sets of a method body by traversing it forward. *)
+
 let compute_generates ~program ~cls ~meth =
   let () = Messages.message 2 ("Compute generates in " ^ meth.Method.name) in
   let rec generate =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
-	    Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
+	     Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
       | Id (a, v) when Method.local_p meth v ->
 	  IdSet.singleton v
       | Id (a, v) ->
@@ -89,89 +108,112 @@ let compute_generates ~program ~cls ~meth =
       | LhsWildcard (n, t) -> IdSet.empty
       | LhsSSAId (n, i, v) -> assert (Method.local_p meth i); IdSet.singleton i
   in
-  let rec compute_in_statement outs =
-    function
+  let rec compute_in_statement outs stmt =
+    match stmt with
 	Skip n ->
-	  Skip { n with life = outs }
+	  let n' = { n with life = outs } in
+	    logio stmt outs n'.life ;
+	    Skip n'
       | Assert (n, e) ->
-	  let n' = { n with life = IdSet.union outs (generate e) } in
+	  let g = generate e in
+	  let n' = { n with life = IdSet.union outs g } in
+	    logio stmt outs n'.life ;
 	    Assert (n', e)
       | Prove (n, e) ->
 	  let n' = { n with life = IdSet.union outs (generate e) } in
+	    logio stmt outs n'.life ;
 	    Prove (n', e)
       | Assign (n, lhs, rhs) ->
 	  let k = List.fold_left (add kill) IdSet.empty lhs
 	  and g = List.fold_left (add generate) IdSet.empty rhs in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	    logio stmt outs n'.life ;
 	    Assign (n', lhs, rhs)
       | Await (n, g) ->
 	  let n' = { n with life = IdSet.union outs (generate g) } in
+	    logio stmt outs n'.life ;
 	    Await (n', g)
       | Posit (n, g) ->
 	  let n' = { n with life = IdSet.union outs (generate g) } in
+	    logio stmt outs n'.life ;
 	    Posit (n', g)
       | Release n ->
-	  Release { n with life = outs }
+	  let n' = { n with life = outs } in
+	    logio stmt outs n'.life ;
+	    Release n'
       | AsyncCall (n, None, c, m, s, a) ->
 	  let g = 
 	    IdSet.union outs (List.fold_left (add generate) IdSet.empty (c::a))
 	  in
-	    AsyncCall ({ n with life = g }, None, c, m, s, a)
+	  let n' = { n with life = g } in
+	    logio stmt outs n'.life ;
+	    AsyncCall (n', None, c, m, s, a)
       | AsyncCall (n, Some l, c, m, s, a) ->
 	  let g = List.fold_left (add generate) IdSet.empty (c::a)
 	  and k =  kill l in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	    logio stmt outs n'.life ;
 	    AsyncCall (n', Some l, c, m, s, a)
       | Reply (n, l, p) ->
 	  let g = generate l in
 	  let k = List.fold_left (add kill) IdSet.empty p in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	    logio stmt outs n'.life ;
 	    Reply (n', l, p)
       | Free (n, v) ->
 	  let k = List.fold_left (add kill) IdSet.empty v in
 	  let n' = { n with life = IdSet.diff outs k } in
+	    logio stmt outs n'.life ;
 	    Free (n', v)
       | Bury (n, v) ->
 	  (* This statement must not affect the life range of any value,
 	     and all its arguments must be dead at that point. *)
 	  let k = List.fold_left (add kill) IdSet.empty v in
 	  let n' = { n with life = IdSet.diff outs k } in
+	    logio stmt outs n'.life ;
 	    Bury (n', v)
       | SyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add generate) IdSet.empty (c::i)
 	  and k = List.fold_left (add kill) IdSet.empty o in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	    logio stmt outs n'.life ;
 	    SyncCall (n', c, m, s, i, o)
       | AwaitSyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add generate) IdSet.empty (c::i)
 	  and k = List.fold_left (add kill) IdSet.empty o in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	    logio stmt outs n'.life ;
 	    AwaitSyncCall (n', c, m, s, i, o)
       | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
 	  let g = List.fold_left (add generate) IdSet.empty i in
 	  let n' = { n with life = IdSet.union outs g } in
+	    logio stmt outs n'.life ;
 	    LocalAsyncCall (n', None, m, s, ub, lb, i)
       | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
 	  let g = List.fold_left (add generate) IdSet.empty i
 	  and k = kill l in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	    logio stmt outs n'.life ;
 	    LocalAsyncCall (n', Some l, m, s, ub, lb, i)
       | LocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add generate) IdSet.empty i
 	  and k = List.fold_left (add kill) IdSet.empty o in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g }
 	  in
+	    logio stmt outs n'.life ;
 	    LocalSyncCall (n', m, s, u, l, i, o)
       | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add generate) IdSet.empty i
 	  and k = List.fold_left (add kill) IdSet.empty o in
 	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	    logio stmt outs n'.life ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
       | Tailcall (n, m, s, u, l, ins) ->
 	  let g =
 	    IdSet.union outs (List.fold_left (add generate) IdSet.empty ins)
 	  in
 	  let n' = { n with life = IdSet.union outs g } in
+	    logio stmt outs n'.life ;
 	    Tailcall (n', m, s, u, l, ins)
       | If (n, c, l, r) ->
 	  let c' = IdSet.union outs (generate c) in
@@ -180,6 +222,7 @@ let compute_generates ~program ~cls ~meth =
 	  let n' =
 	    { n with life = IdSet.union (note l').life (note r').life }
 	  in
+	    logio stmt outs n'.life ;
 	    If (n', c, l', r')
       | While (n, c, i, b) ->
 	  let c' = IdSet.union outs (generate c) in
@@ -190,11 +233,13 @@ let compute_generates ~program ~cls ~meth =
 	  in
 	  let b' = compute_in_statement i' b in
 	  let n' = { n with life = (note b').life } in
+	    logio stmt outs n'.life ;
 	    While (n', c, i, b')
       | Sequence (n, s1, s2) ->
 	  let s2' = compute_in_statement outs s2 in
 	  let s1' = compute_in_statement (note s2').life s1 in
 	  let n' = { n with life = (note s2').life } in
+	    logio stmt outs n'.life ;
 	    Sequence (n', s1', s2')
       | Merge (n, s1, s2) -> 
 	  let s1' = compute_in_statement outs s1
@@ -202,6 +247,7 @@ let compute_generates ~program ~cls ~meth =
 	  let n' =
 	    { n with life = IdSet.union (note s1').life (note s2').life }
 	  in
+	    logio stmt outs n'.life ;
 	    Merge (n', s1', s2')
       | Choice (n, s1, s2) -> 
 	  let s1' = compute_in_statement outs s1
@@ -209,16 +255,21 @@ let compute_generates ~program ~cls ~meth =
 	  let n' =
 	    { n with life = IdSet.union (note s1').life (note s2').life }
 	  in
+	    logio stmt outs n'.life ;
 	    Choice (n', s1', s2')
       | Extern (n, s) ->
-	  Extern ({ n with life = outs }, s)
+	  let n' = { n with life = outs } in
+	    logio stmt outs n'.life ;
+	    Extern (n', s)
   in
     match meth.Method.body with
 	None -> meth
       | Some b ->
+	  let () = log 1 ("Live vars in " ^ (Method.name_as_string meth)) in
 	  let add s v = IdSet.add v.VarDecl.name s in
 	  let outs = List.fold_left add IdSet.empty meth.Method.outpars in
 	    { meth with Method.body = Some (compute_in_statement outs b) }
+
 
 (* Compute the kill sets of a method body by traversing it backwards.
    This pass is necessary for programs which are not in SSA form.  For
@@ -238,6 +289,7 @@ let compute_in_method ~program ~cls ~meth =
       | Some b ->
 	  compute_kills program cls (compute_generates program cls meth)
 
+
 (* Compute life ranges in a program by mapping the above functions
    through the declarations in the tree. [analyse] is the main
    function to call from outside. *)
@@ -247,7 +299,8 @@ let analyse program =
     let compute_in_class cls =
       let compute_in_with_def w =
 	{ w with With.methods =
-	    List.map (fun m -> compute_in_method program cls m) w.With.methods }
+	    List.map (fun m -> compute_in_method program cls m)
+	      w.With.methods }
       in
 	{ cls with Class.with_defs =
 	    List.map compute_in_with_def cls.Class.with_defs }
