@@ -316,6 +316,12 @@ red init .
 red simulate('PROGRAM, upTerm(init main("Christmas", emp)), 0, 1) .
 ])
 
+TEST_CREOLC([DiscreteTimeout], [examples], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("DiscreteTimeout", emp)), 0, 1) .
+])
+
 TEST_CREOLC([Sensors], [examples], [dnl
 red init .
 ],[dnl

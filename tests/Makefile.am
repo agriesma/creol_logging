@@ -35,6 +35,9 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/BoundedBuffer.creol \
 		  examples/BoundedBuffer.maude \
 		  examples/BoundedBuffer.out \
+		  examples/DiscreteTimeout.creol \
+		  examples/DiscreteTimeout.maude \
+		  examples/DiscreteTimeout.out \
 		  examples/Fibonacci.creol examples/Fibonacci.maude \
 		  examples/Fibonacci.out \
 		  examples/Hello.creol examples/Hello.maude \

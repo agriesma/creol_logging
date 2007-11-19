@@ -1,0 +1,12 @@
+load creol-interpreter
+mod PROGRAM is
+protecting CREOL-SIMULATOR .
+op init : -> Configuration [ctor] .
+eq init =
+< "DiscreteTimeout" : Cl | Inh: noInh, Par: "other", Att: "other" |-> null , "clock" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: ( "clock" @@ "DiscreteTimeout" ) ::= int(0) ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "clock" ::= "+" ( "clock" # int(1) ) ; ( "label:0" ! "this" . "run" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
+  < "timeout" : Mtdname | Param: "n", Latt: "n" |-> null , "result" |-> null , "timeout" |-> null , "l" |-> null, Code: "timeout" ::= "+" ( "clock" # int(10) ) ; "l" ! "other" . "m" ( emp ) ; ( ( await "&&" ( ( "l" ?? ) # "<=" ( "clock" # "timeout" ) ) ) ; ( "l" ? ( noVid ) )  ; "result" ::= bool(true) ||| ( await ">" ( "clock" # "timeout" ) ) ; "result" ::= bool(false) ) ; return ( "result" ) >, Ocnt: 0 >
+
+.
+endm
