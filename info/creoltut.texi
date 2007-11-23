@@ -5,7 +5,8 @@ This chapter is intended to be an introduction into the concepts of
 the Creol language by giving examples.
 
 @menu
-* First Creol Program::         A first Creol program
+* First Creol Program::         A first Creol program.
+* Sieve of Erathostenes::       Computing prime numbers.
 @end menu
 
 
@@ -169,3 +170,190 @@ the a term repeating the input program and a collection of queues and
 objects.  We observe that all activites have terminated and that the
 object @code{ob("Main0")} has stored the string @code{"Hello, world"}
 in its attribute @code{"result"}.
+
+
+
+@node Sieve of Erathostenes
+@section Sieve of Erathostenes
+
+In this section we will explain how simple programs can be written in
+Creol.  We will show this using the well-known algorithm of
+Erathostenes for computing prime numbers.
+
+@menu
+* A Synchronous Version::                     
+* An Asynchronous Buggy Version::        
+* A Correct Asynchronous Version::       
+@end menu
+
+@node A Synchronous Version
+@subsection A synchronous version
+
+We begin the description of the sieve example by giving its
+@emph{synchronous implementation.}  Each system contains one instance
+of class generator, which will create an instance of class
+@code{Sieve} (with initial class parameter @code{2}) and send numbers
+beginning with @code{3} to that instance.
+
+Each instance of class @code{Sieve} implements the interface
+@code{Sieve}.  Each instance will receive a number and check whether
+it is divisible by its class parameter @code{p}.  If this is the case,
+the number is known not to be a prime and @code{false} is returned.
+If this is not the case it is sent to the next object in the chain for
+testing, or a new object is created with this number as class
+parameter and @code{true} is returned.  This way, a chain of objects
+is generated, whose class parameter values @code{p} enumerate the
+prime numbers.
+
+The implementation is given below.
+
+@example
+interface Sieve
+begin
+with Any
+  op send(in x: Int; out r: Bool)
+end
+
+class Generator
+begin
+  var n: Int
+  var next: Sieve
+  op init == next := new Sieve(2); n := 3
+  op run == var r: Bool; next.send(n; r); n := n + 1; !run()
+end
+
+class Sieve(p: Int) implements Sieve
+begin
+  var next: Sieve
+
+  with Any
+    op send(in n: Int; out res: Bool) ==
+      var d: Int := n / p, r: Int := n - d * p;
+      if r = 0
+      then res := false
+      else
+        if next /= null
+        then next.send(n; res)
+        else next := new Sieve(n); res := true
+        end
+      end
+end
+@end example
+
+
+@node An Asynchronous Buggy Version
+@subsection A buggy asynchronous version
+
+The implementation of the sieve in the previous section is synchronous
+and therefore suffers delays as the chain of prime number gets longer.
+Such delays can be avoided by using asynchronous communication.  Below
+is a modified version of the example that replaces synchronous
+communication with asyncrhonous communication.
+
+@example
+class Generator
+begin
+  var n: Int
+  var next: Sieve
+  op init == next := new Sieve(2); n := 3
+  op run == var r: Bool; var l: Label[Bool]; l!next.send(n); n := n + 1;
+    !run(); await l?; l?(r)
+end
+
+class Sieve(p: Int) implements Sieve
+begin
+  var next: Sieve
+  op init == skip
+  op run == skip
+  with Any
+    op send(in n: Int; out res: Bool) ==
+      var d: Int := n / p, r: Int := n - d * p;
+      if r = 0
+      then res := false
+      else
+        if next /= null
+          then
+           await next.send(n; res)
+         else
+           next := new Sieve(n); res := true
+         end
+      end
+end
+@end example
+
+One may ask whether this implementation is correct.  Unfortunately, it
+is only correct, if the communication media and scheduling preserves
+the order in which messsages are received and handled.  This is
+@emph{not} the case for Creol.
+
+The tools for Creol allow us to check properties of this program
+automatically.  We may ask the Maude engine to search for a
+computation in which @code{9} becomes a prime number.  Below we see a
+search statement, where the parameters @code{[1, 75]} state to search
+for only one solution and to abort the search after @code{75} rewrite
+steps.@footnote{The depth of @code{75} is the depth of the first
+example Maude finds and has been determined empirically.}
+
+@example
+search [1, 75] in PROGRAM : init main("Generator", emp) =>+
+ < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
+                     L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
+ conf:Configuration .
+@end example
+
+This command will result in a line like:
+
+@example
+Solution 1 (state 491568)
+states: 491569  rewrites: 22482129 in 252276ms cpu (300662ms real) (89116
+    rewrites/second)
+@end example
+
+followed by a configuration in which an instance of sieve with @c
+@code{p = 9} has been created.  The computation leading to that state
+can be displayed with the command @command{show path 491568 .}.  The
+number to use is the number of the state in the state graph which
+displays the error and is one less than the number of states.
+
+
+@node A Correct Asynchronous Version
+@subsection A correct asynchronous version
+
+@example
+interface Sieve
+begin
+with Any
+  op send(in x: Int, seq: Int; out r: Bool)
+end
+
+class Generator
+begin
+  var n: Int := 3
+  var next: Sieve
+  op init == next := new Sieve(2)
+  op run == var r: Bool; var l: Label[Bool];
+    l!next.send(n, n); n := n + 1; !run(); await l?; l?(r)
+end
+
+class Sieve(p: Int) implements Sieve
+begin
+  var next: Sieve
+  var ins: Int := 0
+  var outs: Int := 0
+
+  with Any
+    op send(in n: Int, seq: Int; out res: Bool) ==
+      var l: Label[Bool];
+      await seq = ins; ins := ins + 1;
+      if n % p = 0
+      then res := false
+      else
+        if next /= null
+          then
+           l!next.send(n, outs); outs := outs + 1; await l?; l?(res)
+         else
+           next := new Sieve(n); res := true
+         end
+      end
+end
+@end example
