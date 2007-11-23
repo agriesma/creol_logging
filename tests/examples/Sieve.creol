@@ -36,8 +36,6 @@ end
 class Sieve(p: Int) implements Sieve
 begin
   var next: Sieve
-  op init == skip
-  op run == skip
 
   with Any
     op send(in n: Int; out res: Bool) ==
