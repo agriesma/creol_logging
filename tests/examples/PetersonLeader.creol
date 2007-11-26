@@ -19,22 +19,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+interface Main
+begin
+with Process
+  op getNeighbour(out n: Process)
+end
+
 interface Process
 begin
 with Process
   op send(in u: Int)
 end
 
-class Process(i: Int, neighbour: Process) contracts Process
+class Process(i: Int, main: Main) contracts Process
 begin
-
+  var neighbour: Process
   var mode: Bool := true // true is active, false is relay
   var status: Int := 0   // 0 is unknown, 1 is chosen, 2 is reported
   var uid1: Int := i
   var uid2: Int
   var uid3: Int
 
-  op init == !neighbour.send(i)
+  op init == main.getNeighbour(; neighbour); !neighbour.send(i)
 
   with Process op send(in u: Int) ==
     if mode then
@@ -59,4 +65,21 @@ begin
       !neighbour.send(u)
     end
 
+end
+
+class Main contracts Main
+begin
+  var p1: Process
+  var p2: Process
+  var p3: Process
+  var p4: Process
+
+  op init == p1 := new Process(1, this); p2 := new Process(2, this);
+    p3 := new Process(3, this); p4 := new Process(4, this)
+
+  with Process op getNeighbour(out n: Process) ==
+    if caller = p1 then n := p2 else
+    if caller = p2 then n := p3 else
+    if caller = p3 then n := p4 else
+    if caller = p4 then n := p1 end end end end
 end

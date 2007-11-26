@@ -127,6 +127,7 @@ TEST_CREOLC_PP([Nil], [typecheck])
 TEST_CREOLC_PP([ExprFailure], [typecheck])
 TEST_CREOLC_PP([Alarmclock], [examples])
 TEST_CREOLC_PP([AsyncLCR], [examples])
+TEST_CREOLC_PP([PetersonLeader], [examples])
 TEST_CREOLC_PP([AsyncSieveBuggy], [examples])
 TEST_CREOLC_PP([AsyncSieve], [examples])
 TEST_CREOLC_PP([BoundedBuffer], [examples])
@@ -155,6 +156,7 @@ TEST_CREOLC_XML([Nil], [typecheck])
 TEST_CREOLC_XML([ExprFailure], [typecheck])
 TEST_CREOLC_XML([Alarmclock], [examples])
 TEST_CREOLC_XML([AsyncLCR], [examples])
+TEST_CREOLC_XML([PetersonLeader], [examples])
 TEST_CREOLC_XML([AsyncSieveBuggy], [examples])
 TEST_CREOLC_XML([AsyncSieve], [examples])
 TEST_CREOLC_XML([BoundedBuffer], [examples])
@@ -250,6 +252,13 @@ red init .
 rew init main("Init", emp) .
 ],[
 red simulate('PROGRAM, upTerm(init main("Init", emp)), 0, 1) .
+])
+
+TEST_CREOLC([PetersonLeader], [examples], [dnl
+red init .
+rew init main("Main", emp) .
+],[
+red simulate('PROGRAM, upTerm(init main("Main", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([AsyncSieveBuggy], [examples], [dnl

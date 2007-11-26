@@ -47,6 +47,9 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Hello.out \
 		  examples/PeerToPeer.creol examples/PeerToPeer.maude \
 		  examples/PeerToPeer.out \
+		  examples/PetersonLeader.creol \
+		  examples/PetersonLeader.maude \
+		  examples/PetersonLeader.out \
 		  examples/Philosophers.creol \
 		  examples/Philosophers.maude examples/Philosophers.out \
 		  examples/SantaClaus.creol examples/SantaClaus.maude \
