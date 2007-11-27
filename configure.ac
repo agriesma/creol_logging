@@ -121,10 +121,10 @@ If you are sure that you have maude installed, rerun $as_me with
 fi
 
 AC_MSG_CHECKING([for ocaml-libxml2])
-ocamllibxml2=`$OCAMLFIND query libxml2 2>/dev/null`
+OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' libxml2 2>/dev/null`
 if test "$?" = "0"
 then
-  AC_MSG_RESULT([yes])
+  AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
 else
   AC_MSG_RESULT([no])
   AC_MSG_ERROR([ocaml-libxml2 cannot be found.
@@ -133,6 +133,7 @@ You have to install ocaml-libxml2 from
 <http://heim.ifi.uio.no/~kyas/creoltools/> to compile the creoltools.
 ])
 fi
+AC_SUBST([OCAML_LIBXML2_VERSION])
 
 dnl check for ocamlweb and latex for literate programming.
 AC_CHECK_PROG([DOT], [dot], [dot], [${top_srcdir}/missing dot])
