@@ -38,23 +38,17 @@ begin
   var status: Int := 0   // 0 is unknown, 1 is chosen, 2 is reported
   var uid1: Int := i
   var uid2: Int
-  var uid3: Int
 
   op init == main.getNeighbour(; neighbour); !neighbour.send(i)
 
   with Process op send(in u: Int) ==
     if mode then
       if uid2 = null then
-        uid2 := u;
-        !neighbour.send(uid2);
-        if uid2 = uid1 then status := 1 end
+        if u = uid1 then status := 1 else uid2 := u; !neighbour.send(u) end
       else
-        assert uid3 = null;
-        uid3 := u;
-        if (uid2 > uid1 && uid2 > uid3) then
+        if (uid2 > uid1 && uid2 > u) then
           // Advance phase
-          uid1, uid2, uid3 := uid2, null, null;
-          !neighbour.send(uid1)
+          uid1, uid2 := uid2, null; !neighbour.send(uid1)
         else
           // Become relay
           mode := false
@@ -73,13 +67,16 @@ begin
   var p2: Process
   var p3: Process
   var p4: Process
+  var p5: Process
 
-  op init == p1 := new Process(1, this); p2 := new Process(2, this);
-    p3 := new Process(3, this); p4 := new Process(4, this)
+  op init == p1 := new Process(1, this); p2 := new Process(3, this);
+    p3 := new Process(5, this); p4 := new Process(4, this);
+    p5 := new Process(2, this)
 
   with Process op getNeighbour(out n: Process) ==
     if caller = p1 then n := p2 else
     if caller = p2 then n := p3 else
     if caller = p3 then n := p4 else
-    if caller = p4 then n := p1 end end end end
+    if caller = p4 then n := p5 else
+    if caller = p5 then n := p1 end end end end end
 end

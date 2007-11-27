@@ -1,5 +1,5 @@
 (*
- * CreolTyping.ml -- Type analysis for Creol.
+ * Typing.ml -- Type analysis for Creol.
  *
  * This file is part of creoltools
  *
@@ -254,7 +254,7 @@ let typecheck tree: Declaration.t list =
 	    This (subst_in_note subst n)
 	| QualifiedThis (n, t) ->
 	    QualifiedThis (subst_in_note subst n,
-			  Type.apply_substitution subst t)
+			   Type.apply_substitution subst t)
 	| Caller n ->
 	    Caller (subst_in_note subst n)
 	| Null n ->
@@ -275,38 +275,38 @@ let typecheck tree: Declaration.t list =
 	    String (subst_in_note subst n, value)
 	| Tuple (n, l) ->
 	    Tuple (subst_in_note subst n,
-		  List.map (substitute_types_in_expression subst) l)
+		   List.map (substitute_types_in_expression subst) l)
 	| ListLit (n, l) ->
 	    ListLit (subst_in_note subst n,
-		    List.map (substitute_types_in_expression subst) l)
+		     List.map (substitute_types_in_expression subst) l)
 	| SetLit (n, l) ->
 	    SetLit (subst_in_note subst n,
-		   List.map (substitute_types_in_expression subst) l)
+		    List.map (substitute_types_in_expression subst) l)
 	| Id (n, name) ->
 	    Id (subst_in_note subst n, name)
 	| StaticAttr (n, name, t) ->
 	    StaticAttr (subst_in_note subst n, name, t)
 	| Unary (n, op, arg) ->
 	    Unary (subst_in_note subst n, op,
-		  substitute_types_in_expression subst arg)
+		   substitute_types_in_expression subst arg)
 	| Binary (n, op, arg1, arg2) ->
 	    Binary (subst_in_note subst n, op,
-		   substitute_types_in_expression subst arg1,
-		   substitute_types_in_expression subst arg2)
+		    substitute_types_in_expression subst arg1,
+		    substitute_types_in_expression subst arg2)
 	| FuncCall (n, name, args) ->
 	    FuncCall (subst_in_note subst n, name,
-		     List.map (substitute_types_in_expression subst) args)
+		      List.map (substitute_types_in_expression subst) args)
 	| Expression.If (n, cond, iftrue, iffalse) ->
 	    Expression.If (subst_in_note subst n,
-			  substitute_types_in_expression subst cond,
-			  substitute_types_in_expression subst iftrue,
-			  substitute_types_in_expression subst iffalse)
+			   substitute_types_in_expression subst cond,
+			   substitute_types_in_expression subst iftrue,
+			   substitute_types_in_expression subst iffalse)
 	| Label (n, l) ->
 	    Label (subst_in_note subst n,
-		  substitute_types_in_expression subst l)
+		   substitute_types_in_expression subst l)
 	| New (n, t, args) ->
 	    New (subst_in_note subst n, Type.apply_substitution subst t,
-		List.map (substitute_types_in_expression subst) args)
+		 List.map (substitute_types_in_expression subst) args)
 	      (*i	| Choose (n, i, t, e) ->
 		Choose (subst_in_note subst n, i,
 		Type.apply_substitution subst t,
@@ -324,7 +324,7 @@ let typecheck tree: Declaration.t list =
 	    SSAId (subst_in_note subst n, name, version)
 	| Phi (n, args) ->
 	    Phi (subst_in_note subst n,
-		List.map (substitute_types_in_expression subst) args)
+		 List.map (substitute_types_in_expression subst) args)
   in
   let type_check_expression program cls meth coiface constr expr =
     (** Type check an expression [expr] in the environment
@@ -340,8 +340,8 @@ let typecheck tree: Declaration.t list =
       let (fresh_name', s) =
 	List.fold_left
 	  (fun (fn, s) x ->
-	    let (v, fn') = fresh_var fn in
-	      (fn', Type.Subst.add x v s))
+	     let (v, fn') = fresh_var fn in
+	       (fn', Type.Subst.add x v s))
 	  (fresh_name, Type.Subst.empty)
 	  fv
       in
@@ -361,7 +361,7 @@ let typecheck tree: Declaration.t list =
 	      (QualifiedThis (set_type n t, t), constr, fresh_name)
 	    else
 	      raise (Type_error (Expression.file n, Expression.line n,
-			        "Cannot qualify this as " ^ (Type.as_string t)))
+			         "Cannot qualify this as " ^ (Type.as_string t)))
 	| Caller n ->
 	    (Caller (set_type n (Type.Basic coiface)), constr, fresh_name)
 	| Null n ->
@@ -387,23 +387,23 @@ let typecheck tree: Declaration.t list =
 	      type_recon_expression_list constr fresh_name l
 	    in
 	      (Tuple (set_type n (Type.Tuple (List.map get_type l')), l'),
-	      constr', fresh_name')
+	       constr', fresh_name')
 	| ListLit (n, l) -> 
 	    let (l', constr', fresh_name') = 
 	      type_recon_expression_list constr fresh_name l in
 	    let (v, fresh_name'') = fresh_var fresh_name' in
 	    let ty = Type.Application ("List", [v]) in
 	      (ListLit (set_type n ty, l'),
-	      (List.map (fun e -> (get_type e, v)) l') @ constr',
-	      fresh_name'')
+	       (List.map (fun e -> (get_type e, v)) l') @ constr',
+	       fresh_name'')
 	| SetLit (n, l) ->
 	    let (l', constr', fresh_name') = 
 	      type_recon_expression_list constr fresh_name l in
 	    let (v, fresh_name'') = fresh_var fresh_name' in
 	    let ty = Type.Application ("Set", [v]) in
 	      (SetLit (set_type n ty, l'),
-	      (List.map (fun e -> (get_type e, v)) l') @ constr',
-	      fresh_name'')
+	       (List.map (fun e -> (get_type e, v)) l') @ constr',
+	       fresh_name'')
 	| Id (n, name) ->
 	    let res =
 	      try
@@ -415,9 +415,9 @@ let typecheck tree: Declaration.t list =
 		    with
 			Not_found ->
 			  raise (Type_error ((Expression.file n),
-					    (Expression.line n),
-					    "Identifier " ^ name ^
-					      " not declared"))
+					     (Expression.line n),
+					     "Identifier " ^ name ^
+					       " not declared"))
 	    in
 	      (Id (set_type n res, name), constr, fresh_name)
 	| StaticAttr (n, name, (Type.Basic c)) ->
@@ -426,7 +426,7 @@ let typecheck tree: Declaration.t list =
 		name
 	    in
 	      (StaticAttr (set_type n res.VarDecl.var_type, name,
-			  (Type.Basic c)), constr, fresh_name)
+			   (Type.Basic c)), constr, fresh_name)
 	| StaticAttr _ -> assert false
 	| Unary (n, op, arg) ->
 	    let (arg', constr', fresh_name') =
@@ -437,25 +437,25 @@ let typecheck tree: Declaration.t list =
 	      match Program.find_functions program name with
 		  [] ->
 		    raise (Type_error (Expression.file n, Expression.line n,
-				      "Unary operator " ^ name ^
-					" not defined"))
+				       "Unary operator " ^ name ^
+					 " not defined"))
 		| [candidate] ->
 		    (* This is a small optimisation. *)
 		    let r =
 		      Type.Function
 			(Function.domain_type candidate,
-			candidate.Function.result_type)
+			 candidate.Function.result_type)
 		    in
 		      fresh_names_in_type fresh_name' r
 		| candidates ->
 		    let (fn'', t) =
 		      List.fold_left (fun (fn, t) o ->
-			let r =
-			  Type.Function (Function.domain_type o,
-					o.Function.result_type)
-			in
-			let (fn', sr) = fresh_names_in_type fn r in
-			  (fn', sr::t))
+					let r =
+					  Type.Function (Function.domain_type o,
+							 o.Function.result_type)
+					in
+					let (fn', sr) = fresh_names_in_type fn r in
+					  (fn', sr::t))
 			(fresh_name', [])
 			candidates
 		    in
@@ -464,7 +464,7 @@ let typecheck tree: Declaration.t list =
 	    let ty2 = Type.Tuple [get_type arg'] in
 	    let (v, fresh_name''') = fresh_var fresh_name'' in
 	      (Unary (set_type n v, op, arg'),
-	      (Type.Function (ty2, v), ty1)::constr', fresh_name''')
+	       (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Binary (n, op, arg1, arg2) ->
 	    let (arg1', constr', fresh_name') =
 	      type_recon_expression constr fresh_name arg1
@@ -477,25 +477,25 @@ let typecheck tree: Declaration.t list =
 	      match Program.find_functions program name with
 		  [] ->
 		    raise (Type_error (Expression.file n, Expression.line n,
-				      "Binary operator " ^ name ^
-					" not defined"))
+				       "Binary operator " ^ name ^
+					 " not defined"))
 		| [candidate] ->
 		    (* This is a small optimisation. *)
 		    let r =
 		      Type.Function
 			(Function.domain_type candidate,
-			candidate.Function.result_type)
+			 candidate.Function.result_type)
 		    in
 		      fresh_names_in_type fresh_name'' r
 		| candidates ->
 		    let (fn'', t) =
 		      List.fold_left (fun (fn, t) o ->
-			let r =
-			  Type.Function (Function.domain_type o,
-					o.Function.result_type)
-			in
-			let (fn', sr) = fresh_names_in_type fn r in
-			  (fn', sr::t))
+					let r =
+					  Type.Function (Function.domain_type o,
+							 o.Function.result_type)
+					in
+					let (fn', sr) = fresh_names_in_type fn r in
+					  (fn', sr::t))
 			(fresh_name'', [])
 			candidates
 		    in
@@ -504,24 +504,24 @@ let typecheck tree: Declaration.t list =
 	    let ty2 = Type.Tuple [get_type arg1'; get_type arg2'] in
 	    let (v, fresh_name'''') = fresh_var fresh_name''' in
 	      (Binary (set_type n v, op, arg1', arg2'),
-	      (Type.Function (ty2, v), ty1)::constr'', fresh_name'''')
+	       (Type.Function (ty2, v), ty1)::constr'', fresh_name'''')
 	| Expression.If (n, cond, iftrue, iffalse) ->
 	    let (ncond, constr', fresh_name') =
 	      type_recon_expression constr fresh_name cond
 	    in let  (niftrue, constr'', fresh_name'') =
-	      type_recon_expression constr' fresh_name' iftrue
+		type_recon_expression constr' fresh_name' iftrue
 	    in let (niffalse, constr''', fresh_name''') =
-	      type_recon_expression constr'' fresh_name'' iffalse
+		type_recon_expression constr'' fresh_name'' iffalse
 	    in
-		 if (Expression.get_type ncond) = Type.bool then
-		   let restype =
-		     Program.meet program [get_type niftrue; get_type niffalse]
-		   in
-		     (Expression.If (set_type n restype, ncond, niftrue, niffalse),
-		     constr''', fresh_name''')
-		 else
-		   raise (Type_error (Expression.file n, Expression.line n,
-				     "Condition must be boolean"))
+	      if (Expression.get_type ncond) = Type.bool then
+		let restype =
+		  Program.meet program [get_type niftrue; get_type niffalse]
+		in
+		  (Expression.If (set_type n restype, ncond, niftrue, niffalse),
+		   constr''', fresh_name''')
+	      else
+		raise (Type_error (Expression.file n, Expression.line n,
+				   "Condition must be boolean"))
 	| FuncCall (n, name, args) ->
 	    let (nargs, constr', fresh_name') =
 	      type_recon_expression_list constr fresh_name args 
@@ -530,24 +530,24 @@ let typecheck tree: Declaration.t list =
 	      match Program.find_functions program name with
 		  [] ->
 		    raise (Type_error (Expression.file n, Expression.line n,
-				      "Function " ^ name ^ " not defined"))
+				       "Function " ^ name ^ " not defined"))
 		| [candidate] ->
 		    (* This is a small optimisation. *)
 		    let r =
 		      Type.Function
 			(Function.domain_type candidate,
-			candidate.Function.result_type)
+			 candidate.Function.result_type)
 		    in
 		      fresh_names_in_type fresh_name' r
 		| candidates ->
 		    let (fn'', t) =
 		      List.fold_left (fun (fn, t) o ->
-			let r =
-			  Type.Function (Function.domain_type o,
-					o.Function.result_type)
-			in
-			let (fn', sr) = fresh_names_in_type fn r in
-			  (fn', sr::t))
+					let r =
+					  Type.Function (Function.domain_type o,
+							 o.Function.result_type)
+					in
+					let (fn', sr) = fresh_names_in_type fn r in
+					  (fn', sr::t))
 			(fresh_name', [])
 			candidates
 		    in
@@ -556,7 +556,7 @@ let typecheck tree: Declaration.t list =
 	    let ty2 = Type.Tuple (List.map get_type nargs) in
 	    let (v, fresh_name''') = fresh_var fresh_name'' in
 	      (FuncCall (set_type n v, name, nargs),
-	      (Type.Function (ty2, v), ty1)::constr', fresh_name''')
+	       (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
 	    let exists =
 	      try
@@ -568,7 +568,7 @@ let typecheck tree: Declaration.t list =
 		(Label (set_type n (Type.Basic "Bool"), l), constr, fresh_name)
 	      else
 		raise (Type_error (Expression.file n, Expression.line n,
-				  "Label " ^ name ^ " not declared"))
+				   "Label " ^ name ^ " not declared"))
 	| Label _ -> assert false
 	| New (n, Type.Basic c, args) ->
 	    let (nargs, constr', fresh_name') =
@@ -581,7 +581,7 @@ let typecheck tree: Declaration.t list =
 	      with
 		  Not_found ->
 		    raise (Type_error (Expression.file n, Expression.line n,
-				      "Class " ^ c ^ " not defined"))
+				       "Class " ^ c ^ " not defined"))
 	    in
 	    let ctor_t = Type.Tuple
 	      (List.map (fun x -> x.VarDecl.var_type) cls_n.Class.parameters)
@@ -591,13 +591,13 @@ let typecheck tree: Declaration.t list =
 	      then
 		(* BOGUS *)
 		(New (set_type n (Class.get_type (Program.find_class program c)),
-		     Type.Basic c, nargs), constr', fresh_name')
+		      Type.Basic c, nargs), constr', fresh_name')
 	      else
 		raise (Type_error (Expression.file n, Expression.line n,
-				  "Arguments to new " ^ c ^
-				    " mismatch: expected " ^
-				    (Type.as_string ctor_t) ^ " but got " ^
-				    (Type.as_string args_t)))
+				   "Arguments to new " ^ c ^
+				     " mismatch: expected " ^
+				     (Type.as_string ctor_t) ^ " but got " ^
+				     (Type.as_string args_t)))
 	| New _ -> assert false
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
@@ -611,9 +611,9 @@ let typecheck tree: Declaration.t list =
 		    with
 			Not_found ->
 			  raise (Type_error ((Expression.file n),
-					    (Expression.line n),
-					    "Identifier " ^ name ^
-					      " not declared"))
+					     (Expression.line n),
+					     "Identifier " ^ name ^
+					       " not declared"))
 	    in
 	      (SSAId (set_type n res, name, version), constr, fresh_name)
 	| Phi (n, args) ->
@@ -649,10 +649,10 @@ let typecheck tree: Declaration.t list =
 	    and line = string_of_int (Expression.line (Expression.note expr)) 
 	    in 
 	      prerr_endline (file ^ ":" ^ line ^ ": expression has type " ^
-				(Type.as_string s) ^ " but expected is type " ^
-				(Type.as_string t) ^
-				"\n  Cannot satisfy constraints: " ^
-				(string_of_constraint_set constr')) ;
+			       (Type.as_string s) ^ " but expected is type " ^
+			       (Type.as_string t) ^
+			       "\n  Cannot satisfy constraints: " ^
+			       (string_of_constraint_set constr')) ;
 	      exit 1
     in
       substitute_types_in_expression subst expr'
@@ -670,15 +670,15 @@ let typecheck tree: Declaration.t list =
 		  with
 		      Not_found ->
 			raise (Type_error ((Expression.file n),
-					  (Expression.line n),
-					  "Identifier " ^ name ^
-					    " not declared"))
+					   (Expression.line n),
+					   "Identifier " ^ name ^
+					     " not declared"))
 	  in
 	    LhsId (set_type n res, name)
       | LhsAttr (n, name, (Type.Basic c)) ->
 	  let res =
 	    (Program.find_attr_decl program
-		(Program.find_class program c) name).VarDecl.var_type
+	       (Program.find_class program c) name).VarDecl.var_type
 	  in
 	    LhsAttr (set_type n res, name, (Type.Basic c))
       | LhsAttr _ -> assert false
@@ -697,9 +697,9 @@ let typecheck tree: Declaration.t list =
 		  with
 		      Not_found ->
 			raise (Type_error ((Expression.file n),
-					  (Expression.line n),
-					  "Identifier " ^ name ^
-					    " not declared"))
+					   (Expression.line n),
+					   "Identifier " ^ name ^
+					     " not declared"))
 	  in
 	    LhsSSAId (set_type n res, name, version)
   in
@@ -728,8 +728,8 @@ let typecheck tree: Declaration.t list =
 	with
 	    Not_found ->
 	      raise (Type_error (file n, line n,
-				"Interface " ^ (Type.as_string callee_t) ^
-				  " not defined."))
+				 "Interface " ^ (Type.as_string callee_t) ^
+				   " not defined."))
       in
       let co =
 	(* Find the cointerface of our methods. *)
@@ -739,16 +739,16 @@ let typecheck tree: Declaration.t list =
 	in
 	  match cands with
 	      [] -> raise (Type_error (file n, line n,
-				      "Interface " ^ (Type.as_string callee_t) ^
-					" does not provide a method " ^ m ^ 
-					" with signature " ^
-					(Type.string_of_sig 
+				       "Interface " ^ (Type.as_string callee_t) ^
+					 " does not provide a method " ^ m ^ 
+					 " with signature " ^
+					 (Type.string_of_sig 
 					    ((Class.get_type cls), ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> raise (Type_error (file n, line n,
-				     "Call to method " ^ m ^ " of interface " ^
-				       (Type.as_string callee_t) ^
-				       " is ambigous."))
+				      "Call to method " ^ m ^ " of interface " ^
+					(Type.as_string callee_t) ^
+					" is ambigous."))
       in
       let signature = (co, ins_t, outs_t)
       in
@@ -756,9 +756,9 @@ let typecheck tree: Declaration.t list =
 	  (label', callee', signature, ins')
 	else
 	  raise (Type_error (file n, line n,
-	  		    "Class " ^ cls.Class.name ^
-			      " does not contract interface " ^
-			      (Type.as_string co)))
+	  		     "Class " ^ cls.Class.name ^
+			       " does not contract interface " ^
+			       (Type.as_string co)))
     and check_sync_method_call n callee m ins outs =
       (* Check an asyncrhonous method call *)
       let callee' =
@@ -778,8 +778,8 @@ let typecheck tree: Declaration.t list =
 	with
 	    Not_found ->
 	      raise (Type_error (file n, line n,
-				"Interface " ^ (Type.as_string callee_t) ^
-				  " not defined."))
+				 "Interface " ^ (Type.as_string callee_t) ^
+				   " not defined."))
       in
       let co =
 	(* Find the cointerface of our methods. *)
@@ -793,15 +793,15 @@ let typecheck tree: Declaration.t list =
 		  Type.string_of_sig ((Class.get_type cls), ins_t, outs_t)
 		in
 		  raise (Type_error (file n, line n,
-				    "Interface " ^ (Type.as_string callee_t) ^
-				      " does not provide a method " ^ m ^ 
-				      " with signature " ^ t))
+				     "Interface " ^ (Type.as_string callee_t) ^
+				       " does not provide a method " ^ m ^ 
+				       " with signature " ^ t))
 	    | [meth] -> meth.Method.coiface
 	    | _ ->
 		raise (Type_error (file n, line n,
-				  "Call to method " ^ m ^ " of interface " ^
-				    (Type.as_string callee_t) ^
-				    " is ambigous."))
+				   "Call to method " ^ m ^ " of interface " ^
+				     (Type.as_string callee_t) ^
+				     " is ambigous."))
       in
       let signature = (co, ins_t, outs_t)
       in
@@ -809,9 +809,9 @@ let typecheck tree: Declaration.t list =
 	  (callee', signature, ins', outs')
 	else
 	  raise (Type_error (file n, line n,
-	  		    "Class " ^ cls.Class.name ^
-			      " does not contract interface " ^
-			      (Type.as_string co)))
+	  		     "Class " ^ cls.Class.name ^
+			       " does not contract interface " ^
+			       (Type.as_string co)))
     in
     let check_method_bounds n m signature lb ub =
       let c' =
@@ -822,8 +822,8 @@ let typecheck tree: Declaration.t list =
 		Program.find_class program x
 	      else
 	        raise (Type_error (file n, line n,
-			          "Class " ^ x ^ " is not a subclass of " ^
-				    cls.Class.name))
+			           "Class " ^ x ^ " is not a subclass of " ^
+				     cls.Class.name))
       in
 
         (* FIXME: We check for an internal method only, but in the
@@ -837,9 +837,9 @@ let typecheck tree: Declaration.t list =
 		()
 	      else
 		raise (Type_error (file n, line n,
-				  "Class " ^ c'.Class.name ^
-				    " does not provide method " ^ m ^
-				    (Type.string_of_sig signature)))
+				   "Class " ^ c'.Class.name ^
+				     " does not provide method " ^ m ^
+				     (Type.string_of_sig signature)))
 	  | Some y ->
 	      let cands =
 		Program.class_find_methods program c' m signature
@@ -851,9 +851,9 @@ let typecheck tree: Declaration.t list =
 		  ()
 		else
 		  raise (Type_error (file n, line n,
-				    "Class " ^ c'.Class.name ^
-				      " does not provide method " ^ m ^
-				      "which is above " ^ y))
+				     "Class " ^ c'.Class.name ^
+				       " does not provide method " ^ m ^
+				       "which is above " ^ y))
     in
     let check_local_async_call n m lb ub ins outs_t =
       let ins' =
@@ -899,10 +899,10 @@ let typecheck tree: Declaration.t list =
 	      and rhs_t = Expression.get_type rhs in
 	      let die () =
 		raise (Type_error (file n, line n,
-				  "Type mismatch in assignment: Expected " ^
-				    (Type.as_string lhs_t) ^
-				    " but got " ^
-				    (Type.as_string rhs_t)))
+				   "Type mismatch in assignment: Expected " ^
+				     (Type.as_string lhs_t) ^
+				     " but got " ^
+				     (Type.as_string rhs_t)))
 	      in
 		if Type.sentence_p rhs_t then
 		  if Program.subtype_p program rhs_t lhs_t then
@@ -924,8 +924,8 @@ let typecheck tree: Declaration.t list =
 	      with
 		  Invalid_argument _ ->
 		    raise (Type_error (file n, line n,
-				      "Type mismatch in assignment: " ^ 
-					"length of arguments differ"))
+				       "Type mismatch in assignment: " ^ 
+					 "length of arguments differ"))
 	    in
 	      Assign (n, lhs', rhs'')
         | Await (n, e) ->
@@ -987,35 +987,48 @@ let typecheck tree: Declaration.t list =
 	| Tailcall _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
 	    If (n, type_check_expression program cls meth coiface [] cond,
-	       type_check_statement program cls meth coiface iftrue,
-	       type_check_statement program cls meth coiface iffalse)
+		type_check_statement program cls meth coiface iftrue,
+		type_check_statement program cls meth coiface iffalse)
 	| While (n, cond, None, body) ->
 	    While (n, type_check_expression program cls meth coiface [] cond,
-		  None,
-		  type_check_statement program cls meth coiface body)
+		   None,
+		   type_check_statement program cls meth coiface body)
 	| While (n, cond, Some inv, body) ->
 	    While (n, type_check_expression program cls meth coiface [] cond,
-		  Some (type_check_expression program cls meth coiface [] inv),
-		  type_check_statement program cls meth coiface body)
+		   Some (type_check_expression program cls meth coiface [] inv),
+		   type_check_statement program cls meth coiface body)
 	| Sequence (n, s1, s2) ->
 	    let ns1 = type_check_statement program cls meth coiface s1 in
 	    let ns2 = type_check_statement program cls meth coiface s2 in
 	      Sequence (n, ns1, ns2)
 	| Merge (n, s1, s2) ->
 	    Merge (n, type_check_statement program cls meth coiface s1,
-		  type_check_statement program cls meth coiface s2)
+		   type_check_statement program cls meth coiface s2)
 	| Choice (n, s1, s2) ->
 	    Choice (n, type_check_statement program cls meth coiface s1,
-		   type_check_statement program cls meth coiface s2)
+		    type_check_statement program cls meth coiface s2)
 	| Extern _ as s -> s
   and type_check_method program cls coiface meth =
-    { meth with Method.body =
-	match meth.Method.body with
-	    None -> None
-	  | Some s ->
-	      Some (type_check_statement program cls meth coiface s) }
+    let () =
+      let f d { VarDecl.name = n; var_type = t } =
+	if not (Program.type_p program t) then
+	  raise (Type_error (cls.Class.file, cls.Class.line,
+			     "type " ^ (Type.as_string t) ^ " of " ^ d ^
+			       " parameter " ^ n ^ " does not exist"))
+      in
+	List.iter (f "input") meth.Method.inpars ;
+	List.iter (f "output") meth.Method.outpars
+    in
+      { meth with Method.body =
+	  match meth.Method.body with
+	      None -> None
+	    | Some s ->
+		Some (type_check_statement program cls meth coiface s) }
   and type_check_with_def program cls w =
-    let coiface = Type.as_string w.With.co_interface
+    let coiface = Type.as_string w.With.co_interface in
+    let () = if not (Program.interface_p program w.With.co_interface) then
+      raise (Type_error (cls.Class.file, cls.Class.line,
+			 "cointerface " ^ coiface ^ " is not an interface"))
     in
       { w with With.methods =
 	  List.map
@@ -1032,12 +1045,35 @@ let typecheck tree: Declaration.t list =
 	
   and type_check_class program cls =
 
+    let attribute_well_typed { VarDecl.name = n; var_type = t; init = i } =
+      if Program.type_p program t then
+	true
+      else
+	begin
+	  Messages.error cls.Class.file cls.Class.line
+	    ("type " ^ (Type.as_string t) ^ " of attribute " ^ n ^
+	       " does not exist") ;
+	  false
+	end
+
+    and parameter_well_typed { VarDecl.name = n; var_type = t } =
+      if Program.type_p program t then
+	true
+      else
+	begin
+	  Messages.error cls.Class.file cls.Class.line
+	    ("type " ^ (Type.as_string t) ^ " of class parameter " ^ n ^
+	       " does not exist") ;
+	  false
+	end
+
     (* Count the number of message definitions missing for an interface. *)
-    let methods_missing_for_iface i =
+
+    and methods_missing_for_iface i =
       let report m =
 	Messages.error cls.Class.file cls.Class.line
 	  (cls.Class.name ^ " does not provide a method " ^ m ^
-	      " declared in " ^ i.Interface.name)
+	     " declared in " ^ i.Interface.name)
       in
       let methods_missing_for_with w = 
 	let p m =
@@ -1067,31 +1103,45 @@ let typecheck tree: Declaration.t list =
     in
       try
 	ignore (Program.superclasses program cls.Class.name) ;
-	let methods_missing =
-	  let c n =
-	    try
-	      methods_missing_for_iface (Program.find_interface program n)
-	    with
-		Not_found ->
-		  Messages.error cls.Class.file cls.Class.line
-		    ("No interface " ^ n ^ " defined") ;
-		  1
-	  in
-	    try
-	      List.fold_left (fun a n -> a + (c n)) 0 
-                (Program.class_implements program cls)
-	    with
-	        Program.Interface_not_found (file, line, iface) ->
-		  Messages.error file line ("Interface " ^ iface ^
-					       " not found") ;
-		  1
-	in
-	  if (methods_missing = 0) then
-	    { cls with Class.with_defs =
-		List.map (type_check_with_def program cls)
-		  cls.Class.with_defs }
-	  else
+	let () =
+	  if (List.fold_left
+		(fun a v -> if parameter_well_typed v then a else a + 1)
+		0 cls.Class.parameters) > 0 then
 	    exit 1
+	in
+	let () =
+	  if (List.fold_left
+		(fun a v -> if attribute_well_typed v then a else a + 1)
+		0 cls.Class.attributes) > 0 then
+	    exit 1
+	in
+	  begin
+	    let methods_missing =
+	      let c n =
+		try
+		  methods_missing_for_iface (Program.find_interface program n)
+		with
+		    Not_found ->
+		      Messages.error cls.Class.file cls.Class.line
+			("No interface " ^ n ^ " defined") ;
+		      1
+	      in
+		try
+		  List.fold_left (fun a n -> a + (c n)) 0 
+                    (Program.class_implements program cls)
+		with
+	            Program.Interface_not_found (file, line, iface) ->
+		      Messages.error file line ("Interface " ^ iface ^
+						  " not found") ;
+		      1
+	    in
+	      if (methods_missing = 0) then
+		{ cls with Class.with_defs =
+		    List.map (type_check_with_def program cls)
+		      cls.Class.with_defs }
+	      else
+		exit 1
+	  end
       with
 	  Program.Class_not_found (f, l, c) ->
 	    Messages.error f l ("Class " ^ c ^ " not defined") ;

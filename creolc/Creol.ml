@@ -1182,6 +1182,22 @@ struct
 	| _ -> assert false
 
 
+
+  (* Check, whether [iface] is an interface in [program] *)
+
+  let interface_p ~program ~iface =
+    match iface with
+	Type.Internal -> true
+      | Type.Basic n ->
+	  let p =
+	    function
+		Declaration.Interface { Interface.name = n' } -> n = n'
+	      | _ -> false
+	  in
+	    List.exists p program
+      | _ -> false
+
+
   (* Return true if [s] is a subinterface of [t]. *)
 
   let subinterface_p ~program s t =
@@ -1236,6 +1252,37 @@ struct
 	     (List.map Type.as_string s_decl.Datatype.supers))
     with
 	Not_found -> false
+
+
+  (* Check, whether [ty] is a type in [program]. *)
+
+  let type_p ~program ~ty =
+    let p name' =
+      function
+          Declaration.Interface { Interface.name = n } -> (name' = n)
+        | Declaration.Datatype { Datatype.name = t } -> (name' = (Type.name t))
+	| _ -> false
+    in
+    let rec work_p =
+      function 
+	| Type.Internal ->
+	    true
+	| Type.Basic n ->
+	    List.exists (p n) program
+	| Type.Variable _ ->
+	    true
+	| Type.Application (n, a) ->
+	    (List.exists (p n) program) && (List.for_all work_p a)
+	| Type.Tuple l ->
+	    List.for_all work_p l
+	| Type.Intersection l ->
+	    List.for_all work_p l
+	| Type.Disjunction l ->
+	    List.for_all work_p l
+	| Type.Function (d, r) ->
+	    (work_p d) && (work_p r)
+    in
+      work_p ty
 
 
   (* Find all definitions of functions called [name] in [program],

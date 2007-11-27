@@ -34,7 +34,7 @@ bin_PROGRAMS		= creolc creolc.opt
 BUILT_SOURCES		= Version.ml Lexer.ml Parser.ml Parser.mli
 
 creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
-			  CreolTyping.ml \
+			  Typing.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \
@@ -50,7 +50,7 @@ creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
 creolc_cmi		= Lexer.cmi Parser.cmi
 
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
-			  CreolTyping.cmo TreeLower.cmo TreeSSA.cmo \
+			  Typing.cmo TreeLower.cmo TreeSSA.cmo \
 			  TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeTailcall.cmo \
 			  Lexer.cmo Parser.cmo \
@@ -61,7 +61,7 @@ creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
-			  CreolTyping.cmx TreeLower.cmx TreeSSA.cmx \
+			  Typing.cmx TreeLower.cmx TreeSSA.cmx \
 			  TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeTailcall.cmx \
 			  Lexer.cmx Parser.cmx \
@@ -73,7 +73,7 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
 			  Lexer.mll Parser.mly \
 			  Creol.ml \
-			  CreolTyping.ml \
+			  Typing.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeLife.ml \

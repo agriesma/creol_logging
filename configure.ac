@@ -44,6 +44,37 @@ this dependency.
 ])
 fi
 
+dnl We have found findlib, now we check for the version of findlib and
+dnl ocamlc
+AC_MSG_CHECKING([for version of findlib])
+OCAMLFIND_VERSION=`$OCAMLFIND query -format '%v' findlib 2>/dev/null`
+if test "$?" = "0"
+then
+  AC_MSG_RESULT([$OCAMLFIND_VERSION])
+else
+  AC_MSG_RESULT([none found])
+  AC_MSG_ERROR([findlib cannot determine its version.
+
+This may indicate that your installation of findlib is faulty.
+])
+fi
+
+AC_MSG_CHECKING([for version of ocaml])
+OCAML_VERSION=`$OCAMLFIND ocamlc -version 2>/dev/null`
+if test "$?" = "0"
+then
+  AC_MSG_RESULT([$OCAML_VERSION])
+else
+  AC_MSG_RESULT([none found])
+  AC_MSG_ERROR([findlib cannot determine version of ocamlc
+
+This may indicate that your installation of ocaml or findlib is faulty.
+])
+fi
+
+AC_SUBST([OCAMLFIND_VERSION])
+AC_SUBST([OCAML_VERSION])
+
 dnl If this test fails, we are on a platform which we do not support,
 dnl because ocamllex is part of the ocaml distribution, and ocamlfind
 dnl should depend on ocaml and friends!

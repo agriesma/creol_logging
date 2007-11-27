@@ -81,7 +81,9 @@ LANGUAGE	= language/Pair.creol language/Pair.maude language/Pair.out \
 		  language/Interleave.out
 
 TYPECHECK	= typecheck/Nil.creol typecheck/ExprFailure.creol \
-		  typecheck/Contracts.creol
+		  typecheck/Contracts.creol typecheck/Nat.creol \
+		  typecheck/Nat2.creol typecheck/Nat3.creol \
+		  typecheck/Nat4.creol
 
 TESTFILES	= Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \

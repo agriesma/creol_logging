@@ -77,7 +77,7 @@ let passes = [
   ( "typecheck" ,
   { help = "Undocumented." ;
     dependencies = "";
-    pass = CreolTyping.typecheck;
+    pass = Typing.typecheck;
     elapsed = 0.0; enabled = true; dump = false } );
   ( "lower" ,
   { help = "Expand statements to Core Creol" ;
