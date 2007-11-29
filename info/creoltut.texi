@@ -7,6 +7,7 @@ the Creol language by giving examples.
 @menu
 * First Creol Program::         A first Creol program.
 * Sieve of Erathostenes::       Computing prime numbers.
+* Inheritance::                 Inheritance and Interfaces
 @end menu
 
 
@@ -319,6 +320,9 @@ displays the error and is one less than the number of states.
 @node A Correct Asynchronous Version
 @subsection A correct asynchronous version
 
+One way of correcting the implementation of the sieve example is by
+introducing @emph{sequence numbers}.
+
 @example
 interface Sieve
 begin
@@ -355,5 +359,95 @@ begin
            next := new Sieve(n); res := true
          end
       end
+end
+@end example
+
+While this leads to a correct implementation, it also changes the
+interface of the @code{send} method, because a new parameter
+@code{seq} for the current sequence number had to be introduced.
+
+In Creol it is very important to be aware of the non-deterministic
+scheduling, and the reordering communication channels.  A later
+version of the language shall include primitives for refining these
+behaviours.
+
+
+
+@node Inheritance
+@section Inheritance and Interfaces
+
+Creol supports multiple inheritance.  To be more precise, Creol
+supports @emph{two} notions of inheritance: one for @emph{interfaces},
+since these provide behavioural specifications and serve as types, and
+one for @emph{code}.  Unlike in Java or C++, both kinds of inheritance
+are @emph{unrelated} and have to be specified separately.
+
+The keyword @code{inherit} is used to inherit code from some class
+@var{C}.  This means that all methods implemented in @var{C} or one of
+its super-classes are now implementations for the current class,
+provided that the implementation has not been @emph{overridden} by the
+current class.
+
+The keyword @code{implements} (@pxref{First Creol Program}) is used to
+assign @emph{types} to objects.  Each class implements the empty
+interface @code{Any}, which is also the super-interface of all other
+interfaces.  Classes are not types.  Interface declarations are never
+inherited.
+
+Each method may require some co-interface, which the caller has to
+satisfy.  This means that if a method requires a co-interface, all
+callers must implement that interface.  This is required, because the
+@code{caller} is typed by the co-interface, allowing the method to
+call back.  To make sure, that a method can be used after being
+inherited, an interface may be contracted using the @code{contracts}
+keyword.  See @ref{Contracts} for details.  The compiler will issue an
+error message if it believes that you should contract an interface.
+
+What does this mean in practise?  All classes implementing a certain
+interface can substitute for each other, since interface describe the
+behaviour.  Inheritance between interfaces @emph{is} behavioural
+sub-typing, and instances implementing a sub-interface can substitute
+for instances implementing the super-interface.
+
+Classes, however, may reuse code from super-classes freely.  If they
+decide to inherit a method, they must provide all interfaces required
+by that method, which are those needed to satisfy co-interface
+constraints.
+
+
+
+@subsection Object construction
+
+Especially when using multiple inheritance, one has to be aware how
+objects are constructed.  A new object is created using a new
+statement @code{o := new @var{C} (@var{args})}.
+
+Unlike C++ and other languages with multiple inheritance, Creol merges
+all attribute definitions from the same class.  If attributes are
+initialised multiple times, the last definition will prevail.
+
+@example
+class A(a: Int)
+begin
+  op m(out r: Int) == r := a
+end
+
+class B(b: Int) inherits A(b)
+begin
+  op init == assert a = b
+  op n(out r: Int) == m(; r)
+end
+
+class C(c: Int) inherits A(c)
+begin
+  op init == assert a = c
+  op o(out r: Int) == m(; r)
+end
+
+class D inherits B(1), C(2)
+begin
+  var x: Int
+  var y: Int
+  op run == n(; x); o(; y); assert x = 1 && y = 2
 end
 @end example
