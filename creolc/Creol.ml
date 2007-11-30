@@ -595,243 +595,262 @@ struct
 end
 
 module Statement =
-  struct
+struct
 
-    open Expression
+  open Expression
 
-    module IdSet = Set.Make(String)
+  module IdSet = Set.Make(String)
 
-    type note = {
-	file: string;
-	line: int;
-	life: IdSet.t;
-	freed: IdSet.t;
-	buried: IdSet.t;
-    }
+  (* *)
 
-    let file note = note.file
+  type note = {
+    file: string;
+    line: int;
+    life: IdSet.t;
+    freed: IdSet.t;
+    buried: IdSet.t;
+  }
 
-    let line note = note.line
+  let file note = note.file
+  
+  let line note = note.line
 
-    let make_note ?(file = "**dummy**") ?(line = 0) () = {
-      file = file;
-      line = line;
-      life = IdSet.empty;
-      freed = IdSet.empty;
-      buried = IdSet.empty;
-    }
+  let make_note ?(file = "**dummy**") ?(line = 0) () = {
+    file = file;
+    line = line;
+    life = IdSet.empty;
+    freed = IdSet.empty;
+    buried = IdSet.empty;
+  }
 
-    type t =
-      (* Abstract syntax of statements in Creol.  The type parameter ['a]
-	  refers to the type of possible annotations. *)
-	Skip of note
-	| Release of note
-	| Assert of note * Expression.t
-	| Prove of note * Expression.t
-	| Assign of note * Expression.lhs list * Expression.t list
-	  (* A multiple assignment statement.  Requires that the two lists
-	      are of the same length. *)
-	| Await of note * Expression.t
-	| Posit of note * Expression.t
-	  (* A posit statement, which is used to define {i true} properties
-              about time in a model. *)
-	| AsyncCall of note * Expression.lhs option * Expression.t * string *
-	   Type.signature *  Expression.t list
-	| Reply of note * Expression.t * Expression.lhs list
-	| Free of note * Expression.lhs list
-	| Bury of note * Expression.lhs list
-	    (* Bury represents a special form of assignment, setting all
-		its arguments to null.  It does not affect life ranges
-		of its arguments and assumes that all argument names are
-		already dead at that position. *)
-	| SyncCall of note * Expression.t * string * Type.signature *
-	    Expression.t list * Expression.lhs list
-	| AwaitSyncCall of note * Expression.t * string * Type.signature *
-	    Expression.t list * Expression.lhs list
-	| LocalAsyncCall of note * Expression.lhs option * string *
-	    Type.signature * string option * string option * Expression.t list
-	| LocalSyncCall of note * string * Type.signature * string option *
-	    string option * Expression.t list * Expression.lhs list
-	| AwaitLocalSyncCall of note * string * Type.signature * string option *
-	    string option * Expression.t list * Expression.lhs list
-	| Tailcall of note * string * Type.signature * string option *
-	    string option * Expression.t list
-	| If of note * Expression.t * t * t
-	| While of note * Expression.t * Expression.t option *
-	    t
-	| Sequence of note * t  * t
-	| Merge of note * t * t
-	| Choice of note * t * t
-        | Extern of note * string
 
-    let note =
-      function
-	| Skip a | Assert (a, _) | Prove (a, _) | Assign (a, _, _)
-	| Release a | Await (a, _) | Posit (a, _)
-	| AsyncCall (a, _, _, _, _, _) | Reply (a, _, _)
-	| Free (a, _) | Bury (a, _)
-	| SyncCall (a, _, _, _, _, _)
-	| AwaitSyncCall (a, _, _, _, _, _)
-	| LocalAsyncCall (a, _, _, _, _, _, _)
-	| LocalSyncCall (a, _, _, _, _, _, _)
-	| AwaitLocalSyncCall (a, _, _, _, _, _, _)
-	| Tailcall (a, _, _, _, _, _)
-	| If (a, _, _, _) | While (a, _, _, _)
-	| Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
-	| Extern (a, _) -> a
+  (* Abstract syntax of statements in Creol. *)
+  type t =
+      Skip of note
+    | Release of note
+    | Assert of note * Expression.t
+    | Prove of note * Expression.t
+    | Assign of note * Expression.lhs list * Expression.t list
+	(* A multiple assignment statement.  Requires that the two lists
+	   are of the same length. *)
+    | Await of note * Expression.t
+    | Posit of note * Expression.t
+	(* A posit statement, which is used to define {i true} properties
+           about time in a model. *)
+    | AsyncCall of note * Expression.lhs option * Expression.t * string *
+	Type.signature *  Expression.t list
+    | Reply of note * Expression.t * Expression.lhs list
+    | Free of note * Expression.lhs list
+    | Bury of note * Expression.lhs list
+	(* Bury represents a special form of assignment, setting all
+	   its arguments to null.  It does not affect life ranges
+	   of its arguments and assumes that all argument names are
+	   already dead at that position. *)
+    | SyncCall of note * Expression.t * string * Type.signature *
+	Expression.t list * Expression.lhs list
+    | AwaitSyncCall of note * Expression.t * string * Type.signature *
+	Expression.t list * Expression.lhs list
+    | LocalAsyncCall of note * Expression.lhs option * string *
+	Type.signature * string option * string option * Expression.t list
+    | LocalSyncCall of note * string * Type.signature * string option *
+	string option * Expression.t list * Expression.lhs list
+    | AwaitLocalSyncCall of note * string * Type.signature * string option *
+	string option * Expression.t list * Expression.lhs list
+    | Tailcall of note * string * Type.signature * string option *
+	string option * Expression.t list
+    | If of note * Expression.t * t * t
+    | While of note * Expression.t * Expression.t option *
+	t
+    | Sequence of note * t  * t
+    | Merge of note * t * t
+    | Choice of note * t * t
+    | Extern of note * string
 
-    let set_note stmt n =
+
+  (* Test, whether the statement is a skip statement. *)
+  let skip_p =
+    function
+	Skip _ -> true
+      | _ -> false
+
+
+  (* Extract the note from a statement. *)
+  let note =
+    function
+      | Skip a | Assert (a, _) | Prove (a, _) | Assign (a, _, _)
+      | Release a | Await (a, _) | Posit (a, _)
+      | AsyncCall (a, _, _, _, _, _) | Reply (a, _, _)
+      | Free (a, _) | Bury (a, _)
+      | SyncCall (a, _, _, _, _, _)
+      | AwaitSyncCall (a, _, _, _, _, _)
+      | LocalAsyncCall (a, _, _, _, _, _, _)
+      | LocalSyncCall (a, _, _, _, _, _, _)
+      | AwaitLocalSyncCall (a, _, _, _, _, _, _)
+      | Tailcall (a, _, _, _, _, _)
+      | If (a, _, _, _) | While (a, _, _, _)
+      | Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
+      | Extern (a, _) -> a
+
+
+  (* Set the note of a statement *)
+  let set_note stmt n =
+    match stmt with
+      | Skip _ -> Skip n
+      | Assert (_, e) -> Assert (n, e)
+      | Prove (_, e) -> Prove (n, e)
+      | Assign (_, vs, es) -> Assign (n, vs, es)
+      | Release _ -> Release n
+      | Await (_, c) -> Await (n, c)
+      | Posit (_, c) -> Posit (n, c)
+      | AsyncCall (_, l, x, m, s, i) -> AsyncCall (n, l, x, m, s, i)
+      | Reply (_, l, vs) -> Reply (n, l, vs)
+      | Free (_, ls) -> Free (n, ls)
+      | Bury (_, vs) -> Bury (n, vs)
+      | SyncCall (_, x, m, s, i, o) -> SyncCall (n, x, m, s, i, o)
+      | AwaitSyncCall (_, x, m, s, i, o) -> AwaitSyncCall (n, x, m, s, i, o)
+      | LocalAsyncCall (_, lab, m, s, l, u, i) ->
+	  LocalAsyncCall (n, lab, m, s, l, u, i)
+      | LocalSyncCall (_, m, s, l, u, i, o) ->
+          LocalSyncCall (n, m, s, l, u, i, o)
+      | AwaitLocalSyncCall (_, m, s, l, u, i, o) ->
+          AwaitLocalSyncCall (n, m, s, l, u, i, o)
+      | Tailcall (_, a, b, c, d, e) -> Tailcall (n, a, b, c, d, e)
+      | If (_, c, s1, s2) -> If (n, c, s1, s2)
+      | While (_, c, i, s) -> While (n, c, i, s)
+      | Sequence (_, s1, s2) -> Sequence (n, s1, s2)
+      | Merge (_, s1, s2) -> Merge (n, s1, s2)
+      | Choice (_, s1, s2) -> Choice (n, s1, s2)
+      | Extern (_, s) -> Extern(n, s)
+
+
+  (* Give a string representation of a statement *)
+  let to_string =
+    function
+      | Skip _ -> "skip"
+      | Assert (_, _) -> "assert _"
+      | Prove (_, _) -> "prove _"
+      | Assign (_, _, _) -> "_ := _"
+      | Release _ -> "release"
+      | Await (_, _) -> "await _"
+      | Posit (_, _) -> "release _"
+      | AsyncCall (_, _, _, _, _, _) -> " _!_._(_)"
+      | Reply (_, _, _) -> "_?(_)"
+      | Free (_, _) -> "free _"
+      | Bury (_, _) -> "bury _"
+      | SyncCall (_, _, _, _, _, _) -> "_._(_;_)"
+      | AwaitSyncCall (_, _, _, _, _, _) -> "await _._(_;_)"
+      | LocalAsyncCall (_, _, _, _, _, _, _) -> "_!_<:_:>_(_)"
+      | LocalSyncCall (_, _, _, _, _, _, _) -> "_<:_:>_(_;_)"
+      | AwaitLocalSyncCall (_, _, _, _, _, _, _) -> "await _<:_:>_(_;_)"
+      | Tailcall (_, _, _, _, _, _) -> "tailcall _<:_:>_(_)"
+      | If (_, _, _, _) -> "if _ then _ else _ end"
+      | While (_, _, _, _) -> "while _ do _ end"
+      | Sequence (_, _, _) -> "_;_"
+      | Merge (_, _, _) -> "_|||_"
+      | Choice (_, _, _) -> "_[]_"
+      | Extern (_, s) -> "extern \"" ^ s ^ "\""
+
+
+  (* Get the variables life at a statement. *)
+  let life s = (note s).life
+
+
+  (* Set the variables life at a statement. *)
+  let set_life s l =
+    let note' = { (note s) with life = l } in set_note s note'
+
+
+  (* Get the set of variables freed at that statement. *)
+  let freed s = (note s).freed
+
+
+  (* Set the set of variables freed at that statement. *)
+  let set_freed s f =
+    let note' = { (note s) with freed = f } in set_note s note'
+
+  (* Get the set of variables buried at a statement. *)
+  let buried s = (note s).buried
+
+
+  (* Set the set of variables buried at a statement. *)
+  let set_buried s f =
+    let note' = { (note s) with buried = f } in set_note s note'
+
+
+  (* Transform an arbitrary statement [stmt] into a statement in which
+     all sequences are right-threaded, i.e., the first (or left)
+     part of a sequence statement is always a non-sequence
+     statement. *)
+  let rec normalize_sequences stmt =
+    (* Append the sequence of statement [stm2] to the sequence [stm1].
+       Assumes that both statement sequences are right-threaded. *)
+    let rec append_to_sequence stm1 stm2 =
+      match stm1 with
+	  Sequence(a, s1, s2) ->
+	    Sequence(a, s1, append_to_sequence s2  stm2)
+	| _ -> Sequence (note stm1, stm1, stm2)
+    in
       match stmt with
-	| Skip _ -> Skip n
-        | Assert (_, e) -> Assert (n, e)
-        | Prove (_, e) -> Prove (n, e)
-        | Assign (_, vs, es) -> Assign (n, vs, es)
-	| Release _ -> Release n
-        | Await (_, c) -> Await (n, c)
-        | Posit (_, c) -> Posit (n, c)
-	| AsyncCall (_, l, x, m, s, i) -> AsyncCall (n, l, x, m, s, i)
-        | Reply (_, l, vs) -> Reply (n, l, vs)
-	| Free (_, ls) -> Free (n, ls)
-        | Bury (_, vs) -> Bury (n, vs)
-	| SyncCall (_, x, m, s, i, o) -> SyncCall (n, x, m, s, i, o)
-	| AwaitSyncCall (_, x, m, s, i, o) -> AwaitSyncCall (n, x, m, s, i, o)
-	| LocalAsyncCall (_, lab, m, s, l, u, i) ->
-	    LocalAsyncCall (n, lab, m, s, l, u, i)
-	| LocalSyncCall (_, m, s, l, u, i, o) ->
-            LocalSyncCall (n, m, s, l, u, i, o)
-	| AwaitLocalSyncCall (_, m, s, l, u, i, o) ->
-            AwaitLocalSyncCall (n, m, s, l, u, i, o)
-	| Tailcall (_, a, b, c, d, e) -> Tailcall (n, a, b, c, d, e)
-	| If (_, c, s1, s2) -> If (n, c, s1, s2)
-        | While (_, c, i, s) -> While (n, c, i, s)
-	| Sequence (_, s1, s2) -> Sequence (n, s1, s2)
-        | Merge (_, s1, s2) -> Merge (n, s1, s2)
-        | Choice (_, s1, s2) -> Choice (n, s1, s2)
-	| Extern (_, s) -> Extern(n, s)
+	  If (a, c, s1, s2) ->
+	    If (a, c, normalize_sequences s1, normalize_sequences s2)
+	| While (a, c, i, s) -> 
+	    While (a, c, i, normalize_sequences s)
+	| Sequence (a, (Sequence _ as s1), (Sequence _ as s2)) ->
+	    append_to_sequence (normalize_sequences s1)
+	      (normalize_sequences s2)
+	| Sequence (a, Sequence (a1, s11, s12), s2) ->
+	    Sequence (a, s11, normalize_sequences (Sequence (a1, s12, s2)))
+	| Sequence (a, s1, (Sequence _ as s2)) ->
+	    Sequence (a, s1, normalize_sequences s2)
+	| Merge (a, s1, s2) ->
+	    Merge (a, normalize_sequences s1, normalize_sequences s2)
+	| Choice (a, s1, s2) ->
+	    Choice (a, normalize_sequences s1, normalize_sequences s2)
+	| _ -> stmt
 
-
-    let to_string =
-      function
-	| Skip _ -> "skip"
-	| Assert (_, _) -> "assert _"
-	| Prove (_, _) -> "prove _"
-	| Assign (_, _, _) -> "_ := _"
-	| Release _ -> "release"
-	| Await (_, _) -> "await _"
-	| Posit (_, _) -> "release _"
-	| AsyncCall (_, _, _, _, _, _) -> " _!_._(_)"
-	| Reply (_, _, _) -> "_?(_)"
-	| Free (_, _) -> "free _"
-	| Bury (_, _) -> "bury _"
-	| SyncCall (_, _, _, _, _, _) -> "_._(_;_)"
-	| AwaitSyncCall (_, _, _, _, _, _) -> "await _._(_;_)"
-	| LocalAsyncCall (_, _, _, _, _, _, _) -> "_!_<:_:>_(_)"
-	| LocalSyncCall (_, _, _, _, _, _, _) -> "_<:_:>_(_;_)"
-	| AwaitLocalSyncCall (_, _, _, _, _, _, _) -> "await _<:_:>_(_;_)"
-	| Tailcall (_, _, _, _, _, _) -> "tailcall _<:_:>_(_)"
-	| If (_, _, _, _) -> "if _ then _ else _ end"
-	| While (_, _, _, _) -> "while _ do _ end"
-	| Sequence (_, _, _) -> "_;_"
-	| Merge (_, _, _) -> "_|||_"
-	| Choice (_, _, _) -> "_[]_"
-	| Extern (_, s) -> "extern \"" ^ s ^ "\""
-
-    let life s = (note s).life
-
-    let set_life s l =
-      let note' = { (note s) with life = l } in set_note s note'
-
-    let freed s = (note s).freed
-
-    let set_freed s f =
-      let note' = { (note s) with freed = f } in set_note s note'
-
-    let buried s = (note s).buried
-
-    let set_buried s f =
-      let note' = { (note s) with buried = f } in set_note s note'
-
-    (* Test, whether the statement is a skip statement. *)
-    let skip_p =
-      function
-	  Skip _ -> true
-	| _ -> false
-
-    let rec normalize_sequences stmt =
-      (* Transform an arbitrary statement [stmt] into a statement in
-	  which all sequences are right-threaded, i.e., the first (or
-	  left) part of a sequence statement is always a non-sequence
-	  statement. *)
-      let rec append_to_sequence stm1 stm2 =
-	(* Append the sequence of statement [stm2] to the sequence
-	    [stm1].  Assumes that both statement sequences are
-	    right-threaded. *)
-	match stm1 with
-	    Sequence(a, s1, s2) ->
-	      Sequence(a, s1, append_to_sequence s2  stm2)
-	  | _ -> Sequence (note stm1, stm1, stm2)
-      in
-	match stmt with
-	    If (a, c, s1, s2) ->
-	      If (a, c, normalize_sequences s1, normalize_sequences s2)
-	  | While (a, c, i, s) -> 
-	      While (a, c, i, normalize_sequences s)
-	  | Sequence (a, (Sequence _ as s1), (Sequence _ as s2)) ->
-	      append_to_sequence (normalize_sequences s1)
-		(normalize_sequences s2)
-	  | Sequence (a, Sequence (a1, s11, s12), s2) ->
-	      Sequence (a, s11, normalize_sequences (Sequence (a1, s12, s2)))
-	  | Sequence (a, s1, (Sequence _ as s2)) ->
-	      Sequence (a, s1, normalize_sequences s2)
-	  | Merge (a, s1, s2) ->
-	      Merge (a, normalize_sequences s1, normalize_sequences s2)
-	  | Choice (a, s1, s2) ->
-	      Choice (a, normalize_sequences s1, normalize_sequences s2)
-	  | _ -> stmt
-
-    let simplify_assignment =
-      function
-          Assign (note, lhs, rhs) ->
-            let needed =
-	      function
-	          (LhsId (a, v), Id (b, w)) when v = w -> false
-                | _ -> true
-            in
+  let simplify_assignment =
+    function
+        Assign (note, lhs, rhs) ->
+          let needed =
+	    function
+	        (LhsId (a, v), Id (b, w)) when v = w -> false
+              | _ -> true
+          in
 	    begin
 	      match List.split (List.filter needed (List.combine lhs rhs)) with
 	          ([], []) -> Skip note
 	        | (nl, nr) -> Assign (note, nl, nr)
-	      end
-        | _ -> assert false
+	    end
+      | _ -> assert false
 
-    let rec remove_redundant_skips =
-      function
-	  (Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _ |
-	   AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _ |
-	   AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ | 
-	   AwaitLocalSyncCall _ | Tailcall _ | Extern _) as s -> s
-	| Skip note -> Skip note
-	| If (note, c, t, f) ->
-	    If (note, c, remove_redundant_skips t, remove_redundant_skips f)
-	| While (note, c, i, b) -> While (note, c, i, remove_redundant_skips b)
-	| Sequence (_, Skip note, Skip _) -> Skip note
-	| Sequence (_, Skip _, stmt) -> remove_redundant_skips stmt
-	| Sequence (_, stmt, Skip _) -> remove_redundant_skips stmt
-	| Sequence (note, stmt1, stmt2) -> 
-	    Sequence (note, remove_redundant_skips stmt1,
-		     remove_redundant_skips stmt2)
-	| Merge (note, l, r) -> Merge (note, l, r)
-	| Choice (note, l, r) -> Choice (note, l, r)
+  let rec remove_redundant_skips =
+    function
+	(Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _ |
+	     AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _ |
+		 AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ | 
+		     AwaitLocalSyncCall _ | Tailcall _ | Extern _) as s -> s
+      | Skip note -> Skip note
+      | If (note, c, t, f) ->
+	  If (note, c, remove_redundant_skips t, remove_redundant_skips f)
+      | While (note, c, i, b) -> While (note, c, i, remove_redundant_skips b)
+      | Sequence (_, Skip note, Skip _) -> Skip note
+      | Sequence (_, Skip _, stmt) -> remove_redundant_skips stmt
+      | Sequence (_, stmt, Skip _) -> remove_redundant_skips stmt
+      | Sequence (note, stmt1, stmt2) -> 
+	  Sequence (note, remove_redundant_skips stmt1,
+		    remove_redundant_skips stmt2)
+      | Merge (note, l, r) -> Merge (note, l, r)
+      | Choice (note, l, r) -> Choice (note, l, r)
 
-    let assignment_of_bury =
-      function
-	  Bury (a, (_::_ as l)) ->
-	    let nul v =
-	      let t = Expression.get_lhs_type v in
-		Expression.Null (Expression.make_note ~ty:t ()) in
-	      Assign (a, l, List.map nul l)
-	| _ -> assert false
-  end
+  let assignment_of_bury =
+    function
+	Bury (a, (_::_ as l)) ->
+	  let nul v =
+	    let t = Expression.get_lhs_type v in
+	      Expression.Null (Expression.make_note ~ty:t ()) in
+	    Assign (a, l, List.map nul l)
+      | _ -> assert false
+end
 
 (* The abstract syntax of Creol *)
 

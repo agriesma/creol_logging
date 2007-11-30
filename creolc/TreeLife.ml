@@ -22,13 +22,23 @@
 (*s Compute life ranges of variables in Creol programs.
 
   A variable is called \emph{life} at a statement $s$, if it may be
-  read before the next write to it.
+  read before the next write to it.  This can be computed with the
+  data-flow equation
+  \begin{equation*}
+    \mathit{live}_{\mathit{in}}(s)= \mathit{gen}(s)\cup
+    (\mathit{life}_{\mathit{out}}(s)\setminus \mathit{kill}(s))\quad,
+  \end{equation*}
+  where $\mathit{life}_{\mathit{out}}(s)=
+  \bigcup_{p\in\mathit{succ}(s)}\mathit{life}_{\mathit{in}}(p)$.  The set 
+  $\mathit{life}_{\mathit{out}}(\mathit{final})$ is equal to the
+  out-parameters of the method (these are always life in a method).
 
-  The function [generate] computes the set of variables \emph{read} in
+  The function [gen] computes the set of variables \emph{read} in
   a statement, which usually happens only by expressions.  The
   function [kill] computes the set of variables \emph{written to} in a
   statement.
 
+  
 *)
 
 open Creol
@@ -61,11 +71,10 @@ let logio stmt i o =
 	       "]: in = {" ^ (g i) ^ "}, out = {" ^ (g o) ^ "}")
 
 
-(* Compute the generate sets of a method body by traversing it forward. *)
+(* Compute life ranges of a method body by traversing it backward. *)
 
-let compute_generates ~program ~cls ~meth =
-  let () = Messages.message 2 ("Compute generates in " ^ meth.Method.name) in
-  let rec generate =
+let compute_in_body ~program ~cls ~meth =
+  let rec gen =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
 	     Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
@@ -76,29 +85,29 @@ let compute_generates ~program ~cls ~meth =
       | StaticAttr _ ->
 	  IdSet.empty
       | Tuple (a, l) ->
-	  List.fold_left (add generate) IdSet.empty l
+	  List.fold_left (add gen) IdSet.empty l
       | ListLit (a, l) ->
-	  List.fold_left (add generate) IdSet.empty l
+	  List.fold_left (add gen) IdSet.empty l
       | SetLit (a, l) ->
-	  List.fold_left (add generate) IdSet.empty l
+	  List.fold_left (add gen) IdSet.empty l
       | Unary (a, o, e) ->
-	  generate e
+	  gen e
       | Binary (a, o, l, r) ->
-	  IdSet.union (generate l) (generate r)
+	  IdSet.union (gen l) (gen r)
       | Expression.If (a, c, t, f) ->
-	  List.fold_left (add generate) IdSet.empty [c; t; f]
+	  List.fold_left (add gen) IdSet.empty [c; t; f]
       | FuncCall (a, f, l) ->
-	  List.fold_left (add generate) IdSet.empty l
+	  List.fold_left (add gen) IdSet.empty l
       | Expression.Label (a, l) ->
-	  generate l
+	  gen l
       | New (a, c, l) ->
-	  List.fold_left (add generate) IdSet.empty l
+	  List.fold_left (add gen) IdSet.empty l
       | Expression.Extern _ ->
 	  IdSet.empty
       | SSAId (a, v, n) ->
 	  assert (Method.local_p meth v); IdSet.singleton v
       | Phi (a, l) ->
-	  List.fold_left (add generate) IdSet.empty l
+	  List.fold_left (add gen) IdSet.empty l
   in
   let kill =
     function
@@ -115,49 +124,50 @@ let compute_generates ~program ~cls ~meth =
 	    logio stmt outs n'.life ;
 	    Skip n'
       | Assert (n, e) ->
-	  let g = generate e in
-	  let n' = { n with life = IdSet.union outs g } in
+	  let g = gen e in
+	  let n' = { n with life = IdSet.union g outs } in
 	    logio stmt outs n'.life ;
 	    Assert (n', e)
       | Prove (n, e) ->
-	  let n' = { n with life = IdSet.union outs (generate e) } in
+	  let g = gen e in
+	  let n' = { n with life = IdSet.union g outs } in
 	    logio stmt outs n'.life ;
 	    Prove (n', e)
       | Assign (n, lhs, rhs) ->
 	  let k = List.fold_left (add kill) IdSet.empty lhs
-	  and g = List.fold_left (add generate) IdSet.empty rhs in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	  and g = List.fold_left (add gen) IdSet.empty rhs in
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    Assign (n', lhs, rhs)
-      | Await (n, g) ->
-	  let n' = { n with life = IdSet.union outs (generate g) } in
+      | Await (n, c) ->
+	  let g = gen c in
+	  let n' = { n with life = IdSet.union g outs } in
 	    logio stmt outs n'.life ;
-	    Await (n', g)
-      | Posit (n, g) ->
-	  let n' = { n with life = IdSet.union outs (generate g) } in
+	    Await (n', c)
+      | Posit (n, c) ->
+	  let g = gen c in
+	  let n' = { n with life = IdSet.union g outs } in
 	    logio stmt outs n'.life ;
-	    Posit (n', g)
+	    Posit (n', c)
       | Release n ->
 	  let n' = { n with life = outs } in
 	    logio stmt outs n'.life ;
 	    Release n'
       | AsyncCall (n, None, c, m, s, a) ->
-	  let g = 
-	    IdSet.union outs (List.fold_left (add generate) IdSet.empty (c::a))
-	  in
-	  let n' = { n with life = g } in
+	  let g = List.fold_left (add gen) IdSet.empty (c::a) in
+	  let n' = { n with life = IdSet.union g outs } in
 	    logio stmt outs n'.life ;
 	    AsyncCall (n', None, c, m, s, a)
       | AsyncCall (n, Some l, c, m, s, a) ->
-	  let g = List.fold_left (add generate) IdSet.empty (c::a)
+	  let g = List.fold_left (add gen) IdSet.empty (c::a)
 	  and k =  kill l in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    AsyncCall (n', Some l, c, m, s, a)
       | Reply (n, l, p) ->
-	  let g = generate l in
+	  let g = gen l in
 	  let k = List.fold_left (add kill) IdSet.empty p in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    Reply (n', l, p)
       | Free (n, v) ->
@@ -173,88 +183,85 @@ let compute_generates ~program ~cls ~meth =
 	    logio stmt outs n'.life ;
 	    Bury (n', v)
       | SyncCall (n, c, m, s, i, o) ->
-	  let g = List.fold_left (add generate) IdSet.empty (c::i)
+	  let g = List.fold_left (add gen) IdSet.empty (c::i)
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    SyncCall (n', c, m, s, i, o)
       | AwaitSyncCall (n, c, m, s, i, o) ->
-	  let g = List.fold_left (add generate) IdSet.empty (c::i)
+	  let g = List.fold_left (add gen) IdSet.empty (c::i)
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    AwaitSyncCall (n', c, m, s, i, o)
       | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
-	  let g = List.fold_left (add generate) IdSet.empty i in
-	  let n' = { n with life = IdSet.union outs g } in
+	  let g = List.fold_left (add gen) IdSet.empty i in
+	  let n' = { n with life = IdSet.union g outs } in
 	    logio stmt outs n'.life ;
 	    LocalAsyncCall (n', None, m, s, ub, lb, i)
       | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
-	  let g = List.fold_left (add generate) IdSet.empty i
+	  let g = List.fold_left (add gen) IdSet.empty i
 	  and k = kill l in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    LocalAsyncCall (n', Some l, m, s, ub, lb, i)
       | LocalSyncCall (n, m, s, u, l, i, o) ->
-	  let g = List.fold_left (add generate) IdSet.empty i
+	  let g = List.fold_left (add gen) IdSet.empty i
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g }
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) }
 	  in
 	    logio stmt outs n'.life ;
 	    LocalSyncCall (n', m, s, u, l, i, o)
       | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
-	  let g = List.fold_left (add generate) IdSet.empty i
+	  let g = List.fold_left (add gen) IdSet.empty i
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with life = IdSet.union (IdSet.diff outs k) g } in
+	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
       | Tailcall (n, m, s, u, l, ins) ->
-	  let g =
-	    IdSet.union outs (List.fold_left (add generate) IdSet.empty ins)
-	  in
-	  let n' = { n with life = IdSet.union outs g } in
+	  let g = List.fold_left (add gen) IdSet.empty ins in
+	  let n' = { n with life = IdSet.union g outs } in
 	    logio stmt outs n'.life ;
 	    Tailcall (n', m, s, u, l, ins)
       | If (n, c, l, r) ->
-	  let c' = IdSet.union outs (generate c) in
-	  let l' = compute_in_statement c' l
-	  and r' = compute_in_statement c' r in
-	  let n' =
-	    { n with life = IdSet.union (note l').life (note r').life }
+	  let l' = compute_in_statement outs l
+	  and r' = compute_in_statement outs r in
+	  let outs' = IdSet.union (life l') (life r') in
+	  let g = gen c in
+	  let n' = { n with life = IdSet.union g outs' }
 	  in
 	    logio stmt outs n'.life ;
 	    If (n', c, l', r')
       | While (n, c, i, b) ->
-	  let c' = IdSet.union outs (generate c) in
-	  let i' =
+	  let b' = compute_in_statement outs b in
+	  let outs' = life b' in
+	  let g =
  	    match i with
-		None -> c'
-	      | Some inv -> IdSet.union c' (generate inv)
+		None -> (gen c)
+	      | Some inv -> IdSet.union (gen c) (gen inv)
 	  in
-	  let b' = compute_in_statement i' b in
-	  let n' = { n with life = (note b').life } in
+	  let n' = { n with life = IdSet.union g outs' } in
 	    logio stmt outs n'.life ;
 	    While (n', c, i, b')
       | Sequence (n, s1, s2) ->
 	  let s2' = compute_in_statement outs s2 in
-	  let s1' = compute_in_statement (note s2').life s1 in
-	  let n' = { n with life = (note s2').life } in
+	  let s1' = compute_in_statement (life s2') s1 in
+	    (* the out of the statement is the out of the first statement. *)
+	  let n' = { n with life = life s1' } in
 	    logio stmt outs n'.life ;
 	    Sequence (n', s1', s2')
       | Merge (n, s1, s2) -> 
 	  let s1' = compute_in_statement outs s1
 	  and s2' = compute_in_statement outs s2 in
-	  let n' =
-	    { n with life = IdSet.union (note s1').life (note s2').life }
-	  in
+	  let outs' = IdSet.union (life s1') (life s2') in
+	  let n' = { n with life = outs' } in
 	    logio stmt outs n'.life ;
 	    Merge (n', s1', s2')
       | Choice (n, s1, s2) -> 
 	  let s1' = compute_in_statement outs s1
 	  and s2' = compute_in_statement outs s2 in
-	  let n' =
-	    { n with life = IdSet.union (note s1').life (note s2').life }
-	  in
+	  let outs' = IdSet.union (life s1') (life s2') in
+	  let n' = { n with life = outs' } in
 	    logio stmt outs n'.life ;
 	    Choice (n', s1', s2')
       | Extern (n, s) ->
@@ -271,23 +278,13 @@ let compute_generates ~program ~cls ~meth =
 	    { meth with Method.body = Some (compute_in_statement outs b) }
 
 
-(* Compute the kill sets of a method body by traversing it backwards.
-   This pass is necessary for programs which are not in SSA form.  For
-   all other programs, this pass will do nothing.  It hsould be
-   reasonably fast, so this should not cost too much.  *)
-
-let compute_kills ~program ~cls ~meth =
-  let () = Messages.message 2 ("Compute kills in " ^ meth.Method.name) in
-    meth
-
 let compute_in_method ~program ~cls ~meth =
   let () = Messages.message 2
     ("Compute life ranges in " ^ cls.Class.name ^ "::" ^ meth.Method.name)
   in
     match meth.Method.body with
 	None -> meth
-      | Some b ->
-	  compute_kills program cls (compute_generates program cls meth)
+      | Some b -> compute_in_body program cls meth
 
 
 (* Compute life ranges in a program by mapping the above functions

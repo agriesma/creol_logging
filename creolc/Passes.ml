@@ -351,19 +351,22 @@ let execute_passes filename tree =
 let report_timings () =
   let total = ref 0.0 in
   let report p =
-    if (snd p).enabled then
-      prerr_endline ((fst p) ^ ": " ^
-			(String.make (38 - String.length (fst p)) '.') ^
-			" " ^ (string_of_float (snd p).elapsed) ^ " ms");
-    total := !total +. (snd p).elapsed
+    let t = (snd p).elapsed in
+      if (snd p).enabled then
+	prerr_endline ((fst p) ^ ": " ^
+			 (String.make (38 - String.length (fst p)) '.') ^
+			 " " ^ (string_of_float t) ^ " ms");
+      total := !total +. t
   in
     prerr_endline ("Parsing: ............................... " ^
 		      (string_of_float !time_parse) ^ " ms");
     List.iter report passes ;
-    prerr_endline ("Dumps: ................................. " ^
-		      (string_of_float !time_dump) ^ " ms");
-    prerr_endline ("Emit: .................................. " ^
-		      (string_of_float !time_emit) ^ " ms");
+    if !time_dump > 0. then
+      prerr_endline ("Dumps: ................................. " ^
+		       (string_of_float !time_dump) ^ " ms");
+    if !time_emit > 0. then
+      prerr_endline ("Emit: .................................. " ^
+		       (string_of_float !time_emit) ^ " ms");
     prerr_endline ("Total: ................................. " ^
 		      (string_of_float
 			  (!total +. !time_parse +. !time_dump +. !time_emit)) ^
