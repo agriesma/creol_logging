@@ -66,7 +66,7 @@ let logio stmt i o =
       in
 	h (IdSet.fold (fun e a -> e :: a) s [])
     in
-    let w = (file (note stmt)) ^ ": " ^ (string_of_int (line (note stmt))) in
+    let w = (file stmt) ^ ": " ^ (string_of_int (line stmt)) in
       log 1 ("Live at " ^ w ^ " [" ^ (Statement.to_string  stmt) ^
 	       "]: in = {" ^ (g i) ^ "}, out = {" ^ (g o) ^ "}")
 
@@ -171,8 +171,11 @@ let compute_in_body ~program ~cls ~meth =
 	    logio stmt outs n'.life ;
 	    Reply (n', l, p)
       | Free (n, v) ->
-	  let k = List.fold_left (add kill) IdSet.empty v in
-	  let n' = { n with life = IdSet.diff outs k } in
+	  (* This statement keeps its arguments life, even though the
+	     list of variables here is to be released. The call to [kill]
+	     is used for typing reasons only. *)
+	  let g = List.fold_left (add kill) IdSet.empty v in
+	  let n' = { n with life = IdSet.union outs g } in
 	    logio stmt outs n'.life ;
 	    Free (n', v)
       | Bury (n, v) ->

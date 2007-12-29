@@ -40,86 +40,101 @@ let optimize prg =
 	| LhsSSAId (_, v, _) -> v
 	| _ -> assert false
     in
+
+    (* Decide whether we should append a free statement to the current
+       statement. *)
+
+    let append_free s =
+      let d = def s and l = life s and f = freed s in
+      let r =
+	IdSet.filter
+	  (fun v -> Type.label_p (find_variable meth v).var_type)
+	  (IdSet.diff d (IdSet.union l f))
+      in
+	Messages.message 1 ((file s) ^ ": " ^ (string_of_int (line s)) ^
+			      ": d = " ^ (string_of_idset d) ^
+			      "; l = " ^ (string_of_idset l) ^
+			      "; r = " ^ (string_of_idset r)) ;
+	if IdSet.is_empty r then
+	  s
+	else
+	  let r' =
+	    IdSet.fold
+	      (fun e a -> LhsId (Expression.make_note (), e) :: a)
+	      r []
+	  in
+	  let n = {(note s) with freed = IdSet.union (freed s) r} in
+	    assert (IdSet.is_empty (IdSet.inter f r));
+	    assert (r' <> []) ;
+	    Sequence (n, s, Free (n, r'))
+    in
+
+    (* Insert free statements.  [free] is a set of label names which are
+       known to be consumed at a specific statement. *)
+
     let rec work free =
       function
 	| AsyncCall (_, Some l, _, _, _, _) as s ->
 	    let free' = IdSet.remove (name l) free in
-	      (free', set_freed s free')
+	      append_free (set_freed s free')
 	| LocalAsyncCall (_, Some l, _, _, _, _, _) as s ->
 	    let free' = IdSet.remove (name l) free in
-	      (free', set_freed s free')
+	      append_free (set_freed s free')
 	| Reply (n, l, v) ->
 	    let free' =
 	      let nm = variable l in
 	        Messages.message 1
-		  ("Variable " ^ nm ^ " freed (consumed) at " ^ (file n) ^
-		    ": " ^ (string_of_int (line n)));
-		  IdSet.add nm free
+		  ("Variable " ^ nm ^ " freed (consumed) at " ^ (n.file) ^
+		     ": " ^ (string_of_int (n.line)));
+		IdSet.add nm free
 	    in
-	      (free', Reply ({ n with freed = free'}, l, v))
+	      append_free (Reply ({ n with freed = free'}, l, v))
 	| Free (n, l) ->
 	    let f a e =
 	      let nm = name e in
 	        Messages.message 1
-		  ("Variable " ^ nm ^ " freed at " ^ (file n) ^ ": " ^
-		    (string_of_int (line n)));
+		  ("Variable " ^ nm ^ " freed at " ^ (n.file) ^ ": " ^
+		     (string_of_int (n.line)));
 		IdSet.add nm a
 	    in
 	    let free' = List.fold_left f free l in
-	      (free', Free ({ n with freed = free'}, l))
+	      Free ({ n with freed = free'}, l)
 	| If (n, c, s1, s2) ->
-	    let (free', s1') = work free s1 in
-	    let (free'', s2') = work free' s2 in
-	      (*i assert (IdSet.equal free' free''); i*)
-	      (free'', If ({n with freed = free'' }, c, s1', s2'))
+	    let s1' = work free s1 in
+	    let s2' = work free s2 in
+	      assert (IdSet.equal (freed s1') (freed s2')) ;
+	      append_free (If ({n with freed = (freed s2') }, c, s1', s2'))
 	| While (n, c, i, s) ->
-	    let (free', s') = work free s in
-	      (free', While ({ n with freed = free' }, c, i, s'))
+	    let s' = append_free (work free s) in
+	      append_free (While ({ n with freed = freed s' }, c, i, s'))
 	| Sequence (n, s1, s2) ->
-	    let (free', s1') = work free s1 in
-	    let (free'', s2') = work free' s2 in
-	    let k =
-	      IdSet.filter
-		(fun v -> not (IdSet.mem v free') &&
-		  Type.label_p (find_variable meth v).var_type)
-		(IdSet.diff (life s1) (life s2))
-	    in
-	      if IdSet.is_empty k then
-		(free'', Sequence ({ n with freed = free'' }, s1', s2'))
-	      else
-		let k' =
-		  let f e a =
-		    Messages.message 1
-		      ("Freeing " ^ e ^ " at " ^ (file (note s2)) ^ ": " ^
-			(string_of_int (line (note s2)))) ;
-		    (LhsId (Expression.make_note (), e))::a
-		  in
-		    IdSet.fold f k []
-		in
-		  (IdSet.diff free'' k, Sequence ({ n with freed = free'' }, s1',
-			       Sequence (note s2, Free (note s2, k'), s2')))
+	    let s1' = work free s1 in
+	    let s2' = work (freed s1') s2 in
+	      append_free (Sequence ({ n with freed = freed s2' }, s1', s2'))
 	| Choice (n, s1, s2) ->
-	    let (f1, s1') = work free s1 and (f2, s2') = work free s2 in
-            let free' = IdSet.union f1 f2 in
-	      (*i assert (IdSet.equal f1 f2) ; i*)
-	      (free', Choice ({ n with freed = free' }, s1', s2'))
+	    let s1' = work free s1
+	    and s2' = work free s2 in
+	      assert (IdSet.equal (freed s1') (freed s2')) ;
+	      append_free (Choice ({ n with freed = freed s2' }, s1', s2'))
 	| Merge (n, s1, s2) ->
-	    let (f1, s1') = work free s1 and (f2, s2') = work free s2 in
-	    let free' = IdSet.union f1 f2 in
-	      (*i assert (IdSet.equal f1 f2) ; i*)
-	      (free', Merge ({ n with freed = free' }, s1', s2'))
-	| s -> (free, set_freed s free)
+	    let s1' = work free s1
+	    and s2' = work free s2 in
+	      assert (IdSet.equal (freed s1') (freed s2')) ;
+	      append_free (Merge ({ n with freed = freed s2' }, s1', s2'))
+	| s -> append_free s
     in
-    let (free', body') = work IdSet.empty stmt in
-      (*i assert (IdSet.is_empty free'); i*) body'
+      append_free (work IdSet.empty stmt)
   in
   let optimise_in_method meth =
     match meth.Method.body with
 	None ->
 	  meth
       | Some body ->
-	  let body' = optimise_in_statement meth body in
-	    { meth with Method.body = Some body' }
+	  let body' =
+	    optimise_in_statement meth
+	      (Sequence (make_note (), body, Skip (make_note ())))
+	  in
+	    { meth with Method.body = Some (remove_redundant_skips body') }
   in
   let optimise_in_with w =
     { w with With.methods = List.map optimise_in_method w.With.methods }

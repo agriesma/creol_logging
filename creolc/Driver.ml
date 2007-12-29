@@ -144,7 +144,7 @@ let license =
 let show_version () =
   (** Show the name and the version of the program and exit. *)
   print_string (Version.package ^ " " ^ Version.version ^ " (" ^
-		   Version.reldate ^ ")\n" );
+		   Version.release ^ " of " ^ Version.reldate ^ ")\n" );
   print_string license ;
   exit 0
 
@@ -173,7 +173,7 @@ let options = [
   "{name ,}  Enable passes:\n" ^ (Passes.help ()));
   ("-P",
   Arg.String Passes.disable,
-  "  Disable the pass [name].  [name]s are the same as for `-t'");
+  "  Disable the pass [name].  [name]s are the same as for `-p'");
   ("-d",
   Arg.String Passes.dump_after,
   "  Dump tree after [name] to out.[name].  [name]s are identical to `-p'");

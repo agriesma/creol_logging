@@ -1,0 +1,121 @@
+dnl Makefile.am - Use automake to create Makefile.in
+dnl
+dnl This file is part of creoltools
+dnl
+dnl Written and Copyright (c) 2007 by Marcel Kyas
+dnl
+dnl This program is free software; you can redistribute it and/or
+dnl modify it under the terms of the GNU General Public License as
+dnl published by the Free Software Foundation; either version 3 of the
+dnl License, or (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+
+dnl diff two files with uniform output.
+m4_define([DIFF], [AT_CHECK([diff -autN $1 $2])])
+
+dnl Execute a maude command and compare it to the expected results.
+dnl First parameter is the name of the test, second parameter is the maude
+dnl script to execute for the text.  Number of rewrites will be filtered.
+m4_define([TEST_MAUDE], [dnl
+AT_CHECK([$MAUDE -no-banner -no-advise -batch $2 dnl
+  | $SED -f ${abs_srcdir}/maude.sed > $1.out])
+DIFF([$1.out], [${abs_srcdir}/$3/$1.out])
+])
+
+dnl Test our tool chain.  Requires maude,
+dnl
+dnl The test works as follows:
+dnl Given an argument the test will first compile a maude version of the
+dnl system.  This will be compared to some expected results.
+dnl Then a set of tests, defined in [name]-tests.maude are run on this
+dnl model and the output of maude is again compared to some expected
+dnl results.
+m4_define([TEST_CREOLC], [dnl
+AT_SETUP([$1])
+AT_CHECK([${CREOLC} -T maude -W all ${abs_srcdir}/$2/$1.creol -o $1.maude])
+DIFF([${abs_srcdir}/$2/$1.maude], [$1.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+load $1 .
+$3
+quit .
+])
+TEST_MAUDE([$1], test.maude, $2)
+AT_DATA([metatest.maude],
+[
+set show timing off .
+set show advise off .
+load creol-interpreter .
+load $1 .
+load creol-metaexec .
+$4
+quit .
+])
+dnl Don't exec this, it takes ages.
+dnl TEST_MAUDE([meta-$1], metatest.maude, $2)
+AT_CLEANUP
+])
+
+m4_define([TEST_CREOLMC], [dnl
+AT_SETUP([$1])
+AT_CHECK([${CREOLC} -T maudemc ${abs_srcdir}/$2/$1.creol -o $1.maude])
+DIFF([${abs_srcdir}/$2/$1.maude], [$1.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+load $1 .
+$3
+quit .
+])
+TEST_MAUDE([$1], test.maude, [$2])
+AT_DATA([metatest.maude],
+[
+set show timing off .
+set show advise off .
+load creol-interpreter .
+load $1 .
+load creol-metaexec .
+$4
+quit .
+])
+dnl Don't exec this, it takes ages.
+dnl TEST_MAUDE([meta-$1], metatest.maude, $2)
+AT_CLEANUP
+])
+
+m4_define([TEST_CREOLC_PP],[dnl
+AT_CHECK([${CREOLC} -T creol -P typecheck,lower -o $1-pp1.creol ${abs_srcdir}/$2/$1.creol])
+AT_CHECK([${CREOLC} -T creol -P typecheck,lower -o $1-pp2.creol $1-pp1.creol])
+DIFF([$1-pp1.creol], [$1-pp2.creol])
+])
+
+dnl test the xml export.
+m4_define([TEST_CREOLC_XML],[dnl
+AT_CHECK([${CREOLC} -T xml -P typecheck -o $1-pass1.xml ${abs_srcdir}/$2/$1.creol])
+])
+
+dnl Test a particular pass.
+dnl
+m4_define([TEST_CREOLC_PASS],[dnl
+AT_SETUP([$1-$2])
+AT_CHECK([${CREOLC} -T xml -p $1 ${abs_srcdir}/$1/$2.creol -o $2.xml])
+DIFF([${abs_srcdir}/$1/$2.xml], [$2.xml])
+AT_CLEANUP
+])
+
+m4_define([TEST_CREOLC_TYPECHECK],[dnl
+AT_SETUP([typecheck-$1])
+AT_CHECK([${CREOLC} -T none ${abs_srcdir}/typecheck/$1.creol 2>&1 | sed s,${abs_srcdir}/typecheck/,,], [0], [$2], [])
+AT_CLEANUP
+])

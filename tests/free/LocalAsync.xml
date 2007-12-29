@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:class name="C">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="l">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:sequence>
+      <creol:localasynccall method="run">
+       <creol:signature>
+        <creol:cointerface>
+         <creol:internal/>
+        </creol:cointerface>
+        <creol:input-parameters/>
+        <creol:output-parameters/>
+       </creol:signature>
+       <creol:identifier name="l"/>
+       <creol:arguments/>
+       <creol:statement-note file="LocalAsync.creol" line="24">
+        <creol:def-var name="l"/>
+       </creol:statement-note>
+      </creol:localasynccall>
+      <creol:free>
+       <creol:identifier name="l"/>
+       <creol:statement-note file="LocalAsync.creol" line="24">
+        <creol:def-var name="l"/>
+        <creol:freed-var name="l"/>
+       </creol:statement-note>
+      </creol:free>
+      <creol:statement-note file="LocalAsync.creol" line="24">
+       <creol:def-var name="l"/>
+       <creol:freed-var name="l"/>
+      </creol:statement-note>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>

@@ -205,7 +205,7 @@ attribute:
 vardecl:
       v = vardecl_no_init
 	{ v }
-    | v = vardecl_no_init ASSIGN i = expression
+    | v = vardecl_no_init ASSIGN i = expression_or_new
 	{ { v with VarDecl.init = Some i } }
 
 %inline vardecl_no_init:
@@ -215,7 +215,6 @@ vardecl:
     | ID COLON error
 	{ signal_error $startpos "syntax error in variable declaration" }
 	
-
 method_decl:
       OP i = ID p = parameters_opt
       ioption(preceded(REQUIRES, expression))

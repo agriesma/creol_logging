@@ -25,7 +25,7 @@ MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 
-EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
+TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Alarmclock.out \
 		  examples/AsyncLCR.creol examples/AsyncLCR.maude \
 		  examples/AsyncLCR.out \
@@ -60,9 +60,8 @@ EXAMPLES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Sieve.out \
 		  examples/SingleCellBuffer.creol \
 		  examples/SingleCellBuffer.maude \
-		  examples/SingleCellBuffer.out
-
-LANGUAGE	= language/Pair.creol language/Pair.maude language/Pair.out \
+		  examples/SingleCellBuffer.out \
+		  language/Pair.creol language/Pair.maude language/Pair.out \
 		  language/Inheritance.creol language/Inheritance.maude \
 		  language/Inheritance.out \
 		  language/Diamond.creol language/Diamond.maude \
@@ -78,14 +77,15 @@ LANGUAGE	= language/Pair.creol language/Pair.maude language/Pair.out \
 		  language/StackGarbage.creol language/StackGarbage.maude \
 		  language/StackGarbage.out \
 		  language/Interleave.creol language/Interleave.maude \
-		  language/Interleave.out
-
-TYPECHECK	= typecheck/Nil.creol typecheck/ExprFailure.creol \
+		  language/Interleave.out \
+		  typecheck/Nil.creol typecheck/ExprFailure.creol \
 		  typecheck/Contracts.creol typecheck/Nat.creol \
 		  typecheck/Nat2.creol typecheck/Nat3.creol \
-		  typecheck/Nat4.creol
-
-TESTFILES	= Datatypes.maude Datatypes.out \
+		  typecheck/Nat4.creol \
+		  bury/Assign.creol bury/Assign.xml \
+		  free/Async.creol free/Async.xml \
+		  free/LocalAsync.creol free/LocalAsync.xml \
+		  Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \
 		  Interpreter.maude Interpreter.out \
 		  MetaExec.maude MetaExec.out \
@@ -94,9 +94,14 @@ TESTFILES	= Datatypes.maude Datatypes.out \
 		  MC4Phil.creol MC4Phil.maude MC4PhilTest.maude \
 		  MC5Phil.creol MC5Phil.maude MC5PhilTest.maude
 
-EXTRA_DIST	= ${srcdir}/atlocal.in ${srcdir}/testsuite.at maude.sed \
-		  package.m4 testsuite ${EXAMPLES} ${LANGUAGE} ${TYPECHECK} \
-		  ${TESTFILES} Signature.m4
+EXTRA_DIST	= ${srcdir}/atlocal.in \
+		  ${srcdir}/macros.at \
+		  ${srcdir}/testsuite.at \
+		  ${srcdir}/maude.sed \
+		  package.m4 \
+		  testsuite \
+		  ${TESTFILES} \
+		  ${srcdir}/Signature.m4
 
 check-local: atconfig atlocal ${TESTSUITE} Signature.maude
 	$(SHELL) $(TESTSUITE)
@@ -107,8 +112,8 @@ Signature.maude: ${srcdir}/Signature.m4
 clean-local:
 	rm -rf testsuite.dir
 
-${TESTSUITE}: ${srcdir}/testsuite.at ${srcdir}/package.m4 ${TESTPARTS}
-	  ${AUTOTEST} -I ${srcdir} $< -o $@.tmp 
+${TESTSUITE}: ${srcdir}/testsuite.at ${srcdir}/macros.at package.m4
+	  ${AUTOTEST} -I ${srcdir} $< -o $@.tmp
 	  mv $@.tmp $@
 
 package.m4: ${top_srcdir}/configure.ac
@@ -118,4 +123,4 @@ package.m4: ${top_srcdir}/configure.ac
 	   echo 'm4_define([AT_PACKAGE_VERSION],   [@PACKAGE_VERSION@])';     \
 	   echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])';      \
 	   echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])';   \
-	} >$(srcdir)/package.m4
+	} > package.m4

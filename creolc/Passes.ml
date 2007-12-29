@@ -89,6 +89,11 @@ let passes = [
     dependencies = "";
     pass = TreeSSA.into_ssa ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
+  ( "def-vars" ,
+  { help = "Compute data flow." ;
+    dependencies = "";
+    pass = TreeDef.analyse ;
+    elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "life-vars" ,
   { help = "Compute data flow." ;
     dependencies = "";
@@ -96,12 +101,12 @@ let passes = [
     elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "free" ,
   { help = "Insert statements to free labels" ;
-    dependencies = "life-vars" ;
+    dependencies = "def-vars,life-vars" ;
     pass = TreeFree.optimize ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "bury" ,
   { help = "Insert statements to reset dead variables" ;
-    dependencies = "life-vars" ;
+    dependencies = "def-vars,life-vars" ;
     pass = TreeBury.optimize ;
     elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "tailcall" ,

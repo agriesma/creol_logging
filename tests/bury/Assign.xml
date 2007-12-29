@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:class name="C">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="i">
+      <creol:type name="Int"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:sequence>
+      <creol:assign>
+       <creol:targets>
+        <creol:identifier name="i"/>
+       </creol:targets>
+       <creol:expressions>
+        <creol:expression>
+         <creol:int value="0">
+          <creol:expression-note file="Assign.creol" line="26">
+           <creol:inferred-type>
+            <creol:type name="Int"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:int>
+        </creol:expression>
+       </creol:expressions>
+       <creol:statement-note file="Assign.creol" line="26">
+        <creol:def-var name="i"/>
+       </creol:statement-note>
+      </creol:assign>
+      <creol:sequence>
+       <creol:sequence>
+        <creol:bury>
+         <creol:identifier name="i"/>
+         <creol:statement-note file="Assign.creol" line="27"/>
+        </creol:bury>
+        <creol:release>
+         <creol:statement-note file="Assign.creol" line="27">
+          <creol:def-var name="i"/>
+         </creol:statement-note>
+        </creol:release>
+        <creol:statement-note file="Assign.creol" line="27"/>
+       </creol:sequence>
+       <creol:assign>
+        <creol:targets>
+         <creol:identifier name="i"/>
+        </creol:targets>
+        <creol:expressions>
+         <creol:expression>
+          <creol:int value="1">
+           <creol:expression-note file="Assign.creol" line="28">
+            <creol:inferred-type>
+             <creol:type name="Int"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:int>
+         </creol:expression>
+        </creol:expressions>
+        <creol:statement-note file="Assign.creol" line="28">
+         <creol:def-var name="i"/>
+        </creol:statement-note>
+       </creol:assign>
+       <creol:statement-note file="Assign.creol" line="27">
+        <creol:def-var name="i"/>
+       </creol:statement-note>
+      </creol:sequence>
+      <creol:statement-note file="Assign.creol" line="26">
+       <creol:def-var name="i"/>
+      </creol:statement-note>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>

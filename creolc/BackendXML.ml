@@ -415,9 +415,11 @@ let emit ~name ~tree =
         set
     in
       XmlTextWriter.start_element writer "creol:statement-note" ;
-      XmlTextWriter.write_attribute writer "file" note.Statement.file ;
+      XmlTextWriter.write_attribute writer "file"
+	(Filename.basename note.Statement.file) ;
       XmlTextWriter.write_attribute writer "line"
         (string_of_int note.Statement.line) ;
+      emit_idset "creol:def-var" note.Statement.def ;
       emit_idset "creol:life-var" note.Statement.life ;
       emit_idset "creol:freed-var" note.Statement.freed ;
       emit_idset "creol:buried-var" note.Statement.buried ;
@@ -621,7 +623,8 @@ let emit ~name ~tree =
           XmlTextWriter.end_element writer
   and creol_expression_note_to_xml note =
     XmlTextWriter.start_element writer "creol:expression-note" ;
-    XmlTextWriter.write_attribute writer "file" note.Expression.file ;
+    XmlTextWriter.write_attribute writer "file" 
+      (Filename.basename note.Expression.file) ;
     XmlTextWriter.write_attribute writer "line"
       (string_of_int note.Expression.line) ;
     XmlTextWriter.start_element writer "creol:inferred-type" ;
@@ -669,8 +672,6 @@ let emit ~name ~tree =
     XmlTextWriter.start_element writer "creol:creol";
     XmlTextWriter.write_attribute writer "xmlns:creol" "http://www.creol.org/";
     XmlTextWriter.write_attribute writer "version" "0.0";
-    XmlTextWriter.write_attribute writer "exporter"
-      (Version.package ^ " " ^ Version.version);
     List.iter (creol_declaration_to_xml) tree;
     XmlTextWriter.end_element writer;
     XmlTextWriter.end_document writer;

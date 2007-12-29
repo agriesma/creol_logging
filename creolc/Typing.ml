@@ -727,7 +727,7 @@ let typecheck tree: Declaration.t list =
 	  Program.find_interface program (Type.as_string callee_t)
 	with
 	    Not_found ->
-	      raise (Type_error (file n, line n,
+	      raise (Type_error (n.file, n.line,
 				 "Interface " ^ (Type.as_string callee_t) ^
 				   " not defined."))
       in
@@ -738,14 +738,14 @@ let typecheck tree: Declaration.t list =
 	    ((Class.get_type cls), ins_t, outs_t)
 	in
 	  match cands with
-	      [] -> raise (Type_error (file n, line n,
+	      [] -> raise (Type_error (n.file, n.line,
 				       "Interface " ^ (Type.as_string callee_t) ^
 					 " does not provide a method " ^ m ^ 
 					 " with signature " ^
 					 (Type.string_of_sig 
 					    ((Class.get_type cls), ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
-	    | _ -> raise (Type_error (file n, line n,
+	    | _ -> raise (Type_error (n.file, n.line,
 				      "Call to method " ^ m ^ " of interface " ^
 					(Type.as_string callee_t) ^
 					" is ambigous."))
@@ -755,7 +755,7 @@ let typecheck tree: Declaration.t list =
 	if (Program.contracts_p program cls co) then
 	  (label', callee', signature, ins')
 	else
-	  raise (Type_error (file n, line n,
+	  raise (Type_error (n.file, n.line,
 	  		     "Class " ^ cls.Class.name ^
 			       " does not contract interface " ^
 			       (Type.as_string co)))
@@ -777,7 +777,7 @@ let typecheck tree: Declaration.t list =
 	  Program.find_interface program (Type.as_string callee_t)
 	with
 	    Not_found ->
-	      raise (Type_error (file n, line n,
+	      raise (Type_error (n.file, n.line,
 				 "Interface " ^ (Type.as_string callee_t) ^
 				   " not defined."))
       in
@@ -792,13 +792,13 @@ let typecheck tree: Declaration.t list =
 		let t =
 		  Type.string_of_sig ((Class.get_type cls), ins_t, outs_t)
 		in
-		  raise (Type_error (file n, line n,
+		  raise (Type_error (n.file, n.line,
 				     "Interface " ^ (Type.as_string callee_t) ^
 				       " does not provide a method " ^ m ^ 
 				       " with signature " ^ t))
 	    | [meth] -> meth.Method.coiface
 	    | _ ->
-		raise (Type_error (file n, line n,
+		raise (Type_error (n.file, n.line,
 				   "Call to method " ^ m ^ " of interface " ^
 				     (Type.as_string callee_t) ^
 				     " is ambigous."))
@@ -808,7 +808,7 @@ let typecheck tree: Declaration.t list =
 	if (Program.contracts_p program cls co) then
 	  (callee', signature, ins', outs')
 	else
-	  raise (Type_error (file n, line n,
+	  raise (Type_error (n.file, n.line,
 	  		     "Class " ^ cls.Class.name ^
 			       " does not contract interface " ^
 			       (Type.as_string co)))
@@ -821,7 +821,7 @@ let typecheck tree: Declaration.t list =
 	      if Program.subclass_p program cls.Class.name x then
 		Program.find_class program x
 	      else
-	        raise (Type_error (file n, line n,
+	        raise (Type_error (n.file, n.line,
 			           "Class " ^ x ^ " is not a subclass of " ^
 				     cls.Class.name))
       in
@@ -836,7 +836,7 @@ let typecheck tree: Declaration.t list =
 	      if Program.class_provides_method_p program c' m signature then
 		()
 	      else
-		raise (Type_error (file n, line n,
+		raise (Type_error (n.file, n.line,
 				   "Class " ^ c'.Class.name ^
 				     " does not provide method " ^ m ^
 				     (Type.string_of_sig signature)))
@@ -850,7 +850,7 @@ let typecheck tree: Declaration.t list =
 		if List.exists p cands then
 		  ()
 		else
-		  raise (Type_error (file n, line n,
+		  raise (Type_error (n.file, n.line,
 				     "Class " ^ c'.Class.name ^
 				       " does not provide method " ^ m ^
 				       "which is above " ^ y))
@@ -898,7 +898,7 @@ let typecheck tree: Declaration.t list =
 	      let lhs_t = Expression.get_lhs_type lhs
 	      and rhs_t = Expression.get_type rhs in
 	      let die () =
-		raise (Type_error (file n, line n,
+		raise (Type_error (n.file, n.line,
 				   "Type mismatch in assignment: Expected " ^
 				     (Type.as_string lhs_t) ^
 				     " but got " ^
@@ -923,7 +923,7 @@ let typecheck tree: Declaration.t list =
 		List.map2 check_assignment_pair lhs' rhs'
 	      with
 		  Invalid_argument _ ->
-		    raise (Type_error (file n, line n,
+		    raise (Type_error (n.file, n.line,
 				       "Type mismatch in assignment: " ^ 
 					 "length of arguments differ"))
 	    in
@@ -949,7 +949,7 @@ let typecheck tree: Declaration.t list =
 	      then
 	        Reply (n, nlabel, nretvals)
 	      else
-	        raise (Type_error (file n, line n, "Type mismatch"))
+	        raise (Type_error (n.file, n.line, "Type mismatch"))
         | Free (n, args) -> assert false
         | Bury (n, args) -> assert false
         | LocalAsyncCall (n, None, m, _, lb, ub, args) ->

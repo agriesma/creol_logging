@@ -91,30 +91,29 @@ let pass input =
       | Await (a, g) -> (label_decls, Await (a, lower_expression g))
       | Posit (a, g) -> (label_decls, Posit (a, lower_expression g))
       | AsyncCall (a, None, e, n, ((co, dom, Some rng) as s), p) ->
-	  (* If a label name is not given, we assign a new one and free it
-	     afterwards.  It may be better to insert free later, but for this
-	     we need smarter semantic analysis. *)
+	  (* If a label name is not given, we assign a new one and
+	     free it afterwards. *)
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p
 	  and l = fresh_label ()
 	  and lt = Type.label rng in
 	  let n' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'),
-		     Free (a, [LhsId (n', l)])))
+	     Sequence (a, AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'),
+		       Free (a, [LhsId (n', l)])))
       | AsyncCall (a, None, e, n, s, p) ->
-	  (* If a label name is not given, we assign a new one and free it
-	     afterwards.    We cannot give a correct type to the label,
-             hopefully because the type checker has been disabled.  If we
-             did run the type checker and we get to this case, there is an
-             error in the type checker.  *)
+	  (* If a label name is not given, we create a new label name.
+             We cannot give a correct type to the label.  If the type
+             checker is run after lowering, it may report errors for
+             this call.  *)
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p
 	  and l = fresh_label () in
-	  let a' = make_expr_note_from_stmt_note a Type.data in
-	    ((label_decl l Type.data)::label_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
-		     Free (a, [LhsId (a', l)])))
+	  let lt = Type.label [] in
+	  let a' = make_expr_note_from_stmt_note a lt in
+	    ((label_decl l lt)::label_decls,
+	     Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
+		       Free (a, [LhsId (a', l)])))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p in
@@ -150,8 +149,7 @@ let pass input =
 			     Reply (a, Id (a', l), r))))
       | LocalAsyncCall (a, None, m, ((c, dom, Some rng) as s), lb, ub, i) ->
 	  (* If a label name is not given, we assign a new one and free it
-	     afterwards.  It may be better to insert free later, but for this
-	     we need smarter semantic analysis. *)
+	     afterwards. *)
 	  let i' = List.map lower_expression i
 	  and l = fresh_label ()
 	  and lt = Type.label rng in
@@ -161,17 +159,18 @@ let pass input =
 		     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'),
 		     Free (a, [LhsId (a', l)])))
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
-	  (* If a label name is not given, we assign a new one and free it
-	     afterwards.  We cannot give a correct type to the label,
-	     hopefully because the type checker has been disabled.  If we
-	     did run the type checker and we get to this case, there is an
-	     error in the type checker.  *)
+	  (* If a label name is not given, we create a new label name
+	     and assign the call to it.  We cannot give a correct type
+	     to the label.  If the type checker is run after lowering,
+	     we may see a type error since there is no corresponding
+	     method declared.  *)
 	  let i' = List.map lower_expression i
 	  and l = fresh_label () in
-	  let a' = make_expr_note_from_stmt_note a Type.data in
-	    ((label_decl l Type.data)::label_decls,
-	    Sequence (a, LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'),
-	             Free (a, [LhsId (a', l)])))
+	  let lt = Type.label [] in
+	  let a' = make_expr_note_from_stmt_note a lt in
+	    ((label_decl l lt)::label_decls,
+	     Sequence (a, LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'),
+	               Free (a, [LhsId (a', l)])))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
 	  let i' = List.map lower_expression i in
 	    (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
@@ -225,16 +224,18 @@ let pass input =
 	    (label_decls'', Merge (a, s1', s2'))
       | Extern _ as s -> (label_decls, s)
   and lower_method_variables note vars =
-    (** Compute a pair of a new list of local variable declarations
-	and a list of assignments used for initialisation.
 
-	if the variable list is empty or no variable in the list has an
-	initializer, this function will produce a skip statement as the
-	method-call's initialization.  The caller of this function should
-	check for this and discard the initalization block.
+    (* Compute a pair of a new list of local variable declarations and
+       a list of assignments used for initialisation.
 
-	The initialisation component of variable declarations will be
-	removed. *)
+       if the variable list is empty or no variable in the list has an
+       initializer, this function will produce a skip statement as the
+       method-call's initialization.  The caller of this function should
+       check for this and discard the initalization block.
+
+       The initialisation component of variable declarations will be
+       removed. *)
+
     let lower_method_variable =
       function 
           ({ VarDecl.name = n ; var_type = _ ; init = Some i } as v) ->

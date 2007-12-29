@@ -601,23 +601,35 @@ struct
 
   module IdSet = Set.Make(String)
 
+  (*s Convert a an identifier set to a string. *)
+
+  let string_of_idset s =
+    let rec work s' =
+      if IdSet.is_empty s' then
+	""
+      else
+	let e = IdSet.choose s' in
+	let s'' = IdSet.remove e s' in
+	  e ^ ", " ^ (work s'')
+    in
+      "{" ^ (work s) ^ "}"
+
+
   (* *)
 
   type note = {
     file: string;
     line: int;
+    def: IdSet.t;
     life: IdSet.t;
     freed: IdSet.t;
     buried: IdSet.t;
   }
 
-  let file note = note.file
-  
-  let line note = note.line
-
   let make_note ?(file = "**dummy**") ?(line = 0) () = {
     file = file;
     line = line;
+    def = IdSet.empty;
     life = IdSet.empty;
     freed = IdSet.empty;
     buried = IdSet.empty;
@@ -692,6 +704,10 @@ struct
       | Extern (a, _) -> a
 
 
+  let file stmt = (note stmt).file
+  
+  let line stmt = (note stmt).line
+
   (* Set the note of a statement *)
   let set_note stmt n =
     match stmt with
@@ -749,6 +765,15 @@ struct
       | Merge (_, _, _) -> "_|||_"
       | Choice (_, _, _) -> "_[]_"
       | Extern (_, s) -> "extern \"" ^ s ^ "\""
+
+
+  (* Get the variables defined at a statement. *)
+  let def s = (note s).def
+
+
+  (* Set the variables defined at a statement. *)
+  let set_def s d =
+    let note' = { (note s) with def = d } in set_note s note'
 
 
   (* Get the variables life at a statement. *)
@@ -931,7 +956,7 @@ module Method =
        the local attributes, then searching the input parameters and
        finally searching the output paramenters.  Raises [Not_found]
        if the variable is not found. *)
-    let find_variable meth name =
+    let find_variable ~meth name =
       let p { VarDecl.name = n } = (n = name) in
 	try
 	  List.find p meth.vars
@@ -941,6 +966,12 @@ module Method =
 		List.find p meth.inpars
 	      with
 		  Not_found -> List.find p meth.outpars
+
+
+    (* Determine whether a local variable is a label. *)
+    let label_p ~meth name =
+      Type.label_p (find_variable meth name).VarDecl.var_type
+
 
     (* Determine whether [name] is the name of an input parameter to
        [meth]. *)

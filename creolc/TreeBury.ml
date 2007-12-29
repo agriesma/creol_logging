@@ -21,7 +21,7 @@
 
 (*s Bury all variables holding dead values.
 
-  Requires life ranges. *)
+  Requires life ranges and defined ranges. *)
 
 open Creol
 open Expression
@@ -40,30 +40,54 @@ open Method
 
 let optimize prg =
   let optimise_in_statement meth stmt =
+
+    (* Append a bury statement. *)
+    let prepend_bury s =
+      let d = def s and l = life s in
+      let r =
+	IdSet.filter (fun v -> not (label_p meth v)) (IdSet.diff d l)
+      in
+	Messages.message 1 ((file s) ^ ": " ^ (string_of_int (line s)) ^
+			      ": d = " ^ (string_of_idset d) ^
+			      "; l = " ^ (string_of_idset l) ^
+			      "; r = " ^ (string_of_idset r)) ;
+	if IdSet.is_empty r then
+	  s
+	else
+	  let r' =
+	    IdSet.fold
+	      (fun e a ->
+		 assert (not (label_p meth e)) ;
+		 LhsId (Expression.make_note (), e) :: a)
+	      r []
+	  in
+	  let n = {(note s) with def = IdSet.diff d r; life = IdSet.diff l r }
+	  in
+	    assert (r' <> []) ;
+	    Sequence (n, Bury (n, r'), s)
+    in
+
     let rec work =
       function
-	  Sequence (n, s1, s2) ->
-	    let s1' = work s1 and s2' = work s2 in
-	    let k =
-	      IdSet.filter
-		(fun v -> not (Type.label_p (find_variable meth v).var_type))
-		(IdSet.diff (life s1) (life s2))
-	    in
-	      if IdSet.is_empty k then
-		Sequence (n, s1', s2')
-	      else
-		let k' =
-		  IdSet.fold
-		    (fun e a -> (LhsId (Expression.make_note (), e))::a)
-		    k []
-		in
-		  Sequence (n, s1',
-			   Sequence (note s2, Bury (note s2, k'), s2'))
+	| Assign _ as s -> s
+	| If (n, c, s1, s2) ->
+	    let s1' = work s1 in
+	    let s2' = work s2 in
+	      If (n, c, s1', s2')
+	| While (n, c, i, s) ->
+	    let s' = work s in
+	      While (n, c, i, s')
+	| Sequence (n, s1, s2) ->
+	    let s1' = work s1 in
+	    let s2' = work s2 in
+	      Sequence (n, s1', s2')
 	| Choice (n, s1, s2) ->
-	    Choice (n, work s1, work s2)
+	    let s1' = work s1 and s2' = work s2 in
+	      Choice (n, s1', s2')
 	| Merge (n, s1, s2) ->
-	    Merge (n, work s1, work s2)
-	| s -> s
+	    let s1' = work s1 and s2' = work s2 in
+	      Merge (n, s1', s2')
+	| s -> prepend_bury s
     in
       work stmt
   in

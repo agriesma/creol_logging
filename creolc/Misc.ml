@@ -65,7 +65,7 @@ let home () =
 	end
 
 
-(** Fresh variable names. *)
+(*s Fresh variable names. *)
 type freshname = FreshName of string * freshvarname
 and freshvarname = unit -> freshname
 
