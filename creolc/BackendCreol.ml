@@ -55,13 +55,12 @@ let emit out_channel input =
     output_string out_channel ("datatype " ^ (Type.as_string d.Datatype.name));
     if d.Datatype.supers <> [] then
       begin
-        output_string out_channel " by " ;
+        output_string out_channel " of " ;
 	separated_list (function t -> output_string out_channel
 	  (Type.as_string t))
 	  (function () -> output_string out_channel ", ") d.Datatype.supers
       end ;
-    output_string out_channel "\nbegin\n" ;
-    output_string out_channel "end\n"
+    output_string out_channel "\n"
   and pretty_print_function f =
     output_string out_channel ("  fun " ^ f.Function.name) ;
     output_string out_channel " (" ;

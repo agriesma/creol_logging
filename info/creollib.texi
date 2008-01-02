@@ -1,27 +1,23 @@
-/*
- * prelude.creol
- *
- * Copyright (c) 2007
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+@node Creol Prelude
+@chapter Creol Prelude
 
+The prelude of creol defines a standard library.  It contains all the
+data types, functions, and classes defined for all creol programs.
+
+
+@section Datatype Data
+
+@example
 datatype Data
 
 fun = (a: Data, b: Data): Bool == extern "="
 fun /= (a: Data, b: Data): Bool == extern "/="
+@end example
 
+
+@section Datatype Bool
+
+@example
 datatype Bool
 
 fun ~ (a: Bool) : Bool == extern "~"
@@ -30,7 +26,12 @@ fun || (a: Bool, b: Bool): Bool == extern "||"
 fun => (a: Bool, b: Bool): Bool == extern "=>"
 fun ^ (a: Bool, b: Bool): Bool == extern "^"
 fun <=> (a: Bool, b: Bool): Bool == extern "<=>"
+@end example
 
+
+@section Datatype Real
+
+@example
 datatype Real
 
 fun - (a: Real): Real == extern "-"
@@ -45,7 +46,12 @@ fun < (a: Real, b: Real): Bool == extern "<"
 fun <= (a: Real, b: Real): Bool == extern "<="
 fun > (a: Real, b: Real): Bool == extern ">"
 fun >= (a: Real, b: Real): Bool == extern ">="
+@end example
 
+
+@section Datatype Int
+
+@example
 datatype Int of Real
 
 fun - (a: Int): Int == extern "-"
@@ -61,7 +67,12 @@ fun < (a: Int, b: Int): Bool == extern "<"
 fun <= (a: Int, b: Int): Bool == extern "<="
 fun > (a: Int, b: Int): Bool == extern ">"
 fun >= (a: Int, b: Int): Bool == extern ">="
+@end example
 
+
+@section Datatype String
+
+@example
 datatype String
 
 fun |- (a: String, b: String): String == extern "|-"
@@ -73,7 +84,12 @@ fun < (a: String, b: String): Bool == extern "<"
 fun <= (a: String, b: String): Bool == extern "<="
 fun > (a: String, b: String): Bool == extern ">"
 fun >= (a: String, b: String): Bool == extern ">="
+@end example
 
+
+@section Datatype List
+
+@example
 datatype List[`a]
 
 fun head(l: List[`a]): `a == extern "head"
@@ -89,26 +105,36 @@ fun |-|(l: List[`a], m: List[`a]): List[`a] == extern "|-|"
 fun #(l: List[`a]): Int == extern "length"
 fun length(l: List[`a]): Int == extern "length"
 fun isempty(l: List[`a]): Bool == extern "isempty"
+@end example
 
-// More to come.
 
+@section Datatype Set
+
+@example
 datatype Set[`a]
+@end example
 
-// More to come.
 
+@section Datatype Pair
 
-// datatype Pair
-
+@example
 fun fst (a: [`a, `b]): `a == extern "fst"
 fun snd (a: [`a, `b]): `b == extern "snd"
+@end example
 
+
+@section Datatypes Time and Duration
+
+@example
 datatype Time
 
 fun <(a: Time, b: Time): Bool == extern "<"
 fun <=(a: Time, b: Time): Bool == extern "<="
 fun >=(a: Time, b: Time): Bool == extern ">="
 fun >(a: Time, b: Time): Bool == extern ">"
+@end example
 
+@example
 datatype Duration
 
 fun dur(a: Real): Duration == extern "duration"
@@ -123,7 +149,11 @@ fun <(a: Duration, b: Duration): Bool == extern "<"
 fun <=(a: Duration, b: Duration): Bool == extern "<="
 fun >=(a: Duration, b: Duration): Bool == extern ">="
 fun >(a: Duration, b: Duration): Bool == extern ">"
+@end example
 
+
+@section Interface Any
+
+@example
 interface Any
-begin
-end
+@end example

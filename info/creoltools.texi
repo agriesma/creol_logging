@@ -55,6 +55,7 @@ Software Foundation raise funds for GNU development.''
 * Introduction::        Introduction to Creol and its tools.
 * Creol Tutorial::      An introduction to the Creol language.
 * Creol::               A description of the Creol language.
+* Creol Prelude::       The standard library for Creol.
 * CMC::                 Creol Machine Code.
 * creolc::              How to use the @command{creolc} compiler.
 * creolshell::          How to use the @command{creolshell}.
@@ -69,6 +70,7 @@ Software Foundation raise funds for GNU development.''
 @include introduction.texi
 @include creoltut.texi
 @include creol.texi
+@include creollib.texi
 @include cmc.texi
 @include creolc.texi
 @include creolshell.texi

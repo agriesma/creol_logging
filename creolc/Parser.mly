@@ -89,7 +89,7 @@ let statement_note pos =
 %token WHILE VAR WITH OP IN OUT CONSTRUCTOR FUN EXTERN
 %token REQUIRES ENSURES INV  SOME FORALL EXISTS HISTORY
 %token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
-%token AS BY DO
+%token AS BY DO OF
 %token EXCEPTION
 %token EQEQ COMMA SEMI COLON ASSIGN
 %token LBRACK RBRACK
@@ -280,8 +280,7 @@ with_decl:
 
 datatypedecl:
     DATATYPE t = creol_type
-      s = loption(preceded(BY, separated_list(COMMA, creol_type)))
-    loption(delimited(BEGIN, list(invariant), END))
+      s = loption(preceded(OF, separated_list(COMMA, creol_type)))
     { { Datatype.name = t; supers = s; hidden = false } }
 
 functiondecl:

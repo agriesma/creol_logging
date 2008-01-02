@@ -141,7 +141,7 @@ rule token = parse
     | "nil" { NIL }
     | "now" { NOW }
     | "null" { NULL }
-    | "of" { reserved lexbuf }
+    | "of" { OF }
     | "op" { OP }
     | "out" { OUT }
     | "posit" { POSIT }

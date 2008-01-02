@@ -425,7 +425,8 @@ statement @code{o := new @var{C} (@var{args})}.
 Unlike C++ and other languages with multiple inheritance, Creol merges
 all attribute definitions from the same class.  If attributes are
 initialised multiple times, the last definition will prevail.
-
+Consider the following example, which will be used to explain the
+creation of an instance of class @code{D}.
 @example
 class A(a: Int)
 begin
@@ -451,3 +452,59 @@ begin
   op run == n(; x); o(; y); assert x = 1 && y = 2
 end
 @end example
+
+The instance of class @code{D} is constructed by executing the
+following steps:
+@enumerate
+@item
+An empty object is be created with some value for the ``attribute''
+@code{self} and the attributes @code{x} and @code{y}, constituting the
+@emph{segment} for class @code{D}.
+
+@item
+The segment for class @code{B} is created by adding an attribute
+@code{b} to the object.  That attribute will be initialised with
+@code{1}.
+
+@item
+The segment for class @code{A} is created by adding an attribute
+@code{a} to the object, which will be initialised to @code{1}, the
+value of @code{b}.
+
+@item
+The segment for class @code{C} will be created by adding an attribute
+@code{c}, initialising it to @code{2}.
+
+@item
+The segment of class @code{A} is re-initialised, because class
+@code{C} inherits from class @code{A}.  The attribute @code{a} is set
+to @code{2}, the value of @code{b}
+
+@item
+The @code{init} method of class @code{A}, which is empty, is run.
+
+@item
+The @code{init} method of class @code{C} is run.  The assertion
+@code{a = c} holds.
+
+@item
+The @code{init} method of class @code{A} is re-run.
+
+@item
+The @code{init} method of class @code{B} is run.  The assertion
+@code{a = b} does @emph{not} hold, since it has been reinitialised to
+@code{2} after creating a segment for class @code{C}.
+
+@item
+The @code{init} method of class @code{D}, which is empty, is run.
+
+@end enumerate
+
+Observe, that the actual problem is, that class @code{D} inherits from
+both @code{B} and @code{C}.  Creating instances of class @code{B} or
+of class @code{C} does not have these issues.
+
+Additionally, observe the order in which the @code{init} method's are
+run:  it is the reverse order in which the segments of the attributes
+are initialised.  This ensures, that the class parameters are present
+and initialised once the method is run.

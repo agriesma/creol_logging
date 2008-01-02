@@ -1,7 +1,12 @@
-creoltools 0.0g (2007-XX-XX): alpha release.
+creoltools 0.0g (2007-01-DD): alpha release.
+
+This is the latest release which allows to disable type checking.
 
 In the language:
-*
+* datatype are not like modules anymore.  We may introduce modules later,
+  but for now a datatype is just in the global space.
+* datatypes declare their supertype by using the keyword of.  For example,
+  datatype Int of Real declared Int as a subtype of Real.
 
 In the compiler:
 * An error in locating the prelude has been corrected.
@@ -15,11 +20,15 @@ In the compiler:
 * Searching for methods in interfaces and classes should be slightly
   faster and the implementation has been corrected for some corner
   cases.
+* Passes for inserting free and bury statements have been added.  Passes
+  exploit static analysis for figuring out which labes to free and which
+  variables to bury.
 * Revise the implementation of the bury statement by expressing them
   as assignments.
 * Added a backend to dot, allowing to visualise some aspects of
   a creol model/program.  Currently, only relations between classes
   and types.
+* Many more errors have been corrected.
 
 In the standard library:
 * An error in the pair module has been corrected.
@@ -36,6 +45,7 @@ In the interpreter:
 Other:
 * The emacs lisp files have been removed and form their own projects
   now.
+* The documentation has been updated.
 
 
 creoltools 0.0g (2007-09-10): alpha release.
