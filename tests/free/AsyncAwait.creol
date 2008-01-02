@@ -1,5 +1,5 @@
 /*
- * Diamond.creol -- Corner cases of the Creol semantics.
+ * AsyncAwaitRepl.creol -- Free an asynchronous call.
  *
  * This file is part of creoltools
  *
@@ -19,40 +19,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * This test case is used to analyze how Diamond-shaped inheritance is going
- * to be executed in Creol.
- */
-class A(a: Int)
+interface I
 begin
-  op init == skip
-  op run == skip
-  op m(out r: Int) == r := a
+  with I op m
 end
 
-class B(b: Int) inherits A(b)
+class C contracts I
 begin
-  op init == assert a = b
-  op run == skip
-  op n(out r: Int) ==
-    m(; r)
-end
-
-class C(c: Int) inherits A(c)
-begin
-  op init == assert a = c
-  op run == skip
-  op o(out r: Int) ==
-    m(; r)
-end
-
-class D inherits B(1), C(2)
-begin
-  var x: Int
-  var y: Int
-  op init == skip
   op run ==
-    n(; x);
-    o(; y);
-    assert x = 1 && y = 2
+    var i: I;
+    var l: Label[ ];
+    i := new C;
+    l!i.m();
+    await l?
+
+  with I op m ==
+    skip
 end

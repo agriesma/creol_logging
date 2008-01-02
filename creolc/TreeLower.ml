@@ -99,8 +99,7 @@ let pass input =
 	  and lt = Type.label rng in
 	  let n' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	     Sequence (a, AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'),
-		       Free (a, [LhsId (n', l)])))
+	     AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'))
       | AsyncCall (a, None, e, n, s, p) ->
 	  (* If a label name is not given, we create a new label name.
              We cannot give a correct type to the label.  If the type
@@ -112,8 +111,7 @@ let pass input =
 	  let lt = Type.label [] in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	     Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
-		       Free (a, [LhsId (a', l)])))
+	     AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p in
@@ -155,9 +153,7 @@ let pass input =
 	  and lt = Type.label rng in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l (Type.label rng))::label_decls,
-	    Sequence (a,
-		     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'),
-		     Free (a, [LhsId (a', l)])))
+	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'))
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
 	  (* If a label name is not given, we create a new label name
 	     and assign the call to it.  We cannot give a correct type
@@ -169,8 +165,7 @@ let pass input =
 	  let lt = Type.label [] in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((label_decl l lt)::label_decls,
-	     Sequence (a, LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'),
-	               Free (a, [LhsId (a', l)])))
+	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
 	  let i' = List.map lower_expression i in
 	    (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
@@ -221,7 +216,7 @@ let pass input =
       | Choice (a, s1, s2) ->
 	  let (label_decls', s1') = lower_statement label_decls s1 in
 	  let (label_decls'', s2') = lower_statement label_decls' s2 in
-	    (label_decls'', Merge (a, s1', s2'))
+	    (label_decls'', Choice (a, s1', s2'))
       | Extern _ as s -> (label_decls, s)
   and lower_method_variables note vars =
 

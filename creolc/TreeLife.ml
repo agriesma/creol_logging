@@ -117,6 +117,12 @@ let compute_in_body ~program ~cls ~meth =
       | LhsWildcard (n, t) -> IdSet.empty
       | LhsSSAId (n, i, v) -> assert (Method.local_p meth i); IdSet.singleton i
   in
+
+  (* Compute life variable information for a statement.  The parameter
+     [outs] is the output set of all successors.  The parameter [stmt]
+     is the current statement we analyse.  The statement's note will
+     be updated with the variables life on the input edge. *)
+
   let rec compute_in_statement outs stmt =
     match stmt with
 	Skip n ->
@@ -229,9 +235,9 @@ let compute_in_body ~program ~cls ~meth =
       | If (n, c, l, r) ->
 	  let l' = compute_in_statement outs l
 	  and r' = compute_in_statement outs r in
-	  let outs' = IdSet.union (life l') (life r') in
 	  let g = gen c in
-	  let n' = { n with life = IdSet.union g outs' }
+	  let n' = { n with life =
+	      IdSet.union g (IdSet.union (life l') (life r')) }
 	  in
 	    logio stmt outs n'.life ;
 	    If (n', c, l', r')
@@ -256,15 +262,13 @@ let compute_in_body ~program ~cls ~meth =
       | Merge (n, s1, s2) -> 
 	  let s1' = compute_in_statement outs s1
 	  and s2' = compute_in_statement outs s2 in
-	  let outs' = IdSet.union (life s1') (life s2') in
-	  let n' = { n with life = outs' } in
+	  let n' = { n with life = IdSet.union (life s1') (life s2') } in
 	    logio stmt outs n'.life ;
 	    Merge (n', s1', s2')
       | Choice (n, s1, s2) -> 
 	  let s1' = compute_in_statement outs s1
 	  and s2' = compute_in_statement outs s2 in
-	  let outs' = IdSet.union (life s1') (life s2') in
-	  let n' = { n with life = outs' } in
+	  let n' = { n with life = IdSet.union (life s1') (life s2') } in
 	    logio stmt outs n'.life ;
 	    Choice (n', s1', s2')
       | Extern (n, s) ->

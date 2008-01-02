@@ -44,12 +44,10 @@
       <creol:free>
        <creol:identifier name="l"/>
        <creol:statement-note file="LocalAsync.creol" line="24">
-        <creol:def-var name="l"/>
         <creol:freed-var name="l"/>
        </creol:statement-note>
       </creol:free>
       <creol:statement-note file="LocalAsync.creol" line="24">
-       <creol:def-var name="l"/>
        <creol:freed-var name="l"/>
       </creol:statement-note>
      </creol:sequence>

@@ -39,7 +39,7 @@
         <creol:expression>
          <creol:new class="C">
           <creol:arguments/>
-          <creol:expression-note file="Async.creol" line="32">
+          <creol:expression-note file="AsyncAwait.creol" line="32">
            <creol:inferred-type>
             <creol:type name="I"/>
            </creol:inferred-type>
@@ -47,7 +47,7 @@
          </creol:new>
         </creol:expression>
        </creol:expressions>
-       <creol:statement-note file="Async.creol" line="32">
+       <creol:statement-note file="AsyncAwait.creol" line="32">
         <creol:def-var name="i"/>
        </creol:statement-note>
       </creol:assign>
@@ -63,7 +63,7 @@
         <creol:identifier name="l"/>
         <creol:callee>
          <creol:identifier name="i">
-          <creol:expression-note file="Async.creol" line="33">
+          <creol:expression-note file="AsyncAwait.creol" line="33">
            <creol:inferred-type>
             <creol:type name="I"/>
            </creol:inferred-type>
@@ -71,27 +71,56 @@
          </creol:identifier>
         </creol:callee>
         <creol:arguments/>
-        <creol:statement-note file="Async.creol" line="33">
+        <creol:statement-note file="AsyncAwait.creol" line="33">
          <creol:def-var name="i"/>
          <creol:def-var name="l"/>
          <creol:life-var name="i"/>
         </creol:statement-note>
        </creol:asynccall>
-       <creol:free>
-        <creol:identifier name="l"/>
-        <creol:statement-note file="Async.creol" line="33">
+       <creol:sequence>
+        <creol:await>
+         <creol:label>
+          <creol:identifier name="l">
+           <creol:expression-note file="AsyncAwait.creol" line="34">
+            <creol:inferred-type>
+             <creol:type name="Data"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:identifier>
+          <creol:expression-note file="AsyncAwait.creol" line="34">
+           <creol:inferred-type>
+            <creol:type name="Bool"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:label>
+         <creol:statement-note file="AsyncAwait.creol" line="34">
+          <creol:def-var name="i"/>
+          <creol:def-var name="l"/>
+          <creol:life-var name="l"/>
+         </creol:statement-note>
+        </creol:await>
+        <creol:free>
+         <creol:identifier name="l"/>
+         <creol:statement-note file="AsyncAwait.creol" line="34">
+          <creol:def-var name="i"/>
+          <creol:life-var name="l"/>
+          <creol:freed-var name="l"/>
+         </creol:statement-note>
+        </creol:free>
+        <creol:statement-note file="AsyncAwait.creol" line="34">
          <creol:def-var name="i"/>
-         <creol:life-var name="i"/>
+         <creol:life-var name="l"/>
          <creol:freed-var name="l"/>
         </creol:statement-note>
-       </creol:free>
-       <creol:statement-note file="Async.creol" line="33">
+       </creol:sequence>
+       <creol:statement-note file="AsyncAwait.creol" line="33">
         <creol:def-var name="i"/>
+        <creol:def-var name="l"/>
         <creol:life-var name="i"/>
         <creol:freed-var name="l"/>
        </creol:statement-note>
       </creol:sequence>
-      <creol:statement-note file="Async.creol" line="32">
+      <creol:statement-note file="AsyncAwait.creol" line="32">
        <creol:def-var name="i"/>
        <creol:def-var name="l"/>
        <creol:freed-var name="l"/>
@@ -107,7 +136,7 @@
     <creol:variables/>
     <creol:body>
      <creol:skip>
-      <creol:statement-note file="Async.creol" line="36"/>
+      <creol:statement-note file="AsyncAwait.creol" line="37"/>
      </creol:skip>
     </creol:body>
    </creol:method>

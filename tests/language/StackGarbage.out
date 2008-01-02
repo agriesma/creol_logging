@@ -5,8 +5,8 @@ result Class:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "m" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null, Code:
-    ("r" ::= int(1) ||| "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; "r"
-    ::= "+"("r" # int(1))) ; return("r") > *
+    ("r" ::= int(1)[]"label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; "r" ::=
+    "+"("r" # int(1))) ; return("r") > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null,
     Code: "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; return(emp) >,
   Ocnt: 0 >

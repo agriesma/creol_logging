@@ -36,11 +36,11 @@ type options = {
 let requires =
   function
       { target = Interpreter } ->
-	["lower"]
+	[ "lower"; "free" ]
     | { target = Modelchecker } -> 
-	["lower"; "bury"; "tailcall"]
+	[ "lower"; "free" ; "bury"; "tailcall"]
     | { target = Realtime } ->
-	["lower"]
+	[ "lower"; "free" ]
 
 let conflicts =
   function

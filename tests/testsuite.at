@@ -309,4 +309,8 @@ TEST_CREOLC_PASS([bury], [Assign])
 dnl Test PASS: free
 dnl
 TEST_CREOLC_PASS([free], [Async])
+TEST_CREOLC_PASS([free], [AsyncAwait])
+TEST_CREOLC_PASS([free], [AsyncRepl])
+TEST_CREOLC_PASS([free], [AsyncAwaitRepl])
+TEST_CREOLC_PASS([free], [AsyncChoice])
 TEST_CREOLC_PASS([free], [LocalAsync])
