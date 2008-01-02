@@ -104,26 +104,20 @@
          <creol:statement-note file="AsyncAwait.creol" line="34">
           <creol:def-var name="i"/>
           <creol:life-var name="l"/>
-          <creol:freed-var name="l"/>
          </creol:statement-note>
         </creol:free>
         <creol:statement-note file="AsyncAwait.creol" line="34">
          <creol:def-var name="i"/>
          <creol:life-var name="l"/>
-         <creol:freed-var name="l"/>
         </creol:statement-note>
        </creol:sequence>
        <creol:statement-note file="AsyncAwait.creol" line="33">
         <creol:def-var name="i"/>
-        <creol:def-var name="l"/>
         <creol:life-var name="i"/>
-        <creol:freed-var name="l"/>
        </creol:statement-note>
       </creol:sequence>
       <creol:statement-note file="AsyncAwait.creol" line="32">
        <creol:def-var name="i"/>
-       <creol:def-var name="l"/>
-       <creol:freed-var name="l"/>
       </creol:statement-note>
      </creol:sequence>
     </creol:body>

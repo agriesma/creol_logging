@@ -76,11 +76,11 @@ result Configuration:
     "harnessedReindeers" ::= "|-"("harnessedReindeers" # "head"(
     "waitReindeers")) ; "waitReindeers" ::= "tail"("waitReindeers") ; await
     "&&"("&&"("&&"("&&"("t1" ?? # "t2" ??) # "t3" ??) # "t4" ??) # "t5" ??) ;
-    "label:0" ! "head"("harnessedReindeers") . "unharness"(emp) ; free(
-    "label:0") ; "harnessedReindeers" ::= "tail"("harnessedReindeers") ;
-    "label:1" ! "head"("harnessedReindeers") . "unharness"(emp) ; free(
-    "label:1") ; "harnessedReindeers" ::= "tail"("harnessedReindeers") ;
-    return(emp) > *
+    free("t5", "t4", "t3", "t2", "t1") ; "label:0" ! "head"(
+    "harnessedReindeers") . "unharness"(emp) ; free("label:0") ;
+    "harnessedReindeers" ::= "tail"("harnessedReindeers") ; "label:1" ! "head"(
+    "harnessedReindeers") . "unharness"(emp) ; free("label:1") ;
+    "harnessedReindeers" ::= "tail"("harnessedReindeers") ; return(emp) > *
   < "haveProblem" : Mtdname | Param: noVid, Latt: noSubst, Code: "ctElves" ::=
     "+"("ctElves" # int(1)) ; "waitElves" ::= "|-"("waitElves" # "caller") ;
     return(emp) > *
@@ -92,9 +92,9 @@ result Configuration:
   < "loop" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, "label:2" |-> null, Code: (await "&&"("<="(int(3) # "ctElves") # "~"(
     "="("ctReindeers" # int(9)))) ; "label:1" ! "this" . "talkToElves"(emp) ;
-    "label:1" ?(noVid) ||| await "="("ctReindeers" # int(5)) ; "label:0" !
-    "this" . "deliverToys"(emp) ; "label:0" ?(noVid)) ; "label:2" ! "this" .
-    "loop"(emp) ; free("label:2") ; return(emp) > *
+    "label:1" ?(noVid)[]await "="("ctReindeers" # int(5)) ; "label:0" ! "this"
+    . "deliverToys"(emp) ; "label:0" ?(noVid)) ; "label:2" ! "this" . "loop"(
+    emp) ; free("label:2") ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
     "this" . "loop"(emp) ; free("label:0") ; return(emp) > *
   < "talkToElves" : Mtdname | Param: noVid, Latt: "t1" |-> null, "t2" |-> null,
@@ -105,11 +105,12 @@ result Configuration:
     "head"("waitElves")) ; "waitElves" ::= "tail"("waitElves") ; "t3" ! "head"(
     "waitElves") . "showIn"(emp) ; "inofficeElves" ::= "|-"("inofficeElves" #
     "head"("waitElves")) ; "waitElves" ::= "tail"("waitElves") ; await "&&"(
-    "&&"("t1" ?? # "t2" ??) # "t3" ??) ; "t1" ! "head"("inofficeElves") .
-    "showOut"(emp) ; "inofficeElves" ::= "tail"("inofficeElves") ; "t2" !
+    "&&"("t1" ?? # "t2" ??) # "t3" ??) ; free("t3", "t2", "t1") ; "t1" !
     "head"("inofficeElves") . "showOut"(emp) ; "inofficeElves" ::= "tail"(
-    "inofficeElves") ; "t3" ! "head"("inofficeElves") . "showOut"(emp) ;
-    "inofficeElves" ::= "tail"("inofficeElves") ; await "&&"("&&"("t1" ?? #
-    "t2" ??) # "t3" ??) ; return(emp) >,
+    "inofficeElves") ; "t2" ! "head"("inofficeElves") . "showOut"(emp) ;
+    "inofficeElves" ::= "tail"("inofficeElves") ; "t3" ! "head"(
+    "inofficeElves") . "showOut"(emp) ; "inofficeElves" ::= "tail"(
+    "inofficeElves") ; await "&&"("&&"("t1" ?? # "t2" ??) # "t3" ??) ; free(
+    "t3", "t2", "t1") ; return(emp) >,
   Ocnt: 0 >
 Bye.

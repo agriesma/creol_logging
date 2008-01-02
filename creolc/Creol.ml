@@ -604,26 +604,22 @@ struct
   (*s Convert a an identifier set to a string. *)
 
   let string_of_idset s =
-    let rec work s' =
-      if IdSet.is_empty s' then
-	""
-      else
-	let e = IdSet.choose s' in
-	let s'' = IdSet.remove e s' in
-	  e ^ ", " ^ (work s'')
+    let rec work =
+      function
+	  [] -> ""
+	| [e] -> e
+	| e::l -> e ^ ", " ^ (work l)
     in
-      "{" ^ (work s) ^ "}"
+      "{" ^ (work (IdSet.elements s)) ^ "}"
 
 
-  (* *)
+  (* A definition of the note attached to a statement. *)
 
   type note = {
     file: string;
     line: int;
     def: IdSet.t;
     life: IdSet.t;
-    freed: IdSet.t;
-    buried: IdSet.t;
   }
 
   let make_note ?(file = "**dummy**") ?(line = 0) () = {
@@ -631,8 +627,6 @@ struct
     line = line;
     def = IdSet.empty;
     life = IdSet.empty;
-    freed = IdSet.empty;
-    buried = IdSet.empty;
   }
 
 
@@ -767,13 +761,23 @@ struct
       | Extern (_, s) -> "extern \"" ^ s ^ "\""
 
 
-  (* Get the variables defined at a statement. *)
+  (* Get the variables defined at a statement.
+
+     In case of a sequence of statements, return the set of variables
+     of the final statement.  For a [Sequence] statement, the
+     invariant is, that a variable is defined if it is defined at its
+     final statement. *)
   let def s = (note s).def
 
 
   (* Set the variables defined at a statement. *)
   let set_def s d =
     let note' = { (note s) with def = d } in set_note s note'
+
+
+  (* Check whether a variable is defined for a statement. *)
+  let def_p s v =
+    IdSet.mem v (def s)
 
 
   (* Get the variables life at a statement. *)
@@ -785,21 +789,8 @@ struct
     let note' = { (note s) with life = l } in set_note s note'
 
 
-  (* Get the set of variables freed at that statement. *)
-  let freed s = (note s).freed
-
-
-  (* Set the set of variables freed at that statement. *)
-  let set_freed s f =
-    let note' = { (note s) with freed = f } in set_note s note'
-
-  (* Get the set of variables buried at a statement. *)
-  let buried s = (note s).buried
-
-
-  (* Set the set of variables buried at a statement. *)
-  let set_buried s f =
-    let note' = { (note s) with buried = f } in set_note s note'
+  (* Check whether a variable is life at a statement. *)
+  let life_p stmt v = IdSet.mem v (life stmt)
 
 
   (* Transform an arbitrary statement [stmt] into a statement in which

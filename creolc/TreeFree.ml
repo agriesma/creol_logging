@@ -29,107 +29,88 @@ open Statement
 open VarDecl
 open Method
 
+let log l = Messages.message (l + 1)
+
 (* This function inserts free statements for all label variables at
    the point at which they die. *)
 
 let optimize prg =
   let optimise_in_statement meth stmt =
-    let name =
-      function
-	  LhsId (_, v) -> v
-	| LhsSSAId (_, v, _) -> v
-	| _ -> assert false
-    in
 
     (* Decide whether we should append a free statement to the current
-       statement. *)
+       statement.  If no free statement needs to be appended, then the
+       function returns [s].  Otherwise, a Sequence statement will be
+       returned, which has a \emph{different} defined set than the
+       original statement.  This means, that we have to update all
+       subsequent defined sets.  *)
 
-    let append_free ~(s: Statement.t) ~(l: IdSet.t) =
-      let d = def s and f = freed s in
+    let append_free ~s ~l =
+      let d = def s in
       let r =
 	IdSet.filter
-	  (fun v -> Type.label_p (find_variable meth v).var_type)
-	  (IdSet.diff d (IdSet.union l f))
+	  (fun v -> Method.label_p meth v)
+	  (IdSet.diff d l)
       in
-	Messages.message 1 ((file s) ^ ": " ^ (string_of_int (line s)) ^
-			      ": [" ^ (Statement.to_string s) ^
-			      "] d = " ^ (string_of_idset d) ^
-			      "; l = " ^ (string_of_idset l) ^
-			      "; r = " ^ (string_of_idset r)) ;
 	if IdSet.is_empty r then
-	  s
+	  let () = log 0 ((file s) ^ ": " ^ (string_of_int (line s)) ^
+			    ": [" ^ (Statement.to_string s) ^
+			    "] d = " ^ (string_of_idset d) ^
+			    "; l = " ^ (string_of_idset l) ^
+			    "; r = {}")
+	  in
+	    s
 	else
+	  let d' = IdSet.diff d r in
+	  let () = log 0 ((file s) ^ ": " ^ (string_of_int (line s)) ^
+			    ": [" ^ (Statement.to_string s) ^
+			    "] d = " ^ (string_of_idset d) ^
+			    "; l = " ^ (string_of_idset l) ^
+			    "; r = " ^ (string_of_idset r) ^
+			    "; d' = " ^ (string_of_idset d')) in
 	  let r' =
 	    IdSet.fold
 	      (fun e a -> LhsId (Expression.make_note (), e) :: a)
 	      r []
 	  in
-	  let n = {(note s) with freed = IdSet.union (freed s) r;
-		     def = IdSet.diff (def s) r } in
-	    assert (IdSet.is_empty (IdSet.inter f r));
-	    assert (r' <> []) ;
+	  let n = {(note s) with def = d' } in
 	    Sequence (n, s, Free (n, r'))
     in
 
-    (* Insert free statements.  [free] is a set of label names which are
-       known to be consumed at a specific statement. *)
+    (* Insert free statements.  [lv] is a set of label names which are
+       life at a given location. *)
 
-    let rec work free lv =
+    let rec work lv =
       function
-	| AsyncCall (_, Some l, _, _, _, _) as s ->
-	    let free' = IdSet.remove (name l) free in
-	      append_free (set_freed s free') lv
-	| LocalAsyncCall (_, Some l, _, _, _, _, _) as s ->
-	    let free' = IdSet.remove (name l) free in
-	      append_free (set_freed s free') lv
-	| Reply (n, l, v) ->
-	    let free' =
-	      let nm = variable l in
-	        Messages.message 1
-		  ("Variable " ^ nm ^ " freed (consumed) at " ^ (n.file) ^
-		     ": " ^ (string_of_int (n.line)));
-		IdSet.add nm free
-	    in
-	      append_free (Reply ({ n with freed = free'}, l, v)) lv
-	| Free (n, l) ->
-	    let f a e =
-	      let nm = name e in
-	        Messages.message 1
-		  ("Variable " ^ nm ^ " freed at " ^ (n.file) ^ ": " ^
-		     (string_of_int (n.line)));
-		IdSet.add nm a
-	    in
-	    let free' = List.fold_left f free l in
-	      Free ({ n with freed = free'}, l)
 	| If (n, c, s1, s2) ->
-	    let s1' = work free lv s1
-	    and s2' = work free lv s2 in
-	    let freed' = IdSet.union (freed s1') (freed s2') in
-	      append_free (If ({n with freed = freed' }, c, s1', s2')) n.life
+	    let s1' = work lv s1
+	    and s2' = work lv s2 in
+	    let def' = IdSet.inter (def s1') (def s2') in
+	      append_free (If ({n with def = def' }, c, s1', s2')) lv
 	| While (n, c, i, s) ->
-	    let s' = append_free (work free lv s) lv in
-	      append_free (While ({ n with freed = freed s' }, c, i, s')) n.life
+	    let s' = append_free (work lv s) lv in
+	      append_free (While ({ n with def = def s' }, c, i, s')) lv
 	| Sequence (n, s1, s2) ->
-	    let s1' = work free (life s2) s1 in
-	    let s2' = work (freed s1') lv s2 in
-	      Sequence ({ n with freed = freed s2' }, s1', s2')
+	    let s1' = work (life s2) s1 in
+	    let s2' = TreeDef.compute_in_statement meth (def s1') s2 in
+	    let s2'' = work lv s2' in
+	      Sequence ({ n with def = def s2'' }, s1', s2'')
 	| Choice (n, s1, s2) ->
-	    let s1' = work free lv s1
-	    and s2' = work free lv s2 in
-	    let freed' = IdSet.union (freed s1') (freed s2') in
-	      Choice ({ n with freed = freed' }, s1', s2')
+	    let s1' = work lv s1
+	    and s2' = work lv s2 in
+	    let def' = IdSet.inter (def s1') (def s2') in
+	      Choice ({ n with def = def' }, s1', s2')
 	| Merge (n, s1, s2) ->
-	    let s1' = work free lv s1
-	    and s2' = work free lv s2 in
-	    let freed' = IdSet.union (freed s1') (freed s2') in
-	      Merge ({ n with freed = freed' }, s1', s2')
+	    let s1' = work lv s1
+	    and s2' = work lv s2 in
+	    let def' = IdSet.inter (def s1') (def s2') in
+	      Merge ({ n with def = def' }, s1', s2')
 	| s -> append_free s lv
     in
-      let lv =
-        let add a { VarDecl.name = n } = IdSet.add n a in
-	  List.fold_left add IdSet.empty meth.Method.outpars
-      in
-        work IdSet.empty lv stmt
+    let lv =
+      let add a { VarDecl.name = n } = IdSet.add n a in
+	List.fold_left add IdSet.empty meth.Method.outpars
+    in
+      work lv stmt
   in
   let optimise_in_method meth =
     match meth.Method.body with

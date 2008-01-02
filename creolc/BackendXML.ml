@@ -421,8 +421,6 @@ let emit ~name ~tree =
         (string_of_int note.Statement.line) ;
       emit_idset "creol:def-var" note.Statement.def ;
       emit_idset "creol:life-var" note.Statement.life ;
-      emit_idset "creol:freed-var" note.Statement.freed ;
-      emit_idset "creol:buried-var" note.Statement.buried ;
       XmlTextWriter.end_element writer
   and creol_vardecl_to_xml v =
     XmlTextWriter.start_element writer "creol:vardecl";

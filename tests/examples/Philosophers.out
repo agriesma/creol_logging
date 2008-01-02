@@ -26,10 +26,10 @@ result Configuration:
     "label:0" ! "this" . "digest"(emp) ; free("label:0") ; return(emp) > *
   < "eat" : Mtdname | Param: noVid, Latt: "l" |-> null, "label:0" |-> null,
     "label:1" |-> null, Code: await "hungry" ; "l" ! "neighbor" .
-    "borrowStick"(emp) ; await ("l" ??) ; await "chopstick" ; "hist" ::= "|-"(
-    "hist" # str("e")) ; "hungry" ::= bool(false) ; "label:0" ! "neighbor" .
-    "returnStick"(emp) ; free("label:0") ; release ; "label:1" ! "this" .
-    "eat"(emp) ; free("label:1") ; return(emp) > *
+    "borrowStick"(emp) ; await ("l" ??) ; free("l") ; await "chopstick" ;
+    "hist" ::= "|-"("hist" # str("e")) ; "hungry" ::= bool(false) ; "label:0" !
+    "neighbor" . "returnStick"(emp) ; free("label:0") ; release ; "label:1" !
+    "this" . "eat"(emp) ; free("label:1") ; return(emp) > *
   < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "hist" ::=
     str("") ; "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "label:0"
     ! "butler" . "getNeighbor"(emp) ; "label:0" ?("neighbor") ; return(emp) > *

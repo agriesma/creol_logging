@@ -83,12 +83,15 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  typecheck/Nat2.creol typecheck/Nat3.creol \
 		  typecheck/Nat4.creol \
 		  bury/Assign.creol bury/Assign.xml \
+		  bury/If.creol bury/If.xml \
 		  free/Async.creol free/Async.xml \
 		  free/AsyncRepl.creol free/AsyncRepl.xml \
 		  free/AsyncAwaitRepl.creol free/AsyncAwaitRepl.xml \
 		  free/AsyncAwait.creol free/AsyncAwait.xml \
 		  free/AsyncChoice.creol free/AsyncChoice.xml \
+		  free/AsyncAnon.creol free/AsyncAnon.xml \
 		  free/LocalAsync.creol free/LocalAsync.xml \
+		  free/If.creol free/If.xml \
 		  Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \
 		  Interpreter.maude Interpreter.out \

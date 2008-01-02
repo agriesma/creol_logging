@@ -28,6 +28,7 @@
 *)
 
 open Creol
+open Messages
 
 (* Defines the type of a pass.  \ocwlowerid{help} represents the help
    message for that pass.  \ocwlowerid{dependencies} is a string
@@ -160,8 +161,7 @@ and enable_pass s =
 
 let requires passes =
   let doit p =
-    Messages.message 1
-      ("Enabling pass " ^ p ^ ", it is required by the backend") ;
+    message 1 ("Enabling pass " ^ p ^ ", it is required by the backend") ;
     enable_pass p
   in
     List.iter doit passes
@@ -185,8 +185,7 @@ let disable_pass s =
 
 let conflicts passes =
   let doit p =
-    Messages.message 1
-      ("Disabling pass " ^ p ^ ", it conflicts with the backend") ;
+    message 1 ("Disabling pass " ^ p ^ ", it conflicts with the backend") ;
     disable_pass p
   in
     List.iter doit passes
@@ -241,7 +240,7 @@ let parse_from_channel (name: string) (channel: in_channel) =
   let buf = Lexing.from_channel channel in
   let pos = buf.Lexing.lex_curr_p in
   let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in
-  let _ = Messages.message 1 ("Reading " ^ name) in
+  let _ = message 1 ("Reading " ^ name) in
   let do_parse = fun () -> Parser.main Lexer.token buf in
   let (result, elapsed) = Misc.measure do_parse in
     time_parse := !time_parse +. elapsed ;
@@ -307,9 +306,9 @@ let execute_dump ~filename ~pass ~tree =
       "." ^ pass
   in
   let f () =
-    let () = Messages.message 1 ("Writing dump to " ^ file) in
+    let () = message 1 ("Writing dump to " ^ file) in
     let () = BackendXML.emit file tree in
-    let () = Messages.message 1 ("Finished writing dump to " ^ file) in
+    let () = message 1 ("Finished writing dump to " ^ file) in
       ()
   in
   let ((), elapsed) = Misc.measure f in
@@ -332,9 +331,10 @@ let execute_passes filename tree =
     if (snd p).enabled then
       begin
 	let pass () =
-	  let _ = Messages.message 1 ("Executing " ^ (fst p)) in
+	  let () = message 1 ("===== Executing " ^ (fst p)) in
           let result = (snd p).pass tree in
-	  let _ = Messages.message 1 ("Finished executing " ^ (fst p)) in
+	  let () = message 1 ("===== Finished executing " ^ (fst p) ^ "\n\n")
+	  in
 	    result
 	in
 	let (result, elapsed) = Misc.measure pass

@@ -70,18 +70,13 @@ let logio stmt i o =
 	       "]: in = {" ^ (g i) ^ "}, out = {" ^ (g o) ^ "}")
 
 
-(* Compute defined ranges of a method body by traversing it forward. *)
+(* Compute the defined ranges in a statement. *)
 
-let compute_in_body ~program ~cls ~meth =
-
-  (* Check whether an expression defines a new value.  This will
-     almost never happen.  The note is updated with the set of defined
-     variables of the output edge. *)
-
+let compute_in_statement ~meth ins stmt =
   let rec kill =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
-	    Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
+	     Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
       | Id (a, v) when Method.local_p meth v ->
 	  IdSet.singleton v
       | Id (a, v) ->
@@ -119,55 +114,56 @@ let compute_in_body ~program ~cls ~meth =
       | LhsId (n, i) -> IdSet.empty
       | LhsAttr (n, s, t) -> IdSet.empty
       | LhsWildcard (n, t) -> IdSet.empty
-      | LhsSSAId (n, i, v) -> assert (Method.local_p meth i); IdSet.singleton i
+      | LhsSSAId (n, i, v) ->
+	  assert (Method.local_p meth i); IdSet.singleton i
   in
-  let rec compute_in_statement ins stmt =
+  let rec work ins stmt =
     match stmt with
 	Skip n ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Skip n', ins)
+	    Skip n'
       | Assert (n, e) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Assert (n', e), n'.def)
+	    Assert (n', e)
       | Prove (n, e) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Prove (n', e), n'.def)
+	    Prove (n', e)
       | Assign (n, lhs, rhs) ->
 	  let g = List.fold_left (add gen) IdSet.empty lhs in
 	  let n' = { n with def = IdSet.union g ins } in
 	    logio stmt ins n'.def ;
-	    (Assign (n', lhs, rhs), n'.def)
+	    Assign (n', lhs, rhs)
       | Await (n, c) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Await (n', c), n'.def)
+	    Await (n', c)
       | Posit (n, c) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Posit (n', c), n'.def)
+	    Posit (n', c)
       | Release n ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Release n', n'.def)
+	    Release n'
       | AsyncCall (n, None, c, m, s, a) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (AsyncCall (n', None, c, m, s, a), n'.def)
+	    AsyncCall (n', None, c, m, s, a)
       | AsyncCall (n, Some l, c, m, s, a) ->
 	  let g =  gen l in
 	  let n' = { n with def = IdSet.union ins g } in
 	    logio stmt ins n'.def ;
-	    (AsyncCall (n', Some l, c, m, s, a), n'.def)
+	    AsyncCall (n', Some l, c, m, s, a)
       | Reply (n, l, p) ->
 	  (* A reply statement leaves [l] undefined and defines [p]. *)
 	  let k = kill l
 	  and g = List.fold_left (add gen) IdSet.empty p in
 	  let n' = { n with def = IdSet.union (IdSet.diff ins k) g } in
 	    logio stmt ins n'.def ;
-	    (Reply (n', l, p), n'.def)
+	    Reply (n', l, p)
       | Free (n, v) ->
 	  (* A free statement will leave all members of v as
 	     undefined.  The call to the gen-function is used only for
@@ -175,7 +171,7 @@ let compute_in_body ~program ~cls ~meth =
 	  let k = List.fold_left (add gen) IdSet.empty v in
 	  let n' = { n with def = IdSet.diff ins k } in
 	    logio stmt ins n'.def ;
-	    (Free (n', v), n'.def)
+	    Free (n', v)
       | Bury (n, v) ->
 	  (* A bury statement will leave all members of v as
 	     undefined.  The call to the gen-function is used only for
@@ -183,84 +179,93 @@ let compute_in_body ~program ~cls ~meth =
 	  let k = List.fold_left (add gen) IdSet.empty v in
 	  let n' = { n with def = IdSet.diff ins k } in
 	    logio stmt ins n'.def ;
-	    (Bury (n', v), n'.def)
+	    Bury (n', v)
       | SyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
 	  let n' = { n with def = IdSet.union ins g } in
 	    logio stmt ins n'.def ;
-	    (SyncCall (n', c, m, s, i, o), n'.def)
+	    SyncCall (n', c, m, s, i, o)
       | AwaitSyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
 	  let n' = { n with def = IdSet.union ins g } in
 	    logio stmt ins n'.def ;
-	    (AwaitSyncCall (n', c, m, s, i, o), n'.def)
+	    AwaitSyncCall (n', c, m, s, i, o)
       | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (LocalAsyncCall (n', None, m, s, ub, lb, i), n'.def)
+	    LocalAsyncCall (n', None, m, s, ub, lb, i)
       | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
 	  let g = gen l in
 	  let n' = { n with def = IdSet.union ins g } in
 	    logio stmt ins n'.def ;
-	    (LocalAsyncCall (n', Some l, m, s, ub, lb, i), n'.def)
+	    LocalAsyncCall (n', Some l, m, s, ub, lb, i)
       | LocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
 	  let n' = { n with def = IdSet.union ins g }
 	  in
 	    logio stmt ins n'.def ;
-	    (LocalSyncCall (n', m, s, u, l, i, o), n'.def)
+	    LocalSyncCall (n', m, s, u, l, i, o)
       | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
 	  let n' = { n with def = IdSet.union g ins } in
 	    logio stmt ins n'.def ;
-	    (AwaitLocalSyncCall (n', m, s, u, l, i, o), n'.def)
+	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
       | Tailcall (n, m, s, ub, lb, i) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Tailcall (n', m, s, ub, lb, i), n'.def)
+	    Tailcall (n', m, s, ub, lb, i)
       | If (n, c, l, r) ->
-	  let (l', o1) = compute_in_statement ins l
-	  and (r', o2) = compute_in_statement ins r in
-	  let n' = { n with def = IdSet.inter o1 o2 }
+	  let l' = work ins l
+	  and r' = work ins r in
+	  let n' = { n with def = IdSet.inter (def l') (def r') }
 	  in
 	    logio stmt ins n'.def ;
-	    (If (n', c, l', r'), n'.def)
+	    If (n', c, l', r')
       | While (n, c, i, b) ->
-	  let (b', o) = compute_in_statement ins b in
-	  let n' = { n with def = IdSet.union ins o } in
+	  let b' = work ins b in
+	  let n' = { n with def = IdSet.union ins (def b') } in
 	    logio stmt ins n'.def ;
-	    (While (n', c, i, b'), n'.def)
+	    While (n', c, i, b')
       | Sequence (n, s1, s2) ->
-	  let (s1', o1) = compute_in_statement ins s1 in
-	  let (s2', o2) = compute_in_statement o1 s2 in
-	  let n' = { n with def = o2 } in
+	  let s1' = work ins s1 in
+	  let s2' = work (def s1') s2 in
+	  let n' = { n with def = def s2' } in
 	    logio stmt ins n'.def ;
-	    (Sequence (n', s1', s2'), n'.def)
+	    Sequence (n', s1', s2')
       | Merge (n, s1, s2) -> 
-	  let (s1', o1) = compute_in_statement ins s1
-	  and (s2', o2) = compute_in_statement ins s2 in
-	  let n' = { n with def = IdSet.union o1 o2 } in
+	  let s1' = work ins s1
+	  and s2' = work ins s2 in
+	  let n' = { n with def = IdSet.inter (def s1') (def s2') } in
 	    logio stmt ins n'.def ;
-	    (Merge (n', s1', s2'), n'.def)
+	    Merge (n', s1', s2')
       | Choice (n, s1, s2) -> 
-	  let (s1', o1) = compute_in_statement ins s1
-	  and (s2', o2) = compute_in_statement ins s2 in
-	  let n' = { n with def = IdSet.union o1 o2 } in
+	  let s1' = work ins s1
+	  and s2' = work ins s2 in
+	  let n' = { n with def = IdSet.inter (def s1') (def s2') } in
 	    logio stmt ins n'.def ;
-	    (Choice (n', s1', s2'), n'.def)
+	    Choice (n', s1', s2')
       | Extern (n, s) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;
-	    (Extern (n', s), n'.def)
+	    Extern (n', s)
   in
-    match meth.Method.body with
-	None -> meth
-      | Some b ->
-	  let () = log 1 ("Defined vars in " ^ (Method.name_as_string meth)) in
-	  let add s v = IdSet.add v.VarDecl.name s in
-	  let ins = List.fold_left add IdSet.empty meth.Method.inpars in
-	  let (b', _) = compute_in_statement ins b in
-	    { meth with Method.body = Some b' }
+    work ins stmt
+
+(* Compute defined ranges of a method body by traversing it forward. *)
+
+let compute_in_body ~program ~cls ~meth =
+
+  (* Check whether an expression defines a new value.  This will
+     almost never happen.  The note is updated with the set of defined
+     variables of the output edge. *)
+
+  match meth.Method.body with
+      None -> meth
+    | Some b ->
+	let () = log 1 ("Defined vars in " ^ (Method.name_as_string meth)) in
+	let add s v = IdSet.add v.VarDecl.name s in
+	let ins = List.fold_left add IdSet.empty meth.Method.inpars in
+	  { meth with Method.body = Some (compute_in_statement meth ins b) }
 
 
 let compute_in_method ~program ~cls ~meth =

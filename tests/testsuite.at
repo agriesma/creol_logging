@@ -305,6 +305,7 @@ TEST_CREOLC_TYPECHECK([Contracts],
 dnl Test PASS: bury
 dnl
 TEST_CREOLC_PASS([bury], [Assign])
+TEST_CREOLC_PASS([bury], [If])
 
 dnl Test PASS: free
 dnl
@@ -313,4 +314,6 @@ TEST_CREOLC_PASS([free], [AsyncAwait])
 TEST_CREOLC_PASS([free], [AsyncRepl])
 TEST_CREOLC_PASS([free], [AsyncAwaitRepl])
 TEST_CREOLC_PASS([free], [AsyncChoice])
+TEST_CREOLC_PASS([free], [AsyncAnon])
 TEST_CREOLC_PASS([free], [LocalAsync])
+TEST_CREOLC_PASS([free], [If])

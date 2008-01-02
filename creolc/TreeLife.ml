@@ -236,8 +236,8 @@ let compute_in_body ~program ~cls ~meth =
 	  let l' = compute_in_statement outs l
 	  and r' = compute_in_statement outs r in
 	  let g = gen c in
-	  let n' = { n with life =
-	      IdSet.union g (IdSet.union (life l') (life r')) }
+	  let life' = IdSet.union g (IdSet.union (life l') (life r')) in
+	  let n' = { n with life = life' }
 	  in
 	    logio stmt outs n'.life ;
 	    If (n', c, l', r')

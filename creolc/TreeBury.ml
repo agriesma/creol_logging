@@ -27,7 +27,8 @@ open Creol
 open Expression
 open Statement
 open VarDecl
-open Method
+
+let log l = Messages.message (l + 1)
 
 (* This function inserts bury statements for all variables at the
    point at which they die.
@@ -41,55 +42,78 @@ open Method
 let optimize prg =
   let optimise_in_statement meth stmt =
 
-    (* Append a bury statement. *)
-    let prepend_bury s =
-      let d = def s and l = life s in
+    (* Decide whether we should append a \textbf{bury} statement to
+       the current statement.  If no \textbf{bury} statement needs to
+       be appended, then the function returns [s].  The parameter [l]
+       contains the set of variables which are life \emph{after}
+       executing that statement.  Otherwise, a Sequence statement will
+       be returned, which has a \emph{different} defined set than the
+       original statement.  This means, that all subsequent defined
+       sets have to be updated.  *)
+
+    let append_bury ~s ~l =
+      let d = def s in
       let r =
-	IdSet.filter (fun v -> not (label_p meth v)) (IdSet.diff d l)
+	IdSet.filter
+	  (fun v -> not (Method.label_p meth v) && not (Method.input_p meth v))
+	  (IdSet.diff d l)
       in
-	Messages.message 1 ((file s) ^ ": " ^ (string_of_int (line s)) ^
-			      ": d = " ^ (string_of_idset d) ^
-			      "; l = " ^ (string_of_idset l) ^
-			      "; r = " ^ (string_of_idset r)) ;
 	if IdSet.is_empty r then
-	  s
+	  let () = log 0 ((file s) ^ ": " ^ (string_of_int (line s)) ^
+			    ": [" ^ (Statement.to_string s) ^
+			    "] d = " ^ (string_of_idset d) ^
+			    "; l = " ^ (string_of_idset l) ^
+			    "; r = {}")
+	  in
+	    s
 	else
+	  let d' = IdSet.diff d r in
+	  let () = log 0 ((file s) ^ ": " ^ (string_of_int (line s)) ^
+			    ": [" ^ (Statement.to_string s) ^
+			    "] d = " ^ (string_of_idset d) ^
+			    "; l = " ^ (string_of_idset l) ^
+			    "; r = " ^ (string_of_idset r) ^
+			    "; d' = " ^ (string_of_idset d')) in
 	  let r' =
 	    IdSet.fold
-	      (fun e a ->
-		 assert (not (label_p meth e)) ;
-		 LhsId (Expression.make_note (), e) :: a)
+	      (fun e a -> LhsId (Expression.make_note (), e) :: a)
 	      r []
 	  in
-	  let n = {(note s) with def = IdSet.diff d r; life = IdSet.diff l r }
-	  in
-	    assert (r' <> []) ;
-	    Sequence (n, Bury (n, r'), s)
+	  let n = {(note s) with def = d' } in
+	    Sequence (n, s, Bury (n, r'))
     in
-
-    let rec work =
+    let rec work lv =
       function
-	| Assign _ as s -> s
 	| If (n, c, s1, s2) ->
-	    let s1' = work s1 in
-	    let s2' = work s2 in
-	      If (n, c, s1', s2')
+	    let s1' = work lv s1
+	    and s2' = work lv s2 in
+	    let def' = IdSet.inter (def s1') (def s2') in
+	      append_bury (If ({n with def = def' }, c, s1', s2')) lv
 	| While (n, c, i, s) ->
-	    let s' = work s in
-	      While (n, c, i, s')
+	    let s' = append_bury (work lv s) lv in
+	      append_bury (While ({ n with def = def s' }, c, i, s')) lv
 	| Sequence (n, s1, s2) ->
-	    let s1' = work s1 in
-	    let s2' = work s2 in
-	      Sequence (n, s1', s2')
+	    let s1' = work (life s2) s1 in
+	    let s2' = TreeDef.compute_in_statement meth (def s1') s2 in
+	    let s2'' = work lv s2' in
+	      Sequence ({ n with def = def s2'' }, s1', s2'')
 	| Choice (n, s1, s2) ->
-	    let s1' = work s1 and s2' = work s2 in
-	      Choice (n, s1', s2')
+	    let s1' = work lv s1
+	    and s2' = work lv s2 in
+	    let def' = IdSet.inter (def s1') (def s2') in
+	      Choice ({ n with def = def' }, s1', s2')
 	| Merge (n, s1, s2) ->
-	    let s1' = work s1 and s2' = work s2 in
-	      Merge (n, s1', s2')
-	| s -> prepend_bury s
+	    let s1' = work lv s1
+	    and s2' = work lv s2 in
+	    let def' = IdSet.inter (def s1') (def s2') in
+	      Merge ({ n with def = def' }, s1', s2')
+	| s -> append_bury s lv
     in
-      work stmt
+    let lv =
+      let add a { VarDecl.name = n } = IdSet.add n a in
+	List.fold_left add IdSet.empty meth.Method.outpars
+    in
+      work lv stmt
   in
   let optimise_in_method meth =
     match meth.Method.body with

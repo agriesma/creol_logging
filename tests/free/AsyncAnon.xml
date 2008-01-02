@@ -1,0 +1,189 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:interface name="I"/>
+ <creol:class name="C">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="label:0">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+     <creol:vardecl name="i">
+      <creol:type name="I"/>
+     </creol:vardecl>
+     <creol:vardecl name="l">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:sequence>
+      <creol:assign>
+       <creol:targets>
+        <creol:identifier name="i"/>
+       </creol:targets>
+       <creol:expressions>
+        <creol:expression>
+         <creol:new class="C">
+          <creol:arguments/>
+          <creol:expression-note file="AsyncAnon.creol" line="32">
+           <creol:inferred-type>
+            <creol:type name="I"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:new>
+        </creol:expression>
+       </creol:expressions>
+       <creol:statement-note file="AsyncAnon.creol" line="32">
+        <creol:def-var name="i"/>
+       </creol:statement-note>
+      </creol:assign>
+      <creol:sequence>
+       <creol:asynccall method="m">
+        <creol:signature>
+         <creol:cointerface>
+          <creol:type name="I"/>
+         </creol:cointerface>
+         <creol:input-parameters/>
+         <creol:output-parameters/>
+        </creol:signature>
+        <creol:identifier name="l"/>
+        <creol:callee>
+         <creol:identifier name="i">
+          <creol:expression-note file="AsyncAnon.creol" line="33">
+           <creol:inferred-type>
+            <creol:type name="I"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:identifier>
+        </creol:callee>
+        <creol:arguments/>
+        <creol:statement-note file="AsyncAnon.creol" line="33">
+         <creol:def-var name="i"/>
+         <creol:def-var name="l"/>
+         <creol:life-var name="i"/>
+        </creol:statement-note>
+       </creol:asynccall>
+       <creol:sequence>
+        <creol:sequence>
+         <creol:localasynccall method="run">
+          <creol:signature>
+           <creol:cointerface>
+            <creol:internal/>
+           </creol:cointerface>
+           <creol:input-parameters/>
+           <creol:output-parameters>
+            <creol:unknown/>
+           </creol:output-parameters>
+          </creol:signature>
+          <creol:identifier name="label:0"/>
+          <creol:arguments/>
+          <creol:statement-note file="AsyncAnon.creol" line="34">
+           <creol:def-var name="i"/>
+           <creol:def-var name="l"/>
+           <creol:def-var name="label:0"/>
+           <creol:life-var name="l"/>
+          </creol:statement-note>
+         </creol:localasynccall>
+         <creol:free>
+          <creol:identifier name="label:0"/>
+          <creol:statement-note file="AsyncAnon.creol" line="34">
+           <creol:def-var name="i"/>
+           <creol:def-var name="l"/>
+           <creol:life-var name="l"/>
+          </creol:statement-note>
+         </creol:free>
+         <creol:statement-note file="AsyncAnon.creol" line="34">
+          <creol:def-var name="i"/>
+          <creol:def-var name="l"/>
+          <creol:life-var name="l"/>
+         </creol:statement-note>
+        </creol:sequence>
+        <creol:sequence>
+         <creol:await>
+          <creol:label>
+           <creol:identifier name="l">
+            <creol:expression-note file="AsyncAnon.creol" line="35">
+             <creol:inferred-type>
+              <creol:type name="Data"/>
+             </creol:inferred-type>
+            </creol:expression-note>
+           </creol:identifier>
+           <creol:expression-note file="AsyncAnon.creol" line="35">
+            <creol:inferred-type>
+             <creol:type name="Bool"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:label>
+          <creol:statement-note file="AsyncAnon.creol" line="35">
+           <creol:def-var name="i"/>
+           <creol:def-var name="l"/>
+           <creol:life-var name="l"/>
+          </creol:statement-note>
+         </creol:await>
+         <creol:reply>
+          <creol:identifier name="l">
+           <creol:expression-note file="AsyncAnon.creol" line="36">
+            <creol:inferred-type>
+             <creol:typeapplication name="Label"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:identifier>
+          <creol:results/>
+          <creol:statement-note file="AsyncAnon.creol" line="36">
+           <creol:def-var name="i"/>
+           <creol:life-var name="l"/>
+          </creol:statement-note>
+         </creol:reply>
+         <creol:statement-note file="AsyncAnon.creol" line="35">
+          <creol:def-var name="i"/>
+          <creol:life-var name="l"/>
+         </creol:statement-note>
+        </creol:sequence>
+        <creol:statement-note file="AsyncAnon.creol" line="34">
+         <creol:def-var name="i"/>
+         <creol:life-var name="l"/>
+        </creol:statement-note>
+       </creol:sequence>
+       <creol:statement-note file="AsyncAnon.creol" line="33">
+        <creol:def-var name="i"/>
+        <creol:life-var name="i"/>
+       </creol:statement-note>
+      </creol:sequence>
+      <creol:statement-note file="AsyncAnon.creol" line="32">
+       <creol:def-var name="i"/>
+      </creol:statement-note>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+  <creol:with cointerface="I">
+   <creol:method name="m" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="AsyncAnon.creol" line="39"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>

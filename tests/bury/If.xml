@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:class name="C">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+  <creol:with cointerface="Any">
+   <creol:method name="abs" location="C">
+    <creol:inputs>
+     <creol:vardecl name="x">
+      <creol:type name="Int"/>
+     </creol:vardecl>
+    </creol:inputs>
+    <creol:outputs>
+     <creol:vardecl name="y">
+      <creol:type name="Bool"/>
+     </creol:vardecl>
+    </creol:outputs>
+    <creol:variables/>
+    <creol:body>
+     <creol:if>
+      <creol:condition>
+       <creol:funccall name="&gt;">
+        <creol:arguments>
+         <creol:argument>
+          <creol:identifier name="x">
+           <creol:expression-note file="If.creol" line="25">
+            <creol:inferred-type>
+             <creol:type name="Int"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:identifier>
+         </creol:argument>
+         <creol:argument>
+          <creol:int value="0">
+           <creol:expression-note file="If.creol" line="25">
+            <creol:inferred-type>
+             <creol:type name="Int"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:int>
+         </creol:argument>
+        </creol:arguments>
+        <creol:expression-note file="If.creol" line="25">
+         <creol:inferred-type>
+          <creol:type name="Bool"/>
+         </creol:inferred-type>
+        </creol:expression-note>
+       </creol:funccall>
+      </creol:condition>
+      <creol:then>
+       <creol:assign>
+        <creol:targets>
+         <creol:identifier name="y"/>
+        </creol:targets>
+        <creol:expressions>
+         <creol:expression>
+          <creol:bool value="true">
+           <creol:expression-note file="If.creol" line="26">
+            <creol:inferred-type>
+             <creol:type name="Bool"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:bool>
+         </creol:expression>
+        </creol:expressions>
+        <creol:statement-note file="If.creol" line="26">
+         <creol:def-var name="x"/>
+         <creol:def-var name="y"/>
+        </creol:statement-note>
+       </creol:assign>
+      </creol:then>
+      <creol:else>
+       <creol:assign>
+        <creol:targets>
+         <creol:identifier name="y"/>
+        </creol:targets>
+        <creol:expressions>
+         <creol:expression>
+          <creol:bool value="false">
+           <creol:expression-note file="If.creol" line="28">
+            <creol:inferred-type>
+             <creol:type name="Bool"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:bool>
+         </creol:expression>
+        </creol:expressions>
+        <creol:statement-note file="If.creol" line="28">
+         <creol:def-var name="x"/>
+         <creol:def-var name="y"/>
+        </creol:statement-note>
+       </creol:assign>
+      </creol:else>
+      <creol:statement-note file="If.creol" line="25">
+       <creol:def-var name="x"/>
+       <creol:def-var name="y"/>
+       <creol:life-var name="x"/>
+      </creol:statement-note>
+     </creol:if>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>
