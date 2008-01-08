@@ -78,6 +78,8 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/StackGarbage.out \
 		  language/Interleave.creol language/Interleave.maude \
 		  language/Interleave.out \
+		  language/While.creol language/While.maude \
+		  language/While.out \
 		  syntax/StrayChar.creol \
 		  typecheck/Nil.creol typecheck/ExprFailure.creol \
 		  typecheck/Contracts.creol typecheck/Nat.creol \

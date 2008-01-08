@@ -52,6 +52,7 @@ TEST_CREOLC_PP([MutRec2], [language])
 TEST_CREOLC_PP([Interleave], [language])
 TEST_CREOLC_PP([StackCheck], [language])
 TEST_CREOLC_PP([StackGarbage], [language])
+TEST_CREOLC_PP([While], [language])
 TEST_CREOLC_PP([Alarmclock], [examples])
 TEST_CREOLC_PP([AsyncLCR], [examples])
 TEST_CREOLC_PP([PetersonLeader], [examples])
@@ -79,6 +80,7 @@ TEST_CREOLC_XML([MutRec2], [language])
 TEST_CREOLC_XML([Interleave], [language])
 TEST_CREOLC_XML([StackCheck], [language])
 TEST_CREOLC_XML([StackGarbage], [language])
+TEST_CREOLC_XML([While], [language])
 TEST_CREOLC_XML([Alarmclock], [examples])
 TEST_CREOLC_XML([AsyncLCR], [examples])
 TEST_CREOLC_XML([PetersonLeader], [examples])
@@ -162,6 +164,11 @@ red init .
 red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
 ])
 
+TEST_CREOLC([While], [language], [dnl
+red init .
+],[dnl
+red simulate('PROGRAM, upTerm(init main("Test", emp)), 0, 1) .
+])
 
 dnl This set of tests is testing our existing programs.
 dnl
