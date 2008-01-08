@@ -286,20 +286,22 @@ The usual @code{if ... then ... else ... end} statement.
 
 @subsection Loop Statements
 
-The @code{for}-loop is guaranteed to terminate.  Its syntax is @code{for
-@var{i} := @var{lower} to @var{upper} by @var{stride} do
-@var{statement} od}.  First, the expressions denoted by @var{lower}
-and @var{upper} are evaluated.  Then @var{i} assumes each value which
-is greater or equal to @var{lower} until it is greater or equal to
-@var{upper}.  Furthermore, the variable @var{i} is @emph{read-only} in
-@var{statement}.
+THE INFORMATION IN THIS SECTION IS SUBJECT TO CHANGE.
 
-A loop may be annotated by a @emph{loop invariant}.
-The invariant is a proof obligation which must hold at the beginning
-of a loop, the end of a loop, @emph{and} every processor release-point
-within the loop body.  It is therefore advisable, that the loop
-invariant restricted to instance variables is @emph{implied} by the
-class invariant.
+Creol supports a while loop, which uses the syntax @code{while @var{c}
+[ inv @code{i} ] do @var{s} end}.  As usual, @code{@var{c}} is the
+condition and @code{@var{s}} is the statement to execute.
+
+A loop may be annotated by a @emph{loop invariant}, as indicated by
+the optional @code{inv @code{i}} part.  The invariant is a proof
+obligation which must hold at the beginning of a loop, the end of a
+loop, @emph{and} every processor release-point within the loop body.
+It is therefore advisable, that the loop invariant restricted to
+instance variables is @emph{implied} by the class invariant.
+
+Finally, we advice that each loop used in a program is
+@emph{terminating}.  Infinite loops may prohibit class updates and
+cause other undesired behaviours.
 
 
 @subsection Sequential Composition
