@@ -31,29 +31,17 @@ let tailcall_counter = ref 0
 
 let tailcall_successes () = !tailcall_counter
 
-let optimize prg =
-  (** Take a program and try to replace tail calls with a version using
-      out special macro. *)
-  let rec optimise_declaration =
-    function
-      Declaration.Class c -> Declaration.Class (optimise_in_class c)
-    | Declaration.Interface i -> Declaration.Interface i
-    | Declaration.Exception e -> Declaration.Exception e
-    | Declaration.Datatype d -> Declaration.Datatype d
-    | Declaration.Function f -> Declaration.Function f
-  and optimise_in_class c =
-    { c with Class.with_defs = List.map optimise_in_with c.Class.with_defs }
-  and optimise_in_with w =
-    { w with With.methods = List.map optimise_in_method w.With.methods }
-  and optimise_in_method m =
-    match m.Method.body with
-	None -> m
-      | Some body ->
-	  { m with Method.body =
-	      Some ((optimise_in_statement
-			(List.map (function v -> v.VarDecl.name) m.Method.outpars))
-		       body) } 
-  and optimise_in_statement outs s = s
-  in
-    tailcall_counter := 0;
-    List.map optimise_declaration prg
+let optimise_in_statement stmt = stmt
+
+let optimise_in_method prg cls m =
+  match m.Method.body with
+      None -> m
+    | Some body ->
+	{ m with Method.body =
+	    Some ((optimise_in_statement
+		      (List.map (function v -> v.VarDecl.name) m.Method.outpars))
+		     body) } 
+
+(* Take a program and try to replace tail calls with a version using
+   out special macro. *)
+let optimize prg = Program.for_each_method prg optimise_in_method

@@ -1557,4 +1557,25 @@ struct
   let class_provides_method_p ~program ~cls meth signature =
     [] <> (class_find_methods program cls meth signature)
 
+  (* Apply a function to each method defined in the program. *)
+
+  let for_each_method program f =
+    let for_class c =
+      let for_with_def w =
+	{ w with With.methods =
+	    List.map (fun m -> f program c m) w.With.methods }
+      in
+	{ c with Class.with_defs =
+	    List.map for_with_def c.Class.with_defs }
+    in
+    let for_decl d =
+      match d with
+	  Declaration.Class c -> Declaration.Class (for_class c)
+	| Declaration.Interface _ -> d
+	| Declaration.Exception _ -> d
+	| Declaration.Datatype _ -> d
+	| Declaration.Function _ -> d
+    in
+      List.map for_decl program
+
 end

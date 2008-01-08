@@ -268,7 +268,7 @@ let compute_in_body ~program ~cls ~meth =
 	  { meth with Method.body = Some (compute_in_statement meth ins b) }
 
 
-let compute_in_method ~program ~cls ~meth =
+let compute_in_method program cls meth =
   let () = log 2
     ("Compute defined ranges in " ^ cls.Class.name ^ "::" ^ meth.Method.name)
   in
@@ -281,22 +281,4 @@ let compute_in_method ~program ~cls ~meth =
    through the declarations in the tree. [analyse] is the main
    function to call from outside. *)
 
-let analyse program =
-  let compute_in_declaration d =
-    let compute_in_class cls =
-      let compute_in_with_def w =
-	{ w with With.methods =
-	    List.map (fun m -> compute_in_method program cls m)
-	      w.With.methods }
-      in
-	{ cls with Class.with_defs =
-	    List.map compute_in_with_def cls.Class.with_defs }
-    in
-      match d with
-	  Declaration.Class c -> Declaration.Class (compute_in_class c)
-	| Declaration.Interface _ -> d
-	| Declaration.Exception _ -> d
-	| Declaration.Datatype _ -> d
-	| Declaration.Function _ -> d
-  in
-    List.map compute_in_declaration program
+let analyse program = Program.for_each_method program compute_in_method 
