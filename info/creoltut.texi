@@ -7,6 +7,7 @@ the Creol language by giving examples.
 @menu
 * First Creol Program::         A first Creol program.
 * Sieve of Erathostenes::       Computing prime numbers.
+* Self Calls::                  How to call methods of one-self.
 * Inheritance::                 Inheritance and Interfaces
 @end menu
 
@@ -371,6 +372,53 @@ scheduling, and the reordering communication channels.  A later
 version of the language shall include primitives for refining these
 behaviours.
 
+
+@node Self Calls
+@section Self Calls
+
+The co-interface mechanism of Creol interacts with calls of an object
+to itself.  Within (almost) all calls an object receives, the
+programmer can access the identity of the caller using the variable
+@code{caller}.  The type of that variable is defined using a
+@code{with}-clause.  For example, a declaration of the form @code{with
+@var{A} op @var{m}} indicates that all callers of the method @var{m}
+must implement the interface @var{A}.  In addition, it states that the
+type of @code{caller} is @var{A}.  Within the body of @var{m}, the
+programmer can call all methods of @code{caller} that are defined in
+interface @code{A}.
+
+Some methods, most prominently @code{run} and @code{init} (see below
+XXX), do not define a co-interface, because they are listed before the
+first @code{with} clause.  Such methods do not define the variable
+@code{caller}, because @code{caller} does not have a type.  As a
+consequence, these methods may only be called by the object itself.
+
+Such self calls do not mention the receiver of the message.  They
+exist in two variants: @code{@var{m}(@var{i};@var{o})} (synchronous
+self-call) and @code{@var{l}!@var{m}(@var{i})} (asynchronous self-call
+with label @var{l}).  With these local calls, no co-interface
+requirements are enforced.  Calls to the @code{caller} are illegal in
+these local methods.
+
+Synchronous internal calls have the additional property that they
+maintain the standard recursion discipline.  If a method activation
+that has been called internally terminates, control will return to the
+method activation that made the call.
+
+Self-calls do not impose co-interface requirements on the caller.
+This makes it impossible to call methods of oneself, which require a
+co-interface, since these methods may call using the @code{caller}
+variable.  One can still call these methods @emph{using external}
+calls: @code{await this.@var{m}(@var{i};@var{o})} and
+@code{@var{l}!this.@var{m}(@var{i})}.  External self calls must be
+asynchronous.
+
+Synchronous self-calls will deadlock, since the object must release
+the process.@footnote{Internal synchronous self-calls will cause the
+calling process to suspend and the called method to be activated.}
+If the self-call is external and asynchronous, the  calling process
+will be suspended, but the call has to compete with all other calls,
+allowing other calls to be served before that call.
 
 
 @node Inheritance
