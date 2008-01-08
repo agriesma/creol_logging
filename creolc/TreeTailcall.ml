@@ -31,7 +31,7 @@ let tailcall_counter = ref 0
 
 let tailcall_successes () = !tailcall_counter
 
-let optimise_in_statement stmt = stmt
+let optimise_in_statement outs stmt = stmt
 
 let optimise_in_method prg cls m =
   match m.Method.body with
