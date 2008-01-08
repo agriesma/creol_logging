@@ -376,6 +376,7 @@ basic_statement:
 	{ signal_error $startpos "Syntax error in posit condition" }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
+      s = ioption(preceded(AS, creol_type))
 	{ AsyncCall ((statement_note $startpos), 
 		     (match l with
                           None -> None
@@ -385,6 +386,7 @@ basic_statement:
 	lb = ioption(preceded(SUPERTYPE, CID)) 
 	ub = ioption(preceded(SUBTYPE, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
+      s = ioption(preceded(AS, creol_type))
         { let l' =
 	  match l with
               None -> None
@@ -399,22 +401,26 @@ basic_statement:
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
+      s = ioption(preceded(AS, creol_type))
 	{ SyncCall ((statement_note $startpos), c, m, Type.default_sig,  i, o) }
     | m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
+      s = ioption(preceded(AS, creol_type))
 	{ LocalSyncCall((statement_note $startpos), m, Type.default_sig, lb, ub, i, o) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
+      s = ioption(preceded(AS, creol_type))
 	{ AwaitSyncCall ((statement_note $startpos), c, m, Type.default_sig, i, o) }
     | AWAIT m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
+      s = ioption(preceded(AS, creol_type))
 	{ AwaitLocalSyncCall((statement_note $startpos), m, Type.default_sig, lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }

@@ -767,13 +767,14 @@ basic-statement ::=
   | @{ lhs @code{,} @} @code{:=} @{ expr-or-new @code{,} @}
   | @code{release}
   | @code{await} expr
-  | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)}
-  | [ id ] @code{!} id [ @code{<:} cid ] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{)}
+  | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
+  | [ id ] @code{!} id [ @code{<:} cid ] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
   | id @code{?} @code{(}  @{ lhs @code{,} @} @code{)}
-  | [ @code{await} ] expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)}
-  | [ @code{await} ] id [@code{<:} cid] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)}
+  | [ @code{await} ] expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
+  | [ @code{await} ] id [@code{<:} cid] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
   | @code{begin} statement @code{end}
   | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
+  | @code{while} expr [ @code{inv} expr ] @code{do} statement @code{end}
   | @code{assert} assertion
 
 expr-or-new ::=
