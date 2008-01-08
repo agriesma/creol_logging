@@ -114,8 +114,14 @@ DIFF([${abs_srcdir}/$1/$2.xml], [$2.xml])
 AT_CLEANUP
 ])
 
+m4_define([TEST_CREOLC_SYNTAX],[dnl
+AT_SETUP([syntax-$1])
+AT_CHECK([${CREOLC} -T none ${abs_srcdir}/syntax/$1.creol 2>&1 | sed s,${abs_srcdir}/syntax/,,], ignore, [$2], [])
+AT_CLEANUP
+])
+
 m4_define([TEST_CREOLC_TYPECHECK],[dnl
 AT_SETUP([typecheck-$1])
-AT_CHECK([${CREOLC} -T none ${abs_srcdir}/typecheck/$1.creol 2>&1 | sed s,${abs_srcdir}/typecheck/,,], [0], [$2], [])
+AT_CHECK([${CREOLC} -T none ${abs_srcdir}/typecheck/$1.creol 2>&1 | sed s,${abs_srcdir}/typecheck/,,], ignore, [$2], [])
 AT_CLEANUP
 ])

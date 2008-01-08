@@ -277,6 +277,11 @@ red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 ])
 
 dnl test cases for the type checker
+TEST_CREOLC_SYNTAX([StrayChar],
+[[StrayChar.creol:22: syntax error
+]])
+
+dnl test cases for the type checker
 TEST_CREOLC_TYPECHECK([Nat],
 [[Nat.creol:22: type Nat of attribute x does not exist
 ]])

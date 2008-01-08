@@ -143,6 +143,7 @@ declaration:
     | d = interfacedecl	{ Declaration.Interface d }
     | d = datatypedecl { Declaration.Datatype d }
     | d = functiondecl { Declaration.Function d }
+    | error { signal_error $startpos "syntax error" }
 
 classdecl:
       CLASS n = CID p = loption(class_params) s = list(super_decl)

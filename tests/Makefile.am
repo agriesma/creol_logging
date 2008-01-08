@@ -78,6 +78,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/StackGarbage.out \
 		  language/Interleave.creol language/Interleave.maude \
 		  language/Interleave.out \
+		  syntax/StrayChar.creol \
 		  typecheck/Nil.creol typecheck/ExprFailure.creol \
 		  typecheck/Contracts.creol typecheck/Nat.creol \
 		  typecheck/Nat2.creol typecheck/Nat3.creol \
