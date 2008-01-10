@@ -91,6 +91,9 @@ let optimise_in_statement meth stmt =
       | While (n, c, i, s) ->
 	  let s' = append_bury (work lv s) lv in
 	    append_bury (While ({ n with def = def s' }, c, i, s')) lv
+      | DoWhile (n, c, i, s) ->
+	  let s' = append_bury (work lv s) lv in
+	    append_bury (DoWhile ({ n with def = def s' }, c, i, s')) lv
       | Sequence (n, s1, s2) ->
 	  let s1' = work (life s2) s1 in
 	  let s2' = TreeDef.compute_in_statement meth (def s1') s2 in

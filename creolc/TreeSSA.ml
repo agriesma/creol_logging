@@ -289,6 +289,7 @@ let into_ssa tree =
 	  let phi1 = compute_phi n env_pre env_pre env in
 	  let phi2 = compute_phi n env_pre env_pre env in
 	    Sequence (n, While (n, nc, i, Sequence (n, phi1, nb)), phi2)
+      | DoWhile _ -> assert false
       | Sequence (n, s1, s2) ->
 	  let ns1 = statement_to_ssa env s1 in
 	  let ns2 = statement_to_ssa env s2 in
@@ -470,6 +471,7 @@ let out_of_ssa tree =
 	  let nc = expression_of_ssa c in
 	  let nb = statement_of_ssa b in
 	    While (n, nc, i, nb)
+      | DoWhile _ -> assert false
       | Sequence (n, s1, s2) ->
 	  let ns1 = statement_of_ssa s1 in
 	  let ns2 = statement_of_ssa s2 in

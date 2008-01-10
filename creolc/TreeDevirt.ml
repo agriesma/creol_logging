@@ -123,6 +123,10 @@ let devirt_statement program cls meth stmt =
 	  While (n, devirt_expression c, None, work b)
       | While (n, c, Some i, b) ->
 	  While (n, devirt_expression c, Some (devirt_expression i), work b)
+      | DoWhile (n, c, None, b) ->
+	  DoWhile (n, devirt_expression c, None, work b)
+      | DoWhile (n, c, Some i, b) ->
+	  DoWhile (n, devirt_expression c, Some (devirt_expression i), work b)
       | Sequence (n, s1, s2) ->
 	  Sequence (n, work s1, work s2)
       | Merge (n, s1, s2) -> Merge (n, work s1, work s2)

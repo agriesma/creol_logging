@@ -666,8 +666,8 @@ struct
     | Tailcall of note * string * Type.signature * string option *
 	string option * Expression.t list
     | If of note * Expression.t * t * t
-    | While of note * Expression.t * Expression.t option *
-	t
+    | While of note * Expression.t * Expression.t option * t
+    | DoWhile of note * Expression.t * Expression.t option * t
     | Sequence of note * t  * t
     | Merge of note * t * t
     | Choice of note * t * t
@@ -694,7 +694,7 @@ struct
       | LocalSyncCall (a, _, _, _, _, _, _)
       | AwaitLocalSyncCall (a, _, _, _, _, _, _)
       | Tailcall (a, _, _, _, _, _)
-      | If (a, _, _, _) | While (a, _, _, _)
+      | If (a, _, _, _) | While (a, _, _, _) | DoWhile (a, _, _, _)
       | Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
       | Extern (a, _) -> a
 
@@ -728,6 +728,7 @@ struct
       | Tailcall (_, a, b, c, d, e) -> Tailcall (n, a, b, c, d, e)
       | If (_, c, s1, s2) -> If (n, c, s1, s2)
       | While (_, c, i, s) -> While (n, c, i, s)
+      | DoWhile (_, c, i, s) -> DoWhile (n, c, i, s)
       | Sequence (_, s1, s2) -> Sequence (n, s1, s2)
       | Merge (_, s1, s2) -> Merge (n, s1, s2)
       | Choice (_, s1, s2) -> Choice (n, s1, s2)
@@ -756,6 +757,7 @@ struct
       | Tailcall (_, _, _, _, _, _) -> "tailcall _<:_:>_(_)"
       | If (_, _, _, _) -> "if _ then _ else _ end"
       | While (_, _, _, _) -> "while _ do _ end"
+      | DoWhile (_, _, _, _) -> "do _ while _"
       | Sequence (_, _, _) -> "_;_"
       | Merge (_, _, _) -> "_|||_"
       | Choice (_, _, _) -> "_[]_"
@@ -812,6 +814,8 @@ struct
 	    If (a, c, normalize_sequences s1, normalize_sequences s2)
 	| While (a, c, i, s) -> 
 	    While (a, c, i, normalize_sequences s)
+	| DoWhile (a, c, i, s) -> 
+	    DoWhile (a, c, i, normalize_sequences s)
 	| Sequence (a, (Sequence _ as s1), (Sequence _ as s2)) ->
 	    append_to_sequence (normalize_sequences s1)
 	      (normalize_sequences s2)
@@ -850,6 +854,8 @@ struct
       | If (note, c, t, f) ->
 	  If (note, c, remove_redundant_skips t, remove_redundant_skips f)
       | While (note, c, i, b) -> While (note, c, i, remove_redundant_skips b)
+      | DoWhile (note, c, i, b) ->
+	  DoWhile (note, c, i, remove_redundant_skips b)
       | Sequence (_, Skip note, Skip _) -> Skip note
       | Sequence (_, Skip _, stmt) -> remove_redundant_skips stmt
       | Sequence (_, stmt, Skip _) -> remove_redundant_skips stmt

@@ -21,6 +21,7 @@ semantics, yet.
 * Datatype Declaration::        Declaring data types.
 * Exception Declaration::       Declaring exceptions.
 * Grammar::                     Creol grammar in EBNF.
+* Parse Errors::                A note on parse errors.
 @end menu
 
 
@@ -802,5 +803,33 @@ type ::=
   | @code{[} @{ type , @} @code{]}
   | @code{`} id
 @end format
+
+
+@node Parse Errors
+@section A Note on Parse Errors
+
+Some errors are quite hard to identify by the parser and a parser
+implementing the grammar given above can not identify all causes
+of the parse error directly.  In this section we document the most
+important misreported parse errors.
+
+@subsection Missind @code{end}
+
+Consider the following class:
+@example
+class A
+  op init == if true then skip
+end
+@end example
+
+The indentiation of this code snippet suggest that the programmer has
+omitted the end of the @code{if} statement.  The parser has a different
+view, since it is insensitive to indentiation.  It will use the
+@code{end} on the following line to build an @code{if} statement.  It
+will then look for a composition operator for continuing to parse a
+method body, or for an @code{op} or @code{end} to finish parsing the
+method body.  But now the parser encounters @emph{the end of the file}.
+It will then report an error for the definition of the method body.
+
 
 @c  LocalWords:  Creol Datatype

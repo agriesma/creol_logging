@@ -344,6 +344,23 @@ let emit out_channel input =
 	    print (lvl + 1) 25 b;
 	    do_indent lvl ;
 	    output_string out_channel "end";
+	| Statement.DoWhile (_, c, i, b) ->
+	    (* The text generated in this branch does not parse in standard
+	       Creol.  This should not be changed.  Consult the manual for
+	       the reasons. *)
+	    output_string out_channel "do ";
+	    do_indent (lvl + 1);
+	    print (lvl + 1) 25 b;
+	    do_indent lvl ;
+	    output_string out_channel "while ";
+	    pretty_print_expression c;
+	    (match i with
+		None -> ()
+	      | Some inv -> 
+		  do_indent lvl;
+		  output_string out_channel "inv ";
+		  pretty_print_expression inv ;
+		  do_indent lvl) ;
 	| Statement.Sequence (_, s1, s2) -> 
 	    let op_prec = 25 in
 	    let nl = lvl + if prec < op_prec then 1 else 0 in

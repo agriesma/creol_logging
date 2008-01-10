@@ -267,6 +267,8 @@ let emit options out_channel input =
 	    output_string out_channel " do ";
 	    print 25 b;
 	    output_string out_channel " od "
+	| Statement.DoWhile (n, c, i, b) ->
+	    print 25 (Statement.Sequence (n, b, Statement.While (n, c, i, b)))
 	| Statement.Sequence (_, s1, s2) ->
 	    let op_prec = 25 in
 	      open_paren prec op_prec ;

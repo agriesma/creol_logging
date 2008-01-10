@@ -205,6 +205,8 @@ let pass input =
       | While (a, c, Some i, b) ->
 	  let (label_decls', b') = lower_statement label_decls b in
 	    (label_decls', While (a, lower_expression c, Some (lower_expression i), b'))
+      | DoWhile (a, c, i, b) ->
+	  lower_statement label_decls (Sequence (a, b, While (a, c, i, b)))
       | Sequence (a, s1, s2) ->
 	  let (label_decls', s1') = lower_statement label_decls s1 in
 	  let (label_decls'', s2') = lower_statement label_decls' s2 in

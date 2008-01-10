@@ -226,6 +226,11 @@ let compute_in_statement ~meth ins stmt =
 	  let n' = { n with def = IdSet.union ins (def b') } in
 	    logio stmt ins n'.def ;
 	    While (n', c, i, b')
+      | DoWhile (n, c, i, b) ->
+	  let b' = work ins b in
+	  let n' = { n with def = IdSet.union ins (def b') } in
+	    logio stmt ins n'.def ;
+	    DoWhile (n', c, i, b')
       | Sequence (n, s1, s2) ->
 	  let s1' = work ins s1 in
 	  let s2' = work (def s1') s2 in

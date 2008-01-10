@@ -212,6 +212,7 @@ vardecl:
       i = ID COLON t = creol_type
         { { VarDecl.name = i; VarDecl.var_type = t; VarDecl.init = None } }
     | ID error
+	{ signal_error $startpos "syntax error in variable declaration" }
     | ID COLON error
 	{ signal_error $startpos "syntax error in variable declaration" }
 	
@@ -221,6 +222,7 @@ method_decl:
       ioption(preceded(ENSURES, expression))
         { Method.make_decl i (fst p) (snd p) }
     | OP error
+	{ signal_error $startpos "syntax error in method declaration" }
     | OP ID error
 	{ signal_error $startpos "syntax error in method declaration" }
 
@@ -263,6 +265,7 @@ interfacedecl:
         { { Interface.name = n; inherits = inherits i;
 	    with_decls = upd_method_locs n w; hidden = false } }
     | INTERFACE error
+	{ signal_error $startpos "syntax error in interface declaration" }
     | INTERFACE CID error
 	{ signal_error $startpos "syntax error in interface declaration" }
 
@@ -272,6 +275,7 @@ with_decl:
 	 methods = List.map (Method.set_cointerface c) l;
 	 invariants = i } }
     | WITH error
+	{ signal_error $startpos "syntax error in with block declaration" }
     | WITH CID error
 	{ signal_error $startpos "syntax error in with block declaration" }
 
@@ -297,10 +301,13 @@ functiondecl:
 	body = Expression.Extern (expression_note $startpos, s);
 	hidden = false } }
   | FUN error
+    { signal_error $startpos "Syntax error in function declaration" }
   | FUN id_or_op error
+    { signal_error $startpos "Syntax error in function declaration" }
   | FUN id_or_op
     loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON error
+    { signal_error $startpos "Syntax error in function declaration" }
   | FUN id_or_op
     loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON creol_type EQEQ error
@@ -423,16 +430,33 @@ basic_statement:
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement END
         { If((statement_note $startpos), e, t, f) }
+    | IF expression THEN statement ELSE error
+        { signal_error $startpos "syntax error in if statement" }
     | IF e = expression THEN t = statement END
         { If((statement_note $startpos), e, t, Skip (statement_note $startpos)) }
+    | IF expression THEN error
+        { signal_error $startpos "syntax error in if statement" }
     | WHILE c = expression inv = ioption(preceded(INV, expression)) DO
 	s = statement END
 	{ While (statement_note $startpos, c, inv, s) }
+    | WHILE expression INV expression DO error
+        { signal_error $startpos "syntax error in while statement" }
+    | WHILE expression DO error
+        { signal_error $startpos "syntax error in while statement" }
+    | WHILE expression INV error
+        { signal_error $startpos "syntax error in invariant" }
+    | WHILE error
+        { signal_error $startpos "syntax error in while condition" }
+    | DO s = statement WHILE c = expression
+      inv = ioption(preceded(INV, expression))
+	{ DoWhile (statement_note $startpos, c, inv, s) }
     | ASSERT a = expression
 	{ Assert (statement_note $startpos, a) }
     | PROVE a = expression
-	{ Assert (statement_note $startpos, a) }
-    | ASSERT error | PROVE error
+	{ Prove (statement_note $startpos, a) }
+    | ASSERT error
+	{ signal_error $startpos "syntax error in assertion" }
+    | PROVE error
 	{ signal_error $startpos "syntax error in assertion" }
     | expression error
 	{ signal_error $startpos "syntax error in statement" }
