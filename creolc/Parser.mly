@@ -386,7 +386,6 @@ basic_statement:
 	lb = ioption(preceded(SUPERTYPE, CID)) 
 	ub = ioption(preceded(SUBTYPE, CID))
       LPAREN i = separated_list(COMMA, expression) RPAREN
-      s = ioption(preceded(AS, creol_type))
         { let l' =
 	  match l with
               None -> None
@@ -420,7 +419,6 @@ basic_statement:
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-      s = ioption(preceded(AS, creol_type))
 	{ AwaitLocalSyncCall((statement_note $startpos), m, Type.default_sig, lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }
