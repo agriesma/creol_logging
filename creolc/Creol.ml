@@ -1034,13 +1034,18 @@ struct
       | [t] -> Type.Basic t
       | i -> Type.Intersection (List.map (fun t -> Type.Basic t) i)
 
-  let find_attr_decl cls name =
+  let has_attr_p ~cls ~name =
+    let f l = List.exists (function { VarDecl.name = n } -> n = name) l in
+      (f cls.attributes) || (f cls.parameters)
+
+  let find_attr_decl ~cls ~name =
     let find l = List.find (function { VarDecl.name = n } -> n = name) l
     in
       try
 	find cls.attributes
       with
-	  Not_found -> find cls.parameters
+	  Not_found ->
+	    find cls.parameters
 
 
 end
@@ -1340,20 +1345,30 @@ struct
       List.fold_left f [] program
 
 
-  let rec find_attr_decl program cls name =
-    let rec find lst =
-      match lst with
-	  [] -> raise Not_found
+  (* Find the class declaration for an attribute. [cls] is the class
+     in which we search for the attribute. [name] is the name of the
+     attribute. *)
+  let find_class_of_attr ~program ~cls ~attr =
+    let rec work c =
+      if Class.has_attr_p c attr then
+	Some c
+      else
+	search c.Class.inherits
+    and search =
+      function
+	  [] -> None
 	| i::r ->
-	    try
-	      find_attr_decl program (find_class program (fst i)) name
-	    with
-		Not_found -> find r
+	    match work (find_class program (fst i)) with
+		None -> search r
+	      | cls' -> cls'
     in
-      try
-	Class.find_attr_decl cls name
-      with
-	  Not_found -> find cls.Class.inherits
+      match work cls with
+	  None -> raise Not_found
+	| Some cls' -> cls'
+
+  let find_attr_decl ~program ~cls ~name =
+    let c = find_class_of_attr program cls name in
+      Class.find_attr_decl c name
 
 
   (* Return a list of all interfaces which are implemented by a class.
