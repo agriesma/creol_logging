@@ -314,6 +314,10 @@ TEST_CREOLC_TYPECHECK([Contracts],
 [Contracts.creol:37: Class Bar does not contract interface Bar
 ])
 
+dnl Test PASS: devirt
+dnl
+TEST_CREOLC_PASS([devirt], [Devirt])
+
 dnl Test PASS: bury
 dnl
 TEST_CREOLC_PASS([bury], [Assign])

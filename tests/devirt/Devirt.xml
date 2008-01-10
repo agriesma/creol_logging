@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:class name="A">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes>
+   <creol:vardecl name="x">
+    <creol:type name="Int"/>
+   </creol:vardecl>
+  </creol:attributes>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="run" location="A">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="init" location="A">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:assign>
+      <creol:targets>
+       <creol:attribute name="x"/>
+      </creol:targets>
+      <creol:expressions>
+       <creol:expression>
+        <creol:int value="0">
+         <creol:expression-note file="Devirt.creol" line="25">
+          <creol:inferred-type>
+           <creol:type name="Int"/>
+          </creol:inferred-type>
+         </creol:expression-note>
+        </creol:int>
+       </creol:expression>
+      </creol:expressions>
+      <creol:statement-note file="Devirt.creol" line="25"/>
+     </creol:assign>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+ <creol:class name="B">
+  <creol:parameters/>
+  <creol:inherits>
+   <creol:inherits name="A"/>
+  </creol:inherits>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="B">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="B">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:assign>
+      <creol:targets>
+       <creol:attribute name="x"/>
+      </creol:targets>
+      <creol:expressions>
+       <creol:expression>
+        <creol:funccall name="+">
+         <creol:arguments>
+          <creol:argument>
+           <creol:staticattr name="x">
+            <creol:type name="A"/>
+            <creol:expression-note file="Devirt.creol" line="31">
+             <creol:inferred-type>
+              <creol:type name="Int"/>
+             </creol:inferred-type>
+            </creol:expression-note>
+           </creol:staticattr>
+          </creol:argument>
+          <creol:argument>
+           <creol:int value="1">
+            <creol:expression-note file="Devirt.creol" line="31">
+             <creol:inferred-type>
+              <creol:type name="Int"/>
+             </creol:inferred-type>
+            </creol:expression-note>
+           </creol:int>
+          </creol:argument>
+         </creol:arguments>
+         <creol:expression-note file="Devirt.creol" line="31">
+          <creol:inferred-type>
+           <creol:type name="Int"/>
+          </creol:inferred-type>
+         </creol:expression-note>
+        </creol:funccall>
+       </creol:expression>
+      </creol:expressions>
+      <creol:statement-note file="Devirt.creol" line="31"/>
+     </creol:assign>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>

@@ -76,50 +76,55 @@ let time_dump = ref 0.0
 *)
 let passes = [
   ( "typecheck" ,
-  { help = "Undocumented." ;
-    dependencies = "";
-    pass = Typing.typecheck;
-    elapsed = 0.0; enabled = true; dump = false } );
+    { help = "Undocumented." ;
+      dependencies = "";
+      pass = Typing.typecheck;
+      elapsed = 0.0; enabled = true; dump = false } );
   ( "lower" ,
-  { help = "Expand statements to Core Creol" ;
-    dependencies = "";
-    pass = TreeLower.pass;
-    elapsed = 0.0; enabled = true; dump = false } );
+    { help = "Expand statements to Core Creol" ;
+      dependencies = "";
+      pass = TreeLower.pass;
+      elapsed = 0.0; enabled = true; dump = false } );
+  ( "devirt" ,
+    { help = "Devirtualise attribute access.";
+      dependencies = "";
+      pass = TreeDevirt.transform;
+      elapsed = 0.0; enabled = false; dump = false } );
   ( "into-ssa" ,
-  { help = "Compute data flow." ;
-    dependencies = "";
-    pass = TreeSSA.into_ssa ;
-    elapsed = 0.0; enabled = false; dump = false } ) ;
+    { help = "Compute data flow." ;
+      dependencies = "";
+      pass = TreeSSA.into_ssa ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "def-vars" ,
-  { help = "Compute data flow." ;
-    dependencies = "";
-    pass = TreeDef.analyse ;
-    elapsed = 0.0; enabled = false; dump = false } ) ;
+    { help = "Compute data flow." ;
+      dependencies = "";
+      pass = TreeDef.analyse ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "life-vars" ,
-  { help = "Compute data flow." ;
-    dependencies = "";
-    pass = TreeLife.analyse ;
-    elapsed = 0.0; enabled = false; dump = false } ) ;
+    { help = "Compute data flow." ;
+      dependencies = "";
+      pass = TreeLife.analyse ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "free" ,
-  { help = "Insert statements to free labels" ;
-    dependencies = "def-vars,life-vars" ;
-    pass = TreeFree.optimize ;
-    elapsed = 0.0; enabled = false; dump = false } ) ;
+    { help = "Insert statements to free labels" ;
+      dependencies = "def-vars,life-vars" ;
+      pass = TreeFree.optimize ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "bury" ,
-  { help = "Insert statements to reset dead variables" ;
-    dependencies = "def-vars,life-vars" ;
-    pass = TreeBury.optimize ;
-    elapsed = 0.0; enabled = false; dump = false } ) ;
+    { help = "Insert statements to reset dead variables" ;
+      dependencies = "def-vars,life-vars" ;
+      pass = TreeBury.optimize ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "tailcall" ,
-  { help = "Optimise tail-calls." ;
-    dependencies = "lower";
-    pass = TreeTailcall.optimize ;
-    elapsed = 0.0; enabled = false; dump = false } );
+    { help = "Optimise tail-calls." ;
+      dependencies = "lower";
+      pass = TreeTailcall.optimize ;
+      elapsed = 0.0; enabled = false; dump = false } );
   ( "outof-ssa" ,
-  { help = "Convert a tree in SSA back to a non-SSA form." ;
-    dependencies = "into-ssa";
-    pass = TreeSSA.out_of_ssa ;
-    elapsed = 0.0; enabled = false; dump = false } ) ;
+    { help = "Convert a tree in SSA back to a non-SSA form." ;
+      dependencies = "into-ssa";
+      pass = TreeSSA.out_of_ssa ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
 ]
 
 
