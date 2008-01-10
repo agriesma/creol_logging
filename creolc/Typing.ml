@@ -606,14 +606,9 @@ let typecheck tree: Declaration.t list =
 		(Method.find_variable meth name).VarDecl.var_type
 	      with
 		  Not_found ->
-		    try
-		      (Class.find_attr_decl cls name).VarDecl.var_type
-		    with
-			Not_found ->
-			  raise (Type_error ((Expression.file n),
-					     (Expression.line n),
-					     "Identifier " ^ name ^
-					       " not declared"))
+		    raise (Type_error ((Expression.file n),
+				       (Expression.line n),
+				       "Identifier " ^ name ^ " not declared"))
 	    in
 	      (SSAId (set_type n res, name, version), constr, fresh_name)
 	| Phi (n, args) ->
@@ -666,7 +661,7 @@ let typecheck tree: Declaration.t list =
 	    with
 		Not_found ->
 		  try
-		    (Class.find_attr_decl cls name).VarDecl.var_type
+		    (Program.find_attr_decl program cls name).VarDecl.var_type
 		  with
 		      Not_found ->
 			raise (Type_error ((Expression.file n),
@@ -692,14 +687,9 @@ let typecheck tree: Declaration.t list =
 	      (Method.find_variable meth name).VarDecl.var_type
 	    with
 		Not_found ->
-		  try
-		    (Class.find_attr_decl cls name).VarDecl.var_type
-		  with
-		      Not_found ->
-			raise (Type_error ((Expression.file n),
-					   (Expression.line n),
-					   "Identifier " ^ name ^
-					     " not declared"))
+		  raise (Type_error ((Expression.file n),
+				     (Expression.line n),
+				     "Identifier " ^ name ^ " not declared"))
 	  in
 	    LhsSSAId (set_type n res, name, version)
   in
