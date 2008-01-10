@@ -86,11 +86,10 @@ let statement_note pos =
 %token EOF
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END
 %token INTERFACE DATATYPE
-%token WHILE VAR WITH OP IN OUT CONSTRUCTOR FUN EXTERN
+%token WHILE VAR WITH OP IN OUT FUN EXTERN
 %token REQUIRES ENSURES INV  SOME FORALL EXISTS HISTORY
 %token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
-%token AS BY DO OF
-%token EXCEPTION
+%token AS DO OF
 %token EQEQ COMMA SEMI COLON ASSIGN
 %token LBRACK RBRACK
 %token LPAREN RPAREN
@@ -381,7 +380,7 @@ basic_statement:
 		     (match l with
                           None -> None
 			| Some lab -> Some (LhsId (expression_note $startpos, lab))),
-                    callee, m, Type.default_sig, i) }
+                    callee, m, Type.default_sig ~coiface:s (), i) }
     | l = ioption(ID) BANG m = ID
 	lb = ioption(preceded(SUPERTYPE, CID)) 
 	ub = ioption(preceded(SUBTYPE, CID))
@@ -392,7 +391,7 @@ basic_statement:
 	    | Some lab -> Some (LhsId (expression_note $startpos, lab))
 	  in
 	    LocalAsyncCall ((statement_note $startpos), l', m,
-			   Type.default_sig, lb, ub, i)
+			   Type.default_sig (), lb, ub, i)
 	}
     | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
 	{ Reply (statement_note $startpos,
@@ -401,25 +400,25 @@ basic_statement:
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
       s = ioption(preceded(AS, creol_type))
-	{ SyncCall ((statement_note $startpos), c, m, Type.default_sig,  i, o) }
+	{ SyncCall ((statement_note $startpos), c, m, Type.default_sig ~coiface:s (),  i, o) }
     | m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
       s = ioption(preceded(AS, creol_type))
-	{ LocalSyncCall((statement_note $startpos), m, Type.default_sig, lb, ub, i, o) }
+	{ LocalSyncCall((statement_note $startpos), m, Type.default_sig ~coiface:s (), lb, ub, i, o) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
       s = ioption(preceded(AS, creol_type))
-	{ AwaitSyncCall ((statement_note $startpos), c, m, Type.default_sig, i, o) }
+	{ AwaitSyncCall ((statement_note $startpos), c, m, Type.default_sig ~coiface:s (), i, o) }
     | AWAIT m = ID
 	lb = ioption(preceded(SUPERTYPE, CID))
 	ub = ioption(preceded(SUBTYPE, CID))
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ AwaitLocalSyncCall((statement_note $startpos), m, Type.default_sig, lb, ub, i, o) }
+	{ AwaitLocalSyncCall((statement_note $startpos), m, Type.default_sig (), lb, ub, i, o) }
     | BEGIN s = statement END
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement END

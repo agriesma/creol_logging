@@ -922,7 +922,7 @@ let typecheck tree: Declaration.t list =
 	    Await (n, type_check_expression program cls meth coiface [] e)
         | Posit (n, e) ->
 	    Posit (n, type_check_expression program cls meth coiface [] e)
-        | AsyncCall (n, label, callee, m, _, ins) ->
+        | AsyncCall (n, label, callee, m, (co, _, _), ins) ->
 	    let (label', callee', signature, ins') =
 	      check_async_method_call n label callee m ins
 	    in
@@ -954,12 +954,12 @@ let typecheck tree: Declaration.t list =
 	      check_local_async_call n m lb ub args (Some lt)
 	    in
 	      LocalAsyncCall (n, Some l', m, signature, lb, ub, args')
-        | SyncCall (n, callee, m, _, ins, outs) ->
+        | SyncCall (n, callee, m, (co, _, _), ins, outs) ->
 	    let (callee', signature, ins', outs') =
 	      check_sync_method_call n callee m ins outs
 	    in
 	      SyncCall (n, callee', m, signature, ins', outs')
-        | AwaitSyncCall (n, callee, m, _, ins, outs) ->
+        | AwaitSyncCall (n, callee, m, (co, _, _), ins, outs) ->
 	    let (callee', signature, ins', outs') =
 	      check_sync_method_call n callee m ins outs
 	    in

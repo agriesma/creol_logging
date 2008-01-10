@@ -113,18 +113,17 @@ rule token = parse
     | "as" { AS }
     | "await" { AWAIT }
     | "begin" { BEGIN }
-    | "by" { BY }
+    | "by" { reserved lexbuf }
     | "caller" { CALLER }
     | "case" { reserved lexbuf }
     | "class" { CLASS }
     | "contracts" { CONTRACTS }
-    | "ctor" { CONSTRUCTOR }
     | "datatype" { DATATYPE }
     | "do" { DO }
     | "else" { ELSE }
     | "end" { END }
     | "ensures" { ENSURES }
-    | "exception" { EXCEPTION }
+    | "exception" { reserved lexbuf }
     | "exists" { EXISTS }
     | "extern" { EXTERN }
     | "false" { BOOL(false) }

@@ -185,7 +185,8 @@ struct
 
   type signature = t * t list option * t list option
 
-  let default_sig = (any, None, None)
+  let default_sig ?(coiface = None) (): signature =
+    let t = match coiface with None -> any | Some c -> c in (t, None, None)
 
   let co_interface (c, _, _) = c
 
