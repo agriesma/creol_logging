@@ -450,6 +450,73 @@ call back.  To make sure, that a method can be used after being
 inherited, an interface may be contracted using the @code{contracts}
 keyword.  See @ref{Contracts} for details.  The compiler will issue an
 error message if it believes that you should contract an interface.
+Consider the following example:
+
+@example
+interface Foo begin with Bar op foo end
+
+interface Bar begin with Any op bar end
+
+interface Baz begin with Any op bar end
+
+class Foo implements Foo
+begin
+  with Bar op foo == caller.bar
+end
+
+class Bar implements Bar
+begin
+  var foo: Foo
+  op init == foo := new Foo
+  with Any op bar == foo.foo
+end
+
+class Baz implements Baz inherits Bar
+begin
+end
+
+class Main
+begin
+  var baz: Baz
+  op init == baz := new Baz
+  op run == baz.bar
+end
+@end example
+
+This example is @emph{not} type-safe, more specifically, the call
+@code{caller.bar} is not well-typed.  The trace which violates the
+well-typedness rules of Creol is the following one:
+@enumerate
+@item
+Create an instance of @code{Main}, which will create one instance of
+@code{Baz} during the initialization.  In the run method, we can the
+@code{bar} method of @code{baz}.  This call is well-typed, since all
+instances of @code{Baz} implement the @code{Baz} interface which
+exports this method to all objects.
+
+@item
+In the @code{bar} method, which the class @code{Baz} inherits from
+@code{Bar}, we call the method @code{foo} of @code{Bar}'s @code{foo}
+object.
+
+@item
+In the @code{foo} method, we call the @code{bar} method of the
+@code{caller}.  In this method, the caller is believed to be an
+instance of a class implementing the @code{Bar} interface.  But the
+caller is really an instance of class @code{Baz}, which does not
+implement the @code{Bar} interface, causing a run-time type error.
+@end enumerate
+
+What went wrong?  Observe, that the code of the method @code{bar} in
+class @code{Bar} is well-typed for classes implementing the interface
+@code{Bar}.  This interface is a co-interface requirement of the
+method @code{foo} in class @code{Foo}.  But the use of
+@code{implements} does @emph{not} imply that future sub-classes of
+@code{Bar} have the type @code{Bar} as well.  The way to correct this
+error is to @code{contract Bar} in the definition of class @code{Bar}.
+This will ensure, that @code{Bar} is also the type of all sub-classes
+of @code{Bar}, among others @code{Baz}.
+
 
 What does this mean in practise?  All classes implementing a certain
 interface can substitute for each other, since interface describe the

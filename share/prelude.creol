@@ -126,4 +126,5 @@ fun >(a: Duration, b: Duration): Bool == extern ">"
 
 interface Any
 begin
+inv true
 end

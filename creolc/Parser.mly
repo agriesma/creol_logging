@@ -146,8 +146,8 @@ declaration:
 
 classdecl:
       CLASS n = CID p = loption(class_params) s = list(super_decl)
-	BEGIN a = list(attribute) aw = loption(anon_with_def)
-	m = list(with_def) END
+	BEGIN a = list(terminated(attribute, ioption(SEMI)))
+        aw = loption(anon_with_def) m = list(with_def) END
       { { Class.name = n; parameters = p; inherits = inherits s;
 	  contracts = contracts s; implements = implements s;
 	  attributes = List.flatten a;
@@ -249,8 +249,7 @@ with_def:
 	invariants = i } }
 
 method_def:
-      d = method_decl EQEQ a = list(terminated(attribute, SEMI))
-	s = statement
+      d = method_decl EQEQ a = list(terminated(attribute, SEMI)) s = statement
         { { d with Method.vars = List.flatten a; body = Some s} }
   |   d = method_decl EQEQ EXTERN s = STRING
         { { d with body = Some (Extern (statement_note $startpos, s)) } }
@@ -261,7 +260,8 @@ method_def:
 
 interfacedecl:
       INTERFACE n = CID loption(class_params)
-      i = list(inherits_decl) BEGIN w = list(with_decl) END
+      i = list(inherits_decl) BEGIN ioption(preceded(INV, expression))
+      w = list(with_decl) END
         { { Interface.name = n; inherits = inherits i;
 	    with_decls = upd_method_locs n w; hidden = false } }
     | INTERFACE error
@@ -447,8 +447,8 @@ basic_statement:
         { signal_error $startpos "syntax error in invariant" }
     | WHILE error
         { signal_error $startpos "syntax error in while condition" }
-    | DO s = statement WHILE c = expression
-      inv = ioption(preceded(INV, expression))
+    | DO s = statement inv = ioption(preceded(INV, expression))
+      WHILE c = expression
 	{ DoWhile (statement_note $startpos, c, inv, s) }
     | ASSERT a = expression
 	{ Assert (statement_note $startpos, a) }

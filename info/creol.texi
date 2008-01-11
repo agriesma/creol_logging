@@ -85,6 +85,30 @@ keyword @code{caller}.
 Variables are lower-case character-sequences, matching the regular
 expression @code{[a-z][a-zA-Z0-9]}.  Variables are typed (see below).
 
+In Creol, the location of a variable name @var{v} is determined as
+follows: if @var{v} refers to a variable, that is declared in the
+method that contains the expression, or refers to one of the input- or
+output parameters, then the name refers to a @emph{local variable},
+@pxref{Method Declaration}.  Otherwise, it refers to an attribute of a
+class @var{C}, @pxref{Class Attributes}.  This class is determined
+with the following procedure: If the current class @var{C} defines an
+@emph{attribute} or @emph{class parameter} named @var{v}, then @var{v}
+refers to an attribute of class @var{C}.  Otherwise, recursively
+search the super-classes in a depth-first manner, where the
+super-classes defined in the @code{inherits} list are searched form
+left to right, @pxref{Inherits}.
+
+
+@subsection Static Attribute Access Expressions
+@anchor{Static Attribute Access}
+
+If a variable @emph{hides} an attribute, or attributes of the same
+name are defined in different classes, the attribute can be accessed
+statically.  An expression of the form @code{@var{v}@@@var{C}} refers
+to an attribute named @var{v} defined in class @var{C} or inherited by
+@var{C} (as determined above).  It is illegal to access an attribute
+of a class of which the current class is @emph{not} a subclass.
+
 
 @subsection Boolean Expressions
 
@@ -273,6 +297,28 @@ with @emph{exactly one output parameter}, regardless of its type, just as
 two output parameters.
 
 
+@subsection Release Statement
+@anchor{Release Statement}
+
+The @code{release} statement represents an unconditional processor
+release point.  The currently active process will be suspended, and
+a next process may be selected.  Is is legal to reselect the same
+process after executing a release statement.
+
+
+@subsection Await Statement
+@anchor{Await Statement}
+
+The @code{await @var{c}} statement is a conditional processor release
+point.  If the condition @var{c} holds when executing the statement,
+the process will continue.  If the condition @var{c} does not hold,
+however, the currently active process is suspended and another process
+is selected.
+
+Observe, that the await statement behaves differently in the context
+of a merge statement (@pxref{Merge Statement}).
+
+
 @subsection Blocks
 
 Groups of statements are formed using braces, i.e., any statement or
@@ -290,11 +336,17 @@ The usual @code{if ... then ... else ... end} statement.
 THE INFORMATION IN THIS SECTION IS SUBJECT TO CHANGE.
 
 Creol supports a while loop, which uses the syntax @code{while @var{c}
-[ inv @code{i} ] do @var{s} end}.  As usual, @code{@var{c}} is the
-condition and @code{@var{s}} is the statement to execute.
+[ inv @code{I} ] do @var{S} end}.  As usual, @code{@var{c}} is the
+condition and @code{@var{S}} is the statement to execute.
+
+In addition, Creol supports also a do-while loop, which uses the
+syntax @code{do @var{S} [ inv @var{I} ] while @var{c}}, where @var{c},
+@var{S}, and @var{I} have the same meaning as with @code{while} loops.
+Observe that the compiler will transform a do-while loop into a while
+loop, which implies that it will not occur in the generated output.
 
 A loop may be annotated by a @emph{loop invariant}, as indicated by
-the optional @code{inv @code{i}} part.  The invariant is a proof
+the optional @code{inv @code{I}} part.  The invariant is a proof
 obligation which must hold at the beginning of a loop, the end of a
 loop, @emph{and} every processor release-point within the loop body.
 It is therefore advisable, that the loop invariant restricted to
@@ -313,9 +365,24 @@ Note that contrary to Java and C @code{;} is a @emph{binary operator}
 on statements, i.e., it is not a statement terminator.
 
 
-@subsection Non-deterministic merge
+@subsection Non-deterministic Merge
+@anchor{Merge Statement}
 
-TBD
+The statement @code{S1 ||| S2} will execute both @code{S1} and
+@code{S2} in a ``pseudo-interleaved'' manner.  It will check, whether
+@code{S1} or @code{S2} are enabled for execution.  Of both are not
+enabled for execution, e.g., because both are @code{await} statements
+(@pxref{Await Statement}), the current activation will be suspended.
+If one of them, say @code{S1} is enabled for execution, it will be
+executed until the next release point, up to a point where only
+@code{S1'} need to be executed.  Then, the system will continue
+executing @code{S1' ||| S2}.
+
+This means, that the process will @emph{not} release on an
+@code{await} statement but continue executing @code{S2} if @code{S2}
+is enabled for execution.  The statement @code{release},
+@pxref{Release Statement}, on the other hand, leads to an immediate
+release of the processor, even if it occurs as an await statement.
 
 The non-deterministic merge statement should best be avoided, since it
 may cause an exponential increase of the state space to be analysed.
@@ -327,7 +394,7 @@ such transformations automatically.  This may be an instance of
 partial order reduction.}.
 
 
-@subsection Non-deterministic choice
+@subsection Non-deterministic Choice
 
 The statement @code{S1 [] S2} chooses either @code{S1} or @code{S2}
 for execution.
@@ -466,7 +533,13 @@ class and provide the signature of the @emph{only} constructor.
 @subsection Inheritance
 
 A class can inherit from a list of super-classes, which are defined in
-an @code{inherits} specification.
+an @code{inherits} specification.  A list of super-classes is listed
+after the @code{inherits} keyword.  Each super-class must specify
+values for the classes @emph{class parameters},
+@pxref{Class Parameters}.
+
+The programmer must be aware of Creols behaviour if a class is
+inherited multiple times, @pxref{Inheritance} for a discussion.
 
 
 @node Implements
@@ -479,9 +552,9 @@ version is by declaring the interfaces using the @code{implements}
 keyword.  A class claiming to implement an interface must implement
 all methods specified in this interface.  Since interfaces also
 specify behavior for methods, the method implementation must
-implement the specified behaviour.@footnote{Whether a class implements
+implement the specified behaviour@footnote{Whether a class implements
 an interface cannot be determined statically, therefore the compiler
-does not check this}.  Unlike in the Java Programming Language, the
+does not check this.}.  Unlike in the Java Programming Language, the
 information on implementing interfaces is @emph{not} inherited by
 other classes.  This supports code reuse without affecting reasoning
 control.
@@ -508,73 +581,7 @@ the caller of a method using the co-interface.  If a class calls a
 method of an object it may only do so if it satisfies the co-interface
 requirement.  Because that method may be inherited, the class must
 contract the interface to keep the method type safe for all
-sub-classes.  Consider the following example:
-
-@example
-interface Foo begin with Bar op foo end
-
-interface Bar begin with Any op bar end
-
-interface Baz begin with Any op bar end
-
-class Foo implements Foo
-begin
-  with Bar op foo == caller.bar
-end
-
-class Bar implements Bar
-begin
-  var foo: Foo
-  op init == foo := new Foo
-  with Any op bar == foo.foo
-end
-
-class Baz implements Baz inherits Bar
-begin
-end
-
-class Main
-begin
-  var baz: Baz
-  op init == baz := new Baz
-  op run == baz.bar
-end
-@end example
-
-This example is @emph{not} type-safe, more specifically, the call
-@code{caller.bar} is not well-typed.  The trace which violates the
-well-typedness rules of Creol is the following one:
-@enumerate
-@item
-Create an instance of @code{Main}, which will create one instance of
-@code{Baz} during the initialization.  In the run method, we can the
-@code{bar} method of @code{baz}.  This call is well-typed, since all
-instances of @code{Baz} implement the @code{Baz} interface which
-exports this method to all objects.
-
-@item
-In the @code{bar} method, which the class @code{Baz} inherits from
-@code{Bar}, we call the method @code{foo} of @code{Bar}'s @code{foo}
-object.
-
-@item
-In the @code{foo} method, we call the @code{bar} method of the
-@code{caller}.  In this method, the caller is believed to be an
-instance of a class implementing the @code{Bar} interface.  But the
-caller is really an instance of class @code{Baz}, which does not
-implement the @code{Bar} interface, causing a run-time type error.
-@end enumerate
-
-What went wrong?  Observe, that the code of the method @code{bar} in
-class @code{Bar} is well-typed for classes implementing the interface
-@code{Bar}.  This interface is a co-interface requirement of the
-method @code{foo} in class @code{Foo}.  But the use of
-@code{implements} does @emph{not} imply that future sub-classes of
-@code{Bar} have the type @code{Bar} as well.  The way to correct this
-error is to @code{contract Bar} in the definition of class @code{Bar}.
-This will ensure, that @code{Bar} is also the type of all sub-classes
-of @code{Bar}, among others @code{Baz}.
-
+sub-classes.
 
 
 @node Class Attributes
@@ -582,9 +589,10 @@ of @code{Bar}, among others @code{Baz}.
 
 A class may specify a list of attributes or class variables.  These
 attributes store the persistent state of an object.  An attribute
-declaration has the form @code{op @var{name}: @var{type}} and may also
-be initialized in that statement, i.e., @code{op @var{name}:
-@var{type} := @var{expression}}.
+declaration has the form @code{var @var{name}: @var{type}} and may also
+be initialized in that statement, i.e., @code{var @var{name}:
+@var{type} := @var{expression}}.  The declaration of a class attribute
+may optionally be terminated with a semicolon.
 
 The expression may be any constant expression or it may refer to the
 parameters of the current class, the super classes, and the super
@@ -607,16 +615,28 @@ definition}.  A with definition has the format @code{with
 @var{interface} @var{operations} @var{invariants}}, where
 @code{with @var{interface}} specifies the co-interface.
 
+
 @node Class Invariants
 @subsection Class Invariants
 
-TBD
+Classes may specify class invariants.  Invariants which apply to all
+methods provided by a class must be specified in the internal section,
+before the first @code{with} declaration.  An invariant is specified
+with @code{inv @var{I}}, where @var{I} is the invariant.
+
+The syntax for invariants is not yet specified, but all valid
+expressions of type Boolean are accepted as invariants.
 
 
 @node Datatype Declaration
 @section Datatype Declarations
 
-TBD
+A datatype declaration defines a new datatype.  The syntax of a
+datatype declaration is @code{datatype @var{T} [ of @{ @var{S} , @}
+]}, where @var{T} is the new type and @var{S} is a list of possible
+super-types.
+
+Currently, datatypes are all abstract.
 
 
 @node Exception Declaration
@@ -702,6 +722,10 @@ as                              @r{left}
 
 @subsection Grammar
 
+The grammar specified in this section is in LR(1) and does not contain
+any shift-reduce or reduce-reduce conflicts.  This means, that each
+syntactically correct Creol program has a unique parse tree.
+
 @format
 main ::=
     @{ declaration @}
@@ -716,7 +740,7 @@ class-decl ::=
     @code{class} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]
     @{ (@code{contracts} | @code{implements} | @code{inherits} )
 	@{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} @}
-    @code{begin} @{ @code{var} var-decl @}
+    @code{begin} @{ @code{var} var-decl [ @code{;} ] @}
     [ internal-with-def ] @{ with-def @}
     @code{end}
 
@@ -776,6 +800,7 @@ basic-statement ::=
   | @code{begin} statement @code{end}
   | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
   | @code{while} expr [ @code{inv} expr ] @code{do} statement @code{end}
+  | @code{do} statement [ @code{inv} expr ] @code{while} expr
   | @code{assert} assertion
 
 expr-or-new ::=
@@ -808,10 +833,11 @@ type ::=
 @node Parse Errors
 @section A Note on Parse Errors
 
-Some errors are quite hard to identify by the parser and a parser
-implementing the grammar given above can not identify all causes
-of the parse error directly.  In this section we document the most
-important misreported parse errors.
+Syntactically incorrect programs will be rejected by the parser, but
+the error the parser reports can be confusing.  We explain the most
+common confusing error messages and explain, why these error messages
+are hard (or impossible) to improve.
+
 
 @subsection Missind @code{end}
 

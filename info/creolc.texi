@@ -171,6 +171,14 @@ Enables all passes.
 @item lower
 Expand statements and expressions to Core Creol statements.
 
+@item devirt
+Devirtualise attribute access, i.e., replace each access to a variable
+name by a static attribute access (@pxref{Static Attribute Access}), if
+the name does not refer to a variable that is local to the method.  In
+addition, a static attribute access expression is refined to the
+super-class that actually defines the attribute, if the class
+specified in the expression does not define that attribute.
+
 @item into-ssa
 Rewrite a Creol program into @emph{static single assignment} format.
 

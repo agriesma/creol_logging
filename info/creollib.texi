@@ -154,6 +154,11 @@ fun >(a: Duration, b: Duration): Bool == extern ">"
 
 @section Interface Any
 
+The prelude provides the interface @code{Any}, which each class is
+implicitly contracting.  The interface @code{Any} does not provide any
+methods and allows every behaviour.  This interface has the following
+declaration:
+
 @example
-interface Any
+interface Any begin inv true end
 @end example
