@@ -1,0 +1,5 @@
+@c node-name, next, previous, up
+@node Real-time Creol
+@chapter Modelling Real-Time Systems with Creol
+
+XXX

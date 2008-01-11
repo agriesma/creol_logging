@@ -12,7 +12,6 @@ This chapter assumes familarity with Maude.
 * Datatypes::           Explanation of datatypes.
 * Configuration::       Data Structures describing configurations.
 * Interpreter::         Creol Interpreter.
-* Model Checker::       Creol Model Checker in Maude.
 * Sort Hierarchy::      Summary of all sorts and how they relate.
 * Using CMC::           Some notes on using the model.
 @end menu
@@ -793,48 +792,6 @@ Bury a variable, i.e., remove it from the local bindings.
 @end table
 
 
-@node Model Checker
-@section Creol Model Checker
-
-The model checker is a version of the interpreter that is specifically
-tuned towards model checking.  It has the same structure as the
-interpreter, and has almost the same definitions.  In this section we
-point out the most important differences.
-
-The model checker is defined in the file
-@file{creol-modelchecker.maude} (@pxref{Setting CMC Up}).
-
-XXX
-
-@menu
-* Differences::         Differences to the Interpreter.
-* LTL Specifications::  Writing properties for the interpreter.
-@end menu
-
-
-@node Differences
-@subsection Differences to the Interpreter
-
-XXX
-
-
-@node LTL Specifications
-@subsection LTL Specifications
-
-Currently, the support for LTL specifications is ad-hoc.  We express
-state properties in Maude and use the standard methods to turn it into
-LTL specifications for model checking.  However, we must specify in a
-way that all object identities are present in the initial state.
-
-Normal object identities of objects created in normal methods will only
-work if the property is @emph{symmetric} for all instances of a class,
-since we cannot control which identity that object will receive.
-
-A more refined description will come later.
-@c XXX Finish this, after Immo came up with something.
-
-
-
 @node Sort Hierarchy
 @section Sort Hierarchy
 
@@ -860,7 +817,6 @@ described in @ref{Setting CMC Up}.
 * Setting CMC Up::
 * Simulation::
 * Meta Execution::
-* Model Checking::
 @end menu
 
 
@@ -950,11 +906,3 @@ the same result.
 
 We encourage you to use @file{creol-metaexec.maude} as a model for
 writing your own execution strategies for the CMC.
-
-
-@node Model Checking
-@subsection Model Checking Creol Prorams
-
-The specification language of the model checker is currently ad-hoc.
-Therefore, we currently cannot give any suggestions for using the model
-checker.  See the examples for some ideas on how to use it.

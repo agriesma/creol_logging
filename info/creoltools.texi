@@ -11,7 +11,7 @@
 This manual is describing Tools for Creol
 (version @value{VERSION}, @value{UPDATED}).
 
-Copyright @copyright{} 2007 Marcel Kyas.
+Copyright @copyright{} 2007, 2008 Marcel Kyas.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -52,19 +52,20 @@ Software Foundation raise funds for GNU development.''
 @end ifnottex
 
 @menu
-* Introduction::        Introduction to Creol and its tools.
-* Creol Tutorial::      An introduction to the Creol language.
-* Creol::               A description of the Creol language.
-* Creol Prelude::       The standard library for Creol.
-* CMC::                 Creol Machine Code.
-* creolc::              How to use the @command{creolc} compiler.
-* creolshell::          How to use the @command{creolshell}.
-* FAQ::                 Frequently asked questions.
-* Release History::     Release history.
-* Licenses::            Your rights and freedoms.
-* Reporting Bugs::      How to write a good bug report.
-* Bibliography::        Further reading.
-* Index::               Index of concepts.
+* Introduction::          Introduction to Creol and its tools.
+* Creol Tutorial::        An introduction to the Creol language.
+* Creol::                 A description of the Creol language.
+* Creol Prelude::         The standard library for Creol.
+* CMC::                   Creol Machine Code.
+* Model-checking Creol::  Using Maude to Model-Check Creol programs.
+* Real-time Creol::       Using Creol for Timed Models.
+* creolc::                How to use the @command{creolc} compiler.
+* creolshell::            How to use the @command{creolshell}.
+* FAQ::                   Frequently asked questions.
+* Licenses::              Your rights and freedoms.
+* Reporting Bugs::        How to write a good bug report.
+* Bibliography::          Further reading.
+* Index::                 Index of concepts.
 @end menu
 
 @include introduction.texi
@@ -72,19 +73,11 @@ Software Foundation raise funds for GNU development.''
 @include creol.texi
 @include creollib.texi
 @include cmc.texi
+@include creolmc.texi
+@include creolrt.texi
 @include creolc.texi
 @include creolshell.texi
 @include faq.texi
-
-
-@c The release history is maintained here to force an update of this file
-@c with each release.  This will set version and date in @file{version.texi}
-@c to its correct values.
-
-@node Release History
-@appendix Release History
-
-Version 0.0g was released on September 10, 2007.
 
 
 @node Licenses
@@ -113,3 +106,15 @@ the GNU Free Documentation License.
 @printindex cp
 
 @bye
+@c The release history is maintained here to force an update of this file
+@c with each release.  This will set version and date in @file{version.texi}
+@c to its correct values.
+@c
+@c Version 0.0h (rxxxx) was released on 
+@c Version 0.0g (r901) was released on September 10, 2007.
+@c Version 0.0f (r685) was released on Jul 10, 2007.
+@c Version 0.0e (r595) was released on June 22, 2007.
+@c Version 0.0d (r568) was released on June 17, 2007.
+@c Version 0.0c (r494) was released on May 7, 2007.
+@c Version 0.0b (r365) was released on March 16, 2007.
+@c Version 0.0a (r275) was released on March 5, 2007.
