@@ -1,5 +1,5 @@
 /*
- * MissingEnd.creol -- Display a parse error caused by a missing end.
+ * MissingEnd2.creol -- Error with missing end, test 2.
  *
  * This file is part of creoltools
  *
@@ -26,4 +26,6 @@ begin
       skip
     else
       skip
+
+  op run == skip
 end

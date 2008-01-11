@@ -80,6 +80,12 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/Interleave.out \
 		  language/While.creol language/While.maude \
 		  language/While.out \
+		  syntax/AttrDecl.creol \
+		  syntax/MissingEnd.creol \
+		  syntax/MissingEnd2.creol \
+		  syntax/MissingEnd3.creol \
+		  syntax/MissingEnd4.creol \
+		  syntax/MissingEnd5.creol \
 		  syntax/StrayChar.creol \
 		  typecheck/Nil.creol typecheck/ExprFailure.creol \
 		  typecheck/Contracts.creol typecheck/Nat.creol \

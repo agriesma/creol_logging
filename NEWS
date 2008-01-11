@@ -7,6 +7,7 @@ In the language:
   but for now a datatype is just in the global space.
 * datatypes declare their supertype by using the keyword of.  For example,
   datatype Int of Real declared Int as a subtype of Real.
+* An attribute declaration may optionally be terminated with a semicolon.
 
 In the compiler:
 * An error in locating the prelude has been corrected.
@@ -23,12 +24,14 @@ In the compiler:
 * Passes for inserting free and bury statements have been added.  Passes
   exploit static analysis for figuring out which labes to free and which
   variables to bury.
+* A devirtualisation pass has been added.
 * Revise the implementation of the bury statement by expressing them
   as assignments.
 * Added a backend to dot, allowing to visualise some aspects of
   a creol model/program.  Currently, only relations between classes
   and types.
 * Many more errors have been corrected.
+* Some attempt has been made in giving better error messages.
 
 In the standard library:
 * An error in the pair module has been corrected.

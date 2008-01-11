@@ -254,7 +254,7 @@ method_def:
   |   d = method_decl EQEQ EXTERN s = STRING
         { { d with body = Some (Extern (statement_note $startpos, s)) } }
   |   method_decl EQEQ error
-        { signal_error $startpos "Syntax error in method body" }
+        { signal_error $startpos($3) "syntax error in method body" }
 
 (* Interface Declaration *)
 
@@ -301,17 +301,17 @@ functiondecl:
 	body = Expression.Extern (expression_note $startpos, s);
 	hidden = false } }
   | FUN error
-    { signal_error $startpos "Syntax error in function declaration" }
+    { signal_error $startpos "syntax error in function declaration" }
   | FUN id_or_op error
-    { signal_error $startpos "Syntax error in function declaration" }
+    { signal_error $startpos "syntax error in function declaration" }
   | FUN id_or_op
     loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON error
-    { signal_error $startpos "Syntax error in function declaration" }
+    { signal_error $startpos "syntax error in function declaration" }
   | FUN id_or_op
     loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
     COLON creol_type EQEQ error
-    { signal_error $startpos "Syntax error in function declaration" }
+    { signal_error $startpos "syntax error in function declaration" }
 
 id_or_op:
       i = ID { i }
@@ -371,15 +371,15 @@ basic_statement:
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((statement_note $startpos), t, e) }
     | separated_nonempty_list(COMMA, lhs) ASSIGN error
-	{ signal_error $startpos "Syntax error in assignment" }
+	{ signal_error $startpos "syntax error in assignment" }
     | AWAIT e = expression
 	{ Await ((statement_note $startpos), e) }
     | AWAIT error
-	{ signal_error $startpos "Syntax error in await condition" }
+	{ signal_error $startpos "syntax error in await condition" }
     | POSIT e = expression
 	{ Posit ((statement_note $startpos), e) }
     | POSIT error
-	{ signal_error $startpos "Syntax error in posit condition" }
+	{ signal_error $startpos "syntax error in posit condition" }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
       s = ioption(preceded(AS, creol_type))
@@ -431,35 +431,35 @@ basic_statement:
     | IF e = expression THEN t = statement ELSE f = statement END
         { If((statement_note $startpos), e, t, f) }
     | IF expression THEN statement ELSE error
-        { signal_error $startpos "syntax error in if statement" }
+        { signal_error $startpos($6) "syntax error in else block" }
     | IF e = expression THEN t = statement END
         { If((statement_note $startpos), e, t, Skip (statement_note $startpos)) }
     | IF expression THEN error
-        { signal_error $startpos "syntax error in if statement" }
+        { signal_error $startpos($4) "syntax error in if statement" }
     | WHILE c = expression inv = ioption(preceded(INV, expression)) DO
 	s = statement END
 	{ While (statement_note $startpos, c, inv, s) }
     | WHILE expression INV expression DO error
-        { signal_error $startpos "syntax error in while statement" }
+        { signal_error $startpos($6) "syntax error in while statement" }
     | WHILE expression DO error
-        { signal_error $startpos "syntax error in while statement" }
+        { signal_error $startpos($4) "syntax error in while statement" }
     | WHILE expression INV error
-        { signal_error $startpos "syntax error in invariant" }
+        { signal_error $startpos($4) "syntax error in invariant" }
     | WHILE error
-        { signal_error $startpos "syntax error in while condition" }
+        { signal_error $startpos($2) "syntax error in while condition" }
     | DO s = statement inv = ioption(preceded(INV, expression))
       WHILE c = expression
 	{ DoWhile (statement_note $startpos, c, inv, s) }
     | ASSERT a = expression
 	{ Assert (statement_note $startpos, a) }
+    | ASSERT error
+	{ signal_error $startpos($2) "syntax error in assertion" }
     | PROVE a = expression
 	{ Prove (statement_note $startpos, a) }
-    | ASSERT error
-	{ signal_error $startpos "syntax error in assertion" }
     | PROVE error
-	{ signal_error $startpos "syntax error in assertion" }
+	{ signal_error $startpos($2) "syntax error in assertion" }
     | expression error
-	{ signal_error $startpos "syntax error in statement" }
+	{ signal_error $startpos($2) "syntax error in statement" }
 
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:

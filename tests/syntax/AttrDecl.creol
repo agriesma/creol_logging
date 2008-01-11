@@ -1,5 +1,5 @@
 /*
- * MissingEnd.creol -- Display a parse error caused by a missing end.
+ * AttrDecl.creol -- Demontrate attribute declarations.
  *
  * This file is part of creoltools
  *
@@ -21,9 +21,9 @@
 
 class Foo
 begin
-  op init ==
-    if true then
-      skip
-    else
-      skip
+  var a: Int
+  var b: Int := 1
+  var c: Int;
+  var d: Int := 1;
+  op init == skip
 end

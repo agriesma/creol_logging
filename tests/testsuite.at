@@ -283,10 +283,34 @@ red init .
 red simulate('PROGRAM, upTerm(init main("Butler", emp)), 0, 1) .
 ])
 
-dnl test cases for the type checker
+
+dnl test cases for the parser.
+TEST_CREOLC_SYNTAX([AttrDecl])
+
 TEST_CREOLC_SYNTAX([StrayChar],
 [[StrayChar.creol:22: syntax error
 ]])
+
+TEST_CREOLC_SYNTAX([MissingEnd],
+[[MissingEnd.creol:30: syntax error in method body
+]])
+
+TEST_CREOLC_SYNTAX([MissingEnd2],
+[[MissingEnd2.creol:30: syntax error in else block
+]])
+
+TEST_CREOLC_SYNTAX([MissingEnd3],
+[[MissingEnd3.creol:28: syntax error in if statement
+]])
+
+TEST_CREOLC_SYNTAX([MissingEnd4],
+[[MissingEnd4.creol:29: syntax error in while statement
+]])
+
+TEST_CREOLC_SYNTAX([MissingEnd5],
+[[MissingEnd5.creol:29: syntax error in if statement
+]])
+
 
 dnl test cases for the type checker
 TEST_CREOLC_TYPECHECK([Nat],
