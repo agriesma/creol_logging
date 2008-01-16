@@ -2,7 +2,7 @@
 reduce in TEST-TAILCALL : init .
 result Configuration: 
 < ob("Tailcall0") : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
-    "Tailcall0"), ob("Tailcall0"), "init", emp),emp) >
+    "Tailcall0"), ob("Tailcall0"), "init", emp), emp) >
 
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 

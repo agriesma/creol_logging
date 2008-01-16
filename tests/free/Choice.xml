@@ -1,0 +1,367 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:class name="C">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="m" location="C">
+    <creol:inputs>
+     <creol:vardecl name="x">
+      <creol:type name="Bool"/>
+     </creol:vardecl>
+    </creol:inputs>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="l">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:sequence>
+      <creol:localasynccall method="m">
+       <creol:signature>
+        <creol:cointerface>
+         <creol:internal/>
+        </creol:cointerface>
+        <creol:input-parameters>
+         <creol:type name="Bool"/>
+        </creol:input-parameters>
+        <creol:output-parameters/>
+       </creol:signature>
+       <creol:identifier name="l"/>
+       <creol:arguments>
+        <creol:expression>
+         <creol:funccall name="~">
+          <creol:arguments>
+           <creol:argument>
+            <creol:identifier name="x">
+             <creol:expression-note file="Choice.creol" line="25">
+              <creol:inferred-type>
+               <creol:type name="Bool"/>
+              </creol:inferred-type>
+             </creol:expression-note>
+            </creol:identifier>
+           </creol:argument>
+          </creol:arguments>
+          <creol:expression-note file="Choice.creol" line="25">
+           <creol:inferred-type>
+            <creol:type name="Bool"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:funccall>
+        </creol:expression>
+       </creol:arguments>
+       <creol:statement-note file="Choice.creol" line="25">
+        <creol:def-var name="l"/>
+        <creol:def-var name="x"/>
+        <creol:life-var name="x"/>
+       </creol:statement-note>
+      </creol:localasynccall>
+      <creol:choice>
+       <creol:sequence>
+        <creol:await>
+         <creol:identifier name="x">
+          <creol:expression-note file="Choice.creol" line="27">
+           <creol:inferred-type>
+            <creol:type name="Bool"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:identifier>
+         <creol:statement-note file="Choice.creol" line="27">
+          <creol:def-var name="l"/>
+          <creol:def-var name="x"/>
+          <creol:life-var name="l"/>
+          <creol:life-var name="x"/>
+         </creol:statement-note>
+        </creol:await>
+        <creol:reply>
+         <creol:identifier name="l">
+          <creol:expression-note file="Choice.creol" line="27">
+           <creol:inferred-type>
+            <creol:typeapplication name="Label"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:identifier>
+         <creol:results/>
+         <creol:statement-note file="Choice.creol" line="27">
+          <creol:def-var name="x"/>
+          <creol:life-var name="l"/>
+         </creol:statement-note>
+        </creol:reply>
+        <creol:statement-note file="Choice.creol" line="27">
+         <creol:def-var name="x"/>
+         <creol:life-var name="l"/>
+         <creol:life-var name="x"/>
+        </creol:statement-note>
+       </creol:sequence>
+       <creol:sequence>
+        <creol:skip>
+         <creol:statement-note file="Choice.creol" line="29">
+          <creol:def-var name="l"/>
+          <creol:def-var name="x"/>
+         </creol:statement-note>
+        </creol:skip>
+        <creol:free>
+         <creol:identifier name="l"/>
+         <creol:statement-note file="Choice.creol" line="29">
+          <creol:def-var name="x"/>
+         </creol:statement-note>
+        </creol:free>
+        <creol:statement-note file="Choice.creol" line="29">
+         <creol:def-var name="x"/>
+        </creol:statement-note>
+       </creol:sequence>
+       <creol:statement-note file="Choice.creol" line="27">
+        <creol:def-var name="x"/>
+        <creol:life-var name="l"/>
+        <creol:life-var name="x"/>
+       </creol:statement-note>
+      </creol:choice>
+      <creol:statement-note file="Choice.creol" line="25">
+       <creol:def-var name="x"/>
+       <creol:life-var name="x"/>
+      </creol:statement-note>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+ <creol:class name="D">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="D">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="D">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:skip>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:skip>
+    </creol:body>
+   </creol:method>
+   <creol:method name="m" location="D">
+    <creol:inputs>
+     <creol:vardecl name="x">
+      <creol:type name="Bool"/>
+     </creol:vardecl>
+    </creol:inputs>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="l">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:sequence>
+      <creol:localasynccall method="m">
+       <creol:signature>
+        <creol:cointerface>
+         <creol:internal/>
+        </creol:cointerface>
+        <creol:input-parameters>
+         <creol:type name="Bool"/>
+        </creol:input-parameters>
+        <creol:output-parameters/>
+       </creol:signature>
+       <creol:identifier name="l"/>
+       <creol:arguments>
+        <creol:expression>
+         <creol:funccall name="~">
+          <creol:arguments>
+           <creol:argument>
+            <creol:identifier name="x">
+             <creol:expression-note file="Choice.creol" line="36">
+              <creol:inferred-type>
+               <creol:type name="Bool"/>
+              </creol:inferred-type>
+             </creol:expression-note>
+            </creol:identifier>
+           </creol:argument>
+          </creol:arguments>
+          <creol:expression-note file="Choice.creol" line="36">
+           <creol:inferred-type>
+            <creol:type name="Bool"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:funccall>
+        </creol:expression>
+       </creol:arguments>
+       <creol:statement-note file="Choice.creol" line="36">
+        <creol:def-var name="l"/>
+        <creol:def-var name="x"/>
+        <creol:life-var name="x"/>
+       </creol:statement-note>
+      </creol:localasynccall>
+      <creol:sequence>
+       <creol:choice>
+        <creol:sequence>
+         <creol:await>
+          <creol:identifier name="x">
+           <creol:expression-note file="Choice.creol" line="38">
+            <creol:inferred-type>
+             <creol:type name="Bool"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:identifier>
+          <creol:statement-note file="Choice.creol" line="38">
+           <creol:def-var name="l"/>
+           <creol:def-var name="x"/>
+           <creol:life-var name="l"/>
+           <creol:life-var name="x"/>
+          </creol:statement-note>
+         </creol:await>
+         <creol:reply>
+          <creol:identifier name="l">
+           <creol:expression-note file="Choice.creol" line="38">
+            <creol:inferred-type>
+             <creol:typeapplication name="Label"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:identifier>
+          <creol:results/>
+          <creol:statement-note file="Choice.creol" line="38">
+           <creol:def-var name="x"/>
+           <creol:life-var name="l"/>
+           <creol:life-var name="x"/>
+          </creol:statement-note>
+         </creol:reply>
+         <creol:statement-note file="Choice.creol" line="38">
+          <creol:def-var name="x"/>
+          <creol:life-var name="l"/>
+          <creol:life-var name="x"/>
+         </creol:statement-note>
+        </creol:sequence>
+        <creol:skip>
+         <creol:statement-note file="Choice.creol" line="40">
+          <creol:def-var name="l"/>
+          <creol:def-var name="x"/>
+          <creol:life-var name="l"/>
+          <creol:life-var name="x"/>
+         </creol:statement-note>
+        </creol:skip>
+        <creol:statement-note file="Choice.creol" line="38">
+         <creol:def-var name="x"/>
+         <creol:life-var name="l"/>
+         <creol:life-var name="x"/>
+        </creol:statement-note>
+       </creol:choice>
+       <creol:choice>
+        <creol:sequence>
+         <creol:await>
+          <creol:funccall name="&amp;&amp;">
+           <creol:arguments>
+            <creol:argument>
+             <creol:identifier name="x">
+              <creol:expression-note file="Choice.creol" line="43">
+               <creol:inferred-type>
+                <creol:type name="Bool"/>
+               </creol:inferred-type>
+              </creol:expression-note>
+             </creol:identifier>
+            </creol:argument>
+            <creol:argument>
+             <creol:bool value="true">
+              <creol:expression-note file="Choice.creol" line="43">
+               <creol:inferred-type>
+                <creol:type name="Bool"/>
+               </creol:inferred-type>
+              </creol:expression-note>
+             </creol:bool>
+            </creol:argument>
+           </creol:arguments>
+           <creol:expression-note file="Choice.creol" line="43">
+            <creol:inferred-type>
+             <creol:type name="Bool"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:funccall>
+          <creol:statement-note file="Choice.creol" line="43">
+           <creol:def-var name="x"/>
+           <creol:life-var name="l"/>
+           <creol:life-var name="x"/>
+          </creol:statement-note>
+         </creol:await>
+         <creol:reply>
+          <creol:identifier name="l">
+           <creol:expression-note file="Choice.creol" line="43">
+            <creol:inferred-type>
+             <creol:typeapplication name="Label"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:identifier>
+          <creol:results/>
+          <creol:statement-note file="Choice.creol" line="43">
+           <creol:def-var name="x"/>
+           <creol:life-var name="l"/>
+          </creol:statement-note>
+         </creol:reply>
+         <creol:statement-note file="Choice.creol" line="43">
+          <creol:def-var name="x"/>
+          <creol:life-var name="l"/>
+          <creol:life-var name="x"/>
+         </creol:statement-note>
+        </creol:sequence>
+        <creol:skip>
+         <creol:statement-note file="Choice.creol" line="45">
+          <creol:def-var name="x"/>
+         </creol:statement-note>
+        </creol:skip>
+        <creol:statement-note file="Choice.creol" line="43">
+         <creol:def-var name="x"/>
+         <creol:life-var name="l"/>
+         <creol:life-var name="x"/>
+        </creol:statement-note>
+       </creol:choice>
+       <creol:statement-note file="Choice.creol" line="37">
+        <creol:def-var name="x"/>
+        <creol:life-var name="l"/>
+        <creol:life-var name="x"/>
+       </creol:statement-note>
+      </creol:sequence>
+      <creol:statement-note file="Choice.creol" line="36">
+       <creol:def-var name="x"/>
+       <creol:life-var name="x"/>
+      </creol:statement-note>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>

@@ -442,24 +442,24 @@ result GroundTerm: 'cont['label['s_^5['0.Zero]]]
 reduce in CREOL-LABEL-TEST : downTerm(upTerm(cont(label(5))), skip) .
 result Stm: cont(label(5))
 ==========================================
-reduce in CREOL-LABEL-TEST : comp(label(5),emp) .
-result Body: comp(label(5),emp)
+reduce in CREOL-LABEL-TEST : comp(label(5), emp) .
+result Body: comp(label(5), emp)
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm(comp(label(5),emp)) .
-result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
+reduce in CREOL-LABEL-TEST : upTerm(comp(label(5), emp)) .
+result GroundTerm: 'comp['label['s_^5['0.Zero]],'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5),emp)), noMsg) .
-result Body: comp(label(5),emp)
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5), emp)), noMsg) .
+result Body: comp(label(5), emp)
 ==========================================
-reduce in CREOL-LABEL-TEST : invoc(ob("object1"),label(5),"method1",emp) .
-result Body: invoc(ob("object1"),label(5),"method1",emp)
+reduce in CREOL-LABEL-TEST : invoc(ob("object1"), label(5), "method1", emp) .
+result Body: invoc(ob("object1"), label(5), "method1", emp)
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm(invoc(ob("object1"),label(5),"method1",
+reduce in CREOL-LABEL-TEST : upTerm(invoc(ob("object1"), label(5), "method1",
     emp)) .
-result GroundTerm: 'invoc`(_`,_`,_`,_`)['ob`(_`)['"object1".String],'label[
-    's_^5['0.Zero]],'"method1".String,'emp.DataList]
+result GroundTerm: 'invoc['ob`(_`)['"object1".String],'label['s_^5['0.Zero]],
+    '"method1".String,'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob("object1"),label(5),
-    "method1",emp)), noMsg) .
-result Body: invoc(ob("object1"),label(5),"method1",emp)
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob("object1"), label(5),
+    "method1", emp)), noMsg) .
+result Body: invoc(ob("object1"), label(5), "method1", emp)
 Bye.
