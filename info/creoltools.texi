@@ -14,17 +14,21 @@ This manual is describing Tools for Creol
 Copyright @copyright{} 2007, 2008 Marcel Kyas.
 
 @quotation
+This work has been financially supported by European Project
+IST-2001-33522 Omega, European Project IST-33826 Credo, the German
+Research Council, and the Norwegian Research Council.
+
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with the Front-Cover texts being ``A GNU Manual,''
-and with the Back-Cover Texts as in (a) below.  A copy of the
-license is included in the section entitled ``GNU Free Documentation
-License.''
+any later version published by the Free Software Foundation.
+@c ; with no Invariant Sections, with the Front-Cover texts being
+@c ``A GNU Manual,'' and with the Back-Cover Texts as in (a) below.
+A copy of the license is included in the section entitled ``GNU Free
+Documentation License.''
 
-(a) The FSF's Back-Cover Text is: ``You have freedom to copy and modify
-this GNU Manual, like GNU software.  Copies published by the Free
-Software Foundation raise funds for GNU development.''
+@c (a) The FSF's Back-Cover Text is: ``You have freedom to copy and
+@c modify this GNU Manual, like GNU software.  Copies published by the
+@c Free Software Foundation raise funds for GNU development.''
 @end quotation
 @end copying
 
@@ -56,15 +60,15 @@ Software Foundation raise funds for GNU development.''
 * Creol Tutorial::        An introduction to the Creol language.
 * Creol::                 A description of the Creol language.
 * Creol Prelude::         The standard library for Creol.
-* CMC::                   Creol Machine Code.
-* Model-checking Creol::  Using Maude to Model-Check Creol programs.
 * Real-time Creol::       Using Creol for Timed Models.
+* Model-checking Creol::  Using Maude to Model-Check Creol programs.
+* CMC::                   Creol Machine Code.
 * creolc::                How to use the @command{creolc} compiler.
 * creolshell::            How to use the @command{creolshell}.
 * FAQ::                   Frequently asked questions.
-* Licenses::              Your rights and freedoms.
 * Reporting Bugs::        How to write a good bug report.
 * Bibliography::          Further reading.
+* Licenses::              Your rights and freedoms.
 * Index::                 Index of concepts.
 @end menu
 
@@ -72,12 +76,15 @@ Software Foundation raise funds for GNU development.''
 @include creoltut.texi
 @include creol.texi
 @include creollib.texi
-@include cmc.texi
-@include creolmc.texi
 @include creolrt.texi
+@include creolmc.texi
+@include cmc.texi
 @include creolc.texi
 @include creolshell.texi
 @include faq.texi
+
+@include bibliography.texi
+@include bugs.texi
 
 
 @node Licenses
@@ -96,9 +103,6 @@ the GNU Free Documentation License.
 @include gpl.texi
 @raisesections
 @include fdl.texi
-
-@include bibliography.texi
-@include bugs.texi
 
 @node Index
 @unnumbered Index

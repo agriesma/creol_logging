@@ -6,7 +6,23 @@ In this chapter we describe the general structure of the machine in
 Maude.  The machine is interpreting the Core Creol language, which is
 mimicked by Maude terms.
 
-This chapter assumes familarity with Maude.
+Currently, three different interpreters are provided.  The first
+interpreter, defined in file @file{creol-interpreter.maude} is
+suitable for fine-grained simulation.  The second interpreter, defined
+in the file @file{creol-modelchecker.maude}, is suitable for
+coarse-grained simulation and model checking.  The third interpreter,
+defined in @file{creol-realtime.maude}, is suitable for simulating
+programs using the real-time extension (@pxref{Real-time Creol}).
+
+All interpreters for Creol programs have a similar interface and
+accept the same input terms for classes and objects.  The difference
+between the Maude based targets of the compiler (@pxref{Target
+Options}) are minimal and distinguished by enabling or disabling
+certain transformations.  These transformations can be enabled or
+disabled on the command-line (@pxref{Pass Options}).
+
+The interpreters differ in the definition of some predicates, as
+indicated below.  XXX
 
 @menu
 * Datatypes::           Explanation of datatypes.
@@ -15,6 +31,7 @@ This chapter assumes familarity with Maude.
 * Sort Hierarchy::      Summary of all sorts and how they relate.
 * Using CMC::           Some notes on using the model.
 @end menu
+
 
 @node Datatypes
 @section Datatypes
@@ -69,8 +86,11 @@ Values of sort @code{Oid} are the object identifiers.  The sort
 @code{Oid} is a subsort of @code{Data}.
 
 @item Label
-Values of sort @code{Label} are the values of the labels of
-asynchronous calls.  This sort is a subsort of @code{Data}.
+@anchor{Label} Values of sort @code{Label} are the values of the
+labels of asynchronous calls.  They are handles that identify the
+call, allowing to wait for the result at the callers location, and
+allowing to send the result at the receivers location.  This sort is a
+subsort of @code{Data}.
 
 @item Appl
 Terms of this sort are function applications.  The sort @code{Appl} is
@@ -662,7 +682,103 @@ value of @code{null}.
 @node Message
 @subsection Messages
 
-XXX
+The module @code{CREOL-COMMUNICATION} defines messages and message
+queues.  A message has sort @code{Msg}.  Message queues have sort
+@code{MMsg} and are multi-sets of terms of sort @code{Body}.
+
+
+@subsubsection Invocation message
+
+An invocation message has the format @code{invoc(_,_,_,_)} and is of
+sort @code{Body}, where the first parameter is an @emph{object
+identity} representing the sender of the message, the second parameter
+is a label, which identifies the call, the third parameter is the name
+of the method, and the fourth parameter is a list of values
+representing the actual arguments.
+
+
+@subsubsection Completion message
+
+Conversely, a completion message has the format @code{comp(_,_)} and
+is of sort @code{Body}, where the first parameter represents the label
+of the call, as supplied by the invocation message, and the second
+parameter is a list of values representing the return values.
+
+
+@subsubsection Messages
+
+Given a message body (a term of sort @code{Body}), a message is formed
+as a term @code{_from_to_}, where the first place holds the body, the
+second term holds the identity of the sender and the last term holds
+the identity of the receiver.
+
+
+@subsubsection Bind method message
+
+A bind method message is used to ask a class for a method body to an
+invocation.  It has the format @code{bindMtd(_,_,_,_,_,_)}, where the
+parameters have the following meaning:
+
+@enumerate
+@item
+The first parameter indicates the caller of the method.  This value
+will be used to initialise the variable @code{caller} in the bound
+method.
+
+@item
+The second parameter indicates the identity of the callee.  The
+bound process will be inserted into its process queue.
+
+@item
+The this parameter indicates the label of the call.  This value is
+used to initialise the hidden variable @code{.label} and is used for
+sending the completion message.
+
+@item
+The fourth parameter indicates the name of the method to bind to.
+
+@item
+The fifth parameter is a list of values which represent the actual
+arguments to the call.
+
+@item
+The sixth parameter is a list of classes in which the method is to be
+searched for.
+@end enumerate
+
+
+@subsubsection Bound method message
+
+This message is created after the method has successfully been bound.
+It has the format @code{boundMtd(_,_)}, where the first parameter
+represents the identity of the callee and the second parameter
+represents the process to execute.
+
+
+@subsubsection Message queue
+
+A message queue has the sort @code{Queue} and the format @c
+@code{<_: Qu | Size:_, Dealloc:_, Ev:_ >}.  The parameters represent
+the following:
+@enumerate
+@item
+The first parameter indicates the identity of the owner of the message
+queue.
+
+@item
+The second parameter indicates its size.  More importantly, it
+indicates the number of messages one may still insert into the queue.
+
+@item
+The third parameter is a multiset of labels marked for deallocation.
+The multiset is constructed with the constructor @code{_^_} and has
+the identity @code{noDealloc}.
+
+@item
+The fourth parameter is a multiset of invocation and completion
+message bodies.  The multiset of invocations and completions is
+constructed by @code{_+_} and has the identity @code{noMsg}.
+@end enumerate
 
 
 @node Evaluation
@@ -679,15 +795,26 @@ the data types can be applied to obtain the function-application's
 value.
 
 The operation @code{evalList} maps eval on expression lists (of sort
-@code{ExprList}).
-
+@code{ExprList}) to a list of data (of sort @code{DataList}).
 
 
 @node Configurations
 @subsection Configurations
 
-XXX
+The module @code{CREOL-CONFIG} defines the sort @code{Configuration}
+which defines a global state configuration of a Creol model.
+Essentially, a configuration is a multiset of messages, message
+queues, classes, and objects.  The identity is called @code{noConf}.
 
+This module defines an additional sort @code{State} (or reuses it from
+@code{MODEL-CHECKER}), which is a parenthised Configuration, written
+@code{@{_@}}.
+
+Finally, the @code{main(_,_)} operation is defined, where the first
+parameter is the name of a class, say @var{C}, and the second
+parameter is a list of expressions used to initialise the first
+instance of the system.  That instance will be an instance of class
+@var{C}.
 
 
 @node Interpreter
@@ -761,7 +888,11 @@ Execute a @code{accept} statement.
 
 @item receive-call-req
 If we receive an invocation message, start binding the method body.
-@code{m} and @code{m @ c}.
+This rule ie used for virtual calls @code{m}.
+
+@item receive-static-call-req
+If we receive an invocation message, start binding the method body.
+This rule is used for static calls @code{m @ c}.
 
 @item receive-call-bound
 If a method is bound, enqueue it into the process queue.
@@ -786,9 +917,6 @@ Schedule a label such that the corresponding reply can be removed.
 
 @item deallocate
 If the reply arrives, remove it immediately.
-
-@item bury
-Bury a variable, i.e., remove it from the local bindings.
 @end table
 
 
