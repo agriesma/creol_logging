@@ -900,22 +900,6 @@ STEP(< O : Qu | Size: Sz`,' Dealloc: LS`,'
 
 *** Method binding with multiple inheritance
 
-ifdef(`NOTHING',
-*** If we do not find a run method we provide a default method.
-eq
-  bindMtd(O, O', Lab, "run", DL, noInh)
-  = 
-  boundMtd(O,(("caller" |-> O', ".label" |-> Lab), return(emp)))
-  .
-
-*** Same for init.
-eq
-  bindMtd(O, O', Lab, "init", EL, noInh)
-  = 
-  boundMtd(O,(("caller" |-> O', ".label" |-> Lab), return(emp)))
-  .
-)dnl
-
 eq
   bindMtd(O, O', Lab, M, DL, (C < EL >) `##' I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
@@ -1041,7 +1025,7 @@ eq
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
   = 
   < O : C |  Att: S,
-    Pr: ((ifdef(`MODELCHECKER', `A |-> null, L', L)),
+    Pr: ((ifdef(`MODELCHECK', `A |-> null, L', L)),
          (AL assign DL); SL), PrQ: W, Lcnt: F >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label receive-reply]
@@ -1056,14 +1040,20 @@ eq
   .
 
 *** Free a label.  Make sure that the use of labels is linear.
-STEP(`< O : C | Att: S, Pr: ((A |-> Lab, L), free(A) ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
-  `< O : C | Att: S, Pr: ((A |-> null, L), SL), PrQ: W, Lcnt: N >
-  if Lab =/= null then
-    < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: MM >
-  else
-    < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  fi',
+
+STEP(< O : C | Att: S`,' Pr: ((L`,' A |-> Lab)`,' free(A `#' NeAL) ; SL)`,'
+       PrQ: W`,' Lcnt: N >
+  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >,
+  < O : C | Att: S`,' Pr: ((L, A |-> null)`,' free(NeAL); SL)`,' 
+     PrQ: W`,'  Lcnt: N >
+  < O : Qu | Size: Sz`,'  Dealloc: (Lab ^ LS)`,'  Ev: MM >,
+  `[label free]')
+
+STEP(< O : C | Att: S`,' Pr: ((L `,' A |-> Lab)`,' free(A) ; SL)`,'
+       PrQ: W`,' Lcnt: N >
+  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >,
+  < O : C | Att: S`,' Pr: ((L `,' A |-> null)`,' SL)`,' PrQ: W`,'  Lcnt: N >
+  < O : Qu | Size: Sz`,'  Dealloc: (Lab ^ LS)`,'  Ev: MM >,
   `[label free]')
 
 *** Deallocate
