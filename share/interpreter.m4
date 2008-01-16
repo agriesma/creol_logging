@@ -9,8 +9,8 @@ dnl m4, with either one of `CREOL' or `MODELCHECK' defined.
 dnl
 dnl See the lines below for its license
 dnl
-changecom
-define(`KIND', ifdef(`TIME', `real-time ')ifdef(`MODELCHECK', `model-checker', `interpreter'))
+changecom`'dnl
+define(`KIND', ifdef(`TIME', `real-time ')ifdef(`MODELCHECK', `model-checker', `interpreter'))dnl
 dnl
 dnl The macro STEP is used to indicate that the specified transition
 dnl may be both an equation (this is the case for model checking,
@@ -20,12 +20,12 @@ dnl $2 is the post-condition of the rule.
 dnl $3 is an annotation.  It must not be empty, and usually contains at
 dnl    least the label.
 define(`STEP',dnl
-ifdef(`MODELCHECK',
+ifdef(`MODELCHECK',dnl
 `eq
   $1
   =
   $2
-  $3 .',
+  $3 .',dnl
 `rl
   $1
   =>
@@ -41,13 +41,13 @@ dnl $3 is the condition.
 dnl $4 is an annotation.  It must not be empty, and usually contains at
 dnl    least the label.
 define(`CSTEP',dnl
-ifdef(`MODELCHECK',
+ifdef(`MODELCHECK',dnl
 `ceq
   $1
   =
   $2
   if $3
-  $4 .',
+  $4 .',dnl
 `crl
   $1
   =>
@@ -81,9 +81,8 @@ ifdef(`MODELCHECK',dnl
 *** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***
 
-ifdef(`MODELCHECK',`load model-checker')
-
-*** Data types are in their own module.
+ifdef(`MODELCHECK', `load model-checker .
+')dnl
 load creol-datatypes .
 
 
@@ -214,7 +213,7 @@ fmod CREOL-STM-LIST is
 
 
   *** Multiset of Processes
-  sorts MProc .
+  sort MProc .
   subsort Process < MProc .
   op noProc : -> MProc [ctor] .
   op _++_ : MProc MProc -> MProc
@@ -229,8 +228,8 @@ endfm
 fmod CREOL-CLASS is
   protecting CREOL-STM-LIST .
 
-  sort Inh InhList .
-  subsorts Inh < InhList .
+  sorts Inh InhList .
+  subsort Inh < InhList .
 
   op  _<_> : Cid  ExprList -> Inh [ctor prec 15] . *** initialised superclass
   op noInh : -> InhList [ctor] .
@@ -272,7 +271,7 @@ fmod CREOL-CLASS is
       Ocnt: 0 > .
 
   --- fetches pair (code, vars) to bind call to process.
-  op get : String MMtd Oid Label ExprList -> Process .
+  op get : String MMtd Oid Label DataList -> Process .
   var Lab : Label .
   eq get(Q, noMtd, O, Lab, EL) = noProc .
   eq get(Q, MM * < Q : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, EL) =
@@ -304,9 +303,8 @@ fmod CREOL-COMMUNICATION is
   sort Body .
 
   *** INVOCATION and REPLY
-  op invoc(_,_,_,_) : *** Nat Oid 
-    Oid Label Mid DataList -> Body [ctor `format' (! o o o o o o o o o o)] .  
-  op comp(_,_) : Label DataList -> Body [ctor `format' (! o o o o o o)] .  
+  op invoc : Oid Label Mid DataList -> Body [ctor `format'(! o)] .  
+  op comp : Label DataList -> Body [ctor `format' (! o)] .  
 
   --- Messages.  Messages have at least a receiver.
 
@@ -318,12 +316,12 @@ fmod CREOL-COMMUNICATION is
   --- Method binding messages.
   --- Bind method request
   --- Given: caller callee method params (list of classes to look in)
-  op bindMtd : Oid Oid Label String ExprList InhList -> Msg [ctor] .
+  op bindMtd : Oid Oid Label String DataList InhList -> Msg [ctor `format'(!r d)] .
 
   --- Successfully bound method body. 
   --- Consider the call O.Q(I). bindMtd(O,Q,I,C S) tries to find Q in
   --- class C or superclasses, then in S. boundMtd(O,Mt) is the result.
-  op boundMtd(_,_) : Oid Process -> Msg [ctor `format' (!r r o o o !r on)] .
+  op boundMtd : Oid Process -> Msg [ctor `format'(!r d)] .
 
   --- Error and warning messages are intended to stop the machine.
   --- For now, nothing is emitting these.
@@ -335,13 +333,6 @@ fmod CREOL-COMMUNICATION is
   subsort Body < MMsg .
   op noMsg : -> MMsg [ctor] .
   op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
-
-  --- Size of the bag.
-  op size : MMsg -> Nat .
-  var M : Body .
-  var MB : MMsg .
-  eq size(MB + M) = 1 + size(MB) .
-  eq size(noMsg) = 0 .
 
   --- Multiset of labels for deallocation.
   sort Labels .
@@ -390,11 +381,12 @@ ifdef(`MODELCHECK',dnl
 
   *** System initialisation
   var C : Cid .
-  var E : ExprList .
-  op main : Cid ExprList -> Configuration .
-  eq main(C,E) = < ob("main") : "" | Att: noSubst, 
-                 Pr: ("var" |-> null, ("var" ::= new C(E))), PrQ: noProc, Lcnt: 0 > 
-               < ob("main") : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
+  var DL : DataList .
+  op main : Cid DataList -> Configuration .
+  eq main(C,DL) =
+    < ob("main") : "" | Att: noSubst, 
+      Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc, Lcnt: 0 > 
+    < ob("main") : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
 
 endfm
 
@@ -890,20 +882,28 @@ crl
 *** METHOD CALLS ***
 
 *** receive invocation message ***
-STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >
-  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM + invoc(O'`,' Lab`,' Q`,' DL) >
-,
-< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >
+STEP(< O : Qu | Size: Sz`,' Dealloc: LS`,'
+       Ev: MM + invoc(O'`,' Lab`,' Q`,' DL) >
+  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >,
   < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >
-	 bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
+  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >
+    bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
 `[label receive-call-req]')
+
+
+STEP(< O : Qu | Size: Sz`,' Dealloc: LS`,'
+       Ev: MM + invoc(O'`,' Lab`,' Q @ C`,' DL) >,
+  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >
+  bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
+`[label receive-static-call-req]')
 
 
 *** Method binding with multiple inheritance
 
+ifdef(`NOTHING',
 *** If we do not find a run method we provide a default method.
 eq
-  bindMtd(O, O', Lab, "run", EL, noInh)
+  bindMtd(O, O', Lab, "run", DL, noInh)
   = 
   boundMtd(O,(("caller" |-> O', ".label" |-> Lab), return(emp)))
   .
@@ -914,25 +914,19 @@ eq
   = 
   boundMtd(O,(("caller" |-> O', ".label" |-> Lab), return(emp)))
   .
-
+)dnl
 
 eq
-  bindMtd(O, O', Lab, M, EL, (C < EL' >) `##' I')
+  bindMtd(O, O', Lab, M, DL, (C < EL >) `##' I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
-  if get(M, MS, O', Lab, EL) == noProc then
-    bindMtd(O, O', Lab, M, EL, I `##' I')
+  if get(M, MS, O', Lab, DL) == noProc then
+    bindMtd(O, O', Lab, M, DL, I `##' I')
   else
-    boundMtd(O,get(M, MS, O', Lab, EL))
+    boundMtd(O,get(M, MS, O', Lab, DL))
   fi
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   .
-
-STEP(< O : Qu | Size: Sz`,' Dealloc: LS`,'
-                  Ev: MM + invoc(O'`,' Lab`,' Q @ C`,' DL) >,
-< O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >
-    bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
-`[label receive-call-req]')
 
 eq
   boundMtd(O, P')
@@ -957,16 +951,15 @@ ifdef(`MODELCHECK',
     therefore check whether there is room for the message in the queue,
     before sending.
   )***
-  eq
+eq
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: F >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >' CLOCK
   =
   `< O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Lcnt: F >
   CLOCK
-  *** XXX: QUEUE
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM +
     invoc(O, label(O, O, Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T)) >'
-  *** if size(MM) < Sz
+dnl  if Sz > 0
 ,dnl
 `rl
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N >'
@@ -1048,8 +1041,8 @@ eq
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
   = 
   < O : C |  Att: S,
-    Pr: ((ifdef(`MODELCHECKER', `A |-> noLabel, L', L)),
-         (AL assign DL); SL), PrQ: W, Lcnt: F > 
+    Pr: ((ifdef(`MODELCHECKER', `A |-> null, L', L)),
+         (AL assign DL); SL), PrQ: W, Lcnt: F >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label receive-reply]
   .
@@ -1065,9 +1058,12 @@ eq
 *** Free a label.  Make sure that the use of labels is linear.
 STEP(`< O : C | Att: S, Pr: ((A |-> Lab, L), free(A) ; SL), PrQ: W, Lcnt: N >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
-  `< O : C | Att: S, Pr: ((A |-> ifdef(`MODELCHECKER', null, Lab), L), SL),
-              PrQ: W, Lcnt: N > 
-  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: MM >',
+  `< O : C | Att: S, Pr: ((A |-> null, L), SL), PrQ: W, Lcnt: N >
+  if Lab =/= null then
+    < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: MM >
+  else
+    < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  fi',
   `[label free]')
 
 *** Deallocate
