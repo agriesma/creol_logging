@@ -28,6 +28,8 @@ open Expression
 open Statement
 open VarDecl
 
+let dependencies = "def-vars,life-vars"
+
 let log l = Messages.message (l + 1)
 
 (* This function inserts bury statements for all variables at the
@@ -83,6 +85,8 @@ let optimise_in_statement meth stmt =
   in
   let rec work lv =
     function
+      | Free (n, l) ->
+	  Sequence(n, Free(n, l), Bury(n, l))
       | If (n, c, s1, s2) ->
 	  let s1' = work lv s1
 	  and s2' = work lv s2 in

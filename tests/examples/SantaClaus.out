@@ -76,8 +76,8 @@ result Configuration:
     "harnessedReindeers" ::= "|-"("harnessedReindeers" # "head"(
     "waitReindeers")) ; "waitReindeers" ::= "tail"("waitReindeers") ; await
     "&&"("&&"("&&"("&&"("t1" ?? # "t2" ??) # "t3" ??) # "t4" ??) # "t5" ??) ;
-    free("t5", "t4", "t3", "t2", "t1") ; "label:0" ! "head"(
-    "harnessedReindeers") . "unharness"(emp) ; free("label:0") ;
+    free("t5") ; free("t4") ; free("t3") ; free("t2") ; free("t1") ; "label:0"
+    ! "head"("harnessedReindeers") . "unharness"(emp) ; free("label:0") ;
     "harnessedReindeers" ::= "tail"("harnessedReindeers") ; "label:1" ! "head"(
     "harnessedReindeers") . "unharness"(emp) ; free("label:1") ;
     "harnessedReindeers" ::= "tail"("harnessedReindeers") ; return(emp) > *
@@ -105,12 +105,12 @@ result Configuration:
     "head"("waitElves")) ; "waitElves" ::= "tail"("waitElves") ; "t3" ! "head"(
     "waitElves") . "showIn"(emp) ; "inofficeElves" ::= "|-"("inofficeElves" #
     "head"("waitElves")) ; "waitElves" ::= "tail"("waitElves") ; await "&&"(
-    "&&"("t1" ?? # "t2" ??) # "t3" ??) ; free("t3", "t2", "t1") ; "t1" !
-    "head"("inofficeElves") . "showOut"(emp) ; "inofficeElves" ::= "tail"(
-    "inofficeElves") ; "t2" ! "head"("inofficeElves") . "showOut"(emp) ;
+    "&&"("t1" ?? # "t2" ??) # "t3" ??) ; free("t3") ; free("t2") ; free("t1") ;
+    "t1" ! "head"("inofficeElves") . "showOut"(emp) ; "inofficeElves" ::=
+    "tail"("inofficeElves") ; "t2" ! "head"("inofficeElves") . "showOut"(emp) ;
     "inofficeElves" ::= "tail"("inofficeElves") ; "t3" ! "head"(
     "inofficeElves") . "showOut"(emp) ; "inofficeElves" ::= "tail"(
     "inofficeElves") ; await "&&"("&&"("t1" ?? # "t2" ??) # "t3" ??) ; free(
-    "t3", "t2", "t1") ; return(emp) >,
+    "t3") ; free("t2") ; free("t1") ; return(emp) >,
   Ocnt: 0 >
 Bye.

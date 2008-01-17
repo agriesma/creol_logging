@@ -151,12 +151,12 @@ fmod CREOL-STATEMENT is
   op _::=_ : VidList ExprList -> Stm [ctor prec 35] .
   op _::= new_(_) : Vid Cid ExprList -> Stm [ctor prec 35 `format' (d b d o d d d d)] .
   op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
-  op _?(_)  : Vid VidList -> Stm [ctor prec 39] .
-  op _?(_)  : Label VidList -> Stm [ctor prec 39] .
+  op _?(_)  : Vid VidList -> Stm [ctor prec 39 `format' (d c o d d d)] .
+  op _?(_)  : Label VidList -> Stm [ctor ditto] .
   op await_ : Expr -> SuspStm [ctor] .
   op posit_ : Expr -> SuspStm [ctor] .
   op return : ExprList -> Stm [ctor `format' (c o)] .
-  op free : VidList -> Stm [ctor `format' (c o)] .
+  op free : Vid -> Stm [ctor `format' (c o)] .
   op cont : Label -> Stm [ctor `format' (c o)] .
   op tailcall_(_) : Mid ExprList -> Stm [ctor `format' (c o c o c o)] .
   op accept : Label -> Stm [ctor `format' (c o)] .
@@ -166,7 +166,7 @@ fmod CREOL-STATEMENT is
   *** For the model checker the following will be evaluated as an
   *** equation and the old rule is not confluent.
 
-  op _assign_ : VidList DataList -> Stm [ctor `format' (d c o d)] .
+  op assign : VidList DataList -> Stm [ctor `format' (c o)] .
 
 endfm
 
@@ -198,11 +198,11 @@ fmod CREOL-STM-LIST is
   eq noStm MERGER SL = SL .
   eq SL MERGER noStm = SL .
 
-  *** Optimize assignments.  This way we save reducing a skip.  Also note
-  *** that the empty assignment is /not/ programmer syntax, it is inserted
-  *** during run-time.
-  eq (noVid assign emp) = noStm .
+  --- Optimize assignments.  This way we save reducing a skip.  Also note
+  --- that the empty assignment is /not/ programmer syntax, it is inserted
+  --- during run-time.
   eq (noVid ::= emp) = noStm .
+  eq assign(noVid, emp) = noStm .
 
   sort Process .
   op idle : -> Process [`format' (!b o)] .  
@@ -404,7 +404,6 @@ fmod `CREOL-EVAL' is
   var EL : ExprList .
   var NeEL : NeExprList .
   var DL : DataList .
-  var NeDL : NeDataList .
   var ES : ExprSet .
   var NeES : NeExprSet .
   var DS : DataSet .
@@ -544,13 +543,10 @@ mod CREOL-SIMULATOR is
   vars A A' : Vid .
   var a : String .
   var AL : VidList .
-  var NeAL : NeVidList .
   var D : Data .
   var DL : DataList .
-  var NeDL : NeDataList .
   vars E E' : Expr .
   vars EL EL' : ExprList .
-  vars NeEL NeEL' : NeExprList .
   var ST : Stm .
   var SuS : SuspStm .
   vars SL SL' SL'' : StmList .
@@ -586,49 +582,35 @@ ifdef(`MODELCHECK',dnl
  eq caller(label(O, N)) = O .
 )dnl
 
-*** Evaluate all arguments.
+--- Execute an assignment.  First, all expressions on the left hand side
+--- of the assignment are evaluated and the statement is rewritten to
+--- an assign form.
 STEP(dnl
 `< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
 	    PrQ: W, Lcnt: N >' CLOCK,
-`< O : C | Att: S, Pr: (L,((AL assign EVALLIST(EL, (S # L), T)); SL)), 
+`< O : C | Att: S, Pr: (L,(assign(AL, EVALLIST(EL, (S # L), T)) ; SL)), 
 	    PrQ: W, Lcnt: N >' CLOCK,
 `[label assign]')
 
-*** XXX: This equation is currently broken (matches any class, etc.)
-*** The correct implementation depends on the type inference.
-*** But we know that if we refer to A statically, then it should be
-*** an attribute.
 eq
-  < O : C | Att: S, Pr: (L,( ((a @@ C'), AL assign D # DL) ; SL)),
+  < O : C | Att: S, Pr: (L, ( assign(((a @@ C'), AL), D # DL) ; SL)),
     PrQ: W, Lcnt: N >
   =
-    < O : C | Att: insert(a, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
+    < O : C | Att: insert(a, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
       Lcnt: N > 
   [label do-static-assign] .
 
-
-*** Assign the value.
-***
-*** Testing for a of sort string is necessary for confluence, because
-*** 'A == a @ C' is neither in S nor in L.
-***
-*** The "buggy" version seems to do the right thing and is slightly faster.
-
 eq
-  < O : C | Att: S, Pr: (L,( (a , AL assign D # DL) ; SL)), PrQ: W,
+  < O : C | Att: S, Pr: (L,( assign( (a , AL), D # DL) ; SL)), PrQ: W,
     Lcnt: N >
   =
-ifdef(`DEVIRT', `dnl
-  < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
-    Lcnt: N >'
-, `dnl
   if dom(a, L) then
-    < O : C | Att: S, Pr: (insert(a, D, L), (AL assign DL) ; SL), PrQ: W,
+    < O : C | Att: S, Pr: (insert(a, D, L), assign(AL, DL) ; SL), PrQ: W,
       Lcnt: N > 
   else
-    < O : C | Att: insert(a, D, S), Pr: (L, (AL assign DL) ; SL), PrQ: W,
-      Lcnt: N > 
-  fi')
+    < O : C | Att: insert(a, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
+      Lcnt: N >
+  fi
   [label do-assign] .
 
 
@@ -663,74 +645,6 @@ rl
             PrQ: W, Lcnt: N >
   [label while]
   .
-
-*** OBJECT CREATION
-***
-*** Set up an init process, which is essentially init(_;); !run()
-***
-*** As an additional note:  it is smarter to invoke the run method
-*** asynchronously from the initialisation process, to make sure that
-*** the initialisation process will terminate instead of waiting for the
-*** return of run in ill-behaved programs.  We cannot use a tail-call
-*** here, because there is no caller the initialisation will return to.
-STEP(dnl
-< O : C | Att: S`,'Pr: (L`,' (A ::= new C' (EL)); SL)`,'PrQ: W`,' Lcnt: N > 
-  < C' : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: F >
-  CLOCK,
-< O : C | Att: S`,' Pr: (L`,' (A assign newId(C'`,' F)); SL)`,' PrQ: W`,' Lcnt: N >
-  < C' : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: (F + 1) >
-  < newId(C'`,'F) : C' | Att: S`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 1 >
-  < newId(C'`,'F) : Qu | Size: 10`,' Dealloc: noDealloc`,' Ev: noMsg > *** XXX: Currently hard-coded.
-  findAttr(newId(C'`,'F)`,' I`,' S'`,' 
-    (AL assign EVALLIST(EL, compose(S`,'  L), T))`,'
-    ((noSubst`,' (".anon" ! "init" (emp)) ; (".anon" ?(noVid)) ;
-    (".anon" ! "run" (emp)) ;
-    ifdef(`MODELCHECK', (".anon" ?(noVid)), free(".anon")))))
-  CLOCK ,
-`[label new-object]')
-
-
-*** ATTRIBUTE inheritance with multiple inheritance
-*** CMC assumes that all attributes names are (globally) different.
-*** For the purpose of the CMC the class parameters are treated as
-*** attributes!
-
-op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor `format' (n d)] .
-op foundAttr : Oid Subst  StmList Process -> Msg [ctor `format' (n d)] .
-
-eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
-
-*** Good thing we cannot use class names as variables in (at least in
-*** the source language.  The name of the class will be used as the
-*** name of the variable used to call the init routine.
-***
-*** The initialisation of the attributes is ordered from class to
-*** super-class, because we want to pass on the class parameters to
-*** the super-class.  The initialisation, i.e., calling the init method,
-*** is done from the super classes to the sub-classes, making sure that
-*** the state of the object at the beginning of the init call is in a
-*** consistent state.
-eq
-  findAttr(O,(C < EL > `##' I), S, SL, (L', SL')) 
-  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
-  =
-  findAttr(O, I ## I', compose(S', S),
-           SL ; (AL ::= EL), 
-           (L', (".init" ! "init" @ C(emp)) ; (".init" ?( noVid)) ; SL'))
-  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
-  [label find-attr]
-  .
-
-eq
-  foundAttr(O, S', SL, (L', SL'))
-  < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
-  =
-  < O : C | Att: ("this" |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Lcnt: N >
-  .
-
-
-
-
 
 *** Non-deterministic choice ***
 *** Choice is comm, so [nondet] considers both NeSL and NeSL'.
@@ -775,18 +689,19 @@ eq
   [label merge-aux]
   .
 
+--- OPTIMISATION: Reduce the value of a label in a process to avoid
+--- constant re-evaluation
+eq < O : C | Att: S, Pr: (L, A ?(AL); SL), PrQ: W, Lcnt: F > =
+  < O : C | Att: S, Pr: (L, (L[A])?(AL); SL), PrQ: W, Lcnt: F > .
 
 
 *** local call
-ceq
-  < O : C | Att: S, Pr: (L, ((Lab ?(AL)); SL)),
-            PrQ: (L', SL') ++ W, Lcnt: F >
-  = 
-  < O : C | Att: S, Pr: (L', (SL' ; cont(Lab))),
-            PrQ: (L, ((Lab ?(AL)); SL)) ++ W, Lcnt: F >
-  if L'[".label"] == Lab
-  [label local-call]
-  .
+CSTEP(dnl
+< O : C | Att: S`,' Pr: (L`,' Lab ?(AL); SL)`,' PrQ: (L'`,' SL') ++ W`,' Lcnt: F >,
+< O : C | Att: S`,' Pr: (L'`,' SL' ; cont(Lab))`,'
+  PrQ: (L`,' Lab ?(AL); SL) ++ W`,' Lcnt: F >,
+L'[".label"] == Lab,
+`[label local-call]')
 
 
 *** Suspension ***
@@ -921,12 +836,11 @@ eq
   .
 
 rl
-  < O : C | Att: S, Pr: (L, (cont(Lab); SL)),
-	    PrQ: (L',((Lab)?(AL); SL')) ++ W, Lcnt: F >
+  < O : C | Att: S, Pr: (L, cont(Lab)),
+	    PrQ: (L', (Lab ?(AL); SL')) ++ W, Lcnt: F >
   =>
-  < O : C | Att: S, Pr: (L', ((Lab)?(AL); SL')), PrQ: W, Lcnt: F >
-  [label continue]
-  .
+  < O : C | Att: S, Pr: (L', (Lab ?(AL); SL')), PrQ: W, Lcnt: F >
+  [label continue] .
 
 
 ifdef(`MODELCHECK',
@@ -1006,62 +920,106 @@ STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >' CLOCK,
   comp(L[".label"], EVALLIST(EL, (S # L), T)) from O to caller(L[".label"])',
 `[label return]')
 
-*** Optimization: reduce label to value only once
-eq
-  < O : C |  Att: S, Pr: (L, (A ?(AL)); SL), PrQ: W, Lcnt: N > 
-  =
-  < O : C |  Att: S, Pr: (L, ((L[A]) ?(AL)); SL), PrQ: W, Lcnt: N > .
 
-
-*** Model checker behaves differently from interpreter in that receiving
-*** and freeing of label variables will set the variable containing this
-*** name to null.  This will save us some states.  In the model checker
-*** it is /guaranteed/ that exactly one variable exists, which holds the
-*** label value,
+--- Receive reply
 eq
-  < O : C |  Att: S,
-    Pr: ((ifdef(`MODELCHECK', `A |-> Lab, L', L)),
-         (Lab ? (AL)); SL), PrQ: W, Lcnt: F > 
+  < O : C |  Att: S, Pr: (L, (Lab ? (AL)) ; SL), PrQ: W, Lcnt: F > 
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
   = 
-  < O : C |  Att: S,
-    Pr: ((ifdef(`MODELCHECK', `A |-> null, L', L)),
-         (AL assign DL); SL), PrQ: W, Lcnt: F >
+  < O : C |  Att: S, Pr: (L, assign(AL, DL) ; SL), PrQ: W, Lcnt: F >
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
-  [label receive-reply]
-  .
+  [label receive-reply] .
 
 *** Transport rule: include new message in queue
 eq
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > (MsgBody from O' to O)
   =
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + MsgBody >
-  [label transport]
-  .
+  [label transport] .
 
-*** Free a label.  Make sure that the use of labels is linear.
+--- Free a label.  Make sure that the use of labels is linear.
 
-STEP(< O : C | Att: S`,' Pr: ((L`,' A |-> Lab)`,' free(A `#' NeAL) ; SL)`,'
-       PrQ: W`,' Lcnt: N >
+STEP(< O : C | Att: S`,' Pr: (L`,' free(A) ; SL)`,' PrQ: W`,' Lcnt: N >
   < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >,
-  < O : C | Att: S`,' Pr: ((L, A |-> null)`,' free(NeAL); SL)`,' 
-     PrQ: W`,'  Lcnt: N >
-  < O : Qu | Size: Sz`,'  Dealloc: (Lab ^ LS)`,'  Ev: MM >,
-  `[label free]')
-
-STEP(< O : C | Att: S`,' Pr: ((L `,' A |-> Lab)`,' free(A) ; SL)`,'
-       PrQ: W`,' Lcnt: N >
-  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >,
-  < O : C | Att: S`,' Pr: ((L `,' A |-> null)`,' SL)`,' PrQ: W`,'  Lcnt: N >
-  < O : Qu | Size: Sz`,'  Dealloc: (Lab ^ LS)`,'  Ev: MM >,
+  < O : C | Att: S`,' Pr: (L`,' SL)`,' PrQ: W`,'  Lcnt: N >
+  < O : Qu | Size: Sz`,'  Dealloc: (L[A] ^ LS)`,'  Ev: MM >,
   `[label free]')
 
 *** Deallocate
 eq
-  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: comp(Lab , DL) + MM >
+  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: comp(Lab, DL) + MM >
   =
   < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
   [label deallocate] .
+
+
+
+--- OBJECT CREATION
+---
+--- Set up an init process, which is essentially init(;); !run()
+---
+--- It is smarter to invoke the run method asynchronously from the
+--- initialisation process, to make sure that
+--- the initialisation process will terminate instead of waiting for the
+--- return of run in ill-behaved programs.  We cannot use a tail-call
+--- here, because there is no caller the initialisation will return to.
+STEP(dnl
+< O : C | Att: S`,'Pr: (L`,' (A ::= new C' (EL)); SL)`,' PrQ: W`,' Lcnt: N > 
+  < C' : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: F >
+  CLOCK`'dnl
+,dnl
+< O : C | Att: S`,' Pr: (L`,' assign(A`,' newId(C'`,' F)); SL)`,' PrQ: W`,' Lcnt: N >
+  < C' : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: (F + 1) >
+  < newId(C'`,'F) : C' | Att: S`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 1 >
+  < newId(C'`,'F) : Qu | Size: 10`,' Dealloc: noDealloc`,' Ev: noMsg > *** XXX: Currently hard-coded.
+  findAttr(newId(C'`,'F)`,' I`,' S'`,' 
+    assign(AL`,' EVALLIST(EL, compose(S`,'  L), T))`,'
+    ((noSubst`,' (".anon" ! "init" (emp)) ; (".anon" ?(noVid)) ;
+    (".anon" ! "run" (emp)) ; free(".anon")))) CLOCK,dnl
+`[label new-object]')
+
+
+--- ATTRIBUTE inheritance with multiple inheritance
+--- CMC assumes that all attributes names are (globally) different.
+--- For the purpose of the CMC the class parameters are treated as
+--- attributes!
+
+op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor `format' (n d)] .
+op foundAttr : Oid Subst  StmList Process -> Msg [ctor `format' (n d)] .
+
+eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
+
+--- Good thing we cannot use class names as variables in (at least in
+--- the source language.  The name of the class will be used as the
+--- name of the variable used to call the init routine.
+---
+--- The initialisation of the attributes is ordered from class to
+--- super-class, because we want to pass on the class parameters to
+--- the super-class.  The initialisation, i.e., calling the init method,
+--- is done from the super classes to the sub-classes, making sure that
+--- the state of the object at the beginning of the init call is in a
+--- consistent state.
+eq
+  findAttr(O,(C < EL > `##' I), S, SL, (L', SL')) 
+  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
+  =
+  findAttr(O, I ## I', compose(S', S),
+           SL ; (AL ::= EL), 
+           (L', (".init" ! "init" @ C(emp)) ; (".init" ?(noVid)) ; SL'))
+  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
+  [label find-attr]
+  .
+
+eq
+  foundAttr(O, S', SL, (L', SL'))
+  < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
+  =
+  < O : C | Att: ("this" |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Lcnt: N >
+  .
+
+
+
+
 
 ifdef(`TIME',dnl
 *** The following formalises the tick rule for real-time Creol.  This rule
@@ -1069,8 +1027,8 @@ ifdef(`TIME',dnl
 *** the global state at the new time.
 
 op posit(_,_,_) : Subst StmList Float -> Bool .
-eq posit((S # L), posit E ; SL, T) = EVAL(E,(S # L), T) asBool .
-eq posit((S # L), SL, T) = true [otherwise] .
+eq posit((S `#' L), posit E ; SL, T) = EVAL(E,(S `#' L), T) asBool .
+eq posit((S `#' L), SL, T) = true [otherwise] .
 
 op posit(_,_,_) : Subst MProc Float -> Bool .
 eq posit(S, noProc, T) = true .

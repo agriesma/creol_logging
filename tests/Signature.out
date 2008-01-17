@@ -164,23 +164,14 @@ result GroundTerm: 'return['_#_['"a".Char,'null.Data,'"c".Char]]
 reduce in CREOL-STATEMENT : downTerm(upTerm(return("a" # null # "c")), skip) .
 result Stm: return("a" # null # "c")
 ==========================================
-reduce in CREOL-STATEMENT : free(noVid) .
-result Stm: free(noVid)
+reduce in CREOL-STATEMENT : free("a") .
+result Stm: free("a")
 ==========================================
-reduce in CREOL-STATEMENT : upTerm(free(noVid)) .
-result GroundTerm: 'free['noVid.VidList]
+reduce in CREOL-STATEMENT : upTerm(free("a")) .
+result GroundTerm: 'free['"a".Char]
 ==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(free(noVid)), skip) .
-result Stm: free(noVid)
-==========================================
-reduce in CREOL-STATEMENT : free("a", "b", "c") .
-result Stm: free("a", "b", "c")
-==========================================
-reduce in CREOL-STATEMENT : upTerm(free("a", "b", "c")) .
-result GroundTerm: 'free['_`,_['"a".Char,'"b".Char,'"c".Char]]
-==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(free("a", "b", "c")), skip) .
-result Stm: free("a", "b", "c")
+reduce in CREOL-STATEMENT : downTerm(upTerm(free("a")), skip) .
+result Stm: free("a")
 ==========================================
 reduce in CREOL-STATEMENT : tailcall "m"(emp) .
 result Stm: tailcall "m"(emp)

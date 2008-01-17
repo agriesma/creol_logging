@@ -112,7 +112,7 @@ let passes = [
       elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "bury" ,
     { help = "Insert statements to reset dead variables" ;
-      dependencies = "def-vars,life-vars" ;
+      dependencies = TreeBury.dependencies ;
       pass = TreeBury.optimize ;
       elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "tailcall" ,

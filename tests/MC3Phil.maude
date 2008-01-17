@@ -5,9 +5,9 @@ op init : -> Configuration [ctor] .
 eq init =
 < "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "label:0" ! "butler" . "getNeighbor" ( emp ) ; ( "label:0" ? ( "neighbor" ) )  ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null, Code: ( ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ||| ( "label:1" ! "this" . "eat" (emp ) )  ; free( "label:1" ) ) ; return ( emp ) > *
-  < "eat" : Mtdname | Param: noVid, Latt: "label:2" |-> null , "label:1" |-> null , "label:0" |-> null, Code: ( await "hungry" ) ; "label:0" ! "neighbor" . "borrowStick" ( emp ) ; ( await ( "label:0" ?? ) ) ; ( "label:0" ? ( noVid ) )  ; ( await "chopstick" ) ; "hungry" ::= bool(false) ; "label:1" ! "neighbor" . "returnStick" ( emp ) ; free( "label:1" ) ; ( "label:2" ! "this" . "eat" (emp ) )  ; free( "label:2" ) ; return ( emp ) > *
-  < "think" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: ( await "~" ( "hungry" ) ) ; release ; "hungry" ::= bool(true) ; ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null, Code: ( ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; "label:0" ::= null ||| ( "label:1" ! "this" . "eat" (emp ) )  ; free( "label:1" ) ; "label:1" ::= null ) ; return ( emp ) > *
+  < "eat" : Mtdname | Param: noVid, Latt: "label:2" |-> null , "label:1" |-> null , "label:0" |-> null, Code: ( await "hungry" ) ; "label:0" ! "neighbor" . "borrowStick" ( emp ) ; ( await ( "label:0" ?? ) ) ; ( "label:0" ? ( noVid ) )  ; ( await "chopstick" ) ; "hungry" ::= bool(false) ; "label:1" ! "neighbor" . "returnStick" ( emp ) ; free( "label:1" ) ; "label:1" ::= null ; ( "label:2" ! "this" . "eat" (emp ) )  ; free( "label:2" ) ; "label:2" ::= null ; return ( emp ) > *
+  < "think" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: ( await "~" ( "hungry" ) ) ; release ; "hungry" ::= bool(true) ; ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; "label:0" ::= null ; return ( emp ) > *
   < "borrowStick" : Mtdname | Param: noVid, Latt: noSubst, Code: ( await "chopstick" ) ; "chopstick" ::= bool(false) ; return ( emp ) > *
   < "returnStick" : Mtdname | Param: noVid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; return ( emp ) >, Ocnt: 0 >
 

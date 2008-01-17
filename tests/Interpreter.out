@@ -19,7 +19,7 @@ search in TEST-TAILCALL : init =>+ conf:Configuration
   Pr: L:Subst, accept(tag(label(ob("Tailcall0"),2))) ; SL:StmList,
   PrQ: W:MProc, Lcnt: N:Nat > .
 
-Solution 1 (state 13)
+Solution 1 (state 14)
 conf:Configuration --> 
 < ob("Tailcall0") : Qu | Size: 10, Dealloc: label(ob("Tailcall0"),2), Ev: noMsg
     >

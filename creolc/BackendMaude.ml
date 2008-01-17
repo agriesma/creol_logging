@@ -215,12 +215,16 @@ let emit options out_channel input =
 	    output_string out_channel " ? ( " ;
 	    of_lhs_list o;
 	    output_string out_channel " ) ) "
-	| Statement.Free (_, l) ->
+        | Statement.Free (_, [l]) ->
 	    output_string out_channel "free( " ;
-	    of_lhs_list l ;
-	    output_string out_channel " )"
+	    of_lhs l ;
+            output_string out_channel " )"
+        | Statement.Free (n, l::ls) ->
+            print prec (Statement.Sequence (n, Statement.Free(n, [l]),
+              Statement.Free(n, ls)))
 	| Statement.Bury _ as s ->
-	      print prec (Statement.assignment_of_bury s)
+	    print prec (Statement.assignment_of_bury s)
+        | Statement.Free (_, []) -> assert false
 	| Statement.LocalSyncCall _ -> assert false
 	| Statement.AwaitLocalSyncCall _ -> assert false
 	| Statement.LocalAsyncCall (_, None, _, _, _, _, _) -> assert false
