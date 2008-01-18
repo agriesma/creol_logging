@@ -109,14 +109,15 @@ rule token = parse
     | "|" { BAR }
     | '}' { RBRACE }
     | '~' { TILDE }
-    | "assert" { ASSERT }
     | "as" { AS }
+    | "assert" { ASSERT }
     | "await" { AWAIT }
     | "begin" { BEGIN }
     | "by" { reserved lexbuf }
     | "caller" { CALLER }
     | "case" { reserved lexbuf }
     | "class" { CLASS }
+    | "const" { reserved lexbuf }
     | "contracts" { CONTRACTS }
     | "datatype" { DATATYPE }
     | "do" { DO }
@@ -127,15 +128,16 @@ rule token = parse
     | "exists" { EXISTS }
     | "extern" { EXTERN }
     | "false" { BOOL(false) }
+    | "for" { reserved lexbuf }
     | "forall" { FORALL }
     | "fun" { FUN }
     | "history" { HISTORY }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
+    | "in" { IN }
     | "inherits" { INHERITS }
     | "interface" { INTERFACE }
     | "inv" { INV }
-    | "in" { IN }
     | "new" { NEW }
     | "nil" { NIL }
     | "now" { NOW }
@@ -144,16 +146,21 @@ rule token = parse
     | "op" { OP }
     | "out" { OUT }
     | "posit" { POSIT }
+    | "prove" { reserved lexbuf }
     | "raise" { reserved lexbuf }
     | "release" { RELEASE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }
+    | "signal" { reserved lexbuf }
     | "some" { SOME }
     | "then" { THEN }
     | "this" { THIS }
     | "true" { BOOL(true) }
     | "try" { reserved lexbuf }
     | "var" { VAR }
+    | "volatile" { reserved lexbuf }
+    | "when" { reserved lexbuf }
+    | "where" { reserved lexbuf }
     | "while" { WHILE }
     | "with" { WITH }
     | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
