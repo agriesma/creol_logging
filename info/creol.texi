@@ -13,6 +13,7 @@ semantics, yet.
 * Comments::                    Comments in Creol.
 * Types::                       Type specifications.
 * Literals and Expression::     The functional sub-language.
+* Assertions::                  The declarative assertion language.
 * Statements::                  The object-oriented sub-language.
 * Variable Declaration::        Declaring variables and attributes.
 * Method Declaration::          Declaring and defining behavior.
@@ -227,6 +228,42 @@ of a function and @var{e},@var{d},@dots{} refers to expressions
 representing the actual arguments.
 
 
+@node Assertions
+@section Assertion Language
+
+In this section we describe the assertion language that is supported
+by the compiler.
+
+The core of the assertion language is the use of a new variable
+@code{history} of type @code{List[Event]}, where event is a predefined
+type.
+
+Each expression of type boolean, as defined in the preceding section,
+@pxref{Literals and Expression}, is also an assertion.
+
+In addition, the following three expressions are accepted:
+
+@example
+(forall @var{v}: @var{T}: @var{expr})
+(exists @var{v}: @var{T}: @var{expr})
+(some @var{v}: @var{T}: @var{expr})
+@end example
+
+The first two expressions correspond to universal and existential
+quantification.  The last one corresponds to @emph{Hilbert's epsilon}:
+it chooses some value @var{v} that makes @var{expr} true.
+Technically, terms using quantifiers can be transformed into terms
+using some like this:
+@example
+(forall @var{v}: @var{T}: @var{expr}) = @var{expr}[v/(some @var{v}: @var{T}: ~ @var{expr})]
+(exists @var{v}: @var{T}: @var{expr}) = @var{expr}[v/(some @var{v}: @var{T}: @var{expr})]
+@end example
+
+For many specifications, however, it is more convenient to use the
+@code{some} expression, since it can be used as a value of type
+@var{T} directly.
+
+
 @node Statements
 @section Statements
 
@@ -367,6 +404,8 @@ on statements, i.e., it is not a statement terminator.
 
 @subsection Non-deterministic Merge
 @anchor{Merge Statement}
+
+THE NON-DETERMINISTIC MERGE STATEMENT IS CURRENTLY DISABLED.
 
 The statement @code{S1 ||| S2} will execute both @code{S1} and
 @code{S2} in a ``pseudo-interleaved'' manner.  It will check, whether
@@ -681,15 +720,20 @@ variable or method names in programs.
 
 @c 45678901 34567890123 56789012345 78901234567 90123456789 12345678901
 @example
-assert      await       begin       by          caller      case
-class       contracts   ctor        datatype    do          else
-end         ensures     exception   exists      false       for
-forall      fun         history     if          implements  inherits
-interface   inv         in          new         nil         not
-now         null        of          op          out         posit
-prove       raise       requires    skip        some        then
-this        to          true        try         var         when
+as          assert      await       begin       caller      class
+contracts   datatype    do          else        end         ensures
+exists      extern      false       forall      fun         history
+if          implements  in          inherits    interface   inv
+new         nil         now         null        of          op
+out         posit       prove       release     requires    skip
+some        then        this        true        var         while
 with
+@end example
+
+Currently reserved, but unused keywords are
+@example
+by          case        const       exception   for         prove
+raise       signal      try         volatile    when        where
 @end example
 
 The following symbols are used as operator symbols.  They are listed
@@ -700,7 +744,6 @@ than ones on the lines above.
 ,                               @r{left}
 |                               @r{left}
 in                              @r{left}
-as                              @r{left}
 <=>                             @r{left}
 =>                              @r{left}
 ^                               @r{left}

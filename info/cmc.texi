@@ -21,9 +21,6 @@ Options}) are minimal and distinguished by enabling or disabling
 certain transformations.  These transformations can be enabled or
 disabled on the command-line (@pxref{Pass Options}).
 
-The interpreters differ in the definition of some predicates, as
-indicated below.  XXX
-
 @menu
 * Datatypes::           Explanation of datatypes.
 * Configuration::       Data Structures describing configurations.
@@ -632,7 +629,7 @@ actual arguments to @code{"C"}'s constructor.
 
 Observe that the run-time system assumes that the class hierarchy is
 acyclic.  If this is not the case, object creation may enter an infinite
-loop.  @c See @xref{XXX} for details.
+loop.
 
 
 @node Method
@@ -828,27 +825,25 @@ equations.  The names given below can be used for tracing the rules
 using Maudes trace facility.
 
 @table @code
-@item assign
+@item assignnment
 These rules execute assignment statements of the form @code{AL assign
 DL}, where @code{AL} and @code{DL} are lists of attributes resp. lists
 of data values.  Two auxiluary equations will perform the actual
 assignment:  @code{do-static-assign} for assigning to attributes and
-@code{do-assign} for 
+@code{do-assign} for assigning to local variables or attributes if no
+local variable of the same name is in scope.
 
 @item skip
-This rule executes a skip statement.
+This rule executes a skip statement.  A skip statement does not change
+the state.
 
-@item if-th
+@item if-then-else
 This rule executes an if-then-else statement.
 
 @item while
 This rule executes a while statement.
 
-@item new-object
-This rule creates a new object, initialises it, and executes its
-run-method.
-
-@item nondet
+@item choice
 This rule executes a non-deterministic choice statetement.
 
 @item merge
@@ -857,67 +852,71 @@ This rule executes a merge (@code{S1 ||| S2}) statement by choosing an
 enabled branch and setting up a @code{S1 MERGER S2} statement, where
 @code{S1} is the statement to execute now.
 
-@item merge-aux
-This rule executes a @code{S1 MERGER S2} statement.
+@item merger
+This rule executes a @code{@var{S1} MERGER @var{S2}} statement.
+@code{MERGER} is a non-commutative version of merge.  It represents
+the case where the simulator has committed itself to the branch
+@var{S1}.  If the first statement of @var{S1} is enabled, it will be
+executed, otherwise, the simulator rewrites it to
+@code{@var{S1} ||| @var{S2}}, which allows the interpreter to with
+@var{S2} or to suspend the currently active process if neither
+@var{S1} nor @var{S2} are enabled.
 
-@item local-call
-This rule executes a local call.  More specifically, it moves control
-to the called process if the current process is blocking on the reply
-of a self-call.  This avoids a deadlock when a process calls itself.
-The actual return from a self-call is handled by rule @code{continue},
-@pxref{Continue}.
-
-@item local-call-in-merge
-This rule executes a local call within a @code{MERGER} statement.
+@item release
+Execute a release statement by suspending the current process.
 
 @item suspend
-Suspend a process.
+Suspend a process, if the current statement is not enabled.
 
-@item guard
-Execute an await statement if the guard is enabled.
+@item await
+Execute an await statement, if the guard is enabled.  If the guard is
+not enabled, the rule behaves like @code{suspend}@footnote{Duplicating
+the behaviour of suspend for the await statement is confluent.  It is,
+on the other hand, a useful optimisation.}.
 
 @item PrQ-ready
-Wake up a suspended process.
+Select the next enabled process for execution.
 
-@item tailcall
-Execute a @code{tailcall} statement.
-
-@item accept
-Execute a @code{accept} statement.
-
-@item receive-call-req
+@item receive-invoc
 If we receive an invocation message, start binding the method body.
 This rule ie used for virtual calls @code{m}.
 
-@item receive-static-call-req
+@item receive-static-invoc
 If we receive an invocation message, start binding the method body.
 This rule is used for static calls @code{m @ c}.
 
-@item receive-call-bound
-If a method is bound, enqueue it into the process queue.
+@item receive-comp
+This rule executes a reply statement @code{_?(_)} by receiving the
+corresponding completion message.
 
+@item local-reply
+This rule executes a reply statement to a local call.  It moves
+control to the called process if the current process is blocking on
+the reply of a self-call.  This avoids a deadlock when a process calls
+itself.  The actual return from a self-call is handled by rule
+@code{continue}, @pxref{Continue}.
 
 @item continue
 @anchor{Continue} Continue execution after a syncrhonous self-call has
 terminated.  It replaces the currently active process with its local
 caller.  Observe, that the completion message of the call has already
-been emitted.
+been emitted.  It will be received by the rule @code{receive-comp}.
 
-@item continue2
-@anchor{Continue2} This rule executes a @code{continue} statement in a
-@code{S1 MERGER S2} statement.
-
-@item local-async-reply
+@item local-async-call
 Execute a local asynchronous method call.
 
-@item local-async-qualified-req
+@item local-async-static-call
 Execute a local asynchronous method call with a class qualifier.
 
-@item return
-Emit a reply statement.
+@item remote-async-call
+Execute a remote asynchronous call.
 
-@item invoc-msg
-Move an invocation message into the queue.
+@item return
+Emit a reply statement.  Observe that the process may continue
+execution after this statement.
+
+@item transport
+Move a message into the queue.
 
 @item free
 Schedule the labels identified in the argument of the @code{free}
@@ -929,6 +928,16 @@ done to ensure linearity of the use of labels.
 If a label @var{l} has been deallocated by a free statement, and the
 completion message to the call with label @var{l} arrives, the
 completion message will be removed by this equation.
+
+@item tailcall
+Execute a @code{tailcall} statement.
+
+@item tailcall-accept
+Execute a @code{accept} statement.
+
+@item new-object
+This rule creates a new object, initialises it, and executes its
+run-method.
 @end table
 
 
@@ -939,6 +948,11 @@ For simulating timed Creol, the system defined two operators
 @code{State} are satisfied.
 
 @table @code
+@item posit
+Execute a posit statement.  In untimed simulations, this statement
+behaves like skip.  In the timed case, it behaves like skip if the
+guard is enabled.
+
 @item tick
 This rule is used to advance the clock.  It is enabled, if all posit
 constraints in the current state remain valid by advancing the value
@@ -949,7 +963,10 @@ of the global clock.
 @node Sort Hierarchy
 @section Sort Hierarchy
 
-XXX
+The image below summarises all sorts defined in the interpreter and
+its datatype hierarchy.
+
+@image{sorts,5in,,Figure of sort hierarchy}
 
 
 @node Using CMC
