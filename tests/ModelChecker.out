@@ -27,8 +27,8 @@ result Configuration:
 ==========================================
 rewrite [1] in TEST-TAILCALL : init .
 result Configuration: 
-< ob("Tailcall0") : Qu | Size: 10, Dealloc: label(ob("Tailcall0"), ob(
-    "Tailcall0"), "run", emp), Ev: noMsg >
+< ob("Tailcall0") : Qu | Size: 10, Dealloc: noDealloc, Ev: comp(label(ob(
+    "Tailcall0"), ob("Tailcall0"), "init", emp), emp) >
 
 < ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 
@@ -40,10 +40,10 @@ result Configuration:
 
 < ob("Tailcall0") : "Tailcall" | Att: "this" |-> ob("Tailcall0"), "x" |-> int(
     5),
-  Pr: idle,
-  PrQ: (".label" |-> label(ob("Tailcall0"), ob("Tailcall0"), "run", emp),
-    "caller" |-> ob("Tailcall0")), if "<"(int(0) # "x") th "x" ::= "-"("x" #
-    int(1)) ; tailcall "run"(emp) el return(emp) fi, Lcnt: 1 >
+  Pr: ".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), label(
+    ob("Tailcall0"), ob("Tailcall0"), "init", emp) ?(noVid) ; ".anon" ! "run"(
+    emp) ; free(".anon"),
+  PrQ: noProc, Lcnt: 1 >
 
 < ob("main") : "" | Att: noSubst,
   Pr: idle,
