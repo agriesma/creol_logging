@@ -84,26 +84,25 @@ let statement_note pos =
 %}
 
 %token EOF
+
+(* Keywords *)
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END
 %token INTERFACE DATATYPE
 %token WHILE VAR WITH OP IN OUT FUN EXTERN
 %token REQUIRES ENSURES INV  SOME FORALL EXISTS HISTORY
 %token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
-%token AS DO OF
-%token EQEQ COMMA SEMI COLON ASSIGN
-%token LBRACK RBRACK
-%token LPAREN RPAREN
-%token LBRACE RBRACE
+%token AS DO OF ASSERT PROVE
+
+(* Symbols *)
+%token EQEQ COMMA SEMI COLON BACKTICK ASSIGN
+%token LBRACK RBRACK LPAREN RPAREN LBRACE RBRACE
 %token HASH QUESTION BANG DOT AT
-%token SUBTYPE SUPERTYPE DLRARROW
-%token BACKTICK
-%token BOX DIAMOND MERGE
-%token PLUS MINUS
-%token TIMESTIMES TIMES PERCENT DIV EQ NE LT LE GT GE
-%token AMPAMP BAR BARBAR WEDGE VEE DARROW TILDE
-%token UNDERSCORE
-%token HAT BACKSLASH ASSERT PROVE
+%token SUBTYPE SUPERTYPE
+%token BOX MERGE PLUS MINUS TIMESTIMES TIMES PERCENT DIV
 %token PREPEND CONCAT APPEND
+%token EQ NE LT LE GT GE
+%token TILDE AMPAMP BAR BARBAR HAT WEDGE VEE DLRARROW DARROW
+%token BACKSLASH UNDERSCORE
 %token <string> CID ID STRING
 %token <int>  INT
 %token <bool> BOOL
@@ -533,14 +532,12 @@ expression:
 	{ FuncCall(expression_note $startpos, f, l) }
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (expression_note $startpos, c, t, f) }
-(*
-    | SOME v = vardecl_no_init COLON e = expression
+    | LPAREN SOME v = vardecl_no_init COLON e = expression RPAREN
 	{ Choose (expression_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
-    | FORALL v = vardecl_no_init COLON e = expression
+    | LPAREN FORALL v = vardecl_no_init COLON e = expression RPAREN
 	{ Forall (expression_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
-    | EXISTS v = vardecl_no_init COLON e = expression
+    | LPAREN EXISTS v = vardecl_no_init COLON e = expression RPAREN
 	{ Exists (expression_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
-*)
 
 %inline binop:
       AMPAMP { And }

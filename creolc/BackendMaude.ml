@@ -222,9 +222,9 @@ let emit options out_channel input =
         | Statement.Free (n, l::ls) ->
             print prec (Statement.Sequence (n, Statement.Free(n, [l]),
               Statement.Free(n, ls)))
+        | Statement.Free (_, []) -> assert false
 	| Statement.Bury _ as s ->
 	    print prec (Statement.assignment_of_bury s)
-        | Statement.Free (_, []) -> assert false
 	| Statement.LocalSyncCall _ -> assert false
 	| Statement.AwaitLocalSyncCall _ -> assert false
 	| Statement.LocalAsyncCall (_, None, _, _, _, _, _) -> assert false

@@ -82,7 +82,7 @@ rule token = parse
     | "<=>" { DLRARROW }
     | "<=" { LE }
     | "<:" { SUBTYPE }
-    | "<>" { DIAMOND }
+    | "<>" { reserved lexbuf }
     | '<' { LT }
     | "=>" { DARROW }
     | "==" { EQEQ }

@@ -268,9 +268,9 @@ struct
       | If of note * t * t * t
       | Label of note * t
       | New of note * Type.t * t list
-	  (*i	| Choose of note * string * Type.t * t
-	    | Forall of note * string * Type.t * t
-	    | Exists of note * string * Type.t * t i*)
+      | Choose of note * string * Type.t * t
+      | Forall of note * string * Type.t * t
+      | Exists of note * string * Type.t * t
       | Extern of note * string
       | SSAId of note * string * int
       | Phi of note * t list
