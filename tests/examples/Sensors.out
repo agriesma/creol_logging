@@ -99,8 +99,8 @@ result Configuration:
     ; if "="("slots" # int(0)) th "label:1" ! "this" . "packAndSend"(emp) ;
     "label:1" ?(noVid) el skip fi ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
-    null, Code: ("label:0" ! "this" . "run0"(emp) ; free("label:0") |||
-    "label:1" ! "this" . "run1"(emp) ; free("label:1")) ; return(emp) > *
+    null, Code: "label:0" ! "this" . "run0"(emp) ; free("label:0") ; "label:1"
+    ! "this" . "run1"(emp) ; free("label:1") ; return(emp) > *
   < "run0" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, Code: "label:0" ! "this" . "read0"(emp) ; "label:0" ?(noVid) ; await
     ">="(now # "+"("t0" # "rate0")) ; posit "<="(now # "+"("t0" # "rate0")) ;

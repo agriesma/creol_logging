@@ -42,7 +42,7 @@ begin
     hungry@Philosopher := false;
     butler@Philosopher.getNeighbor(; neighbor@Philosopher)
  
-  op run == !think() ||| !eat()
+  op run == !think() ; !eat()
 
   op eat ==
     await hungry@Philosopher;

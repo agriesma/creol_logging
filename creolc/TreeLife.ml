@@ -270,12 +270,7 @@ let compute_in_body ~program ~cls ~meth =
 	  let n' = { n with life = life s1' } in
 	    logio stmt outs n'.life ;
 	    Sequence (n', s1', s2')
-      | Merge (n, s1, s2) -> 
-	  let s1' = compute_in_statement outs s1
-	  and s2' = compute_in_statement outs s2 in
-	  let n' = { n with life = IdSet.union (life s1') (life s2') } in
-	    logio stmt outs n'.life ;
-	    Merge (n', s1', s2')
+      | Merge _ -> assert false
       | Choice (n, s1, s2) -> 
 	  let s1' = compute_in_statement outs s1
 	  and s2' = compute_in_statement outs s2 in

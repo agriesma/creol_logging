@@ -294,21 +294,12 @@ let into_ssa tree =
 	  let ns1 = statement_to_ssa env s1 in
 	  let ns2 = statement_to_ssa env s2 in
 	    Sequence (n, ns1, ns2)
-	      (* For merge and choice we do not enforce sequencing of the
-		 computation of the parts, but we allow the compiler to
-		 choose some order *)
-      | Merge (n, l, r) -> 
-	  let env_pre = Hashtbl.copy env in
-	  let nl = statement_to_ssa env l in
-	  let env_left = Hashtbl.copy env in
-	  let nr = statement_to_ssa env r in
-	  let phi = compute_phi n env_pre env_left env in
-	    Sequence (n, Merge (n, nl, nr), phi)
+      | Merge _ -> assert false
       | Choice (n, l, r) -> 
 	  let env_pre = Hashtbl.copy env in
-	  let nl = statement_to_ssa env l in
-	  let env_left = Hashtbl.copy env in
-	  let nr = statement_to_ssa env r in
+          let nl = statement_to_ssa env l in
+          let env_left = Hashtbl.copy env in
+          let nr = statement_to_ssa env r in
 	  let phi = compute_phi n env_pre env_left env in
 	    Sequence(n, Choice (n, nl, nr), phi)
       | Extern (n, s) -> Extern (n, s)
@@ -476,16 +467,10 @@ let out_of_ssa tree =
 	  let ns1 = statement_of_ssa s1 in
 	  let ns2 = statement_of_ssa s2 in
 	    Sequence (n, ns1, ns2)
-	      (* For merge and choice we do not enforce sequencing of the
-		 computation of the parts, but we allow the compiler to
-		 choose some order *)
-      | Merge (n, l, r) -> 
-	  let nl = statement_of_ssa l in
-	  let nr = statement_of_ssa r in
-	    Merge (n, nl, nr)
+      | Merge _ -> assert false;
       | Choice (n, l, r) -> 
-	  let nl = statement_of_ssa l in
-	  let nr = statement_of_ssa r in
+	  let nl = statement_of_ssa l
+          and nr = statement_of_ssa r in
 	    Choice (n, nl, nr)
       | Extern (n, s) -> Extern (n, s)
   in

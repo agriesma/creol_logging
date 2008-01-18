@@ -40,7 +40,7 @@ begin
   op init == chopstick := true; hungry := false;
     butler.getNeighbor(; neighbor)
  
-  op run == !think() ||| !eat()
+  op run == !think() ; !eat()
 
   op digest == hungry := true; !digest()
 

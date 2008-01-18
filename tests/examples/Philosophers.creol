@@ -54,7 +54,7 @@ begin
   op init == hist := ""; chopstick := true; hungry := false;
     butler.getNeighbor(; neighbor)
  
-  op run == !think() ||| !eat() ||| !digest()
+  op run == !think() ; !eat() ; !digest()
 
   op digest == release ; hungry := true; hist := hist |- "d";
     release; !digest()

@@ -237,12 +237,7 @@ let compute_in_statement ~meth ins stmt =
 	  let n' = { n with def = def s2' } in
 	    logio stmt ins n'.def ;
 	    Sequence (n', s1', s2')
-      | Merge (n, s1, s2) -> 
-	  let s1' = work ins s1
-	  and s2' = work ins s2 in
-	  let n' = { n with def = IdSet.inter (def s1') (def s2') } in
-	    logio stmt ins n'.def ;
-	    Merge (n', s1', s2')
+      | Merge _ -> assert false
       | Choice (n, s1, s2) -> 
 	  let s1' = work ins s1
 	  and s2' = work ins s2 in

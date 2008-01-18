@@ -36,9 +36,9 @@ result Configuration:
   < "returnStick" : Mtdname | Param: noVid, Latt: noSubst, Code: "chopstick"
     ::= bool(true) ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
-    null, "label:2" |-> null, Code: ("label:0" ! "this" . "think"(emp) ; free(
-    "label:0") ||| "label:1" ! "this" . "eat"(emp) ; free("label:1") |||
-    "label:2" ! "this" . "digest"(emp) ; free("label:2")) ; return(emp) > *
+    null, "label:2" |-> null, Code: "label:0" ! "this" . "think"(emp) ; free(
+    "label:0") ; "label:1" ! "this" . "eat"(emp) ; free("label:1") ; "label:2"
+    ! "this" . "digest"(emp) ; free("label:2") ; return(emp) > *
   < "think" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: await
     "~"("hungry") ; "hist" ::= "|-"("hist" # str("t")) ; release ; "label:0" !
     "this" . "think"(emp) ; free("label:0") ; return(emp) >,

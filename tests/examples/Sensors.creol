@@ -126,7 +126,7 @@ begin
     buffer, slots, rate0, rate1, t0, t1 :=
       nil, size, initialRate0, initialRate1, now, now
 
-  op run == !run0() ||| !run1()
+  op run == !run0() ; !run1()
 
   op run0 == read0(;); await now >= t0 + rate0; posit now <= t0 + rate0;
     t0 := now; !run0()

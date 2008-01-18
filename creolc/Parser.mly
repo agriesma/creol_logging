@@ -348,7 +348,10 @@ statement:
       l = choice_statement r = ioption(preceded(MERGE, statement))
 	{ match r with
 	      None -> l
-	    | Some s -> Merge((statement_note $startpos), l, s) }
+	    | Some s -> (* Merge((statement_note $startpos), l, s) *)
+                  signal_error $startpos(r)
+                        "Merge statements are currently not supported."
+        }
 
 choice_statement:
       l = statement_sequence r = ioption(preceded(BOX, choice_statement))

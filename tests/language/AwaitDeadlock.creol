@@ -17,7 +17,7 @@ begin
 
   op init == clock := 0
 
-  op run == !tick() ||| !sense()
+  op run == !tick() ; !sense()
 
   op tick == clock := clock + 1; !tick(); release
 

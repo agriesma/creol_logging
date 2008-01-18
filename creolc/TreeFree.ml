@@ -101,11 +101,7 @@ let optimise_in_statement meth stmt =
 	  and s2' = work lv s2 in
 	  let def' = IdSet.inter (def s1') (def s2') in
 	    Choice ({ n with def = def' }, s1', s2')
-      | Merge (n, s1, s2) ->
-	  let s1' = work lv s1
-	  and s2' = work lv s2 in
-	  let def' = IdSet.inter (def s1') (def s2') in
-	    Merge ({ n with def = def' }, s1', s2')
+      | Merge _ -> assert false
       | s -> append_free s lv
   in
   let lv =
