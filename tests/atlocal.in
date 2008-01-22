@@ -35,3 +35,5 @@ then
   MAUDE=@MAUDE@
   export MAUDE
 fi
+
+WITH_METATESTS=@WITH_METATESTS@

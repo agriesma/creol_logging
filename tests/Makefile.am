@@ -22,6 +22,9 @@ CLEANFILES		= testsuite.log
 DISTCLEANFILES		= atconfig atlocal
 MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
 
+DIST_SUBDIRS		= profiling
+SUBDIRS			= @WITH_PROFILING@
+
 AUTOTEST		= ${AUTOM4TE} --language=autotest
 TESTSUITE		= ${srcdir}/testsuite
 

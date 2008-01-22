@@ -33,7 +33,7 @@ DISTCLEANFILES		=
 MAINTAINERCLEANFILES	=
 
 .dot.eps:
-	${DOT} -Tps -o $@
+	${DOT} -Tps -o $@ $<
 
 .dot.pdf:
 	${DOT} -Tps2 -o temp.eps $<

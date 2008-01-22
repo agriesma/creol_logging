@@ -1,8 +1,8 @@
-## Makefile.am - Use automake to create Makefile.in
+#! /bin/sh
 #
 # This file is part of creoltools
 #
-# Written and Copyright (c) 2007 by Marcel Kyas
+# Written and Copyright (c) 2008 by Marcel Kyas
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -16,18 +16,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-DISTCHECK_CONFIGURE_FLAGS = --disable-make-install \
-	--with-profiling \
-	--with-metatests
 
-# Subdirs
-DIST_SUBDIRS		= share info creolc tests
-SUBDIRS			= share info creolc tests
+if [ -z "$1" -o -z "$2" ]
+then
+	echo "Usage: $0 [maude-file] [out-file]"
+fi
 
-MOSTLYCLEANFILES	= *~
-MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
-			  depcomp elisp-comp missing install-sh
+if [ -f "$2" ]
+then
+	rm "$2"
+fi
 
-bin_SCRIPTS		= creolshell creolbug
-dist_noinst_SCRIPTS	= maude-sh
+cp "$1" "$2"
+
+cat >> "$2" <<EOF
+set profile on .
+red modelCheck({ init main("Butler", emp) }, <> [] objcnt("Philosopher", 5)) .
+show profile .
+quit .
+EOF

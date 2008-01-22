@@ -155,6 +155,18 @@ AC_SUBST([OCAMLFIND_FLAGS])
 AC_SUBST([CREOL_VARIANTS])
 AC_SUBST([CREOLC_PDF])
 
+AC_ARG_WITH([metatests],
+  [AS_HELP_STRING([--with-metatests], [Run meta-execution tests.  Slow!])],
+  [WITH_METATESTS=yes],
+  [WITH_METATESTS=no])
+AC_SUBST([WITH_METATESTS])
+
+AC_ARG_WITH([profiling],
+  [AS_HELP_STRING([--with-profiling], [Generate profiles.  Slow!])],
+  [WITH_PROFILING=profiling],
+  [WITH_PROFILING=])
+AC_SUBST([WITH_PROFILING])
+
 AC_CONFIG_TESTDIR(tests, creolc)
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
@@ -164,5 +176,6 @@ AC_CONFIG_FILES([Makefile
 		 info/Makefile
 		 share/Makefile
 		 tests/atlocal
-		 tests/Makefile])
+		 tests/Makefile
+		 tests/profiling/Makefile])
 AC_OUTPUT

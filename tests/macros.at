@@ -50,6 +50,9 @@ $3
 quit .
 ])
 TEST_MAUDE([$1], test.maude, $2)
+
+if [ "x$WITH_METATESTS" = "xyes" ]
+then
 AT_DATA([metatest.maude],
 [
 set show timing off .
@@ -60,8 +63,9 @@ load creol-metaexec .
 $4
 quit .
 ])
-dnl Don't exec this, it takes ages.
-dnl TEST_MAUDE([meta-$1], metatest.maude, $2)
+TEST_MAUDE([meta-$1], metatest.maude, $2)
+fi
+
 AT_CLEANUP
 ])
 
@@ -78,6 +82,9 @@ $3
 quit .
 ])
 TEST_MAUDE([$1], test.maude, [$2])
+
+if [ "x$WITH_METATESTS" = "xyes" ]
+then
 AT_DATA([metatest.maude],
 [
 set show timing off .
@@ -88,8 +95,9 @@ load creol-metaexec .
 $4
 quit .
 ])
-dnl Don't exec this, it takes ages.
-dnl TEST_MAUDE([meta-$1], metatest.maude, $2)
+TEST_MAUDE([meta-$1], metatest.maude, $2)
+fi
+
 AT_CLEANUP
 ])
 

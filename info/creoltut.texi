@@ -265,7 +265,7 @@ receive the result of the code at a later time.  The handle must be
 declared as a variable of type @code{Label[`a]}, where @code{`a} is a
 type variable ranging over the expected return types.  After the call
 has been made, the result of that label may be received later using
-the statement @code{l?(@var{o})$, where @var{o} is a list of variables
+the statement @code{l?(@var{o})}, where @var{o} is a list of variables
 used to store the result values.  These values may received at most
 once.  It is an error to try to receive the values to a call twice,
 resulting in deadlocks or undefined behaviour.

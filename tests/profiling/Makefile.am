@@ -16,18 +16,34 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-DISTCHECK_CONFIGURE_FLAGS = --disable-make-install \
-	--with-profiling \
-	--with-metatests
-
-# Subdirs
-DIST_SUBDIRS		= share info creolc tests
-SUBDIRS			= share info creolc tests
 
 MOSTLYCLEANFILES	= *~
-MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
-			  depcomp elisp-comp missing install-sh
+CLEANFILES		= *.prof
+DISTCLEANFILES		= *.maude
+MAINTAINERCLEANFILES	= Makefile.in
 
-bin_SCRIPTS		= creolshell creolbug
-dist_noinst_SCRIPTS	= maude-sh
+EXTRA_DIST	= generate.sh Philosophers.creol
+
+SUFFIXES	= .maude .prof
+
+CREOL_LIBRARY_PATH	= ${top_srcdir}/share
+MAUDE_LIB		:= ${top_builddir}/share:${MAUDE_LIB}
+
+export CREOL_LIBRARY_PATH MAUDE_LIB
+
+check-local: Phil1.prof Phil2.prof
+
+.maude.prof:
+	${MAUDE} $< > $@
+
+Phil1.maude: Philosophers.creol
+	rm -f model.maude
+	 ${top_builddir}/creolc/creolc -T maudemc -o model.maude $<
+	$(SHELL) ${srcdir}/generate.sh model.maude $@
+	rm -f model.maude
+
+Phil2.maude: Philosophers.creol
+	rm -f model.maude
+	${top_builddir}/creolc/creolc -T maudemc -p devirt -o model.maude $<
+	$(SHELL) ${srcdir}/generate.sh model.maude $@
+	rm -f model.maude
