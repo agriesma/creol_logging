@@ -79,7 +79,7 @@ fmod CREOL-DATA-SIG is
   op _??  : Label -> Expr [ctor] .
   op _@@_ : String String -> Vid [ctor] .
 
-  op ob(_) : String -> Oid [ctor] .
+  op ob(_) : String -> Oid [ctor format (r d o r o)] .
 
   vars B B' : Bool .
   op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .

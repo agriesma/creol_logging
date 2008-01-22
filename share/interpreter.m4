@@ -291,8 +291,8 @@ fmod CREOL-COMMUNICATION is
   sort Body .
 
   *** INVOCATION and REPLY
-  op invoc : Oid Label Mid DataList -> Body [ctor `format'(! o)] .  
-  op comp : Label DataList -> Body [ctor `format' (! o)] .  
+  op invoc : Oid Label Mid DataList -> Body [ctor `format'(b o)] .  
+  op comp : Label DataList -> Body [ctor `format' (b o)] .  
 
   --- Messages.  Messages have at least a receiver.
 
@@ -574,10 +574,10 @@ ifdef(`TIME',
 `define(`CLOCK', `')')dnl
 
 ifdef(`MODELCHECK',dnl
-  op label : Oid Oid Mid DataList -> Label [ctor] .
+  op label : Oid Oid Mid DataList -> Label [ctor ``format'' (! o)] .
   eq caller(label(O, O', M, DL)) = O . 
 ,dnl
- op label(_,_) : Oid Nat -> Label [ctor ``format'' (d d ! d d o d)] .
+ op label : Oid Nat -> Label [ctor ``format'' (o o)] .
  eq caller(label(O, N)) = O .
 )dnl
 
@@ -904,11 +904,10 @@ STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM,
 --- Transport rule: include new message in queue
 ---
 eq
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  (MsgBody from O' to O)
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  MsgBody from O' to O
   =
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM + MsgBody,
-    Lcnt: N >
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM + MsgBody, Lcnt: N >
   [label transport] .
 
 --- free
@@ -925,10 +924,10 @@ STEP(< O : C | Att: S`,' Pr: (L`,' free(A) ; SL)`,' PrQ: W`,'
 --- deallocate
 ---
 eq
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: (Lab ^ LS),
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: (Lab ^ LS),
             Ev: MM + comp(Lab, DL), Lcnt: N >
   =
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   [label deallocate] .
 
 
@@ -948,7 +947,8 @@ crl
   < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
          Dealloc: LS, Ev: MM, Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (insert(".label", tag(Lab), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  < O : C | Att: S, Pr: (insert(".label", tag(Lab), L), SL), PrQ: W,
+            Dealloc: LS, Ev: MM, Lcnt: N >
   if L[".label"] = Lab
   [label tailcall-accept] .
 

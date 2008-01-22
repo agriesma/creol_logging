@@ -54,10 +54,7 @@ result Configuration:
   Lcnt: 0 >
 ==========================================
 rewrite in TEST-TAILCALL : init .
-result Configuration: (comp(label(ob("Tailcall0"), ob("Tailcall0"), "run",
-    emp), emp) from ob("Tailcall0") to ob("Tailcall0")
-)
-
+result Configuration: 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) # "x")
@@ -68,7 +65,7 @@ result Configuration: (comp(label(ob("Tailcall0"), ob("Tailcall0"), "run",
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(0),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: label(ob("Tailcall0"), ob("Tailcall0"), "run", emp),
+  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

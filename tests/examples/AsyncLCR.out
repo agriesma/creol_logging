@@ -27,19 +27,7 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : init
 main("Init", emp) .
-result Configuration: (comp(label(ob("Init0"),1), emp) from ob("Init0") to ob(
-    "Init0")
-)
-(invoc(ob("Process0"), label(ob("Process0"),1), "getNeighbor", emp) from ob(
-    "Process0") to ob("Init0")
-)
-(invoc(ob("Process1"), label(ob("Process1"),1), "getNeighbor", emp) from ob(
-    "Process1") to ob("Init0")
-)
-(invoc(ob("Process2"), label(ob("Process2"),1), "getNeighbor", emp) from ob(
-    "Process2") to ob("Init0")
-)
-
+result Configuration: 
 < "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
   < "getNeighbor" : Mtdname | Param: noVid, Latt: "p" |-> null, Code: if "="(
@@ -69,48 +57,36 @@ result Configuration: (comp(label(ob("Init0"),1), emp) from ob("Init0") to ob(
     "Process2"), "this" |-> ob("Init0"),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: label(ob("Init0"),1),
+  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
 
 < ob("Process0") : "Process" |
-  Att: "i" |-> ob("Init0"), "neighbor" |-> null, "status" |-> int(0), "this"
-    |-> ob("Process0"), "u" |-> int(1),
-  Pr: (".label" |-> label(ob("Process0"),0), "caller" |-> ob("Process0"),
-    "label:0" |-> label(ob("Process0"),1), "label:1" |-> null), label(ob(
-    "Process0"),1) ?("neighbor") ; "label:1" ! "neighbor" . "receive"("u") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process0"),0)),
-  PrQ: ".anon" |-> label(ob("Process0"),0), label(ob("Process0"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+  Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process2"), "status" |-> int(0),
+    "this" |-> ob("Process0"), "u" |-> int(1),
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 6 >
 
 < ob("Process1") : "Process" |
-  Att: "i" |-> ob("Init0"), "neighbor" |-> null, "status" |-> int(0), "this"
-    |-> ob("Process1"), "u" |-> int(2),
-  Pr: (".label" |-> label(ob("Process1"),0), "caller" |-> ob("Process1"),
-    "label:0" |-> label(ob("Process1"),1), "label:1" |-> null), label(ob(
-    "Process1"),1) ?("neighbor") ; "label:1" ! "neighbor" . "receive"("u") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process1"),0)),
-  PrQ: ".anon" |-> label(ob("Process1"),0), label(ob("Process1"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+  Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process0"), "status" |-> int(0),
+    "this" |-> ob("Process1"), "u" |-> int(2),
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 5 >
 
 < ob("Process2") : "Process" |
-  Att: "i" |-> ob("Init0"), "neighbor" |-> null, "status" |-> int(0), "this"
-    |-> ob("Process2"), "u" |-> int(3),
-  Pr: (".label" |-> label(ob("Process2"),0), "caller" |-> ob("Process2"),
-    "label:0" |-> label(ob("Process2"),1), "label:1" |-> null), label(ob(
-    "Process2"),1) ?("neighbor") ; "label:1" ! "neighbor" . "receive"("u") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process2"),0)),
-  PrQ: ".anon" |-> label(ob("Process2"),0), label(ob("Process2"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+  Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process1"), "status" |-> int(1),
+    "this" |-> ob("Process2"), "u" |-> int(3),
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 4 >
 
 < ob("main") : "" |
   Att: noSubst,

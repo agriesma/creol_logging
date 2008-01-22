@@ -19,7 +19,7 @@ search in TEST-TAILCALL : init =>+ conf:Configuration
 
 < ob("Tailcall0") : "Tailcall" |
   Att: A:Subst,
-  Pr: L:Subst, accept(tag(label(ob("Tailcall0"),2))) ; SL:StmList,
+  Pr: L:Subst, accept(tag(label(ob("Tailcall0"), 2))) ; SL:StmList,
   PrQ: W:MProc,
   Dealloc: LS:Labels,
   Ev: MM:MMsg,
@@ -28,10 +28,7 @@ search in TEST-TAILCALL : init =>+ conf:Configuration
 No solution.
 ==========================================
 rewrite in TEST-TAILCALL : init .
-result Configuration: (comp(label(ob("Tailcall0"),1), emp) from ob("Tailcall0")
-    to ob("Tailcall0")
-)
-
+result Configuration: 
 < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) # "x")
@@ -42,7 +39,7 @@ result Configuration: (comp(label(ob("Tailcall0"),1), emp) from ob("Tailcall0")
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(0),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: label(ob("Tailcall0"),1),
+  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
 

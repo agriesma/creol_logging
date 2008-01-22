@@ -9,10 +9,7 @@ result Class:
 ==========================================
 rewrite in PROGRAM : init
 main("Test", emp) .
-result Configuration: (comp(label(ob("Test0"),1), emp) from ob("Test0") to ob(
-    "Test0")
-)
-
+result Configuration: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "x" ::= pair(int(1),
     int(2)) ; return(emp) > *
@@ -23,7 +20,7 @@ result Configuration: (comp(label(ob("Test0"),1), emp) from ob("Test0") to ob(
   Att: "this" |-> ob("Test0"), "x" |-> pair(int(1), int(2)),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: label(ob("Test0"),1),
+  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
 

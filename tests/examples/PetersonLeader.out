@@ -36,25 +36,7 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : init
 main("Main", emp) .
-result Configuration: (comp(label(ob("Main0"),1), emp) from ob("Main0") to ob(
-    "Main0")
-)
-(invoc(ob("Process0"), label(ob("Process0"),1), "getNeighbour", emp) from ob(
-    "Process0") to ob("Main0")
-)
-(invoc(ob("Process1"), label(ob("Process1"),1), "getNeighbour", emp) from ob(
-    "Process1") to ob("Main0")
-)
-(invoc(ob("Process2"), label(ob("Process2"),1), "getNeighbour", emp) from ob(
-    "Process2") to ob("Main0")
-)
-(invoc(ob("Process3"), label(ob("Process3"),1), "getNeighbour", emp) from ob(
-    "Process3") to ob("Main0")
-)
-(invoc(ob("Process4"), label(ob("Process4"),1), "getNeighbour", emp) from ob(
-    "Process4") to ob("Main0")
-)
-
+result Configuration: 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, "p4" |-> null, "p5" |-> null, Mtds:
   < "getNeighbour" : Mtdname | Param: noVid, Latt: "n" |-> null, Code: if "="(
@@ -94,79 +76,59 @@ result Configuration: (comp(label(ob("Main0"),1), emp) from ob("Main0") to ob(
     ob("Main0"),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: label(ob("Main0"),1),
+  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
 
 < ob("Process0") : "Process" |
-  Att: "i" |-> int(1), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process0"),
-    "uid1" |-> int(1), "uid2" |-> null,
-  Pr: (".label" |-> label(ob("Process0"),0), "caller" |-> ob("Process0"),
-    "label:0" |-> label(ob("Process0"),1), "label:1" |-> null), label(ob(
-    "Process0"),1) ?("neighbour") ; "label:1" ! "neighbour" . "send"("i") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process0"),0)),
-  PrQ: ".anon" |-> label(ob("Process0"),0), label(ob("Process0"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+  Att: "i" |-> int(1), "main" |-> ob("Main0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process1"), "status" |-> int(0), "this" |-> ob(
+    "Process0"), "uid1" |-> int(1), "uid2" |-> int(2),
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 6 >
 
 < ob("Process1") : "Process" |
-  Att: "i" |-> int(3), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process1"),
-    "uid1" |-> int(3), "uid2" |-> null,
-  Pr: (".label" |-> label(ob("Process1"),0), "caller" |-> ob("Process1"),
-    "label:0" |-> label(ob("Process1"),1), "label:1" |-> null), label(ob(
-    "Process1"),1) ?("neighbour") ; "label:1" ! "neighbour" . "send"("i") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process1"),0)),
-  PrQ: ".anon" |-> label(ob("Process1"),0), label(ob("Process1"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+  Att: "i" |-> int(3), "main" |-> ob("Main0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process2"), "status" |-> int(0), "this" |-> ob(
+    "Process1"), "uid1" |-> int(3), "uid2" |-> int(1),
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 6 >
 
 < ob("Process2") : "Process" |
-  Att: "i" |-> int(5), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process2"),
-    "uid1" |-> int(5), "uid2" |-> null,
-  Pr: (".label" |-> label(ob("Process2"),0), "caller" |-> ob("Process2"),
-    "label:0" |-> label(ob("Process2"),1), "label:1" |-> null), label(ob(
-    "Process2"),1) ?("neighbour") ; "label:1" ! "neighbour" . "send"("i") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process2"),0)),
-  PrQ: ".anon" |-> label(ob("Process2"),0), label(ob("Process2"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+  Att: "i" |-> int(5), "main" |-> ob("Main0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process3"), "status" |-> int(0), "this" |-> ob(
+    "Process2"), "uid1" |-> int(5), "uid2" |-> int(3),
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 6 >
 
 < ob("Process3") : "Process" |
   Att: "i" |-> int(4), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process3"),
-    "uid1" |-> int(4), "uid2" |-> null,
-  Pr: (".label" |-> label(ob("Process3"),0), "caller" |-> ob("Process3"),
-    "label:0" |-> label(ob("Process3"),1), "label:1" |-> null), label(ob(
-    "Process3"),1) ?("neighbour") ; "label:1" ! "neighbour" . "send"("i") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process3"),0)),
-  PrQ: ".anon" |-> label(ob("Process3"),0), label(ob("Process3"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+    "neighbour" |-> ob("Process4"), "status" |-> int(1), "this" |-> ob(
+    "Process3"), "uid1" |-> int(5), "uid2" |-> null,
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 6 >
 
 < ob("Process4") : "Process" |
-  Att: "i" |-> int(2), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process4"),
-    "uid1" |-> int(2), "uid2" |-> null,
-  Pr: (".label" |-> label(ob("Process4"),0), "caller" |-> ob("Process4"),
-    "label:0" |-> label(ob("Process4"),1), "label:1" |-> null), label(ob(
-    "Process4"),1) ?("neighbour") ; "label:1" ! "neighbour" . "send"("i") ;
-    free("label:1") ; return(emp) ; cont(label(ob("Process4"),0)),
-  PrQ: ".anon" |-> label(ob("Process4"),0), label(ob("Process4"),0) ?(noVid) ;
-    ".anon" ! "run"(emp) ; free(".anon"),
+  Att: "i" |-> int(2), "main" |-> ob("Main0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process0"), "status" |-> int(0), "this" |-> ob(
+    "Process4"), "uid1" |-> int(2), "uid2" |-> int(4),
+  Pr: idle,
+  PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 2 >
+  Lcnt: 6 >
 
 < ob("main") : "" |
   Att: noSubst,

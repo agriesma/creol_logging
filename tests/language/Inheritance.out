@@ -15,9 +15,7 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : init
 main("B", int(1)) .
-result Configuration: (comp(label(ob("B0"),2), emp) from ob("B0") to ob("B0")
-)
-
+result Configuration: 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
@@ -34,7 +32,7 @@ result Configuration: (comp(label(ob("B0"),2), emp) from ob("B0") to ob("B0")
   Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: label(ob("B0"),2),
+  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 3 >
 
