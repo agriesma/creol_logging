@@ -82,11 +82,9 @@ GRAMMAR_TEST(CLASS, {| noInh |}, noInh)
 GRAMMAR_TEST(CLASS, {| "A" < emp > |}, noInh)
 GRAMMAR_TEST(CLASS, {| "A" < emp > ## "B" < "x" > |}, noInh)
 
-GRAMMAR_TEST(OBJECT, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 0 > |}, noObj)
+GRAMMAR_TEST(OBJECT, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
 
 GRAMMAR_TEST(COMMUNICATION, noMsg, noMsg)
-GRAMMAR_TEST(COMMUNICATION, {| noQu |}, noQu)
-GRAMMAR_TEST(COMMUNICATION, {| < ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc , Ev: noMsg > |}, noQu)
 
 fmod CREOL-LABEL-TEST is
   extending CREOL-DATA-SIG .

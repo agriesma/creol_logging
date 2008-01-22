@@ -36,10 +36,8 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : init
 main("D", emp) .
-result Configuration: 
-< ob("D0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
-
-< ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
+result Configuration: (comp(label(ob("D0"),5), emp) from ob("D0") to ob("D0")
+)
 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
@@ -74,12 +72,20 @@ result Configuration:
     "this" . "o"(emp) ; "label:1" ?("y") ; skip ; return(emp) >,
   Ocnt: 1 >
 
-< ob("D0") : "D" | Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this"
-    |-> ob("D0"), "x" |-> int(2), "y" |-> int(2),
+< ob("D0") : "D" |
+  Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this" |-> ob("D0"), "x"
+    |-> int(2), "y" |-> int(2),
   Pr: idle,
-  PrQ: noProc, Lcnt: 11 >
+  PrQ: noProc,
+  Dealloc: label(ob("D0"),5),
+  Ev: noMsg,
+  Lcnt: 10 >
 
-< ob("main") : "" | Att: noSubst,
+< ob("main") : "" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 >
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >
 Bye.

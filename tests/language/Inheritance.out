@@ -15,10 +15,8 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : init
 main("B", int(1)) .
-result Configuration: 
-< ob("B0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
-
-< ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
+result Configuration: (comp(label(ob("B0"),2), emp) from ob("B0") to ob("B0")
+)
 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
@@ -32,11 +30,19 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 1 >
 
-< ob("B0") : "B" | Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),
+< ob("B0") : "B" |
+  Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),
   Pr: idle,
-  PrQ: noProc, Lcnt: 4 >
+  PrQ: noProc,
+  Dealloc: label(ob("B0"),2),
+  Ev: noMsg,
+  Lcnt: 3 >
 
-< ob("main") : "" | Att: noSubst,
+< ob("main") : "" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 >
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >
 Bye.

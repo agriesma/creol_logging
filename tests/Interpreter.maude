@@ -45,7 +45,7 @@ red in TEST-TAILCALL : init .
 
 search [1] in TEST-TAILCALL : init =>+
   < ob("Tailcall0") : "Tailcall" | Att: A:Subst, Pr:
-    L:Subst, accept(tag(label(ob("Tailcall0"), 2))) ; SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
+    L:Subst, accept(tag(label(ob("Tailcall0"), 2))) ; SL:StmList, PrQ: W:MProc, Dealloc: LS:Labels, Ev: MM:MMsg, Lcnt: N:Nat >
   conf:Configuration .
 
 rew in TEST-TAILCALL : init .

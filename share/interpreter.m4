@@ -281,24 +281,12 @@ fmod CREOL-CLASS is
 
 endfm
 
-*** CREOL objects ***
-fmod CREOL-OBJECT is
-  protecting CREOL-CLASS .
-
-  sort Object .
-
-  op noObj : -> Object [ctor] .
-  op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
-       Oid Cid Subst Process MProc Nat -> Object 
-         [ctor `format' (nr d d g r d o  r++ ni o  r ni o  r s o--  r o)] .
-
-endfm
 
 ***
 *** CREOL messages and queues
 ***
 fmod CREOL-COMMUNICATION is
-  protecting CREOL-OBJECT .
+  protecting CREOL-CLASS .
 
   sort Body .
 
@@ -341,22 +329,33 @@ fmod CREOL-COMMUNICATION is
   op noDealloc :         -> Labels  [ctor] .
   op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
-  --- message queue
-  sort Queue .
-  op noQu : -> Queue [ctor] .
-  op <_: Qu | Size:_, Dealloc:_, Ev:_ > : Oid Nat Labels MMsg -> Queue 
-                          [`format' (nm r o d d sm o d sm o d sm o m o)] .
+endfm
+
+
+***
+*** CREOL objects
+***
+fmod CREOL-OBJECT is
+  protecting CREOL-COMMUNICATION .
+
+  sort Object .
+
+  op noObj : -> Object [ctor] .
+  op <_:_ | Att:_, Pr:_, PrQ:_, Dealloc:_, Ev:_, Lcnt:_> : 
+       Oid Cid Subst Process MProc Labels MMsg Nat -> Object 
+         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o  r ni o  r ni o--  r o)] .
 
 endfm
 
+
 *** STATE CONFIGURATION ***
 fmod CREOL-CONFIG is
-  protecting CREOL-COMMUNICATION .
+  protecting CREOL-OBJECT .
 
   sort Configuration .
 ifdef(`TIME', `  sort Clock .')
 
-  subsorts Object Msg Queue Class < Configuration .
+  subsorts Object Msg Class < Configuration .
 ifdef(`TIME', `  subsort Clock < Configuration .')
 
 ifdef(`TIME',
@@ -385,8 +384,8 @@ ifdef(`MODELCHECK',dnl
   op main : Cid DataList -> Configuration .
   eq main(C,DL) =
     < ob("main") : "" | Att: noSubst, 
-      Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc, Lcnt: 0 > 
-    < ob("main") : Qu | Size: 1, Dealloc: noDealloc,Ev: noMsg > .
+      Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
+      Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
 
 endfm
 
@@ -590,29 +589,29 @@ ifdef(`MODELCHECK',dnl
 --- an assign form.
 STEP(dnl
 `< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
-	    PrQ: W, Lcnt: N >' CLOCK,
+	    PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
 `< O : C | Att: S, Pr: (L,(assign(AL, EVALLIST(EL, (S # L), T)) ; SL)), 
-	    PrQ: W, Lcnt: N >' CLOCK,
+	    PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
 `[label assignment]')
 
 eq
   < O : C | Att: S, Pr: (L, ( assign(((a @@ CC), AL), D # DL) ; SL)),
-    PrQ: W, Lcnt: N >
+    PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
     < O : C | Att: insert(a, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
-      Lcnt: N > 
+      Dealloc: LS, Ev: MM, Lcnt: N > 
   [label do-static-assign] .
 
 eq
   < O : C | Att: S, Pr: (L,( assign( (a , AL), D # DL) ; SL)), PrQ: W,
-    Lcnt: N >
+    Dealloc: LS, Ev: MM, Lcnt: N >
   =
   if dom(a, L) then
     < O : C | Att: S, Pr: (insert(a, D, L), assign(AL, DL) ; SL), PrQ: W,
-      Lcnt: N > 
+      Dealloc: LS, Ev: MM, Lcnt: N > 
   else
     < O : C | Att: insert(a, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
-      Lcnt: N >
+      Dealloc: LS, Ev: MM, Lcnt: N >
   fi
   [label do-assign] .
 
@@ -621,20 +620,20 @@ eq
 --- Skip
 ---
 STEP(dnl
-`< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Lcnt: N >',
-`< O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >',
+`< O : C | Att: S, Pr: (L, skip ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >',
+`< O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >',
 `[label skip]')
 
 
 --- if_then_else
 ---
 STEP(dnl
-< O : C | Att: S`,' Pr: (L`,' if E th SL' el SL'' fi ; SL)`,' PrQ: W`,' Lcnt: N >
+< O : C | Att: S`,' Pr: (L`,' if E th SL' el SL'' fi ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   CLOCK,
 if EVAL(E, (S # L), T) asBool then
-    < O : C | Att: S`,' Pr: (L`,' SL' ; SL)`,' PrQ: W`,' Lcnt: N >
+    < O : C | Att: S`,' Pr: (L`,' SL' ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   else
-    < O : C | Att: S`,' Pr: (L`,' SL'' ; SL)`,' PrQ: W`,' Lcnt: N >
+    < O : C | Att: S`,' Pr: (L`,' SL'' ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   fi
   CLOCK,
 `[label if-then-else]')
@@ -646,11 +645,11 @@ if EVAL(E, (S # L), T) asBool then
 --- Therefore, it is always a rule.
 ---
 rl
-  < O : C | Att: S, Pr: (L, while E do SL od ; SL'), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, while E do SL od ; SL'), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =>
   < O : C | Att: S,
             Pr: (L, (if E th (SL ; while E do SL od) el skip fi); SL'),
-            PrQ: W, Lcnt: N >
+            PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   [label while] .
 
 
@@ -659,11 +658,11 @@ rl
 --- Choice is comm, so [choice] considers both NeSL and NeSL'.
 ---
 crl
-  < O : C | Att: S, Pr: (L, (NeSL [] NeSL'); SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S, Pr: (L, (NeSL [] NeSL'); SL), PrQ: W, Dealloc: LS,
+            Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (L, (NeSL ; SL)), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S, Pr: (L, (NeSL ; SL)), PrQ: W, Dealloc: LS, Ev: MM,
+            Lcnt: N > CLOCK
   if READY(NeSL, (S # L), MM, T)
   [label choice] .
 
@@ -673,29 +672,28 @@ crl
 --- Merge is comm, so [merge] considers both NeSL and NeSL'.
 ---
 crl
-  < O : C | Att: S, Pr: (L, (NeSL ||| NeSL'); SL), PrQ: W, Lcnt: N >  
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S, Pr: (L, (NeSL ||| NeSL'); SL), PrQ: W, Dealloc: LS,
+            Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL'); SL), PrQ: W, Lcnt: N >  
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL'); SL), PrQ: W, Dealloc: LS,
+            Ev: MM, Lcnt: N > CLOCK
   if READY(NeSL,(S # L), MM, T)
   [label merge] .
 
 --- merger
 ---
 eq
-  < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER NeSL'); SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER NeSL'); SL), PrQ: W,
+            Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =
   if ENABLED(ST, (S # L), MM, T) then
     < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER NeSL')); SL)), PrQ: W,
-      Lcnt: N >
+      Dealloc: LS, Ev: MM, Lcnt: N >
   else
-    < O : C | Att: S, Pr: (L, ((ST ; SL') ||| NeSL'); SL), PrQ: W, Lcnt: N >   
-  fi
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
-  [label merger]
-  .
+    < O : C | Att: S, Pr: (L, ((ST ; SL') ||| NeSL'); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >   
+  fi CLOCK
+ [label merger] .
+
 
 --- PROCESS SUSPENSION
 
@@ -704,20 +702,18 @@ eq
 --- The release statement is an unconditional processor release point.
 ---
 STEP(dnl
-`< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
-`< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+`< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >',
+`< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Dealloc: LS, Ev: MM, Lcnt: N >',
 `[label release]')
 
 
 --- suspend
 ---
 CSTEP(dnl
-`< O : C | Att: S, Pr: (L, SuS ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
-`< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
+`< O : C | Att: S, Pr: (L, SuS ; SL), PrQ: W, Dealloc: LS, Ev: MM,
+           Lcnt: N > CLOCK',
+`< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Dealloc: LS, Ev: MM,
+           Lcnt: N > CLOCK',
 not ENABLED(SuS, (S # L), MM, T),
 `[label suspend]')
 
@@ -725,18 +721,17 @@ not ENABLED(SuS, (S # L), MM, T),
 --- await
 ---
 CSTEP(dnl
-`< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
-`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
+`< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Dealloc: LS, Ev: MM,
+           Lcnt: N > CLOCK',
+`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
 `EVALGUARD(G, (S # L), MM, T) asBool'
 `[label await]')
 
 --- Optimze label access in await statements.
 eq
-  < O : C | Att: S, Pr: (L, await (A ??) ; SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, await (A ??) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
-  < O : C | Att: S, Pr: (L, await ((L[A]) ??) ; SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, await ((L[A]) ??) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   .
 
 
@@ -745,11 +740,10 @@ eq
 --- Must be a rule to preserve confluence.
 ---
 crl
-  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Dealloc: LS, Ev: MM,
+            Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   if READY(SL, (S # L), MM, T)
   [label PrQ-ready] .
 
@@ -759,27 +753,25 @@ crl
 
 --- OPTIMISATION: Reduce the value of a label in a process to avoid
 --- constant re-evaluation
-eq < O : C | Att: S, Pr: (L, A ?(AL); SL), PrQ: W, Lcnt: F > =
-  < O : C | Att: S, Pr: (L, (L[A])?(AL); SL), PrQ: W, Lcnt: F > .
+eq < O : C | Att: S, Pr: (L, A ?(AL); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > =
+  < O : C | Att: S, Pr: (L, (L[A])?(AL); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > .
 
 
 --- receive-invoc
 ---
 --- Receive an invocation message and try to bind the process.
 ---
-STEP(< O : Qu | Size: Sz`,' Dealloc: LS`,'
-       Ev: MM + invoc(O'`,' Lab`,' Q`,' DL) >
-  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >,
-  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >
-  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Lcnt: N >
+STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
+            Ev: MM + invoc(O'`,' Lab`,' Q`,' DL)`,' Lcnt: N >,
+  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
     bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
 `[label receive-invoc]')
 
 
-STEP(< O : Qu | Size: Sz`,' Dealloc: LS`,'
-       Ev: MM + invoc(O'`,' Lab`,' Q @ C`,' DL) >,
-  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >
-  bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
+STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
+            Ev: MM + invoc(O'`,' Lab`,' Q @ CC`,' DL)`,' Lcnt: N >,
+  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
+    bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' CC < emp >),
 `[label receive-static-invoc]')
 
 
@@ -799,9 +791,9 @@ eq
 
 eq
   boundMtd(O, P')
-  < O : C | Att: S, Pr: P, PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
-  < O : C | Att: S, Pr: P, PrQ: P' ++ W, Lcnt: N >
+  < O : C | Att: S, Pr: P, PrQ: P' ++ W, Dealloc: LS, Ev: MM, Lcnt: N >
   .
 
 --- receive-comp
@@ -811,20 +803,19 @@ eq
 --- in the queue.
 ---
 rl
-  < O : C |  Att: S, Pr: (L, (Lab ? (AL)) ; SL), PrQ: W, Lcnt: F > 
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + comp(Lab, DL) >
+  < O : C |  Att: S, Pr: (L, (Lab ? (AL)) ; SL), PrQ: W, Dealloc: LS,
+             Ev: MM  + comp(Lab, DL), Lcnt: F > 
   =>
-  < O : C |  Att: S, Pr: (L, assign(AL, DL) ; SL), PrQ: W, Lcnt: F >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : C |  Att: S, Pr: (L, assign(AL, DL) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   [label receive-comp] .
 
 
 --- local-reply
 ---
 CSTEP(dnl
-< O : C | Att: S`,' Pr: (L`,' Lab ?(AL); SL)`,' PrQ: (L'`,' SL') ++ W`,' Lcnt: F >,
+< O : C | Att: S`,' Pr: (L`,' Lab ?(AL); SL)`,' PrQ: (L'`,' SL') ++ W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
 < O : C | Att: S`,' Pr: (L'`,' SL' ; cont(Lab))`,'
-  PrQ: (L`,' Lab ?(AL); SL) ++ W`,' Lcnt: F >,
+  PrQ: (L`,' Lab ?(AL); SL) ++ W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
 L'[".label"] == Lab,
 `[label local-reply]')
 
@@ -837,9 +828,9 @@ L'[".label"] == Lab,
 --- which await a reply to the label.
 rl
   < O : C | Att: S, Pr: (L, cont(Lab)), PrQ: (L', (Lab ?(AL); SL')) ++ W,
-    Lcnt: F >
+    Dealloc: LS, Ev: MM, Lcnt: F >
   =>
-  < O : C | Att: S, Pr: (L', (Lab ?(AL); SL')), PrQ: W, Lcnt: F >
+  < O : C | Att: S, Pr: (L', (Lab ?(AL); SL')), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   [label continue] .
 
 
@@ -847,17 +838,15 @@ rl
 ---
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: F >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK
+  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > CLOCK
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Lcnt: F >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM +
-    invoc(O, label(O, O, Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T)) > CLOCK'
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM +
+    invoc(O, label(O, O, Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T)), Lcnt: F > CLOCK'
 ,
 `rl
-  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Lcnt: N > CLOCK
+  < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
+  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
   invoc(O, label(O, N), Q, EVALLIST(EL, (S # L), T)) from O to O CLOCK'
 )dnl
   [label local-async-call] .
@@ -867,17 +856,17 @@ ifdef(`MODELCHECK',
 ---
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: (L, ( A ! Q @ CC (EL) ); SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (L, ( A ! Q @ CC (EL) ); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   CLOCK
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   invoc(O, label(O, O, Q @ CC, EVALLIST(EL, (S # L), T)), Q @ CC,
         EVALLIST(EL, (S # L), T)) from O to O CLOCK'
 ,
 `rl
-  < O : C | Att: S, Pr: (L, ( A ! Q @ CC(EL)); SL), PrQ: W, Lcnt: N > CLOCK
+  < O : C | Att: S, Pr: (L, ( A ! Q @ CC(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (insert (A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
+  < O : C | Att: S, Pr: (insert (A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
   invoc(O, label(O, N), Q @ CC, EVALLIST(EL, (S # L), T)) from O to O CLOCK'
 )dnl
   [label local-async-static-call] .
@@ -887,15 +876,15 @@ ifdef(`MODELCHECK',
 ---
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Lcnt: N > CLOCK
+  < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, EVAL(E, (S # L), T), Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Lcnt: N > CLOCK
+  < O : C | Att: S, Pr: (insert(A, label(O, EVAL(E, (S # L), T), Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   invoc(O, label(O, EVAL(E, (S # L), T), Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T)) from O to EVAL(E, (S # L), T)'
 ,dnl
 `rl
-  < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Lcnt: N > CLOCK
+  < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Lcnt: N + 1 >
+  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
   invoc(O, label(O, N), Q , EVALLIST(EL, (S # L), T)) from O to EVAL(E, (S # L), T) CLOCK'
 )dnl
   [label remote-async-call] .
@@ -903,8 +892,8 @@ ifdef(`MODELCHECK',
 
 --- return
 ---
-STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >' CLOCK,
-`< O : C |  Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
+`< O : C |  Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   CLOCK
   comp(L[".label"], EVALLIST(EL, (S # L), T)) from O to caller(L[".label"])',
 `[label return]')
@@ -915,28 +904,31 @@ STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Lcnt: N >' CLOCK,
 --- Transport rule: include new message in queue
 ---
 eq
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > (MsgBody from O' to O)
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  (MsgBody from O' to O)
   =
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM + MsgBody >
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM + MsgBody,
+    Lcnt: N >
   [label transport] .
 
 --- free
 ---
 --- Free a label.  Make sure that the use of labels is linear.
 ---
-STEP(< O : C | Att: S`,' Pr: (L`,' free(A) ; SL)`,' PrQ: W`,' Lcnt: N >
-  < O : Qu | Size: Sz`,' Dealloc: LS`,' Ev: MM >,
-  < O : C | Att: S`,' Pr: (insert(A`,' null`,' L)`,' SL)`,' PrQ: W`,'  Lcnt: N >
-  < O : Qu | Size: Sz`,'  Dealloc: (L[A] ^ LS)`,'  Ev: MM >,
+STEP(< O : C | Att: S`,' Pr: (L`,' free(A) ; SL)`,' PrQ: W`,'
+               Dealloc: LS`,' Ev: MM`,' Lcnt: N >,
+  < O : C | Att: S`,' Pr: (insert(A`,' null`,' L)`,' SL)`,' PrQ: W`,'
+            Dealloc: (L[A] ^ LS)`,' Ev: MM`,' Lcnt: N >,
   `[label free]')
 
 
 --- deallocate
 ---
 eq
-  < O : Qu | Size: Sz, Dealloc: (Lab ^ LS), Ev: comp(Lab, DL) + MM >
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: (Lab ^ LS),
+            Ev: MM + comp(Lab, DL), Lcnt: N >
   =
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >
+  < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   [label deallocate] .
 
 
@@ -945,8 +937,8 @@ eq
 --- Fake the caller and the label and tag the label.  Since we do not
 --- want to interleave, this can also be an equation.
 ---
-STEP(`< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >' CLOCK,
-`< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Lcnt: N >
+STEP(`< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
+`< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   bindMtd(O, O, tag(L[".label"]), M, EVALLIST(EL, (S # L), T), C < emp >)'
   CLOCK,
 `[label tailcall]')
@@ -954,9 +946,9 @@ STEP(`< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Lcnt: N >' CLOCK,
 *** If we receive the method body, the call is accepted and the label untagged.
 crl
   < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
-         Lcnt: N >
+         Dealloc: LS, Ev: MM, Lcnt: N >
   =>
-  < O : C | Att: S, Pr: (insert(".label", tag(Lab), L), SL), PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: (insert(".label", tag(Lab), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   if L[".label"] = Lab
   [label tailcall-accept] .
 
@@ -972,14 +964,13 @@ crl
 --- here, because there is no caller the initialisation will return to.
 ---
 STEP(dnl
-< O : C | Att: S`,'Pr: (L`,' (A ::= new CC (EL)); SL)`,' PrQ: W`,' Lcnt: N > 
+< O : C | Att: S`,'Pr: (L`,' (A ::= new CC (EL)); SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N > 
   < CC : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: F >
   CLOCK`'dnl
 ,dnl
-< O : C | Att: S`,' Pr: (L`,' assign(A`,' newId(CC`,' F)); SL)`,' PrQ: W`,' Lcnt: N >
+< O : C | Att: S`,' Pr: (L`,' assign(A`,' newId(CC`,' F)); SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   < CC : Cl | Inh: I `,' Par: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: (F + 1) >
-  < newId(CC`,'F) : CC | Att: S`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 1 >
-  < newId(CC`,'F) : Qu | Size: 10`,' Dealloc: noDealloc`,' Ev: noMsg >
+  < newId(CC`,'F) : CC | Att: S`,' Pr: idle`,' PrQ: noProc`,' Dealloc: noDealloc`,' Ev: noMsg`,' Lcnt: 0 >
   findAttr(newId(CC`,' F)`,' I`,' S'`,' 
     assign(AL`,' EVALLIST(EL, compose(S`,'  L), T))`,'
     ((noSubst`,' (".anon" ! "init" (emp)) ; (".anon" ?(noVid)) ;
@@ -1015,9 +1006,9 @@ eq
 
 eq
   foundAttr(O, S', SL, (L', SL'))
-  < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
+  < O : C | Att: S, Pr: idle, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
-  < O : C | Att: ("this" |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Lcnt: N > .
+  < O : C | Att: ("this" |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > .
 
 
 
@@ -1027,17 +1018,14 @@ eq
 ---
 ifdef(`TIME',dnl
 `CSTEP(
-`< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
-`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM > CLOCK',
+`< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W,
+           Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
+`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
 EVALGUARD(G, (S # L), MM, T) asBool,
 `[label posit]')',
 `STEP(
-`< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
-`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Lcnt: N >
-  < O : Qu | Size: Sz, Dealloc: LS, Ev: MM >',
+`< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >',
+`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >',
 `[label posit]')'dnl
 )dnl END if time.
 
@@ -1058,12 +1046,12 @@ eq posit(S, (L, SL) ++ W, T) = posit((S # L),SL,T) and posit(S, W, T) .
 op posit : State -> Bool .
 eq posit ({ clock(delta, T) }) = true .
 eq posit ({ c:Class cnf }) = posit ({ cnf }) .
-eq posit ({ c:Queue cnf }) = posit ({ cnf }) .
-eq posit ({ < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: N >
+eq posit ({ cnf }) = posit ({ cnf }) .
+eq posit ({ < O : C | Att: S, Pr: idle, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
             cnf clock(delta, T) }) =
   *** posit (S, W, T + delta) and
     posit ({ cnf clock(delta, T) }) .
-eq posit ({ < O : C | Att: S, Pr: (L, SL), PrQ: W, Lcnt: N >
+eq posit ({ < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
             cnf clock(delta, T) }) =
   posit((S # L), SL, T + delta) and *** posit (S, W, T + delta) and
     posit ({ cnf clock(delta, T) }) .
@@ -1088,6 +1076,8 @@ mod CREOL-PREDICATES is
   var C : Cid .
   var O : Oid .
   vars S S' L L' : Subst .
+  var LS : Labels .
+  var MM : MMsg .
   var P : Process .
   var Q : MProc .
   vars N N' : Nat .
@@ -1096,7 +1086,7 @@ mod CREOL-PREDICATES is
   eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= objcnt(C`,' N') = N == N' .
   eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= maxobjcnt(C`,' N') = N <= N' .
   eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= minobjcnt(C`,' N') = N >= N' .
-  eq { c < O : C | Att: S`,' Pr: P`,' PrQ: Q`,' Lcnt: N > } |= hasvalue(O`,' A`,' D) = D == S[A] .
+  eq { c < O : C | Att: S`,' Pr: P`,' PrQ: Q`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N > } |= hasvalue(O`,' A`,' D) = D == S[A] .
 
 endm
 )dnl

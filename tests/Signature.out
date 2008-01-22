@@ -348,30 +348,50 @@ reduce in CREOL-CLASS : downTerm(upTerm("A" < emp > ## "B" < "x" >), noInh) .
 result InhList: "A" < emp > ## "B" < "x" >
 ==========================================
 reduce in CREOL-OBJECT : 
-< ob("object1") : "Class" | Att: noSubst,
+< ob("object1") : "Class" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 > .
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 > .
 result Object: 
-< ob("object1") : "Class" | Att: noSubst,
+< ob("object1") : "Class" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 >
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >
 ==========================================
 reduce in CREOL-OBJECT : upTerm(
-< ob("object1") : "Class" | Att: noSubst,
+< ob("object1") : "Class" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 >) .
-result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Lcnt:_>['ob`(_`)[
-    '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
-    'noProc.MProc,'0.Zero]
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >) .
+result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>[
+    'ob`(_`)['"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
+    'noProc.MProc,'noDealloc.Labels,'noMsg.MMsg,'0.Zero]
 ==========================================
 reduce in CREOL-OBJECT : downTerm(upTerm(
-< ob("object1") : "Class" | Att: noSubst,
+< ob("object1") : "Class" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 >), noObj) .
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >), noObj) .
 result Object: 
-< ob("object1") : "Class" | Att: noSubst,
+< ob("object1") : "Class" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 >
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >
 ==========================================
 reduce in CREOL-COMMUNICATION : noMsg .
 result MMsg: noMsg
@@ -381,30 +401,6 @@ result Constant: 'noMsg.MMsg
 ==========================================
 reduce in CREOL-COMMUNICATION : downTerm(upTerm(noMsg), noMsg) .
 result MMsg: noMsg
-==========================================
-reduce in CREOL-COMMUNICATION : noQu .
-result Queue: noQu
-==========================================
-reduce in CREOL-COMMUNICATION : upTerm(noQu) .
-result Constant: 'noQu.Queue
-==========================================
-reduce in CREOL-COMMUNICATION : downTerm(upTerm(noQu), noQu) .
-result Queue: noQu
-==========================================
-reduce in CREOL-COMMUNICATION : 
-< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg > .
-result Queue: 
-< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
-==========================================
-reduce in CREOL-COMMUNICATION : upTerm(
-< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >) .
-result GroundTerm: '<_:`Qu`|`Size:_`,Dealloc:_`,Ev:_>['ob`(_`)['"Ob1".String],
-    's_['0.Zero],'noDealloc.Labels,'noMsg.MMsg]
-==========================================
-reduce in CREOL-COMMUNICATION : downTerm(upTerm(
-< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >), noQu) .
-result Queue: 
-< ob("Ob1") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
 ==========================================
 reduce in CREOL-LABEL-TEST : cont(label(1)) .
 result Stm: cont(label(1))
