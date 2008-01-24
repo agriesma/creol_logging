@@ -440,7 +440,11 @@ basic_statement:
         { signal_error $startpos($4) "syntax error in if statement" }
     | WHILE c = expression inv = ioption(preceded(INV, expression)) DO
 	s = statement END
-	{ While (statement_note $startpos, c, inv, s) }
+	{ match inv with
+	      Some i -> While (statement_note $startpos, c, i, s)
+	    | None ->
+		While (statement_note $startpos, c,
+		       Bool (expression_note $startpos, true), s) }
     | WHILE expression INV expression DO error
         { signal_error $startpos($6) "syntax error in while statement" }
     | WHILE expression DO error
@@ -451,7 +455,11 @@ basic_statement:
         { signal_error $startpos($2) "syntax error in while condition" }
     | DO s = statement inv = ioption(preceded(INV, expression))
       WHILE c = expression
-	{ DoWhile (statement_note $startpos, c, inv, s) }
+	{ match inv with
+	      Some i -> DoWhile (statement_note $startpos, c, i, s)
+	    | None ->
+		DoWhile (statement_note $startpos, c,
+			 Bool(expression_note $startpos, true), s) }
     | ASSERT a = expression
 	{ Assert (statement_note $startpos, a) }
     | ASSERT error

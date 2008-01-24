@@ -30,15 +30,13 @@ EXTRA_DIST		= sorts.dot sorts.txt sorts.eps sorts.pdf sorts.png
 MOSTLYCLEANFILES	= *~ *.cps
 CLEANFILES		=
 DISTCLEANFILES		=
-MAINTAINERCLEANFILES	=
+MAINTAINERCLEANFILES	= sorts.eps sorts.pdf sorts.png
 
 .dot.eps:
-	${DOT} -Tps -o $@ $<
+	${DOT} -T ps2 -o $@ $<
 
-.dot.pdf:
-	${DOT} -Tps2 -o temp.eps $<
-	ps2pdf14 temp.eps $@
-	rm -f temp.eps
+.eps.pdf:
+	ps2pdf14 $< $@
 
 .dot.png:
-	${DOT} -Tpng -o $@ $<
+	${DOT} -T png -o $@ $<

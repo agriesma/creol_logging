@@ -1,0 +1,1 @@
+red modelCheck({ init main("Butler", emp) }, <> [] objcnt("Philosopher", 5)) .

@@ -350,14 +350,9 @@ let emit ~name ~tree =
 	  XmlTextWriter.start_element writer "creol:condition" ;
 	  creol_expression_to_xml c ;
           XmlTextWriter.end_element writer ;
-	  begin
-	    match i with
-		None -> ()
-	      | Some inv ->
-		  XmlTextWriter.start_element writer "creol:invariant" ;
-		  creol_expression_to_xml inv ;
-		  XmlTextWriter.end_element writer ;
-	  end ;
+	  XmlTextWriter.start_element writer "creol:invariant" ;
+	  creol_expression_to_xml i ;
+	  XmlTextWriter.end_element writer ;
 	  XmlTextWriter.start_element writer "creol:do" ;
 	  creol_statement_to_xml d ;
           XmlTextWriter.end_element writer ;
@@ -371,14 +366,9 @@ let emit ~name ~tree =
 	  XmlTextWriter.start_element writer "creol:condition" ;
 	  creol_expression_to_xml c ;
           XmlTextWriter.end_element writer ;
-	  begin
-	    match i with
-		None -> ()
-	      | Some inv ->
-		  XmlTextWriter.start_element writer "creol:invariant" ;
-		  creol_expression_to_xml inv ;
-		  XmlTextWriter.end_element writer ;
-	  end ;
+	  XmlTextWriter.start_element writer "creol:invariant" ;
+	  creol_expression_to_xml i ;
+	  XmlTextWriter.end_element writer ;
 	  creol_statement_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Statement.Sequence (a, s1, s2) ->

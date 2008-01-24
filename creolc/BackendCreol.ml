@@ -333,11 +333,11 @@ let emit out_channel input =
 	    output_string out_channel "while ";
 	    pretty_print_expression c;
 	    (match i with
-		None -> ()
-	      | Some inv -> 
+		Expression.Bool (_, true) -> ()
+	      | _ -> 
 		  do_indent lvl;
 		  output_string out_channel "inv ";
-		  pretty_print_expression inv ;
+		  pretty_print_expression i ;
 		  do_indent lvl) ;
 	    output_string out_channel " do ";
 	    do_indent (lvl + 1);
@@ -353,11 +353,11 @@ let emit out_channel input =
 	    print (lvl + 1) 25 b;
 	    do_indent lvl ;
 	    (match i with
-		None -> ()
-	      | Some inv -> 
+		Expression.Bool (_, true) -> ()
+	      | _ -> 
 		  do_indent lvl;
 		  output_string out_channel "inv ";
-		  pretty_print_expression inv ;
+		  pretty_print_expression i ;
 		  do_indent lvl) ;
 	    output_string out_channel "while ";
 	    pretty_print_expression c;

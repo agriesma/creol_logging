@@ -80,6 +80,11 @@ let passes = [
       dependencies = "";
       pass = Typing.typecheck;
       elapsed = 0.0; enabled = true; dump = false } );
+  ( "fold",
+    { help = "Fold all constants." ;
+      dependencies = "typecheck" ;
+      pass = TreeFold.optimise ;
+      elapsed = 0.0; enabled = false; dump = false } );
   ( "lower" ,
     { help = "Expand statements to Core Creol" ;
       dependencies = "";

@@ -22,12 +22,16 @@ CLEANFILES		= *.prof
 DISTCLEANFILES		= *.maude
 MAINTAINERCLEANFILES	= Makefile.in
 
-EXTRA_DIST	= generate.sh Philosophers.creol
+EXTRA_DIST	= generate.sh \
+		  Philosophers.creol Philosophers.tests
 
 SUFFIXES	= .maude .prof
 
 CREOL_LIBRARY_PATH	= ${top_srcdir}/share
 MAUDE_LIB		:= ${top_builddir}/share:${MAUDE_LIB}
+
+GENERATE	= $(SHELL) ${srcdir}/generate.sh
+CREOLC		= ${top_builddir}/creolc/creolc
 
 export CREOL_LIBRARY_PATH MAUDE_LIB
 
@@ -36,14 +40,14 @@ check-local: Phil1.prof Phil2.prof
 .maude.prof:
 	${MAUDE} $< > $@
 
-Phil1.maude: Philosophers.creol
+Phil1.maude: Philosophers.creol Philosophers.tests ${srcdir}/generate.sh
 	rm -f model.maude
-	 ${top_builddir}/creolc/creolc -T maudemc -o model.maude $<
-	$(SHELL) ${srcdir}/generate.sh model.maude $@
+	$(CREOLC) -T maudemc -o model.maude $<
+	$(GENERATE) model.maude ${srcdir}/Philosophers.tests $@
 	rm -f model.maude
 
-Phil2.maude: Philosophers.creol
+Phil2.maude: Philosophers.creol Philosophers.tests ${srcdir}/generate.sh
 	rm -f model.maude
-	${top_builddir}/creolc/creolc -T maudemc -p devirt -o model.maude $<
-	$(SHELL) ${srcdir}/generate.sh model.maude $@
+	$(CREOLC) -T maudemc -p devirt -o model.maude $<
+	$(GENERATE) model.maude ${srcdir}/Philosophers.tests $@
 	rm -f model.maude

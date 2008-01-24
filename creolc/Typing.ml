@@ -979,21 +979,13 @@ let typecheck tree: Declaration.t list =
 	    If (n, type_check_expression program cls meth coiface [] cond,
 		type_check_statement program cls meth coiface iftrue,
 		type_check_statement program cls meth coiface iffalse)
-	| While (n, cond, None, body) ->
+	| While (n, cond, inv, body) ->
 	    While (n, type_check_expression program cls meth coiface [] cond,
-		   None,
+		   type_check_expression program cls meth coiface [] inv,
 		   type_check_statement program cls meth coiface body)
-	| While (n, cond, Some inv, body) ->
-	    While (n, type_check_expression program cls meth coiface [] cond,
-		   Some (type_check_expression program cls meth coiface [] inv),
-		   type_check_statement program cls meth coiface body)
-	| DoWhile (n, cond, None, body) ->
+	| DoWhile (n, cond, inv, body) ->
 	    DoWhile (n, type_check_expression program cls meth coiface [] cond,
-		   None,
-		   type_check_statement program cls meth coiface body)
-	| DoWhile (n, cond, Some inv, body) ->
-	    DoWhile (n, type_check_expression program cls meth coiface [] cond,
-		   Some (type_check_expression program cls meth coiface [] inv),
+		   type_check_expression program cls meth coiface [] inv,
 		   type_check_statement program cls meth coiface body)
 	| Sequence (n, s1, s2) ->
 	    let ns1 = type_check_statement program cls meth coiface s1 in

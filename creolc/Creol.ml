@@ -400,14 +400,45 @@ struct
       | FuncCall (a, _, _) -> a
       | Label (a, _) -> a
       | New (a, _, _) -> a
-	  (*i	| Choose (a, _, _, _) -> a
-	    | Forall (a, _, _, _) -> a
-	    | Exists (a, _, _, _) -> a i*)
+      | Choose (a, _, _, _) -> a
+      | Forall (a, _, _, _) -> a
+      | Exists (a, _, _, _) -> a 
       | Extern (a, _) -> a
       | SSAId (a, _, _) -> a
       | Phi (a, _) -> a
 
   let get_type expr = (note expr).ty
+
+  let set_note note =
+    function
+	This _ -> This note
+      | QualifiedThis (_, t) -> QualifiedThis (note, t)
+      | Caller _ -> Caller note
+      | Now _ -> Now note
+      | Null _ -> Null note
+      | Nil _ -> Nil note
+      | History _ -> History note
+      | Bool (_, v) -> Bool (note, v)
+      | Int (_, v) -> Int (note, v)
+      | Float (_, v) -> Float (note, v)
+      | String (_, v) -> String (note, v)
+      | Id (_, i) -> Id (note, i)
+      | StaticAttr(_, i, t) -> StaticAttr (note, i, t)
+      | Tuple (_, l) -> Tuple (note, l)
+      | ListLit (_, l) -> ListLit (note, l)
+      | SetLit (_, l) -> SetLit (note, l)
+      | Unary (_, o, a) -> Unary (note, o, a)
+      | Binary (_, o, l, r) -> Binary (note, o, l, r)
+      | If (_, c, t, f) -> If (note, c, t, f)
+      | FuncCall (_, f, a) -> FuncCall (note, f, a)
+      | Label (_, l) -> Label (note, l)
+      | New (_, c, a) -> New (note, c, a)
+      | Choose (_, v, t, p) -> Choose (note, v, t, p)
+      | Forall (_, v, t, p) -> Forall (note, v, t, p)
+      | Exists (_, v, t, p) -> Exists (note, v, t, p)
+      | Extern (_, i) -> Extern (note, i)
+      | SSAId (_, i, n) -> SSAId (note, i, n)
+      | Phi (_, l) -> Phi (note, l)
 
   let get_lhs_type =
     function
@@ -430,6 +461,44 @@ struct
       | LhsAttr(_, n, _) -> n
       | LhsWildcard _ -> "_"
       | LhsSSAId (_, n, _) -> n
+
+
+  (* Whether an expression is a true literal. *)
+  let rec literal_p =
+    function
+      | Null _ | Nil _ | Bool _ | Int _ | Float _ | String _ ->
+	  true
+      | Tuple (_, l) | ListLit (_, l) | SetLit (_, l) ->
+	  List.for_all literal_p l
+      | _ ->
+	  false
+
+
+  (* Whether an expression is a constant expression. *)
+  let rec constant_p =
+    function
+	This _ | QualifiedThis _ | Caller _ -> true
+      | Now _ -> true (* At least within the same state *)
+      | Null _ | Nil _ -> true
+      | History _ -> true (* At least within the same state *)
+      | Bool _ | Int _ | Float _ | String _ -> true
+      | Id _ -> false
+      | StaticAttr _ -> false
+      | Tuple (_, l) -> List.for_all constant_p l
+      | ListLit (_, l) -> List.for_all constant_p l
+      | SetLit (_, l) -> List.for_all constant_p l
+      | Unary (_, _, a) -> constant_p a
+      | Binary (_, _, l, r) -> (constant_p l) && (constant_p r)
+      | If (_, c, t, f) -> (constant_p c) && (constant_p t) && (constant_p f)
+      | FuncCall (_, _, a) -> List.for_all constant_p a
+      | Label _ -> false
+      | New _ -> false
+      | Choose _ -> false
+      | Forall (_, _, _, p) -> constant_p p
+      | Exists (_, _, _, p) -> constant_p p
+      | Extern (_, i) -> false
+      | SSAId _ -> false
+      | Phi _ -> false
 
   (* Whether an expression contains a label *)
   let rec contains_label_p =
@@ -666,8 +735,8 @@ struct
     | Tailcall of note * string * Type.signature * string option *
 	string option * Expression.t list
     | If of note * Expression.t * t * t
-    | While of note * Expression.t * Expression.t option * t
-    | DoWhile of note * Expression.t * Expression.t option * t
+    | While of note * Expression.t * Expression.t * t
+    | DoWhile of note * Expression.t * Expression.t * t
     | Sequence of note * t  * t
     | Merge of note * t * t
     | Choice of note * t * t

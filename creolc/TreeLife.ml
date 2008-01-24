@@ -244,10 +244,7 @@ let compute_in_body ~program ~cls ~meth =
       | While (n, c, i, b) ->
 	  let b' = compute_in_statement outs b in
 	  let outs' = life b' in
-	  let g =
- 	    match i with
-		None -> (gen c)
-	      | Some inv -> IdSet.union (gen c) (gen inv)
+	  let g = IdSet.union (gen c) (gen i)
 	  in
 	  let n' = { n with life = IdSet.union g outs' } in
 	    logio stmt outs n'.life ;
@@ -255,10 +252,7 @@ let compute_in_body ~program ~cls ~meth =
       | DoWhile (n, c, i, b) ->
 	  let b' = compute_in_statement outs b in
 	  let outs' = life b' in
-	  let g =
- 	    match i with
-		None -> (gen c)
-	      | Some inv -> IdSet.union (gen c) (gen inv)
+	  let g = IdSet.union (gen c) (gen i)
 	  in
 	  let n' = { n with life = IdSet.union g outs' } in
 	    logio stmt outs n'.life ;

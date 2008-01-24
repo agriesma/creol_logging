@@ -17,21 +17,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ -z "$1" -o -z "$2" ]
+if [ -z "$1" -o -z "$2" -o -z "$3" ]
 then
-	echo "Usage: $0 [maude-file] [out-file]"
+	echo "Usage: $0 [maude-file] [spec-file] [out-file]"
+	exit 1
 fi
 
-if [ -f "$2" ]
+if [ -f "$3" ]
 then
-	rm "$2"
+	rm "$3"
 fi
 
-cp "$1" "$2"
+tmpfile1=`mktemp profiler.XXXXXXXXXX`
+tmpfile2=`mktemp profiler.XXXXXXXXXX`
 
-cat >> "$2" <<EOF
+cat >> $tmpfile1 <<EOF
 set profile on .
-red modelCheck({ init main("Butler", emp) }, <> [] objcnt("Philosopher", 5)) .
+set clear profile off .
+EOF
+
+cat >> $tmpfile2 <<EOF
 show profile .
 quit .
 EOF
+
+cat "$1" "$tmpfile1" "$2" "$tmpfile2" > "$3"
+
+rm -f "$tmpfile1" "$tmpfile2"
