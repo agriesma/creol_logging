@@ -1,3 +1,7 @@
 @node Bibliography
 @appendix Bibliography
 
+Leslie Lamport
+@anchor{Lamport (1987)} (1987),
+@url{http://research.microsoft.com/users/lamport/pubs/distributed-system.txt},
+accessed 2008-01-25.

@@ -21,17 +21,48 @@ have a notion of output or console, because it is a language for
 describing @emph{distributed systems} using objet-oriented
 techniques.
 
-A distribtuted system ... XXX
+A distribtuted system collects many computing resources into one
+system to solve common tasks.  This is often done to increase the
+computational power of the system (especially, if the task at hand is
+easy to parallelise).  But very often, the subsystems of a distributed
+system offer specialised facilities which are not shared by other
+subsystems.  However, building distributed systems is hard, since all
+parts work independently but still have to cooperate.  Leslie Lamport
+characterises a distributed system by: ``A distributed system is one
+in which the failure of a computer you didn't even know existed can
+render your own computer unusable'' (@pxref{Lamport (1987)}).
 
-Since Creol does not provide any output, we shall in all examples
-indicate where the results are stored.  In the following example we
-have two classes and one interface.
+Conceptually, each object of a Creol system executes on its own
+virtual processor and owns its own private ressources.  The object is
+active and has its own thread of execution, where its activity starts
+immediately after the object has been created and initialised.  It is
+responsible for its own scheduling.  Other objects have very little
+control on how an object is coordinating its activities.  It has
+private access to its data.  All communication between objects is only
+by message passing.  Object can neither read nor write attributes
+which belong to another object.
 
-Whereas traditionally classes are the type of objects, objects in
-Creol are typed by interfaces only.  The interface describes what
-methods are available to other objects.  Additionally, one can specify
-@emph{co-interfaces}.  A method is only available to objects which are
-typed by the co-interface.
+Objects may receive messages, which results in the creation of an
+activity which handles the reaction to that message.  At any time at
+most one activity is active in an object.  Different activities are
+coordinated cooperatively:  An activity has to explicitely yield to
+other activities.
+
+Creol does not provide any output functions.  We still want to show a
+simple ``hello, world'' example.  We do so with two objects.  One
+object will send a ``hello, world'' message and the other object will
+receive it.  As in other object-oriented programming languages,
+classes are a structuring mechanism that collects attribute
+declarations and the code for methods.  Objects are instances of one
+class, but classes can inherit code from other classes
+(@pxref{Inheritance}).
+
+In contrast to other object-oriented programming languages, where
+classes are also types of objects, objects in Creol are typed by
+interfaces only.  The interface describes what methods are available
+to other objects.  Additionally, one can specify @emph{co-interfaces}.
+A method is only available to objects which are typed by the
+co-interface.
 
 Below, objects of type @code{Hello} export a method @code{hello} to
 all objects which are an instance of @code{Any}.  The interface
@@ -408,11 +439,12 @@ type of @code{caller} is @var{A}.  Within the body of @var{m}, the
 programmer can call all methods of @code{caller} that are defined in
 interface @code{A}.
 
-Some methods, most prominently @code{run} and @code{init} (see below
-XXX), do not define a co-interface, because they are listed before the
-first @code{with} clause.  Such methods do not define the variable
-@code{caller}, because @code{caller} does not have a type.  As a
-consequence, these methods may only be called by the object itself.
+Some methods, most prominently @code{run} and @code{init}
+(@pxref{Object Activity}), do not define a co-interface, because they
+are listed before the first @code{with} clause.  Such methods do not
+define the variable @code{caller}, because @code{caller} does not have
+a type.  As a consequence, these methods may only be called by the
+object itself.
 
 Such self calls do not mention the receiver of the message.  They
 exist in two variants: @code{@var{m}(@var{i};@var{o})} (synchronous
@@ -644,3 +676,26 @@ Additionally, observe the order in which the @code{init} method's are
 run:  it is the reverse order in which the segments of the attributes
 are initialised.  This ensures, that the class parameters are present
 and initialised once the method is run.
+
+
+@subsection Object Activity
+@anchor{Object Activity}
+
+After the object is created, it will continue to execute the internal
+@code{run} method.  The invocation of that method is the final step of
+object creation.
+
+If the @code{run} method is not provided, a default implementation
+consisting of @code{skip} is used.  After executing that statement,
+the object becomes @emph{passive} and will henceforth only react to
+method invocation from other objects.
+
+As a general principle, an object may become passive at any time by
+ceasing to maintain its activity.  Conversely, in order to stay
+active, the object has to maintain its activity, usually by using
+self-calls.
+
+We advise to use asyncrhonous self-calls, which allows other
+activities to be scheduled.  Otherwise, the object becomes
+unresponsive.  Synchronous calls may be used, if the activity allows
+other activities to be scheduled by using await-statements.
