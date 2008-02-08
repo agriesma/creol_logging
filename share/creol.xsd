@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xs:schema PUBLIC "-//W3C//DTD XMLSCHEMA 200102//EN" "http://www.w3.org/2001/XMLSchema.dtd">
 
-<!--
+<!-- creol.xsd - See the License below -->
 
-creol.xsd
-
--->
-
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <xsd:annotation>
-    <xsd:documentation xml:lang="en">
-      An XML schema for Creol Programs
+<xs:schema xml:lang="EN" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:documentation xml:lang="en">
+      XML schema of the XML dump format exported by creoltools.
 
       Written by Marcel Kyas
 
@@ -24,26 +21,62 @@ creol.xsd
       General Public License for more details.
 
       You should have received a copy of the GNU General Public License
-      along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    </xsd:documentation>
-  </xsd:annotation>
+      along with this program.  If not, see
+      &lt;http://www.gnu.org/licenses/&gt;.
+    </xs:documentation>
+  </xs:annotation>
 
-  <xsd:element name="creol" type="CreolType" />
+  <xs:element name="creol" type="CreolType" />
 
-  <xsd:complexType name="CreolType">
-    <xsd:sequence>
-      <xsd:element name="class" type="CreolClassType" />
-      <xsd:element name="interface" type="CreolInterfaceType" />
-    </xsd:sequence>
-    <xsd:attribute name="version" type="xsd:NMTOKEN" fixed="0.0" />
-    <xsd:attribute name="date" type="xsd:date" />
-  </xsd:complexType>
+  <xs:complexType name="CreolType">
+      <xs:sequence>
+	<xs:element name="class" type="Creol.Class" />
+	<xs:element name="interface" type="Creol.Interface" />
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:NMTOKEN" fixed="0.0" />
+      <xs:attribute name="date" type="xs:date" />
+  </xs:complexType>
 
-  <xsd:complexType name="CreolClassType">
-    <xsd:sequence>
-      <xsd:element name="" />
-    </xsd:sequence>
-    <xsd:attribute name="name" type="xsd:string" />
-  </xsd:complexType>
+  <xs:complexType name="Creol.Interface">
+    <xs:sequence>
+      <xs:element name="parameters" />
+      <xs:element name="inherits" />
+      <xs:element name="contracts" />
+      <xs:element name="implements" />
+      <xs:element name="attribute" />
+      <xs:element name="invariant" />
+      <xs:element name="with" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" />
+  </xs:complexType>
 
-</xsd:schema>
+  <xs:element name="class" type="Creol.Class" />
+
+  <xs:complexType name="Creol.Interface">
+    <xs:sequence>
+      <xs:element name="parameters" />
+      <xs:element name="inherits" />
+      <xs:element name="contracts" />
+      <xs:element name="implements" />
+      <xs:element name="attribute" />
+      <xs:element name="invariant" />
+      <xs:element name="with" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="Creol.Attribute">
+    <xs:sequence>
+      <xs:element name="type" type="Creol.Type" />
+      <xs:element name="init" type="Creol.Expression" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="Creol.Type">
+  </xs:complexType>
+
+  <xs:complexType name="Creol.Expression">
+  </xs:complexType>
+
+</xs:schema>
