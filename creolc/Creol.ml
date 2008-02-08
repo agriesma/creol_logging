@@ -1060,6 +1060,13 @@ module Method =
     let local_p meth name =
       var_p meth name || input_p meth name || output_p meth name
 
+    let apply_to_body (f: Statement.t -> Statement.t) meth =
+      match meth.body with
+	  None ->
+	    meth
+	| Some body ->
+	    { meth with body = Some (f body) }
+
   end
 
 

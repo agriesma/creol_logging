@@ -117,10 +117,6 @@ let optimise_in_statement meth stmt =
 
 
 let optimise_in_method prg cls meth =
-  match meth.Method.body with
-      None ->
-	meth
-    | Some body ->
-	{ meth with Method.body = Some (optimise_in_statement meth body) }
+  Method.apply_to_body (optimise_in_statement meth) meth
 
 let optimize prg = Program.for_each_method prg optimise_in_method
