@@ -71,8 +71,9 @@ let emit options out_channel input =
       | Expression.Now _ -> output_string out_channel "now"
       | Expression.History _ -> assert false
       | Expression.Int (_, i) ->
-	  output_string out_channel ("int(" ^ (string_of_int i) ^ ")")
-      | Expression.Float (_, f) -> assert false
+	  output_string out_channel ("int(" ^ (Big_int.string_of_big_int i) ^ ")")
+      | Expression.Float (_, f) -> 
+	  output_string out_channel ("float(" ^ (Num.string_of_num f) ^ ")")
       | Expression.Bool (_, false) -> output_string out_channel "bool(false)"
       | Expression.Bool (_, true) -> output_string out_channel "bool(true)"
       | Expression.String (_, s) ->

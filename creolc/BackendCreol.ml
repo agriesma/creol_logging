@@ -408,9 +408,10 @@ let emit out_channel input =
 	| Expression.Nil _ -> output_string out_channel "nil"
 	| Expression.Null _ -> output_string out_channel "null"
 	| Expression.History _ -> output_string out_channel "history"
-	| Expression.Int (_, i) -> output_string out_channel (string_of_int i)
+	| Expression.Int (_, i) ->
+                        output_string out_channel (Big_int.string_of_big_int i)
 	| Expression.Float (_, f) ->
-	    output_string out_channel (string_of_float f)
+	    output_string out_channel (Num.string_of_num f)
 	| Expression.Bool (_, b) ->
 	    output_string out_channel (string_of_bool b)
 	| Expression.String (_, s) ->

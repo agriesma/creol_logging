@@ -163,8 +163,8 @@ rule token = parse
     | "where" { reserved lexbuf }
     | "while" { WHILE }
     | "with" { WITH }
-    | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
-    | ['0'-'9']+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
+    | FLOAT { FLOAT(Num.num_of_string (Lexing.lexeme lexbuf)) }
+    | ['0'-'9']+ { INT(Big_int.big_int_of_string (Lexing.lexeme lexbuf)) }
     | CID { CID(Lexing.lexeme lexbuf) }
     | ID { ID(Lexing.lexeme lexbuf) }
     | STRING

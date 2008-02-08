@@ -502,12 +502,12 @@ let emit ~name ~tree =
           XmlTextWriter.end_element writer
       | Expression.Int (a, v) -> 
 	  XmlTextWriter.start_element writer "creol:int" ;
-	  XmlTextWriter.write_attribute writer "value" (string_of_int v) ;
+	  XmlTextWriter.write_attribute writer "value" (Big_int.string_of_big_int v) ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Float (a, v) -> 
 	  XmlTextWriter.start_element writer "creol:float" ;
-	  XmlTextWriter.write_attribute writer "value" (string_of_float v) ;
+	  XmlTextWriter.write_attribute writer "value" (Num.string_of_num v) ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.String (a, v) -> 

@@ -80,9 +80,10 @@ let optimise_in_statement meth stmt =
               | Length ->
                   begin
                     match e' with
-                      | Nil _ -> Int (n, 0)
-                      | ListLit (_, l) -> Int (n, List.length l)
-                      | SetLit (_, []) -> Int (n, 0)
+                      | Nil _ -> Int (n, Big_int.zero_big_int)
+                      | ListLit (_, l) ->
+                          Int (n, Big_int.big_int_of_int (List.length l))
+                      | SetLit (_, []) -> Int (n, Big_int.zero_big_int)
                       | _ -> Unary (n, o, e')
                   end
           end
@@ -95,37 +96,43 @@ let optimise_in_statement meth stmt =
 		Plus ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Int (n, lv + rv)
+			(Int (_, lv), Int (_, rv)) ->
+                           Int (n, Big_int.add_big_int lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Minus ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Int (n, lv - rv)
+			(Int (_, lv), Int (_, rv)) ->
+                                Int (n, Big_int.sub_big_int lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Times  ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Int (n, lv * rv)
+			(Int (_, lv), Int (_, rv)) ->
+                                Int (n, Big_int.mult_big_int lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Div ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Int (n, lv / rv)
+			(Int (_, lv), Int (_, rv)) ->
+                                Int (n, Big_int.div_big_int lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Modulo  ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Int (n, lv / rv)
+			(Int (_, lv), Int (_, rv)) ->
+                                Int (n, Big_int.mod_big_int lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Power ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Int (n, lv / rv)
+			(Int (_, lv), Int (_, rv)) ->
+                          Int (n, Big_int.power_big_int_positive_big_int lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Eq ->

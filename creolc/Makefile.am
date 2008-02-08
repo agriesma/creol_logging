@@ -90,7 +90,7 @@ creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
 
 OCAMLC_FLAGS		+= -g
 OCAMLOPT_FLAGS		+= -w a -noassert -unsafe -inline 10
-OCAMLFIND_FLAGS		+= -package "unix libxml2 str"
+OCAMLFIND_FLAGS		+= -package "num unix libxml2 str"
 
 SVNVERSION = \
 	if test -d ${top_srcdir}/.svn ; \

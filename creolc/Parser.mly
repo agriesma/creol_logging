@@ -104,9 +104,9 @@ let statement_note pos =
 %token TILDE AMPAMP BAR BARBAR HAT WEDGE VEE DLRARROW DARROW
 %token BACKSLASH UNDERSCORE
 %token <string> CID ID STRING
-%token <int>  INT
 %token <bool> BOOL
-%token <float> FLOAT
+%token <Big_int.big_int>  INT
+%token <Num.num> FLOAT
 %token NIL NULL
 
 (* %left COMMA *)

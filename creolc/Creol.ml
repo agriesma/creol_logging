@@ -254,8 +254,8 @@ struct
       | Nil of note
       | History of note
       | Bool of note * bool
-      | Int of note * int
-      | Float of note * float
+      | Int of note * Big_int.big_int
+      | Float of note * Num.num
       | String of note * string
       | Id of note * string
       | StaticAttr of note * string * Type.t
