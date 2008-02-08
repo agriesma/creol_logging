@@ -1,11 +1,35 @@
 @node Creol Prelude
 @chapter Creol Prelude
 
-The prelude of creol defines a standard library.  It contains all the
-data types, functions, and classes defined for all creol programs.
+The prelude of Creol provides the standard library of Creol.  It
+contains all the data types, functions, and classes defined for all
+creol programs.
+
+@menu
+* Datatype Data::       Universal super type.
+* Datatype Bool::       Truth values.
+* Datatype Real::       Real-valued numbers.
+@end menu
 
 
+@node Datatype Data
 @section Datatype Data
+
+The type @code{Data} is the implicit super-type of all other types.
+Two functions are predefined on all instances of @code{Data}: equality
+(written as @code{=}) and inequality (written as @code{/=}).
+
+The semantics of equality is a @emph{structural equality} for all
+@emph{datatypes} and @emph{referential equality} for objects.
+
+For data-values, equality is characterised by Leibnitz axiom, that two
+values @var{x} and @var{y} are equal if and only if all functions
+@var{f} applied to @var{x} and @var{y}, including predicates, return
+the same value, i.e., @var{f}(@var{x})=@var{f}(@var{y}).
+
+Two objects are equal if they have the same name.  Objects of
+different names may behave exactly the same in all circumstances, but
+may still be distinguished by their name.
 
 @example
 datatype Data
@@ -15,7 +39,13 @@ fun /= (a: Data, b: Data): Bool == extern "/="
 @end example
 
 
+@node Datatype Bool
 @section Datatype Bool
+
+The type @code{Bool} comprises the truth values.  The literals
+@code{true} and @code{false} have the type @code{Bool}.  In addition,
+the functions displayed below are defined on values of type
+@code{Bool}.
 
 @example
 datatype Bool
@@ -28,8 +58,33 @@ fun ^ (a: Bool, b: Bool): Bool == extern "^"
 fun <=> (a: Bool, b: Bool): Bool == extern "<=>"
 @end example
 
+The function @code{~} represents negation.
 
+The function @code{&&} represents conjunction.
+
+The function @code{||} represents disjunction.
+
+The function @code{=>} represents implication.
+
+The function @code{<=>} represents equivalence or by-implication.  It
+is a synonym for equality (@code{=}).
+
+The function @code{^} represent exclusive disjunction.  It
+is a synonym for inequality (@code{/=}).
+
+The functions @code{<=>} and @code{^} are provided, because they have
+lower precedence than @code{=} and @code{/=}, making it simpler to
+write formulae involving equalities and inequalities: @code{(P(a) =
+P(b)) = (a = b)} can be written nicelier as @code{P(a) = P(b) <=> a =
+b}.
+
+
+
+@node Datatype Real
 @section Datatype Real
+
+The type @code{Real} is supposed to include all values from the real
+number field.
 
 @example
 datatype Real
@@ -47,6 +102,10 @@ fun <= (a: Real, b: Real): Bool == extern "<="
 fun > (a: Real, b: Real): Bool == extern ">"
 fun >= (a: Real, b: Real): Bool == extern ">="
 @end example
+
+The compiler encodes literals of type @code{Real} as fractions with
+arbitrary precision.
+
 
 
 @section Datatype Int

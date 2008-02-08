@@ -65,8 +65,9 @@ Documentation License.''
 * CMC::                   Creol Machine Code.
 * creolc::                How to use the @command{creolc} compiler.
 * creolshell::            How to use the @command{creolshell}.
+* Grammar::               The grammar definition of Creol.
 * FAQ::                   Frequently asked questions.
-* Reporting Bugs::        How to write a good bug report.
+@c * Reporting Bugs::        How to write a good bug report.
 * Bibliography::          Further reading.
 * Licenses::              Your rights and freedoms.
 * Index::                 Index of concepts.
@@ -81,10 +82,11 @@ Documentation License.''
 @include cmc.texi
 @include creolc.texi
 @include creolshell.texi
+@include grammar.texi
 @include faq.texi
 
 @include bibliography.texi
-@include bugs.texi
+@c @include bugs.texi
 
 
 @node Licenses

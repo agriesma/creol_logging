@@ -1,5 +1,5 @@
 @node FAQ
-@chapter Frequently Asked Questions
+@appendix Frequently Asked Questions
 
 
 In this chapter we collect the frequently asked questions and their

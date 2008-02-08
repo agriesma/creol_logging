@@ -1,13 +1,16 @@
 @node Creol
 @chapter Creol
 
-This chapter describes the concrete syntax of Creol.  It also gives an
-informal semantics.
+This chapter describes the concrete syntax of Creol and explains the
+semantics of Creol in an informal manner.  The formal semantics of
+Creol is defined in rewriting logic and can be found in the file
+@file{creol-interpreter.maude}.
 
-This chapter is not yet finished.  Some constructs described in this
-chapter need not be implemented by the compiler or the Maude
-semantics, yet.
-
+As of today, the contents of this chapter is subject to change.  Creol
+is still an evolving language.  Incompatible changes to the language
+are not excluded, but we will try hard to avoid them.  This chapter
+serves as a reference.  The reader is referred to @ref{Creol
+Tutorial} for an exposition of the language and its features.
 
 @menu
 * Comments::                    Comments in Creol.
@@ -20,10 +23,9 @@ semantics, yet.
 * Interface Declaration::       Types for objects.
 * Class Declaration::           Implementation for types.
 * Datatype Declaration::        Declaring data types.
-* Exception Declaration::       Declaring exceptions.
-* Grammar::                     Creol grammar in EBNF.
 * Parse Errors::                A note on parse errors.
 @end menu
+
 
 
 @node Comments
@@ -134,6 +136,22 @@ The boolean expressions are:
 
 @subsection Integers, Reals, and Arithmetic Expressions
 
+Integer literals are written as strings of digits.  Integer literals
+are represented as arbitrary precision numbers in the compiler.  This
+means that there is no pratical limitation on the size of integer
+literals.  There may be limitations imposed by the back-ends, if
+down-stream applications and target platforms impose range
+limitations.  Consult the back-end documentation for details.
+
+Real literals are written in the usual format, e.g., @code{0.5} or
+@code{1e-2} are all valid real literals.  Real literals are
+represented as fractions with arbitrary precision in the compiler.
+This means that there is no pratical limitation on the size of real
+literals.  There may be limitations imposed by the back-ends, if
+down-stream applications and target platforms impose range and
+precision limitations.  Consult the back-end documentation for
+details.
+
 The arithmetic expressions are:
 
 @code{- @var{expression}} for negation.
@@ -144,7 +162,8 @@ The arithmetic expressions are:
 
 @code{@var{expression} / @var{expression}} for division.
 
-@code{@var{expression} % @var{expression}} for modulo.
+@code{@var{expression} % @var{expression}} for the Eucledian remainder
+(modulo).
 
 @code{@var{expression} + @var{expression}} for addition.
 
@@ -153,8 +172,12 @@ The arithmetic expressions are:
 
 @subsection Strings
 
-The operations on strings are the same as the ones on sequences.
-Single-letter strings are considered to be characters.
+A string literal is written by quoting its contents in @code{"}, e.g.,
+@code{"Hello, world"} is a string literal.  The internal @code{String}
+type is @emph{List of characters}.  Consequently, the operations on
+strings are the same as the ones on sequences (@pxref{List Syntax}).
+Single-letter strings, e.g., list of length 1 are alos considered to
+be character literals.
 
 
 @subsection Tuples
@@ -164,9 +187,18 @@ The operations on tuples are
 @code{( @var{expression} , )} for tuple construction.
 
 
-@subsection Sequences
+@subsection List
+@anchor{List Syntax}
+
+The literal @code{nil} represents the empty list.  Non-empty list
+literals are written by enclosing a comma-separated list of
+expressions inside of square brackets: @code{[1, 2, 3]} is the list
+containing the elements @code{1}, @code{2}, and @code{3} in that
+order.
 
 The operations on sequences are:
+
+@code{# @var{expression}} for the length of the list.
 
 @code{@var{expression} |- @var{expression}} for appending to the right.
 
@@ -176,11 +208,13 @@ The operations on sequences are:
 
 @code{@var{expression} \ @var{expression}} for projection.
 
-Sequences can be constructed by enumerating their elements in order:
-@code{[ @{ @var{expression} , @} ]}.
 
 
 @subsection Sets
+
+@code{@{@}} represents the empty set.  Generally, sets can be
+constructed by enumerating the elements: @code{@{ @{ @var{expression}
+, @} @}}.
 
 The operations on sets are:
 
@@ -194,10 +228,6 @@ The operations on sets are:
 
 @code{@{ @var{id} : @var{expression} | @var{expression} @}}
 for set aggregation:
-
-@code{@{ @}} represents the empty set.  Generally, sets can be
-constructed by enumerating the elements: @code{@{ @{ @var{expression}
-, @} @}}.
 
 
 
@@ -308,6 +338,13 @@ method, @var{ins} is a possibly empty list of expressions describing
 the actual arguments to the call and @var{outs} is a possibly empty
 list of variable or attribute names used to store the result values.
 
+If the type system expresses doubts on the interface to provide by
+@code{this}, the programmer may append @code{as @var{I}} to the
+statement, e.g., @code{x.m(;) as I}.  Note that this differs from
+@code{x as I.m(;)}.  In the later example, the type of the
+@emph{callee} @code{x} is coerced, whereas in the former case, the
+type of @code{this} is coerced.
+
 
 @subsection Asynchronous Method Calls
 
@@ -332,6 +369,13 @@ It is not possible to define labels for any output arity.
 with @emph{exactly one output parameter}, regardless of its type, just as
 @code{var x: Label[Data, Data]} expresses, that the method should have
 two output parameters.
+
+As with synchronous method calls, if the type system expresses doubts
+on the interface to provide by @code{this}, the programmer may append
+@code{as @var{I}} to the statement, e.g., @code{!x.m() as I}.  Note
+that this differs from @code{!x as I.m()}.  In the later example, the
+type of the @emph{callee} @code{x} is coerced, whereas in the former
+case, the type of @code{this} is coerced.
 
 
 @subsection Release Statement
@@ -676,201 +720,6 @@ datatype declaration is @code{datatype @var{T} [ of @{ @var{S} , @}
 super-types.
 
 Currently, datatypes are all abstract.
-
-
-@node Exception Declaration
-@section Exception Declarations
-
-Exception have to be declared for type checking.  A declaration has
-the form
-@example
-exception @var{E} [ ( @var{@{ var-decl-no-init @}} ) ]
-@end example
-
-This allows a programmer to supply additional information to an
-exception.
-
-@itemize @bullet
-@item
-Actually, only a sequence of types should be sufficient, or we may use
-these names as record names.
-@end itemize
-
-
-
-@node Grammar
-@section Creol Grammar
-
-For reference, we summarize the grammar of Creol.  The grammar of
-Creol is LR(1) and is used by the compiler.  @code{@{...@}} means a
-list of symbols, where the optional decorator at the end indicates the
-separator.  An optional symbol is enclosed in square brackets like
-this: @code{[ ... ]}.  Terminal symbols are printed like this:
-@strong{terminal}.  Finally, the symbol @var{id}, denoting method
-names, functions, and variables, refers to an identifier, which is any
-string that matches the regular expression @code{[_a-z][_'0-9A-Za-z]*},
-and @var{cid}, denoting class and type names, refers to any string
-that matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
-
-
-@subsection Reserved Keywords
-
-The following are reserved as keywords and cannot be used for
-variable or method names in programs.
-
-@c 45678901 34567890123 56789012345 78901234567 90123456789 12345678901
-@example
-as          assert      await       begin       caller      class
-contracts   datatype    do          else        end         ensures
-exists      extern      false       forall      fun         history
-if          implements  in          inherits    interface   inv
-new         nil         now         null        of          op
-out         posit       prove       release     requires    skip
-some        then        this        true        var         while
-with
-@end example
-
-Currently reserved, but unused keywords are
-@example
-by          case        const       exception   for         prove
-raise       signal      try         volatile    when        where
-@end example
-
-The following symbols are used as operator symbols.  They are listed
-in the order of their precedence.  Operators on any line bind stronger
-than ones on the lines above.
-
-@example
-,                               @r{left}
-|                               @r{left}
-in                              @r{left}
-<=>                             @r{left}
-=>                              @r{left}
-^                               @r{left}
-|| \/                           @r{left}
-&& /\                           @r{left}
-~                               @r{right, unary operator}
-= /=                            @r{non-associative}
-<= < > >=                       @r{non-associative}
-\                               @r{left}
-|-|                             @r{left}
--|                              @r{right}
-|-                              @r{left}
-+ -                             @r{left}
-* / %                           @r{left}
-**                              @r{left}
-- #                             @r{right, unary operators}
-@end example
-
-
-@subsection Grammar
-
-The grammar specified in this section is in LR(1) and does not contain
-any shift-reduce or reduce-reduce conflicts.  This means, that each
-syntactically correct Creol program has a unique parse tree.
-
-@format
-main ::=
-    @{ declaration @}
-
-declaration ::=
-    class-decl
-  | interface-decl
-  | datatype-decl
-  | exception-decl
-
-class-decl ::=
-    @code{class} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]
-    @{ (@code{contracts} | @code{implements} | @code{inherits} )
-	@{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} @}
-    @code{begin} @{ @code{var} var-decl [ @code{;} ] @}
-    [ internal-with-def ] @{ with-def @}
-    @code{end}
-
-interface-decl ::=
-    @code{interface} id @{ @code{inherits} @{ id @code{,} @} @}
-    @code{begin} @code{with} cid @{ op-decl @} @{ invariant @} @code{end}
-
-datatype-decl ::=
-    @code{datatype} cid [ @code{by} @{ cid @code{,} @} ] @code{begin}
-    @{ constructor @} @{ function @} @{ invariant @} @code{end}
-
-exception-decl ::=
-    @code{exception} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)} ]
-
-var-decl-no-init ::=
-    @{ id @code{,} @} @code{:} type
-
-var-decl ::=
-    var-decl-no-init @code{:=} @{ expr @code{,} @}
-
-op-decl ::=
-    @code{op} id @code{(} [ @code{in} @{ var-decl-no-init @code{,} @} ]
-    [ @code{;} @code{out} @{ var-decl-no-init @code{,} @} ] @code{)}  
-    [@code{requires} assertion] [@code{ensures} assertion]
-
-anon-with-def ::=
-    @{ op-def @} @{ invariant @}
-
-with-def ::=
-    @code{with} cid @{ op-def @} @{ invariant @}
-
-op-def ::=
-    op-decl @code{==} @{ @code{var} var-decl @code{;} @} statement
-
-function ::=
-    @code{op} id @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expression | @code{extern} string )
-
-statement ::=
-    choice-statement [ @code{|||} statement ]
-
-choice-statement ::=
-    seq-statement [ @code{[]} choice-statement ]
-
-seq-statement ::=
-    basic-statement [ @code{;} seq-statement ]
-
-basic-statement ::=
-    @code{skip}
-  | @{ lhs @code{,} @} @code{:=} @{ expr-or-new @code{,} @}
-  | @code{release}
-  | @code{await} expr
-  | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
-  | [ id ] @code{!} id [ @code{<:} cid ] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
-  | id @code{?} @code{(}  @{ lhs @code{,} @} @code{)}
-  | [ @code{await} ] expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
-  | [ @code{await} ] id [@code{<:} cid] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
-  | @code{begin} statement @code{end}
-  | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
-  | @code{while} expr [ @code{inv} expr ] @code{do} statement @code{end}
-  | @code{do} statement [ @code{inv} expr ] @code{while} expr
-  | @code{assert} assertion
-
-expr-or-new ::=
-    @code{new} cid @code{(} @{ expr @code{,} @} @code{)}
-  | expr
-
-expr ::=
-    @code{true} | @code{false} | integer | float | string | @code{nil} | @code{null} | id [ (@code{?} | @code{@@} type) ]
-  | @code{(} @{ expr @code{,} @} @code{)}
-  | @code{[} @{ expr @code{,} @} @code{]}
-  | @code{@{} @{ expr @code{,} @} @code{@}}
-  | @code{@{} id @code{:} expr @code{|} expr @code{@}}
-  | unaryop expr | expr binop expr | id @code{(} @{ expr @code{,} @} @code{)}
-  | @code{if} expr @code{then} expr @code{else} expr @code{end}
-
-unaryop ::= @code{~} | @code{-} | @code{#}
-
-binop ::=
-    @code{+} | @code{-} | @code{*} | @code{/} | @code{=} | @code{<} | @code{>} |
-    @code{<=} | @code{>=} | @code{&&} | @code{/\} | @code{||} | @code{\/} | @code{|-} |
-    @code{|-|} | @code{-|} | @code{\}
-
-type ::=
-    cid [ @code{[} @{ type , @} @code{]} ]
-  | @code{[} @{ type , @} @code{]}
-  | @code{`} id
-@end format
 
 
 @node Parse Errors

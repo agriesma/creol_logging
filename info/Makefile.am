@@ -22,7 +22,7 @@ creoltools_TEXINFOS	= introduction.texi invocation.texi creol.texi \
 			  cmc.texi creolc.texi creolshell.texi faq.texi \
 			  bugs.texi bibliography.texi creoltut.texi \
 			  creollib.texi creolmc.texi creolrt.texi \
-			  fdl.texi gpl.texi
+			  grammar.texi fdl.texi gpl.texi
 
 BUILT_SOURCES		= sorts.eps sorts.pdf sorts.png
 EXTRA_DIST		= sorts.dot sorts.txt sorts.eps sorts.pdf sorts.png
