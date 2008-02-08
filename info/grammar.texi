@@ -1,0 +1,173 @@
+@node Grammar
+@appendix Creol Grammar
+
+For reference, we summarize the grammar of Creol.  The grammar of
+Creol is LR(1) and is used by the compiler.  @code{@{...@}} means a
+list of symbols, where the optional decorator at the end indicates the
+separator.  An optional symbol is enclosed in square brackets like
+this: @code{[ ... ]}.  Terminal symbols are printed like this:
+@strong{terminal}.  Finally, the symbol @var{id}, denoting method
+names, functions, and variables, refers to an identifier, which is any
+string that matches the regular expression @code{[_a-z][_'0-9A-Za-z]*},
+and @var{cid}, denoting class and type names, refers to any string
+that matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
+
+
+@section Reserved Keywords
+
+The following are reserved as keywords and cannot be used for
+variable or method names in programs.
+
+@c 45678901 34567890123 56789012345 78901234567 90123456789 12345678901
+@example
+as          assert      await       begin       caller      class
+contracts   datatype    do          else        end         ensures
+exists      extern      false       forall      fun         history
+if          implements  in          inherits    interface   inv
+new         nil         now         null        of          op
+out         posit       prove       release     requires    skip
+some        then        this        true        var         while
+with
+@end example
+
+Currently reserved, but unused keywords are
+@example
+by          case        const       exception   for         prove
+raise       signal      try         volatile    when        where
+@end example
+
+The following symbols are used as operator symbols.  They are listed
+in the order of their precedence.  Operators on any line bind stronger
+than ones on the lines above.
+
+@example
+,                               @r{left}
+|                               @r{left}
+in                              @r{left}
+<=>                             @r{left}
+=>                              @r{left}
+^                               @r{left}
+|| \/                           @r{left}
+&& /\                           @r{left}
+~                               @r{right, unary operator}
+= /=                            @r{non-associative}
+<= < > >=                       @r{non-associative}
+\                               @r{left}
+|-|                             @r{left}
+-|                              @r{right}
+|-                              @r{left}
++ -                             @r{left}
+* / %                           @r{left}
+**                              @r{left}
+- #                             @r{right, unary operators}
+@end example
+
+
+@section Grammar
+
+The grammar specified in this section is in LR(1) and does not contain
+any shift-reduce or reduce-reduce conflicts.  This means, that each
+syntactically correct Creol program has a unique parse tree.
+
+@format
+main ::=
+    @{ declaration @}
+
+declaration ::=
+    class-decl
+  | interface-decl
+  | datatype-decl
+  | exception-decl
+
+class-decl ::=
+    @code{class} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]
+    @{ (@code{contracts} | @code{implements} | @code{inherits} )
+	@{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} @}
+    @code{begin} @{ @code{var} var-decl [ @code{;} ] @}
+    [ internal-with-def ] @{ with-def @}
+    @code{end}
+
+interface-decl ::=
+    @code{interface} id @{ @code{inherits} @{ id @code{,} @} @}
+    @code{begin} @code{with} cid @{ op-decl @} @{ invariant @} @code{end}
+
+datatype-decl ::=
+    @code{datatype} cid [ @code{by} @{ cid @code{,} @} ] @code{begin}
+    @{ constructor @} @{ function @} @{ invariant @} @code{end}
+
+exception-decl ::=
+    @code{exception} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)} ]
+
+var-decl-no-init ::=
+    @{ id @code{,} @} @code{:} type
+
+var-decl ::=
+    var-decl-no-init @code{:=} @{ expr @code{,} @}
+
+op-decl ::=
+    @code{op} id @code{(} [ @code{in} @{ var-decl-no-init @code{,} @} ]
+    [ @code{;} @code{out} @{ var-decl-no-init @code{,} @} ] @code{)}  
+    [@code{requires} assertion] [@code{ensures} assertion]
+
+anon-with-def ::=
+    @{ op-def @} @{ invariant @}
+
+with-def ::=
+    @code{with} cid @{ op-def @} @{ invariant @}
+
+op-def ::=
+    op-decl @code{==} @{ @code{var} var-decl @code{;} @} statement
+
+function ::=
+    @code{op} id @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expression | @code{extern} string )
+
+statement ::=
+    choice-statement [ @code{|||} statement ]
+
+choice-statement ::=
+    seq-statement [ @code{[]} choice-statement ]
+
+seq-statement ::=
+    basic-statement [ @code{;} seq-statement ]
+
+basic-statement ::=
+    @code{skip}
+  | @{ lhs @code{,} @} @code{:=} @{ expr-or-new @code{,} @}
+  | @code{release}
+  | @code{await} expr
+  | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
+  | [ id ] @code{!} id [ @code{<:} cid ] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
+  | id @code{?} @code{(}  @{ lhs @code{,} @} @code{)}
+  | [ @code{await} ] expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
+  | [ @code{await} ] id [@code{<:} cid] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
+  | @code{begin} statement @code{end}
+  | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
+  | @code{while} expr [ @code{inv} expr ] @code{do} statement @code{end}
+  | @code{do} statement [ @code{inv} expr ] @code{while} expr
+  | @code{assert} assertion
+
+expr-or-new ::=
+    @code{new} cid @code{(} @{ expr @code{,} @} @code{)}
+  | expr
+
+expr ::=
+    @code{true} | @code{false} | integer | float | string | @code{nil} | @code{null} | id [ (@code{?} | @code{@@} type) ]
+  | @code{(} @{ expr @code{,} @} @code{)}
+  | @code{[} @{ expr @code{,} @} @code{]}
+  | @code{@{} @{ expr @code{,} @} @code{@}}
+  | @code{@{} id @code{:} expr @code{|} expr @code{@}}
+  | unaryop expr | expr binop expr | id @code{(} @{ expr @code{,} @} @code{)}
+  | @code{if} expr @code{then} expr @code{else} expr @code{end}
+
+unaryop ::= @code{~} | @code{-} | @code{#}
+
+binop ::=
+    @code{+} | @code{-} | @code{*} | @code{/} | @code{=} | @code{<} | @code{>} |
+    @code{<=} | @code{>=} | @code{&&} | @code{/\} | @code{||} | @code{\/} | @code{|-} |
+    @code{|-|} | @code{-|} | @code{\}
+
+type ::=
+    cid [ @code{[} @{ type , @} @code{]} ]
+  | @code{[} @{ type , @} @code{]}
+  | @code{`} id
+@end format
