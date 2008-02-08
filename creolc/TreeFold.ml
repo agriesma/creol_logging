@@ -30,6 +30,11 @@ open VarDecl
 open Method
 
 let log l = Messages.message (l + 1)
+let is_zero = Big_int.eq_big_int Big_int.zero_big_int
+let is_one = Big_int.eq_big_int Big_int.unit_big_int
+let is_zero_num = Num.eq_num (Num.num_of_int 0)
+let is_one_num = Num.eq_num (Num.num_of_int 1)
+
 
 (* This function tries to fold all constant expressions to literals.
 
@@ -42,7 +47,7 @@ let log l = Messages.message (l + 1)
      expression $1+x+1$ is neither folded to $2+x$ nor $x+2$.
    \end{itemize} *)
 
-let optimise_in_statement meth stmt =
+let optimise_in_statement stmt =
   let rec fold_expr = function
     | This _ as e -> e
     | QualifiedThis _ as e -> e
@@ -74,6 +79,8 @@ let optimise_in_statement meth stmt =
               | UMinus ->
                   begin
                     match e' with
+                      | Int (_, v) when is_zero v -> Int (n, v)
+                      | Float (_, v) when is_zero_num v -> Float (n, v)
                       | Unary (n'', UMinus, e'') -> Expression.set_note n e''
                       | _ -> Unary (n, o, e')
                   end
@@ -96,43 +103,97 @@ let optimise_in_statement meth stmt =
 		Plus ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) ->
-                           Int (n, Big_int.add_big_int lv rv)
+		      | (Int (_, lv), _) when  is_zero lv -> r'
+                      | (_, Int (_, rv)) when is_zero rv -> l'
+		      | (Int (_, lv), Int (_, rv)) ->
+                          Int (n, Big_int.add_big_int lv rv)
+		      | (Float (_, lv), _) when  is_zero_num lv -> r'
+                      | (_, Float (_, rv)) when is_zero_num rv -> l'
+		      | (Float (_, lv), Float (_, rv)) ->
+                          Float (n, Num.add_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Minus ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) ->
-                                Int (n, Big_int.sub_big_int lv rv)
+		      | (Int (_, lv), _) when  is_zero lv -> r'
+                      | (_, Int (_, rv)) when is_zero rv -> l'
+		      | (Int (_, lv), Int (_, rv)) ->
+                          Int (n, Big_int.sub_big_int lv rv)
+		      | (Float (_, lv), _) when  is_zero_num lv -> r'
+                      | (_, Float (_, rv)) when is_zero_num rv -> l'
+		      | (Float (_, lv), Float (_, rv)) ->
+                          Float (n, Num.sub_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Times  ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) ->
-                                Int (n, Big_int.mult_big_int lv rv)
+		      | (Int (_, lv), _) when is_one lv -> r'
+                      | (_, Int (_, rv)) when is_one rv -> l'
+		      | (Int (_, lv), _) when is_zero lv -> l'
+                      | (_, Int (_, rv)) when is_zero rv -> r'
+		      | (Int (_, lv), Int (_, rv)) ->
+			  Int (n, Big_int.mult_big_int lv rv)
+		      | (Float (_, lv), _) when is_one_num lv -> r'
+                      | (_, Float (_, rv)) when is_one_num rv -> l'
+		      | (Float (_, lv), _) when is_zero_num lv -> l'
+                      | (_, Float (_, rv)) when is_zero_num rv -> r'
+		      | (Float (_, lv), Float (_, rv)) ->
+			  Float (n, Num.mult_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Div ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) ->
-                                Int (n, Big_int.div_big_int lv rv)
+                      | (_, Int (_, rv)) when is_one rv -> l'
+		      | (Int (_, lv), _) when is_zero lv -> l'
+                      | (_, Int (_, rv)) when is_zero rv ->
+			  assert false; (* Report division by zero? *)
+		      |	(Int (_, lv), Int (_, rv)) ->
+                          Int (n, Big_int.div_big_int lv rv)
+                      | (_, Float (_, rv)) when is_one_num rv -> l'
+		      | (Float (_, lv), _) when is_zero_num lv -> l'
+                      | (_, Float (_, rv)) when is_zero_num rv ->
+			  assert false; (* Report division by zero? *)
+		      |	(Float (_, lv), Float (_, rv)) ->
+                          Float (n, Num.div_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Modulo  ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) ->
-                                Int (n, Big_int.mod_big_int lv rv)
+                      | (_, Int (_, rv)) when is_one rv -> l'
+		      | (Int (_, lv), _) when is_zero lv -> l'
+                      | (_, Int (_, rv)) when is_zero rv ->
+			  assert false; (* Report division by zero? *)
+		      | (Int (_, lv), Int (_, rv)) ->
+                          Int (n, Big_int.mod_big_int lv rv)
+                      | (_, Float (_, rv)) when is_one_num rv -> l'
+		      | (Float (_, lv), _) when is_zero_num lv -> l'
+                      | (_, Float (_, rv)) when is_zero_num rv ->
+			  assert false; (* Report division by zero? *)
+		      | (Float (_, lv), Float (_, rv)) ->
+                          Float (n, Num.mod_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Power ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) ->
+                      | (Int (_, lv), _) when is_one lv -> l'
+                      | (_, Int (_, rv)) when is_one rv -> l'
+		      | (Int (_, lv), _) when is_zero lv -> l'
+                      | (_, Int (_, rv)) when is_zero rv ->
+			  Int (n, Big_int.zero_big_int)
+		      | (Int (_, lv), Int (_, rv)) ->
                           Int (n, Big_int.power_big_int_positive_big_int lv rv)
+                      | (Float (_, lv), _) when is_one_num lv -> l'
+                      | (_, Float (_, rv)) when is_one_num rv -> l'
+		      | (Float (_, lv), _) when is_zero_num lv -> l'
+                      | (_, Float (_, rv)) when is_zero_num rv ->
+			  Float (n, Num.num_of_int 1)
+		      | (Float (_, lv), Float (_, rv)) ->
+                          Float (n, Num.power_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Eq ->
@@ -148,31 +209,59 @@ let optimise_in_statement meth stmt =
 	      | Le ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Bool (n, lv <= rv)
+		      | (Int (_, lv), Int (_, rv)) ->
+			  Bool (n, Big_int.le_big_int lv rv)
+		      | (Int (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.le_num (Num.num_of_big_int lv) rv)
+		      | (Float (_, lv), Int (_, rv)) ->
+			  Bool (n, Num.le_num lv (Num.num_of_big_int rv))
+		      | (Float (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.le_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Lt ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Bool (n, lv < rv)
+		      | (Int (_, lv), Int (_, rv)) ->
+			  Bool (n, Big_int.lt_big_int lv rv)
+		      | (Int (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.lt_num (Num.num_of_big_int lv) rv)
+		      | (Float (_, lv), Int (_, rv)) ->
+			  Bool (n, Num.lt_num lv (Num.num_of_big_int rv))
+		      | (Float (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.lt_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Ge ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Bool (n, lv >= rv)
+		      | (Int (_, lv), Int (_, rv)) ->
+			  Bool (n, Big_int.ge_big_int lv rv)
+		      | (Int (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.ge_num (Num.num_of_big_int lv) rv)
+		      | (Float (_, lv), Int (_, rv)) ->
+			  Bool (n, Num.ge_num lv (Num.num_of_big_int rv))
+		      | (Float (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.ge_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Gt ->
 		  begin
 		    match (l', r') with
-			(Int (_, lv), Int (_, rv)) -> Bool (n, lv > rv)
+		      | (Int (_, lv), Int (_, rv)) ->
+			  Bool (n, Big_int.gt_big_int lv rv)
+		      | (Int (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.gt_num (Num.num_of_big_int lv) rv)
+		      | (Float (_, lv), Int (_, rv)) ->
+			  Bool (n, Num.gt_num lv (Num.num_of_big_int rv))
+		      | (Float (_, lv), Float (_, rv)) ->
+			  Bool (n, Num.gt_num lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | And  ->
 		  begin
 		    match (l', r') with
-			(Bool (_, false), _) -> Bool (n, false)
+		      | (Bool (_, false), _) -> Bool (n, false)
 		      | (_, Bool (_, false)) -> Bool (n, false)
 		      | (Bool(_, true), Bool (_, true)) -> Bool (n, true)
 		      | _ -> Binary (n, o, l', r')
@@ -180,7 +269,7 @@ let optimise_in_statement meth stmt =
 	      | Wedge ->
 		  begin
 		    match (l', r') with
-			(Bool (_, false), _) -> Bool (n, false)
+		      | (Bool (_, false), _) -> Bool (n, false)
 		      | (_, Bool (_, false)) -> Bool (n, false)
 		      | (Bool(_, true), Bool (_, true)) -> Bool (n, true)
 		      | _ -> Binary (n, o, l', r')
@@ -188,7 +277,7 @@ let optimise_in_statement meth stmt =
 	      | Or ->
 		  begin
 		    match (l', r') with
-			(Bool (_, true), _) -> Bool (n, true)
+		      | (Bool (_, true), _) -> Bool (n, true)
 		      | (_, Bool (_, true)) -> Bool (n, true)
 		      | (Bool(_, false), Bool (_, false)) -> Bool (n, false)
 		      | _ -> Binary (n, o, l', r')
@@ -196,7 +285,7 @@ let optimise_in_statement meth stmt =
 	      | Vee ->
 		  begin
 		    match (l', r') with
-			(Bool (_, true), _) -> Bool (n, true)
+		      | (Bool (_, true), _) -> Bool (n, true)
 		      | (_, Bool (_, true)) -> Bool (n, true)
 		      | (Bool(_, false), Bool (_, false)) -> Bool (n, false)
 		      | _ -> Binary (n, o, l', r')
@@ -209,8 +298,10 @@ let optimise_in_statement meth stmt =
 	      | Implies ->
 		  begin
 		    match (l', r') with
-			(Bool (_, false), _) -> Bool (n, true)
-		      | (_, Bool (_, true)) -> Expression. set_note n l'
+		      | (Bool (_, false), _) -> Bool (n, true)
+		      | (_, Bool (_, false)) -> fold_expr (Unary (n, Not, l'))
+		      | (Bool (_, true), _) -> Expression.set_note n r'
+		      | (_, Bool (_, true)) -> Expression.set_note n l'
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Iff ->
@@ -316,11 +407,6 @@ let optimise_in_statement meth stmt =
     work stmt
 
 let optimise_in_method program cls meth =
-    match meth.Method.body with
-	None ->
-	  meth
-      | Some body ->
-	  let body' = optimise_in_statement meth body in
-	    { meth with Method.body = Some body' }
+  Method.apply_to_body optimise_in_statement meth
 
 let optimise program = Program.for_each_method program optimise_in_method
