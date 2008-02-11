@@ -380,6 +380,7 @@ fun snd (a: [`a, `b]): `b == extern "snd"
 
 
 @section Datatypes Time and Duration
+@anchor{Datatypes Time and Duration}
 
 The types @code{Time} and @code{Duration} are used for real-time
 modelling.  They should not be used in untimed models.  The semantics

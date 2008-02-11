@@ -2,4 +2,160 @@
 @node Real-time Creol
 @chapter Modelling Real-Time Systems with Creol
 
-XXX
+A @emph{timed system} is a system where the @emph{timing} of input and
+output is relevant for the function and the correctness of the system.
+In @emph{hard real-time systems} the deadlines imposed must be met for
+the correct functioning of the system.  @emph{Soft real-time systems}
+have average time constraints, where some deadlines may be missed
+without affecting the correctness and performance of the system.
+Missing a deadline may have disastrous effects in a
+@emph{safety-critical} system.
+
+The semantic model used for the real-time extension of Creol is based
+on @emph{timed traces}, which are a language accepted by a class of
+timed automata @c @cite{alur94:_theor_timed_autom}.
+In this theory it is assumed that all actions are
+@emph{instantaneous}, i.e., they do not take any time, that time is
+monotonically increasing, and that time is @emph{non-Zeno}, i.e., that
+it will diverge.
+
+@c Such a model of time is supported by most analysis tools, including
+@c Real-Time Maude~\cite{oelveczky07:_seman_and_pragm_of_real_time_maude}
+@c and Uppaal~\cite{bengtsson96:_uppaal}.
+
+Without loss of generality we assume one global clock, whose current
+value is represented by the term @code{now}.@footnote{Drifting or
+skewed clocks, which evolve differently from the perfect global clock,
+can be easily expressed using function on clock.}  We require that the
+domain of time is totally ordered and @emph{dense}@footnote{A linearly
+ordered set @math{D} is dense, if for all @math{x,y\in D} with
+@math{x<z} there exists @math{z\in D} with @math{x<z} and @math{z<y}.}.
+
+The purpose of the time-guards is to indicate how long an action is
+supposed to take.  The invariants on state are used to force the
+progress of the system as time proceeds.
+
+Until now the focus has been on the language for modelling untimed
+asynchronous, concurrent object-oriented systems in Core Creol.  Now
+the focus shifts to the modelling of real-time behaviours.  Modelling
+the real-time behaviour of a system is very difficult, because it
+often involves an analysis of the system on the level of its
+@emph{machine code}, which has to take the actual target platform into
+account. @c ~\cite{ferdinand01:_reliab_and_precis_wcet_deter}.
+Such models are unnecessarily detailed for our purposes, and
+focusing on time is often harmful for modelling.
+@c ~\cite{turski88:_time_consid_irrel_for_real_time_system}.
+Indeed, the model is intended to capture the timing requirements of
+the original specification and shall help in identifying conditions
+under which these requirements can be met.  The proposed extension
+follows Hooman.
+@c ~\cite{hooman94:_exten_hoare_logic_real_time}.
+
+Creol is extended with time by introducing @emph{two} data types and
+two statements for expressing timed properties of the system.  The
+first data type is @emph{Time} and is the type of the value of clocks.
+The current value is made available to a Creol model by the expression
+@code{now}, which can be stored in variables of type @code{Time} and
+which can be compared to other values of type @code{Time}.
+
+In addition we introduce a second data type @emph{Duration}, used to
+express the difference between two clock values.  Duration is used to
+express all timings @emph{relative} to the absolute clock.  The
+operations defined on these data types are summarised in
+@ref{Datatypes Time and Duration}.
+
+With these operations, a modeller can observe time and express
+durations, and formulate predicates on time.  In the following, a
+@emph{timed} constraint is any Boolean predicate, in which all
+non-Boolean expressions have the type @code{Time}, @code{Duration} or
+are composed to return these types.  The latter clause allows scalar
+multiplication of durations in timed constraints (the scalar has type
+@emph{Real}) without admitting comparisons of real numbers as part of
+timed constraints.
+
+The use of timed constraints to relate the untimed behaviour of a
+model to time is explained in the next subsections.
+
+
+@section Waiting
+
+As with timed automata models, the execution of statements is supposed
+to be instantaneous and time is allowed to advance between statements.
+This, on the other hand, implies that time need not progress.  Using
+the @code{await} statement with a time constraint forces the advance
+of time for the process to proceed.
+
+@example
+var t: Time := now; S; await now >= t + 1
+@end example
+
+Modelling time dependant behaviour can also be accomplished using the
+await statement with a time constraints.  This figure shows a first
+attempt at modelling a time-out, where @code{S1} is executing if
+@code{S} terminates after 1 time unit and @code{S2} is executed if
+@code{S} terminates within 1 time unit.
+
+@example
+var t: Time := now; S;
+begin
+  await now >= t + 1; S1 [] await now < t + 1; S2
+end
+@end example
+
+Await statements on timed constraints can be used to model elapse of
+time.  Together with the non-deterministic choice operator these can be
+used to model time-dependent execution of statements.  Timed
+constraints may also be used in while and if conditions.  Time does
+not advance while the condition is evaluated, but it may advance
+before, while, and after executing the substatements.
+
+Also note, that only by using await statements with timed constraints,
+there are now constraints on how time is supposed to advance.  It has
+to advance, because all valid computations are non-Zeno, but it can
+advance in an arbitrary manner, allowing to observe undesired or
+uninteresting behaviour.
+
+
+@section Progress
+
+Similarly, the fragment @code{var t: Time := now; S; await now < t +
+1} could be used to express that executing @code{S} takes at most 1
+time unit.  Unfortunately, the program will just block if executing
+@code{S} takes more than 1 time unit.  This means, that it does not
+@emph{guarantee} that executing @code{S} takes at most one time units.
+
+Also, the program fragment allows to wait before choosing a branch.
+These examples show that the @code{await} statement is not expressive
+enough to ensure @emph{progress} of the system.
+
+For this purpose we introduce the statement @code{posit @var{c}},
+where @var{c} is a predicate on timed expression only.  The semantics
+of this predicate is similar to @emph{invariants} in timed automata.
+Each timed trace must satisfy all posit constraints to be considered a
+timed trace of the Creol model.
+
+However, posit statement also influence the enabledness of the delay
+rule, which implies, that each @emph{local} posit statement has a
+global effect.
+
+A @code{posit} statement does not have any operational meaning, but it
+declares a property on time which is supposed to hold for all
+computations of the system.  A program with @code{posit} statements
+may result in systems which do not have any computations at all, e.g.,
+@code{posit false} or @code{await now > c; posit now < c}.  But since
+Creol is a modelling language, a model with traces need not imply that
+such a system exists or is realisable.  All @code{posit}
+declarations are assumed as axioms on the modelling level and become
+proof obligations on the implementation level.  It has to be stressed
+that discharging @code{posit} declarations on the implementation
+level has to be done by suitable schedulers for each single object, as
+well as ensuring that inter-object communication is @emph{realisable}
+as postulated by the modeller.
+
+The semantics of a time-annotated Creol model is a set of timed
+traces, which has been formalised as a (generally) infinite state
+timed transition systems by extending Creol's operational semantics.
+We continue with representing time-annotated Creol models as timed
+transition systems.
+
+

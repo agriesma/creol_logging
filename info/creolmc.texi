@@ -10,8 +10,6 @@ point out the most important differences.
 The model checker is defined in the file
 @file{creol-modelchecker.maude} (@pxref{Setting CMC Up}).
 
-XXX
-
 @menu
 * Differences::         Differences to the Interpreter.
 * LTL Specifications::  Writing properties for the interpreter.
@@ -22,7 +20,15 @@ XXX
 @node Differences
 @section Differences to the Interpreter
 
-XXX
+Whenever possible, a rule is replaced by an equation.
+
+The type of a label has been changed.  I the interpreter, a label is a
+pair @code{label(@var{O}, @var{N})}, where @var{O} is the identity of
+the caller and @var{N} is a unique identity for that call.  In the
+model checker, the identity is no longer unique:  It is replaced by
+@code{label(@var{O}, @var{O'}, @var{M}, @var{I})}, where @var{O'}
+refers to the callee, @var{M} identifies the called method, and
+@var{I} are the values of the input parameters.
 
 
 @node LTL Specifications
