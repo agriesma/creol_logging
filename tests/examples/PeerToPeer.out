@@ -17,7 +17,7 @@ result Class:
   < "getPack" : Mtdname | Param: "fId", "pNbr", Latt: "f" |-> null, "fId" |->
     null, "label:0" |-> null, "pNbr" |-> null, "pack" |-> null, Code: "label:0"
     ! "db" . "getFile"("fId") ; await ("label:0" ??) ; "label:0" ?("f") ;
-    "pack" ::= "at"("f" # "pNbr") ; return("pack") > *
+    "pack" ::= "nth"("f" # "pNbr") ; return("pack") > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "reqFile" : Mtdname | Param: "sId", "fId", Latt: "fId" |-> null, "file" |->

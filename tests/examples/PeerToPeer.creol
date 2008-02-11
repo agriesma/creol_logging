@@ -73,7 +73,7 @@ begin
     op getPack(in fId: String, pNbr: Int; out pack: Data) ==
       var f: List[List[Data]];
       await db.getFile(fId; f);
-      pack := at(f, pNbr)
+      pack := nth(f, pNbr)
 
   with Any
     op availFiles (in sList: List[Server];

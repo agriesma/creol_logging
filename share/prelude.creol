@@ -53,7 +53,7 @@ fun - (a: Int): Int == extern "-"
 fun + (a: Int, b: Int): Int == extern "+"
 fun - (a: Int, b: Int): Int == extern "-"
 fun * (a: Int, b: Int): Int == extern "*"
-fun / (a: Int, b: Int): Real == extern "/"
+fun / (a: Int, b: Int): Int == extern "/"
 fun div(a: Int, b: Int): Int == extern "div"
 fun % (a: Int, b: Int): Int == extern "%"
 fun ** (a: Int, b: Int): Int == extern "**"
@@ -62,6 +62,7 @@ fun < (a: Int, b: Int): Bool == extern "<"
 fun <= (a: Int, b: Int): Bool == extern "<="
 fun > (a: Int, b: Int): Bool == extern ">"
 fun >= (a: Int, b: Int): Bool == extern ">="
+fun real_of_int(a: Int) : Real == extern "real_of_int"
 
 datatype String
 
@@ -81,7 +82,7 @@ fun head(l: List[`a]): `a == extern "head"
 fun tail(l: List[`a]): List[`a] == extern "tail"
 fun last(l: List[`a]): `a == extern "last"
 fun rest(l: List[`a]): List[`a] == extern "rest"
-fun at(l: List[`a], p: Int): `a == extern "at"
+fun nth(l: List[`a], n: Int): `a == extern "nth"
 fun has(l: List[`a], e: `a): Bool == extern "has"
 fun remove(l: List[`a], e: `a): List[`a] == extern "remove"
 fun -|(e: `a, l: List[`a]): List[`a] == extern "-|"
@@ -94,6 +95,14 @@ fun isempty(l: List[`a]): Bool == extern "isempty"
 // More to come.
 
 datatype Set[`a]
+
+fun #(s: Set[`a]): Int == extern "#"
+fun remove(s: Set[`a], e: `a): Set[`a] == extern "remove"
+fun add(s: Set[`a], e: `a): Set[`a] == extern "add"
+fun has(s: Set[`a], e: `a): Bool == extern "has"
+fun union(s: Set[`a], t: Set[`a]): Set[`a] == extern "union"
+fun inter(s: Set[`a], t: Set[`a]): Set[`a] == extern "inter"
+fun diff(s: Set[`a], t: Set[`a]): Set[`a] == extern "diff"
 
 // More to come.
 

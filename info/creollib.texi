@@ -86,6 +86,36 @@ b}.
 The type @code{Real} is supposed to include all values from the real
 number field.
 
+The unary operator @code{-} represents negation of a real.
+
+The binary operator @code{+} represents addition of two reals.
+
+The binary operator @code{-} represents subtraction of two reals.
+
+The binary operator @code{*} represents multiplication of two reals.
+
+The binary operator @code{/} represents division of two
+reals.
+
+The binary function @code{div} represents Eucledian division of two
+reals.
+
+The binary operator @code{%} represents Eucledian remainder of two
+reals.
+
+The binary operator @code{**} represents exponentiation of two reals.
+
+The binary relation @code{<} represents ``less than''.
+
+The binary relation @code{<=} represents ``less than or equal''.
+
+The binary relation @code{>} represents ``greater than''.
+
+The binary relation @code{>=} represents ``less than or equal''.
+
+The function @code{real_of_int} converts an integer value into a real
+value such that both represent the same number.
+
 @example
 datatype Real
 
@@ -110,10 +140,44 @@ arbitrary precision.
 
 @section Datatype Int
 
+The datatype @code{Int} includes all integer numbers.
+
+The unary operator @code{-} represents negation of an integer.
+
+The binary operator @code{+} represents addition of two integers.
+
+The binary operator @code{-} represents subtraction of two integers.
+
+The binary operator @code{*} represents multiplication of two integers.
+
+The binary operator @code{/} represents Eucledian division of two
+integers.  In order to have standard division, at least one of the
+arguments should be coerced to @code{Real} using @code{real_of_int}.
+
+The binary function @code{div} represents Eucledian division of two
+integers.  In order to have standard division, at least one of the
+arguments should be coerced to @code{Real} using @code{real_of_int}.
+
+The binary operator @code{%} represents Eucledian remainder of two
+integers.
+
+The binary operator @code{**} represents exponentiation of two
+integers.
+
+The binary relation @code{<} represents ``less than''.
+
+The binary relation @code{<=} represents ``less than or equal''.
+
+The binary relation @code{>} represents ``greater than''.
+
+The binary relation @code{>=} represents ``less than or equal''.
+
+The function @code{real_of_int} converts an integer value into a real
+value such that both represent the same number.
+
 @example
 datatype Int of Real
 
-fun - (a: Int): Int == extern "-"
 fun - (a: Int): Int == extern "-"
 fun + (a: Int, b: Int): Int == extern "+"
 fun - (a: Int, b: Int): Int == extern "-"
@@ -126,18 +190,37 @@ fun < (a: Int, b: Int): Bool == extern "<"
 fun <= (a: Int, b: Int): Bool == extern "<="
 fun > (a: Int, b: Int): Bool == extern ">"
 fun >= (a: Int, b: Int): Bool == extern ">="
+
+fun real_of_int(a: Int): Real == extern "real_of_int"
 @end example
+
+The compiler can represent integer numbers with arbitrary precision.
+Different back-ends can impose different limits on the range they can
+represent.
 
 
 @section Datatype String
 
+The datatype @code{String} represents all character strings.
+
+The unary operator @code{#} returns the length of the string.
+
+The binary operators @code{|-|}, @code{|-}, and @code{-|} all
+represent string concatenation.  @emph{Creol} does not distinguish
+characters (which are strings of length 1) and strings.  It is good
+style to use @code{|-} to append a character to a string, @code{-|} to
+prepend one, and @code{|-|} in any other case.
+
+The binary relations @code{<}, @code{<=}, @code{>}, and @code{>=}
+compare strings with respect to their lexicographic order.
+
 @example
 datatype String
 
+fun # (a: String): Int == extern "#"
 fun |- (a: String, b: String): String == extern "|-"
 fun -| (a: String, b: String): String == extern "-|"
 fun |-| (a: String, b: String): String == extern "|-|"
-fun # (a: String): Int == extern "#"
 
 fun < (a: String, b: String): Bool == extern "<"
 fun <= (a: String, b: String): Bool == extern "<="
@@ -145,8 +228,79 @@ fun > (a: String, b: String): Bool == extern ">"
 fun >= (a: String, b: String): Bool == extern ">="
 @end example
 
+Creol does not define the representation of strings and how the
+lexicographic ordering is defined.  All implementations will probably
+behave as expected with all characters from the original US-ASCII set.
+
 
 @section Datatype List
+
+The type constructor @code{List[`a]} generates monomorphic list
+types.  A list that may contain anything has type @code{List[Data]}
+and a list of object references has type @code{List[Any]}.
+
+The function @code{head} returns the first element of the list.  If
+the list is empty, the result is undefined.@footnote{Creol does not
+yet support exceptions.  For now we suggest a defensive programming
+approach.  Later, these functions may raise an exception instead of
+having an undefined behaviour.}
+
+The function @code{tail} returns a list without its first element.  If
+the list is empty, the result is undefined.
+
+The function @code{last} returns the last element of the list.  If
+the list is empty, the result is undefined.
+
+The function @code{rest} returns a list without its last element.  If
+the list is empty, the result is undefined.
+
+The function @code{reverse} returns a list in which all elements occur
+in reverse order.
+
+The function @code{sub} returns a slice of the list, beginning at
+@code{i} and ending at @code{j}.
+
+The function @code{after} returns a list containing all elements after
+@code{p}.  If @code{p} is larger than the length of the list, the
+empty list is returned.
+
+The function @code{has} tests, whether the list @code{l} contains the
+element @code{e}.
+
+The function @code{nth} returns the @code{n}th element of the list.  If
+the list has less than @code{n} elements, the result is undefined.
+
+The function @code{rnth} returns the @code{n}th element from the back
+of the list.  If the list has less than @code{n} elements, the result
+is undefined.
+
+The function @code{remove} returns the largest sublist @code{l'} of
+@code{l} that does not contain @code{e}.
+
+The operator @code{-|} prepends an element to a list.
+
+The operator @code{|-} appends an element to a list.
+
+The operator @code{|-|} concatenates two list.
+
+The operator @code{#} returns the length of the list.
+
+The function @code{isempty} tests, whether the list is empty.  It is
+synonymous to @code{l == nil}.
+
+The function @code{begwith} tests whether a list @code{l} begins with
+the list @code{l'}
+
+The function @code{endswith} tests whether a list @code{l} ends with
+the list @code{l'}.
+
+The function @code{index} returns the index of the first occurence of
+an element @code{e}.  If @code{e} does not occur in the list, the
+result is undefined.
+
+The function @code{rindex} returns the index of the last occurence of
+an element @code{e}.  If @code{e} does not occur in the list, the
+result is undefined.
 
 @example
 datatype List[`a]
@@ -155,26 +309,69 @@ fun head(l: List[`a]): `a == extern "head"
 fun tail(l: List[`a]): List[`a] == extern "tail"
 fun last(l: List[`a]): `a == extern "last"
 fun rest(l: List[`a]): List[`a] == extern "rest"
-fun at(l: List[`a], p: Int): `a == extern "at"
+fun nth(l: List[`a], n: Int): `a == extern "nth"
+fun reverse(l: List[`a]): List[`a] == extern "reverse"
+fun sub(l: List[`a], i: Int, j: Int) == extern "sub"
+fun after(l: List[`a], n: Int): List[`a] == extern "after"
 fun has(l: List[`a], e: `a): Bool == extern "has"
 fun remove(l: List[`a], e: `a): List[`a] == extern "remove"
 fun -|(e: `a, l: List[`a]): List[`a] == extern "-|"
 fun |-(l: List[`a], e: `a): List[`a] == extern "|-"
 fun |-|(l: List[`a], m: List[`a]): List[`a] == extern "|-|"
 fun #(l: List[`a]): Int == extern "length"
-fun length(l: List[`a]): Int == extern "length"
 fun isempty(l: List[`a]): Bool == extern "isempty"
+fun begwith(l: List[`a], m: List[`a]) : Bool == extern "begwith"
+fun index(l: List[`a], e: `a): Int == extern "index"
+fun rindex(l: List[`a], e: `a): Int == extern "rindex"
 @end example
 
 
 @section Datatype Set
 
+The type constructor @code{Set[`a]} generates monomorphic set
+types.  A set that may contain anything has type @code{Set[Data]}
+and a set of object references has type @code{Set[Any]}.
+
+The function @code{#} returns the number of elements contained in the
+argument set.
+
+The function @code{remove} returns the argument set without element
+@code{e}.
+
+The function @code{add} returns the argument set with the addition of
+element @code{e}.
+
+The function @code{union} returns the set union of the two argument
+sets.
+
+The function @code{inter} returns the set intersection of the two
+argument sets.
+
+The function @code{diff} returns the set difference of the two
+argument sets.
+
+The preficate @code{isempty} tests, whether the argument set is empty.
+
 @example
 datatype Set[`a]
+
+fun #(s: Set[`a]): Int == extern "#"
+fun remove(s: Set[`a], e: `a): Set[`a] == extern "remove"
+fun add(s: Set[`a], e: `a): Set[`a] == extern "add"
+fun has(s: Set[`a], e: `a): Bool == extern "has"
+fun union(s: Set[`a], t: Set[`a]): Set[`a] == extern "union"
+fun inter(s: Set[`a], t: Set[`a]): Set[`a] == extern "inter"
+fun diff(s: Set[`a], t: Set[`a]): Set[`a] == extern "diff"
+fun isempty(s: Set[`a]): Bool == extern "isempty"
 @end example
 
 
 @section Datatype Pair
+
+The pair type constructor is defined in @ref{Types}.  For example, a
+pair of integers has the type @code{[Int, Int]}.  The standard library
+defines two projections on pairs:  @code{fst} projects on the first
+element and @code{snd} projects on the second element.
 
 @example
 fun fst (a: [`a, `b]): `a == extern "fst"
@@ -183,6 +380,16 @@ fun snd (a: [`a, `b]): `b == extern "snd"
 
 
 @section Datatypes Time and Duration
+
+The types @code{Time} and @code{Duration} are used for real-time
+modelling.  They should not be used in untimed models.  The semantics
+of timed constraints in an untimed semantics is currently left
+unspecified.  For a detailed explanation of modelling with time, we
+refer the reader to @ref{Real-time Creol}.
+
+The only literal of type @code{Time} is @code{now}, which can be
+stored in variables.  On values of type @code{Time} these relations
+are defined: @code{<}, @code{<=}, @code{>=}, and @code{>}.
 
 @example
 datatype Time
@@ -193,12 +400,48 @@ fun >=(a: Time, b: Time): Bool == extern ">="
 fun >(a: Time, b: Time): Bool == extern ">"
 @end example
 
+Values of type @code{Time} refer to particular instances of when
+events happened.  The type @code{Duration} refers to the difference
+between to instances of time.  A @code{Duration} is not ``negative''.
+
+The function @code{dur} constructs a new duration from a @code{Real}
+value.  The unit of duration is left unspecified.
+
+The operator @code{+(a: Time, d: Duration): Time} returns the time
+after @code{d} has elapsed from @code{a}.
+
+The operator @code{-(a: Time, d: Duration): Time} returns the time
+before @code{d} has elapsed until @code{a}.
+
+The operator @code{-(a: Time, b: Time): Duration} returns the time
+elapsed between @code{a} and @code{b}.  If @code{a} happened before
+@code{b}, the result is normalised.  Consequently, for all values of
+@code{Time}, we have @code{a - b = b - a}.
+
+The operator @code{+(a: Duration, d: Duration): Duration} is the sum
+of two durations.
+
+The operator @code{-(a: Duration, d: Duration): Duration} is the
+difference between two durations.  The result is undefined if @code{d
+> a}.
+
+The operators @code{*(a: Duration, s: Real): Duration} and 
+@code{*(a: Real, s: Duration): Duration} represent @emph{scalar}
+multiplication of durations.
+
+The operator @code{/(a: Duration, s: Real): Duration} is scalar
+division.  It is a shorhand for @code{a * (1.0 / s)}.
+
+On values of type @code{Duration} these relations are defined:
+@code{<}, @code{<=}, @code{>=}, and @code{>}.
+
 @example
 datatype Duration
 
 fun dur(a: Real): Duration == extern "duration"
 fun +(a: Time, d: Duration): Time == extern "+"
 fun -(a: Time, d: Duration): Time == extern "-"
+fun -(a: Time, b: Time): Duration == extern "-"
 fun +(a: Duration, d: Duration): Duration == extern "+"
 fun -(a: Duration, d: Duration): Duration == extern "-"
 fun *(a: Duration, s: Real): Duration == extern "*"

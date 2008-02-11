@@ -139,6 +139,7 @@ fmod CREOL-DATA-INT is
   eq "-" (int(I) # int(I')) = int( _-_(I, I')) .
   eq "*" (int(I) # int(I')) = int(I * I') .
   eq "/" (int(I) # int(I')) = int(I quo I') .
+  eq "div" (int(I) # int(I')) = int(I quo I') .
   eq "%" (int(I) # int(I')) = int(I rem I') .
   eq "**" (int(I) # int(I')) = int(I ^ I') .
 
@@ -149,13 +150,14 @@ fmod CREOL-DATA-INT is
 endfm
 
 fmod CREOL-DATA-FLOAT is
-  extending CREOL-DATA-SIG .
-
+  protecting CONVERSION .
   protecting FLOAT .
+  extending CREOL-DATA-INT .
 
-  op float(_): Float     -> Data [ctor format(o o ! o o)] . 
+  op float(_): Float -> Data [ctor format(o o ! o o)] . 
 
   vars F F' : Float .
+  var I : Int .
 
   op _asFloat : Data -> Float .
   eq float(F) asFloat = F .
@@ -169,7 +171,10 @@ fmod CREOL-DATA-FLOAT is
   eq "-" (float(F) # float(F')) = float( _-_(F, F')) .
   eq "*" (float(F) # float(F')) = float(F * F') .
   eq "/" (float(F) # float(F')) = float(F / F') .
+  eq "div" (float(F) # float(F')) = float(F / F') . --- That is wrong.
+  eq "%" (float(F) # float(F')) = float(F rem F') .
   eq "**" (float(F) # float(F')) = float(F ^ F') .
+  eq "real_of_int" (int(I)) = float(float(I)) .
 endfm
 
 fmod CREOL-DATA-STRING is
@@ -205,27 +210,37 @@ fmod CREOL-DATA-LIST is
   vars E E' : Expr .
   vars L L' L'' : ExprList .
 
-  *** list-functions
+  --- list-functions
   eq "head" (list(emp))	= null .
   eq "head" (list(E # L)) = E .
+  eq "tail" (list(emp))	= null .
+  eq "tail" (list(E # L)) = list(L) .
+
   eq "last" (list(emp))	= null .
   eq "last" (list(L # E)) = E .
   eq "rest" (list(emp))	= null .
   eq "rest" (list(L # E)) = list(L) .
-  eq "tail" (list(emp))	= null .
-  eq "tail" (list(E # L)) = list(L) .
 
   eq "length" (list(emp)) = int(0) .
-  eq "length" (list(E # L)) = "+" (int(1) # ("length" (list(L)))) .
+  eq "length" (list(E # L)) = "+" ("length" (list(L)) # int(1)) .
   
   eq "isempty" (list(emp))  = bool(true) .
   eq "isempty" (list(E # L))= bool(false) .
   
-  eq "remove" (list(E) #   E')  = if  E == E' then list(emp) else list(E) fi .
   eq "remove" (list(emp) # E )  = list(emp) .
   eq "remove" (list(E # L) # E') =
     if E == E' then "remove" ((list(L))# E') 
       else "|-|" (list(E) # ("remove" (list(L) # E'))) fi .
+
+  --- Reverse a list
+  eq "reverse" (list(emp)) = list (emp) .
+  eq "reverse" (list(D # L)) = "|-" ("reverse" (list(L)) # D) .
+
+  --- index starts at 1
+  eq "after" (list(emp) # int(N))    = null . 
+  eq "after" (list(E # L) # int(0))  = list(E # L) .
+  eq "after" (list(E # L) # int(N))  =
+    "after" (list(L) # int(_-_(N, 1))) .
 
   --- Compute a slice of a sequence.
   eq "sub" (list(L) # int(N) # int(M)) =
@@ -238,16 +253,11 @@ fmod CREOL-DATA-LIST is
 
   eq "-|" (D # list(L)) = list(D # L) .
   eq "|-" (list(L) # D) = list(L # D) .
+  eq "|-|" (list(L) # list(L'))   = list(L # L') .
 
   eq "has" (list(emp) # E ) = bool(false) .
   eq "has" (list(E # L) # E') =
     if E == E' then bool(true) else "has" (list(L) # E') fi .
-
-  ***index starts at 1
-  eq "after" (list(emp) # int(N))    = null . 
-  eq "after" (list(E # L) # int(0))  = list(E # L) .
-  eq "after" (list(E # L) # int(N))  =
-    "after" (list(L) # int(_-_(N, 1))) .
 
   eq "nth" ((list(L)) # int(0))  = null .
   eq "nth" ((list(emp)) # int(N))  = null .
@@ -259,10 +269,15 @@ fmod CREOL-DATA-LIST is
   eq "rnth" ((list(L # E)) # int(N)) =
     if (N == 1) then E else "rnth" (list(L) # int(_-_(N, 1))) fi .
 
-  eq "begwith" (list(E) # E') = bool("head" (list(E)) == E') .
-  eq "begwith" (list(E # L)# E') = bool("head" (list(E # L)) == E') .
-  eq "begwith" (list(E)# E') = bool("last" (list(E)) == E') .
-  eq "begwith" (list(E # L)# E') = bool("last" (list(L)) == E') .
+  eq "begwith" (list(emp) # list(L # E)) = bool(false) .
+  eq "begwith" (list(L) # list(emp)) = bool(true) .
+  eq "begwith" (list(D # L) # list(D' # L')) =
+    if D == D' then "begwith" (list(L) # list(L')) else bool(false) fi .
+
+  eq "endswith" (list(emp) # list(L # E)) = bool(false) .
+  eq "endswith" (list(L) # list(emp)) = bool(true) .
+  eq "endswith" (list(L # D) # list(L' # D')) =
+    if D == D' then "endswith" (list(L) # list(L')) else bool(false) fi .
 
   --- If E is not in the list, these will fail with the term
   --- "+" (int(N) # null)
@@ -277,8 +292,6 @@ fmod CREOL-DATA-LIST is
   eq ".rindex" (list(emp) # E') = null .
   eq ".rindex" (list(L # E) # E') =
     if E == E' then int(1) else "+" (int(1) # "rindex" (list(L) # E')) fi .
-
-  eq "|-|" (list(L) # list(L'))   = list(L # L') .
 endfm
 
 fmod CREOL-DATA-SET is
@@ -295,7 +308,7 @@ fmod CREOL-DATA-SET is
   subsort Expr < NeExprSet .
 
   op emptyset : -> DataSet [ctor] .
-  op _:_ : DataSet DataSet -> DataSet [ctor comm assoc id: emp] .
+  op _:_ : DataSet DataSet -> DataSet [ctor comm assoc id: emptyset] .
   op _:_ : NeDataSet DataSet -> NeDataSet [ctor ditto] .
   op _:_ : DataSet NeDataSet -> DataSet [ctor ditto] .
   op _:_ : ExprSet ExprSet -> ExprSet [ctor ditto] .
@@ -305,28 +318,45 @@ fmod CREOL-DATA-SET is
   op set : ExprSet -> Expr .
   op set : DataSet -> Data [ctor] .
 
-  vars N        : Nat .
-  vars D D'     : Data .
-  vars E E'     : Expr .
-  vars L L' L'' : ExprSet .
+  vars N    : Nat .
+  vars D D' : Data .
+  vars E E' : Expr .
+  vars S S' : DataSet .
 
   eq D : D = D . --- Collapse multiple elements.
 
   eq "#" (set(emptyset)) = int(0) .
-  eq "#" (set(L : E)) = "+" (int(1) # "#" (set(L))) .
+  eq "#" (set(S : D)) = "+" (int(1) # ("#" (set(S)))) .
 
-  eq "remove" (set(emptyset) # E)  = set(emp) .
-  eq "remove" (set(L : E) # E') =
-    if E == E' then set(L) else "add" (set(E) # ("remove" (set(L) # E'))) fi .
+  eq "remove" (set(emptyset) # E)  = set(emptyset) .
+  eq "remove" (set(S : D) # D') =
+    if D == D' then "remove" (set(S) # D') else
+                    "add" (set(D) # "remove" (set(S) # D')) fi .
 
-  eq "add" (set(L) # E) =
-    if "has" (set(L) # E) asBool then set(L) else set(L # E) fi .    
+  eq "add" (set(S) # D) =
+    if "has" (set(S) # D) asBool then set(S) else set(S : D) fi .    
 
-  eq "has" (set(emptyset) #  E ) = bool(false) .
-  eq "has" (set(L # E) # E') =
-    if E == E' then bool(true) else "has" (set(L) # E') fi .
+  eq "has" (set(emptyset) #  E) = bool(false) .
+  eq "has" (set(S : D) # D') =
+    if D == D' then bool(true) else "has" (set(S) # D') fi .
 
-  eq "union" (set(L) # set(L'))   = set(L # L') .
+  eq "union" (set(emptyset) # set(S)) = set(S) .
+  eq "union" (set(S) # set(emptyset)) = set(S) .
+  eq "union" (set(S : D) # set(S')) =
+    if "has" (set(S') # D) asBool then "union" (set(S) # set(S'))
+                                  else "union" (set(S) # set(S' : D)) fi .
+
+  eq "inter" (set(emptyset) # set(S)) = set(emptyset) .
+  eq "inter" (set(S) # set(emptyset)) = set(emptyset) .
+  eq "inter" (set(S : D) # set(S')) =
+    if "has" (set(S') # D) asBool then "add" ("inter" (set(S) # set(S')) # D)
+                                  else "inter" (set(S) # set(S')) fi .
+
+  eq "diff" (set(S) # set(emptyset)) = set(S) .
+  eq "diff" (set(emptyset) # set(S)) = set(emptyset) .
+  eq "diff" (set(S : D) # set(S')) =
+    if "has" (set(S') # D) asBool then "diff" (set(S) # set(S'))
+                                else "add" ("diff" (set(S) # set(S')) # D) fi .
 
 endfm
 
