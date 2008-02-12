@@ -50,18 +50,18 @@ GRAMMAR_TEST(STATEMENT, "a" . "a", "a")
 GRAMMAR_TEST(STATEMENT, "a" @ "a", "a")
 GRAMMAR_TEST(STATEMENT, skip, "a" ::= "a")
 GRAMMAR_TEST(STATEMENT, "a" ::= "a", skip)
-GRAMMAR_TEST(STATEMENT, {| "var" ::= new "C" (int(5) # bool(true)) |}, skip)
+GRAMMAR_TEST(STATEMENT, {| "var" ::= new "C" (int(5) :: bool(true)) |}, skip)
 GRAMMAR_TEST(STATEMENT, "l" ! "m" (emp), skip)
-GRAMMAR_TEST(STATEMENT, {| "l" ! "m" (null # null) |}, skip)
-GRAMMAR_TEST(STATEMENT, {| "l" ! "o" . "m" (null # "a") |}, skip)
+GRAMMAR_TEST(STATEMENT, {| "l" ! "m" (null :: null) |}, skip)
+GRAMMAR_TEST(STATEMENT, {| "l" ! "o" . "m" (null :: "a") |}, skip)
 GRAMMAR_TEST(STATEMENT, {| (("l")?(noVid)) |}, skip)
 GRAMMAR_TEST(STATEMENT, (("l")?("l")), skip)
 GRAMMAR_TEST(STATEMENT, await ("test" ??) , skip)
 GRAMMAR_TEST(STATEMENT, return (emp), skip)
-GRAMMAR_TEST(STATEMENT, {| return ("a" # null # "c") |}, skip)
+GRAMMAR_TEST(STATEMENT, {| return ("a" :: null :: "c") |}, skip)
 GRAMMAR_TEST(STATEMENT, free ("a" ), skip)
 GRAMMAR_TEST(STATEMENT, tailcall "m" (emp), skip)
-GRAMMAR_TEST(STATEMENT, {| tailcall "m" (null # "a") |}, skip)
+GRAMMAR_TEST(STATEMENT, {| tailcall "m" (null :: "a") |}, skip)
 dnl Should not be accepted, but is with an ambigous parse!
 dnl GRAMMAR_TEST(STATEMENT, "l" ! "this" . "m" @ "C" ( emp ) , skip)
 
@@ -80,7 +80,7 @@ GRAMMAR_TEST(STM-LIST, {| (insert("var2", int(4), insert("var1", str("test"), no
 
 GRAMMAR_TEST(CLASS, {| noInh |}, noInh)
 GRAMMAR_TEST(CLASS, {| "A" < emp > |}, noInh)
-GRAMMAR_TEST(CLASS, {| "A" < emp > ## "B" < "x" > |}, noInh)
+GRAMMAR_TEST(CLASS, {| "A" < emp > ,, "B" < "x" > |}, noInh)
 
 GRAMMAR_TEST(OBJECT, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
 

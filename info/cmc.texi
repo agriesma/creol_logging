@@ -96,7 +96,7 @@ a subsort of term.  The sort @code{Appl} is a supersort of @code{Data}
 @end table
 
 Lists of expressions and of data values are defined in this module,
-too.  These lists are constructed using the @code{#} operator.  
+too.  These lists are constructed using the @code{::} operator.  
 @table @code
 @item ExprList
 A possibly empty list of expressions with identity @code{emp}.
@@ -162,8 +162,8 @@ Equality (and inequality) is defined for all datatypes.
 
 @example
   vars D D' : Data .
-  eq "=" (D # D') = bool(D == D') .
-  eq "/=" (D # D') = bool(D =/= D') .
+  eq "=" (D :: D') = bool(D == D') .
+  eq "/=" (D :: D') = bool(D =/= D') .
 @end example
 
 
@@ -193,15 +193,15 @@ The module @code{CREOL-DATA-SIG} defines these functions for booleans.
 @example
   vars B B' : Bool .
   vars E E' : Expr .
-  eq "||" (bool(true) # E) = bool(true) .
-  eq "||" (bool(false) # E) = E .
-  eq "&&" (bool(false) # E) = bool(false) .
-  eq "&&" (bool(true) #  E) = E .
-  eq "=>" (bool(true) # bool(false)) = bool(false) .
-  eq "=>" (bool(true) # bool(true)) = bool(true) .
-  eq "=>" (bool(false) # E') = bool(true) .
-  eq "^" (bool(B) # bool(B')) = bool(B xor B') .
-  eq "<=>" (bool(B) # bool(B')') = bool(B == B') .
+  eq "||" (bool(true) :: E) = bool(true) .
+  eq "||" (bool(false) :: E) = E .
+  eq "&&" (bool(false) :: E) = bool(false) .
+  eq "&&" (bool(true) ::  E) = E .
+  eq "=>" (bool(true) :: bool(false)) = bool(false) .
+  eq "=>" (bool(true) :: bool(true)) = bool(true) .
+  eq "=>" (bool(false) :: E') = bool(true) .
+  eq "^" (bool(B) :: bool(B')) = bool(B xor B') .
+  eq "<=>" (bool(B) :: bool(B')') = bool(B == B') .
 @end example
 
 
@@ -219,16 +219,16 @@ Integer values are constructed with
 The functions are defined as:
 @example
   eq "-" (int(I)) = int(-(I)) .
-  eq "<"  (int(I) # int(I')) = bool(I < I') .
-  eq "<=" (int(I) # int(I')) = bool(I <= I') .
-  eq ">"  (int(I) # int(I')) = bool(I > I') .
-  eq ">=" (int(I) # int(I')) = bool(I >= I') .
-  eq "+" (int(I) # int(I')) = int(I + I') .
-  eq "-" (int(I) # int(I')) = int( _-_(I, I')) .
-  eq "*" (int(I) # int(I')) = int(I * I') .
-  eq "/" (int(I) # int(I')) = int(I quo I') .
-  eq "%" (int(I) # int(I')) = int(I rem I') .
-  eq "**" (int(I) # int(I')) = int(I ^ I') .
+  eq "<"  (int(I) :: int(I')) = bool(I < I') .
+  eq "<=" (int(I) :: int(I')) = bool(I <= I') .
+  eq ">"  (int(I) :: int(I')) = bool(I > I') .
+  eq ">=" (int(I) :: int(I')) = bool(I >= I') .
+  eq "+" (int(I) :: int(I')) = int(I + I') .
+  eq "-" (int(I) :: int(I')) = int( _-_(I, I')) .
+  eq "*" (int(I) :: int(I')) = int(I * I') .
+  eq "/" (int(I) :: int(I')) = int(I quo I') .
+  eq "%" (int(I) :: int(I')) = int(I rem I') .
+  eq "**" (int(I) :: int(I')) = int(I ^ I') .
 @end example
 
 
@@ -246,16 +246,16 @@ The floating point datatype is defined in the module
 The functions are defined as:
 @example
   eq "-" (float(I)) = float(-(I)) .
-  eq "<"  (float(I) # float(I')) = bool(I < I') .
-  eq "<=" (float(I) # float(I')) = bool(I <= I') .
-  eq ">"  (float(I) # float(I')) = bool(I > I') .
-  eq ">=" (float(I) # float(I')) = bool(I >= I') .
-  eq "+" (float(I) # float(I')) = float(I + I') .
-  eq "-" (float(I) # float(I')) = float( _-_(I, I')) .
-  eq "*" (float(I) # float(I')) = float(I * I') .
-  eq "/" (float(I) # float(I')) = float(I quo I') .
-  eq "%" (float(I) # float(I')) = float(I rem I') .
-  eq "**" (float(I) # float(I')) = float(I ^ I') .
+  eq "<"  (float(I) :: float(I')) = bool(I < I') .
+  eq "<=" (float(I) :: float(I')) = bool(I <= I') .
+  eq ">"  (float(I) :: float(I')) = bool(I > I') .
+  eq ">=" (float(I) :: float(I')) = bool(I >= I') .
+  eq "+" (float(I) :: float(I')) = float(I + I') .
+  eq "-" (float(I) :: float(I')) = float( _-_(I, I')) .
+  eq "*" (float(I) :: float(I')) = float(I * I') .
+  eq "/" (float(I) :: float(I')) = float(I quo I') .
+  eq "%" (float(I) :: float(I')) = float(I rem I') .
+  eq "**" (float(I) :: float(I')) = float(I ^ I') .
 @end example
 
 
@@ -277,13 +277,13 @@ Strings are constructed with
 
 The defined functions are:
 @example
-  eq "<" (str(S)# str(S')) = bool(S < S') .
-  eq "<=" (str(S)# str(S')) = bool(S <= S') .
-  eq ">" (str(S)# str(S')) = bool(S > S') .
-  eq ">=" (str(S)# str(S')) = bool(S >= S') .
-  eq "-|" (str(S) # str(S')) = str(S + S') .
-  eq "|-|" (str(S) # str(S')) = str(S + S') .
-  eq "|-" (str(S) # str(S')) = str(S + S') .
+  eq "<" (str(S):: str(S')) = bool(S < S') .
+  eq "<=" (str(S):: str(S')) = bool(S <= S') .
+  eq ">" (str(S):: str(S')) = bool(S > S') .
+  eq ">=" (str(S):: str(S')) = bool(S >= S') .
+  eq "-|" (str(S) :: str(S')) = str(S + S') .
+  eq "|-|" (str(S) :: str(S')) = str(S + S') .
+  eq "|-" (str(S) :: str(S')) = str(S + S') .
 @end example
 
 
@@ -301,50 +301,50 @@ constructed by:
 The defined functions are:
 @example
   eq "head" (list(emp)) = null .
-  eq "head" (list(E # L)) = E .
+  eq "head" (list(E :: L)) = E .
   eq "last" (list(emp)) = null .
-  eq "last" (list(L # E)) = E .
+  eq "last" (list(L :: E)) = E .
   eq "rest" (list(emp)) = null .
-  eq "rest" (list(L # E)) = list(L) .
+  eq "rest" (list(L :: E)) = list(L) .
   eq "tail" (list(emp)) = null .
-  eq "tail" (list(E # L)) = list(L) .
+  eq "tail" (list(E :: L)) = list(L) .
 
   eq "length" (list(emp)) = int(0) .
-  eq "length" (list(E # L)) = "+" (int(1) # ("length" (list(L)))) .
+  eq "length" (list(E :: L)) = "+" (int(1) :: ("length" (list(L)))) .
 
   eq "isempty" (list(emp))  = bool(true) .
-  eq "isempty" (list(E # L))= bool(false) .
+  eq "isempty" (list(E :: L))= bool(false) .
 
-  eq "remove" (list(E) # E')  = if  E == E' then list(emp) else list(E) fi .
-  eq "remove" (list(emp)# E )  = list(emp) .
-  eq "remove" (list(E # L)# E') =
-    if E == E' then "remove" ((list(L))# E')
-      else "|-|" (list(E) # ("remove" (list(L) # E'))) fi .
+  eq "remove" (list(E) :: E')  = if  E == E' then list(emp) else list(E) fi .
+  eq "remove" (list(emp):: E )  = list(emp) .
+  eq "remove" (list(E :: L):: E') =
+    if E == E' then "remove" ((list(L)):: E')
+      else "|-|" (list(E) :: ("remove" (list(L) :: E'))) fi .
 
-  eq "-|" (D # list(L)) = list(D # L) .
-  eq "|-" (list(L) # D) = list(L # D) .
+  eq "-|" (D :: list(L)) = list(D :: L) .
+  eq "|-" (list(L) :: D) = list(L :: D) .
 
-  eq "has" (list(emp)# E ) = bool(false) .
-  eq "has" (list(E # L) # E) = bool(true) .
-  eq "has" (list(E # L) # E') = "has" (list(L) # E') [otherwise] .
+  eq "has" (list(emp):: E ) = bool(false) .
+  eq "has" (list(E :: L) :: E) = bool(true) .
+  eq "has" (list(E :: L) :: E') = "has" (list(L) :: E') [otherwise] .
 
   ***index starts at 1
-  eq "after" (list(emp) # int(N))    = null .
-  eq "after" (list(E # L) # int(0))  = list(E # L) .
-  eq "after" (list(E # L) # int(N))  =
-    "after" ((list(L)) # "-" (int(N) # int(1))) .
+  eq "after" (list(emp) :: int(N))    = null .
+  eq "after" (list(E :: L) :: int(0))  = list(E :: L) .
+  eq "after" (list(E :: L) :: int(N))  =
+    "after" ((list(L)) :: "-" (int(N) :: int(1))) .
 
-  eq "index" ((list(L)) # int(0)) = null .
-  eq "index" ((list(emp)) # int(N)) = null .
-  eq "index" ((list(E # L)) # int(N)) =
-    if (N == 1) then E else "index" (list(L) # "-" (int(N) # int(1))) fi .
+  eq "index" ((list(L)) :: int(0)) = null .
+  eq "index" ((list(emp)) :: int(N)) = null .
+  eq "index" ((list(E :: L)) :: int(N)) =
+    if (N == 1) then E else "index" (list(L) :: "-" (int(N) :: int(1))) fi .
 
-  eq "begwith" (list(E) # E') = bool("head" (list(E)) == E') .
-  eq "begwith" (list(E # L) # E') = bool("head" (list(E # L)) == E') .
-  eq "begwith" (list(E) # E') = bool("last" (list(E)) == E') .
-  eq "begwith" (list(E # L) # E') = bool("last" (list(L)) == E') .
+  eq "begwith" (list(E) :: E') = bool("head" (list(E)) == E') .
+  eq "begwith" (list(E :: L) :: E') = bool("head" (list(E :: L)) == E') .
+  eq "begwith" (list(E) :: E') = bool("last" (list(E)) == E') .
+  eq "begwith" (list(E :: L) :: E') = bool("last" (list(L)) == E') .
 
-  eq "|-|" (list(L) # list(L'))   = list(L # L') .
+  eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
 @end example
 
 
@@ -402,7 +402,7 @@ Now we need to define constructors and destructors for pairs.  These
 are defined in terms of applications:
 
 @example
-  eq "pair" (D # D') = pair(D, D') .
+  eq "pair" (D :: D') = pair(D, D') .
   eq "fst" (pair(D, D')) = D .
   eq "snd" (pair(D, D')) = D' .
 @end example
@@ -455,7 +455,7 @@ This function computes the @emph{union} of the substitutions @code{S1}
 and @code{S2}, where the bindings in @code{S2} override the bindings
 in @code{S1}.
 
-@item S1 # S2
+@item S1 :: S2
 This function constructs a @emph{union} of @code{S1} and @code{S2},
 too.  However, in contrast to @code{compose(S1, S2)}, the union is not
 actually computed, but if bindings are accessed, it is first checked,
@@ -465,10 +465,10 @@ whether it is defined in @code{S2} and then in @code{S1}.
 Observe, that for all substitutions @code{S1} and @code{S2} and all
 attribute identifiers @code{a} we have:
 @example
-compose(S1, S2)[a] = (S1 # S2)[a]
+compose(S1, S2)[a] = (S1 :: S2)[a]
 @end example
 
-The advantage of @code{_#_} over compose is, that more attributes
+The advantage of @code{_::_} over compose is, that more attributes
 are looked up from the local environment and the computation of the
 union is costly.
 

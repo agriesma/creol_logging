@@ -1,64 +1,7 @@
-dnl
-dnl interpreter.m4 -- Source for modelchecker.maude and interpreter.maude
-dnl
-dnl Copyright (c) 2007
-dnl
-dnl The purpose of this file is to create the files `interpreter.maude'
-dnl and `modelchecker.maude'.  These files have to be processed with
-dnl m4, with either one of `CREOL' or `MODELCHECK' defined.
-dnl
-dnl See the lines below for its license
-dnl
-changecom`'dnl
-define(`KIND', ifdef(`TIME', `real-time ')ifdef(`MODELCHECK', `model-checker', `interpreter'))dnl
-dnl
-dnl The macro STEP is used to indicate that the specified transition
-dnl may be both an equation (this is the case for model checking,
-dnl or a rule (in the interpreter).
-dnl $1 is the pre-condition of the rule.
-dnl $2 is the post-condition of the rule.
-dnl $3 is an annotation.  It must not be empty, and usually contains at
-dnl    least the label.
-define(`STEP',dnl
-ifdef(`MODELCHECK',dnl
-`eq
-  $1
-  =
-  $2
-  $3 .',dnl
-`rl
-  $1
-  =>
-  $2
-  $3 .'))dnl
-dnl
-dnl The macro CSTEP is used to indicate that the specified transition
-dnl may be both a conditional equation (this is the case for model checking),
-dnl or a conditional rule (in the interpreter).
-dnl $1 is the pre-condition of the rule.
-dnl $2 is the post-condition of the rule.
-dnl $3 is the condition.
-dnl $4 is an annotation.  It must not be empty, and usually contains at
-dnl    least the label.
-define(`CSTEP',dnl
-ifdef(`MODELCHECK',dnl
-`ceq
-  $1
-  =
-  $2
-  if $3
-  $4 .',dnl
-`crl
-  $1
-  =>
-  $2
-  if $3
-  $4 .'))dnl
+include(macros.m4)dnl
 dnl The usual header.
 ***
-ifdef(`MODELCHECK',dnl
-`*** Modelchecker for Creol.',dnl
-`*** Reimplementation of the CREOL interpreter, 2007')
+*** Reimplementation of the CREOL KIND, 2007
 ***
 *** Copyright (c) 2007
 ***
@@ -113,10 +56,10 @@ fmod CREOL-SUBST is
   vars S1 S2  : Subst .
 
   *** Lazy composition operator for substitutions
-  op _#_ : Subst Subst -> Subst .
-  eq S1 # noSubst = S1 .
-  eq noSubst # S2 = S2 .
-  eq (S1 # S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
+  op _::_ : Subst Subst -> Subst .
+  eq S1 :: noSubst = S1 .
+  eq noSubst :: S2 = S2 .
+  eq (S1 :: S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
 
   *** Composition operater for substitutions
   op compose : Subst Subst -> Subst .
@@ -126,7 +69,7 @@ fmod CREOL-SUBST is
   
 
   op dom : Vid Subst -> Bool .
-  eq dom(A, S1 # S2) = dom(A, S2) or-else dom(A, S1) .
+  eq dom(A, S1 :: S2) = dom(A, S2) or-else dom(A, S1) .
   eq dom(A, (S1, A |-> D)) = true .
   eq dom(A, S1) = false [owise] .
 endfm
@@ -233,7 +176,7 @@ fmod CREOL-CLASS is
 
   op  _<_> : Cid  ExprList -> Inh [ctor prec 15] . *** initialised superclass
   op noInh : -> InhList [ctor] .
-  op  _##_   : InhList InhList -> InhList [ctor assoc id: noInh] .
+  op  _,,_   : InhList InhList -> InhList [ctor assoc id: noInh] .
 
   var Ih : Inh . 
   var IL : InhList .
@@ -428,23 +371,13 @@ fmod `CREOL-EVAL' is
   vars NeSL NeSL' NeSL'' : NeStmList .
   var AL : VidList .
   var M : ExprMap .
-
 dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
 dnl untimed cases.
 dnl
-define(`EVAL', `EVALGUARD($1, $2, noMsg, $3)')dnl
-define(`EVALLIST', `EVALGUARDLIST($1, $2, noMsg, $3)')dnl
-define(`EVALSET', `EVALGUARDSET($1, $2, noMsg, $3)')dnl
-define(`EVALMAP', `EVALGUARDMAP($1, $2, noMsg, $3)')dnl
 ifdef(`TIME',dnl
   var T : Float .
-`define(`EVALGUARD', evalGuard($1, $2, $3, $4))dnl
-define(`EVALGUARDLIST', evalGuardList($1, $2, $3, $4))dnl
-define(`EVALGUARDSET', evalGuardSet($1, $2, $3, $4))dnl
-define(`EVALGUARDMAP', evalGuardMap($1, $2, $3, $4))dnl
-define(`ENABLED', enabled($1, $2, $3, $4))dnl
-define(`READY', ready($1, $2, $3, $4))'
+
   op evalGuard : Expr Subst MMsg Float -> Data .
   op evalGuardList : ExprList Subst MMsg Float -> DataList [strat (1 0 0 0 0)] .
   op evalGuardSet : ExprSet Subst MMsg Float -> DataSet [strat (1 0 0 0 0)] .
@@ -452,12 +385,7 @@ define(`READY', ready($1, $2, $3, $4))'
   op enabled : NeStmList Subst MMsg Float -> Bool .
   op ready : NeStmList Subst MMsg Float -> Bool .
 ,dnl Untimed:
-`define(`EVALGUARD', evalGuard($1, $2, $3))dnl
-define(`EVALGUARDLIST', evalGuardList($1, $2, $3))dnl
-define(`EVALGUARDSET', evalGuardSet($1, $2, $3))dnl
-define(`EVALGUARDMAP', evalGuardMap($1, $2, $3))dnl
-define(`ENABLED', enabled($1, $2, $3))dnl
-define(`READY', ready($1, $2, $3))'
+
   op evalGuard : Expr Subst MMsg -> Data .
   op evalGuardList : ExprList Subst MMsg -> DataList [strat (1 0 0 0)] .
   op evalGuardSet : ExprSet Subst MMsg -> DataSet [strat (1 0 0 0)] .
@@ -467,8 +395,8 @@ define(`READY', ready($1, $2, $3))'
 )dnl
 
   eq EVALGUARD(D, S, MM, T) = D .
-  eq EVALGUARD((Q @@ C), (S # S'), MM, T) =  S [Q] .
-  eq EVALGUARD(Q, (S # S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
+  eq EVALGUARD((Q @@ C), (S :: S'), MM, T) =  S [Q] .
+  eq EVALGUARD(Q, (S :: S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
   eq EVALGUARD(A, S, MM, T) =  S [A] .
   eq EVALGUARD(Q (EL), S, MM, T) = Q ( EVALGUARDLIST(EL, S, MM, T) ) .
   eq EVALGUARD((A ??), S, MM, T) = bool(inqueue(S[A], MM)) .
@@ -486,24 +414,28 @@ define(`READY', ready($1, $2, $3))'
   *** Evaluate guard lists.  This is almost the same as evalList, but we
   *** had to adapt this to guards.
   eq EVALGUARDLIST(emp, S, MM, T) = emp .
-  eq EVALGUARDLIST(DL, S, MM, T) = DL .   *** Short circuit evaluation.
+  eq EVALGUARDLIST(DL, S, MM, T) = DL .   --- No need to evaluate.
   eq EVALGUARDLIST(E, S, MM, T) = EVALGUARD(E, S, MM, T) .
-  eq EVALGUARDLIST(E # NeEL, S, MM, T) =
-    EVALGUARD(E, S, MM, T) # EVALGUARDLIST(NeEL, S, MM, T) .
+  eq EVALGUARDLIST(E :: NeEL, S, MM, T) =
+    EVALGUARD(E, S, MM, T) :: EVALGUARDLIST(NeEL, S, MM, T) .
 
   eq EVALGUARDSET(emptyset, S, MM, T) = emptyset .
-  eq EVALGUARDSET(DS, S, MM, T) = DS . --- Short circuit evaluation.
+  eq EVALGUARDSET(DS, S, MM, T) = DS .  ---  No need to evaluate
   eq EVALGUARDSET(E, S, MM, T) = EVALGUARD(E, S, MM, T) .
   eq EVALGUARDSET(E : NeES, S, MM, T) =
     EVALGUARD(E, S, MM, T) : EVALGUARDSET(NeES, S, MM, T) .
 
   *** Evaluate a map.
-  eq EVALGUARDMAP(empty, S, MM, T) = empty . *** Short circuit evaluation.
+  eq EVALGUARDMAP(empty, S, MM, T) = empty .
  eq EVALGUARDMAP((D |~> D', M), S, MM, T) =
-   (D |~> D' , EVALGUARDMAP(M, S, MM, T)) .
+   (D |~> D' , EVALGUARDMAP(M, S, MM, T)) .  --- No need to evaluate .
+ eq EVALGUARDMAP((D |~> E', M), S, MM, T) =
+   (D |~> EVALGUARD(E', S, MM, T) , EVALGUARDMAP(M, S, MM, T)) .
+ eq EVALGUARDMAP((E |~> D', M), S, MM, T) =
+   (EVALGUARD(E, S, MM, T) |~> D' , EVALGUARDMAP(M, S, MM, T)) .
  eq EVALGUARDMAP((E |~> E', M), S, MM, T) =
    (EVALGUARD(E, S, MM, T) |~> EVALGUARD(E', S, MM, T) ,
-    EVALGUARDMAP(M, S, MM, T)) .
+   EVALGUARDMAP(M, S, MM, T)) .
 
   eq ENABLED((NeSL [] NeSL') ; SL'',  S, MM, T) =
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
@@ -511,8 +443,9 @@ define(`READY', ready($1, $2, $3))'
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
   eq ENABLED((NeSL MERGER SL') ; SL'', S, MM, T) = ENABLED(NeSL, S, MM, T) .
   eq ENABLED(await E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
-  eq ENABLED(posit E ; SL'', S, MM, T) =
-    ifdef(`TIME', EVALGUARD(E, S, MM, T) asBool, true) .
+ifdef(`TIME',dnl
+  eq ENABLED(posit E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+)dnl
   eq ENABLED(NeSL, S, MM, T) = true [owise] .
 
   *** The ready predicate holds, if a statement is ready for execution,
@@ -590,12 +523,12 @@ ifdef(`MODELCHECK',dnl
 STEP(dnl
 `< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
 	    PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
-`< O : C | Att: S, Pr: (L,(assign(AL, EVALLIST(EL, (S # L), T)) ; SL)), 
+`< O : C | Att: S, Pr: (L,(assign(AL, EVALLIST(EL, (S :: L), T)) ; SL)), 
 	    PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
 `[label assignment]')
 
 eq
-  < O : C | Att: S, Pr: (L, ( assign(((a @@ CC), AL), D # DL) ; SL)),
+  < O : C | Att: S, Pr: (L, ( assign(((a @@ CC), AL), D :: DL) ; SL)),
     PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
     < O : C | Att: insert(a, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
@@ -603,7 +536,7 @@ eq
   [label do-static-assign] .
 
 eq
-  < O : C | Att: S, Pr: (L,( assign( (a , AL), D # DL) ; SL)), PrQ: W,
+  < O : C | Att: S, Pr: (L,( assign( (a , AL), D :: DL) ; SL)), PrQ: W,
     Dealloc: LS, Ev: MM, Lcnt: N >
   =
   if dom(a, L) then
@@ -630,7 +563,7 @@ STEP(dnl
 STEP(dnl
 < O : C | Att: S`,' Pr: (L`,' if E th SL' el SL'' fi ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   CLOCK,
-if EVAL(E, (S # L), T) asBool then
+if EVAL(E, (S :: L), T) asBool then
     < O : C | Att: S`,' Pr: (L`,' SL' ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   else
     < O : C | Att: S`,' Pr: (L`,' SL'' ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
@@ -663,7 +596,7 @@ crl
   =>
   < O : C | Att: S, Pr: (L, (NeSL ; SL)), PrQ: W, Dealloc: LS, Ev: MM,
             Lcnt: N > CLOCK
-  if READY(NeSL, (S # L), MM, T)
+  if READY(NeSL, (S :: L), MM, T)
   [label choice] .
 
 
@@ -677,7 +610,7 @@ crl
   =>
   < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL'); SL), PrQ: W, Dealloc: LS,
             Ev: MM, Lcnt: N > CLOCK
-  if READY(NeSL,(S # L), MM, T)
+  if READY(NeSL,(S :: L), MM, T)
   [label merge] .
 
 --- merger
@@ -686,7 +619,7 @@ eq
   < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER NeSL'); SL), PrQ: W,
             Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =
-  if ENABLED(ST, (S # L), MM, T) then
+  if ENABLED(ST, (S :: L), MM, T) then
     < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER NeSL')); SL)), PrQ: W,
       Dealloc: LS, Ev: MM, Lcnt: N >
   else
@@ -714,7 +647,7 @@ CSTEP(dnl
            Lcnt: N > CLOCK',
 `< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Dealloc: LS, Ev: MM,
            Lcnt: N > CLOCK',
-not ENABLED(SuS, (S # L), MM, T),
+not ENABLED(SuS, (S :: L), MM, T),
 `[label suspend]')
 
 
@@ -724,7 +657,7 @@ CSTEP(dnl
 `< O : C | Att: S, Pr: (L, await G ; SL), PrQ: W, Dealloc: LS, Ev: MM,
            Lcnt: N > CLOCK',
 `< O : C | Att: S, Pr: (L,SL) , PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
-`EVALGUARD(G, (S # L), MM, T) asBool'
+`EVALGUARD(G, (S :: L), MM, T) asBool'
 `[label await]')
 
 --- Optimze label access in await statements.
@@ -744,7 +677,7 @@ crl
             Lcnt: N > CLOCK
   =>
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
-  if READY(SL, (S # L), MM, T)
+  if READY(SL, (S :: L), MM, T)
   [label PrQ-ready] .
 
 
@@ -778,11 +711,11 @@ STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
 --- Method binding with multiple inheritance
 ---
 eq
-  bindMtd(O, O', Lab, M, DL, (C < EL >) `##' I')
+  bindMtd(O, O', Lab, M, DL, (C < EL >) `,,' I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
   if get(M, MS, O', Lab, DL) == noProc then
-    bindMtd(O, O', Lab, M, DL, I `##' I')
+    bindMtd(O, O', Lab, M, DL, I `,,' I')
   else
     boundMtd(O, get(M, MS, O', Lab, DL))
   fi
@@ -840,14 +773,14 @@ ifdef(`MODELCHECK',
 `eq
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > CLOCK
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM +
-    invoc(O, label(O, O, Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T)), Lcnt: F > CLOCK'
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM +
+    invoc(O, label(O, O, Q, EVALLIST(EL, (S :: L), T)), Q, EVALLIST(EL, (S :: L), T)), Lcnt: F > CLOCK'
 ,
 `rl
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
   < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q, EVALLIST(EL, (S # L), T)) from O to O CLOCK'
+  invoc(O, label(O, N), Q, EVALLIST(EL, (S :: L), T)) from O to O CLOCK'
 )dnl
   [label local-async-call] .
 
@@ -859,15 +792,15 @@ ifdef(`MODELCHECK',
   < O : C | Att: S, Pr: (L, ( A ! Q @ CC (EL) ); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   CLOCK
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  invoc(O, label(O, O, Q @ CC, EVALLIST(EL, (S # L), T)), Q @ CC,
-        EVALLIST(EL, (S # L), T)) from O to O CLOCK'
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  invoc(O, label(O, O, Q @ CC, EVALLIST(EL, (S :: L), T)), Q @ CC,
+        EVALLIST(EL, (S :: L), T)) from O to O CLOCK'
 ,
 `rl
   < O : C | Att: S, Pr: (L, ( A ! Q @ CC(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
   < O : C | Att: S, Pr: (insert (A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q @ CC, EVALLIST(EL, (S # L), T)) from O to O CLOCK'
+  invoc(O, label(O, N), Q @ CC, EVALLIST(EL, (S :: L), T)) from O to O CLOCK'
 )dnl
   [label local-async-static-call] .
 
@@ -878,14 +811,14 @@ ifdef(`MODELCHECK',
 `eq
   < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, EVAL(E, (S # L), T), Q, EVALLIST(EL, (S # L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
-  invoc(O, label(O, EVAL(E, (S # L), T), Q, EVALLIST(EL, (S # L), T)), Q, EVALLIST(EL, (S # L), T)) from O to EVAL(E, (S # L), T)'
+  < O : C | Att: S, Pr: (insert(A, label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
+  invoc(O, label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)), Q, EVALLIST(EL, (S :: L), T)) from O to EVAL(E, (S :: L), T)'
 ,dnl
 `rl
   < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
   < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q , EVALLIST(EL, (S # L), T)) from O to EVAL(E, (S # L), T) CLOCK'
+  invoc(O, label(O, N), Q , EVALLIST(EL, (S :: L), T)) from O to EVAL(E, (S :: L), T) CLOCK'
 )dnl
   [label remote-async-call] .
 
@@ -895,7 +828,7 @@ ifdef(`MODELCHECK',
 STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
 `< O : C |  Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   CLOCK
-  comp(L[".label"], EVALLIST(EL, (S # L), T)) from O to caller(L[".label"])',
+  comp(L[".label"], EVALLIST(EL, (S :: L), T)) from O to caller(L[".label"])',
 `[label return]')
 
 
@@ -938,7 +871,7 @@ eq
 ---
 STEP(`< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
 `< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  bindMtd(O, O, tag(L[".label"]), M, EVALLIST(EL, (S # L), T), C < emp >)'
+  bindMtd(O, O, tag(L[".label"]), M, EVALLIST(EL, (S :: L), T), C < emp >)'
   CLOCK,
 `[label tailcall]')
 
@@ -996,10 +929,10 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 --- consistent state.
 ---
 eq
-  findAttr(O,(C < EL > `##' I), S, SL, (L', SL')) 
+  findAttr(O,(C < EL > `,,' I), S, SL, (L', SL')) 
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
   =
-  findAttr(O, I ## I', compose(S', S),
+  findAttr(O, I ,, I', compose(S', S),
            SL ; (AL ::= EL), 
            (L', (".init" ! "init" @ C(emp)) ; (".init" ?(noVid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F > .
@@ -1021,7 +954,7 @@ ifdef(`TIME',dnl
 `< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W,
            Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
 `< O : C | Att: S, Pr: (L,SL) , PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
-EVALGUARD(G, (S # L), MM, T) asBool,
+EVALGUARD(G, (S :: L), MM, T) asBool,
 `[label posit]')',
 `STEP(
 `< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >',
@@ -1036,12 +969,12 @@ ifdef(`TIME',dnl
 --- the global state at the new time.
 
 op posit(_,_,_) : Subst StmList Float -> Bool .
-eq posit((S `#' L), posit E ; SL, T) = EVAL(E,(S `#' L), T) asBool .
-eq posit((S `#' L), SL, T) = true [otherwise] .
+eq posit((S `::' L), posit E ; SL, T) = EVAL(E,(S `::' L), T) asBool .
+eq posit((S `::' L), SL, T) = true [otherwise] .
 
 op posit(_,_,_) : Subst MProc Float -> Bool .
 eq posit(S, noProc, T) = true .
-eq posit(S, (L, SL) ++ W, T) = posit((S # L),SL,T) and posit(S, W, T) .
+eq posit(S, (L, SL) ++ W, T) = posit((S :: L),SL,T) and posit(S, W, T) .
 
 op posit : State -> Bool .
 eq posit ({ clock(delta, T) }) = true .
@@ -1053,7 +986,7 @@ eq posit ({ < O : C | Att: S, Pr: idle, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
     posit ({ cnf clock(delta, T) }) .
 eq posit ({ < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
             cnf clock(delta, T) }) =
-  posit((S # L), SL, T + delta) and *** posit (S, W, T + delta) and
+  posit((S :: L), SL, T + delta) and *** posit (S, W, T + delta) and
     posit ({ cnf clock(delta, T) }) .
 
 *** A very simple discrete time clock.

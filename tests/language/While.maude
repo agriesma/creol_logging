@@ -5,7 +5,7 @@ op init : -> Configuration [ctor] .
 eq init =
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "l" |-> null , "f" |-> null, Code: while "/=" ( "l" # list(emp) ) do  ( "f", "l" )  ::= "head" ( "l" ) # "tail" ( "l" ) od  ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: "l" |-> null , "f" |-> null, Code: while "/=" ( "l" :: list(emp) ) do  ( "f", "l" )  ::= "head" ( "l" ) :: "tail" ( "l" ) od  ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

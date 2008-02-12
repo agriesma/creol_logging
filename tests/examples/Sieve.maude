@@ -5,12 +5,12 @@ op init : -> Configuration [ctor] .
 eq init =
 < "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null , "next" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "next" ::= new "Sieve" ( int(2) ) ; "n" ::= int(3) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "r" |-> null, Code: "label:0" ! "next" . "send" ( "n" ) ; ( "label:0" ? ( "r" ) )  ; "n" ::= "+" ( "n" # int(1) ) ; ( "label:1" ! "this" . "run" (emp ) )  ; free( "label:1" ) ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "r" |-> null, Code: "label:0" ! "next" . "send" ( "n" ) ; ( "label:0" ? ( "r" ) )  ; "n" ::= "+" ( "n" :: int(1) ) ; ( "label:1" ! "this" . "run" (emp ) )  ; free( "label:1" ) ; return ( emp ) >, Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "p" |-> null , "next" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "send" : Mtdname | Param: "n", Latt: "n" |-> null , "res" |-> null , "label:0" |-> null , "d" |-> null , "r" |-> null, Code: "d" ::= "/" ( "n" # "p" ) ; "r" ::= "-" ( "n" # "*" ( "d" # "p" ) ) ; if "=" ( "r" # int(0) ) th "res" ::= bool(false) el if "/=" ( "next" # null ) th "label:0" ! "next" . "send" ( "n" ) ; ( "label:0" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
+  < "send" : Mtdname | Param: "n", Latt: "n" |-> null , "res" |-> null , "label:0" |-> null , "d" |-> null , "r" |-> null, Code: "d" ::= "/" ( "n" :: "p" ) ; "r" ::= "-" ( "n" :: "*" ( "d" :: "p" ) ) ; if "=" ( "r" :: int(0) ) th "res" ::= bool(false) el if "/=" ( "next" :: null ) th "label:0" ! "next" . "send" ( "n" ) ; ( "label:0" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
 
 .
 endm

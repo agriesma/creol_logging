@@ -5,18 +5,18 @@ result Configuration:
     "controller" |-> null, "initialRate" |-> null, "rate" |-> null, "t0" |->
     null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: ("rate", "t0") ::=
-    "initialRate" # now ; return(emp) > *
+    "initialRate" :: now ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: await ">="(
-    now # "+"("t0" # "rate")) ; "label:0" ! "controller" . "write"(int(37)) ;
-    "label:0" ?(noVid) ; posit "<="(now # "+"("t0" # "rate")) ; "t0" ::= now ;
-    return(emp) > *
+    now :: "+"("t0" :: "rate")) ; "label:0" ! "controller" . "write"(int(37)) ;
+    "label:0" ?(noVid) ; posit "<="(now :: "+"("t0" :: "rate")) ; "t0" ::= now
+    ; return(emp) > *
   < "setEncoding" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip
     ; return(emp) > *
   < "setRate" : Mtdname | Param: "newRate", Latt: "label:0" |-> null, "newRate"
-    |-> null, Code: if "&&"("<"("newRate" # "rate") # ">"(now # "+"("t0" #
+    |-> null, Code: if "&&"("<"("newRate" :: "rate") :: ">"(now :: "+"("t0" ::
     "newRate"))) th "label:0" ! "controller" . "write"(int(37)) ; "label:0" ?(
-    noVid) ; "t0" ::= now el skip fi ; "rate" ::= "newRate" ; posit "<"(now #
-    "+"("t0" # "rate")) ; return(emp) > *
+    noVid) ; "t0" ::= now el skip fi ; "rate" ::= "newRate" ; posit "<"(now ::
+    "+"("t0" :: "rate")) ; return(emp) > *
   < "setResolution" : Mtdname | Param: "data", Latt: "data" |-> null, Code:
     skip ; return(emp) > *
   < "switchOff" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(
@@ -51,24 +51,24 @@ result Configuration:
     emp) ; "slots" ::= "size" ; "rate" ::= "initialRate" ; "t0" ::= now ;
     return(emp) > *
   < "packAndSend" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
-    "label:0" ! "radio" . "write"("-|"("this" # "-|"(now # "buffer"))) ;
+    "label:0" ! "radio" . "write"("-|"("this" :: "-|"(now :: "buffer"))) ;
     "label:0" ?(noVid) ; "buffer" ::= list(emp) ; "slots" ::= "size" ; return(
     emp) > *
   < "read" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, "temp" |-> null, Code: "label:0" ! "sensor" . "read"(emp) ; "label:0"
-    ?("temp") ; posit "<="(now # "t0") ; await ">"("slots" # int(0)) ; "buffer"
-    ::= "|-"("buffer" # "temp") ; "slots" ::= "-"("slots" # int(1)) ; if "="(
-    "slots" # int(0)) th "label:1" ! "this" . "packAndSend"(emp) ; "label:1" ?(
-    noVid) el skip fi ; return(emp) > *
+    ?("temp") ; posit "<="(now :: "t0") ; await ">"("slots" :: int(0)) ;
+    "buffer" ::= "|-"("buffer" :: "temp") ; "slots" ::= "-"("slots" :: int(1))
+    ; if "="("slots" :: int(0)) th "label:1" ! "this" . "packAndSend"(emp) ;
+    "label:1" ?(noVid) el skip fi ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, Code: "label:0" ! "this" . "read"(emp) ; "label:0" ?(noVid) ; await
-    ">="(now # "+"("t0" # "rate")) ; posit "<="(now # "+"("t0" # "rate")) ;
+    ">="(now :: "+"("t0" :: "rate")) ; posit "<="(now :: "+"("t0" :: "rate")) ;
     "t0" ::= now ; "label:1" ! "this" . "run"(emp) ; free("label:1") ; return(
     emp) > *
   < "setRate" : Mtdname | Param: "newRate", Latt: "label:0" |-> null, "newRate"
-    |-> null, Code: if "&&"("<"("newRate" # "rate") # ">"(now # "+"("t0" #
+    |-> null, Code: if "&&"("<"("newRate" :: "rate") :: ">"(now :: "+"("t0" ::
     "newRate"))) th "t0" ::= now ; "label:0" ! "this" . "read"(emp) ; "label:0"
-    ?(noVid) el skip fi ; "rate" ::= "newRate" ; posit "<"(now # "+"("t0" #
+    ?(noVid) el skip fi ; "rate" ::= "newRate" ; posit "<"(now :: "+"("t0" ::
     "rate")) ; return(emp) > *
   < "write" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ;
     return(emp) >,
@@ -80,42 +80,42 @@ result Configuration:
     |-> null, "rate1" |-> null, "sensor0" |-> null, "sensor1" |-> null, "size"
     |-> null, "slots" |-> null, "t0" |-> null, "t1" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: ("buffer", "slots",
-    "rate0", "rate1", "t0", "t1") ::= list(emp) # "size" # "initialRate0" #
-    "initialRate1" # now # now ; return(emp) > *
+    "rate0", "rate1", "t0", "t1") ::= list(emp) :: "size" :: "initialRate0" ::
+    "initialRate1" :: now :: now ; return(emp) > *
   < "packAndSend" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
-    "label:0" ! "radio" . "write"("-|"("this" # "-|"(now # "buffer"))) ;
+    "label:0" ! "radio" . "write"("-|"("this" :: "-|"(now :: "buffer"))) ;
     "label:0" ?(noVid) ; "buffer" ::= list(emp) ; "slots" ::= "size" ; return(
     emp) > *
   < "read0" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, "temp" |-> null, Code: "label:0" ! "sensor0" . "read"(emp) ;
-    "label:0" ?("temp") ; posit "<="(now # "t0") ; await ">"("slots" # int(0))
-    ; "buffer" ::= "|-"("buffer" # "temp") ; "slots" ::= "-"("slots" # int(1))
-    ; if "="("slots" # int(0)) th "label:1" ! "this" . "packAndSend"(emp) ;
-    "label:1" ?(noVid) el skip fi ; return(emp) > *
+    "label:0" ?("temp") ; posit "<="(now :: "t0") ; await ">"("slots" :: int(
+    0)) ; "buffer" ::= "|-"("buffer" :: "temp") ; "slots" ::= "-"("slots" ::
+    int(1)) ; if "="("slots" :: int(0)) th "label:1" ! "this" . "packAndSend"(
+    emp) ; "label:1" ?(noVid) el skip fi ; return(emp) > *
   < "read1" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, "temp" |-> null, Code: "label:0" ! "sensor1" . "read"(emp) ;
-    "label:0" ?("temp") ; posit "<="(now # "t1") ; await ">"("slots" # int(0))
-    ; "buffer" ::= "|-"("buffer" # "temp") ; "slots" ::= "-"("slots" # int(1))
-    ; if "="("slots" # int(0)) th "label:1" ! "this" . "packAndSend"(emp) ;
-    "label:1" ?(noVid) el skip fi ; return(emp) > *
+    "label:0" ?("temp") ; posit "<="(now :: "t1") ; await ">"("slots" :: int(
+    0)) ; "buffer" ::= "|-"("buffer" :: "temp") ; "slots" ::= "-"("slots" ::
+    int(1)) ; if "="("slots" :: int(0)) th "label:1" ! "this" . "packAndSend"(
+    emp) ; "label:1" ?(noVid) el skip fi ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, Code: "label:0" ! "this" . "run0"(emp) ; free("label:0") ; "label:1"
     ! "this" . "run1"(emp) ; free("label:1") ; return(emp) > *
   < "run0" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, Code: "label:0" ! "this" . "read0"(emp) ; "label:0" ?(noVid) ; await
-    ">="(now # "+"("t0" # "rate0")) ; posit "<="(now # "+"("t0" # "rate0")) ;
-    "t0" ::= now ; "label:1" ! "this" . "run0"(emp) ; free("label:1") ; return(
-    emp) > *
+    ">="(now :: "+"("t0" :: "rate0")) ; posit "<="(now :: "+"("t0" :: "rate0"))
+    ; "t0" ::= now ; "label:1" ! "this" . "run0"(emp) ; free("label:1") ;
+    return(emp) > *
   < "run1" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
     null, Code: "label:0" ! "this" . "read1"(emp) ; "label:0" ?(noVid) ; await
-    ">="(now # "+"("t1" # "rate1")) ; posit "<="(now # "+"("t1" # "rate1")) ;
-    "t1" ::= now ; "label:1" ! "this" . "run1"(emp) ; free("label:1") ; return(
-    emp) > *
+    ">="(now :: "+"("t1" :: "rate1")) ; posit "<="(now :: "+"("t1" :: "rate1"))
+    ; "t1" ::= now ; "label:1" ! "this" . "run1"(emp) ; free("label:1") ;
+    return(emp) > *
   < "setRate" : Mtdname | Param: "newRate", Latt: "label:0" |-> null, "newRate"
-    |-> null, Code: if "&&"("<"("newRate" # "rate0") # ">"(now # "+"("t0" #
+    |-> null, Code: if "&&"("<"("newRate" :: "rate0") :: ">"(now :: "+"("t0" ::
     "newRate"))) th "t0" ::= now ; "label:0" ! "this" . "read0"(emp) ;
-    "label:0" ?(noVid) el skip fi ; "rate0" ::= "newRate" ; posit "<"(now #
-    "+"("t0" # "rate0")) ; return(emp) > *
+    "label:0" ?(noVid) el skip fi ; "rate0" ::= "newRate" ; posit "<"(now ::
+    "+"("t0" :: "rate0")) ; return(emp) > *
   < "write" : Mtdname | Param: "data", Latt: "data" |-> null, Code: skip ;
     return(emp) >,
   Ocnt: 0 >

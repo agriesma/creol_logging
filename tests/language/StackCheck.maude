@@ -4,9 +4,9 @@ protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "depth" |-> null , "max" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code:  ( ( "depth" @@ "Test" ), ( "max" @@ "Test" ) )  ::= int(0) # int(3) ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code:  ( ( "depth" @@ "Test" ), ( "max" @@ "Test" ) )  ::= int(0) :: int(3) ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: ( "label:0" ! "this" . "test" (emp ) )  ; ( "label:0" ? ( noVid ) )  ; return ( emp ) > *
-  < "test" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "temp" |-> null, Code: "depth" ::= "+" ( "depth" # int(1) ) ; "temp" ::= "depth" ; if "<=" ( "depth" # "max" ) th ( "label:0" ! "this" . "test" (emp ) )  ; ( "label:0" ? ( noVid ) )  el skip fi ; ( await "=" ( "depth" # "temp" ) ) ; "depth" ::= "-" ( "depth" # int(1) ) ; return ( emp ) >, Ocnt: 0 >
+  < "test" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "temp" |-> null, Code: "depth" ::= "+" ( "depth" :: int(1) ) ; "temp" ::= "depth" ; if "<=" ( "depth" :: "max" ) th ( "label:0" ! "this" . "test" (emp ) )  ; ( "label:0" ? ( noVid ) )  el skip fi ; ( await "=" ( "depth" :: "temp" ) ) ; "depth" ::= "-" ( "depth" :: int(1) ) ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

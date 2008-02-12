@@ -22,7 +22,7 @@ CLEANFILES		=
 DISTCLEANFILES		=
 MAINTAINERCLEANFILES	= Makefile.in
 
-EXTRA_DIST		= README interpreter.m4
+EXTRA_DIST		= README macros.m4 interpreter.m4
 dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-interpreter.maude \
@@ -31,11 +31,11 @@ dist_pkgdata_DATA	= creol.xsd \
 			  creol-realtime.maude \
 			  prelude.creol
 
-creol-interpreter.maude: ${srcdir}/interpreter.m4
-	$(M4) ${CREOL_VARIANT} $^ > $@
+creol-interpreter.maude: ${srcdir}/interpreter.m4 ${srcdir}/macros.m4
+	$(M4) -I${srcdir} ${CREOL_VARIANT} $^ > $@
 
-creol-modelchecker.maude: ${srcdir}/interpreter.m4
-	$(M4) -DMODELCHECK ${CREOL_VARIANT} $^ > $@
+creol-modelchecker.maude: ${srcdir}/interpreter.m4 ${srcdir}/macros.m4
+	$(M4) -I${srcdir} -DMODELCHECK ${CREOL_VARIANT} $^ > $@
 
-creol-realtime.maude: ${srcdir}/interpreter.m4
-	$(M4) -DTIME ${CREOL_VARIANT} $^ > $@
+creol-realtime.maude: ${srcdir}/interpreter.m4 ${srcdir}/macros.m4
+	$(M4) -I${srcdir} -DTIME ${CREOL_VARIANT} $^ > $@

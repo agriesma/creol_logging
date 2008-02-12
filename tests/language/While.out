@@ -5,7 +5,7 @@ result Class:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "run" : Mtdname | Param: noVid, Latt: "f" |-> null, "l" |-> null, Code:
-    while "/="("l" # list(emp)) do ("f", "l") ::= "head"("l") # "tail"("l") od
-    ; return(emp) >,
+    while "/="("l" :: list(emp)) do ("f", "l") ::= "head"("l") :: "tail"("l")
+    od ; return(emp) >,
   Ocnt: 0 >
 Bye.

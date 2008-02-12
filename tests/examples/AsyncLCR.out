@@ -4,11 +4,11 @@ result Configuration:
 < "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
   < "getNeighbor" : Mtdname | Param: noVid, Latt: "p" |-> null, Code: if "="(
-    "caller" # "p1") th "p" ::= "p3" el if "="("caller" # "p2") th "p" ::= "p1"
-    el "p" ::= "p2" fi fi ; return("p") > *
+    "caller" :: "p1") th "p" ::= "p3" el if "="("caller" :: "p2") th "p" ::=
+    "p1" el "p" ::= "p2" fi fi ; return("p") > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new
-    "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
-    ::= new "Process"("this" # int(3)) ; return(emp) > *
+    "Process"("this" :: int(1)) ; "p2" ::= new "Process"("this" :: int(2)) ;
+    "p3" ::= new "Process"("this" :: int(3)) ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
@@ -19,8 +19,8 @@ result Configuration:
     "label:0" ?("neighbor") ; "label:1" ! "neighbor" . "receive"("u") ; free(
     "label:1") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "label:0" |-> null, "v" |-> null,
-    Code: if ">"("v" # "u") th "label:0" ! "neighbor" . "receive"("v") ; free(
-    "label:0") el if "="("v" # "u") th "status" ::= int(1) el skip fi fi ;
+    Code: if ">"("v" :: "u") th "label:0" ! "neighbor" . "receive"("v") ; free(
+    "label:0") el if "="("v" :: "u") th "status" ::= int(1) el skip fi fi ;
     return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 0 >
@@ -31,11 +31,11 @@ result Configuration:
 < "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
   < "getNeighbor" : Mtdname | Param: noVid, Latt: "p" |-> null, Code: if "="(
-    "caller" # "p1") th "p" ::= "p3" el if "="("caller" # "p2") th "p" ::= "p1"
-    el "p" ::= "p2" fi fi ; return("p") > *
+    "caller" :: "p1") th "p" ::= "p3" el if "="("caller" :: "p2") th "p" ::=
+    "p1" el "p" ::= "p2" fi fi ; return("p") > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new
-    "Process"("this" # int(1)) ; "p2" ::= new "Process"("this" # int(2)) ; "p3"
-    ::= new "Process"("this" # int(3)) ; return(emp) > *
+    "Process"("this" :: int(1)) ; "p2" ::= new "Process"("this" :: int(2)) ;
+    "p3" ::= new "Process"("this" :: int(3)) ; return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 1 >
 
@@ -46,8 +46,8 @@ result Configuration:
     "label:0" ?("neighbor") ; "label:1" ! "neighbor" . "receive"("u") ; free(
     "label:1") ; return(emp) > *
   < "receive" : Mtdname | Param: "v", Latt: "label:0" |-> null, "v" |-> null,
-    Code: if ">"("v" # "u") th "label:0" ! "neighbor" . "receive"("v") ; free(
-    "label:0") el if "="("v" # "u") th "status" ::= int(1) el skip fi fi ;
+    Code: if ">"("v" :: "u") th "label:0" ! "neighbor" . "receive"("v") ; free(
+    "label:0") el if "="("v" :: "u") th "status" ::= int(1) el skip fi fi ;
     return(emp) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 3 >

@@ -14,7 +14,7 @@ eq init =
 < "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new "Philosopher" ( "this" ) ; "p2" ::= new "Philosopher" ( "this" ) ; "p3" ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
-  < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" # "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" # "p2" ) th "neighbor" ::= "p3" el "neighbor" ::= "p1" fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
+  < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" :: "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" :: "p2" ) th "neighbor" ::= "p3" el "neighbor" ::= "p1" fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
 
 .
 endm

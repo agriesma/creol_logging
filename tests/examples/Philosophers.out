@@ -4,10 +4,10 @@ result Configuration:
 < "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
   < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if
-    "="("caller" # "p1") th "neighbor" ::= "p2" el if "="("caller" # "p2") th
-    "neighbor" ::= "p3" el if "="("caller" # "p3") th "neighbor" ::= "p4" el if
-    "="("caller" # "p4") th "neighbor" ::= "p5" el "neighbor" ::= "p1" fi fi fi
-    fi ; return("neighbor") > *
+    "="("caller" :: "p1") th "neighbor" ::= "p2" el if "="("caller" :: "p2") th
+    "neighbor" ::= "p3" el if "="("caller" :: "p3") th "neighbor" ::= "p4" el
+    if "="("caller" :: "p4") th "neighbor" ::= "p5" el "neighbor" ::= "p1" fi
+    fi fi fi ; return("neighbor") > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new
@@ -22,13 +22,13 @@ result Configuration:
   < "borrowStick" : Mtdname | Param: noVid, Latt: noSubst, Code: await
     "chopstick" ; "chopstick" ::= bool(false) ; return(emp) > *
   < "digest" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: release
-    ; "hungry" ::= bool(true) ; "hist" ::= "|-"("hist" # str("d")) ; release ;
+    ; "hungry" ::= bool(true) ; "hist" ::= "|-"("hist" :: str("d")) ; release ;
     "label:0" ! "this" . "digest"(emp) ; free("label:0") ; return(emp) > *
   < "eat" : Mtdname | Param: noVid, Latt: "l" |-> null, "label:0" |-> null,
     "label:1" |-> null, Code: await "hungry" ; "l" ! "neighbor" .
     "borrowStick"(emp) ; await ("l" ??) ; free("l") ; await "chopstick" ;
-    "hist" ::= "|-"("hist" # str("e")) ; "hungry" ::= bool(false) ; "label:0" !
-    "neighbor" . "returnStick"(emp) ; free("label:0") ; release ; "label:1" !
+    "hist" ::= "|-"("hist" :: str("e")) ; "hungry" ::= bool(false) ; "label:0"
+    ! "neighbor" . "returnStick"(emp) ; free("label:0") ; release ; "label:1" !
     "this" . "eat"(emp) ; free("label:1") ; return(emp) > *
   < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "hist" ::=
     str("") ; "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "label:0"
@@ -40,7 +40,7 @@ result Configuration:
     "label:0") ; "label:1" ! "this" . "eat"(emp) ; free("label:1") ; "label:2"
     ! "this" . "digest"(emp) ; free("label:2") ; return(emp) > *
   < "think" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: await
-    "~"("hungry") ; "hist" ::= "|-"("hist" # str("t")) ; release ; "label:0" !
+    "~"("hungry") ; "hist" ::= "|-"("hist" :: str("t")) ; release ; "label:0" !
     "this" . "think"(emp) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
 Bye.

@@ -4,7 +4,7 @@ result Configuration:
 < "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, Mtds:
   < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if
-    "="("caller" # "p1") th "neighbor" ::= "p2" el if "="("caller" # "p2") th
+    "="("caller" :: "p1") th "neighbor" ::= "p2" el if "="("caller" :: "p2") th
     "neighbor" ::= "p3" el "neighbor" ::= "p1" fi fi ; return("neighbor") > *
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *

@@ -28,25 +28,25 @@ set show advise off .
 load creol-datatypes
 
 red in CREOL-DATA-SIG : emp .
-red in CREOL-DATA-SIG : emp # emp .
+red in CREOL-DATA-SIG : emp :: emp .
 red in CREOL-DATA-SIG : noVid .
 red in CREOL-DATA-SIG : noVid , noVid .
 red in CREOL-DATA-SIG : "a" .
-red in CREOL-DATA-SIG : "a" # "a" .
+red in CREOL-DATA-SIG : "a" :: "a" .
 red in CREOL-DATA-SIG : "a" , "a" .
 red in CREOL-DATA-SIG : "a" ( "a" ) .
 red in CREOL-DATA-SIG : null .
-red in CREOL-DATA-SIG : null # null .
-red in CREOL-DATA-SIG : null # "a" .
-red in CREOL-DATA-SIG : null # ("a" ( "a" )) # null .
-red in CREOL-DATA-SIG : ("a" ( "a" )) # null .
+red in CREOL-DATA-SIG : null :: null .
+red in CREOL-DATA-SIG : null :: "a" .
+red in CREOL-DATA-SIG : null :: ("a" ( "a" )) :: null .
+red in CREOL-DATA-SIG : ("a" ( "a" )) :: null .
 red in CREOL-DATA-SIG : null , "a" .
 red in CREOL-DATA-SIG : ob("a") .
 red in CREOL-DATA-SIG : bool(true) .
-red in CREOL-DATA-SIG : "=" ( null # null ) .
-red in CREOL-DATA-SIG : "/=" ( null # null ) .
-red in CREOL-DATA-SIG : "~" ( "=" ( null # null ) ) .
-red in CREOL-DATA-SIG : "||" ( ("=" ( null # null )) # ("=" ( null # null )) ) .
-red in CREOL-DATA-LIST : "|-" (list(int(1) # int(2)) # "head" (list(int(1) # int(2))) ) .
+red in CREOL-DATA-SIG : "=" ( null :: null ) .
+red in CREOL-DATA-SIG : "/=" ( null :: null ) .
+red in CREOL-DATA-SIG : "~" ( "=" ( null :: null ) ) .
+red in CREOL-DATA-SIG : "||" ( ("=" ( null :: null )) :: ("=" ( null :: null )) ) .
+red in CREOL-DATA-LIST : "|-" (list(int(1) :: int(2)) :: "head" (list(int(1) :: int(2))) ) .
 
 quit
