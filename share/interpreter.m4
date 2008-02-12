@@ -59,19 +59,13 @@ fmod CREOL-SUBST is
   op _::_ : Subst Subst -> Subst .
   eq S1 :: noSubst = S1 .
   eq noSubst :: S2 = S2 .
-  eq (S1 :: S2)[ A ] = if dom(A, S2) then S2[A] else S1[A] fi .
+  eq (S1 :: S2)[ A ] = if $hasMapping(S2, A) then S2[A] else S1[A] fi .
 
   *** Composition operater for substitutions
   op compose : Subst Subst -> Subst .
   eq compose(S1, noSubst) = S1 .
   eq compose(noSubst, S1) = S1 .
   eq compose(S1, (S2, (A |-> D))) = compose(insert(A, D, S1), S2) .
-  
-
-  op dom : Vid Subst -> Bool .
-  eq dom(A, S1 :: S2) = dom(A, S2) or-else dom(A, S1) .
-  eq dom(A, (S1, A |-> D)) = true .
-  eq dom(A, S1) = false [owise] .
 endfm
 
 
@@ -174,7 +168,7 @@ fmod CREOL-CLASS is
   sorts Inh InhList .
   subsort Inh < InhList .
 
-  op  _<_> : Cid  ExprList -> Inh [ctor prec 15] . *** initialised superclass
+  op  _<_> : Cid  ExprList -> Inh [ctor prec 15] .
   op noInh : -> InhList [ctor] .
   op  _,,_   : InhList InhList -> InhList [ctor assoc id: noInh] .
 
@@ -183,7 +177,9 @@ fmod CREOL-CLASS is
   var S : Subst . 
   var SL : StmList . 
   var MM : MMtd .
+  var DL : DataList .
   var EL : ExprList .
+  var Lab : Label .
   var O : Oid .
   var N : Nat .
   var AL : VidList .
@@ -215,12 +211,13 @@ fmod CREOL-CLASS is
 
   --- fetches pair (code, vars) to bind call to process.
   op get : String MMtd Oid Label DataList -> Process .
-  var Lab : Label .
-  eq get(Q, noMtd, O, Lab, EL) = noProc .
-  eq get(Q, MM * < Q : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, EL) =
-    (insert("caller", O, insert(".label", Lab, S)), (AL ::= EL) ; SL) .
-  eq  get(Q, MM * < Q' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, EL) =
-    get(Q, MM, O, Lab, EL) [otherwise] .
+  eq get(Q, noMtd, O, Lab, DL) = noProc .
+  eq get(Q, MM * < Q' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, DL) =
+    if Q == Q' then
+      (insert("caller", O, insert(".label", Lab, S)), assign(AL, DL) ; SL)
+    else
+      get(Q, MM, O, Lab, DL)
+    fi .
 
 endfm
 
@@ -539,7 +536,7 @@ eq
   < O : C | Att: S, Pr: (L,( assign( (a , AL), D :: DL) ; SL)), PrQ: W,
     Dealloc: LS, Ev: MM, Lcnt: N >
   =
-  if dom(a, L) then
+  if $hasMapping(L, a) then
     < O : C | Att: S, Pr: (insert(a, D, L), assign(AL, DL) ; SL), PrQ: W,
       Dealloc: LS, Ev: MM, Lcnt: N > 
   else
