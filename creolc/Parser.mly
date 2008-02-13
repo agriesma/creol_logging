@@ -214,7 +214,7 @@ vardecl:
 	{ signal_error $startpos "syntax error in variable declaration" }
     | ID COLON error
 	{ signal_error $startpos "syntax error in variable declaration" }
-	
+
 method_decl:
       OP i = ID p = parameters_opt
       ioption(preceded(REQUIRES, expression))
@@ -367,13 +367,13 @@ statement_sequence:
 basic_statement:
       SKIP
 	{ Skip (statement_note $startpos) }
-    | RELEASE
-	{ Release (statement_note $startpos) }
     | t = separated_nonempty_list(COMMA, lhs) ASSIGN
           e = separated_nonempty_list(COMMA, expression_or_new)
 	{ Assign((statement_note $startpos), t, e) }
     | separated_nonempty_list(COMMA, lhs) ASSIGN error
 	{ signal_error $startpos "syntax error in assignment" }
+    | RELEASE
+	{ Release (statement_note $startpos) }
     | AWAIT e = expression
 	{ Await ((statement_note $startpos), e) }
     | AWAIT error
@@ -382,6 +382,9 @@ basic_statement:
 	{ Posit ((statement_note $startpos), e) }
     | POSIT error
 	{ signal_error $startpos "syntax error in posit condition" }
+    | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
+	{ Reply (statement_note $startpos,
+		 Id (expression_note $startpos, l), o) }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN
       s = ioption(preceded(AS, creol_type))
@@ -402,9 +405,6 @@ basic_statement:
 	    LocalAsyncCall ((statement_note $startpos), l', m,
 			   Type.default_sig (), lb, ub, i)
 	}
-    | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
-	{ Reply (statement_note $startpos,
-		 Id (expression_note $startpos, l), o) }
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
@@ -526,7 +526,7 @@ expression:
 	{ ListLit (expression_note $startpos, l) }
     | LBRACE e = separated_list(COMMA, expression) RBRACE
 	{ SetLit (expression_note $startpos, e) }
-    | LBRACE ID COLON expression BAR expression RBRACE
+    | LBRACE ID COLON creol_type BAR expression RBRACE
 	{ Null (expression_note $startpos) }
     | l = expression o = binop r = expression
         { Binary(expression_note $startpos, o, l, r) }
@@ -568,8 +568,8 @@ expression:
     | DIV { Div }
     | PERCENT { Modulo }
     | PREPEND { Prepend }
-    | APPEND { Append }
     | CONCAT { Concat }
+    | APPEND { Append }
     | BACKSLASH { Project }
     | IN { In }
 

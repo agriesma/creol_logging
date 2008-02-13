@@ -32,8 +32,8 @@ with
 
 Currently reserved, but unused keywords are
 @example
-by          case        const       exception   for         prove
-raise       signal      try         volatile    when        where
+by          case        const       exception   for         raise
+signal      try         volatile    when        where
 @end example
 
 The following symbols are used as operator symbols.  They are listed
@@ -80,16 +80,17 @@ declaration ::=
   | function-def
 
 class-decl ::=
-    @code{class} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]
-    @{ (@code{contracts} | @code{implements} | @code{inherits} )
-	@{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} @}
-    @code{begin} @{ @code{var} var-decl [ @code{;} ] @}
-    [ internal-with-def ] @{ with-def @}
+    @code{class} cid
+    [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]@c
+    @{ (@code{contracts} | @code{implements} | @code{inherits} )@c
+    @{ cid [@code{(} @{ expr @code{,} @} @code{)}] , @} @}
+    @code{begin} @{ @code{var} var-decl [ @code{;} ] @}@c
+    [ anon-with-def ] @{ with-def @}@c
     @code{end}
 
 interface-decl ::=
     @code{interface} id @{ @code{inherits} @{ id @code{,} @} @}
-    @code{begin} @code{with} cid @{ op-decl @} @{ invariant @} @code{end}
+    @code{begin} @{ invariant @} @{ @code{with} cid @{ op-decl @} @{ invariant @} @} @code{end}
 
 datatype-decl ::=
     @code{datatype} cid [ @code{of} @{ cid @code{,} @} ]
@@ -101,12 +102,11 @@ var-decl-no-init ::=
     @{ id @code{,} @} @code{:} type
 
 var-decl ::=
-    var-decl-no-init @code{:=} @{ expr @code{,} @}
+    var-decl-no-init @code{:=} @{ expr-or-new @code{,} @}
 
 op-decl ::=
-    @code{op} id @code{(} [ @code{in} @{ var-decl-no-init @code{,} @} ]
-    [ @code{;} @code{out} @{ var-decl-no-init @code{,} @} ] @code{)}  
-    [@code{requires} assertion] [@code{ensures} assertion]
+    @code{op} id @code{(} [ [ @code{in} ] @{ var-decl-no-init @code{,} @} ] [ [ @code{;} ] @code{out} @{ var-decl-no-init @code{,} @} ] @code{)}
+    [@code{requires} expr] [@code{ensures} expr]
 
 anon-with-def ::=
     @{ op-def @} @{ invariant @}
@@ -115,7 +115,7 @@ with-def ::=
     @code{with} cid @{ op-def @} @{ invariant @}
 
 op-def ::=
-    op-decl @code{==} @{ @code{var} var-decl @code{;} @} statement
+    op-decl @code{==} @{ @code{var} var-decl @code{;} @} ( statement | @code{extern} string )
 
 statement ::=
     choice-statement [ @code{|||} statement ]
@@ -131,36 +131,51 @@ basic-statement ::=
   | @{ lhs @code{,} @} @code{:=} @{ expr-or-new @code{,} @}
   | @code{release}
   | @code{await} expr
-  | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
-  | [ id ] @code{!} id [ @code{<:} cid ] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
+  | @code{posit} expr
   | id @code{?} @code{(}  @{ lhs @code{,} @} @code{)}
+  | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
+  | [ id ] @code{!} id [ @code{<:} cid ] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{)}
   | [ @code{await} ] expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
-  | [ @code{await} ] id [@code{<:} cid] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
+  | [ @code{await} ] id [@code{<:} cid] [ @code{:>} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)}
   | @code{begin} statement @code{end}
   | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
   | @code{while} expr [ @code{inv} expr ] @code{do} statement @code{end}
   | @code{do} statement [ @code{inv} expr ] @code{while} expr
-  | @code{assert} assertion
+  | @code{assert} expr
+  | @code{prove} expr
+
+lhs ::=
+    id [ @code{@@} type ]
+  | @code{_} [ @code{as} type ]
 
 expr-or-new ::=
     @code{new} cid @code{(} @{ expr @code{,} @} @code{)}
   | expr
 
 expr ::=
-    @code{true} | @code{false} | integer | float | string | @code{nil} | @code{null} | id [ (@code{?} | @code{@@} type) ]
+    @code{true} | @code{false} | integer | float | string @c
+  | @code{this} | @code{caller} | @code{nil} | @code{null} @c
+  | id [ (@code{?} | @code{@@} type) ]
   | @code{(} @{ expr @code{,} @} @code{)}
   | @code{[} @{ expr @code{,} @} @code{]}
   | @code{@{} @{ expr @code{,} @} @code{@}}
-  | @code{@{} id @code{:} expr @code{|} expr @code{@}}
+  | @code{@{} id @code{:} type @code{|} expr @code{@}}
   | unaryop expr | expr binop expr | id @code{(} @{ expr @code{,} @} @code{)}
   | @code{if} expr @code{then} expr @code{else} expr @code{end}
+  | @code{(} (@code{forall} | @code{exists} | @code{some}) var-decl-no-init @code{:} expr @code{)}
 
-unaryop ::= @code{~} | @code{-} | @code{#}
+unaryop ::=
+    @code{~} | @code{-} | @code{#}
 
 binop ::=
-    @code{+} | @code{-} | @code{*} | @code{/} | @code{=} | @code{<} | @code{>} |
-    @code{<=} | @code{>=} | @code{&&} | @code{/\} | @code{||} | @code{\/} | @code{|-} |
-    @code{|-|} | @code{-|} | @code{\}
+    @code{&&} | @code{/\} | @code{||} | @code{\/} | @code{^} @c
+  | @code{<=>} | @code{=>} @c
+  | @code{=} | @code{/=} | @code{<} | @code{>} | @code{<=} | @code{>=}
+  | @code{+} | @code{-} | @code{*} | @code{**} | @code{/} | @code{%} @c
+  | @code{-|} | @code{|-|} | @code{|-} | @code{\} | @code{in}
+
+id-or-op :=
+    unaryop | binaryop | id
 
 type ::=
     cid [ @code{[} @{ type , @} @code{]} ]
