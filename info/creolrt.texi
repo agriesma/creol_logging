@@ -1,6 +1,6 @@
 @c node-name, next, previous, up
-@node Real-time Creol
-@chapter Modelling Real-Time Systems with Creol
+@node Real-time CREOL
+@chapter Modelling Real-Time Systems with @acronym{CREOL}
 
 A @emph{timed system} is a system where the @emph{timing} of input and
 output is relevant for the function and the correctness of the system.
@@ -11,7 +11,7 @@ without affecting the correctness and performance of the system.
 Missing a deadline may have disastrous effects in a
 @emph{safety-critical} system.
 
-The semantic model used for the real-time extension of Creol is based
+The semantic model used for the real-time extension of @acronym{CREOL} is based
 on @emph{timed traces}, which are a language accepted by a class of
 timed automata @c @cite{alur94:_theor_timed_autom}.
 In this theory it is assumed that all actions are
@@ -36,7 +36,7 @@ supposed to take.  The invariants on state are used to force the
 progress of the system as time proceeds.
 
 Until now the focus has been on the language for modelling untimed
-asynchronous, concurrent object-oriented systems in Core Creol.  Now
+asynchronous, concurrent object-oriented systems in Core @acronym{CREOL}.  Now
 the focus shifts to the modelling of real-time behaviours.  Modelling
 the real-time behaviour of a system is very difficult, because it
 often involves an analysis of the system on the level of its
@@ -51,10 +51,10 @@ under which these requirements can be met.  The proposed extension
 follows Hooman.
 @c ~\cite{hooman94:_exten_hoare_logic_real_time}.
 
-Creol is extended with time by introducing @emph{two} data types and
+@acronym{CREOL} is extended with time by introducing @emph{two} data types and
 two statements for expressing timed properties of the system.  The
 first data type is @emph{Time} and is the type of the value of clocks.
-The current value is made available to a Creol model by the expression
+The current value is made available to a @acronym{CREOL} model by the expression
 @code{now}, which can be stored in variables of type @code{Time} and
 which can be compared to other values of type @code{Time}.
 
@@ -62,7 +62,7 @@ In addition we introduce a second data type @emph{Duration}, used to
 express the difference between two clock values.  Duration is used to
 express all timings @emph{relative} to the absolute clock.  The
 operations defined on these data types are summarised in
-@ref{Datatypes Time and Duration}.
+@ref{Data Types Time and Duration}.
 
 With these operations, a modeller can observe time and express
 durations, and formulate predicates on time.  In the following, a
@@ -132,7 +132,7 @@ For this purpose we introduce the statement @code{posit @var{c}},
 where @var{c} is a predicate on timed expression only.  The semantics
 of this predicate is similar to @emph{invariants} in timed automata.
 Each timed trace must satisfy all posit constraints to be considered a
-timed trace of the Creol model.
+timed trace of the @acronym{CREOL} model.
 
 However, posit statement also influence the enabledness of the delay
 rule, which implies, that each @emph{local} posit statement has a
@@ -143,7 +143,7 @@ declares a property on time which is supposed to hold for all
 computations of the system.  A program with @code{posit} statements
 may result in systems which do not have any computations at all, e.g.,
 @code{posit false} or @code{await now > c; posit now < c}.  But since
-Creol is a modelling language, a model with traces need not imply that
+@acronym{CREOL} is a modelling language, a model with traces need not imply that
 such a system exists or is realisable.  All @code{posit}
 declarations are assumed as axioms on the modelling level and become
 proof obligations on the implementation level.  It has to be stressed
@@ -152,10 +152,8 @@ level has to be done by suitable schedulers for each single object, as
 well as ensuring that inter-object communication is @emph{realisable}
 as postulated by the modeller.
 
-The semantics of a time-annotated Creol model is a set of timed
+The semantics of a time-annotated @acronym{CREOL} model is a set of timed
 traces, which has been formalised as a (generally) infinite state
-timed transition systems by extending Creol's operational semantics.
-We continue with representing time-annotated Creol models as timed
+timed transition systems by extending @acronym{CREOL}'s operational semantics.
+We continue with representing time-annotated @acronym{CREOL} models as timed
 transition systems.
-
-

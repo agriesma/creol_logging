@@ -1,8 +1,8 @@
 @node Grammar
-@appendix Creol Grammar
+@appendix @acronym{CREOL} Grammar
 
-For reference, we summarize the grammar of Creol.  The grammar of
-Creol is LR(1) and is used by the compiler.  @code{@{...@}} means a
+For reference, we summarise the grammar of @acronym{CREOL}.  The grammar of
+@acronym{CREOL} is LR(1) and is used by the compiler.  @code{@{...@}} means a
 list of symbols, where the optional decorator at the end indicates the
 separator.  An optional symbol is enclosed in square brackets like
 this: @code{[ ... ]}.  Terminal symbols are printed like this:
@@ -67,7 +67,7 @@ in                              @r{left}
 
 The grammar specified in this section is in LR(1) and does not contain
 any shift-reduce or reduce-reduce conflicts.  This means, that each
-syntactically correct Creol program has a unique parse tree.
+syntactically correct @acronym{CREOL} program has a unique parse tree.
 
 @format
 main ::=
@@ -77,7 +77,7 @@ declaration ::=
     class-decl
   | interface-decl
   | datatype-decl
-  | exception-decl
+  | function-def
 
 class-decl ::=
     @code{class} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)}]
@@ -92,11 +92,10 @@ interface-decl ::=
     @code{begin} @code{with} cid @{ op-decl @} @{ invariant @} @code{end}
 
 datatype-decl ::=
-    @code{datatype} cid [ @code{by} @{ cid @code{,} @} ] @code{begin}
-    @{ constructor @} @{ function @} @{ invariant @} @code{end}
+    @code{datatype} cid [ @code{of} @{ cid @code{,} @} ]
 
-exception-decl ::=
-    @code{exception} cid [ @code{(} @{ var-decl-no-init @code{,} @} @code{)} ]
+function-def ::=
+    @code{fun} id-or-op @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expr | @code{extern} string )
 
 var-decl-no-init ::=
     @{ id @code{,} @} @code{:} type
@@ -117,9 +116,6 @@ with-def ::=
 
 op-def ::=
     op-decl @code{==} @{ @code{var} var-decl @code{;} @} statement
-
-function ::=
-    @code{op} id @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expression | @code{extern} string )
 
 statement ::=
     choice-statement [ @code{|||} statement ]

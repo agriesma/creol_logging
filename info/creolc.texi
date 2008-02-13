@@ -2,21 +2,22 @@
 @chapter The @command{creolc} compiler
 @cindex @command{creolc}
 
-The @emph{Creol tools} provide a compiler from the Creol language,
-@pxref{Creol}, into various other formats, most importantly the
-@emph{Creol Machine Code}, @pxref{CMC}.  In this chapter we describe
-how one may use the compiler.
+The @emph{@acronym{CREOL} tools} provide a compiler from the
+@acronym{CREOL} language, @pxref{CREOL Language}, into various
+other formats, most importantly the @emph{@acronym{CREOL} Machine
+Code}, @pxref{CREOL Machine Code}.  In this chapter we describe how
+one may use the compiler.
 
 The compiler is a command-line tool.  Its user interface follows the
 @emph{Unix}-tradition: it can be integrated into pipes, and will not
 output anything except to report errors or if explicitly requested to.
 
 Traditionally, two versions are generated: @code{creolc} and
-@code{creolc.opt}.  The first one is an OCaml byte code script, and
-the second one is a natively compiled version.  The most important
+@code{creolc.opt}.  The first one is an Objective Caml byte code
+script, and the second one is a native version.  The most important
 differences between the two versions are, that the byte code version
 is slower than the native one but gives better error messages in
-certain situations.
+exceptional situations.
 
 @menu
 * Invoking creolc::           Command line arguments.
@@ -30,14 +31,14 @@ certain situations.
 When invoking @command{creolc}, it normally does compile its input
 file into one Maude module describing the program.
 
-The @command{creolc} compiler accepts options and filenames as
+The @command{creolc} compiler accepts options and file names as
 operands.  Many options have multi-letter names; therefore multiple
 single-letter options may @emph{not} be grouped:  @option{-dr} is
 very different from @option{-d -r}.
 
 You can mix options and other arguments.  for the most part, the order
 of arguments does not matter.  Order matters if you use several
-options of the same kind.  If you, for example, supply mutliple
+options of the same kind.  If you, for example, supply multiple
 warning options, they are enabled and disabled in order from left to
 right.
 
@@ -59,7 +60,7 @@ kind of compilation is done:
 
 @table @option
 @item FILE.creol
-A Creol program that must be compiled.
+A @acronym{CREOL} program that must be compiled.
 @end table
 
 Other options are:
@@ -116,11 +117,11 @@ emitted if an input variable is never read.
 @item undefined
 Warn if a variable is used before it is defined.  This will also warn
 if there is an output variable to which no assignment has been made
-within a method and if an attribute is left unassigned to in the init
+within a method and if an attribute is left unassigned to in the @code{init}
 method.
 
 @item init
-Warn if the class does not provide an internal init method.
+Warn if the class does not provide an internal @code{init} method.
 
 @item run
 Warn if the class does not define an internal run method.
@@ -168,8 +169,11 @@ of the compiler is undefined.
 @item all
 Enables all passes.
 
+@item fold
+Try to fold all constant expressions into literals.
+
 @item lower
-Expand statements and expressions to Core Creol statements.
+Expand statements and expressions to Core @acronym{CREOL} statements.
 
 @item devirt
 Devirtualise attribute access, i.e., replace each access to a variable
@@ -180,7 +184,7 @@ super-class that actually defines the attribute, if the class
 specified in the expression does not define that attribute.
 
 @item into-ssa
-Rewrite a Creol program into @emph{static single assignment} format.
+Rewrite a @acronym{CREOL} program into @emph{static single assignment} format.
 
 @item def-vars
 Compute ranges of statements at which a variable must be defined.
@@ -201,10 +205,10 @@ Alternatively, a @code{free} operation can be used to remove such a
 reply if the value is never read.
 
 @item tailcall
-Perform tailcall optimisations.
+Perform tail call optimisations.
 
 @item outof-ssa
-Rewrite a Core Creol program in static single assignment form into its
+Rewrite a Core @acronym{CREOL} program in static single assignment form into its
 normal form by merging variables.  Depends on @option{into-ssa} and
 @option{life-vars}
 
@@ -228,8 +232,8 @@ Only parse and analyse the program but do @emph{not} write any
 output.
 
 @item creol
-Output the transformed program as a Creol program.  Without any
-passes, this target can be used as a pretty printer for Creol
+Output the transformed program as a @acronym{CREOL} program.  Without any
+passes, this target can be used as a pretty printer for @acronym{CREOL}
 programs.  Virtual statements, which may be inserted during the
 compiler, are output in comments.
 
@@ -241,16 +245,16 @@ and discards them during parsing.
 Generate diagrams in dot format, suitable for rendering with graphviz.
 
 @item maude
-Output the transformed program as Creol Machine Code.  In this mode,
-the resulting maude file uses the @emph{interpreter} for Creol.
+Output the transformed program as @acronym{CREOL} Machine Code.  In this mode,
+the resulting Maude file uses the @emph{interpreter} for @acronym{CREOL}.
 
 @item maudemc
-Output the transformed program as Creol Machine Code.  In this mode,
-the resulting maude file uses the @emph{model checker} for Creol.
+Output the transformed program as @acronym{CREOL} Machine Code.  In this mode,
+the resulting Maude file uses the @emph{model checker} for @acronym{CREOL}.
 
 @item maudert
-Output the transformed program as Creol Machine Code.  In this mode,
-the resulting maude file uses the @emph{timed simulator} for Creol.
+Output the transformed program as @acronym{CREOL} Machine Code.  In this mode,
+the resulting Maude file uses the @emph{timed simulator} for @acronym{CREOL}.
 
 @item xml
 Output the transformed program as an XML document.  The resulting XML
@@ -316,13 +320,22 @@ compiler will report an error.
 @node Known Limitations
 @section Known Limitations
 
-The creol compiler is still far from perfection.  In this section we
+The @acronym{CREOL} compiler is still far from perfection.  In this section we
 explain some of the known limitations of the compiler.
 
 @menu
+* Constant Folding::
 * Bury and Free::
 @end menu
 
+
+@node Constant Folding
+@subsection Constant Folding
+
+The current implementation of constant folding does not take laws of
+associativity and commutativity into account.  As an example, the
+expressions @code{(1 + x) + 1} or @code{1 + (1 + x)} are not folded
+into the expression @code{2 + x}.
 
 
 @node Bury and Free
@@ -340,7 +353,7 @@ individual result for each statement in the program.
 @item
 The analysis is @emph{path-insensitive}.  It will not consider
 condition predicates of condition statements.  This may result in
-missed opportunities when analysising programs like
+missed opportunities when analysing programs like
 @code{if x then l!m() end; if x then l?() end}.  For that code, it is
 apparent, that the label @code{l} should be freed if @code{x} is
 false.  Such information is not yet used and in this example, @code{l}

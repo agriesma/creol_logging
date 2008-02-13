@@ -1,28 +1,34 @@
-@node Creol Prelude
-@chapter Creol Prelude
+@node CREOL Prelude
+@chapter @acronym{CREOL} Prelude
 
-The prelude of Creol provides the standard library of Creol.  It
-contains all the data types, functions, and classes defined for all
-creol programs.
+The prelude of @acronym{CREOL} provides the standard library of
+@acronym{CREOL}.  It contains all the data types, functions, and
+classes defined for all @acronym{CREOL} programs.
 
 @menu
-* Datatype Data::       Universal super type.
-* Datatype Bool::       Truth values.
-* Datatype Real::       Real-valued numbers.
+* Data Type Data::               Universal super type.
+* Data Type Bool::               Truth values.
+* Data Type Real::               Real-valued numbers.
+* Data Type Int::                Integer numbers.
+* Data Type String::             Strings of characters.
+* Data Type List::               Lists of elements.
+* Data Type Set::                Sets of elements.
+* Data Type Pair::               Pairs.
+* Data Types Time and Duration:: Time and durations.
 @end menu
 
 
-@node Datatype Data
-@section Datatype Data
+@node Data Type Data
+@section Data Type Data
 
 The type @code{Data} is the implicit super-type of all other types.
 Two functions are predefined on all instances of @code{Data}: equality
 (written as @code{=}) and inequality (written as @code{/=}).
 
 The semantics of equality is a @emph{structural equality} for all
-@emph{datatypes} and @emph{referential equality} for objects.
+@emph{data types} and @emph{referential equality} for objects.
 
-For data-values, equality is characterised by Leibnitz axiom, that two
+For data-values, equality is characterised by Leibniz axiom, that two
 values @var{x} and @var{y} are equal if and only if all functions
 @var{f} applied to @var{x} and @var{y}, including predicates, return
 the same value, i.e., @var{f}(@var{x})=@var{f}(@var{y}).
@@ -31,428 +37,434 @@ Two objects are equal if they have the same name.  Objects of
 different names may behave exactly the same in all circumstances, but
 may still be distinguished by their name.
 
-@example
-datatype Data
+@table @code
+@item fun = (a: Data, b: Data): Bool
+This operator represents equality.
 
-fun = (a: Data, b: Data): Bool == extern "="
-fun /= (a: Data, b: Data): Bool == extern "/="
-@end example
+@item fun /= (a: Data, b: Data): Bool
+This operator represents inequality.
+
+@end table
 
 
-@node Datatype Bool
-@section Datatype Bool
+@node Data Type Bool
+@section Data Type Bool
 
 The type @code{Bool} comprises the truth values.  The literals
 @code{true} and @code{false} have the type @code{Bool}.  In addition,
 the functions displayed below are defined on values of type
 @code{Bool}.
 
-@example
-datatype Bool
-
-fun ~ (a: Bool) : Bool == extern "~"
-fun && (a: Bool, b: Bool): Bool == extern "&&"
-fun || (a: Bool, b: Bool): Bool == extern "||"
-fun => (a: Bool, b: Bool): Bool == extern "=>"
-fun ^ (a: Bool, b: Bool): Bool == extern "^"
-fun <=> (a: Bool, b: Bool): Bool == extern "<=>"
-@end example
-
+@table @code
+@item fun ~ (a: Bool) : Bool
 The function @code{~} represents negation.
 
+@item fun && (a: Bool, b: Bool): Bool
 The function @code{&&} represents conjunction.
 
+@item fun || (a: Bool, b: Bool): Bool
 The function @code{||} represents disjunction.
 
+@item fun => (a: Bool, b: Bool): Bool
 The function @code{=>} represents implication.
 
+@item fun ^ (a: Bool, b: Bool): Bool
+The function @code{^} represent exclusive disjunction.  It
+is a synonym for inequality (@code{/=}).
+
+@item fun <=> (a: Bool, b: Bool): Bool
 The function @code{<=>} represents equivalence or by-implication.  It
 is a synonym for equality (@code{=}).
 
-The function @code{^} represent exclusive disjunction.  It
-is a synonym for inequality (@code{/=}).
+@end table
 
 The functions @code{<=>} and @code{^} are provided, because they have
 lower precedence than @code{=} and @code{/=}, making it simpler to
 write formulae involving equalities and inequalities: @code{(P(a) =
-P(b)) = (a = b)} can be written nicelier as @code{P(a) = P(b) <=> a =
+P(b)) = (a = b)} can be written more nicely as @code{P(a) = P(b) <=> a =
 b}.
 
 
 
-@node Datatype Real
-@section Datatype Real
+@node Data Type Real
+@section Data Type Real
 
 The type @code{Real} is supposed to include all values from the real
 number field.
 
+@table @code
+@item fun - (a: Real): Real
 The unary operator @code{-} represents negation of a real.
 
+@item fun + (a: Real, b: Real): Real
 The binary operator @code{+} represents addition of two reals.
 
+@item fun - (a: Real, b: Real): Real
 The binary operator @code{-} represents subtraction of two reals.
 
+@item fun * (a: Real, b: Real): Real
 The binary operator @code{*} represents multiplication of two reals.
 
+@item fun / (a: Real, b: Real): Real
 The binary operator @code{/} represents division of two
 reals.
 
-The binary function @code{div} represents Eucledian division of two
+@c @item fun div(a: Real, b: Real): Real
+@c The binary function @code{div} represents Eucledian division of two
+@c reals.
+@c 
+@item fun % (a: Real, b: Real): Real
+The binary operator @code{%} represents Euclidean remainder of two
 reals.
 
-The binary operator @code{%} represents Eucledian remainder of two
-reals.
-
+@item fun ** (a: Real, b: Real): Real
 The binary operator @code{**} represents exponentiation of two reals.
 
+@item fun < (a: Real, b: Real): Bool
 The binary relation @code{<} represents ``less than''.
 
+@item fun <= (a: Real, b: Real): Bool
 The binary relation @code{<=} represents ``less than or equal''.
 
+@item fun > (a: Real, b: Real): Bool
 The binary relation @code{>} represents ``greater than''.
 
+@item fun >= (a: Real, b: Real): Bool
 The binary relation @code{>=} represents ``less than or equal''.
 
-The function @code{real_of_int} converts an integer value into a real
-value such that both represent the same number.
-
-@example
-datatype Real
-
-fun - (a: Real): Real == extern "-"
-fun + (a: Real, b: Real): Real == extern "+"
-fun - (a: Real, b: Real): Real == extern "-"
-fun * (a: Real, b: Real): Real == extern "*"
-fun / (a: Real, b: Real): Real == extern "/"
-fun % (a: Real, b: Real): Real == extern "%"
-fun ** (a: Real, b: Real): Real == extern "**"
-
-fun < (a: Real, b: Real): Bool == extern "<"
-fun <= (a: Real, b: Real): Bool == extern "<="
-fun > (a: Real, b: Real): Bool == extern ">"
-fun >= (a: Real, b: Real): Bool == extern ">="
-@end example
+@end table
 
 The compiler encodes literals of type @code{Real} as fractions with
 arbitrary precision.
 
 
 
-@section Datatype Int
+@node Data Type Int
+@section Data Type Int
 
-The datatype @code{Int} includes all integer numbers.
+The data type @code{Int} includes all integer numbers.  It is a subtype
+of @code{Real}.
 
+@table @code
+@item fun - (a: Int): Int
 The unary operator @code{-} represents negation of an integer.
 
+@item fun + (a: Int, b: Int): Int
 The binary operator @code{+} represents addition of two integers.
 
+@item fun - (a: Int, b: Int): Int
 The binary operator @code{-} represents subtraction of two integers.
 
+@item fun * (a: Int, b: Int): Int
 The binary operator @code{*} represents multiplication of two integers.
 
-The binary operator @code{/} represents Eucledian division of two
+@item fun / (a: Int, b: Int): Int
+The binary operator @code{/} represents Euclidean division of two
 integers.  In order to have standard division, at least one of the
 arguments should be coerced to @code{Real} using @code{real_of_int}.
 
-The binary function @code{div} represents Eucledian division of two
-integers.  In order to have standard division, at least one of the
-arguments should be coerced to @code{Real} using @code{real_of_int}.
-
-The binary operator @code{%} represents Eucledian remainder of two
+@item fun % (a: Int, b: Int): Int
+The binary operator @code{%} represents Euclidean remainder of two
 integers.
 
+@item fun ** (a: Int, b: Int): Int
 The binary operator @code{**} represents exponentiation of two
 integers.
 
+@item fun < (a: Int, b: Int): Bool
 The binary relation @code{<} represents ``less than''.
 
+@item fun <= (a: Int, b: Int): Bool
 The binary relation @code{<=} represents ``less than or equal''.
 
+@item fun > (a: Int, b: Int): Bool
 The binary relation @code{>} represents ``greater than''.
 
+@item fun >= (a: Int, b: Int): Bool
 The binary relation @code{>=} represents ``less than or equal''.
 
+@item fun real_of_int(a: Int): Real
 The function @code{real_of_int} converts an integer value into a real
 value such that both represent the same number.
 
-@example
-datatype Int of Real
-
-fun - (a: Int): Int == extern "-"
-fun + (a: Int, b: Int): Int == extern "+"
-fun - (a: Int, b: Int): Int == extern "-"
-fun * (a: Int, b: Int): Int == extern "*"
-fun / (a: Int, b: Int): Int == extern "/"
-fun % (a: Int, b: Int): Int == extern "%"
-fun ** (a: Int, b: Int): Int == extern "**"
-
-fun < (a: Int, b: Int): Bool == extern "<"
-fun <= (a: Int, b: Int): Bool == extern "<="
-fun > (a: Int, b: Int): Bool == extern ">"
-fun >= (a: Int, b: Int): Bool == extern ">="
-
-fun real_of_int(a: Int): Real == extern "real_of_int"
-@end example
+@end table
 
 The compiler can represent integer numbers with arbitrary precision.
 Different back-ends can impose different limits on the range they can
 represent.
 
 
-@section Datatype String
+@node Data Type String
+@section Data Type String
 
-The datatype @code{String} represents all character strings.
+The data type @code{String} represents all character strings.
 
+The binary operators @code{|-}, @code{-|}, and @code{|-|} are
+synonymous.  @emph{@acronym{CREOL}} does not distinguish characters (which are
+strings of length 1) from strings.  It is good style to use @code{|-}
+to append a character to a string, @code{-|} to prepend one, and
+@code{|-|} in any other case.
+
+@table @code
+@item fun # (a: String): Int
 The unary operator @code{#} returns the length of the string.
 
-The binary operators @code{|-|}, @code{|-}, and @code{-|} all
-represent string concatenation.  @emph{Creol} does not distinguish
-characters (which are strings of length 1) and strings.  It is good
-style to use @code{|-} to append a character to a string, @code{-|} to
-prepend one, and @code{|-|} in any other case.
+@item fun |- (a: String, b: String): String
+The binary operator @code{|-} represent string concatenation.
 
-The binary relations @code{<}, @code{<=}, @code{>}, and @code{>=}
-compare strings with respect to their lexicographic order.
+@item fun -| (a: String, b: String): String
+The binary operator @code{-|} represent string concatenation.
 
-@example
-datatype String
+@item fun |-| (a: String, b: String): String
+The binary operator @code{|-|} represent string concatenation.
 
-fun # (a: String): Int == extern "#"
-fun |- (a: String, b: String): String == extern "|-"
-fun -| (a: String, b: String): String == extern "-|"
-fun |-| (a: String, b: String): String == extern "|-|"
+@item fun < (a: String, b: String): Bool
+This binary relation compares two strings with respect to their
+lexicographic order.
 
-fun < (a: String, b: String): Bool == extern "<"
-fun <= (a: String, b: String): Bool == extern "<="
-fun > (a: String, b: String): Bool == extern ">"
-fun >= (a: String, b: String): Bool == extern ">="
-@end example
+@item fun <= (a: String, b: String): Bool
+This binary relation compares two strings with respect to their
+lexicographic order.
 
-Creol does not define the representation of strings and how the
+@item fun > (a: String, b: String): Bool
+This binary relation compares two strings with respect to their
+lexicographic order.
+
+@item fun >= (a: String, b: String): Bool
+This binary relation compares two strings with respect to their
+lexicographic order.
+
+@end table
+
+@acronym{CREOL} does not define the representation of strings and how the
 lexicographic ordering is defined.  All implementations will probably
 behave as expected with all characters from the original US-ASCII set.
 
 
-@section Datatype List
+@node Data Type List
+@section Data Type List
 
 The type constructor @code{List[`a]} generates monomorphic list
 types.  A list that may contain anything has type @code{List[Data]}
 and a list of object references has type @code{List[Any]}.
 
+@table @code 
+@item fun head(l: List[`a]): `a
 The function @code{head} returns the first element of the list.  If
-the list is empty, the result is undefined.@footnote{Creol does not
-yet support exceptions.  For now we suggest a defensive programming
+the list is empty, the result is undefined.@footnote{@acronym{CREOL} does not
+yet support exceptions.  For now we suggest a defencive programming
 approach.  Later, these functions may raise an exception instead of
 having an undefined behaviour.}
 
+@item fun tail(l: List[`a]): List[`a]
 The function @code{tail} returns a list without its first element.  If
 the list is empty, the result is undefined.
 
+@item fun last(l: List[`a]): `a
 The function @code{last} returns the last element of the list.  If
 the list is empty, the result is undefined.
 
+@item fun rest(l: List[`a]): List[`a]
 The function @code{rest} returns a list without its last element.  If
 the list is empty, the result is undefined.
 
-The function @code{reverse} returns a list in which all elements occur
-in reverse order.
-
-The function @code{sub} returns a slice of the list, beginning at
-@code{i} and ending at @code{j}.
-
-The function @code{after} returns a list containing all elements after
-@code{p}.  If @code{p} is larger than the length of the list, the
-empty list is returned.
-
-The function @code{has} tests, whether the list @code{l} contains the
-element @code{e}.
-
+@item fun nth(l: List[`a], n: Int): `a
 The function @code{nth} returns the @code{n}th element of the list.  If
 the list has less than @code{n} elements, the result is undefined.
 
+@item fun rnth(l: List[`a], n: Int): `a
 The function @code{rnth} returns the @code{n}th element from the back
 of the list.  If the list has less than @code{n} elements, the result
 is undefined.
 
-The function @code{remove} returns the largest sublist @code{l'} of
+@item fun reverse(l: List[`a]): List[`a]
+The function @code{reverse} returns a list in which all elements occur
+in reverse order.
+
+@item fun sub(l: List[`a], i: Int, j: Int)
+The function @code{sub} returns a slice of the list, beginning at
+@code{i} and ending at @code{j}.
+
+@item fun after(l: List[`a], n: Int): List[`a]
+The function @code{after} returns a list containing all elements after
+@code{p}.  If @code{p} is larger than the length of the list, the
+empty list is returned.
+
+@item fun in(l: List[`a], e: `a): Bool
+The function @code{in} tests, whether the list @code{l} contains the
+element @code{e}.
+
+@item fun remove(l: List[`a], e: `a): List[`a]
+The function @code{remove} returns the largest sub list @code{l'} of
 @code{l} that does not contain @code{e}.
 
+@item fun -|(e: `a, l: List[`a]): List[`a]
 The operator @code{-|} prepends an element to a list.
 
+@item fun |-(l: List[`a], e: `a): List[`a]
 The operator @code{|-} appends an element to a list.
 
-The operator @code{|-|} concatenates two list.
+@item fun |-|(l: List[`a], m: List[`a]): List[`a]
+The operator @code{|-|} results in the concatenation of two list.
 
+@item fun #(l: List[`a]): Int
 The operator @code{#} returns the length of the list.
 
+@item fun isempty(l: List[`a]): Bool
 The function @code{isempty} tests, whether the list is empty.  It is
 synonymous to @code{l == nil}.
 
+@item fun begwith(l: List[`a], m: List[`a]) : Bool
 The function @code{begwith} tests whether a list @code{l} begins with
-the list @code{l'}
+the list @code{m}.
 
+@item fun endswith(l: List[`a], m: List[`a]) : Bool
 The function @code{endswith} tests whether a list @code{l} ends with
-the list @code{l'}.
+the list @code{m}.
 
-The function @code{index} returns the index of the first occurence of
+@item fun index(l: List[`a], e: `a): Int
+The function @code{index} returns the index of the first occurrence of
 an element @code{e}.  If @code{e} does not occur in the list, the
 result is undefined.
 
-The function @code{rindex} returns the index of the last occurence of
+@item fun rindex(l: List[`a], e: `a): Int
+The function @code{rindex} returns the index of the last occurrence of
 an element @code{e}.  If @code{e} does not occur in the list, the
 result is undefined.
 
-@example
-datatype List[`a]
-
-fun head(l: List[`a]): `a == extern "head"
-fun tail(l: List[`a]): List[`a] == extern "tail"
-fun last(l: List[`a]): `a == extern "last"
-fun rest(l: List[`a]): List[`a] == extern "rest"
-fun nth(l: List[`a], n: Int): `a == extern "nth"
-fun reverse(l: List[`a]): List[`a] == extern "reverse"
-fun sub(l: List[`a], i: Int, j: Int) == extern "sub"
-fun after(l: List[`a], n: Int): List[`a] == extern "after"
-fun has(l: List[`a], e: `a): Bool == extern "has"
-fun remove(l: List[`a], e: `a): List[`a] == extern "remove"
-fun -|(e: `a, l: List[`a]): List[`a] == extern "-|"
-fun |-(l: List[`a], e: `a): List[`a] == extern "|-"
-fun |-|(l: List[`a], m: List[`a]): List[`a] == extern "|-|"
-fun #(l: List[`a]): Int == extern "length"
-fun isempty(l: List[`a]): Bool == extern "isempty"
-fun begwith(l: List[`a], m: List[`a]) : Bool == extern "begwith"
-fun index(l: List[`a], e: `a): Int == extern "index"
-fun rindex(l: List[`a], e: `a): Int == extern "rindex"
-@end example
+@end table
 
 
-@section Datatype Set
+@node  Data Type Set
+@section Data Type Set
 
+@table @code
+@item fun #(s: Set[`a]): Int
+The function @code{#} returns the number of elements contained in the
+argument set.
+
+@item fun remove(s: Set[`a], e: `a): Set[`a]
 The type constructor @code{Set[`a]} generates monomorphic set
 types.  A set that may contain anything has type @code{Set[Data]}
 and a set of object references has type @code{Set[Any]}.
 
-The function @code{#} returns the number of elements contained in the
-argument set.
-
+@item fun add(s: Set[`a], e: `a): Set[`a]
 The function @code{remove} returns the argument set without element
 @code{e}.
 
+@item fun in(s: Set[`a], e: `a): Bool
 The function @code{add} returns the argument set with the addition of
 element @code{e}.
 
+@item fun union(s: Set[`a], t: Set[`a]): Set[`a]
 The function @code{union} returns the set union of the two argument
 sets.
 
+@item fun inter(s: Set[`a], t: Set[`a]): Set[`a]
 The function @code{inter} returns the set intersection of the two
 argument sets.
 
+@item fun diff(s: Set[`a], t: Set[`a]): Set[`a]
 The function @code{diff} returns the set difference of the two
 argument sets.
 
-The preficate @code{isempty} tests, whether the argument set is empty.
+@item fun isempty(s: Set[`a]): Bool
+The predicate @code{isempty} tests, whether the argument set is empty.
 
-@example
-datatype Set[`a]
-
-fun #(s: Set[`a]): Int == extern "#"
-fun remove(s: Set[`a], e: `a): Set[`a] == extern "remove"
-fun add(s: Set[`a], e: `a): Set[`a] == extern "add"
-fun has(s: Set[`a], e: `a): Bool == extern "has"
-fun union(s: Set[`a], t: Set[`a]): Set[`a] == extern "union"
-fun inter(s: Set[`a], t: Set[`a]): Set[`a] == extern "inter"
-fun diff(s: Set[`a], t: Set[`a]): Set[`a] == extern "diff"
-fun isempty(s: Set[`a]): Bool == extern "isempty"
-@end example
+@end table
 
 
-@section Datatype Pair
+@node Data Type Pair
+@section Data Type Pair
 
 The pair type constructor is defined in @ref{Types}.  For example, a
 pair of integers has the type @code{[Int, Int]}.  The standard library
 defines two projections on pairs:  @code{fst} projects on the first
 element and @code{snd} projects on the second element.
 
-@example
-fun fst (a: [`a, `b]): `a == extern "fst"
-fun snd (a: [`a, `b]): `b == extern "snd"
-@end example
+@table @code
+@item fun fst (a: [`a, `b]): `a == extern "fst"
+
+@item fun snd (a: [`a, `b]): `b == extern "snd"
+
+@end table
 
 
-@section Datatypes Time and Duration
-@anchor{Datatypes Time and Duration}
+@node Data Types Time and Duration
+@section Data Types Time and Duration
 
 The types @code{Time} and @code{Duration} are used for real-time
 modelling.  They should not be used in untimed models.  The semantics
 of timed constraints in an untimed semantics is currently left
 unspecified.  For a detailed explanation of modelling with time, we
-refer the reader to @ref{Real-time Creol}.
+refer the reader to @ref{Real-time CREOL}.
 
 The only literal of type @code{Time} is @code{now}, which can be
-stored in variables.  On values of type @code{Time} these relations
-are defined: @code{<}, @code{<=}, @code{>=}, and @code{>}.
+stored in variables.
 
-@example
-datatype Time
+On values of type @code{Time} these relations are defined:
 
-fun <(a: Time, b: Time): Bool == extern "<"
-fun <=(a: Time, b: Time): Bool == extern "<="
-fun >=(a: Time, b: Time): Bool == extern ">="
-fun >(a: Time, b: Time): Bool == extern ">"
-@end example
+@table @code
+@item fun <(a: Time, b: Time): Bool
+
+@item fun <=(a: Time, b: Time): Bool
+
+@item fun >=(a: Time, b: Time): Bool
+
+@item fun >(a: Time, b: Time): Bool
+@end table
 
 Values of type @code{Time} refer to particular instances of when
 events happened.  The type @code{Duration} refers to the difference
 between to instances of time.  A @code{Duration} is not ``negative''.
 
+@table @code
+@item fun dur(a: Real): Duration
 The function @code{dur} constructs a new duration from a @code{Real}
 value.  The unit of duration is left unspecified.
 
+@item fun +(a: Time, d: Duration): Time
 The operator @code{+(a: Time, d: Duration): Time} returns the time
 after @code{d} has elapsed from @code{a}.
 
+@item fun -(a: Time, d: Duration): Time
 The operator @code{-(a: Time, d: Duration): Time} returns the time
 before @code{d} has elapsed until @code{a}.
 
+@item fun -(a: Time, b: Time): Duration
 The operator @code{-(a: Time, b: Time): Duration} returns the time
 elapsed between @code{a} and @code{b}.  If @code{a} happened before
 @code{b}, the result is normalised.  Consequently, for all values of
 @code{Time}, we have @code{a - b = b - a}.
 
+@item fun +(a: Duration, d: Duration): Duration
 The operator @code{+(a: Duration, d: Duration): Duration} is the sum
 of two durations.
 
+@item fun -(a: Duration, d: Duration): Duration
 The operator @code{-(a: Duration, d: Duration): Duration} is the
 difference between two durations.  The result is undefined if @code{d
 > a}.
 
-The operators @code{*(a: Duration, s: Real): Duration} and 
-@code{*(a: Real, s: Duration): Duration} represent @emph{scalar}
-multiplication of durations.
+@item fun *(a: Duration, s: Real): Duration
 
+@item fun *(a: Real, s: Duration): Duration
+The operators @code{*(a: Duration, s: Real): Duration} and @code{*(a:
+Real, s: Duration): Duration} represent @emph{scalar} multiplication
+of durations.
+
+@item fun /(a: Duration, s: Real): Duration
 The operator @code{/(a: Duration, s: Real): Duration} is scalar
-division.  It is a shorhand for @code{a * (1.0 / s)}.
+division.  It is a shorthand for @code{a * (1.0 / s)}.
 
-On values of type @code{Duration} these relations are defined:
-@code{<}, @code{<=}, @code{>=}, and @code{>}.
+@item fun <(a: Duration, b: Duration): Bool
 
-@example
-datatype Duration
+@item fun <=(a: Duration, b: Duration): Bool
 
-fun dur(a: Real): Duration == extern "duration"
-fun +(a: Time, d: Duration): Time == extern "+"
-fun -(a: Time, d: Duration): Time == extern "-"
-fun -(a: Time, b: Time): Duration == extern "-"
-fun +(a: Duration, d: Duration): Duration == extern "+"
-fun -(a: Duration, d: Duration): Duration == extern "-"
-fun *(a: Duration, s: Real): Duration == extern "*"
-fun *(a: Real, s: Duration): Duration == extern "*"
-fun /(a: Duration, s: Real): Duration == extern "/"
-fun <(a: Duration, b: Duration): Bool == extern "<"
-fun <=(a: Duration, b: Duration): Bool == extern "<="
-fun >=(a: Duration, b: Duration): Bool == extern ">="
-fun >(a: Duration, b: Duration): Bool == extern ">"
-@end example
+@item fun >=(a: Duration, b: Duration): Bool
+
+@item fun >(a: Duration, b: Duration): Bool
+@end table
 
 
 @section Interface Any

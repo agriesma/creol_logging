@@ -1,27 +1,27 @@
-@node Creol Tutorial
-@chapter A Tutorial Introduction to Creol
+@node CREOL Tutorial
+@chapter A Tutorial Introduction to @acronym{CREOL}
 
 This chapter is intended to be an introduction into the concepts of
-the Creol language by giving examples.
+the @acronym{CREOL} language by giving examples.
 
 @menu
-* First Creol Program::         A first Creol program.
-* Sieve of Erathostenes::       Computing prime numbers.
+* First CREOL Program::         A first @acronym{CREOL} program.
+* Sieve of Eratosthenes::       Computing prime numbers.
 * Self Calls::                  How to call methods of one-self.
 * Inheritance::                 Inheritance and Interfaces
 @end menu
 
 
-@node First Creol Program
-@section A First Creol Program
+@node First CREOL Program
+@section A First @acronym{CREOL} Program
 
 Usually, the first program presented in tutorials on programming
-languages is a program that outputs ``hello, world''.  Creol does not
+languages is a program that outputs ``hello, world''.  @acronym{CREOL} does not
 have a notion of output or console, because it is a language for
-describing @emph{distributed systems} using objet-oriented
+describing @emph{distributed systems} using object-oriented
 techniques.
 
-A distribtuted system collects many computing resources into one
+A distributed system collects many computing resources into one
 system to solve common tasks.  This is often done to increase the
 computational power of the system (especially, if the task at hand is
 easy to parallelise).  But very often, the subsystems of a distributed
@@ -32,8 +32,8 @@ characterises a distributed system by: ``A distributed system is one
 in which the failure of a computer you didn't even know existed can
 render your own computer unusable'' (@pxref{Lamport (1987)}).
 
-Conceptually, each object of a Creol system executes on its own
-virtual processor and owns its own private ressources.  The object is
+Conceptually, each object of a @acronym{CREOL} system executes on its own
+virtual processor and owns its own private resources.  The object is
 active and has its own thread of execution, where its activity starts
 immediately after the object has been created and initialised.  It is
 responsible for its own scheduling.  Other objects have very little
@@ -45,10 +45,10 @@ which belong to another object.
 Objects may receive messages, which results in the creation of an
 activity which handles the reaction to that message.  At any time at
 most one activity is active in an object.  Different activities are
-coordinated cooperatively:  An activity has to explicitely yield to
+coordinated cooperatively:  An activity has to explicitly yield to
 other activities.
 
-Creol does not provide any output functions.  We still want to show a
+@acronym{CREOL} does not provide any output functions.  We still want to show a
 simple ``hello, world'' example.  We do so with two objects.  One
 object will send a ``hello, world'' message and the other object will
 receive it.  As in other object-oriented programming languages,
@@ -58,7 +58,7 @@ class, but classes can inherit code from other classes
 (@pxref{Inheritance}).
 
 In contrast to other object-oriented programming languages, where
-classes are also types of objects, objects in Creol are typed by
+classes are also types of objects, objects in @acronym{CREOL} are typed by
 interfaces only.  The interface describes what methods are available
 to other objects.  Additionally, one can specify @emph{co-interfaces}.
 A method is only available to objects which are typed by the
@@ -66,7 +66,7 @@ co-interface.
 
 Below, objects of type @code{Hello} export a method @code{hello} to
 all objects which are an instance of @code{Any}.  The interface
-@code{Any} is the implicit supertype of all objects.  No methods are
+@code{Any} is the implicit super type of all objects.  No methods are
 specified in @code{Any}.
 
 Classes provide implementation for objects.  The class @code{Hello}
@@ -74,7 +74,7 @@ implements the interface @code{Hello} and provides an implementation
 to the @code{hello} method.
 
 The class @code{Main} does not declare to implement any interface, but
-all classes implicitely implement the @code{Any} interface.  Each
+all classes implicitly implement the @code{Any} interface.  Each
 instance of @code{Main} will create an instance of @code{Hello} during
 initialisation in the @code{init} method and will as its only activity
 call the method @code{hello} of that instance and store the result
@@ -103,7 +103,7 @@ end
 In order to execute this program, it has first be compiled to a
 version suitable for execution.  One possibility would be to compile
 the program into the @emph{Maude format}, which is currently the main
-execution and analysis environment for Creol.  This can be achieved by
+execution and analysis environment for @acronym{CREOL}.  This can be achieved by
 storing the example program into a file @file{Hello.creol} and then
 executing the command @command{creolc -o Hello.maude Hello.creol}.
 This results in the Maude model of the following example:
@@ -124,13 +124,11 @@ eq init =
 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "result" |-> null ,
   "hello" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code:
-    "hello" ::= new "Hello" ( emp ) ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hello" ::=
+    new "Hello" ( emp ) ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
     "label:0" ! "hello" . "hello" ( emp ) ; ( "label:0" ? ( "result" ) ) ;
-    return ( emp ) >, Ocnt: 0 >
-
-.
+    return ( emp ) >, Ocnt: 0 > .
 endm
 @end example
 
@@ -138,7 +136,7 @@ As one can see, the differences from the source program to the
 representation in Maude is not too significant.  Most notably,
 information on how instances of a class are to be constructed,
 replacement of statements by counterparts on the lower level, and
-adding auxiluary statements to mark the end of a method are
+adding auxiliary statements to mark the end of a method are
 introduced. This example may be executed in Maude, as shown in the
 following session:
 
@@ -147,71 +145,74 @@ $ maude Hello.maude
                      \||||||||||||||||||/
                    --- Welcome to Maude ---
                      /||||||||||||||||||\
-            Maude 2.3 built: Feb 14 2007 17:53:50
+            Maude 2.3 built: Feb 14 2007 17:43:55
             Copyright 1997-2007 SRI International
-                   Mon Nov  5 11:37:32 2007
+                   Wed Feb 13 12:28:13 2008
 Maude> rew init main("Main", emp) .
 rewrite in PROGRAM : init
 main("Main", emp) .
-rewrites: 225 in 3ms cpu (3ms real) (75000 rewrites/second)
-result Configuration:
-< ob("Hello0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
-
-< ob("Main0") : Qu | Size: 10, Dealloc: noDealloc, Ev: noMsg >
-
-< ob("main") : Qu | Size: 1, Dealloc: noDealloc, Ev: noMsg >
-
+rewrites: 259 in 2ms cpu (2ms real) (129500 rewrites/second)
+result Configuration: 
 < "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code:
-    "result" ::= str("Hello, world") ; return("result") > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
-    return(emp) >
+  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code: "result"
+    ::= str("Hello, world") ; return("result") > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
     *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
-    return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
   Ocnt: 1 >
 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "hello" |-> null, "result" |->
     null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hello" ::= new
     "Hello"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
-    "label:0" ! "hello" . "hello"(emp) ; "label:0" ?("result") ;
-    return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
+    "hello" . "hello"(emp) ; "label:0" ?("result") ; return(emp) >,
   Ocnt: 1 >
 
-< ob("Hello0") : "Hello" | Att: "this" |-> ob("Hello0"),
+< ob("Hello0") : "Hello" |
+  Att: "this" |-> ob("Hello0"),
   Pr: idle,
-  PrQ: noProc, Lcnt: 3 >
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 2 >
 
-< ob("Main0") : "Main" | Att: "hello" |-> ob("Hello0"), "result" |-> str(
-    "Hello, world"), "this" |-> ob("Main0"),
+< ob("Main0") : "Main" |
+  Att: "hello" |-> ob("Hello0"), "result" |-> str("Hello, world"), "this" |->
+    ob("Main0"),
   Pr: idle,
-  PrQ: noProc, Lcnt: 4 >
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 3 >
 
-< ob("main") : "" | Att: noSubst,
+< ob("main") : "" |
+  Att: noSubst,
   Pr: idle,
-  PrQ: noProc, Lcnt: 0 >
-Maude> quit .
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >
+Maude> 
 @end example
 
 The command @command{rew init main("Main", emp) .} instructs the Maude
 interpreter to rewrite the program text @code{init} and a first object
 @code{main("Main", emp)}, which is an instance of class @code{"Main"}
-and which is created without class paramenters.  Maude responds with
+and which is created without class parameters.  Maude responds with
 the a term repeating the input program and a collection of queues and
-objects.  We observe that all activites have terminated and that the
+objects.  We observe that all activities have terminated and that the
 object @code{ob("Main0")} has stored the string @code{"Hello, world"}
 in its attribute @code{"result"}.
 
 
 
-@node Sieve of Erathostenes
-@section Sieve of Erathostenes
+@node Sieve of Eratosthenes
+@section Sieve of Eratosthenes
 
 In this section we will explain how simple programs can be written in
-Creol.  We will show this using the well-known algorithm of
-Erathostenes for computing prime numbers.
+@acronym{CREOL}.  We will show this using the well-known algorithm of
+Eratosthenes for computing prime numbers.
 
 @menu
 * A Synchronous Version::                     
@@ -290,7 +291,7 @@ process.  Two activities occur at the same time.
 A method can be call asynchronously using the construct
 @code{l!m(@var{i})}, where @code{@var{i}} represents the actual
 arguments, @code{m} is the name of the method, @code{o} represents the
-identity of the calle, and @code{l} is a @emph{handle} (often called a
+identity of the callee, and @code{l} is a @emph{handle} (often called a
 @emph{future variable} and sometimes called a label) which allows to
 receive the result of the code at a later time.  The handle must be
 declared as a variable of type @code{Label[`a]}, where @code{`a} is a
@@ -302,7 +303,7 @@ once.  It is an error to try to receive the values to a call twice,
 resulting in deadlocks or undefined behaviour.
 
 Below is a modified version of the example that replaces synchronous
-communication with asyncrhonous communication.
+communication with asynchronous communication.
 
 @example
 class Generator
@@ -337,10 +338,10 @@ end
 
 One may ask whether this implementation is correct.  Unfortunately, it
 is only correct, if the communication media and scheduling preserves
-the order in which messsages are received and handled.  This is
-@emph{not} the case for Creol.
+the order in which messages are received and handled.  This is
+@emph{not} the case for @acronym{CREOL}.
 
-The tools for Creol allow us to check properties of this program
+The tools for @acronym{CREOL} allow us to check properties of this program
 automatically.  We may ask the Maude engine to search for a
 computation in which @code{9} becomes a prime number.  Below we see a
 search statement, where the parameters @code{[1, 75]} state to search
@@ -351,21 +352,22 @@ example Maude finds and has been determined empirically.}
 @example
 search [1, 75] in PROGRAM : init main("Generator", emp) =>+
  < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
-                     L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
+                     L:Subst, SL:StmList, PrQ: W:MProc,
+                     Dealloc: F:Labels, Ev: MM:MMsg, Lcnt: N:Nat >
  conf:Configuration .
 @end example
 
 This command will result in a line like:
 
 @example
-Solution 1 (state 491568)
-states: 491569  rewrites: 22482129 in 252276ms cpu (300662ms real) (89116
+Solution 1 (state 415558)
+states: 415559  rewrites: 25023469 in 146749ms cpu (244608ms real) (170518
     rewrites/second)
 @end example
 
 followed by a configuration in which an instance of sieve with @c
 @code{p = 9} has been created.  The computation leading to that state
-can be displayed with the command @command{show path 491568 .}.  The
+can be displayed with the command @command{show path 415558 .}.  The
 number to use is the number of the state in the state graph which
 displays the error and is one less than the number of states.
 
@@ -419,7 +421,7 @@ While this leads to a correct implementation, it also changes the
 interface of the @code{send} method, because a new parameter
 @code{seq} for the current sequence number had to be introduced.
 
-In Creol it is very important to be aware of the non-deterministic
+In @acronym{CREOL} it is very important to be aware of the non-deterministic
 scheduling, and the reordering communication channels.  A later
 version of the language shall include primitives for refining these
 behaviours.
@@ -428,7 +430,7 @@ behaviours.
 @node Self Calls
 @section Self Calls
 
-The co-interface mechanism of Creol interacts with calls of an object
+The co-interface mechanism of @acronym{CREOL} interacts with calls of an object
 to itself.  Within (almost) all calls an object receives, the
 programmer can access the identity of the caller using the variable
 @code{caller}.  The type of that variable is defined using a
@@ -477,7 +479,7 @@ allowing other calls to be served before that call.
 @node Inheritance
 @section Inheritance and Interfaces
 
-Creol supports multiple inheritance.  To be more precise, Creol
+@acronym{CREOL} supports multiple inheritance.  To be more precise, @acronym{CREOL}
 supports @emph{two} notions of inheritance: one for @emph{interfaces},
 since these provide behavioural specifications and serve as types, and
 one for @emph{code}.  Unlike in Java or C++, both kinds of inheritance
@@ -489,7 +491,7 @@ its super-classes are now implementations for the current class,
 provided that the implementation has not been @emph{overridden} by the
 current class.
 
-The keyword @code{implements} (@pxref{First Creol Program}) is used to
+The keyword @code{implements} (@pxref{First CREOL Program}) is used to
 assign @emph{types} to objects.  Each class implements the empty
 interface @code{Any}, which is also the super-interface of all other
 interfaces.  Classes are not types.  Interface declarations are never
@@ -538,11 +540,11 @@ end
 
 This example is @emph{not} type-safe, more specifically, the call
 @code{caller.bar} is not well-typed.  The trace which violates the
-well-typedness rules of Creol is the following one:
+well-formedness rules of @acronym{CREOL} is the following one:
 @enumerate
 @item
 Create an instance of @code{Main}, which will create one instance of
-@code{Baz} during the initialization.  In the run method, we can the
+@code{Baz} during the initialisation.  In the run method, we can the
 @code{bar} method of @code{baz}.  This call is well-typed, since all
 instances of @code{Baz} implement the @code{Baz} interface which
 exports this method to all objects.
@@ -590,7 +592,7 @@ Especially when using multiple inheritance, one has to be aware how
 objects are constructed.  A new object is created using a new
 statement @code{o := new @var{C} (@var{args})}.
 
-Unlike C++ and other languages with multiple inheritance, Creol merges
+Unlike C++ and other languages with multiple inheritance, @acronym{CREOL} merges
 all attribute definitions from the same class.  If attributes are
 initialised multiple times, the last definition will prevail.
 Consider the following example, which will be used to explain the
@@ -695,7 +697,7 @@ ceasing to maintain its activity.  Conversely, in order to stay
 active, the object has to maintain its activity, usually by using
 self-calls.
 
-We advise to use asyncrhonous self-calls, which allows other
+We advise to use asynchronous self-calls, which allows other
 activities to be scheduled.  Otherwise, the object becomes
 unresponsive.  Synchronous calls may be used, if the activity allows
 other activities to be scheduled by using await-statements.

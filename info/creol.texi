@@ -1,28 +1,28 @@
-@node Creol
-@chapter Creol
+@node CREOL Language
+@chapter @acronym{CREOL} Language
 
-This chapter describes the concrete syntax of Creol and explains the
-semantics of Creol in an informal manner.  The formal semantics of
-Creol is defined in rewriting logic and can be found in the file
+This chapter describes the concrete syntax of @acronym{CREOL} and explains the
+semantics of @acronym{CREOL} in an informal manner.  The formal semantics of
+@acronym{CREOL} is defined in rewriting logic and can be found in the file
 @file{creol-interpreter.maude}.
 
-As of today, the contents of this chapter is subject to change.  Creol
+As of today, the contents of this chapter is subject to change.  @acronym{CREOL}
 is still an evolving language.  Incompatible changes to the language
 are not excluded, but we will try hard to avoid them.  This chapter
-serves as a reference.  The reader is referred to @ref{Creol
+serves as a reference.  The reader is referred to @ref{CREOL
 Tutorial} for an exposition of the language and its features.
 
 @menu
-* Comments::                    Comments in Creol.
+* Comments::                    Comments in @acronym{CREOL}.
 * Types::                       Type specifications.
 * Literals and Expression::     The functional sub-language.
 * Assertions::                  The declarative assertion language.
 * Statements::                  The object-oriented sub-language.
 * Variable Declaration::        Declaring variables and attributes.
-* Method Declaration::          Declaring and defining behavior.
+* Method Declaration::          Declaring and defining behaviour.
 * Interface Declaration::       Types for objects.
 * Class Declaration::           Implementation for types.
-* Datatype Declaration::        Declaring data types.
+* Data Type Declaration::        Declaring data types.
 * Parse Errors::                A note on parse errors.
 @end menu
 
@@ -31,7 +31,7 @@ Tutorial} for an exposition of the language and its features.
 @node Comments
 @section Comments
 
-Creol supports too kinds of comments, both have been inspired by C++
+@acronym{CREOL} supports too kinds of comments, both have been inspired by C++
 and Java.
 
 The first kind begins with @code{//} and extends until the first
@@ -44,7 +44,7 @@ following @code{*/}.  Comments of this kind do not nest.
 @node Types
 @section Types
 
-All expressions in Creol are typed.  All variables and attributes must
+All expressions in @acronym{CREOL} are typed.  All variables and attributes must
 declare a type.  A type is either a data type, where the types
 @code{Int}, @code{Bool}, and @code{String} are pre-defined, a type
 variable, written as @code{`@var{a}}, or a type expression.  Type
@@ -56,13 +56,13 @@ denoted by @code{List[Int]}, or the type of a tuple, written as @code{[
 @node Literals and Expression
 @section Literals and Expressions
 
-Creol assumes a functional sub-language, which we describe in this
+@acronym{CREOL} assumes a functional sub-language, which we describe in this
 section.  The equality symbol
 
 
 @subsection Literals
 
-The boolean literals of Creol are @code{true} and @code{false}.
+The Boolean literals of @acronym{CREOL} are @code{true} and @code{false}.
 
 The integer literals match the regular expression @code{[0-9]+}.
 
@@ -88,7 +88,7 @@ keyword @code{caller}.
 Variables are lower-case character-sequences, matching the regular
 expression @code{[a-z][a-zA-Z0-9]}.  Variables are typed (see below).
 
-In Creol, the location of a variable name @var{v} is determined as
+In @acronym{CREOL}, the location of a variable name @var{v} is determined as
 follows: if @var{v} refers to a variable, that is declared in the
 method that contains the expression, or refers to one of the input- or
 output parameters, then the name refers to a @emph{local variable},
@@ -115,7 +115,7 @@ of a class of which the current class is @emph{not} a subclass.
 
 @subsection Boolean Expressions
 
-The boolean expressions are:
+The Boolean expressions are:
 
 @code{@var{expression} = @var{expression}} for equality.
 
@@ -138,7 +138,7 @@ The boolean expressions are:
 
 Integer literals are written as strings of digits.  Integer literals
 are represented as arbitrary precision numbers in the compiler.  This
-means that there is no pratical limitation on the size of integer
+means that there is no practical limitation on the size of integer
 literals.  There may be limitations imposed by the back-ends, if
 down-stream applications and target platforms impose range
 limitations.  Consult the back-end documentation for details.
@@ -146,7 +146,7 @@ limitations.  Consult the back-end documentation for details.
 Real literals are written in the usual format, e.g., @code{0.5} or
 @code{1e-2} are all valid real literals.  Real literals are
 represented as fractions with arbitrary precision in the compiler.
-This means that there is no pratical limitation on the size of real
+This means that there is no piratical limitation on the size of real
 literals.  There may be limitations imposed by the back-ends, if
 down-stream applications and target platforms impose range and
 precision limitations.  Consult the back-end documentation for
@@ -162,7 +162,7 @@ The arithmetic expressions are:
 
 @code{@var{expression} / @var{expression}} for division.
 
-@code{@var{expression} % @var{expression}} for the Eucledian remainder
+@code{@var{expression} % @var{expression}} for the Euclidean remainder
 (modulo).
 
 @code{@var{expression} + @var{expression}} for addition.
@@ -176,7 +176,7 @@ A string literal is written by quoting its contents in @code{"}, e.g.,
 @code{"Hello, world"} is a string literal.  The internal @code{String}
 type is @emph{List of characters}.  Consequently, the operations on
 strings are the same as the ones on sequences (@pxref{List Syntax}).
-Single-letter strings, e.g., list of length 1 are alos considered to
+Single-letter strings, e.g., list of length 1 are also considered to
 be character literals.
 
 
@@ -247,7 +247,7 @@ co-interface.
 The expression @code{@var{expression} as @var{type}} represents
 re-typing of the value of @var{expression} to the type (interface)
 @var{type}.  If the value of @var{expression} cannot be determined
-statically, type conformance is tested during runtime.
+statically, type conformance is tested during run time.
 
 
 @subsection Function Application
@@ -268,7 +268,7 @@ The core of the assertion language is the use of a new variable
 @code{history} of type @code{List[Event]}, where event is a predefined
 type.
 
-Each expression of type boolean, as defined in the preceding section,
+Each expression of type Boolean, as defined in the preceding section,
 @pxref{Literals and Expression}, is also an assertion.
 
 In addition, the following three expressions are accepted:
@@ -297,7 +297,7 @@ For many specifications, however, it is more convenient to use the
 @node Statements
 @section Statements
 
-In this section we describe the statements of Creol programs.
+In this section we describe the statements of @acronym{CREOL} programs.
 
 
 @subsection Assignments
@@ -416,11 +416,11 @@ The usual @code{if ... then ... else ... end} statement.
 
 THE INFORMATION IN THIS SECTION IS SUBJECT TO CHANGE.
 
-Creol supports a while loop, which uses the syntax @code{while @var{c}
+@acronym{CREOL} supports a while loop, which uses the syntax @code{while @var{c}
 [ inv @code{I} ] do @var{S} end}.  As usual, @code{@var{c}} is the
 condition and @code{@var{S}} is the statement to execute.
 
-In addition, Creol supports also a do-while loop, which uses the
+In addition, @acronym{CREOL} supports also a do-while loop, which uses the
 syntax @code{do @var{S} [ inv @var{I} ] while @var{c}}, where @var{c},
 @var{S}, and @var{I} have the same meaning as with @code{while} loops.
 Observe that the compiler will transform a do-while loop into a while
@@ -509,13 +509,13 @@ in @code{@{ S; T @} [] U} but not in @code{S; @{ T [] U @}}.
 @node Variable Declaration
 @section Variable Declaration
 
-All variables and attributes in Creol must be declared.  A variable is
+All variables and attributes in @acronym{CREOL} must be declared.  A variable is
 declared using the syntax
 @code{var @var{name}: @var{type} [ := @var{init}]}.
 
 The identifier @var{name} is the name of the variable, @var{type} is
 the type of the variable and @var{init} is an expression used to
-initialize the variable.
+initialise the variable.
 
 
 @node Method Declaration
@@ -539,7 +539,7 @@ by a statement.
 @node Interface Declaration
 @section Interface Declarations
 
-All objects in Creol are typed by interface.
+All objects in @acronym{CREOL} are typed by interface.
 
 Each class is assumed to implement the empty interface @code{Any}.
 This interface is the implicit super-interface of all other interfaces.
@@ -576,8 +576,8 @@ the other hand, one might feel that both blocks form a unit and should
 not be used separately.
 
 @item
-One might be tempted to introduce type-parameterized interfaces or
-value-parameterized interfaces.  But a concrete use case is needed,
+One might be tempted to introduce type-parametrised interfaces or
+value-parametrised interfaces.  But a concrete use case is needed,
 first.
 
 @item
@@ -621,7 +621,7 @@ after the @code{inherits} keyword.  Each super-class must specify
 values for the classes @emph{class parameters},
 @pxref{Class Parameters}.
 
-The programmer must be aware of Creols behaviour if a class is
+The programmer must be aware of @acronym{CREOL}'s behaviour if a class is
 inherited multiple times, @pxref{Inheritance} for a discussion.
 
 
@@ -629,12 +629,12 @@ inherited multiple times, @pxref{Inheritance} for a discussion.
 @subsection Implementing Interfaces
 
 For a class to be able to call other methods and to be called by other
-objects it must define the interfaces it implements.  Creol knows
+objects it must define the interfaces it implements.  @acronym{CREOL} knows
 about two distinct ways to implement classes.  The first and weaker
 version is by declaring the interfaces using the @code{implements}
 keyword.  A class claiming to implement an interface must implement
 all methods specified in this interface.  Since interfaces also
-specify behavior for methods, the method implementation must
+specify behaviour for methods, the method implementation must
 implement the specified behaviour@footnote{Whether a class implements
 an interface cannot be determined statically, therefore the compiler
 does not check this.}.  Unlike in the Java Programming Language, the
@@ -673,7 +673,7 @@ sub-classes.
 A class may specify a list of attributes or class variables.  These
 attributes store the persistent state of an object.  An attribute
 declaration has the form @code{var @var{name}: @var{type}} and may also
-be initialized in that statement, i.e., @code{var @var{name}:
+be initialised in that statement, i.e., @code{var @var{name}:
 @var{type} := @var{expression}}.  The declaration of a class attribute
 may optionally be terminated with a semicolon.
 
@@ -681,10 +681,10 @@ The expression may be any constant expression or it may refer to the
 parameters of the current class, the super classes, and the super
 classes attributes, but not to the attributes of the current class.
 
-The programmer may not assume any order in which these initializations
-are evaluated.  If such an order is necessary, then the initialization
-has to be done in the init method.  However, the direct initialization
-of class parameters is executed before the body of the init method is
+The programmer may not assume any order in which these initialisations
+are evaluated.  If such an order is necessary, then the initialisation
+has to be done in the @code{init} method.  However, the direct initialisation
+of class parameters is executed before the body of the @code{init} method is
 executed.
 
 
@@ -711,15 +711,15 @@ The syntax for invariants is not yet specified, but all valid
 expressions of type Boolean are accepted as invariants.
 
 
-@node Datatype Declaration
-@section Datatype Declarations
+@node Data Type Declaration
+@section Data Type Declarations
 
-A datatype declaration defines a new datatype.  The syntax of a
-datatype declaration is @code{datatype @var{T} [ of @{ @var{S} , @}
+A data type declaration defines a new data type.  The syntax of a
+data type declaration is @code{datatype @var{T} [ of @{ @var{S} , @}
 ]}, where @var{T} is the new type and @var{S} is a list of possible
 super-types.
 
-Currently, datatypes are all abstract.
+Currently, data type are all abstract.
 
 
 @node Parse Errors
@@ -731,7 +731,7 @@ common confusing error messages and explain, why these error messages
 are hard (or impossible) to improve.
 
 
-@subsection Missind @code{end}
+@subsection Missing @code{end}
 
 Consider the following class:
 @example
@@ -740,9 +740,9 @@ class A
 end
 @end example
 
-The indentiation of this code snippet suggest that the programmer has
+The indentation of this code snippet suggest that the programmer has
 omitted the end of the @code{if} statement.  The parser has a different
-view, since it is insensitive to indentiation.  It will use the
+view, since it is insensitive to indentation.  It will use the
 @code{end} on the following line to build an @code{if} statement.  It
 will then look for a composition operator for continuing to parse a
 method body, or for an @code{op} or @code{end} to finish parsing the
@@ -750,4 +750,4 @@ method body.  But now the parser encounters @emph{the end of the file}.
 It will then report an error for the definition of the method body.
 
 
-@c  LocalWords:  Creol Datatype
+@c  LocalWords:  @acronym{CREOL} Datatype

@@ -1,6 +1,6 @@
 @c node-name, next, previous, up
-@node Model-checking Creol
-@chapter Model-Checking Creol
+@node Model-checking CREOL
+@chapter Model-Checking @acronym{CREOL}
 
 The model checker is a version of the interpreter that is specifically
 tuned towards model checking.  It has the same structure as the
@@ -49,7 +49,7 @@ A more refined description will come later.
 
 
 @node Model Checking
-@section Model Checking Creol Prorams
+@section Model Checking @acronym{CREOL} Prorams
 
 The specification language of the model checker is currently ad-hoc.
 Therefore, we currently cannot give any suggestions for using the model

@@ -2,21 +2,21 @@
 @c %**start of header
 @documentlanguage en
 @setfilename creoltools.info
-@settitle Creol Tools
+@settitle @acronym{CREOL} Tools
 @c %**end of header
 @afourpaper
 @include version.texi
 
 @copying
-This manual is describing Tools for Creol
+This manual is describing Tools for @acronym{CREOL}
 (version @value{VERSION}, @value{UPDATED}).
 
 Copyright @copyright{} 2007, 2008 Marcel Kyas.
 
 @quotation
-This work has been financially supported by European Project
-IST-2001-33522 Omega, European Project IST-33826 Credo, the German
-Research Council, and the Norwegian Research Council.
+This work has been financially supported by European Projects,
+IST-33826 Credo and IST-2001-33522 Omega, the German Research Council,
+and the Norwegian Research Council.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -32,13 +32,13 @@ Documentation License.''
 @end quotation
 @end copying
 
-@dircategory Creol
+@dircategory @acronym{CREOL}
 @direntry
-* creoltools:: A Creol Compiler.
+* creoltools:: A @acronym{CREOL} Compiler.
 @end direntry
 
 @titlepage
-@title Creol Tools User Guide
+@title @acronym{CREOL} Tools User Guide
 @subtitle for version @value{VERSION}, @value{UPDATED}
 @author Marcel Kyas
 @page
@@ -56,18 +56,17 @@ Documentation License.''
 @end ifnottex
 
 @menu
-* Introduction::          Introduction to Creol and its tools.
-* Creol Tutorial::        An introduction to the Creol language.
-* Creol::                 A description of the Creol language.
-* Creol Prelude::         The standard library for Creol.
-* Real-time Creol::       Using Creol for Timed Models.
-* Model-checking Creol::  Using Maude to Model-Check Creol programs.
-* CMC::                   Creol Machine Code.
+* Introduction::          Introduction to @acronym{CREOL} and its tools.
+* CREOL Tutorial::        An introduction to the @acronym{CREOL} language.
+* CREOL Language::        A description of the @acronym{CREOL} language.
+* CREOL Prelude::         The standard library for @acronym{CREOL}.
+* Real-time CREOL::       Using @acronym{CREOL} for Timed Models.
+* CREOL Machine Code::    @acronym{CREOL} Machine Code.
+* Model-checking CREOL::  Using Maude to Model-Check @acronym{CREOL} programs.
 * creolc::                How to use the @command{creolc} compiler.
 * creolshell::            How to use the @command{creolshell}.
-* Grammar::               The grammar definition of Creol.
+* Grammar::               The grammar definition of @acronym{CREOL}.
 * FAQ::                   Frequently asked questions.
-@c * Reporting Bugs::        How to write a good bug report.
 * Bibliography::          Further reading.
 * Licenses::              Your rights and freedoms.
 * Index::                 Index of concepts.
@@ -78,8 +77,8 @@ Documentation License.''
 @include creol.texi
 @include creollib.texi
 @include creolrt.texi
-@include creolmc.texi
 @include cmc.texi
+@include creolmc.texi
 @include creolc.texi
 @include creolshell.texi
 @include grammar.texi

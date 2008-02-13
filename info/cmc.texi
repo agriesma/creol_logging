@@ -1,9 +1,9 @@
 @c node-name, next, previous, up
-@node CMC
-@chapter Creol Machine Code
+@node CREOL Machine Code
+@chapter @acronym{CREOL} Machine Code
 
 In this chapter we describe the general structure of the machine in
-Maude.  The machine is interpreting the Core Creol language, which is
+Maude.  The machine is interpreting the Core @acronym{CREOL} language, which is
 mimicked by Maude terms.
 
 Currently, three different interpreters are provided.  The first
@@ -12,9 +12,9 @@ suitable for fine-grained simulation.  The second interpreter, defined
 in the file @file{creol-modelchecker.maude}, is suitable for
 coarse-grained simulation and model checking.  The third interpreter,
 defined in @file{creol-realtime.maude}, is suitable for simulating
-programs using the real-time extension (@pxref{Real-time Creol}).
+programs using the real-time extension (@pxref{Real-time CREOL}).
 
-All interpreters for Creol programs have a similar interface and
+All interpreters for @acronym{CREOL} programs have a similar interface and
 accept the same input terms for classes and objects.  The difference
 between the Maude based targets of the compiler (@pxref{Target
 Options}) are minimal and distinguished by enabling or disabling
@@ -22,44 +22,44 @@ certain transformations.  These transformations can be enabled or
 disabled on the command-line (@pxref{Pass Options}).
 
 @menu
-* Datatypes::           Explanation of datatypes.
+* Data Types::          Explanation of data types.
 * Configuration::       Data Structures describing configurations.
-* Interpreter::         Creol Interpreter.
+* Interpreter::         @acronym{CREOL} Interpreter.
 * Sort Hierarchy::      Summary of all sorts and how they relate.
 * Using CMC::           Some notes on using the model.
 @end menu
 
 
-@node Datatypes
-@section Datatypes
+@node Data Types
+@section Data Types
 
-The file @file{datatypes.maude} containes the framework for datatype
-definitions as well as the definition of the pre-defined datatypes.
+The file @file{datatypes.maude} contains the framework for data type
+definitions as well as the definition of the pre-defined data types.
 
 The module @code{CREOL-DATA-SIG} defines the basic features of data
 types for the machine.  First, it defines the basic sorts of the
 expression language:  Attribute names @code{Aid} and so on ...
 
 In addition, it defines the constant @code{null}, object identities
-@code{ob(_)} and booleans @code{bool(_)}.
+@code{ob(_)} and Boolean @code{bool(_)}.
 
 Operations are defined in terms of applications, which are given as
 @code{Appl} terms.  They are declared as @c
 @code{op _(_) : String ExprList -> Appl}.
 
 @menu
-* Datatype Signature::          How datatypes are defined.
-* Predefined Datatypes::        Predefined datatypes.
-* User Defined Datatypes::      How to define new datatypes.
+* Data Type Signature::          How data types are defined.
+* Predefined Data Types::        Predefined data types.
+* User Defined Data Types::      How to define new data types.
 @end menu
 
 
-@node Datatype Signature
-@subsection Datatype Signature
+@node Data Type Signature
+@subsection Data Type Signature
 
 The module @code{CREOL-DATA-SIG} defines the signature of the
-datatypes and expressions, i.e., it defines a kind of abstract syntax.
-It also defines the basic functions defined for @emph{all} datatypes.
+data types and expressions, i.e., it defines a kind of abstract syntax.
+It also defines the basic functions defined for @emph{all} data types.
 
 It defines the following sorts:
 @table @code
@@ -75,7 +75,7 @@ Values of sort @code{Data} are literals.  @code{Data} is a subsort of
 
 @item Aid
 Values of sort @code{Aid} range over the attribute and variable
-names.  While the creol language uses only lower-case variable names,
+names.  While the @acronym{CREOL} language uses only lower-case variable names,
 the interpreter reserves some other strings for its own purposes.
 
 @item Oid
@@ -145,20 +145,20 @@ subsort of @code{Appl}.
 
 It is an error if a term @code{S:String(D:DataList)} cannot be reduced
 to a @code{Data} value.  This usually occurs if the term is ill-typed,
-i.e., we try to add an integer to a boolean.
+i.e., we try to add an integer to a Boolean.
 
 
 @anchor{Reply}
 @subsubsection Reply Guard
 
-Guards can be arbitrary boolean expressions or they can test for the
+Guards can be arbitrary Boolean expressions or they can test for the
 arrival of a single reply with the syntax @code{@var{label} ??}.
 
 
 @anchor{Equality}
 @subsubsection Equality
 
-Equality (and inequality) is defined for all datatypes.
+Equality (and inequality) is defined for all data types.
 
 @example
   vars D D' : Data .
@@ -167,10 +167,10 @@ Equality (and inequality) is defined for all datatypes.
 @end example
 
 
-@node Predefined Datatypes
-@subsection Predefined Datatypes
+@node Predefined Data Types
+@subsection Predefined Data Types
 
-In this section we describe the pre-defined datatypes in the virtual
+In this section we describe the pre-defined data types in the virtual
 machine, the operations defined on them, and their semantics.
 
 @menu
@@ -188,200 +188,107 @@ machine, the operations defined on them, and their semantics.
 @node Boolean
 @subsubsection Boolean
 
-The module @code{CREOL-DATA-SIG} defines these functions for booleans.
-
-@example
-  vars B B' : Bool .
-  vars E E' : Expr .
-  eq "||" (bool(true) :: E) = bool(true) .
-  eq "||" (bool(false) :: E) = E .
-  eq "&&" (bool(false) :: E) = bool(false) .
-  eq "&&" (bool(true) ::  E) = E .
-  eq "=>" (bool(true) :: bool(false)) = bool(false) .
-  eq "=>" (bool(true) :: bool(true)) = bool(true) .
-  eq "=>" (bool(false) :: E') = bool(true) .
-  eq "^" (bool(B) :: bool(B')) = bool(B xor B') .
-  eq "<=>" (bool(B) :: bool(B')') = bool(B == B') .
-@end example
+The module @code{CREOL-DATA-SIG} defines Boolean with functions
+interpreting them.  A Boolean value is represented by either
+@code{bool(true)} or @code{bool(false)} (note the boxing).  The
+functions are @code{||}, @code{??}, @code{=>}, @code{^}, and
+@code{<=>}.  See @ref{Data Type Bool} for an explanation of the
+semantics.
 
 
 @node Integer
 @subsubsection Integer
 
-XXX
-
-The integer datatype is defined in the module @code{CREOL-DATA-INT}.
+The integer data type is defined in the module @code{CREOL-DATA-INT}.
 Integer values are constructed with
 @example
   op int(_) : Int -> Data [ctor] .
 @end example
-
-The functions are defined as:
-@example
-  eq "-" (int(I)) = int(-(I)) .
-  eq "<"  (int(I) :: int(I')) = bool(I < I') .
-  eq "<=" (int(I) :: int(I')) = bool(I <= I') .
-  eq ">"  (int(I) :: int(I')) = bool(I > I') .
-  eq ">=" (int(I) :: int(I')) = bool(I >= I') .
-  eq "+" (int(I) :: int(I')) = int(I + I') .
-  eq "-" (int(I) :: int(I')) = int( _-_(I, I')) .
-  eq "*" (int(I) :: int(I')) = int(I * I') .
-  eq "/" (int(I) :: int(I')) = int(I quo I') .
-  eq "%" (int(I) :: int(I')) = int(I rem I') .
-  eq "**" (int(I) :: int(I')) = int(I ^ I') .
-@end example
+See @ref{Data Type Int} for an explanation of the defined functions and
+their semantics.
 
 
 @node Float
 @subsubsection Float
 
-XXX
-
-The floating point datatype is defined in the module
-@code{CREOL-DATA-FLOAT}.  Integer values are constructed with
+The floating point data type is defined in the module
+@code{CREOL-DATA-FLOAT}.  Real values are constructed with
 @example
   op float(_) : Float -> Data [ctor] .
 @end example
-
-The functions are defined as:
-@example
-  eq "-" (float(I)) = float(-(I)) .
-  eq "<"  (float(I) :: float(I')) = bool(I < I') .
-  eq "<=" (float(I) :: float(I')) = bool(I <= I') .
-  eq ">"  (float(I) :: float(I')) = bool(I > I') .
-  eq ">=" (float(I) :: float(I')) = bool(I >= I') .
-  eq "+" (float(I) :: float(I')) = float(I + I') .
-  eq "-" (float(I) :: float(I')) = float( _-_(I, I')) .
-  eq "*" (float(I) :: float(I')) = float(I * I') .
-  eq "/" (float(I) :: float(I')) = float(I quo I') .
-  eq "%" (float(I) :: float(I')) = float(I rem I') .
-  eq "**" (float(I) :: float(I')) = float(I ^ I') .
-@end example
-
+See @ref{Data Type Real} for an explanation of the defined functions
+and their semantics.
 
 
 
 @node String
 @subsubsection String
 
-XXX
-
-Strings are considered to be list of characters.  Strings are defined
-in the module @code{CREOL-DATA-STRING}.  Therefore, the same
-notation is used as for @code{List} (see @pxref{List}).
+Strings are defined in the module @code{CREOL-DATA-STRING}.  
 
 Strings are constructed with
 @example
   op string(_) : String -> Data [ctor] .
 @end example
-
-The defined functions are:
-@example
-  eq "<" (str(S):: str(S')) = bool(S < S') .
-  eq "<=" (str(S):: str(S')) = bool(S <= S') .
-  eq ">" (str(S):: str(S')) = bool(S > S') .
-  eq ">=" (str(S):: str(S')) = bool(S >= S') .
-  eq "-|" (str(S) :: str(S')) = str(S + S') .
-  eq "|-|" (str(S) :: str(S')) = str(S + S') .
-  eq "|-" (str(S) :: str(S')) = str(S + S') .
-@end example
+See @ref{Data Type String} for an explanation of the defined functions
+and their semantics.
 
 
 @node List
 @subsubsection List
-
-XXX
 
 Lists are defined in the module @code{CREOL-DATA-LIST}.  A list is
 constructed by:
 @example
   op list(_) : DataList -> Data [ctor] .
 @end example
-
-The defined functions are:
-@example
-  eq "head" (list(emp)) = null .
-  eq "head" (list(E :: L)) = E .
-  eq "last" (list(emp)) = null .
-  eq "last" (list(L :: E)) = E .
-  eq "rest" (list(emp)) = null .
-  eq "rest" (list(L :: E)) = list(L) .
-  eq "tail" (list(emp)) = null .
-  eq "tail" (list(E :: L)) = list(L) .
-
-  eq "length" (list(emp)) = int(0) .
-  eq "length" (list(E :: L)) = "+" (int(1) :: ("length" (list(L)))) .
-
-  eq "isempty" (list(emp))  = bool(true) .
-  eq "isempty" (list(E :: L))= bool(false) .
-
-  eq "remove" (list(E) :: E')  = if  E == E' then list(emp) else list(E) fi .
-  eq "remove" (list(emp):: E )  = list(emp) .
-  eq "remove" (list(E :: L):: E') =
-    if E == E' then "remove" ((list(L)):: E')
-      else "|-|" (list(E) :: ("remove" (list(L) :: E'))) fi .
-
-  eq "-|" (D :: list(L)) = list(D :: L) .
-  eq "|-" (list(L) :: D) = list(L :: D) .
-
-  eq "has" (list(emp):: E ) = bool(false) .
-  eq "has" (list(E :: L) :: E) = bool(true) .
-  eq "has" (list(E :: L) :: E') = "has" (list(L) :: E') [otherwise] .
-
-  ***index starts at 1
-  eq "after" (list(emp) :: int(N))    = null .
-  eq "after" (list(E :: L) :: int(0))  = list(E :: L) .
-  eq "after" (list(E :: L) :: int(N))  =
-    "after" ((list(L)) :: "-" (int(N) :: int(1))) .
-
-  eq "index" ((list(L)) :: int(0)) = null .
-  eq "index" ((list(emp)) :: int(N)) = null .
-  eq "index" ((list(E :: L)) :: int(N)) =
-    if (N == 1) then E else "index" (list(L) :: "-" (int(N) :: int(1))) fi .
-
-  eq "begwith" (list(E) :: E') = bool("head" (list(E)) == E') .
-  eq "begwith" (list(E :: L) :: E') = bool("head" (list(E :: L)) == E') .
-  eq "begwith" (list(E) :: E') = bool("last" (list(E)) == E') .
-  eq "begwith" (list(E :: L) :: E') = bool("last" (list(L)) == E') .
-
-  eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
-@end example
+See @ref{Data Type List} for an explanation of the defined functions
+and their semantics.
 
 
 @node Set
 @subsubsection Set
 
-XXX
+Sets are defined in the module @code{CREOL-DATA-SET}.  A set is
+constructed by:
+@example
+  op set(_) : DataSet -> Data [ctor] .
+@end example
+See @ref{Data Type Set} for an explanation of the defined functions
+and their semantics.
 
 
 @node Pair
 @subsubsection Pair
 
 Pairs are explained in the next section. @c
-@xref{User Defined Datatypes}.
+@xref{User Defined Data Types}.
 
 
 @node Time and Duration
 @subsubsection Time and Duration
 
-The module @code{CREOL-DATA-TIME} defines the semantics of the two types
-@code{Time} and @code{Duration}.  Currently, it defines an expression
-@code{now} for representing the current time.  The type @code{Duration}
+The module @code{CREOL-DATA-TIME} defines the semantics of the two
+types @code{Time} and @code{Duration}.  It defines an expression
+@code{now} that represents the current time.  The type @code{Duration}
 is interpreted by real numbers and reuses the module
 @code{CREOL-DATA-FLOAT}.
 
+See @ref{Data Types Time and Duration} for an explanation of the
+defined functions and their semantics.
+
 If a model makes use of time, it has to be executed in the timed version
 of the interpreter.  The other versions will not advance the value of
-@code{now}, leading to deadlocks quickly.
+@code{now} and do not specify any behaviour for @code{posit}.
 
 
-@node User Defined Datatypes
-@subsection Creating Your own Datatype
+@node User Defined Data Types
+@subsection Creating Your own Data Type
 
-The procedure for creating your own datatype is illustrated with the
+The procedure for creating your own data type is illustrated with the
 pair type.  The first thing to do is to write a functional module
-which defines your new datatype as a subsort of @code{Data}.
-Actuallly, we do not need to define another sort, but it is sometimes
+which defines your new data type as a subsort of @code{Data}.
+Actually, we do not need to define another sort, but it is sometimes
 useful for debugging.
 
 @example
@@ -416,14 +323,14 @@ endfm
 @end example
 
 A future version of the compiler may allow the automatic generation of
-Maude modules for user-defined datatypes.
+Maude modules for user-defined data types.
 
 
 @node Configuration
 @section Data Structures Describing Configurations
 
 In this section we explain the data structures forming a state of a
-Creol system.
+@acronym{CREOL} system.
 
 @menu
 * Substitution::        Mapping variables to values.
@@ -446,10 +353,6 @@ using Maude's @code{MAP} module.  In addition, the following operators
 are defined:
 
 @table @code
-@item dom(A, S)
-This predicate tests, whether the attribute name @code{aid} has a
-value in the substitution @code{subst}.
-
 @item compose(S1, S2)
 This function computes the @emph{union} of the substitutions @code{S1}
 and @code{S2}, where the bindings in @code{S2} override the bindings
@@ -500,7 +403,7 @@ Receiving a reply.
 
 @item await _
 Suspend the process until the expression becomes true.  This form of
-await is much more liberal than the one specified for creol, because
+await is much more liberal than the one specified for @acronym{CREOL}, because
 it allows the test for an reply to occur anywhere in the expression.
 We assume that type checking will ensure that each use of a label is
 positive.
@@ -550,12 +453,12 @@ return to the corresponding reply statement.
 @item tailcall
 This statement is used to @emph{replace} the current process with a
 new process, as indicated by the argument.  The purpose of this
-statement is to optimize the number of states in tail-recursive calls
+statement is to optimise the number of states in tail-recursive calls
 during model checking.
 
 @item accept
 The accept statement is a place-holder statement which avoids the
-release of the processor during binding a tailcall.
+release of the processor during binding a tail call.
 @end table
 
 
@@ -570,10 +473,10 @@ Composed statements are defined in the module
 Sequential composition of statements with identity @code{noStm}.
 
 @item _[]_
-Nondeterministic choice of statements.
+Non-deterministic choice of statements.
 
 @item _|||_
-Non-deterministc merge of statements.  See @code{_MERGER_} below.
+Non-deterministic merge of statements.  See @code{_MERGER_} below.
 
 @item if_th_el_fi
 The traditional conditional execution.
@@ -607,7 +510,7 @@ A process queue is a @emph{multi-set} of processes, constructed by
 @node Classes
 @subsection Classes
 
-Classes are the main building blocks of Creol programs, and classes
+Classes are the main building blocks of @acronym{CREOL} programs, and classes
 are represented at the CMC level, too.  A class comprises the super
 classes, the attributes of a class, and the methods of a class.
 
@@ -639,7 +542,7 @@ A method specifies its name, its formal parameters, its local variables,
 and its body, i.e., a (compound) statement to execute if the method is
 called.
 
-A class may have a multiset of methods, which are seperated by @code{*}.
+A class may have a multiset of methods, which are separated by @code{*}.
 
 
 @node Class
@@ -783,7 +686,7 @@ constructed by @code{_+_} and has the identity @code{noMsg}.
 
 The module @code{CREOL-EVAL} defines expressions and how they are
 evaluated, by extending the @code{DATATYPE} module, which defines the
-semantics of all (elementary) datatypes (see @pxref{Datatypes}).
+semantics of all (elementary) data types (see @pxref{Data Types}).
 
 The operation @code{eval(e, S)} evaluates an expression @code{e} in
 the context @code{S}.  This is essentially done by reducing all
@@ -791,7 +694,7 @@ function arguments to data in the hope that an equation defined for
 the data types can be applied to obtain the function-application's
 value.
 
-The operation @code{evalList} maps eval on expression lists (of sort
+The operation @code{evalList} maps @code{eval} on expression lists (of sort
 @code{ExprList}) to a list of data (of sort @code{DataList}).
 
 
@@ -799,12 +702,12 @@ The operation @code{evalList} maps eval on expression lists (of sort
 @subsection Configurations
 
 The module @code{CREOL-CONFIG} defines the sort @code{Configuration}
-which defines a global state configuration of a Creol model.
+which defines a global state configuration of a @acronym{CREOL} model.
 Essentially, a configuration is a multiset of messages, message
 queues, classes, and objects.  The identity is called @code{noConf}.
 
 This module defines an additional sort @code{State} (or reuses it from
-@code{MODEL-CHECKER}), which is a parenthised Configuration, written
+@code{MODEL-CHECKER}), which is a parenthesised Configuration, written
 @code{@{_@}}.
 
 Finally, the @code{main(_,_)} operation is defined, where the first
@@ -815,20 +718,20 @@ instance of the system.  That instance will be an instance of class
 
 
 @node Interpreter
-@section Creol Interpreter
+@section @acronym{CREOL} Interpreter
 
-The interpreter defines the semantics of Creol in terms of rewriting
+The interpreter defines the semantics of @acronym{CREOL} in terms of rewriting
 rules.  We refer the reader to the module @code{INTERPRETER} in the file
 @code{creol-interpreter.maude} (@pxref{Setting CMC Up}) for the exact
 definition of the rules.  Here, we give an overview of the rules and
 equations.  The names given below can be used for tracing the rules
-using Maudes trace facility.
+using Maude's trace facility.
 
 @table @code
 @item assignnment
 These rules execute assignment statements of the form @code{AL assign
 DL}, where @code{AL} and @code{DL} are lists of attributes resp. lists
-of data values.  Two auxiluary equations will perform the actual
+of data values.  Two auxiliary equations will perform the actual
 assignment:  @code{do-static-assign} for assigning to attributes and
 @code{do-assign} for assigning to local variables or attributes if no
 local variable of the same name is in scope.
@@ -844,7 +747,7 @@ This rule executes an if-then-else statement.
 This rule executes a while statement.
 
 @item choice
-This rule executes a non-deterministic choice statetement.
+This rule executes a non-deterministic choice statement.
 
 @item merge
 @anchor{Merge}
@@ -879,7 +782,7 @@ Select the next enabled process for execution.
 
 @item receive-invoc
 If we receive an invocation message, start binding the method body.
-This rule ie used for virtual calls @code{m}.
+This rule is used for virtual calls @code{m}.
 
 @item receive-static-invoc
 If we receive an invocation message, start binding the method body.
@@ -897,7 +800,7 @@ itself.  The actual return from a self-call is handled by rule
 @code{continue}, @pxref{Continue}.
 
 @item continue
-@anchor{Continue} Continue execution after a syncrhonous self-call has
+@anchor{Continue} Continue execution after a synchronous self-call has
 terminated.  It replaces the currently active process with its local
 caller.  Observe, that the completion message of the call has already
 been emitted.  It will be received by the rule @code{receive-comp}.
@@ -943,7 +846,7 @@ run-method.
 
 @subsection Rules defined for real-time simulation
 
-For simulating timed Creol, the system defined two operators
+For simulating timed @acronym{CREOL}, the system defined two operators
 @code{posit}, which check whether all posit constraints in a given
 @code{State} are satisfied.
 
@@ -964,7 +867,7 @@ of the global clock.
 @section Sort Hierarchy
 
 The image below summarises all sorts defined in the interpreter and
-its datatype hierarchy.
+its data type hierarchy.
 
 @image{sorts,5in,,Figure of sort hierarchy}
 
@@ -973,15 +876,15 @@ its datatype hierarchy.
 @section Using the CMC
 
 In this section we describe the necessary steps for setting up the
-interpreter and the model checker and to simulate and analyze the
-Creol model.
+interpreter and the model checker and to simulate and analyse the
+@acronym{CREOL} model.
 
 The compiler targets an interpreter which has been formalised in
 rewriting logic and which is executable in Maude.  The
 @command{creoltools} provide the interpreter and the model checker,
 but they do not provide Maude.  Maude has to be obtained and installed
-seperately, e.g., from @url{http://maude.cs.uiuc.edu}.  Maude then
-needs to be configured for use with the semantics of Creol, as
+separately, e.g., from @url{http://maude.cs.uiuc.edu}.  Maude then
+needs to be configured for use with the semantics of @acronym{CREOL}, as
 described in @ref{Setting CMC Up}.
 
 @menu
@@ -994,15 +897,15 @@ described in @ref{Setting CMC Up}.
 @node Setting CMC Up
 @subsection Setting the CMC Up
 
-The Creol Machine described in this chapter runs on top of the Maude
+The @acronym{CREOL} Machine described in this chapter runs on top of the Maude
 rewriting system, which can be obtained at
 @url{http://maude.cs.uiuc.edu}.  The CMC itself is defined in the
 files @file{creol-datatypes.maude} and @file{creol-interpreter.maude},
 whereas the meta execution strategy (@pxref{Meta Execution}) is
 defined in @file{creol-metaexec.maude}.
 
-These data files are distributed in the subdirectory @file{share} of the
-distrbution.  They will be installed into
+These data files are distributed in the sub-directory @file{share} of the
+distribution.  They will be installed into
 @file{@var{$datadir}/creoltools}, usually
 @file{/usr/local/share/creoltools}.  To use the CMC we have to tell
 Maude where it can find these support files.  Maude searches in
@@ -1028,20 +931,20 @@ The code generated by the compiler can be executed on the CMC, which we
 have described in this chapter.
 The program itself is defined as a constant @code{init}.
 The generated code does not contain
-any objects, therefore an object must be created during initalisation.
+any objects, therefore an object must be created during initialisation.
 The function @code{main(@var{class}, @var{args})} will create a class-less
 object which creates an instance of @var{class} with the expression list
 @var{args} as argument to the constructor.  For example, the initial
-configuration of the Sieve system can be started using the maude command
+configuration of the Sieve system can be started using the Maude command
 @code{red init main("Generator", emp) .}
 
 The rewrite command can be used to have the system run.  This is using
-Maudes built-in rewrite command.  The parameter in square brackets is
+Maude's built-in rewrite command.  The parameter in square brackets is
 the number of rule-applications to perform, e.g.,
 @code{rew[1000] init main("Generator", emp) .} obtains a state after 
-1000 rule applications from the intial configuration.
+1000 rule applications from the initial configuration.
 
-A slightly different state can be obtained using maudes @emph{fair}
+A slightly different state can be obtained using Maude's @emph{fair}
 execution strategy with
 @code{rew[1000] init main("Generator", emp) .}
 
@@ -1058,9 +961,9 @@ For larger systems, random execution, as described in the next section
 @node Meta Execution
 @subsection Strategies for Execution
 
-Because the simulation done by maude often give not the desired results,
+Because the simulation done by Maude often give not the desired results,
 a strategy for more random executions is provided.  You can load and use
-this strategy from the maude session in which the program is to be
+this strategy from the Maude session in which the program is to be
 interpreted with @command{load creol-metaexec}.
 
 This provides one additional term @command{simulate}.  It accepts a
