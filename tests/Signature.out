@@ -21,8 +21,8 @@ reduce in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert(
     "var1", bool(false), noSubst))["var1"]), null) .
 result Data: bool(false)
 ==========================================
-reduce in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1",
-    bool(false), noSubst))) .
+reduce in CREOL-SUBST : $hasMapping(insert("var2", bool(true), insert("var1",
+    bool(false), noSubst)), "var1") .
 result Bool: true
 ==========================================
 reduce in CREOL-DATA-SIG : bool(true) .

@@ -41,7 +41,7 @@ red in CREOL-SUBST : insert("var2", bool(false), insert("var1", bool(true), noSu
 red in CREOL-SUBST : upTerm(insert("var1", bool(false), noSubst)) .
 red in CREOL-SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),noSubst) .
 red in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", bool(false), noSubst)) ["var1"]), null) .
-red in CREOL-SUBST : dom("var1", insert("var2", bool(true), insert("var1", bool(false), noSubst))) .
+red in CREOL-SUBST : $hasMapping(insert("var2", bool(true), insert("var1", bool(false), noSubst)), "var1") .
 
 GRAMMAR_TEST(DATA-SIG, bool(true), null)
 GRAMMAR_TEST(DATA-SIG, "test" ??, null)
