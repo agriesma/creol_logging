@@ -255,19 +255,16 @@ fmod CREOL-DATA-LIST is
   eq "|-" (list(L) :: D) = list(L :: D) .
   eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
 
-  eq "has" (list(emp) :: E ) = bool(false) .
-  eq "has" (list(E :: L) :: E') =
-    if E == E' then bool(true) else "has" (list(L) :: E') fi .
+  eq "in" (list(emp) :: E ) = bool(false) .
+  eq "in" (list(E :: L) :: E') =
+    if E == E' then bool(true) else "in" (list(L) :: E') fi .
 
   eq "nth" ((list(L)) :: int(0))  = null .
   eq "nth" ((list(emp)) :: int(N))  = null .
   eq "nth" ((list(E :: L)) :: int(N)) =
     if (N == 1) then E else "nth" (list(L) :: int(_-_(N, 1))) fi .
 
-  eq "rnth" ((list(L)) :: int(0))  = null .
-  eq "rnth" ((list(emp)) :: int(N))  = null .
-  eq "rnth" ((list(L :: E)) :: int(N)) =
-    if (N == 1) then E else "rnth" (list(L) :: int(_-_(N, 1))) fi .
+  eq "rnth" (list(L) :: int(N)) = "nth" ("reverse" (list(L)) :: int(N)) .
 
   eq "begwith" (list(emp) :: list(L :: E)) = bool(false) .
   eq "begwith" (list(L) :: list(emp)) = bool(true) .
@@ -334,28 +331,28 @@ fmod CREOL-DATA-SET is
                     "add" (set(D) :: "remove" (set(S) :: D')) fi .
 
   eq "add" (set(S) :: D) =
-    if "has" (set(S) :: D) asBool then set(S) else set(S : D) fi .    
+    if "in" (set(S) :: D) asBool then set(S) else set(S : D) fi .    
 
-  eq "has" (set(emptyset) ::  E) = bool(false) .
-  eq "has" (set(S : D) :: D') =
-    if D == D' then bool(true) else "has" (set(S) :: D') fi .
+  eq "in" (set(emptyset) ::  E) = bool(false) .
+  eq "in" (set(S : D) :: D') =
+    if D == D' then bool(true) else "in" (set(S) :: D') fi .
 
   eq "union" (set(emptyset) :: set(S)) = set(S) .
   eq "union" (set(S) :: set(emptyset)) = set(S) .
   eq "union" (set(S : D) :: set(S')) =
-    if "has" (set(S') :: D) asBool then "union" (set(S) :: set(S'))
+    if "in" (set(S') :: D) asBool then "union" (set(S) :: set(S'))
                                   else "union" (set(S) :: set(S' : D)) fi .
 
   eq "inter" (set(emptyset) :: set(S)) = set(emptyset) .
   eq "inter" (set(S) :: set(emptyset)) = set(emptyset) .
   eq "inter" (set(S : D) :: set(S')) =
-    if "has" (set(S') :: D) asBool then "add" ("inter" (set(S) :: set(S')) :: D)
+    if "in" (set(S') :: D) asBool then "add" ("inter" (set(S) :: set(S')) :: D)
                                   else "inter" (set(S) :: set(S')) fi .
 
   eq "diff" (set(S) :: set(emptyset)) = set(S) .
   eq "diff" (set(emptyset) :: set(S)) = set(emptyset) .
   eq "diff" (set(S : D) :: set(S')) =
-    if "has" (set(S') :: D) asBool then "diff" (set(S) :: set(S'))
+    if "in" (set(S') :: D) asBool then "diff" (set(S) :: set(S'))
                                 else "add" ("diff" (set(S) :: set(S')) :: D) fi .
 
 endfm
