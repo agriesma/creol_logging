@@ -2,10 +2,10 @@
 reduce in PROGRAM : init .
 result Class: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
-    *
-  < "run" : Mtdname | Param: noVid, Latt: "f" |-> null, "l" |-> null, Code:
-    while "/="("l" :: list(emp)) do ("f", "l") ::= "head"("l") :: "tail"("l")
-    od ; return(emp) >,
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "f" |-> null, "l" |->
+    null, Code: while "/="("l" :: list(emp)) do ("f", "l") ::= "head"("l") ::
+    "tail"("l") od ; return(emp) >,
   Ocnt: 0 >
 Bye.

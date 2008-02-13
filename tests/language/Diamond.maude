@@ -4,23 +4,23 @@ protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "m" : Mtdname | Param: noVid, Latt: "r" |-> null, Code: "r" ::= "a" ; return ( "r" ) >, Ocnt: 0 >
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "m" : Mtdname | Param: noVid, Latt: "r" |-> null , "_" |-> null, Code: "r" ::= "a" ; return ( "r" ) >, Ocnt: 0 >
 
 < "B" : Cl | Inh: "A" < "b" > , Par: "b", Att: "b" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "n" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
 
 < "C" : Cl | Inh: "A" < "c" > , Par: "c", Att: "c" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "o" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( "r" ) >, Ocnt: 0 >
 
 < "D" : Cl | Inh: "B" < int(1) >  ,, "C" < int(2) > , Par: noVid, Att: "x" |-> null , "y" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "n" (emp ) )  ; ( "label:0" ? ( "x" ) )  ; ( "label:1" ! "this" . "o" (emp ) )  ; ( "label:1" ? ( "y" ) )  ; skip ; return ( emp ) >, Ocnt: 0 >
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "n" (emp ) )  ; ( "label:0" ? ( "x" ) )  ; ( "label:1" ! "this" . "o" (emp ) )  ; ( "label:1" ? ( "y" ) )  ; skip ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm

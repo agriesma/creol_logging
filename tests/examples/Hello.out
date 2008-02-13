@@ -2,18 +2,20 @@
 reduce in PROGRAM : init .
 result Configuration: 
 < "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code: "result"
-    ::= str("Hello, world") ; return("result") > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
-    *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "hello" : Mtdname | Param: noVid, Latt: "_" |-> null, "result" |-> null,
+    Code: "result" ::= str("Hello, world") ; return("result") > *
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) >,
   Ocnt: 0 >
 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "hello" |-> null, "result" |->
     null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hello" ::= new
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "hello" ::= new
     "Hello"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
-    "hello" . "hello"(emp) ; "label:0" ?("result") ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
+    Code: "label:0" ! "hello" . "hello"(emp) ; "label:0" ?("result") ; return(
+    emp) >,
   Ocnt: 0 >
 Bye.

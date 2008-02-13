@@ -2,18 +2,20 @@
 reduce in PROGRAM : init .
 result Class: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "x" ::= pair(int(1),
-    int(2)) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(
+    int(1), int(2)) ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) >,
   Ocnt: 0 >
 ==========================================
 rewrite in PROGRAM : init
 main("Test", emp) .
 result Configuration: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "x" ::= pair(int(1),
-    int(2)) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(
+    int(1), int(2)) ; return(emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) >,
   Ocnt: 1 >
 
 < ob("Test0") : "Test" |

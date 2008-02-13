@@ -2,12 +2,13 @@
 reduce in PROGRAM : init .
 result Class: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
-    *
-  < "m" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null, Code:
-    ("r" ::= int(1)[]"label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; "r" ::=
-    "+"("r" :: int(1))) ; return("r") > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "r" |-> null,
-    Code: "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; return(emp) >,
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) > *
+  < "m" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null, "r"
+    |-> null, Code: ("r" ::= int(1)[]"label:0" ! "this" . "m"(emp) ; "label:0"
+    ?("r") ; "r" ::= "+"("r" :: int(1))) ; return("r") > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null, "r"
+    |-> null, Code: "label:0" ! "this" . "m"(emp) ; "label:0" ?("r") ; return(
+    emp) >,
   Ocnt: 0 >
 Bye.

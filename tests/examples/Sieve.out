@@ -3,24 +3,25 @@ reduce in PROGRAM : init .
 result Configuration: 
 < "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null, "next" |->
     null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "next" ::= new
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "next" ::= new
     "Sieve"(int(2)) ; "n" ::= int(3) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, "label:1" |->
-    null, "r" |-> null, Code: "label:0" ! "next" . "send"("n") ; "label:0" ?(
-    "r") ; "n" ::= "+"("n" :: int(1)) ; "label:1" ! "this" . "run"(emp) ; free(
-    "label:1") ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
+    "label:1" |-> null, "r" |-> null, Code: "label:0" ! "next" . "send"("n") ;
+    "label:0" ?("r") ; "n" ::= "+"("n" :: int(1)) ; "label:1" ! "this" . "run"(
+    emp) ; free("label:1") ; return(emp) >,
   Ocnt: 0 >
 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "next" |-> null, "p" |-> null,
     Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
-    *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) > *
-  < "send" : Mtdname | Param: "n", Latt: "d" |-> null, "label:0" |-> null, "n"
-    |-> null, "r" |-> null, "res" |-> null, Code: "d" ::= "/"("n" :: "p") ; "r"
-    ::= "-"("n" :: "*"("d" :: "p")) ; if "="("r" :: int(0)) th "res" ::= bool(
-    false) el if "/="("next" :: null) th "label:0" ! "next" . "send"("n") ;
-    "label:0" ?("res") el "next" ::= new "Sieve"("n") ; "res" ::= bool(true) fi
-    fi ; return("res") >,
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) > *
+  < "send" : Mtdname | Param: "n", Latt: "_" |-> null, "d" |-> null, "label:0"
+    |-> null, "n" |-> null, "r" |-> null, "res" |-> null, Code: "d" ::= "/"("n"
+    :: "p") ; "r" ::= "-"("n" :: "*"("d" :: "p")) ; if "="("r" :: int(0)) th
+    "res" ::= bool(false) el if "/="("next" :: null) th "label:0" ! "next" .
+    "send"("n") ; "label:0" ?("res") el "next" ::= new "Sieve"("n") ; "res" ::=
+    bool(true) fi fi ; return("res") >,
   Ocnt: 0 >
 Bye.

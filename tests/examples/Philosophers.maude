@@ -4,18 +4,18 @@ protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null , "hist" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "hist" ::= str("") ; "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "label:0" ! "butler" . "getNeighbor" ( emp ) ; ( "label:0" ? ( "neighbor" ) )  ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:2" |-> null , "label:1" |-> null , "label:0" |-> null, Code: ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; ( "label:1" ! "this" . "eat" (emp ) )  ; free( "label:1" ) ; ( "label:2" ! "this" . "digest" (emp ) )  ; free( "label:2" ) ; return ( emp ) > *
-  < "digest" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: release ; "hungry" ::= bool(true) ; "hist" ::= "|-" ( "hist" :: str("d") ) ; release ; ( "label:0" ! "this" . "digest" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
-  < "eat" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "l" |-> null, Code: ( await "hungry" ) ; "l" ! "neighbor" . "borrowStick" ( emp ) ; ( await ( "l" ?? ) ) ; free( "l" ) ; ( await "chopstick" ) ; "hist" ::= "|-" ( "hist" :: str("e") ) ; "hungry" ::= bool(false) ; "label:0" ! "neighbor" . "returnStick" ( emp ) ; free( "label:0" ) ; release ; ( "label:1" ! "this" . "eat" (emp ) )  ; free( "label:1" ) ; return ( emp ) > *
-  < "think" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: ( await "~" ( "hungry" ) ) ; "hist" ::= "|-" ( "hist" :: str("t") ) ; release ; ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
-  < "borrowStick" : Mtdname | Param: noVid, Latt: noSubst, Code: ( await "chopstick" ) ; "chopstick" ::= bool(false) ; return ( emp ) > *
-  < "returnStick" : Mtdname | Param: noVid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; return ( emp ) >, Ocnt: 0 >
+  < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "hist" ::= str("") ; "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "label:0" ! "butler" . "getNeighbor" ( emp ) ; ( "label:0" ? ( "neighbor" ) )  ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "label:2" |-> null , "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; ( "label:1" ! "this" . "eat" (emp ) )  ; free( "label:1" ) ; ( "label:2" ! "this" . "digest" (emp ) )  ; free( "label:2" ) ; return ( emp ) > *
+  < "digest" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: release ; "hungry" ::= bool(true) ; "hist" ::= "|-" ( "hist" :: str("d") ) ; release ; ( "label:0" ! "this" . "digest" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
+  < "eat" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "l" |-> null , "_" |-> null, Code: ( await "hungry" ) ; "l" ! "neighbor" . "borrowStick" ( emp ) ; ( await ( "l" ?? ) ) ; free( "l" ) ; ( await "chopstick" ) ; "hist" ::= "|-" ( "hist" :: str("e") ) ; "hungry" ::= bool(false) ; "label:0" ! "neighbor" . "returnStick" ( emp ) ; free( "label:0" ) ; release ; ( "label:1" ! "this" . "eat" (emp ) )  ; free( "label:1" ) ; return ( emp ) > *
+  < "think" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: ( await "~" ( "hungry" ) ) ; "hist" ::= "|-" ( "hist" :: str("t") ) ; release ; ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
+  < "borrowStick" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: ( await "chopstick" ) ; "chopstick" ::= bool(false) ; return ( emp ) > *
+  < "returnStick" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "chopstick" ::= bool(true) ; return ( emp ) >, Ocnt: 0 >
 
 < "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null , "p4" |-> null , "p5" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new "Philosopher" ( "this" ) ; "p2" ::= new "Philosopher" ( "this" ) ; "p3" ::= new "Philosopher" ( "this" ) ; "p4" ::= new "Philosopher" ( "this" ) ; "p5" ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
-  < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" :: "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" :: "p2" ) th "neighbor" ::= "p3" el if "=" ( "caller" :: "p3" ) th "neighbor" ::= "p4" el if "=" ( "caller" :: "p4" ) th "neighbor" ::= "p5" el "neighbor" ::= "p1" fi fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "p1" ::= new "Philosopher" ( "this" ) ; "p2" ::= new "Philosopher" ( "this" ) ; "p3" ::= new "Philosopher" ( "this" ) ; "p4" ::= new "Philosopher" ( "this" ) ; "p5" ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
+  < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null , "_" |-> null, Code: if "=" ( "caller" :: "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" :: "p2" ) th "neighbor" ::= "p3" el if "=" ( "caller" :: "p3" ) th "neighbor" ::= "p4" el if "=" ( "caller" :: "p4" ) th "neighbor" ::= "p5" el "neighbor" ::= "p1" fi fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
 
 .
 endm

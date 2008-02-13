@@ -541,9 +541,11 @@ expression:
     | IF c = expression THEN t = expression ELSE f = expression END
         { Expression.If (expression_note $startpos, c, t, f) }
     | LPAREN SOME v = vardecl_no_init COLON e = expression RPAREN
-	{ Choose (expression_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
+	{ Choose (expression_note $startpos, v.VarDecl.name,
+		  v.VarDecl.var_type, e) }
     | LPAREN FORALL v = vardecl_no_init COLON e = expression RPAREN
-	{ Forall (expression_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
+	{ Forall (expression_note $startpos, v.VarDecl.name,
+		  v.VarDecl.var_type, e) }
     | LPAREN EXISTS v = vardecl_no_init COLON e = expression RPAREN
 	{ Exists (expression_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
 

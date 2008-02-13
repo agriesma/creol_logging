@@ -4,14 +4,14 @@ protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Process" : Cl | Inh: noInh, Par: "i" , "main", Att: "i" |-> null , "main" |-> null , "neighbour" |-> null , "mode" |-> null , "status" |-> null , "uid1" |-> null , "uid2" |-> null, Mtds: 
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "init" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null, Code:  ( ( "mode" @@ "Process" ), ( "status" @@ "Process" ), ( "uid1" @@ "Process" ) )  ::= bool(true) :: int(0) :: "i" ; "label:0" ! "main" . "getNeighbour" ( emp ) ; ( "label:0" ? ( "neighbour" ) )  ; "label:1" ! "neighbour" . "send" ( "i" ) ; free( "label:1" ) ; return ( emp ) > *
-  < "send" : Mtdname | Param: "u", Latt: "u" |-> null , "label:2" |-> null , "label:1" |-> null , "label:0" |-> null, Code: if "mode" th if "=" ( "uid2" :: null ) th if "=" ( "u" :: "uid1" ) th "status" ::= int(1) el "uid2" ::= "u" ; "label:0" ! "neighbour" . "send" ( "u" ) ; free( "label:0" ) fi el if "&&" ( ">" ( "uid2" :: "uid1" ) :: ">" ( "uid2" :: "u" ) ) th  ( "uid1", "uid2" )  ::= "uid2" :: null ; "label:1" ! "neighbour" . "send" ( "uid1" ) ; free( "label:1" ) el "mode" ::= bool(false) fi fi el "label:2" ! "neighbour" . "send" ( "u" ) ; free( "label:2" ) fi ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code:  ( ( "mode" @@ "Process" ), ( "status" @@ "Process" ), ( "uid1" @@ "Process" ) )  ::= bool(true) :: int(0) :: "i" ; "label:0" ! "main" . "getNeighbour" ( emp ) ; ( "label:0" ? ( "neighbour" ) )  ; "label:1" ! "neighbour" . "send" ( "i" ) ; free( "label:1" ) ; return ( emp ) > *
+  < "send" : Mtdname | Param: "u", Latt: "u" |-> null , "label:2" |-> null , "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: if "mode" th if "=" ( "uid2" :: null ) th if "=" ( "u" :: "uid1" ) th "status" ::= int(1) el "uid2" ::= "u" ; "label:0" ! "neighbour" . "send" ( "u" ) ; free( "label:0" ) fi el if "&&" ( ">" ( "uid2" :: "uid1" ) :: ">" ( "uid2" :: "u" ) ) th  ( "uid1", "uid2" )  ::= "uid2" :: null ; "label:1" ! "neighbour" . "send" ( "uid1" ) ; free( "label:1" ) el "mode" ::= bool(false) fi fi el "label:2" ! "neighbour" . "send" ( "u" ) ; free( "label:2" ) fi ; return ( emp ) >, Ocnt: 0 >
 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null , "p4" |-> null , "p5" |-> null, Mtds: 
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new "Process" ( int(1) :: "this" ) ; "p2" ::= new "Process" ( int(3) :: "this" ) ; "p3" ::= new "Process" ( int(5) :: "this" ) ; "p4" ::= new "Process" ( int(4) :: "this" ) ; "p5" ::= new "Process" ( int(2) :: "this" ) ; return ( emp ) > *
-  < "getNeighbour" : Mtdname | Param: noVid, Latt: "n" |-> null, Code: if "=" ( "caller" :: "p1" ) th "n" ::= "p2" el if "=" ( "caller" :: "p2" ) th "n" ::= "p3" el if "=" ( "caller" :: "p3" ) th "n" ::= "p4" el if "=" ( "caller" :: "p4" ) th "n" ::= "p5" el if "=" ( "caller" :: "p5" ) th "n" ::= "p1" el skip fi fi fi fi fi ; return ( "n" ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "p1" ::= new "Process" ( int(1) :: "this" ) ; "p2" ::= new "Process" ( int(3) :: "this" ) ; "p3" ::= new "Process" ( int(5) :: "this" ) ; "p4" ::= new "Process" ( int(4) :: "this" ) ; "p5" ::= new "Process" ( int(2) :: "this" ) ; return ( emp ) > *
+  < "getNeighbour" : Mtdname | Param: noVid, Latt: "n" |-> null , "_" |-> null, Code: if "=" ( "caller" :: "p1" ) th "n" ::= "p2" el if "=" ( "caller" :: "p2" ) th "n" ::= "p3" el if "=" ( "caller" :: "p3" ) th "n" ::= "p4" el if "=" ( "caller" :: "p4" ) th "n" ::= "p5" el if "=" ( "caller" :: "p5" ) th "n" ::= "p1" el skip fi fi fi fi fi ; return ( "n" ) >, Ocnt: 0 >
 
 .
 endm

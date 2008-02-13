@@ -51,7 +51,6 @@ let conflicts =
     | { target = Realtime } ->
 	[]
 
-
 (* Write a Creol program as a maude term. If the program is parsable
    but not semantically correct, this function will only produce
    garbage. *)
@@ -69,7 +68,6 @@ let emit options out_channel input =
       | Expression.Null _ -> output_string out_channel "null"
       | Expression.Nil _ -> output_string out_channel "list(emp)"
       | Expression.Now _ -> output_string out_channel "now"
-      | Expression.History _ -> assert false
       | Expression.Int (_, i) ->
 	  output_string out_channel ("int(" ^ (Big_int.string_of_big_int i) ^ ")")
       | Expression.Float (_, f) -> 
@@ -113,8 +111,12 @@ let emit options out_channel input =
 	  of_expression_list a;
 	  output_string out_channel " )"
 	    (* Queer, but parens are required for parsing Appl in ExprList. *)
-      | Expression.Unary _ -> assert false
-      | Expression.Binary _ -> assert false
+      | Expression.Unary (n, o, e) ->
+	  of_expression
+	    (Expression.FuncCall(n, Expression.string_of_unaryop o, [e]))
+      | Expression.Binary (n, o, l, r) ->
+	  of_expression
+	    (Expression.FuncCall(n, Expression.string_of_binaryop o, [l; r]))
       | Expression.Label(_, l) ->
 	  output_string out_channel "( " ;
 	  of_expression l ;
@@ -131,7 +133,7 @@ let emit options out_channel input =
 	  of_expression t ;
 	  output_string out_channel " el " ;
 	  of_expression f ;
-	  output_string out_channel " fi)" ;
+	  output_string out_channel " fi)"
       | Expression.Extern _ -> assert false
       | Expression.SSAId (_, n, v) -> 
 	  output_string out_channel ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")") ;
@@ -163,7 +165,7 @@ let emit options out_channel input =
 	  output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
 	  of_type c ;
 	  output_string out_channel "\" )"
-      | Expression.LhsWildcard _ -> assert false
+      | Expression.LhsWildcard _ -> output_string out_channel "_"
       | Expression.LhsSSAId (_, n, v) -> 
 	  output_string out_channel
 	    ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")")
@@ -182,10 +184,10 @@ let emit options out_channel input =
       if prec < op_prec then output_string out_channel " )" ;
     in let rec print prec =
       function
-	  Statement.Skip _ -> output_string out_channel "skip"
-	| Statement.Assert (_, _) -> output_string out_channel "skip"
-	| Statement.Prove (_, _) -> output_string out_channel "skip"
-	| Statement.Await (_, e) -> output_string out_channel "( await ";
+	  Statement.Skip _ ->
+	    output_string out_channel "skip"
+	| Statement.Await (_, e) ->
+	    output_string out_channel "( await ";
 	    of_expression e;
 	    output_string out_channel " )"
 	| Statement.Posit (_, e) -> output_string out_channel "( posit ";
@@ -200,9 +202,12 @@ let emit options out_channel input =
 	      output_string out_channel " ) " ;
 	    output_string out_channel " ::= " ;
 	    of_expression_list e
-	| Statement.SyncCall _ -> assert false
-	| Statement.AwaitSyncCall _ -> assert false
-	| Statement.AsyncCall (_, None, _, _, _, _) -> assert false
+	| Statement.SyncCall _ ->
+	    assert false
+	| Statement.AwaitSyncCall _ ->
+	    assert false
+	| Statement.AsyncCall (_, None, _, _, _, _) ->
+	    assert false
 	| Statement.AsyncCall (_, Some l, c, m, _, a) ->
 	    of_lhs l ;
 	    output_string out_channel " ! ";
@@ -223,12 +228,16 @@ let emit options out_channel input =
         | Statement.Free (n, l::ls) ->
             print prec (Statement.Sequence (n, Statement.Free(n, [l]),
               Statement.Free(n, ls)))
-        | Statement.Free (_, []) -> assert false
+        | Statement.Free (_, []) ->
+	    assert false
 	| Statement.Bury _ as s ->
 	    print prec (Statement.assignment_of_bury s)
-	| Statement.LocalSyncCall _ -> assert false
-	| Statement.AwaitLocalSyncCall _ -> assert false
-	| Statement.LocalAsyncCall (_, None, _, _, _, _, _) -> assert false
+	| Statement.LocalSyncCall _ ->
+	    assert false
+	| Statement.AwaitLocalSyncCall _ ->
+	    assert false
+	| Statement.LocalAsyncCall (_, None, _, _, _, _, _) ->
+	    assert false
 	| Statement.LocalAsyncCall (_, Some l, m, _, None, None, i) ->
 	    (* An unqualified local synchronous call should use this in
 	       order to get late binding correct. *)
@@ -250,6 +259,10 @@ let emit options out_channel input =
 	    output_string out_channel "( " ;
 	    of_expression_list i;
 	    output_string out_channel " ) ) "
+	| Statement.Assert (n, _) ->
+	    print prec (Statement.Skip n)
+	| Statement.Prove (n, _) ->
+	    print prec (Statement.Skip n)
 	| Statement.Tailcall (_, m, _, l, u, i) ->
 	    output_string out_channel ( "\"" ^ m ^ "\"");
 	    (match l with
@@ -348,7 +361,12 @@ let emit options out_channel input =
 				  "\" : Mtdname | Param: ");
     of_parameter_list m.Method.inpars;
     output_string out_channel ", Latt: " ;
-    of_class_attribute_list (m.Method.inpars @ m.Method.outpars @ m.Method.vars);
+    of_class_attribute_list (List.concat
+			       [ m.Method.inpars ; m.Method.outpars ;
+				 m.Method.vars ;
+				 [{ VarDecl.name = "_";
+				    var_type = Type.data;
+				    init = None }]]);
     output_string out_channel ", Code: " ;
     ( match m.Method.body with
 	None -> output_string out_channel "skip"

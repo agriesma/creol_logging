@@ -4,8 +4,8 @@ protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds: 
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "x" ::= pair(int(1) , int(2)) ; return ( emp ) >, Ocnt: 0 >
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(int(1) , int(2)) ; return ( emp ) >, Ocnt: 0 >
 
 .
 endm
