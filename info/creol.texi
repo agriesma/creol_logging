@@ -264,14 +264,14 @@ representing the actual arguments.
 In this section we describe the assertion language that is supported
 by the compiler.
 
-The core of the assertion language is the use of a new variable
-@code{history} of type @code{List[Event]}, where event is a predefined
-type.
+The core of the assertion language is the use of an auxiliary variable
+@code{history} of type @code{List[Event]}, which records the messages
+received by an object.  The type @code{Event} is abstract, but can be
+queried using the functions described in @ref{Data Type Event}.
 
-Each expression of type Boolean, as defined in the preceding section,
-@pxref{Literals and Expression}, is also an assertion.
-
-In addition, the following three expressions are accepted:
+Each expression of type @code{Bool}, as defined in @ref{Literals and
+Expression}, is an assertion.  In addition, the following three
+expressions are assertions:
 
 @example
 (forall @var{v}: @var{T}: @var{expr})

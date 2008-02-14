@@ -130,6 +130,15 @@ let into_ssa tree =
       | Expression.Label (a, l) ->
 	  Expression.Label (a, expression_to_ssa env l)
       | New (a, c, l) -> New (a, c, List.map (expression_to_ssa env) l)
+      | Choose (n, v, t, e) ->
+	  (* [v] is actually a binder and should not be converted to SSA. *)
+	  Choose (n, v, t, expression_to_ssa env e)
+      | Exists (n, v, t, e) ->
+	  (* [v] is actually a binder and should not be converted to SSA. *)
+	  Exists (n, v, t, expression_to_ssa env e)
+      | Forall (n, v, t, e) ->
+	  (* [v] is actually a binder and should not be converted to SSA. *)
+	  Forall (n, v, t, expression_to_ssa env e)
       | Expression.Extern _ as e -> e
       | SSAId (a, v, n) ->
 	  (* We seem to rerun \ocwlowerid{to\_ssa}, and then we just recompute
@@ -377,6 +386,18 @@ let out_of_ssa tree =
 	  Expression.Label (a, expression_of_ssa l)
       | New (a, c, l) -> New (a, c, List.map expression_of_ssa l)
       | Expression.Extern _ as e -> e
+      | Choose (n, v, t, e) ->
+	  (* [v] is actually a binder and should not have been converted
+	     to SSA. *)
+	  Choose (n, v, t, expression_of_ssa e)
+      | Exists (n, v, t, e) ->
+	  (* [v] is actually a binder and should not have been converted
+	     to SSA. *)
+	  Exists (n, v, t, expression_of_ssa e)
+      | Forall (n, v, t, e) ->
+	  (* [v] is actually a binder and should not have been converted
+	     to SSA. *)
+	  Forall (n, v, t, expression_of_ssa e)
       | SSAId (a, v, n) -> (* Just drop the version *) Id (a, v)
       | Phi (a, l) ->
 	  let same_base_p lst = List.fold_left

@@ -456,6 +456,21 @@ let emit out_channel input =
             output_string out_channel ("new " ^ (Type.as_string t) ^ "(");
 	    pretty_print_expression_list a ;
 	    output_string out_channel ")"
+	| Expression.Choose (_,v, t, e) ->
+	    output_string out_channel
+	      ("(some " ^ v ^ ": " ^ (Type.as_string t)) ;
+	    pretty_print_expression e ;
+	    output_string out_channel ")"
+	| Expression.Exists (_,v, t, e) ->
+	    output_string out_channel
+	      ("(exists " ^ v ^ ": " ^ (Type.as_string t)) ;
+	    pretty_print_expression e ;
+	    output_string out_channel ")"
+	| Expression.Forall (_,v, t, e) ->
+	    output_string out_channel
+	      ("(forall " ^ v ^ ": " ^ (Type.as_string t)) ;
+	    pretty_print_expression e ;
+	    output_string out_channel ")"
         | Expression.Extern (_, s) ->
             output_string out_channel ("extern \"" ^ s ^ "\"");
 	| Expression.SSAId (_, v, n) ->

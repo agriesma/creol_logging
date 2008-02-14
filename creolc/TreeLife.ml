@@ -78,30 +78,30 @@ let compute_in_body ~program ~cls ~meth =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
 	     Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
-      | Id (a, v) when Method.local_p meth v ->
-	  IdSet.singleton v
-      | Id (a, v) ->
-	  IdSet.empty
+      | Id (_, v)  ->
+	  if Method.local_p meth v then IdSet.singleton v else IdSet.empty
       | StaticAttr _ ->
 	  IdSet.empty
-      | Tuple (a, l) ->
+      | Tuple (_, l) ->
 	  List.fold_left (add gen) IdSet.empty l
-      | ListLit (a, l) ->
+      | ListLit (_, l) ->
 	  List.fold_left (add gen) IdSet.empty l
-      | SetLit (a, l) ->
+      | SetLit (_, l) ->
 	  List.fold_left (add gen) IdSet.empty l
-      | Unary (a, o, e) ->
+      | Unary (_, _, e) ->
 	  gen e
-      | Binary (a, o, l, r) ->
+      | Binary (_, _, l, r) ->
 	  IdSet.union (gen l) (gen r)
-      | Expression.If (a, c, t, f) ->
+      | Expression.If (_, c, t, f) ->
 	  List.fold_left (add gen) IdSet.empty [c; t; f]
-      | FuncCall (a, f, l) ->
+      | FuncCall (_, _, l) ->
 	  List.fold_left (add gen) IdSet.empty l
-      | Expression.Label (a, l) ->
+      | Expression.Label (_, l) ->
 	  gen l
-      | New (a, c, l) ->
+      | New (_, _, l) ->
 	  List.fold_left (add gen) IdSet.empty l
+      | Choose (_, _, _, e) | Exists (_, _, _, e) | Forall (_, _, _, e) ->
+	  gen e
       | Expression.Extern _ ->
 	  IdSet.empty
       | SSAId (a, v, n) ->

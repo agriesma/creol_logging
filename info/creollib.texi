@@ -15,6 +15,8 @@ classes defined for all @acronym{CREOL} programs.
 * Data Type Set::                Sets of elements.
 * Data Type Pair::               Pairs.
 * Data Types Time and Duration:: Time and durations.
+* Data Type Event::              Observations and histories.
+* Interface Any::                The super type of all references.
 @end menu
 
 
@@ -467,6 +469,50 @@ division.  It is a shorthand for @code{a * (1.0 / s)}.
 @end table
 
 
+@node Data Type Event
+@section Data Type Event
+
+THE INFORMATION IN THIS SECTION IS SUBJECT TO CHANGE.
+
+The type @code{Event} is used in the assertion language.  An event is
+the observation of a call or a reply to a call.  Terms of type
+@code{Event} must not occur in the context of the program.  Within
+assertions, the following functions may be used to query a history:
+
+@table @code
+@item fun sender(e: Event): Any
+The identity of the sender.
+
+@item fun receiver(e: Event): Any
+The identity of the receiver.
+
+@item fun call(e: Event): Bool
+Whether the event is observing a call or a reply.
+
+@item fun method(e: Event): String
+The name of the called method.
+
+@item fun arguments(e: Event): List[Data]
+This is a list of actual arguments supplied to the call observed by
+this event.
+
+@item fun results(e: Event): List[Data]
+If @code{call(e)} is @code{false}, this results in a list of return
+values for the event.  If @code{call(e)} is @code{true}, the meaning
+is undefined.
+
+@item fun id(e: Event): Int
+A identity of the event.  A globally unique ID for an event is the
+triplet @code{(caller(e), call(e), id(e))}.
+
+@item fun time(e: Event): Time
+The time when that event happened.  If this function is used in
+untimed models, its meaning is not defined.
+
+@end table
+
+
+@node Interface Any
 @section Interface Any
 
 The prelude provides the interface @code{Any}, which each class is

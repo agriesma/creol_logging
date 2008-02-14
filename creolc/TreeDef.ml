@@ -77,44 +77,44 @@ let compute_in_statement ~meth ins stmt =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
 	     Bool _ | Int _ | Float _ | String _ | History _) -> IdSet.empty
-      | Id (a, v) when Method.local_p meth v ->
-	  IdSet.singleton v
-      | Id (a, v) ->
-	  IdSet.empty
+      | Id (_, v)  ->
+	  if Method.local_p meth v then IdSet.singleton v else IdSet.empty
       | StaticAttr _ ->
 	  IdSet.empty
-      | Tuple (a, l) ->
+      | Tuple (_, l) ->
 	  List.fold_left (add kill) IdSet.empty l
-      | ListLit (a, l) ->
+      | ListLit (_, l) ->
 	  List.fold_left (add kill) IdSet.empty l
-      | SetLit (a, l) ->
+      | SetLit (_, l) ->
 	  List.fold_left (add kill) IdSet.empty l
-      | Unary (a, o, e) ->
+      | Unary (_, _, e) ->
 	  kill e
-      | Binary (a, o, l, r) ->
+      | Binary (_, _, l, r) ->
 	  IdSet.union (kill l) (kill r)
-      | Expression.If (a, c, t, f) ->
+      | Expression.If (_, c, t, f) ->
 	  List.fold_left (add kill) IdSet.empty [c; t; f]
-      | FuncCall (a, f, l) ->
+      | FuncCall (_, _, l) ->
 	  List.fold_left (add kill) IdSet.empty l
-      | Expression.Label (a, l) ->
+      | Expression.Label (_, l) ->
 	  kill l
-      | New (a, c, l) ->
+      | New (_, _, l) ->
 	  List.fold_left (add kill) IdSet.empty l
+      | Choose (_, _, _, e) | Exists (_, _, _, e) | Forall (_, _, _, e) ->
+	  kill e
       | Expression.Extern _ ->
 	  IdSet.empty
-      | SSAId (a, v, n) ->
+      | SSAId (_, v, _) ->
 	  assert (Method.local_p meth v); IdSet.singleton v
-      | Phi (a, l) ->
+      | Phi (_, l) ->
 	  List.fold_left (add kill) IdSet.empty l
   in
   let gen =
     function
-	LhsId (n, i) when Method.local_p meth i -> IdSet.singleton i
-      | LhsId (n, i) -> IdSet.empty
-      | LhsAttr (n, s, t) -> IdSet.empty
-      | LhsWildcard (n, t) -> IdSet.empty
-      | LhsSSAId (n, i, v) ->
+	LhsId (_, i) when Method.local_p meth i -> IdSet.singleton i
+      | LhsId (_, i) -> IdSet.empty
+      | LhsAttr (_, _, _) -> IdSet.empty
+      | LhsWildcard (_, _) -> IdSet.empty
+      | LhsSSAId (_, i, _) ->
 	  assert (Method.local_p meth i); IdSet.singleton i
   in
   let rec work ins stmt =

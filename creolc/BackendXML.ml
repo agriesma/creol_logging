@@ -598,6 +598,27 @@ let emit ~name ~tree =
           XmlTextWriter.end_element writer ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
+      | Expression.Choose (a, v, t, e) ->
+	  XmlTextWriter.start_element writer "creol:choose" ;
+	  XmlTextWriter.write_attribute writer "name" v ;
+	  creol_type_to_xml t ;
+	  creol_expression_to_xml e ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Expression.Exists (a, v, t, e) ->
+	  XmlTextWriter.start_element writer "creol:exists" ;
+	  XmlTextWriter.write_attribute writer "name" v ;
+	  creol_type_to_xml t ;
+	  creol_expression_to_xml e ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Expression.Forall (a, v, t, e) ->
+	  XmlTextWriter.start_element writer "creol:forall" ;
+	  XmlTextWriter.write_attribute writer "name" v ;
+	  creol_type_to_xml t ;
+	  creol_expression_to_xml e ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
       | Expression.If (a, c, t, f) ->
 	  XmlTextWriter.start_element writer "creol:if" ;
 	  XmlTextWriter.start_element writer "creol:condition" ;

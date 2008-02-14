@@ -58,6 +58,12 @@ let devirt_statement program cls meth stmt =
       | Expression.Label (n, l) ->
 	  Expression.Label (n, devirt_expression l)
       | New (n, c, l) -> New (n, c, List.map devirt_expression l)
+      | Choose (n, v, t, e) ->
+	  Choose (n, v, t, devirt_expression e)
+      | Exists (n, v, t, e) ->
+	  Exists (n, v, t, devirt_expression e)
+      | Forall (n, v, t, e) ->
+	  Forall (n, v, t, devirt_expression e)
       | Expression.Extern _ as e -> e
       | SSAId (_, v, _) as e -> assert (Method.local_p meth v); e
       | Phi (n, l) -> Phi (n, List.map devirt_expression l)

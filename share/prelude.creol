@@ -134,6 +134,17 @@ fun <=(a: Duration, b: Duration): Bool == extern "<="
 fun >=(a: Duration, b: Duration): Bool == extern ">="
 fun >(a: Duration, b: Duration): Bool == extern ">"
 
+datatype Event
+
+fun id(e: Event): Int == extern ""
+fun sender(e: Event): Any == extern ""
+fun receiver(e: Event): Any == extern ""
+fun call(e: Event): Bool == extern ""
+fun method(e: Event): String == extern ""
+fun arguments(e: Event): List[Data] == extern ""
+fun results(e: Event): List[Data] == extern ""
+fun time(e: Event): Time == extern ""
+
 interface Any
 begin
 inv true
