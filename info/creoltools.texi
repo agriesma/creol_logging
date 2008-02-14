@@ -1,6 +1,6 @@
 \input texinfo	@c -*-texinfo-*-
 @c %**start of header
-@documentlanguage en
+@c @documentlanguage en
 @setfilename creoltools.info
 @settitle @acronym{CREOL} Tools
 @c %**end of header
