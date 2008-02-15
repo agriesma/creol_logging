@@ -325,11 +325,19 @@ the interface type of @var{v}.
 @subsection Synchronous Method Calls
 
 A @emph{local} synchronous method call is written as
-@code{@var{m}[@@@var{C}](@var{ins};@var{outs})}, where @var{m} is the
-name of a method, @var{C} is an optional class name, @var{ins} is a
-possibly empty list of expressions describing the actual arguments to
-the call and @var{outs} is a possibly empty list of variable or
-attribute names used to store the result values.
+@code{@var{m}[:>@var{C}][<:@var{D}](@var{ins};@var{outs})}, where
+@var{m} is the name of a method, @var{ins} is a possibly empty list
+of expressions describing the actual arguments to the call and
+@var{outs} is a possibly empty list of variable or attribute names
+used to store the result values.
+
+The optional clause @code{:>@var{C}} states, that the implementation
+of the method @var{m} must be one which is defined in a super-class of
+@var{C}.  Similarily, the optional clause @code{<:@var{D}} states,
+that the implementation of @var{m} must be in a sub-class of
+@var{D}.  These constructs allow to select a specific method
+implementation even in the case of multiple inheritance.  Note that
+@code{<:} cannot refer to a sub-class of the current class.
 
 A @emph{remote} synchronous method call is written as
 @code{@var{e}.@var{m}(@var{ins};@var{outs})}, where @var{e} is an

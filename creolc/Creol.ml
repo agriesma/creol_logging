@@ -728,6 +728,21 @@ struct
 	Expression.t list * Expression.lhs list
     | LocalAsyncCall of note * Expression.lhs option * string *
 	Type.signature * string option * string option * Expression.t list
+	(* The optional [lhs] expression represents the value of the
+	   name of the variable in which the label is stored.  The
+	   following argument is the name of the method.  Then comes the
+	   [signature].  The first optional string is the name of a class
+	   and denotes the \emph{upper} bound for searching the method
+	   body.  The next term represents the corresponding \emph{lower}
+	   bound.
+
+	   The term \emph{upper bound} in this context means, that the
+	   implementation must be defined in a subclass of the given
+	   class \texttt{C}, written \texttt{<:C}.
+
+	   The term \emph{lower bound} in this context means, that the
+	   implementation must be defined in a superclass of the given
+	   class \texttt{C}, written \texttt{:>C}. *)
     | LocalSyncCall of note * string * Type.signature * string option *
 	string option * Expression.t list * Expression.lhs list
     | AwaitLocalSyncCall of note * string * Type.signature * string option *
