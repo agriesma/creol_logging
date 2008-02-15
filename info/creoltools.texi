@@ -1,9 +1,10 @@
 \input texinfo	@c -*-texinfo-*-
 @c %**start of header
-@c @documentlanguage en
 @setfilename creoltools.info
 @settitle @acronym{CREOL} Tools
 @c %**end of header
+@c @documentlanguage en
+@documentencoding US-ASCII
 @afourpaper
 @include version.texi
 
