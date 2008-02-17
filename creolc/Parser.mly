@@ -393,41 +393,38 @@ basic_statement:
                           None -> None
 			| Some lab -> Some (LhsId (expression_note $startpos, lab))),
                     callee, m, Type.default_sig ~coiface:s (), i) }
-    | l = ioption(ID) BANG m = ID
-	lb = ioption(preceded(SUPERTYPE, CID)) 
-	ub = ioption(preceded(SUBTYPE, CID))
+    | l = ioption(ID) BANG m = ID b = bounds
       LPAREN i = separated_list(COMMA, expression) RPAREN
         { let l' =
 	  match l with
               None -> None
 	    | Some lab -> Some (LhsId (expression_note $startpos, lab))
 	  in
-	    LocalAsyncCall ((statement_note $startpos), l', m,
-			   Type.default_sig (), lb, ub, i)
+	    LocalAsyncCall (statement_note $startpos, l', m,
+			    Type.default_sig (), fst b, snd b, i)
 	}
     | c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
       s = ioption(preceded(AS, creol_type))
 	{ SyncCall ((statement_note $startpos), c, m, Type.default_sig ~coiface:s (),  i, o) }
-    | m = ID
-	lb = ioption(preceded(SUPERTYPE, CID))
-	ub = ioption(preceded(SUBTYPE, CID))
+    | m = ID b = bounds
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
       s = ioption(preceded(AS, creol_type))
-	{ LocalSyncCall((statement_note $startpos), m, Type.default_sig ~coiface:s (), lb, ub, i, o) }
+	{ LocalSyncCall(statement_note $startpos, m,
+		        Type.default_sig ~coiface:s (), fst b, snd b, i, o) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
       s = ioption(preceded(AS, creol_type))
-	{ AwaitSyncCall ((statement_note $startpos), c, m, Type.default_sig ~coiface:s (), i, o) }
-    | AWAIT m = ID
-	lb = ioption(preceded(SUPERTYPE, CID))
-	ub = ioption(preceded(SUBTYPE, CID))
+	{ AwaitSyncCall (statement_note $startpos, c, m,
+                         Type.default_sig ~coiface:s (), i, o) }
+    | AWAIT m = ID b = bounds
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-	{ AwaitLocalSyncCall((statement_note $startpos), m, Type.default_sig (), lb, ub, i, o) }
+	{ AwaitLocalSyncCall(statement_note $startpos, m,
+                             Type.default_sig (), fst b, snd b, i, o) }
     | BEGIN s = statement END
 	{ s }
     | IF e = expression THEN t = statement ELSE f = statement END
@@ -470,6 +467,13 @@ basic_statement:
 	{ signal_error $startpos($2) "syntax error in assertion" }
     | expression error
 	{ signal_error $startpos($2) "syntax error in statement" }
+
+%inline bounds:
+      (* empty *)                            { (None, None) }
+    | SUPERTYPE lb = CID                     { (Some lb, None) }
+    | SUBTYPE ub = CID                       { (None, Some ub) }
+    | SUPERTYPE lb = CID SUBTYPE ub = CID    { (Some lb, Some ub) }
+    | SUBTYPE ub = CID SUPERTYPE lb = CID    { (Some lb, Some ub) }
 
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:

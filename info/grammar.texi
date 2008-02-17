@@ -134,15 +134,18 @@ basic-statement ::=
   | @code{posit} expr
   | id @code{?} @code{(}  @{ lhs @code{,} @} @code{)}
   | [ id ] @code{!} expr @code{.} id @code{(} @{ expr @code{,} @} @code{)} [ @code{as} type ]
-  | [ id ] @code{!} id [ @code{:>} cid ] [ @code{<:} cid ] @code{(} @{ expr @code{,} @} @code{)}
+  | [ id ] @code{!} id bounds @code{(} @{ expr @code{,} @} @code{)}
   | [ @code{await} ] expr @code{.} id @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)} [ @code{as} type ]
-  | [ @code{await} ] id [@code{:>} cid] [ @code{<:} cid ] @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)}
+  | [ @code{await} ] id bounds @code{(} @{ expr @code{,} @} @code{;} @{ lhs @code{,} @} @code{)}
   | @code{begin} statement @code{end}
   | @code{if} expr @code{then} statement [@code{else} statement] @code{end}
   | @code{while} expr [ @code{inv} expr ] @code{do} statement @code{end}
   | @code{do} statement [ @code{inv} expr ] @code{while} expr
   | @code{assert} expr
   | @code{prove} expr
+
+bounds ::=
+    empty | @code{:>} cid | @code{<:} cid | @code{:>} cid @code{<:} cid | @code{<:} cid @code{:>} cid
 
 lhs ::=
     id [ @code{@@} type ]

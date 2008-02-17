@@ -338,6 +338,9 @@ that the implementation of @var{m} must be in a sub-class of
 @var{D}.  These constructs allow to select a specific method
 implementation even in the case of multiple inheritance.  Note that
 @code{<:} cannot refer to a sub-class of the current class.
+The bounds can be given in any order.  If both bounds are given,
+the calls @code{m<:@var{C}:>@var{D}} and @code{m:>@var{D}<:@var{C}}
+are synonymous.
 
 A @emph{remote} synchronous method call is written as
 @code{@var{e}.@var{m}(@var{ins};@var{outs})}, where @var{e} is an
