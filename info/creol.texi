@@ -113,28 +113,7 @@ to an attribute named @var{v} defined in class @var{C} or inherited by
 of a class of which the current class is @emph{not} a subclass.
 
 
-@subsection Boolean Expressions
-
-The Boolean expressions are:
-
-@code{@var{expression} = @var{expression}} for equality.
-
-@code{@var{expression} /= @var{expression}} for in-equality.
-
-@code{~ @var{expression}} for negation.
-
-@code{@var{expression} && @var{expression}} for conjunction.
-
-@code{@var{expression} || @var{expression}} for disjunction.
-
-@code{@var{expression} => @var{expression}} for implication.
-
-@code{@var{expression} <=> @var{expression}} for bi-implication.
-
-@code{@var{expression} ^ @var{expression}} for exclusive or.
-
-
-@subsection Integers, Reals, and Arithmetic Expressions
+@subsection Integers and Reals
 
 Integer literals are written as strings of digits.  Integer literals
 are represented as arbitrary precision numbers in the compiler.  This
@@ -151,23 +130,6 @@ literals.  There may be limitations imposed by the back-ends, if
 down-stream applications and target platforms impose range and
 precision limitations.  Consult the back-end documentation for
 details.
-
-The arithmetic expressions are:
-
-@code{- @var{expression}} for negation.
-
-@code{@var{expression} ** @var{expression}} for exponentiation.
-
-@code{@var{expression} * @var{expression}} for multiplication.
-
-@code{@var{expression} / @var{expression}} for division.
-
-@code{@var{expression} % @var{expression}} for the Euclidean remainder
-(modulo).
-
-@code{@var{expression} + @var{expression}} for addition.
-
-@code{@var{expression} - @var{expression}} for subtraction.
 
 
 @subsection Strings
@@ -196,19 +158,6 @@ expressions inside of square brackets: @code{[1, 2, 3]} is the list
 containing the elements @code{1}, @code{2}, and @code{3} in that
 order.
 
-The operations on sequences are:
-
-@code{# @var{expression}} for the length of the list.
-
-@code{@var{expression} |- @var{expression}} for appending to the right.
-
-@code{@var{expression} -| @var{expression}} for appending to the left.
-
-@code{@var{expression} |-| @var{expression}} for concatenation.
-
-@code{@var{expression} \ @var{expression}} for projection.
-
-
 
 @subsection Sets
 
@@ -216,19 +165,9 @@ The operations on sequences are:
 constructed by enumerating the elements: @code{@{ @{ @var{expression}
 , @} @}}.
 
-The operations on sets are:
-
-@code{@var{expression} \ @var{expression}} for set-difference.
-
-@code{@var{expression} || @var{expression}} for union.
-
-@code{@var{expression} && @var{expression}} for intersection.
-
-@code{@var{expression} in @var{expression}} for testing membership.
-
+An expression of the form
 @code{@{ @var{id} : @var{expression} | @var{expression} @}}
-for set aggregation:
-
+represents set aggregation:
 
 
 @subsection Object Expressions and Literals
@@ -256,6 +195,109 @@ Generally, applying a function is written as
 @code{@var{f}(@var{e},@var{d},...,@var{c})}, where @var{f} is the name
 of a function and @var{e},@var{d},@dots{} refers to expressions
 representing the actual arguments.
+
+Some @emph{unary} function applications may only be written in prenex
+form.  The function symbols are @code{#}, @code{~}, and @code{-}.  In
+Creol, we follow these conventions:
+@table @code
+@item #
+The function @code{#} should return an @code{Int} that represents the
+number of elements in a collection
+
+@item ~
+The function @code{~} should represent Boolean negation.
+
+@item -
+The function @code{-} should represent the negation of numbers.
+@end table
+
+Some @emph{binary} function applications may only be written in infix
+form.  The symbols are summarised below, with their conventional
+meaning.
+
+@table @code
+@item &&
+The function @code{&&} represents Boolean conjunction.
+
+@item /\
+The function @code{/\} represents Boolean conjunction.  It is
+not used by the current library.
+
+@item ||
+The function symbol @code{||} represents Boolean disjunction.
+
+@item \/
+The function symbol @code{\/} represents Boolean disjunction.  It is
+not used by the current library.
+
+@item ^
+The function symbol @code{^} represents exclusive Boolean disjunction.
+
+@item <=>
+The function symbol @code{<=>} represents equivalence.
+
+@item =>
+The function symbol @code{=>} represents implication.
+
+@item =
+The function symbol @code{=} represents equality.
+
+@item /=
+The function symbol @code{/=} represents inequality.
+
+@item <=
+The function symbol @code{<=} represents ``less-than-or-equal.''
+
+@item <
+The function symbol @code{<} represents ``less-than.''
+
+@item >
+The function symbol @code{>} represents ``greater-than.''
+
+@item >=
+The function symbol @code{>=} represents ``greater-than-or-equal.''
+
+@item +
+The function symbol @code{+} represents addition.
+
+@item -
+The function symbol @code{-} represents subtraction.
+
+@item *
+The function symbol @code{*} represents multiplication.
+
+@item **
+The function symbol @code{**} represents exponentiation.
+
+@item /
+The function symbol @code{/} represents division.
+
+@item %
+The function symbol @code{%} represents remainder.
+
+@item -|
+The function symbol @code{-|} represents prepending.
+
+@item |-
+The function symbol @code{|-} represents appending.
+
+@item |-|
+The function symbol @code{|-|} represents concatenation.
+
+@item \
+The function symbol @code{\} represents projection.
+
+@item in
+The function symbol @code{in} represents membership.
+
+@end table
+
+The user may overload these operators.  We advise against this.  If
+the user overloads these functions, he should only use it with its
+conventional meaning.  Assigning arbitrary types to these functions
+can also cause more failures during type checking, where the type
+checker rejects programs which it would accept without that function
+declaration.
 
 
 @node Assertions

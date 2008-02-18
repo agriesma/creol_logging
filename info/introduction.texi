@@ -13,7 +13,7 @@ correctness of the overall system.
 
 @menu
 * Overview::            What is @acronym{CREOL} about?
-* Features Of CREOL::   Features Of @acronym{CREOL}.
+* Features of CREOL::   Features of @acronym{CREOL}.
 * Reporting Bugs::      Where do I report bugs to?
 @end menu
 
@@ -58,8 +58,8 @@ pseudo-deterministic rewrite strategy in order to better simulate the
 non-determinism of a distributed environment.
 
 
-@node Features Of CREOL
-@section Features Of @acronym{CREOL}
+@node Features of CREOL
+@section Features of @acronym{CREOL}
 
 @acronym{CREOL} is a @emph{strongly typed} language, in the sense that function
 and method calls which disregard data types are rejected.

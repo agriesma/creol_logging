@@ -30,7 +30,10 @@ subsystems.  However, building distributed systems is hard, since all
 parts work independently but still have to cooperate.  Leslie Lamport
 characterises a distributed system by: ``A distributed system is one
 in which the failure of a computer you didn't even know existed can
-render your own computer unusable'' (@pxref{Lamport (1987)}).
+render your own computer unusable'' @cite{(Leslie Lamport (1987),
+@url{http://research.microsoft.com/users/lamport/pubs/distributed-system.txt},
+accessed 2008-01-25)}.
+
 
 Conceptually, each object of a @acronym{CREOL} system executes on its own
 virtual processor and owns its own private resources.  The object is
@@ -154,19 +157,22 @@ main("Main", emp) .
 rewrites: 259 in 2ms cpu (2ms real) (129500 rewrites/second)
 result Configuration: 
 < "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code: "result"
-    ::= str("Hello, world") ; return("result") > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >
+  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code:
+    "result" ::= str("Hello, world") ; return("result") > *
+  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
+    return(emp) >
     *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
+    return(emp) >,
   Ocnt: 1 >
 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "hello" |-> null, "result" |->
     null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hello" ::= new
     "Hello"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code: "label:0" !
-    "hello" . "hello"(emp) ; "label:0" ?("result") ; return(emp) >,
+  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
+    "label:0" !  "hello" . "hello"(emp) ; "label:0" ?("result") ;
+    return(emp) >,
   Ocnt: 1 >
 
 < ob("Hello0") : "Hello" |
@@ -178,8 +184,8 @@ result Configuration:
   Lcnt: 2 >
 
 < ob("Main0") : "Main" |
-  Att: "hello" |-> ob("Hello0"), "result" |-> str("Hello, world"), "this" |->
-    ob("Main0"),
+  Att: "hello" |-> ob("Hello0"), "result" |-> str("Hello, world"), "this"
+  |-> ob("Main0"),
   Pr: idle,
   PrQ: noProc,
   Dealloc: noDealloc,

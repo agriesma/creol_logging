@@ -68,7 +68,7 @@ Documentation License.''
 * creolshell::            How to use the @command{creolshell}.
 * Grammar::               The grammar definition of @acronym{CREOL}.
 * FAQ::                   Frequently asked questions.
-* Bibliography::          Further reading.
+@c * Bibliography::          Further reading.
 * Licenses::              Your rights and freedoms.
 * Index::                 Index of concepts.
 @end menu
@@ -85,7 +85,7 @@ Documentation License.''
 @include grammar.texi
 @include faq.texi
 
-@include bibliography.texi
+@c @include bibliography.texi
 @c @include bugs.texi
 
 

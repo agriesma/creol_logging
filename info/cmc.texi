@@ -131,7 +131,7 @@ In addition, this module defines the sort @code{Bool} (@pxref{Boolean}).
 
 
 @anchor{Application}
-@subsubsection Application terms
+@subsubsection Application Terms
 
 At the core of the expression language is function application.  The
 machine will maintain all function applications in prenex form, i.e.,
@@ -283,7 +283,7 @@ of the interpreter.  The other versions will not advance the value of
 
 
 @node User Defined Data Types
-@subsection Creating Your own Data Type
+@subsection Creating Your Own Data Type
 
 The procedure for creating your own data type is illustrated with the
 pair type.  The first thing to do is to write a functional module
@@ -587,7 +587,7 @@ queues.  A message has sort @code{Msg}.  Message queues have sort
 @code{MMsg} and are multi-sets of terms of sort @code{Body}.
 
 
-@subsubsection Invocation message
+@subsubsection Invocation Message
 
 An invocation message has the format @code{invoc(_,_,_,_)} and is of
 sort @code{Body}, where the first parameter is an @emph{object
@@ -597,7 +597,7 @@ of the method, and the fourth parameter is a list of values
 representing the actual arguments.
 
 
-@subsubsection Completion message
+@subsubsection Completion Message
 
 Conversely, a completion message has the format @code{comp(_,_)} and
 is of sort @code{Body}, where the first parameter represents the label
@@ -613,7 +613,7 @@ second term holds the identity of the sender and the last term holds
 the identity of the receiver.
 
 
-@subsubsection Bind method message
+@subsubsection Bind Method Message
 
 A bind method message is used to ask a class for a method body to an
 invocation.  It has the format @code{bindMtd(_,_,_,_,_,_)}, where the
@@ -647,7 +647,7 @@ searched for.
 @end enumerate
 
 
-@subsubsection Bound method message
+@subsubsection Bound Method Message
 
 This message is created after the method has successfully been bound.
 It has the format @code{boundMtd(_,_)}, where the first parameter
@@ -655,7 +655,7 @@ represents the identity of the callee and the second parameter
 represents the process to execute.
 
 
-@subsubsection Message queue
+@subsubsection Message Queue
 
 A message queue has the sort @code{Queue} and the format @c
 @code{<_: Qu | Size:_, Dealloc:_, Ev:_ >}.  The parameters represent
@@ -844,7 +844,7 @@ run-method.
 @end table
 
 
-@subsection Rules defined for real-time simulation
+@subsection Rules Defined for Real-Time Simulation
 
 For simulating timed @acronym{CREOL}, the system defined two operators
 @code{posit}, which check whether all posit constraints in a given
