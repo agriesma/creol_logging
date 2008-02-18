@@ -38,11 +38,15 @@ let emit out_channel input =
   let emit_node =
     function
         Declaration.Class { Class.name = n } ->
-  	    output_string out_channel ((c n) ^ "[shape=box, label=\"" ^ n ^ "\"];\n")
+  	    output_string out_channel
+	      ((c n) ^ "[shape=box, label=\"" ^ n ^ "\"];\n")
       | Declaration.Interface { Interface.name = n } ->
-  	    output_string out_channel ((i n) ^ "[shape=diamond, label=\"" ^ n ^ "\"];\n")
+  	    output_string out_channel
+	      ((i n) ^ "[shape=diamond, label=\"" ^ n ^ "\"];\n")
       | Declaration.Datatype { Datatype.name = t } ->
-  	    output_string out_channel ((d (Type.name t)) ^ "[shape=ellipse, label=\"" ^ (Type.as_string t) ^ "\"];\n")
+  	    output_string out_channel
+	      ((d (Type.name t)) ^ "[shape=ellipse, label=\"" ^
+		 (Type.as_string t) ^ "\"];\n")
       | _ -> ()
   and emit_inherits =
     function
@@ -55,7 +59,8 @@ let emit out_channel input =
       | Declaration.Datatype { Datatype.name = n; supers = [] } ->
 	  edge (d (Type.name n)) "D_Data" "solid"
       | Declaration.Datatype { Datatype.name = n; supers = l } ->
-	  List.iter (fun t -> edge (d (Type.name n)) (d (Type.name t)) "solid") l
+	  List.iter
+	    (fun t -> edge (d (Type.name n)) (d (Type.name t)) "solid") l
       | _ -> ()
   and emit_implements =
     function

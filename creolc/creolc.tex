@@ -1,15 +1,12 @@
-\documentclass[a4paper,10pt,DIV10,draft]{scrreprt}
+\documentclass[a4paper,10pt,draft]{article}
 \usepackage[noweb]{ocamlweb}
 \usepackage[utf8]{inputenc}
-\usepackage[OT1]{fontenc}
+\usepackage[T1]{fontenc}
 \usepackage[english]{babel}
-\usepackage{listings}
 \usepackage{amsmath}
-
-\lstdefinelanguage{Creol}{keywords={class,interface,inherits,implements,begin,end,with,inv,end,op,if,then,else,fi,for,do,dopar,done,await,var,in,out,process,layer,until,posit},
-  sensitive=true,
-  morecomment=[l]{--},
-  morestring=[b]"}
+\usepackage{amssymb}
+\usepackage{creol}
+\usepackage{a4wide}
 
 \title{\texttt{creolc}: A compiler for Creol}
 \author{Marcel Kyas}
@@ -22,11 +19,11 @@
 
 \maketitle
 
-\chapter{Introduction}
+\section{Introduction}
 
 This document describes the source code of the creol compiler.
 
-\chapter{Commented Source Code}
+\section{Commented Source Code}
 
 This chapter contains the actual source code of the compiler.
 
