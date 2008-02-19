@@ -28,7 +28,7 @@ CLEANFILES		=
 DISTCLEANFILES		= Version.ml creolc.dvi creolc.pdf
 MAINTAINERCLEANFILES	= .depend Lexer.ml Parser.ml Parser.mli 
 
-EXTRA_DIST		= .depend Lexer.mll Parser.mly creolc.sty creolc.tex
+EXTRA_DIST		= .depend Lexer.mll Parser.mly creol.sty creolc.tex
 
 bin_PROGRAMS		= creolc creolc.opt
 
