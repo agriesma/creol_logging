@@ -1,32 +1,80 @@
 \documentclass[a4paper,10pt,draft]{article}
+\usepackage{a4wide}
 \usepackage[noweb]{ocamlweb}
 \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{creol}
-\usepackage{a4wide}
+\usepackage{hyperref}
+\usepackage[author-year]{amsrefs}
+\usepackage[T1]{fontenc}
 
-\title{\texttt{creolc}: A compiler for Creol}
+\newcommand{\Creol}{\textsc{creol}}
+
+\title{\texttt{creolc}: A compiler for {\Creol}}
 \author{Marcel Kyas}
 
 \begin{document}
 
-\lstset{language=Creol,
-  columns=flexible,
-  basicstyle=\footnotesize}
+\lstset{language=Creol,columns=flexible,basicstyle=\footnotesize}
 
 \maketitle
 
 \section{Introduction}
 
-This document describes the source code of the creol compiler.
+This document describes the source code of the {\Creol}
+compiler.
 
 \section{Commented Source Code}
 
 This chapter contains the actual source code of the compiler.
 
 \input code
+
+\begin{bibdiv}
+  \begin{biblist}
+
+    \bib{cardelli93:_implem_f}{report}{
+      author={Luca Cardelli},
+      title={An Implementation of $F_{<:}$},
+      institution={Digital Equipment Corporation, System Research Center},
+      year={1993},
+      number={97}
+    }
+
+    \bib{compagnoni04:_higher_order_subty_decid}{article}{
+      author={Adriana Beatriz Compagnoni},
+      title={Higher-Order Subtyping and its Decidability},
+      journal={Information and Computation},
+      year={2004},
+      volume={191},
+      number={1},
+      pages={41--113}
+    }
+
+    \bib{compagnoni96:_inter_types_multip_inher}{article}{
+      author={Adriana Beatriz Compagnoni},
+      author={Benjamin C. Pierce},
+      title={Intersection Types and Multiple Inheritance},
+      journal={Mathematical Structures in Computer Science},
+      year={1996},
+      volume={6},
+      number={5},
+      pages={469--501}
+    }
+
+    \bib{pierce94:_bound_quant_undec}{article}{
+      author={Benjamin C. Pierce},
+      title={Bounded Quantification is Undecidable},
+      journal={Information and Computation},
+      year={1994},
+      volume={112},
+      number={1},
+      pages={131--165}
+    }
+
+  \end{biblist}
+\end{bibdiv}
 
 \end{document}
