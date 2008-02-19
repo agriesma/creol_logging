@@ -217,9 +217,17 @@ vardecl:
 
 method_decl:
       OP i = ID p = parameters_opt
-      ioption(preceded(REQUIRES, expression))
-      ioption(preceded(ENSURES, expression))
-        { Method.make_decl i (fst p) (snd p) }
+      r = ioption(preceded(REQUIRES, expression))
+      e = ioption(preceded(ENSURES, expression))
+        { let r' = match r with
+	    | None -> Expression.Bool (Expression.make_note (), true)
+	    | Some x -> x
+	  and e' = match e with
+	    | None -> Expression.Bool (Expression.make_note (), true)
+	    | Some x -> x
+	  in
+	    Method.make_decl i (fst p) (snd p) r' e'
+	}
     | OP error
 	{ signal_error $startpos "syntax error in method declaration" }
     | OP ID error

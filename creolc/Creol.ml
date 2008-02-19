@@ -67,6 +67,10 @@ struct
 
   let string_p t = (t = string)
 
+  let time = Basic "Time"
+
+  let time_p t = (t = time)
+
   let history = Basic "Data"
 
   let history_p t = (t = history)
@@ -76,6 +80,12 @@ struct
   let label_p t = match t with Application("Label", _) -> true | _ -> false
 
   let list t = Application ("List", t)
+
+  let list_p t = match t with Application("List", _) -> true | _ -> false
+
+  let set t = Application ("Set", t)
+
+  let set_p t = match t with Application("Set", _) -> true | _ -> false
 
   let variable_p =
     function
@@ -984,14 +994,16 @@ module Method =
         coiface: Type.t;
         inpars: VarDecl.t list;
         outpars: VarDecl.t list;
+	requires: Expression.t;
+	ensures: Expression.t;
         vars: VarDecl.t list;
         body: Statement.t option;
 	location: string
       }
 
-    let make_decl n inp outp =
+    let make_decl n inp outp r e =
       { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
-	vars = []; body = None; location = "" }
+	requires = r; ensures = e; vars = []; body = None; location = "" }
 
     let set_cointerface cf m = { m with coiface = cf }
 

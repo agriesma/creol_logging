@@ -341,8 +341,10 @@ let pass input =
 
       let make_method name stmt =
 	{ Method.name = name; coiface = Type.Internal;
-	  inpars = []; outpars = []; vars = [];
-	  body = Some stmt; location = c.Class.name }
+	  inpars = []; outpars = [];
+	  requires = Expression.Bool (Expression.make_note (), true);
+	  ensures = Expression.Bool (Expression.make_note (), true);
+	  vars = []; body = Some stmt; location = c.Class.name }
       in
 
 	(* We use the invariant that each class declaration has at

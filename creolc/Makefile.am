@@ -22,12 +22,13 @@
 export OCAMLPATH
 
 # Subdirs
-MOSTLYCLEANFILES	= *~ *.aux *.log *.cmi *.cmo *.cmx *.cma *.cmxa *.o
+MOSTLYCLEANFILES	= *~ *.aux *.log *.out \
+			  *.cma *.cmxa *.cmi *.cmo *.cmx *.o
 CLEANFILES		=
-DISTCLEANFILES		= Version.ml
+DISTCLEANFILES		= Version.ml creolc.dvi creolc.pdf
 MAINTAINERCLEANFILES	= .depend Lexer.ml Parser.ml Parser.mli 
 
-EXTRA_DIST		= .depend Lexer.mll Parser.mly creolc.tex
+EXTRA_DIST		= .depend Lexer.mll Parser.mly creolc.sty creolc.tex
 
 bin_PROGRAMS		= creolc creolc.opt
 
@@ -177,6 +178,7 @@ version-tmp:
 pdf-local: ${CREOLC_PDF}
 
 creolc.pdf: creolc.tex code.tex
+	${PDFLATEX} creolc
 	${PDFLATEX} creolc
 	${PDFLATEX} creolc
 

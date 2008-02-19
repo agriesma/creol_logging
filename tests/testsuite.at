@@ -337,6 +337,7 @@ TEST_CREOLC_TYPECHECK([ExprFailure],
 TEST_CREOLC_TYPECHECK([Contracts],
 [Contracts.creol:37: Class Bar does not contract interface Bar
 ])
+TEST_CREOLC_TYPECHECK([If], [], [])
 
 dnl Test PASS: devirt
 dnl

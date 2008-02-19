@@ -19,13 +19,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s This file implements the type checker for Creol.
+(*s This module implements the type checker for Creol.
+
+  Because {\Creol} features recursive types (interfaces may accept
+  values of themselves), sub-typing, and method overloading, the formal
+  theory of these types corresponds to System
+  $F^{\omega}_{\wedge}$~\cite{compagnoni96:_inter_types_multip_inher}.
+  For this particular theory, type reconstruction is generally
+  undecidable~\citelist{\cite{pierce94:_bound_quant_undec}
+  \cite{compagnoni04:_higher_order_subty_decid}}.
+
+  The central ideas of this implementation are derived from Cardelli's
+  implementation of $F_{<:}$, which he has described
+  in~\cite{cardelli93:_implem_f}.  Using this algorithm, the type
+  checker may reject some well-typed programs, because it fails to
+  guess right, leading to sometimes puzzling error messages.  In
+  practice, these situations do not occur often.
 
 *)
 
 open Creol
 open Expression
 open Statement
+
+(* Our type environment is just a mapping from names, represented as
+   strings, to types. We do not expect many elements in this
+   environment, so a Map should provide the cleanest solution. *)
+
+module Env = Map.Make(String)
 
 (* The type checker raises an [Type_error (file, line, reason)]
    exception if it has deduced that an expression is not well-typed.  The
@@ -78,7 +99,8 @@ let subst_more_specific_p program s t =
 
    FIXME: If there is more than one best solution one solution is
    guessed, which is probably wrong.  Instead, we ought to report
-   a type error. *)
+   a type error.
+*)
 let find_most_specific program substs =
   List.fold_left
     (fun s t -> if subst_more_specific_p program s t then s else t)
@@ -307,18 +329,18 @@ let typecheck tree: Declaration.t list =
 	| New (n, t, args) ->
 	    New (subst_in_note subst n, Type.apply_substitution subst t,
 		 List.map (substitute_types_in_expression subst) args)
-	      (*i	| Choose (n, i, t, e) ->
-		Choose (subst_in_note subst n, i,
-		Type.apply_substitution subst t,
-		substitute_types_in_expression subst e)
-		| Forall (n, i, t, e) ->
-		Forall (subst_in_note subst n, i,
-		Type.apply_substitution subst t,
-		substitute_types_in_expression subst e)
-		| Exists (n, i, t, e) ->
-		Exists (subst_in_note subst n, i,
-		Type.apply_substitution subst t,
-		substitute_types_in_expression subst e) i*)
+	| Choose (n, i, t, e) ->
+	    Choose (subst_in_note subst n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
+	| Forall (n, i, t, e) ->
+	    Forall (subst_in_note subst n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
+	| Exists (n, i, t, e) ->
+	    Exists (subst_in_note subst n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    SSAId (subst_in_note subst n, name, version)
@@ -327,14 +349,16 @@ let typecheck tree: Declaration.t list =
 		 List.map (substitute_types_in_expression subst) args)
   in
   let type_check_expression program cls meth coiface constr expr =
-    (** Type check an expression [expr] in the environment
-	[program cls meth coiface] and the constraint set [constr] by
-	first reconstructing the types and then unification.
 
-	For ML like type systems a constraint set is usually a set of
-	equalities on types, i.e., each constraint looks like [s = t].
-	Here, we use inequalities of the form [s <= t] to represent a
-	constraint in the set.  *)
+    (* Type check an expression [expr] in the environment
+       [program cls meth coiface] and the constraint set [constr] by
+       first reconstructing the types and then unification.
+
+       For ML like type systems a constraint set is usually a set of
+       equalities on types, i.e., each constraint looks like [s = t].
+       Here, we use inequalities of the form [s <= t] to represent a
+       constraint in the set.  *)
+
     let fresh_names_in_type fresh_name t =
       let fv = Type.free_variables t in
       let (fresh_name', s) =
@@ -347,12 +371,36 @@ let typecheck tree: Declaration.t list =
       in
 	(fresh_name', Type.apply_substitution s t)
     in
-    let rec type_recon_expression constr fresh_name =
-      (** Reconstruct the type of an expression.
 
-	  Return the expression with updated type annotations (in Pierce,
-	  this would be the type), the function generating a new fresh
-	  type variable, and the new constraint set.  *)
+      (* Reconstruct the type of an expression.
+
+	 [env] is a type environment.  It is represented as a hash
+	 table ([Env]) which maps names to types.  The environment
+	 will be updated by the binders [Forall], [Exists], and
+	 [Choose].  Looking up the type information of a name occurs
+	 in this order:
+	 \begin{enumerate}
+	 \item First, look in [env] to see whether the name is locally
+	   bound.
+	 \item Second, look in the scope of the current method.
+	 \item Last, look in the scope of the current class and its
+	   superclasses.
+	 \end{enumerate}
+
+	 [constr] is the current constraint set.
+
+	 [fresh_name] is a monad used for generating new names.
+
+	 The result of this function is to update the input expression
+	 with new type variable names and to compute a new constraint
+	 set.  The constraint set will be used to compute
+	 instantiations for the type variables in [unify].
+
+	 Return the expression with updated type annotations (in Pierce,
+	 this would be the type), the function generating a new fresh
+	 type variable, and the new constraint set.  *)
+
+    let rec type_recon_expression env constr fresh_name =
       function
 	  This n ->
 	    (This (set_type n (Class.get_type cls)), constr, fresh_name)
@@ -361,7 +409,8 @@ let typecheck tree: Declaration.t list =
 	      (QualifiedThis (set_type n t, t), constr, fresh_name)
 	    else
 	      raise (Type_error (Expression.file n, Expression.line n,
-			         "Cannot qualify this as " ^ (Type.as_string t)))
+			         "Cannot qualify this as " ^
+				   (Type.as_string t)))
 	| Caller n ->
 	    (Caller (set_type n (Type.Basic coiface)), constr, fresh_name)
 	| Null n ->
@@ -369,11 +418,12 @@ let typecheck tree: Declaration.t list =
 	      (Null (set_type n v), constr, fresh_name')
 	| Nil n ->
 	    let (v, fresh_name') = fresh_var fresh_name in
-	      (Nil (set_type n (Type.Application ("List", [v]))), constr, fresh_name')
+	      (Nil (set_type n (Type.Application ("List", [v]))),
+	       constr, fresh_name')
 	| History n ->
 	    (History (set_type n Type.history), constr, fresh_name)
 	| Now n ->
-	    (Now (set_type n (Type.Basic "Time")), constr, fresh_name)
+	    (Now (set_type n Type.time), constr, fresh_name)
 	| Bool (n, value) ->
 	    (Bool (set_type n Type.bool, value), constr, fresh_name)
 	| Int (n, value) ->
@@ -384,13 +434,13 @@ let typecheck tree: Declaration.t list =
 	    (String (set_type n Type.string, value), constr, fresh_name)
 	| Tuple (n, l) ->
 	    let (l', constr', fresh_name') =
-	      type_recon_expression_list constr fresh_name l
+	      type_recon_expression_list env constr fresh_name l
 	    in
 	      (Tuple (set_type n (Type.Tuple (List.map get_type l')), l'),
 	       constr', fresh_name')
-	| ListLit (n, l) -> 
+	| ListLit (n, l) ->
 	    let (l', constr', fresh_name') = 
-	      type_recon_expression_list constr fresh_name l in
+	      type_recon_expression_list env constr fresh_name l in
 	    let (v, fresh_name'') = fresh_var fresh_name' in
 	    let ty = Type.Application ("List", [v]) in
 	      (ListLit (set_type n ty, l'),
@@ -398,9 +448,9 @@ let typecheck tree: Declaration.t list =
 	       fresh_name'')
 	| SetLit (n, l) ->
 	    let (l', constr', fresh_name') = 
-	      type_recon_expression_list constr fresh_name l in
+	      type_recon_expression_list env constr fresh_name l in
 	    let (v, fresh_name'') = fresh_var fresh_name' in
-	    let ty = Type.Application ("Set", [v]) in
+	    let ty = Type.set [v] in
 	      (SetLit (set_type n ty, l'),
 	       (List.map (fun e -> (get_type e, v)) l') @ constr',
 	       fresh_name'')
@@ -420,17 +470,17 @@ let typecheck tree: Declaration.t list =
 					       " not declared"))
 	    in
 	      (Id (set_type n res, name), constr, fresh_name)
-	| StaticAttr (n, name, (Type.Basic c)) ->
+	| StaticAttr (n, name, ((Type.Basic c) as t)) ->
 	    let res =
 	      Program.find_attr_decl program (Program.find_class program c)
 		name
 	    in
-	      (StaticAttr (set_type n res.VarDecl.var_type, name,
-			   (Type.Basic c)), constr, fresh_name)
+	      (StaticAttr (set_type n res.VarDecl.var_type, name, t),
+	       constr, fresh_name)
 	| StaticAttr _ -> assert false
 	| Unary (n, op, arg) ->
 	    let (arg', constr', fresh_name') =
-	      type_recon_expression constr fresh_name arg 
+	      type_recon_expression env constr fresh_name arg 
 	    in
 	    let name = string_of_unaryop op in
 	    let (fresh_name'', ty1) =
@@ -467,10 +517,10 @@ let typecheck tree: Declaration.t list =
 	       (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Binary (n, op, arg1, arg2) ->
 	    let (arg1', constr', fresh_name') =
-	      type_recon_expression constr fresh_name arg1
+	      type_recon_expression env constr fresh_name arg1
 	    in
 	    let (arg2', constr'', fresh_name'') =
-	      type_recon_expression constr' fresh_name' arg2
+	      type_recon_expression env constr' fresh_name' arg2
 	    in
 	    let name = string_of_binaryop op in
 	    let (fresh_name''', ty1) =
@@ -506,25 +556,22 @@ let typecheck tree: Declaration.t list =
 	      (Binary (set_type n v, op, arg1', arg2'),
 	       (Type.Function (ty2, v), ty1)::constr'', fresh_name'''')
 	| Expression.If (n, cond, iftrue, iffalse) ->
-	    let (ncond, constr', fresh_name') =
-	      type_recon_expression constr fresh_name cond
-	    in let  (niftrue, constr'', fresh_name'') =
-		type_recon_expression constr' fresh_name' iftrue
-	    in let (niffalse, constr''', fresh_name''') =
-		type_recon_expression constr'' fresh_name'' iffalse
+	    let (cond', constr', fresh_name') =
+	      type_recon_expression env constr fresh_name cond
 	    in
-	      if (Expression.get_type ncond) = Type.bool then
-		let restype =
-		  Program.meet program [get_type niftrue; get_type niffalse]
-		in
-		  (Expression.If (set_type n restype, ncond, niftrue, niffalse),
-		   constr''', fresh_name''')
-	      else
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Condition must be boolean"))
+	    let  (iftrue', constr'', fresh_name'') =
+		type_recon_expression env constr' fresh_name' iftrue
+	    in
+	    let (iffalse', constr''', fresh_name''') =
+		type_recon_expression env constr'' fresh_name'' iffalse
+	    in
+	    let (rt, fresh_name'''') = fresh_var fresh_name'''  in
+	      (Expression.If (set_type n rt, cond', iftrue', iffalse'),
+	       [(get_type cond', Type.bool); (get_type iftrue', rt);
+		(get_type iffalse', rt)] @ constr''', fresh_name'''')
 	| FuncCall (n, name, args) ->
 	    let (nargs, constr', fresh_name') =
-	      type_recon_expression_list constr fresh_name args 
+	      type_recon_expression_list env constr fresh_name args 
 	    in
 	    let (fresh_name'', ty1) =
 	      match Program.find_functions program name with
@@ -565,14 +612,15 @@ let typecheck tree: Declaration.t list =
 		  Not_found -> false
 	    in
 	      if exists then
-		(Label (set_type n (Type.Basic "Bool"), l), constr, fresh_name)
+		(Label (set_type n (Type.Basic "Bool"), l), constr,
+		 fresh_name)
 	      else
 		raise (Type_error (Expression.file n, Expression.line n,
 				   "Label " ^ name ^ " not declared"))
 	| Label _ -> assert false
 	| New (n, Type.Basic c, args) ->
 	    let (nargs, constr', fresh_name') =
-	      type_recon_expression_list constr fresh_name args
+	      type_recon_expression_list env constr fresh_name args
 	    in
 	    let args_t = Type.Tuple (List.map get_type nargs) in
 	    let cls_n =
@@ -599,6 +647,37 @@ let typecheck tree: Declaration.t list =
 				     (Type.as_string ctor_t) ^ " but got " ^
 				     (Type.as_string args_t)))
 	| New _ -> assert false
+	| Choose (n, v, t, e) ->
+
+	    (* The rule for typing this expression is: The type of [e]
+	       is \texttt{Bool} in an environment where [v] has type
+	       [t]. Then the result type is [t]. *)
+
+	    if Env.mem v env then () ;
+	    let (e', constr', fresh_name') =
+	      type_recon_expression (Env.add v t env) constr fresh_name e
+	    in
+	      (Choose (set_type n t, v, t, e'),
+	       (get_type e', Type.bool)::constr', fresh_name')
+	| Exists (n, v, t, e) ->
+
+	    (* The rule for typing this expression is: The type of [e]
+	       is \texttt{Bool} in an environment where [v] has type
+	       [t]. Then the result type is \texttt{Bool}. *)
+
+	    if Env.mem v env then () ;
+	    let (e', constr', fresh_name') =
+	      type_recon_expression (Env.add v t env) constr fresh_name e
+	    in
+	      (Exists (set_type n Type.bool, v, t, e'),
+	       (get_type e', Type.bool)::constr', fresh_name')
+	| Forall (n, v, t, e) ->
+	    if Env.mem v env then () ;
+	    let (e', constr', fresh_name') =
+	      type_recon_expression (Env.add v t env) constr fresh_name e
+	    in
+	      (Forall (set_type n Type.bool, v, t, e'),
+	       (get_type e', Type.bool)::constr', fresh_name')
 	| Expression.Extern _ -> assert false
 	| SSAId (n, name, version) ->
 	    let res =
@@ -612,23 +691,24 @@ let typecheck tree: Declaration.t list =
 	    in
 	      (SSAId (set_type n res, name, version), constr, fresh_name)
 	| Phi (n, args) ->
-	    let (nargs, constr', fresh_name') =
-	      type_recon_expression_list constr fresh_name args
+	    let (args', constr', fresh_name') =
+	      type_recon_expression_list env constr fresh_name args
 	    in
-	    let nty =
-	      Program.meet program (List.map get_type nargs)
+	    let ty' =
+	      Program.meet program (List.map get_type args')
 	    in
-	      (Phi (set_type n nty, nargs), constr', fresh_name')
-    and type_recon_expression_list constr fresh_name =
+	      (Phi (set_type n ty', args'), constr', fresh_name')
+    and type_recon_expression_list env constr fresh_name =
       function
 	  [] -> ([], constr, fresh_name)
 	| e::l ->
-	    let (e', c', f') = type_recon_expression constr fresh_name e in
-	    let (l', c'', f'') = type_recon_expression_list c' f' l in
+	    let (e', c', f') = type_recon_expression env constr fresh_name e in
+	    let (l', c'', f'') = type_recon_expression_list env c' f' l in
 	      (e'::l', c'', f'')
     in
     let (expr', constr', _) =
-      type_recon_expression constr (Misc.fresh_name_gen "_") expr
+      type_recon_expression Env.empty constr
+	(Misc.fresh_name_gen "_") expr
     in
     let subst =
       try
@@ -870,9 +950,17 @@ let typecheck tree: Declaration.t list =
 	  Skip n -> Skip n
         | Release n -> Release n
         | Assert (n, e) ->
-	    Assert (n, type_check_expression program cls meth coiface [] e)
+	    let e' = type_check_expression program cls meth coiface [] e in
+	      if Type.bool_p (get_type e') then
+		Assert (n, e')
+	      else
+		raise (Type_error (n.file, n.line, "Condition is not Bool"))
         | Prove (n, e) ->
-	    Prove (n, type_check_expression program cls meth coiface [] e)
+	    let e' = type_check_expression program cls meth coiface [] e in
+	      if Type.bool_p (get_type e') then
+		Prove (n, e')
+	      else
+		raise (Type_error (n.file, n.line, "Condition is not Bool"))
         | Assign (n, lhs, rhs) ->
 	    let lhs' =
 	      List.map (type_check_lhs program cls meth coiface) lhs
@@ -919,7 +1007,11 @@ let typecheck tree: Declaration.t list =
 	    in
 	      Assign (n, lhs', rhs'')
         | Await (n, e) ->
-	    Await (n, type_check_expression program cls meth coiface [] e)
+	    let e' = type_check_expression program cls meth coiface [] e in
+	      if Type.bool_p (get_type e') then
+		Await (n, e')
+	      else
+		raise (Type_error (n.file, n.line, "Condition is not Bool"))
         | Posit (n, e) ->
 	    Posit (n, type_check_expression program cls meth coiface [] e)
         | AsyncCall (n, label, callee, m, (co, _, _), ins) ->
@@ -976,17 +1068,39 @@ let typecheck tree: Declaration.t list =
 	      AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	| Tailcall _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
-	    If (n, type_check_expression program cls meth coiface [] cond,
-		type_check_statement program cls meth coiface iftrue,
-		type_check_statement program cls meth coiface iffalse)
+	    let cond' =
+	      type_check_expression program cls meth coiface [] cond
+	    in
+	      if Type.bool_p (get_type cond') then
+		If (n, cond',
+		    type_check_statement program cls meth coiface iftrue,
+		    type_check_statement program cls meth coiface iffalse)
+	      else
+		raise (Type_error (n.file, n.line, "Condition is not Bool"))
 	| While (n, cond, inv, body) ->
-	    While (n, type_check_expression program cls meth coiface [] cond,
-		   type_check_expression program cls meth coiface [] inv,
-		   type_check_statement program cls meth coiface body)
+	    let cond' = type_check_expression program cls meth coiface [] cond
+	    and inv' = type_check_expression program cls meth coiface [] inv
+	    in
+	      if Type.bool_p (get_type cond') then
+		if Type.bool_p (get_type inv') then
+		  While (n, cond', inv',
+			 type_check_statement program cls meth coiface body)
+		else
+		  raise (Type_error (n.file, n.line, "Invariant is not Bool"))
+	      else
+		raise (Type_error (n.file, n.line, "Condition is not Bool"))
 	| DoWhile (n, cond, inv, body) ->
-	    DoWhile (n, type_check_expression program cls meth coiface [] cond,
-		   type_check_expression program cls meth coiface [] inv,
-		   type_check_statement program cls meth coiface body)
+	    let cond' = type_check_expression program cls meth coiface [] cond
+	    and inv' = type_check_expression program cls meth coiface [] inv
+	    in
+	      if Type.bool_p (get_type cond') then
+		if Type.bool_p (get_type inv') then
+		  DoWhile (n, cond', inv',
+			   type_check_statement program cls meth coiface body)
+		else
+		  raise (Type_error (n.file, n.line, "Invariant is not Bool"))
+	      else
+		raise (Type_error (n.file, n.line, "Condition is not Bool"))
 	| Sequence (n, s1, s2) ->
 	    let ns1 = type_check_statement program cls meth coiface s1 in
 	    let ns2 = type_check_statement program cls meth coiface s2 in
@@ -1009,21 +1123,37 @@ let typecheck tree: Declaration.t list =
 	List.iter (f "input") meth.Method.inpars ;
 	List.iter (f "output") meth.Method.outpars
     in
-      { meth with Method.body =
-	  match meth.Method.body with
+    let r' = type_check_expression program cls { meth with Method.vars = [] }
+      coiface [] meth.Method.requires
+    and e' = type_check_expression program cls { meth with Method.vars = [] }
+      coiface [] meth.Method.ensures
+    and b' = 	  match meth.Method.body with
 	      None -> None
 	    | Some s ->
-		Some (type_check_statement program cls meth coiface s) }
+		Some (type_check_statement program cls meth coiface s)
+    in
+      if Type.bool_p (get_type r') then
+	if Type.bool_p (get_type e') then
+	  { meth with Method.requires = r'; ensures = e'; body = b' }
+	else
+	  raise (Type_error (Expression.file (Expression.note e'),
+			     Expression.line (Expression.note e'),
+			     "Post-condition is not Bool"))
+      else
+	raise (Type_error (Expression.file (Expression.note r'),
+			   Expression.line (Expression.note r'),
+			   "Pre-condition is not Bool"))
   and type_check_with_def program cls w =
     let coiface = Type.as_string w.With.co_interface in
     let () = if not (Program.interface_p program w.With.co_interface) then
       raise (Type_error (cls.Class.file, cls.Class.line,
 			 "cointerface " ^ coiface ^ " is not an interface"))
     in
-      { w with With.methods =
-	  List.map
-	    (fun m -> type_check_method program cls coiface m)
-	    w.With.methods }
+    let m' =
+      List.map (fun m -> type_check_method program cls coiface m)
+	w.With.methods
+    in
+      { w with With.methods = m' }
 
   (* A class is well typed, if it provides methods for all the
      interfaces it claims to implement, if the initialisation of all
