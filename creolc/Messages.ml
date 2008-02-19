@@ -53,12 +53,14 @@ type warning =
     | Undefined
     | MissingInit
     | MissingRun
+    | Shadow
 
 let warnings =
   [("unused", Unused, "Warn if a variable is declared but not unused");
    ("undefined", Undefined, "Warn if a variable is used before it is defined");
    ("init", MissingInit, "Warn if the init method is not defined");
    ("run", MissingRun, "Warn if the run method is not defined");
+   ("shadow", MissingRun, "Warn if a variable hides another one");
   ]
 
 let help_warnings () =

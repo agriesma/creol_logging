@@ -266,88 +266,6 @@ let unify ~program ~constraints =
 (* Type check a tree. *)
 
 let typecheck tree: Declaration.t list =
-  let rec substitute_types_in_expression subst expr =
-    let subst_in_note subst note =
-      { note with Expression.ty =
-	  Type.apply_substitution subst note.Expression.ty }
-    in
-      match expr with
-	  This n ->
-	    This (subst_in_note subst n)
-	| QualifiedThis (n, t) ->
-	    QualifiedThis (subst_in_note subst n,
-			   Type.apply_substitution subst t)
-	| Caller n ->
-	    Caller (subst_in_note subst n)
-	| Null n ->
-	    Null (subst_in_note subst n)
-	| Nil n ->
-	    Nil (subst_in_note subst n)
-	| History n ->
-	    Nil (subst_in_note subst n)
-	| Now n ->
-	    Now (subst_in_note subst n)
-	| Bool (n, value) ->
-	    Bool (subst_in_note subst n, value)
-	| Int (n, value) ->
-	    Int (subst_in_note subst n, value)
-	| Float (n, value) ->
-	    Float (subst_in_note subst n, value)
-	| String (n, value) ->
-	    String (subst_in_note subst n, value)
-	| Tuple (n, l) ->
-	    Tuple (subst_in_note subst n,
-		   List.map (substitute_types_in_expression subst) l)
-	| ListLit (n, l) ->
-	    ListLit (subst_in_note subst n,
-		     List.map (substitute_types_in_expression subst) l)
-	| SetLit (n, l) ->
-	    SetLit (subst_in_note subst n,
-		    List.map (substitute_types_in_expression subst) l)
-	| Id (n, name) ->
-	    Id (subst_in_note subst n, name)
-	| StaticAttr (n, name, t) ->
-	    StaticAttr (subst_in_note subst n, name, t)
-	| Unary (n, op, arg) ->
-	    Unary (subst_in_note subst n, op,
-		   substitute_types_in_expression subst arg)
-	| Binary (n, op, arg1, arg2) ->
-	    Binary (subst_in_note subst n, op,
-		    substitute_types_in_expression subst arg1,
-		    substitute_types_in_expression subst arg2)
-	| FuncCall (n, name, args) ->
-	    FuncCall (subst_in_note subst n, name,
-		      List.map (substitute_types_in_expression subst) args)
-	| Expression.If (n, cond, iftrue, iffalse) ->
-	    Expression.If (subst_in_note subst n,
-			   substitute_types_in_expression subst cond,
-			   substitute_types_in_expression subst iftrue,
-			   substitute_types_in_expression subst iffalse)
-	| Label (n, l) ->
-	    Label (subst_in_note subst n,
-		   substitute_types_in_expression subst l)
-	| New (n, t, args) ->
-	    New (subst_in_note subst n, Type.apply_substitution subst t,
-		 List.map (substitute_types_in_expression subst) args)
-	| Choose (n, i, t, e) ->
-	    Choose (subst_in_note subst n, i,
-		    Type.apply_substitution subst t,
-		    substitute_types_in_expression subst e)
-	| Forall (n, i, t, e) ->
-	    Forall (subst_in_note subst n, i,
-		    Type.apply_substitution subst t,
-		    substitute_types_in_expression subst e)
-	| Exists (n, i, t, e) ->
-	    Exists (subst_in_note subst n, i,
-		    Type.apply_substitution subst t,
-		    substitute_types_in_expression subst e)
-	| Expression.Extern _ -> assert false
-	| SSAId (n, name, version) ->
-	    SSAId (subst_in_note subst n, name, version)
-	| Phi (n, args) ->
-	    Phi (subst_in_note subst n,
-		 List.map (substitute_types_in_expression subst) args)
-  in
   let type_check_expression program cls meth coiface constr expr =
 
     (* Type check an expression [expr] in the environment
@@ -457,17 +375,19 @@ let typecheck tree: Declaration.t list =
 	| Id (n, name) ->
 	    let res =
 	      try
-		(Method.find_variable meth name).VarDecl.var_type
+		try
+		  try
+		    Env.find name env
+		  with
+		      _ -> (Method.find_variable meth name).VarDecl.var_type
+		with _ ->
+		  (Program.find_attr_decl program cls name).VarDecl.var_type
 	      with
 		  Not_found ->
-		    try
-		      (Program.find_attr_decl program cls name).VarDecl.var_type
-		    with
-			Not_found ->
-			  raise (Type_error ((Expression.file n),
-					     (Expression.line n),
-					     "Identifier " ^ name ^
-					       " not declared"))
+		    raise (Type_error ((n.Expression.file),
+				       (n.Expression.line),
+				       "Identifier " ^ name ^
+					 " not declared"))
 	    in
 	      (Id (set_type n res, name), constr, fresh_name)
 	| StaticAttr (n, name, ((Type.Basic c) as t)) ->
@@ -653,7 +573,9 @@ let typecheck tree: Declaration.t list =
 	       is \texttt{Bool} in an environment where [v] has type
 	       [t]. Then the result type is [t]. *)
 
-	    if Env.mem v env then () ;
+	    if Env.mem v env then
+	      Messages.warn Messages.Shadow n.Expression.file n.Expression.line
+		("Variable " ^ v ^ " hides a different variable") ;
 	    let (e', constr', fresh_name') =
 	      type_recon_expression (Env.add v t env) constr fresh_name e
 	    in
@@ -665,14 +587,18 @@ let typecheck tree: Declaration.t list =
 	       is \texttt{Bool} in an environment where [v] has type
 	       [t]. Then the result type is \texttt{Bool}. *)
 
-	    if Env.mem v env then () ;
+	    if Env.mem v env then
+	      Messages.warn Messages.Shadow n.Expression.file n.Expression.line
+		("Variable " ^ v ^ " hides a different variable") ;
 	    let (e', constr', fresh_name') =
 	      type_recon_expression (Env.add v t env) constr fresh_name e
 	    in
 	      (Exists (set_type n Type.bool, v, t, e'),
 	       (get_type e', Type.bool)::constr', fresh_name')
 	| Forall (n, v, t, e) ->
-	    if Env.mem v env then () ;
+	    if Env.mem v env then
+	      Messages.warn Messages.Shadow n.Expression.file n.Expression.line
+		("Variable " ^ v ^ " hides a different variable") ;
 	    let (e', constr', fresh_name') =
 	      type_recon_expression (Env.add v t env) constr fresh_name e
 	    in
@@ -682,7 +608,11 @@ let typecheck tree: Declaration.t list =
 	| SSAId (n, name, version) ->
 	    let res =
 	      try
-		(Method.find_variable meth name).VarDecl.var_type
+		try
+		  Env.find name env
+		with
+		    _ ->
+		      (Method.find_variable meth name).VarDecl.var_type
 	      with
 		  Not_found ->
 		    raise (Type_error ((Expression.file n),
@@ -732,22 +662,32 @@ let typecheck tree: Declaration.t list =
     in
       substitute_types_in_expression subst expr'
   in
+  let type_check_assertion program cls coiface meth e =
+    let e' =
+      type_check_expression program cls meth coiface [] e
+    in
+      if Type.bool_p (get_type e') then
+	e'
+      else
+	raise (Type_error (Expression.file (Expression.note e'),
+			   Expression.line (Expression.note e'),
+			   "Expression is not of type Bool"))
+  in
   let type_check_lhs program (cls: Class.t) meth coiface =
     function
 	LhsId (n, name) ->
 	  let res =
 	    try
+	      try
 	      (Method.find_variable meth name).VarDecl.var_type
+	      with
+		  Not_found ->
+		    (Program.find_attr_decl program cls name).VarDecl.var_type
 	    with
 		Not_found ->
-		  try
-		    (Program.find_attr_decl program cls name).VarDecl.var_type
-		  with
-		      Not_found ->
-			raise (Type_error ((Expression.file n),
-					   (Expression.line n),
-					   "Identifier " ^ name ^
-					     " not declared"))
+		  raise (Type_error ((Expression.file n),
+				     (Expression.line n),
+				     "Identifier " ^ name ^ " not declared"))
 	  in
 	    LhsId (set_type n res, name)
       | LhsAttr (n, name, (Type.Basic c)) ->
@@ -950,17 +890,11 @@ let typecheck tree: Declaration.t list =
 	  Skip n -> Skip n
         | Release n -> Release n
         | Assert (n, e) ->
-	    let e' = type_check_expression program cls meth coiface [] e in
-	      if Type.bool_p (get_type e') then
-		Assert (n, e')
-	      else
-		raise (Type_error (n.file, n.line, "Condition is not Bool"))
+	    let e' = type_check_assertion program cls coiface meth e in
+	      Assert (n, e')
         | Prove (n, e) ->
-	    let e' = type_check_expression program cls meth coiface [] e in
-	      if Type.bool_p (get_type e') then
-		Prove (n, e')
-	      else
-		raise (Type_error (n.file, n.line, "Condition is not Bool"))
+	    let e' = type_check_assertion program cls coiface meth e in
+	      Prove (n, e')
         | Assign (n, lhs, rhs) ->
 	    let lhs' =
 	      List.map (type_check_lhs program cls meth coiface) lhs
@@ -1007,13 +941,11 @@ let typecheck tree: Declaration.t list =
 	    in
 	      Assign (n, lhs', rhs'')
         | Await (n, e) ->
-	    let e' = type_check_expression program cls meth coiface [] e in
-	      if Type.bool_p (get_type e') then
-		Await (n, e')
-	      else
-		raise (Type_error (n.file, n.line, "Condition is not Bool"))
+	    let e' = type_check_assertion program cls coiface meth e in
+	      Await (n, e')
         | Posit (n, e) ->
-	    Posit (n, type_check_expression program cls meth coiface [] e)
+	    let e' = type_check_assertion program cls coiface meth e in
+	      Posit (n, e')
         | AsyncCall (n, label, callee, m, (co, _, _), ins) ->
 	    let (label', callee', signature, ins') =
 	      check_async_method_call n label callee m ins
@@ -1068,39 +1000,22 @@ let typecheck tree: Declaration.t list =
 	      AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	| Tailcall _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
-	    let cond' =
-	      type_check_expression program cls meth coiface [] cond
-	    in
-	      if Type.bool_p (get_type cond') then
-		If (n, cond',
-		    type_check_statement program cls meth coiface iftrue,
-		    type_check_statement program cls meth coiface iffalse)
-	      else
-		raise (Type_error (n.file, n.line, "Condition is not Bool"))
+	    let cond' = type_check_assertion program cls coiface meth cond in
+	      If (n, cond',
+		  type_check_statement program cls meth coiface iftrue,
+		  type_check_statement program cls meth coiface iffalse)
 	| While (n, cond, inv, body) ->
-	    let cond' = type_check_expression program cls meth coiface [] cond
-	    and inv' = type_check_expression program cls meth coiface [] inv
+	    let cond' = type_check_assertion program cls coiface meth cond
+	    and inv' = type_check_assertion program cls coiface meth inv
 	    in
-	      if Type.bool_p (get_type cond') then
-		if Type.bool_p (get_type inv') then
-		  While (n, cond', inv',
-			 type_check_statement program cls meth coiface body)
-		else
-		  raise (Type_error (n.file, n.line, "Invariant is not Bool"))
-	      else
-		raise (Type_error (n.file, n.line, "Condition is not Bool"))
+	      While (n, cond', inv',
+		     type_check_statement program cls meth coiface body)
 	| DoWhile (n, cond, inv, body) ->
-	    let cond' = type_check_expression program cls meth coiface [] cond
-	    and inv' = type_check_expression program cls meth coiface [] inv
+	    let cond' = type_check_assertion program cls coiface meth cond
+	    and inv' = type_check_assertion program cls coiface meth inv
 	    in
-	      if Type.bool_p (get_type cond') then
-		if Type.bool_p (get_type inv') then
-		  DoWhile (n, cond', inv',
-			   type_check_statement program cls meth coiface body)
-		else
-		  raise (Type_error (n.file, n.line, "Invariant is not Bool"))
-	      else
-		raise (Type_error (n.file, n.line, "Condition is not Bool"))
+	      DoWhile (n, cond', inv',
+		       type_check_statement program cls meth coiface body)
 	| Sequence (n, s1, s2) ->
 	    let ns1 = type_check_statement program cls meth coiface s1 in
 	    let ns2 = type_check_statement program cls meth coiface s2 in
@@ -1123,11 +1038,10 @@ let typecheck tree: Declaration.t list =
 	List.iter (f "input") meth.Method.inpars ;
 	List.iter (f "output") meth.Method.outpars
     in
-    let r' = type_check_expression program cls { meth with Method.vars = [] }
-      coiface [] meth.Method.requires
-    and e' = type_check_expression program cls { meth with Method.vars = [] }
-      coiface [] meth.Method.ensures
-    and b' = 	  match meth.Method.body with
+    let m' = { meth with Method.vars = [] } in
+    let r' = type_check_assertion program cls coiface m' meth.Method.requires
+    and e' = type_check_assertion program cls coiface m' meth.Method.ensures
+    and b' = match meth.Method.body with
 	      None -> None
 	    | Some s ->
 		Some (type_check_statement program cls meth coiface s)
@@ -1145,15 +1059,19 @@ let typecheck tree: Declaration.t list =
 			   "Pre-condition is not Bool"))
   and type_check_with_def program cls w =
     let coiface = Type.as_string w.With.co_interface in
-    let () = if not (Program.interface_p program w.With.co_interface) then
-      raise (Type_error (cls.Class.file, cls.Class.line,
-			 "cointerface " ^ coiface ^ " is not an interface"))
+    let () =
+      if not (Program.interface_p program w.With.co_interface) then
+	raise (Type_error (cls.Class.file, cls.Class.line,
+			   "cointerface " ^ coiface ^ " is not an interface"))
+    in
+    let i' =
+      List.map (type_check_assertion program cls coiface Method.empty)
+	w.With.invariants
     in
     let m' =
-      List.map (fun m -> type_check_method program cls coiface m)
-	w.With.methods
+      List.map (type_check_method program cls coiface) w.With.methods
     in
-      { w with With.methods = m' }
+      { w with With.methods = m'; invariants = i' }
 
   (* A class is well typed, if it provides methods for all the
      interfaces it claims to implement, if the initialisation of all

@@ -531,6 +531,89 @@ struct
 	Binary(_, o, _, _) when o = op -> true
       | _ -> false
 
+  (* Apply a type substitution to an expression. *)
+
+  let rec substitute_types_in_expression subst expr =
+    let subst_in_note note =
+      { note with ty = Type.apply_substitution subst note.ty }
+    in
+      match expr with
+	  This n ->
+	    This (subst_in_note n)
+	| QualifiedThis (n, t) ->
+	    QualifiedThis (subst_in_note n, Type.apply_substitution subst t)
+	| Caller n ->
+	    Caller (subst_in_note n)
+	| Null n ->
+	    Null (subst_in_note n)
+	| Nil n ->
+	    Nil (subst_in_note n)
+	| History n ->
+	    Nil (subst_in_note n)
+	| Now n ->
+	    Now (subst_in_note n)
+	| Bool (n, value) ->
+	    Bool (subst_in_note n, value)
+	| Int (n, value) ->
+	    Int (subst_in_note n, value)
+	| Float (n, value) ->
+	    Float (subst_in_note n, value)
+	| String (n, value) ->
+	    String (subst_in_note n, value)
+	| Tuple (n, l) ->
+	    Tuple (subst_in_note n,
+		   List.map (substitute_types_in_expression subst) l)
+	| ListLit (n, l) ->
+	    ListLit (subst_in_note n,
+		     List.map (substitute_types_in_expression subst) l)
+	| SetLit (n, l) ->
+	    SetLit (subst_in_note n,
+		    List.map (substitute_types_in_expression subst) l)
+	| Id (n, name) ->
+	    Id (subst_in_note n, name)
+	| StaticAttr (n, name, t) ->
+	    StaticAttr (subst_in_note n, name, t)
+	| Unary (n, op, arg) ->
+	    Unary (subst_in_note n, op,
+		   substitute_types_in_expression subst arg)
+	| Binary (n, op, arg1, arg2) ->
+	    Binary (subst_in_note n, op,
+		    substitute_types_in_expression subst arg1,
+		    substitute_types_in_expression subst arg2)
+	| FuncCall (n, name, args) ->
+	    FuncCall (subst_in_note n, name,
+		      List.map (substitute_types_in_expression subst) args)
+	| If (n, cond, iftrue, iffalse) ->
+	    If (subst_in_note n,
+		substitute_types_in_expression subst cond,
+		substitute_types_in_expression subst iftrue,
+		substitute_types_in_expression subst iffalse)
+	| Label (n, l) ->
+	    Label (subst_in_note n,
+		   substitute_types_in_expression subst l)
+	| New (n, t, args) ->
+	    New (subst_in_note n, Type.apply_substitution subst t,
+		 List.map (substitute_types_in_expression subst) args)
+	| Choose (n, i, t, e) ->
+	    Choose (subst_in_note n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
+	| Forall (n, i, t, e) ->
+	    Forall (subst_in_note n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
+	| Exists (n, i, t, e) ->
+	    Exists (subst_in_note n, i,
+		    Type.apply_substitution subst t,
+		    substitute_types_in_expression subst e)
+	| Extern _ as e -> e
+	| SSAId (n, name, version) ->
+	    SSAId (subst_in_note n, name, version)
+	| Phi (n, args) ->
+	    Phi (subst_in_note n,
+		 List.map (substitute_types_in_expression subst) args)
+
+
   (* Determines, whether a term is a boolean atom.
 
      An atom is either an atomic proposition or the negation of an
@@ -1001,14 +1084,25 @@ module Method =
 	location: string
       }
 
+    (* This is the empty method.  It is used by the type checker
+       for checking types on class level expressions. *)
+
+    let empty =
+      { name = ""; coiface = Type.Internal; inpars = []; outpars = [];
+	requires = Expression.Bool(Expression.make_note (), true);
+	ensures = Expression.Bool(Expression.make_note (), true);
+	vars = []; body = None; location = "" }
+
     let make_decl n inp outp r e =
       { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
 	requires = r; ensures = e; vars = []; body = None; location = "" }
 
     let set_cointerface cf m = { m with coiface = cf }
 
+
     (* Internal helper function to build a type signature from a list
        [l] of variable declarations. *)
+
     let build_type l =
       Type.Tuple (List.map (fun v -> v.VarDecl.var_type) l)
 
