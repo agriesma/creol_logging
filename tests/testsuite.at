@@ -338,6 +338,23 @@ TEST_CREOLC_TYPECHECK([Contracts],
 [Contracts.creol:37: Class Bar does not contract interface Bar
 ])
 TEST_CREOLC_TYPECHECK([If], [], [])
+TEST_CREOLC_TYPECHECK([New], [], [])
+TEST_CREOLC_TYPECHECK([New2], [], [])
+TEST_CREOLC_TYPECHECK([New3],
+[New3.creol:26: Arguments to new C mismatch in length
+])
+TEST_CREOLC_TYPECHECK([New4],
+[New4.creol:26: Class E not defined
+])
+TEST_CREOLC_TYPECHECK([New5],
+[[New5.creol:26: expression has type Bool but expected is type Int
+  Cannot satisfy constraints: Bool <: Int
+]])
+
+
+
+
+
 
 dnl Test PASS: devirt
 dnl

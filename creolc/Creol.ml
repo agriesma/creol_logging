@@ -1385,6 +1385,12 @@ struct
 	  Declaration.Class cls -> cls
 	| _ -> assert false
 
+  (* Get the type of a class. *)
+
+  let type_of_class ~program ~name =
+    Class.get_type (find_class program name)
+
+
 
   (* Find all super-classes of a class [name] in [program].  Raises a
      [Class_not_found] exception in the context of the class from
@@ -1430,7 +1436,6 @@ struct
       match List.find interface_with_name program with
 	  Declaration.Interface i -> i
 	| _ -> assert false
-
 
 
   (* Check, whether [iface] is an interface in [program] *)

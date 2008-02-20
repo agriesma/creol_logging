@@ -59,32 +59,12 @@ type info = {
    we operate on tree-level.  This function also treats choice
    statements.
 
-   \textbf{BUG}: We need to find out how we can come up with a clever
+   \textbf{TO DO}: We need to find out how we can come up with a clever
    implementation for merge statements.  We may need to expand the
    merge statements into choice statements.  For now, we assume
    that there is {i no} assignment to local variables within merge
-   statements, if they are also used within the merge
-   statement.
-
-   The current code breaks on this:
-
-   \begin{verbatim}
-   begin x := a; release; a := x end |||
-   begin a := x; release; x:= a end
-   \end{verbatim}
-
-   This will result in
-
-   \begin{verbatim}
-   begin x1 := a0; release; a1 := x1 end |||
-   begin a2 := x0; release; x2 := a2 end
-   \end{verbatim}
-
-   But we are missing some phi nodes here, since the interleaving
-   would make something like x1 := phi(a0, a2) and a2 := phi(x0,
-   x1), a1 := phi(x1, x2), and x2 := phi(a0, a2).  How we can come
-   up with something like this, and have some of these statements
-   become join nodes has to be worked out.  *)
+   statements, if they are also used within the merge statement.
+*)
 
 let into_ssa tree =
   let rec expression_to_ssa env =
@@ -303,7 +283,6 @@ let into_ssa tree =
 	  let ns1 = statement_to_ssa env s1 in
 	  let ns2 = statement_to_ssa env s2 in
 	    Sequence (n, ns1, ns2)
-      | Merge _ -> assert false
       | Choice (n, l, r) -> 
 	  let env_pre = Hashtbl.copy env in
           let nl = statement_to_ssa env l in
@@ -488,7 +467,6 @@ let out_of_ssa tree =
 	  let ns1 = statement_of_ssa s1 in
 	  let ns2 = statement_of_ssa s2 in
 	    Sequence (n, ns1, ns2)
-      | Merge _ -> assert false;
       | Choice (n, l, r) -> 
 	  let nl = statement_of_ssa l
           and nr = statement_of_ssa r in

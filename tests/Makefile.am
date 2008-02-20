@@ -94,6 +94,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  typecheck/Contracts.creol typecheck/Nat.creol \
 		  typecheck/Nat2.creol typecheck/Nat3.creol \
 		  typecheck/Nat4.creol typecheck/If.creol \
+		  typecheck/New.creol typecheck/New2.creol \
+		  typecheck/New3.creol typecheck/New4.creol \
+		  typecheck/New5.creol \
 		  devirt/Devirt.creol devirt/Devirt.xml \
 		  bury/Assign.creol bury/Assign.xml \
 		  bury/If.creol bury/If.xml \

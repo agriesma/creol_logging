@@ -290,33 +290,33 @@ let typecheck tree: Declaration.t list =
 	(fresh_name', Type.apply_substitution s t)
     in
 
-      (* Reconstruct the type of an expression.
+    (* Reconstruct the type of an expression.
 
-	 [env] is a type environment.  It is represented as a hash
-	 table ([Env]) which maps names to types.  The environment
-	 will be updated by the binders [Forall], [Exists], and
-	 [Choose].  Looking up the type information of a name occurs
-	 in this order:
-	 \begin{enumerate}
-	 \item First, look in [env] to see whether the name is locally
-	   bound.
-	 \item Second, look in the scope of the current method.
-	 \item Last, look in the scope of the current class and its
-	   superclasses.
-	 \end{enumerate}
+       [env] is a type environment.  It is represented as a hash
+       table ([Env]) which maps names to types.  The environment
+       will be updated by the binders [Forall], [Exists], and
+       [Choose].  Looking up the type information of a name occurs
+       in this order:
+       \begin{enumerate}
+       \item First, look in [env] to see whether the name is locally
+       bound.
+       \item Second, look in the scope of the current method.
+       \item Last, look in the scope of the current class and its
+       superclasses.
+       \end{enumerate}
 
-	 [constr] is the current constraint set.
+       [constr] is the current constraint set.
 
-	 [fresh_name] is a monad used for generating new names.
+       [fresh_name] is a monad used for generating new names.
 
-	 The result of this function is to update the input expression
-	 with new type variable names and to compute a new constraint
-	 set.  The constraint set will be used to compute
-	 instantiations for the type variables in [unify].
+       The result of this function is to update the input expression
+       with new type variable names and to compute a new constraint
+       set.  The constraint set will be used to compute
+       instantiations for the type variables in [unify].
 
-	 Return the expression with updated type annotations (in Pierce,
-	 this would be the type), the function generating a new fresh
-	 type variable, and the new constraint set.  *)
+       Return the expression with updated type annotations (in Pierce,
+       this would be the type), the function generating a new fresh
+       type variable, and the new constraint set.  *)
 
     let rec type_recon_expression env constr fresh_name =
       function
@@ -379,8 +379,9 @@ let typecheck tree: Declaration.t list =
 		  try
 		    Env.find name env
 		  with
-		      _ -> (Method.find_variable meth name).VarDecl.var_type
-		with _ ->
+		      Not_found ->
+			(Method.find_variable meth name).VarDecl.var_type
+		with Not_found ->
 		  (Program.find_attr_decl program cls name).VarDecl.var_type
 	      with
 		  Not_found ->
@@ -480,10 +481,10 @@ let typecheck tree: Declaration.t list =
 	      type_recon_expression env constr fresh_name cond
 	    in
 	    let  (iftrue', constr'', fresh_name'') =
-		type_recon_expression env constr' fresh_name' iftrue
+	      type_recon_expression env constr' fresh_name' iftrue
 	    in
 	    let (iffalse', constr''', fresh_name''') =
-		type_recon_expression env constr'' fresh_name'' iffalse
+	      type_recon_expression env constr'' fresh_name'' iffalse
 	    in
 	    let (rt, fresh_name'''') = fresh_var fresh_name'''  in
 	      (Expression.If (set_type n rt, cond', iftrue', iffalse'),
@@ -525,25 +526,26 @@ let typecheck tree: Declaration.t list =
 	      (FuncCall (set_type n v, name, nargs),
 	       (Type.Function (ty2, v), ty1)::constr', fresh_name''')
 	| Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
-	    let exists =
+	    begin
 	      try
-		match Method.find_variable meth name with _ -> true
+		if Method.label_p meth name then
+		  (Label (set_type n (Type.Basic "Bool"), l), constr,
+		   fresh_name)
+		else
+		  raise (Type_error (Expression.file n, Expression.line n,
+				     "Variable " ^ name ^
+				       " is not of type Label"))
 	      with
-		  Not_found -> false
-	    in
-	      if exists then
-		(Label (set_type n (Type.Basic "Bool"), l), constr,
-		 fresh_name)
-	      else
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Label " ^ name ^ " not declared"))
+		  Not_found ->
+		    raise (Type_error (Expression.file n, Expression.line n,
+				       "Label " ^ name ^ " not declared"))
+	    end
 	| Label _ -> assert false
 	| New (n, Type.Basic c, args) ->
-	    let (nargs, constr', fresh_name') =
+	    let (args', constr', fresh_name') =
 	      type_recon_expression_list env constr fresh_name args
 	    in
-	    let args_t = Type.Tuple (List.map get_type nargs) in
-	    let cls_n =
+	    let cls' =
 	      try
 		Program.find_class program c
 	      with
@@ -551,21 +553,18 @@ let typecheck tree: Declaration.t list =
 		    raise (Type_error (Expression.file n, Expression.line n,
 				       "Class " ^ c ^ " not defined"))
 	    in
-	    let ctor_t = Type.Tuple
-	      (List.map (fun x -> x.VarDecl.var_type) cls_n.Class.parameters)
+	    let mk x y = (get_type x, y.VarDecl.var_type) in
+	    let t =
+	      try
+		List.map2 mk args' cls'.Class.parameters
+	      with
+		  Invalid_argument _ ->
+		    raise (Type_error (Expression.file n, Expression.line n,
+				       "Arguments to new " ^ c ^
+					 " mismatch in length"))
 	    in
-	      if
-		Program.subtype_p program args_t ctor_t
-	      then
-		(* BOGUS *)
-		(New (set_type n (Class.get_type (Program.find_class program c)),
-		      Type.Basic c, nargs), constr', fresh_name')
-	      else
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Arguments to new " ^ c ^
-				     " mismatch: expected " ^
-				     (Type.as_string ctor_t) ^ " but got " ^
-				     (Type.as_string args_t)))
+	      (New (set_type n (Class.get_type cls'), Type.Basic c, args'),
+	       t@constr', fresh_name')
 	| New _ -> assert false
 	| Choose (n, v, t, e) ->
 
@@ -611,7 +610,7 @@ let typecheck tree: Declaration.t list =
 		try
 		  Env.find name env
 		with
-		    _ ->
+		    Not_found ->
 		      (Method.find_variable meth name).VarDecl.var_type
 	      with
 		  Not_found ->
@@ -679,7 +678,7 @@ let typecheck tree: Declaration.t list =
 	  let res =
 	    try
 	      try
-	      (Method.find_variable meth name).VarDecl.var_type
+		(Method.find_variable meth name).VarDecl.var_type
 	      with
 		  Not_found ->
 		    (Program.find_attr_decl program cls name).VarDecl.var_type
@@ -1042,9 +1041,9 @@ let typecheck tree: Declaration.t list =
     let r' = type_check_assertion program cls coiface m' meth.Method.requires
     and e' = type_check_assertion program cls coiface m' meth.Method.ensures
     and b' = match meth.Method.body with
-	      None -> None
-	    | Some s ->
-		Some (type_check_statement program cls meth coiface s)
+	None -> None
+      | Some s ->
+	  Some (type_check_statement program cls meth coiface s)
     in
       if Type.bool_p (get_type r') then
 	if Type.bool_p (get_type e') then
