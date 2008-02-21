@@ -17,9 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-DISTCHECK_CONFIGURE_FLAGS = --disable-make-install \
-	--without-profiling \
-	--without-metatests
+DISTCHECK_CONFIGURE_FLAGS = --without-profiling --without-metatests
 
 # Subdirs
 DIST_SUBDIRS		= share info creolc tests

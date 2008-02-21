@@ -15,7 +15,8 @@ Source0:	%{name}-%{version}.tar.bz2
 BuildRequires: ocaml >= 3.09
 BuildRequires: ocaml-findlib-devel
 BuildRequires: /usr/bin/texi2pdf
-BuildRequires: ocaml-libxml2
+BuildRequires: ocaml-libxml2-devel
+
 Requires: maude >= 2.2
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
