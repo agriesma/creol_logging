@@ -265,7 +265,20 @@ let unify ~program ~constraints =
 
 (* Type check a tree. *)
 
-let typecheck tree: Declaration.t list =
+let typecheck tree: Program.t =
+  let error_ambigous note name callee_t cands =
+    let f m = "    " ^ (Method.name_as_string m) in
+    let rec g = function
+      | [] -> assert false
+      | [m] -> f m
+      | m::l -> (f m) ^ "\n" ^ (g l)
+    in
+    let tmp = g cands in
+      raise (Type_error (note.file, note.line,
+			 "Call to method " ^ name ^ " of " ^
+			   (Type.as_string callee_t) ^
+			   " is ambigous:\n" ^ tmp))
+  in
   let type_check_expression program cls meth coiface constr expr =
 
     (* Type check an expression [expr] in the environment
@@ -754,10 +767,7 @@ let typecheck tree: Declaration.t list =
 					 (Type.string_of_sig 
 					    ((Class.get_type cls), ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
-	    | _ -> raise (Type_error (n.file, n.line,
-				      "Call to method " ^ m ^ " of interface " ^
-					(Type.as_string callee_t) ^
-					" is ambigous."))
+	    | _ -> error_ambigous n m callee_t cands
       in
       let signature = (co, ins_t, outs_t)
       in
@@ -806,11 +816,7 @@ let typecheck tree: Declaration.t list =
 				       " does not provide a method " ^ m ^ 
 				       " with signature " ^ t))
 	    | [meth] -> meth.Method.coiface
-	    | _ ->
-		raise (Type_error (n.file, n.line,
-				   "Call to method " ^ m ^ " of interface " ^
-				     (Type.as_string callee_t) ^
-				     " is ambigous."))
+	    | _ -> error_ambigous n m callee_t cands
       in
       let signature = (co, ins_t, outs_t)
       in
