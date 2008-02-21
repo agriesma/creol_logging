@@ -1849,7 +1849,8 @@ struct
 	      rel
 	| Declaration.Datatype { Datatype.name = name; supers = supers } ->
 	    Rel.add (Type.name name)
-	      (List.fold_left (fun a n -> Rng.add (f n) a) Rng.empty supers)
+	      (List.fold_left (fun a n -> Rng.add (Type.name n) a)
+                Rng.empty supers)
 	      rel
 	| _ -> rel
     in
