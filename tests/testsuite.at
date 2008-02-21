@@ -360,6 +360,10 @@ dnl Test PASS: devirt
 dnl
 TEST_CREOLC_PASS([devirt], [Devirt])
 
+dnl Test PASS: into-ssa
+dnl
+TEST_CREOLC_PASS([into-ssa], [Assign])
+
 dnl Test PASS: bury
 dnl
 TEST_CREOLC_PASS([bury], [Assign])

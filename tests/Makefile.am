@@ -109,6 +109,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  free/LocalAsync.creol free/LocalAsync.xml \
 		  free/If.creol free/If.xml \
 		  free/Choice.creol free/Choice.xml \
+		  into-ssa/Assign.creol into-ssa/Assign.xml \
 		  Datatypes.maude Datatypes.out \
 		  Signature.maude Signature.out \
 		  Interpreter.maude Interpreter.out \
