@@ -1781,6 +1781,81 @@ struct
   let class_provides_method_p ~program ~cls meth signature =
     [] <> (class_find_methods program cls meth signature)
 
+  (* This is the type of the subtype relation. *)
+
+  module Rng = Set.Make(String)
+
+  module Rel = Map.Make(String)
+
+  (* Compute the transitive closure of the subtype relation. *)
+
+  let transitive_closure rel =
+    let rec do_it r =
+      let f s = Rng.fold (fun elt acc -> Rng.union (Rel.find elt r) acc) s s in
+      let r' = Rel.fold (fun key elt acc -> Rel.add key (f elt) acc) r r in
+	if Rel.equal Rng.equal r r' then
+	  r
+	else
+	  do_it r'
+    in
+      do_it rel
+
+  (* Test whether the type relation is acyclic_p *)
+
+  let cycle rel =
+    let f key elt acc = if (Rng.mem key elt) then Rng.add key acc else acc in
+      Rel.fold f rel Rng.empty
+
+  let acyclic_p rel = Rng.is_empty (cycle rel)
+
+  let rec string_of_cycle =
+    function
+	[] -> assert false
+      | [s] -> s
+      | s::r -> s ^ " <: " ^ (string_of_cycle r)
+
+
+  (* Find a cycle.  This is using depth first search. *)
+
+  let find_cycle ~program rel =
+    let rec build (res: string list) (current: string) =
+      let supers: string list =
+	try
+	  List.map Type.name (find_datatype program current).Datatype.supers ;
+	with
+	    Not_found ->
+	      List.map fst (find_interface program current).Interface.inherits 
+      in
+	search (current::res) supers
+    and search (res: string list) =
+      function
+	| [] -> res
+	| cand::r when not (List.mem cand res) -> 
+	    let res' = build res cand in
+	      if List.mem cand res' then res' else search res r
+	| cand::r -> cand::res
+    in
+      build [] (Rng.choose (cycle rel))
+
+
+  (* Compute the subtype relation-ship of the program. *)
+
+  let compute_subtype_relation program =
+    let f rel =
+      function
+	| Declaration.Interface { Interface.name = name; inherits = supers } ->
+	    Rel.add name
+	      (List.fold_left (fun a (n, _) -> Rng.add n a) Rng.empty supers)
+	      rel
+	| Declaration.Datatype { Datatype.name = name; supers = supers } ->
+	    Rel.add (Type.name name)
+	      (List.fold_left (fun a n -> Rng.add (f n) a) Rng.empty supers)
+	      rel
+	| _ -> rel
+    in
+      transitive_closure (List.fold_left f Rel.empty program)
+
+
   (* Apply a function to each method defined in the program. *)
 
   let for_each_method program f =
@@ -1803,3 +1878,4 @@ struct
       List.map for_decl program
 
 end
+ 

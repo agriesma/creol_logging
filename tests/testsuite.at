@@ -350,10 +350,9 @@ TEST_CREOLC_TYPECHECK([New5],
 [[New5.creol:26: expression has type Bool but expected is type Int
   Cannot satisfy constraints: Bool <: Int
 ]])
-
-
-
-
+TEST_CREOLC_TYPECHECK([Cyclic],
+[*top*:0: subtype relation has a cycle: S <: U <: T <: S
+])
 
 
 dnl Test PASS: devirt

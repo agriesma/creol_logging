@@ -1194,7 +1194,20 @@ let typecheck tree: Declaration.t list =
 	  Declaration.Interface (type_check_interface program i)
       | _ as d -> d
   in
-    try
-      List.map (type_check_declaration tree) tree
-    with
-	Type_error (file, line, msg) -> Messages.error file line msg ; exit 1
+  let rel = Program.compute_subtype_relation tree in
+    if Program.acyclic_p rel then
+      begin
+	try
+	  List.map (type_check_declaration tree) tree
+	with
+	    Type_error (file, line, msg) ->
+	      Messages.error file line msg ;
+	      exit 1
+      end
+    else
+      begin
+	let cycle = Program.find_cycle tree rel in
+	  Messages.error "*top*" 0 ("subtype relation has a cycle: " ^
+				      (Program.string_of_cycle cycle)) ;
+	  exit 1
+      end
