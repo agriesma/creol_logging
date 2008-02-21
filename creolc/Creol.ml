@@ -1800,7 +1800,7 @@ struct
     in
       do_it rel
 
-  (* Test whether the type relation is acyclic_p *)
+  (* Test whether the type relation is acyclic. *)
 
   let cycle rel =
     let f key elt acc = if (Rng.mem key elt) then Rng.add key acc else acc in
