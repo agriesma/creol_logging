@@ -100,6 +100,8 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  typecheck/Implements.creol typecheck/Ambiguous.creol \
 		  typecheck/Ambiguous2.creol typecheck/Ambiguous3.creol \
 		  typecheck/Ambiguous4.creol typecheck/Ambiguous5.creol \
+		  typecheck/Ambiguous6.creol typecheck/Ambiguous7.creol \
+		  typecheck/Ambiguous8.creol \
 		  devirt/Devirt.creol devirt/Devirt.xml \
 		  bury/Assign.creol bury/Assign.xml \
 		  bury/If.creol bury/If.xml \
