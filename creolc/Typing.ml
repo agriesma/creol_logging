@@ -42,22 +42,31 @@ open Creol
 open Expression
 open Statement
 
+
+(* Report messages from this module. *)
+
+let log l = Messages.message (l + 2)
+
+
 (* Our type environment is just a mapping from names, represented as
    strings, to types. We do not expect many elements in this
    environment, so a Map should provide the cleanest solution. *)
 
 module Env = Map.Make(String)
 
+
 (* The type checker raises an [Type_error (file, line, reason)]
-   exception if it has deduced that an expression is not well-typed.  The
-   first two arguments refer to the file and line in which the error is
-   occurring.  The third argument indicates the reason of the type
-   error. *)
+   exception if it has deduced that an expression is not well-typed.
+   The first two arguments refer to the file and line in which the
+   error is occurring.  The third argument indicates the reason of the
+   type error. *)
 
 exception Type_error of string * int * string
 
+
 (* This exception is raised by the unifier.  The argument is the
    constrained which cannot be resolved. *)
+
 
 exception Unify_failure of Type.t * Type.t
 
@@ -67,6 +76,7 @@ exception Unify_failure of Type.t * Type.t
 let fresh_var f =
   let Misc.FreshName(n, f') = f () in
     (Type.Variable n, f')
+
 
 (* Pretty-print a constraint set. *)
 
@@ -94,13 +104,12 @@ let subst_more_specific_p program s t =
     List.for_all p keys
 
 
-
-(* Find the "most specific solution" of a set of possible solutions.
-
-   FIXME: If there is more than one best solution one solution is
-   guessed, which is probably wrong.  Instead, we ought to report
-   a type error.
+(* Find a \emph{most specific solution} from a list of possible
+   solutions.  The solution need not be unique.  If there is more than
+   one most specific solution, an undetermined one is returned.  The
+   chosen one need not be the one that proves type correctness.
 *)
+
 let find_most_specific program substs =
   List.fold_left
     (fun s t -> if subst_more_specific_p program s t then s else t)
@@ -108,15 +117,13 @@ let find_most_specific program substs =
     (List.tl substs)
 
 
-(* Report messages from the unifier *)
-let log l = Messages.message (l + 2)
-
 (* Compute the most general unifier for a constraint set [c].  The
    result is a mapping from variable names to types.
    
    The constraint set is usually a set of pair of types.  Such
    a constraint states that two types are equal in the current
    substitution. *)
+
 let unify ~program ~constraints =
   let rec do_unify c (res: Type.t Type.Subst.t): Type.t Type.Subst.t =
     if c = [] then
@@ -139,6 +146,7 @@ let unify ~program ~constraints =
 	  | (Type.Application (s1, t1), Type.Application (s2, t2)) when s1 = s2 ->
 	      do_unify ((List.combine t1 t2)@d) res
 	  | (_, Type.Disjunction l) ->
+
 	      (* This case is essentially handling operator
 		 overloading, but we try to solve the general case,
 		 here, anyhow, because this is probably simpler.
@@ -147,6 +155,7 @@ let unify ~program ~constraints =
 		 is one solution to the problem.  We will
 		 therefore split the constraint set and try each
 		 branch of the disjunction in sequence. *)
+
 	      let rec try_unify_disjunctions =
 		function
 		    [] -> []
@@ -229,6 +238,7 @@ let unify ~program ~constraints =
 		 then we choose x to be s, and if this failes, we
 		 try Any and then Data, since we cannot guess
 		 something better. *)
+
 	      let try_unify r =
 	        log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
 	        do_unify
@@ -239,14 +249,12 @@ let unify ~program ~constraints =
 	      in
 		begin
 		  try
-		    try_unify s
+		    try
+		      try_unify s
+		    with
+			Unify_failure _ -> try_unify Type.any
 		  with
-		      Unify_failure _ ->
-			try
-	                  try_unify Type.any
-			with
-		            Unify_failure _ ->
-			      try_unify Type.data
+		      Unify_failure _ -> try_unify Type.data
 		end
 	  | (_, Type.Basic "Data") ->
 	      (* Every type is supposed to be a subtype of data,
@@ -726,27 +734,53 @@ let typecheck tree: Program.t =
 	    LhsSSAId (set_type n res, name, version)
   in
   let rec type_check_statement program cls meth coiface =
-    let check_async_method_call n label callee m ins =
-      (* Check an asyncrhonous method call *)
-      let callee' =
-	type_check_expression program cls meth coiface [] callee
-      and ins' =
-	List.map (type_check_expression program cls meth coiface []) ins
+
+    (* Check all the constraints on method calls.  This is the generic
+       rule. *)
+
+    let check_method_call n label callee m (asco, _, _) ins outs =
+      let (callee', callee_t) =
+	let c = type_check_expression program cls meth coiface [] callee in
+	  (c , Expression.get_type c)
+      and (ins', ins_t) =
+	let i =
+	  List.map (type_check_expression program cls meth coiface []) ins
+	in
+	  (i, Some (List.map Expression.get_type i))
       and label' =
 	match label with
 	    None -> label
-	  | Some lab -> Some (type_check_lhs program cls meth coiface lab)
+	  | Some l -> Some (type_check_lhs program cls meth coiface l)
       in
-      let callee_t = Expression.get_type callee'
-      and ins_t = Some (List.map Expression.get_type ins')
-      and outs_t =
-	match label' with
-	    None -> None
-	  | Some lab' -> Some (Type.get_from_label (Expression.get_lhs_type lab'))
+      let (outs', outs_t) =
+
+	(* Here we have to guess a correct output type.  If [label]
+	   has been provided, then [outs_t] must be [None] and get it
+	   from the label. *)
+	
+	match (label', outs) with
+	    (None, None) -> (None, None)
+	  | (None, Some ol) ->
+	      let o =
+		List.map (type_check_lhs program cls meth coiface) ol
+	      in
+		(Some o, Some (List.map Expression.get_lhs_type o))
+	  | (Some l, None) ->
+	      (None, Some (Type.get_from_label (Expression.get_lhs_type l)))
+	  | (Some _, Some _) -> assert false
       in
-      let iface = 
+      let ifaces =
 	try
-	  Program.find_interface program (Type.as_string callee_t)
+	  match callee_t with
+	    | Type.Intersection l ->
+		List.map
+		  (fun i -> Program.find_interface program (Type.name i)) l
+	    | Type.Internal ->
+		[]
+	    | Type.Basic n | Type.Application (n, _) ->
+		[Program.find_interface program n]
+	    | _ ->
+		assert false
 	with
 	    Not_found ->
 	      raise (Type_error (n.file, n.line,
@@ -754,79 +788,60 @@ let typecheck tree: Program.t =
 				   " not defined."))
       in
       let co =
-	(* Find the cointerface of our methods. *)
+	let co' =
+	  match asco with
+	      None -> Class.get_type cls
+	    | Some c -> 
+
+		(* Make sure the provided cointerface is actually implemented
+		   by the current class. *)
+		
+		if Program.subtype_p program (Class.get_type cls) c then
+		  c
+		else
+		  raise (Type_error (n.file, n.line, (Type.as_string c) ^
+				       " is not implemented by class " ^
+				       cls.Class.name ^ " of type " ^
+				       (Type.as_string (Class.get_type cls))))
+	in
 	let cands =
-	  Program.interface_find_methods program iface m
-	    ((Class.get_type cls), ins_t, outs_t)
+	  List.fold_left
+	    (fun a iface ->
+	       (Program.interface_find_methods program iface m
+		  (Some co', ins_t, outs_t)) @ a)
+	    [] ifaces
 	in
 	  match cands with
 	      [] -> raise (Type_error (n.file, n.line,
-				       "Interface " ^ (Type.as_string callee_t) ^
+				       "Interface " ^
+					 (Type.as_string callee_t) ^
 					 " does not provide a method " ^ m ^ 
 					 " with signature " ^
-					 (Type.string_of_sig 
-					    ((Class.get_type cls), ins_t, outs_t))))
+					 (Type.string_of_sig
+					    (Some co', ins_t, outs_t))))
 	    | [meth] -> meth.Method.coiface
 	    | _ -> error_ambigous n m callee_t cands
       in
-      let signature = (co, ins_t, outs_t)
-      in
 	if (Program.contracts_p program cls co) then
-	  (label', callee', signature, ins')
+	  (label', callee', (Some co, ins_t, outs_t), ins', outs')
 	else
 	  raise (Type_error (n.file, n.line,
 	  		     "Class " ^ cls.Class.name ^
 			       " does not contract interface " ^
 			       (Type.as_string co)))
-    and check_sync_method_call n callee m ins outs =
-      (* Check an asyncrhonous method call *)
-      let callee' =
-	type_check_expression program cls meth coiface [] callee
-      and ins' =
-	List.map (type_check_expression program cls meth coiface []) ins
-      and outs' =
-	List.map (type_check_lhs program cls meth coiface) outs
+    in
+    let check_async_method_call n label callee m sign ins =
+      let (label', callee', sign', ins', _) =
+	check_method_call n label callee m sign ins None
       in
-      let callee_t = Expression.get_type callee'
-      and ins_t = Some (List.map Expression.get_type ins')
-      and outs_t = Some (List.map Expression.get_lhs_type outs')
+	(label', callee', sign', ins')
+    and check_sync_method_call n callee m sign ins outs =
+      let (_, callee', sign', ins', outs') =
+	check_method_call n None callee m sign ins (Some outs)
       in
-      let iface = 
-	try
-	  Program.find_interface program (Type.as_string callee_t)
-	with
-	    Not_found ->
-	      raise (Type_error (n.file, n.line,
-				 "Interface " ^ (Type.as_string callee_t) ^
-				   " not defined."))
-      in
-      let co =
-	(* Find the cointerface of our methods. *)
-	let cands =
-	  Program.interface_find_methods program iface m
-	    ((Class.get_type cls), ins_t, outs_t)
-	in
-	  match cands with
-	      [] ->
-		let t =
-		  Type.string_of_sig ((Class.get_type cls), ins_t, outs_t)
-		in
-		  raise (Type_error (n.file, n.line,
-				     "Interface " ^ (Type.as_string callee_t) ^
-				       " does not provide a method " ^ m ^ 
-				       " with signature " ^ t))
-	    | [meth] -> meth.Method.coiface
-	    | _ -> error_ambigous n m callee_t cands
-      in
-      let signature = (co, ins_t, outs_t)
-      in
-	if (Program.contracts_p program cls co) then
-	  (callee', signature, ins', outs')
-	else
-	  raise (Type_error (n.file, n.line,
-	  		     "Class " ^ cls.Class.name ^
-			       " does not contract interface " ^
-			       (Type.as_string co)))
+	match outs' with
+	    None -> assert false
+	  | Some o -> (callee', sign', ins', o)
     in
     let check_method_bounds n m signature lb ub =
       let c' =
@@ -875,19 +890,23 @@ let typecheck tree: Program.t =
 	List.map (type_check_expression program cls meth coiface []) ins
       in
       let ins_t = List.map Expression.get_type ins' in
-      let signature = (Type.Internal, Some ins_t, outs_t) in
+      let signature = (Some Type.Internal, Some ins_t, outs_t) in
       let () = check_method_bounds n m signature lb ub
       in (signature, ins')
     in
     let check_local_sync_call n m lb ub ins outs =
-      let ins' =
-	List.map (type_check_expression program cls meth coiface []) ins
-      and outs' =
-	List.map (type_check_lhs program cls meth coiface) outs
+      let (ins', ins_t) =
+	let i =
+	  List.map (type_check_expression program cls meth coiface []) ins
+	in
+	  (i, List.map Expression.get_type i)
+      and (outs', outs_t) =
+	let o =
+	  List.map (type_check_lhs program cls meth coiface) outs
+	in
+	  (o, List.map Expression.get_lhs_type o)
       in
-      let ins_t = List.map Expression.get_type ins'
-      and outs_t = List.map Expression.get_lhs_type outs' in
-      let signature = (Type.Internal, Some ins_t, Some outs_t) in
+      let signature = (Some Type.Internal, Some ins_t, Some outs_t) in
       let () = check_method_bounds n m signature lb ub in
 	(signature, ins', outs')
     in
@@ -951,11 +970,11 @@ let typecheck tree: Program.t =
         | Posit (n, e) ->
 	    let e' = type_check_assertion program cls coiface meth e in
 	      Posit (n, e')
-        | AsyncCall (n, label, callee, m, (co, _, _), ins) ->
-	    let (label', callee', signature, ins') =
-	      check_async_method_call n label callee m ins
+        | AsyncCall (n, label, callee, m, sign, ins) ->
+	    let (label', callee', sign', ins') =
+	      check_async_method_call n label callee m sign ins
 	    in
-	      AsyncCall (n, label', callee', m, signature, ins')
+	      AsyncCall (n, label', callee', m, sign', ins')
         | Reply (n, label, retvals) -> 
 	    let nlabel =
 	      type_check_expression program cls meth coiface [] label
@@ -983,16 +1002,16 @@ let typecheck tree: Program.t =
 	      check_local_async_call n m lb ub args (Some lt)
 	    in
 	      LocalAsyncCall (n, Some l', m, signature, lb, ub, args')
-        | SyncCall (n, callee, m, (co, _, _), ins, outs) ->
+        | SyncCall (n, callee, m, sign, ins, outs) ->
 	    let (callee', signature, ins', outs') =
-	      check_sync_method_call n callee m ins outs
+	      check_sync_method_call n callee m sign ins outs
 	    in
 	      SyncCall (n, callee', m, signature, ins', outs')
-        | AwaitSyncCall (n, callee, m, (co, _, _), ins, outs) ->
-	    let (callee', signature, ins', outs') =
-	      check_sync_method_call n callee m ins outs
+        | AwaitSyncCall (n, callee, m, sign, ins, outs) ->
+	    let (callee', sign', ins', outs') =
+	      check_sync_method_call n callee m sign ins outs
 	    in
-	      AwaitSyncCall (n, callee', m, signature, ins', outs')
+	      AwaitSyncCall (n, callee', m, sign', ins', outs')
 	| LocalSyncCall (n, m, _, lb, ub, ins, outs) ->
             let (signature, ins', outs') =
 	      check_local_sync_call n m lb ub ins outs
@@ -1063,7 +1082,11 @@ let typecheck tree: Program.t =
 			   Expression.line (Expression.note r'),
 			   "Pre-condition is not Bool"))
   and type_check_with_def program cls w =
-    let coiface = Type.as_string w.With.co_interface in
+    let coiface =
+      match w.With.co_interface with
+	| Type.Internal -> "" (* The co-interface may also be internal. *)
+	| _ -> Type.name w.With.co_interface
+    in
     let () =
       if not (Program.interface_p program w.With.co_interface) then
 	raise (Type_error (cls.Class.file, cls.Class.line,
@@ -1130,7 +1153,7 @@ let typecheck tree: Program.t =
 		Type.Tuple x -> x 
 	      | _ -> assert false
 	    in
-	      (w.With.co_interface, Some d, Some r)
+	      (Some w.With.co_interface, Some d, Some r)
 	  in
 	  let r =
 	    Program.class_provides_method_p program cls m.Method.name s

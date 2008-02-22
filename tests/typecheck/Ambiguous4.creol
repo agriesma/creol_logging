@@ -1,5 +1,5 @@
 /*
- * Ambiguous.creol -- Check ambiguity of a call.
+ * Ambiguous3.creol -- Ambiguous external self call.
  *
  * This file is part of creoltools
  *
@@ -19,17 +19,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-interface J begin end
+interface J begin with J op m end
 
-interface K begin end
-
-interface I
-begin
-  with J op m
-  with K op m
-end
+interface K begin with K op m end
 
 class C contracts J, K
 begin
-  op run == var i: I ; i.m(;)
+  op run == (this as J).m(;)
+  with J op m == skip
+  with K op m == skip
 end

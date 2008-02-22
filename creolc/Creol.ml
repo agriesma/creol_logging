@@ -193,10 +193,10 @@ struct
       | Function (d, r) ->
 	  Function (apply_substitution s d, apply_substitution s r)
 
-  type signature = t * t list option * t list option
+  type signature = t option * t list option * t list option
 
   let default_sig ?(coiface = None) (): signature =
-    let t = match coiface with None -> any | Some c -> c in (t, None, None)
+    (coiface, None, None)
 
   let co_interface (c, _, _) = c
 
@@ -206,15 +206,24 @@ struct
 
   let string_of_sig =
     function
-	(co, None, None) ->
+      | (None, None, None) ->
+	  "[ | -> ]"
+      | (Some co, None, None) ->
 	  "[ " ^ (as_string co) ^ " | unknown -> unknown ]"
-      | (co, Some d, None) ->
+      | (None, Some d, None) ->
+	  "[ | " ^ (string_of_creol_type_list d) ^ " -> unknown ]"
+      | (Some co, Some d, None) ->
 	  "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
 	    " -> unknown ]"
-      | (co, None, Some r) ->
+      | (None, None, Some r) ->
+	  "[ | unknown -> " ^ (string_of_creol_type_list r) ^ " ]"
+      | (Some co, None, Some r) ->
 	  "[ " ^ (as_string co) ^ " | unknown -> " ^
 	    (string_of_creol_type_list r) ^ " ]"
-      | (co, Some d, Some r) ->
+      | (None, Some d, Some r) ->
+	  "[ | " ^ (string_of_creol_type_list d) ^ " -> " ^
+	    (string_of_creol_type_list r) ^ " ]"
+      | (Some co, Some d, Some r) ->
 	  "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
 	    " -> " ^ (string_of_creol_type_list r) ^ " ]"
 
@@ -1112,9 +1121,9 @@ module Method =
 
     (* Build a method signature type from the declaration. *)
     let signature m: Type.signature =
-      (m.coiface,
-      Some (List.map (fun v -> v.VarDecl.var_type) m.inpars),
-      Some (List.map (fun v -> v.VarDecl.var_type) m.outpars))
+      (Some m.coiface,
+       Some (List.map (fun v -> v.VarDecl.var_type) m.inpars),
+       Some (List.map (fun v -> v.VarDecl.var_type) m.outpars))
 
 
     (* String representation of a method name. *)
@@ -1711,7 +1720,7 @@ struct
 
 
   let find_method_in_with ~program ~name ~signature w =
-    let (coiface, ins, outs) = signature in
+    let (_, ins, outs) = signature in
     let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
     let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
     let p m =
@@ -1727,8 +1736,9 @@ struct
      super-interfaces.  *)
 
   let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
+    let asco = match coiface with None -> Type.any | Some c -> c in
     let rec find_methods_in_interface i =
-      let q w = subtype_p program coiface w.With.co_interface in
+      let q w = subtype_p program asco w.With.co_interface in
       let withs = List.filter q i.Interface.with_decls in
       let here =
 	List.fold_left
@@ -1757,8 +1767,9 @@ struct
      super-classes.  *)
 
   let class_find_methods ~program ~cls ~name (coiface, ins, outs) =
+    let asco = match coiface with None -> Type.any | Some c -> c in
     let rec find_methods_in_class c =
-      let q w = subtype_p program coiface w.With.co_interface in
+      let q w = subtype_p program asco w.With.co_interface in
       let withs = List.filter q c.Class.with_defs in
       let here =
 	List.fold_left

@@ -19,8 +19,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-export OCAMLPATH
-
 # Subdirs
 MOSTLYCLEANFILES	= *~ *.aux *.log *.out \
 			  *.cma *.cmxa *.cmi *.cmo *.cmx *.o
@@ -89,9 +87,14 @@ creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
 			  BackendDot.ml \
 			  Misc.ml
 
-OCAMLC_FLAGS		+= -g
-OCAMLOPT_FLAGS		+= -w a -noassert -unsafe -inline 10
-OCAMLFIND_FLAGS		+= -package "num unix libxml2 str"
+OCAMLCFLAGS		+= -g
+OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 10
+OCAMLFINDFLAGS		+= -package "num unix libxml2 str"
+
+# The compilers.
+OCAMLC		= $(OCAMLFIND) ocamlc
+OCAMLOPT	= $(OCAMLFIND) ocamlopt
+OCAMLDEP	= $(OCAMLFIND) ocamldep
 
 SVNVERSION = \
 	if test -d ${top_srcdir}/.svn ; \
@@ -112,20 +115,20 @@ SVNDATE = \
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
 
 creolc: $(creolc_cmi) $(creolc_cmo)
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -linkpkg -o $@ $(creolc_cmo)
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(creolc_cmo)
 
 creolc.opt: $(creolc_cmi) $(creolc_cmx)
-	$(OCAMLFIND) ocamlopt $(OCAMLFIND_FLAGS) $(OCAMLOPT_FLAGS) -linkpkg -o $@ $(creolc_cmx)
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(creolc_cmx)
 
 .PRECIOUS: *.cmo *.cmi *.cmx
 .ml.cmo:
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c $< -o $@
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $< -o $@
 
 .mli.cmi:
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c $< -o $@ 
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $< -o $@ 
 
 .ml.cmx:
-	$(OCAMLFIND) ocamlopt $(OCAMLFIND_FLAGS) $(OCAMLOPT_FLAGS) -c $< -o $@ 
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -c $< -o $@ 
 
 # We must make sure that Creol.cmi is build before Parser.ml, but we
 # do not want that Parser.ml depends on Creol.cmi, because then the
@@ -136,28 +139,29 @@ creolc.opt: $(creolc_cmi) $(creolc_cmx)
 # to be redone after those files have been changed.
 #
 Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Messages.ml -o Messages.cmo
-	$(OCAMLFIND) ocamlc $(OCAMLFIND_FLAGS) $(OCAMLC_FLAGS) -c ${srcdir}/Creol.ml -o Creol.cmo
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c ${srcdir}/Messages.ml -o Messages.cmo
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c ${srcdir}/Creol.ml -o Creol.cmo
 	rm -f Parser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --infer $<
+
 
 Lexer.ml: Lexer.mll
 	$(OCAMLLEX) -o $@ $<
 
-distclean-local:
-	test ! -d html || rm -rf html
 
-.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
-	@echo Updating dependencies.
-	@$(OCAMLFIND) ocamldep $(OCAMLFIND_FLAGS) $(OCAMLDEP_FLAGS) $(creolc_SOURCES) > $@
+all-local: depend-tmp version-tmp
 
-html-local: ${srcdir}/Makefile.am $(creolc_DOCSOURCES)
-	test ! -d html || rm -rf html
-	mkdir html
-	$(OCAMLFIND) ocamldoc $(OCAMLFIND_FLAGS) -html -d html -m A $(creolc_DOCSOURCES)
-	date > $@
 
-all-local: version-tmp
+${srcdir}/.depend: depend-tmp
+
+.PHONY: depend-tmp
+depend-tmp: ${srcdir}/Makefile.am $(creolc_SOURCES)
+	@$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
+		> depend-tmp
+	@cmp -s depend-tmp $@ || \
+		(echo "Updated dependencies." ; cp depend-tmp $@ )
+	@rm -f depend-tmp
+
 
 Version.ml: version-tmp
 

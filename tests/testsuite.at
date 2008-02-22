@@ -361,7 +361,14 @@ TEST_CREOLC_TYPECHECK([Ambiguous],
     I::m[ K |  ->  ]
     I::m[ J |  ->  ]
 ]])
-dnl TEST_CREOLC_TYPECHECK([Ambiguous2], [])
+TEST_CREOLC_TYPECHECK([Ambiguous2], [])
+TEST_CREOLC_TYPECHECK([Ambiguous3],
+[[Ambiguous3.creol:28: Call to method m of /\ [J, K] is ambigous:
+    K::m[ K |  ->  ]
+    J::m[ J |  ->  ]
+]])
+TEST_CREOLC_TYPECHECK([Ambiguous4], [])
+TEST_CREOLC_TYPECHECK([Ambiguous5], [])
 
 
 dnl Test PASS: devirt
