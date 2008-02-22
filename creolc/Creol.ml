@@ -1102,6 +1102,33 @@ module Method =
 	ensures = Expression.Bool(Expression.make_note (), true);
 	vars = []; body = None; location = "" }
 
+    let compare m n =
+      let r0 = String.compare m.location n.location in
+      let r1 = String.compare m.name n.name in
+      let r2 = match (m.coiface, n.coiface) with
+	| (Type.Internal, Type.Internal) -> 0
+	| (Type.Internal, _) -> -1
+	| (_, Type.Internal) -> 1
+	| (s, t) -> String.compare (Type.name s) (Type.name t)
+      in
+      let rec c =
+	function
+	  | ([], []) -> 0
+	  | ([], _) -> -1
+	  | (_, []) -> 1
+	  | ({ VarDecl.var_type = a }::r, { VarDecl.var_type = b }::t) ->
+	      String.compare (Type.name a) (Type.name b)
+      in
+      let r3 = c (m.inpars, n.inpars) in
+      let r4 = c (m.outpars, n.outpars) in
+	match () with
+	  | () when r0 <> 0 -> r0
+	  | () when r1 <> 0 -> r1
+	  | () when r2 <> 0 -> r2
+	  | () when r3 <> 0 -> r3
+	  | () when r4 <> 0 -> r4
+          | () -> 0
+
     let make_decl n inp outp r e =
       { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
 	requires = r; ensures = e; vars = []; body = None; location = "" }
@@ -1241,11 +1268,18 @@ struct
 	file: string;
 	line: int }
 
+(* Get the interface type implemented by a class.  If it does not declare
+   interfaces, then the result is \texttt{Any}.  Filters out duplicates. *)
   let get_type cls =
-    match List.map fst (cls.implements @ cls.contracts) with
-	[] -> Type.any
-      | [t] -> Type.Basic t
-      | i -> Type.Intersection (List.map (fun t -> Type.Basic t) i)
+    let ordered =
+      List.fast_sort String.compare
+	(List.fold_left (fun a (t, _) -> if  List.mem t a then a else t::a)
+	   [] (cls.implements @ cls.contracts))
+    in
+      match ordered  with
+	| [] -> Type.any
+	| [t] -> Type.Basic t
+	| ts -> Type.Intersection (List.map (fun t -> Type.Basic t) ts) 
 
   let has_attr_p ~cls ~name =
     let f l = List.exists (function { VarDecl.name = n } -> n = name) l in
@@ -1275,6 +1309,8 @@ struct
 	inherits: Inherits.t list;
 	with_decls: With.t list;
 	hidden: bool }
+
+  let compare { name = m } { name = n } = String.compare m n
 
 end
 

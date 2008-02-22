@@ -55,6 +55,11 @@ let log l = Messages.message (l + 2)
 module Env = Map.Make(String)
 
 
+(* Method candidates are collected in a set. *)
+
+module MSet = Set.Make(Method)
+
+
 (* The type checker raises an [Type_error (file, line, reason)]
    exception if it has deduced that an expression is not well-typed.
    The first two arguments refer to the file and line in which the
@@ -277,11 +282,11 @@ let typecheck tree: Program.t =
   let error_ambigous note name callee_t cands =
     let f m = "    " ^ (Method.name_as_string m) in
     let rec g = function
-      | [] -> assert false
-      | [m] -> f m
-      | m::l -> (f m) ^ "\n" ^ (g l)
+	| [] -> assert false
+	| [m] -> f m
+	| m::r -> (f m) ^ "\n" ^ (g r)
     in
-    let tmp = g cands in
+    let tmp = g (MSet.elements cands) in
       raise (Type_error (note.file, note.line,
 			 "Call to method " ^ name ^ " of " ^
 			   (Type.as_string callee_t) ^
@@ -807,19 +812,20 @@ let typecheck tree: Program.t =
 	let cands =
 	  List.fold_left
 	    (fun a iface ->
+	       List.fold_left (fun a' e' -> MSet.add e' a') a
 	       (Program.interface_find_methods program iface m
-		  (Some co', ins_t, outs_t)) @ a)
-	    [] ifaces
+		  (Some co', ins_t, outs_t)))
+	    MSet.empty ifaces
 	in
-	  match cands with
-	      [] -> raise (Type_error (n.file, n.line,
+	    match MSet.cardinal cands with
+	      0 -> raise (Type_error (n.file, n.line,
 				       "Interface " ^
 					 (Type.as_string callee_t) ^
 					 " does not provide a method " ^ m ^ 
 					 " with signature " ^
 					 (Type.string_of_sig
 					    (Some co', ins_t, outs_t))))
-	    | [meth] -> meth.Method.coiface
+	    | 1 -> (MSet.choose cands).Method.coiface
 	    | _ -> error_ambigous n m callee_t cands
       in
 	if (Program.contracts_p program cls co) then
