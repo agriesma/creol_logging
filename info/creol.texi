@@ -6,11 +6,19 @@ semantics of @acronym{CREOL} in an informal manner.  The formal semantics of
 @acronym{CREOL} is defined in rewriting logic and can be found in the file
 @file{creol-interpreter.maude}.
 
-As of today, the contents of this chapter is subject to change.  @acronym{CREOL}
-is still an evolving language.  Incompatible changes to the language
-are not excluded, but we will try hard to avoid them.  This chapter
-serves as a reference.  The reader is referred to @ref{CREOL
-Tutorial} for an exposition of the language and its features.
+As of today, the contents of this chapter is subject to change.
+@acronym{CREOL} is still an evolving language.  Incompatible changes
+to the language are not excluded, but we will try hard to avoid them.
+This chapter serves as a reference.  The reader is referred to
+@ref{CREOL Tutorial} for an exposition of the language and its
+features.
+
+We use an extended Backus-Naur form to describe the syntax.  Terminal
+symbols are written like @code{this}, whereas non-terminals are
+written like this.  Optional clauses are enclosed in square brackets [
+and ].  Repetitions are enclosed in braces @{ and @}.  A separator
+@code{,} may precede the closing brace.
+
 
 @menu
 * Comments::                    Comments in @acronym{CREOL}.
@@ -22,7 +30,8 @@ Tutorial} for an exposition of the language and its features.
 * Method Declaration::          Declaring and defining behaviour.
 * Interface Declaration::       Types for objects.
 * Class Declaration::           Implementation for types.
-* Data Type Declaration::        Declaring data types.
+* Data Type Declaration::       Declaring data types.
+* Function Definitions::        How to define new functions. 
 * Parse Errors::                A note on parse errors.
 @end menu
 
@@ -88,18 +97,23 @@ keyword @code{caller}.
 Variables are lower-case character-sequences, matching the regular
 expression @code{[a-z][a-zA-Z0-9]}.  Variables are typed (see below).
 
-In @acronym{CREOL}, the location of a variable name @var{v} is determined as
-follows: if @var{v} refers to a variable, that is declared in the
-method that contains the expression, or refers to one of the input- or
-output parameters, then the name refers to a @emph{local variable},
-@pxref{Method Declaration}.  Otherwise, it refers to an attribute of a
-class @var{C}, @pxref{Class Attributes}.  This class is determined
-with the following procedure: If the current class @var{C} defines an
-@emph{attribute} or @emph{class parameter} named @var{v}, then @var{v}
-refers to an attribute of class @var{C}.  Otherwise, recursively
-search the super-classes in a depth-first manner, where the
-super-classes defined in the @code{inherits} list are searched form
-left to right, @pxref{Inherits}.
+In @acronym{CREOL}, the location of a variable name @var{v} is
+determined as follows:
+@itemize
+@item
+If @var{v} is declared in the method that contains the expression, or
+refers to one of the input- or output parameters, then the name refers
+to a @emph{local variable}, @pxref{Method Declaration}.
+
+@item
+Otherwise, if @var{v} occurs syntactically in a method of class
+@var{C}, and @var{v} is declared to be an @emph{attribute} or a
+@emph{class parameter} of @code{C} or one of its super-classes, then
+@var{v} refers to a @emph{class variable}.  The location is determined
+by recursively searching the super-classes in a depth-first manner,
+where the super-classes defined in the @code{inherits} list are
+searched form left to right starting at @code{C}, @pxref{Inherits}.
+@end itemize
 
 
 @subsection Static Attribute Access Expressions
@@ -167,7 +181,7 @@ constructed by enumerating the elements: @code{@{ @{ @var{expression}
 
 An expression of the form
 @code{@{ @var{id} : @var{expression} | @var{expression} @}}
-represents set aggregation:
+represents set aggregation.
 
 
 @subsection Object Expressions and Literals
@@ -518,7 +532,7 @@ This means, that the process will @emph{not} release on an
 @code{await} statement but continue executing @code{S2} if @code{S2}
 is enabled for execution.  The statement @code{release},
 @pxref{Release Statement}, on the other hand, leads to an immediate
-release of the processor, even if it occurs as an await statement.
+release of the processor without changing to the branch @code{S2}.
 
 The non-deterministic merge statement should best be avoided, since it
 may cause an exponential increase of the state space to be analysed.
@@ -578,9 +592,9 @@ An operation definition has the form @code{op @var{name} (in
 @var{ins}; out @var{outs}) requires @var{precondition} ensures
 @var{postcondition} == @var{variables} @var{statement}}.  @var{ins} is
 a list of variable declarations describing the @emph{input}
-parameters.  @var{outs} is a list of variables describing the output
-parameters.  In principle, one should only read from input parameters
-and only write to output parameters.
+parameters.  @var{outs} is a list of variable declarations describing
+the output parameters.  In principle, one should only read from input
+parameters and only write to output parameters.
 
 The precondition and postcondition are optional and their meaning can
 be easily defined using invariants.
@@ -773,6 +787,22 @@ data type declaration is @code{datatype @var{T} [ of @{ @var{S} , @}
 super-types.
 
 Currently, data type are all abstract.
+
+
+@node Function Definitions
+@section Function Definitions
+
+Functions may be defined using the syntax @code{fun @var{f} (@{
+@var{x}: @var{T} , @}): @var{S} == @var{body}}.  The function has name
+@var{f} and has the formal parameters @var{@{ x: T} , @var{@}} and
+returns a value of type @var{S}.
+
+The body @var{body} is either an @code{extern} declaration, stating
+that the semantics of the function is provided by Maude, or an
+expression.
+
+Currently, only @code{extern} declarations are supported by the
+compiler.  No code will be emitted for functions.
 
 
 @node Parse Errors

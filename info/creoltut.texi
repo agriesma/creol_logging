@@ -61,20 +61,22 @@ class, but classes can inherit code from other classes
 (@pxref{Inheritance}).
 
 In contrast to other object-oriented programming languages, where
-classes are also types of objects, objects in @acronym{CREOL} are typed by
-interfaces only.  The interface describes what methods are available
-to other objects.  Additionally, one can specify @emph{co-interfaces}.
-A method is only available to objects which are typed by the
-co-interface.
+classes are also types of objects, objects in @acronym{CREOL} are
+typed by interfaces only.  The interface describes what methods are
+available to other objects.  Additionally, one must specify
+@emph{co-interfaces}.  A method is only available to objects which are
+typed by the co-interface.
 
-Below, objects of type @code{Hello} export a method @code{hello} to
-all objects which are an instance of @code{Any}.  The interface
-@code{Any} is the implicit super type of all objects.  No methods are
-specified in @code{Any}.
+Below, the interface @code{Hello} declares, that objects implementing
+the interface @code{Hello} export a method @code{hello} to all objects
+which are an instance of @code{Any}.  The interface @code{Any} is the
+implicit super type of all objects.  Consequently, any object is
+allowed to call the method @code{hello}.  No methods are specified in
+@code{Any}.
 
 Classes provide implementation for objects.  The class @code{Hello}
-implements the interface @code{Hello} and provides an implementation
-to the @code{hello} method.
+implements the interface @code{Hello} and must therefore provide an
+implementation of the @code{hello} method.
 
 The class @code{Main} does not declare to implement any interface, but
 all classes implicitly implement the @code{Any} interface.  Each
@@ -227,7 +229,7 @@ Eratosthenes for computing prime numbers.
 @end menu
 
 @node A Synchronous Version
-@subsection A synchronous version
+@subsection A Synchronous Version
 
 We begin the description of the sieve example by giving its
 @emph{synchronous implementation.}  Each system contains one instance
@@ -282,7 +284,7 @@ end
 
 
 @node An Asynchronous Buggy Version
-@subsection A buggy asynchronous version
+@subsection A Buggy Asynchronous Version
 
 The implementation of the sieve in the previous section is synchronous
 and therefore suffers delays as the chain of prime number gets longer.
@@ -295,18 +297,20 @@ method proceeds independently from the execution of the calling
 process.  Two activities occur at the same time.
 
 A method can be call asynchronously using the construct
-@code{l!m(@var{i})}, where @code{@var{i}} represents the actual
-arguments, @code{m} is the name of the method, @code{o} represents the
-identity of the callee, and @code{l} is a @emph{handle} (often called a
-@emph{future variable} and sometimes called a label) which allows to
-receive the result of the code at a later time.  The handle must be
-declared as a variable of type @code{Label[`a]}, where @code{`a} is a
-type variable ranging over the expected return types.  After the call
-has been made, the result of that label may be received later using
-the statement @code{l?(@var{o})}, where @var{o} is a list of variables
-used to store the result values.  These values may received at most
-once.  It is an error to try to receive the values to a call twice,
-resulting in deadlocks or undefined behaviour.
+@code{@var{l}!@var{o}.m(@var{i})}, where @code{@var{i}} represents the
+actual arguments, @code{m} is the name of the method, @code{@var{o}}
+represents the identity of the callee, and @code{@var{l}} is a
+@emph{handle} (often called a @emph{future variable} and sometimes
+called a @emph{label}) which allows to receive the result of the code
+at a later time.  The handle must be declared as a variable of type
+@code{Label[`a]}, where @code{`a} is a type variable ranging over the
+expected return types.  After the call has been made, the result of
+that label may be received later using the statement
+@code{l?(@var{r})}, where @var{r} is a list of variables used to store
+the result values.  These values may received at most once.  It is an
+error to try to receive the values to a call twice, resulting in
+deadlocks or undefined behaviour.@footnote{The compiler will implement
+checks for this kind of situation.}
 
 Below is a modified version of the example that replaces synchronous
 communication with asynchronous communication.
@@ -363,6 +367,17 @@ search [1, 75] in PROGRAM : init main("Generator", emp) =>+
  conf:Configuration .
 @end example
 
+This search command is written in the language of Maude and uses terms
+in the run-time syntax of @acronym{CREOL}.  The meaning of this
+expression is, that we search from the initial state @code{init
+main("Generator", emp)} a state that matches the @emph{pattern} where
+one object of type @code{Sieve} has an attribute @code{p} with value
+@code{p}, designated @code{"p" |-> int(9)} in the
+pattern.@footnote{The runtime syntax is described inadequateness
+@ref{CREOL Machine Code}.  More on Maude can be found in @cite{Manuel
+Clavel et.al. (2007), Maude Manual (Version 2.3)},
+@url{http://maude.cs.uiuc.edu/maude2-manual/html/index.html}.}
+
 This command will result in a line like:
 
 @example
@@ -373,13 +388,13 @@ states: 415559  rewrites: 25023469 in 146749ms cpu (244608ms real) (170518
 
 followed by a configuration in which an instance of sieve with @c
 @code{p = 9} has been created.  The computation leading to that state
-can be displayed with the command @command{show path 415558 .}.  The
+can be displayed with the command @command{show path 415558 .}  The
 number to use is the number of the state in the state graph which
 displays the error and is one less than the number of states.
 
 
 @node A Correct Asynchronous Version
-@subsection A correct asynchronous version
+@subsection A Correct Asynchronous Version
 
 One way of correcting the implementation of the sieve example is by
 introducing @emph{sequence numbers}.
@@ -474,34 +489,45 @@ calls: @code{await this.@var{m}(@var{i};@var{o})} and
 @code{@var{l}!this.@var{m}(@var{i})}.  External self calls must be
 asynchronous.
 
-Synchronous self-calls will deadlock, since the object must release
-the process.@footnote{Internal synchronous self-calls will cause the
-calling process to suspend and the called method to be activated.}
-If the self-call is external and asynchronous, the  calling process
-will be suspended, but the call has to compete with all other calls,
-allowing other calls to be served before that call.
+External synchronous self-calls of the form @code{this.m(@var{i};
+@var{r})} will deadlock, since the object must release the
+process.@footnote{Internal synchronous self-calls will cause the
+calling process to suspend and the called method to be activated.
+They use the syntax @code{m(@var{i}; @var{r})}.}  If the self-call is
+external and asynchronous, e.g., @code{await this.m(@var{i};
+@var{r})}, the calling process will be suspended, but the call has to
+compete with all other calls, allowing other calls to be served before
+that call.
 
 
 @node Inheritance
 @section Inheritance and Interfaces
 
-@acronym{CREOL} supports multiple inheritance.  To be more precise, @acronym{CREOL}
-supports @emph{two} notions of inheritance: one for @emph{interfaces},
-since these provide behavioural specifications and serve as types, and
-one for @emph{code}.  Unlike in Java or C++, both kinds of inheritance
-are @emph{unrelated} and have to be specified separately.
+@acronym{CREOL} supports multiple inheritance.  To be more precise,
+@acronym{CREOL} supports @emph{two} notions of inheritance: one for
+@emph{interfaces}, since these provide behavioural specifications and
+serve as types, and one for @emph{code}.  Unlike in Java or C++, both
+kinds of inheritance are @emph{unrelated} and have to be specified
+separately.
 
-The keyword @code{inherit} is used to inherit code from some class
+The keyword @code{inherit} is used to inherit code from a class
 @var{C}.  This means that all methods implemented in @var{C} or one of
-its super-classes are now implementations for the current class,
-provided that the implementation has not been @emph{overridden} by the
-current class.
+its super-classes are now implementations for the current class, as
+usual, provided that the implementation has not been @emph{overridden}
+by the current class.  @acronym{CREOL} actually supports multiple
+inheritance, one can inherit from a list of classes or provide
+multiple @code{inherit} clauses.  Implementations will be searched for
+in a depth-first traversal, following the lists of classes from left
+to right.
 
 The keyword @code{implements} (@pxref{First CREOL Program}) is used to
 assign @emph{types} to objects.  Each class implements the empty
 interface @code{Any}, which is also the super-interface of all other
 interfaces.  Classes are not types.  Interface declarations are never
-inherited.
+inherited.  This means, that if a class @var{C} inherits from class
+@var{D}, which implements interface @var{I}, class @var{C} will not
+implement @var{I} unless @var{C} explicitly declares to implement
+@var{I}.
 
 Each method may require some co-interface, which the caller has to
 satisfy.  This means that if a method requires a co-interface, all
@@ -522,14 +548,14 @@ interface Baz begin with Any op bar end
 
 class Foo implements Foo
 begin
-  with Bar op foo == caller.bar
+  with Bar op foo == caller.bar(;)
 end
 
 class Bar implements Bar
 begin
   var foo: Foo
   op init == foo := new Foo
-  with Any op bar == foo.foo
+  with Any op bar == foo.foo(;)
 end
 
 class Baz implements Baz inherits Bar
@@ -540,7 +566,7 @@ class Main
 begin
   var baz: Baz
   op init == baz := new Baz
-  op run == baz.bar
+  op run == baz.bar(;)
 end
 @end example
 
@@ -550,9 +576,9 @@ well-formedness rules of @acronym{CREOL} is the following one:
 @enumerate
 @item
 Create an instance of @code{Main}, which will create one instance of
-@code{Baz} during the initialisation.  In the run method, we can the
-@code{bar} method of @code{baz}.  This call is well-typed, since all
-instances of @code{Baz} implement the @code{Baz} interface which
+@code{Baz} during the initialisation.  In the run method, we can call
+the @code{bar} method of @code{baz}.  This call is well-typed, since
+all instances of @code{Baz} implement the @code{Baz} interface which
 exports this method to all objects.
 
 @item
@@ -592,7 +618,7 @@ constraints.
 
 
 
-@subsection Object construction
+@subsection Object Construction
 
 Especially when using multiple inheritance, one has to be aware how
 objects are constructed.  A new object is created using a new
@@ -685,13 +711,22 @@ run:  it is the reverse order in which the segments of the attributes
 are initialised.  This ensures, that the class parameters are present
 and initialised once the method is run.
 
+The @code{init} method should not be called explicitly.  This is
+currently not enforced by the compiler, because it may be useful to
+``reset'' the attribute segment of a class during run-time.  If
+@code{init} is called explicitly, it will behave like an ordinary
+internal method and only execute the statements defined in its method
+body.  In addition, it may be dynamically bound.
+
 
 @subsection Object Activity
 @anchor{Object Activity}
 
 After the object is created, it will continue to execute the internal
 @code{run} method.  The invocation of that method is the final step of
-object creation.
+object creation.  Note, that the @code{run} method is never inherited.
+Any class that does not define a @code{run} method explicitly, will
+define one implicitly: it has the body @code{skip}.
 
 If the @code{run} method is not provided, a default implementation
 consisting of @code{skip} is used.  After executing that statement,

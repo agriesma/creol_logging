@@ -720,12 +720,12 @@ instance of the system.  That instance will be an instance of class
 @node Interpreter
 @section @acronym{CREOL} Interpreter
 
-The interpreter defines the semantics of @acronym{CREOL} in terms of rewriting
-rules.  We refer the reader to the module @code{INTERPRETER} in the file
-@code{creol-interpreter.maude} (@pxref{Setting CMC Up}) for the exact
-definition of the rules.  Here, we give an overview of the rules and
-equations.  The names given below can be used for tracing the rules
-using Maude's trace facility.
+The interpreter defines the semantics of @acronym{CREOL} in terms of
+rewriting rules.  We refer the reader to the module
+@code{CREOL-SIMULATOR} in the file @code{creol-interpreter.maude}
+(@pxref{Setting CMC Up}) for the exact definition of the rules.  Here,
+we give an overview of the rules and equations.  The names given below
+can be used for tracing the rules using Maude's trace facility.
 
 @table @code
 @item assignnment
@@ -946,7 +946,7 @@ the number of rule-applications to perform, e.g.,
 
 A slightly different state can be obtained using Maude's @emph{fair}
 execution strategy with
-@code{rew[1000] init main("Generator", emp) .}
+@code{frew[1000] init main("Generator", emp) .}
 
 It is often the case, that these commands will show some state but will
 not show the desired behaviour.  For small systems we advise to use

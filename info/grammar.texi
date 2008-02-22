@@ -73,11 +73,7 @@ syntactically correct @acronym{CREOL} program has a unique parse tree.
 main ::=
     @{ declaration @}
 
-declaration ::=
-    class-decl
-  | interface-decl
-  | datatype-decl
-  | function-def
+declaration ::= class-decl | interface-decl | datatype-decl | function-def
 
 class-decl ::=
     @code{class} cid
@@ -93,7 +89,7 @@ interface-decl ::=
     @code{begin} @{ invariant @} @{ @code{with} cid @{ op-decl @} @{ invariant @} @} @code{end}
 
 datatype-decl ::=
-    @code{datatype} cid [ @code{of} @{ cid @code{,} @} ]
+    @code{datatype} type [ @code{of} @{ type @code{,} @} ]
 
 function-def ::=
     @code{fun} id-or-op @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expr | @code{extern} string )

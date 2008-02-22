@@ -202,10 +202,10 @@ represent.
 The data type @code{String} represents all character strings.
 
 The binary operators @code{|-}, @code{-|}, and @code{|-|} are
-synonymous.  @emph{@acronym{CREOL}} does not distinguish characters (which are
-strings of length 1) from strings.  It is good style to use @code{|-}
-to append a character to a string, @code{-|} to prepend one, and
-@code{|-|} in any other case.
+synonymous.  @acronym{CREOL} does not distinguish characters (which
+are strings of length 1) from strings.  It is good style to use
+@code{|-} to append a character to a string, @code{-|} to prepend one,
+and @code{|-|} in any other case.
 
 @table @code
 @item fun # (a: String): Int
@@ -340,22 +340,25 @@ result is undefined.
 @node  Data Type Set
 @section Data Type Set
 
+The type constructor @code{Set[`a]} generates monomorphic set
+types.  A set that may contain anything has type @code{Set[Data]}
+and a set of object references has type @code{Set[Any]}.
+
 @table @code
 @item fun #(s: Set[`a]): Int
 The function @code{#} returns the number of elements contained in the
 argument set.
 
 @item fun remove(s: Set[`a], e: `a): Set[`a]
-The type constructor @code{Set[`a]} generates monomorphic set
-types.  A set that may contain anything has type @code{Set[Data]}
-and a set of object references has type @code{Set[Any]}.
-
-@item fun add(s: Set[`a], e: `a): Set[`a]
 The function @code{remove} returns the argument set without element
 @code{e}.
 
-@item fun in(s: Set[`a], e: `a): Bool
+@item fun add(s: Set[`a], e: `a): Set[`a]
 The function @code{add} returns the argument set with the addition of
+element @code{e}.
+
+@item fun in(s: Set[`a], e: `a): Bool
+The function @code{in} tests, whether the list @code{s} contains the
 element @code{e}.
 
 @item fun union(s: Set[`a], t: Set[`a]): Set[`a]

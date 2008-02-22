@@ -2,6 +2,22 @@
 @node Real-time CREOL
 @chapter Modelling Real-Time Systems with @acronym{CREOL}
 
+Until now the focus has been on the language for modelling untimed
+asynchronous, concurrent object-oriented systems in Core @acronym{CREOL}.  Now
+the focus shifts to the modelling of real-time behaviours.  Modelling
+the real-time behaviour of a system is very difficult, because it
+often involves an analysis of the system on the level of its
+@emph{machine code}, which has to take the actual target platform into
+account. @c ~\cite{ferdinand01:_reliab_and_precis_wcet_deter}.
+Such models are unnecessarily detailed for our purposes, and
+focusing on time is often harmful for modelling.
+@c ~\cite{turski88:_time_consid_irrel_for_real_time_system}.
+Indeed, the model is intended to capture the timing requirements of
+the original specification and shall help in identifying conditions
+under which these requirements can be met.  The proposed extension
+follows Hooman.
+@c ~\cite{hooman94:_exten_hoare_logic_real_time}.
+
 A @emph{timed system} is a system where the @emph{timing} of input and
 output is relevant for the function and the correctness of the system.
 In @emph{hard real-time systems} the deadlines imposed must be met for
@@ -29,27 +45,11 @@ skewed clocks, which evolve differently from the perfect global clock,
 can be easily expressed using function on clock.}  We require that the
 domain of time is totally ordered and @emph{dense}@footnote{A linearly
 ordered set @math{D} is dense, if for all @math{x,y\in D} with
-@math{x<z} there exists @math{z\in D} with @math{x<z} and @math{z<y}.}.
+@math{x<y} there exists @math{z\in D} with @math{x<z} and @math{z<y}.}.
 
 The purpose of the time-guards is to indicate how long an action is
 supposed to take.  The invariants on state are used to force the
 progress of the system as time proceeds.
-
-Until now the focus has been on the language for modelling untimed
-asynchronous, concurrent object-oriented systems in Core @acronym{CREOL}.  Now
-the focus shifts to the modelling of real-time behaviours.  Modelling
-the real-time behaviour of a system is very difficult, because it
-often involves an analysis of the system on the level of its
-@emph{machine code}, which has to take the actual target platform into
-account. @c ~\cite{ferdinand01:_reliab_and_precis_wcet_deter}.
-Such models are unnecessarily detailed for our purposes, and
-focusing on time is often harmful for modelling.
-@c ~\cite{turski88:_time_consid_irrel_for_real_time_system}.
-Indeed, the model is intended to capture the timing requirements of
-the original specification and shall help in identifying conditions
-under which these requirements can be met.  The proposed extension
-follows Hooman.
-@c ~\cite{hooman94:_exten_hoare_logic_real_time}.
 
 @acronym{CREOL} is extended with time by introducing @emph{two} data types and
 two statements for expressing timed properties of the system.  The
