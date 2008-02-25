@@ -1103,7 +1103,6 @@ module Method =
 	vars = []; body = None; location = "" }
 
     let compare m n =
-      let r0 = String.compare m.location n.location in
       let r1 = String.compare m.name n.name in
       let r2 = match (m.coiface, n.coiface) with
 	| (Type.Internal, Type.Internal) -> 0
@@ -1122,7 +1121,6 @@ module Method =
       let r3 = c (m.inpars, n.inpars) in
       let r4 = c (m.outpars, n.outpars) in
 	match () with
-	  | () when r0 <> 0 -> r0
 	  | () when r1 <> 0 -> r1
 	  | () when r2 <> 0 -> r2
 	  | () when r3 <> 0 -> r3

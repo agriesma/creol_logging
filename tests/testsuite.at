@@ -372,7 +372,6 @@ TEST_CREOLC_TYPECHECK([Ambiguous5], [])
 TEST_CREOLC_TYPECHECK([Ambiguous6],
 [[Ambiguous6.creol:32: Call to method m of /\ [J, K] is ambigous:
     J::m[ J |  ->  ]
-    K::m[ J |  ->  ]
     K::m[ K |  ->  ]
 ]])
 TEST_CREOLC_TYPECHECK([Ambiguous7],
