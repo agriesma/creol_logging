@@ -41,6 +41,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/BoundedBuffer.creol \
 		  examples/BoundedBuffer.maude \
 		  examples/BoundedBuffer.out \
+		  examples/CallAll.creol examples/CallAll.maude \
+		  examples/CallAll.out \
+		  examples/PeerToPeer.creol examples/PeerToPeer.maude \
 		  examples/DiscreteTimeout.creol \
 		  examples/DiscreteTimeout.maude \
 		  examples/DiscreteTimeout.out \

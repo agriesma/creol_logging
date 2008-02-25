@@ -1662,31 +1662,31 @@ struct
   let subtype_p ~program s t =
     let rec work =
       function 
-	  (_, Type.Basic "Data") when Type.sentence_p s -> true 
 	| (_, _) when s = t -> true
+	| (_, Type.Basic "Data") when Type.sentence_p s -> true 
 	| (Type.Basic st, Type.Basic tt) ->
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
 	| (_, Type.Intersection l) ->
-	    List.for_all (fun t -> work (s, t)) l
+	    List.for_all (fun u -> work (s, u)) l
 	| (_, Type.Disjunction l) ->
-	    List.exists (fun t -> work (s, t)) l
+	    List.exists (fun u -> work (s, u)) l
 	| (Type.Application (sc, sa), Type.Application (tc, ta)) ->
 	    (sc = tc) &&
 	      begin
 		try 
-		  List.for_all2 (fun s t -> work (s, t)) sa ta
+		  List.for_all2 (fun u v -> work (u, v)) sa ta
 		with
 		    Invalid_argument _ -> false
 	      end
-	| (Type.Application _, _) -> assert false (* But see above *)
+	| (Type.Application _, _) -> false
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	      try 
-		(List.for_all2 (fun s t -> work (s, t)) sa ta)
+		(List.for_all2 (fun u v -> work (u, v)) sa ta)
 	      with
 		  Invalid_argument _ -> false
 	    end
-	| (Type.Tuple _, _) -> assert false (* But see above *)
+	| (Type.Tuple _, _) -> false
 	| (Type.Intersection sa, _) ->
 	    List.exists (fun s -> work (s, t)) sa
 	| (Type.Disjunction sa, _) ->
@@ -1695,9 +1695,9 @@ struct
 	| ((Type.Internal, _) | (_, Type.Internal)) -> false
 	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
 	    (work (d1, d2)) && (work (r2, r1))
-	| (Type.Function _, _) -> assert false
-	| (Type.Variable _, _) -> assert false
-	| (Type.Basic _, _) -> assert false
+	| (Type.Function _, _) -> false
+	| (Type.Variable _, _) -> false
+	| (Type.Basic _, _) -> false
     in
       work (s, t)
 

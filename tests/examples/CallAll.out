@@ -1,0 +1,21 @@
+==========================================
+reduce in PROGRAM : init .
+result Class: 
+< "CallAll" : Cl | Inh: noInh, Par: noVid, Att: "list" |-> null, "outstanding"
+    |-> null, "results" |-> null, Mtds:
+  < "call_all" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |->
+    null, Code: "results" ::= list(emp) ; "label:0" ! "this" . "doit"("list") ;
+    "label:0" ?(noVid) ; await "="("length"("results") :: "length"("results"))
+    ; return(emp) > *
+  < "doit" : Mtdname | Param: "l", Latt: "_" |-> null, "i" |-> null, "l" |->
+    null, "label:0" |-> null, "o" |-> null, "r" |-> null, Code: if "/="("l" ::
+    list(emp)) th "r" ! "fst"("i") . "m"("snd"("i")) ; "label:0" ! "this" .
+    "doit"("tail"("l")) ; "label:0" ?(noVid) ; await ("r" ??) ; "r" ?("o") ;
+    "results" ::= "|-"("results" :: pair("fst"("i"), "o")) el skip fi ; return(
+    emp) > *
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
+    emp) >,
+  Ocnt: 0 >
+Bye.

@@ -1,0 +1,56 @@
+/*
+ * CallAll.creol -- Shows how one call a variable number of objects
+ * and syncrhonise on their return.
+ *
+ * This file is part of creoltools
+ *
+ * Written and Copyright (c) 2007 by Marcel Kyas
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+interface I
+begin
+  with Any op m(in i: Data; out o: Data)
+end
+
+class CallAll
+begin
+  var outstanding: Int
+  var list: List[[I, Data]]
+  var results: List[[I, Data]]
+
+  op doit(in l: List[[I, Data]]) ==
+    var i: [I, Data];
+    var r: Label[Data];
+    var o:Data;
+    if l /= nil then
+      r!fst(i).m(snd(i)); 
+      doit(tail(l); );
+      await r?;
+      r?(o);
+      results := results |- (fst(i), o)
+    end
+
+  op call_all ==
+     results := nil;
+
+     /* The next call must be synchronous to assert that outstanding is 0,
+        if and only if all called objects have replied. */
+
+    doit(list; );
+
+    await length(results) = length(results)
+
+end
