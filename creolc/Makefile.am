@@ -167,7 +167,7 @@ all-local: version-tmp
 
 
 ${srcdir}/.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
-	(t=`mktemp depend.XXXXXXXX` && \
+	@(t=`mktemp depend.XXXXXXXX` && \
 	  $(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
 	    > $$t && \
 	  cmp -s $$t ${srcdir}/.depend || \
