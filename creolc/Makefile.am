@@ -143,7 +143,9 @@ Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c ${srcdir}/Creol.ml -o Creol.cmo
 	rm -f Parser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --infer $<
-
+	(t=`mktemp menhir.XXXXXXXX` && mv Parser.ml $$t && \
+	sed 's,_menhir_shifted = .*$$,_menhir_shifted = max_int,g' $$t > Parser.ml && \
+	rm $$t)
 
 Lexer.ml: Lexer.mll
 	$(OCAMLLEX) -o $@ $<
