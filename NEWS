@@ -1,3 +1,45 @@
+creoltools 0.0i (2007-02-26): alpha release.
+
+This is one of the latest release which allows to disable type checking
+(we move to mandatory type checking in the 0.1 branch).
+
+In the language:
+* Initial constructs for the assertion language are accepted by the
+  compiler and type checker.  The back-end does not emit any expressions
+  for these yet.
+
+In the compiler:
+* The output format of this compiler has changed.  Models compiled with
+  previous versions cannot run on the interpreter provided with this
+  version and vice versa.
+* The merge statement has been disabled, since to many passes of the
+  compiler cannot handle it correctly.
+* An initial version of an assertion language has been added.
+* The compiler uses arbitrary precision integers and rationals now.
+  The range for literals is now practically unlimited.
+* Add a simple constant folding pass.
+* Emit a place to store wild-card values in.
+* More errors in the type checker have been corrected.
+* The type checker checks whether the type hierarchy is acyclic.
+* Better tests for ambiguity of method binding have been implemented.
+
+In the standard library:
+* Sets have been implemented and documented.
+* "at" is now called "nth"
+
+In the interpreter:
+* Errors have been corrected.  Some equations where made rules because
+  they were not confluent.
+* The sort declarations are stricter now.  More equations and rules are
+  sort-decreasing now.
+* Rename some operators to play nicer with M4.
+* Message queues have been moved into the objects for now.
+
+Other:
+* Document path insensitivity of the analysis.
+* We require Maude 2.3 or later now.
+
+
 creoltools 0.0h (2007-01-11): alpha release.
 
 This is the latest release which allows to disable type checking.

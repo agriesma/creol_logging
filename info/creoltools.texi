@@ -116,6 +116,7 @@ the GNU Free Documentation License.
 @c with each release.  This will set version and date in @file{version.texi}
 @c to its correct values.
 @c
+@c Version 0.0i (r1271) was released on February 26, 2008.
 @c Version 0.0h (r1124) was released on January 11, 2008.
 @c Version 0.0g (r901) was released on September 10, 2007.
 @c Version 0.0f (r685) was released on Jul 10, 2007.

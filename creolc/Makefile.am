@@ -32,22 +32,28 @@ bin_PROGRAMS		= creolc creolc.opt
 
 BUILT_SOURCES		= Version.ml Lexer.ml Parser.ml Parser.mli
 
-creolc_SOURCES		= Version.ml Misc.ml Messages.ml Creol.ml \
-			  Typing.ml \
-			  TreeLower.ml \
-			  TreeSSA.ml TreeFold.ml \
-			  TreeDef.ml \
-			  TreeLife.ml \
-			  TreeFree.ml TreeBury.ml TreeDevirt.ml \
-			  TreeTailcall.ml \
-			  Lexer.ml Lexer.mli \
-			  Parser.ml Parser.mli \
-			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
-			  BackendDot.ml \
-			  Passes.ml \
-			  Driver.ml
-
-creolc_cmi		= Lexer.cmi Parser.cmi
+creolc_SOURCES		= ${srcdir}/Version.ml \
+			  ${srcdir}/Misc.ml \
+			  ${srcdir}/Messages.ml \
+			  ${srcdir}/Creol.ml \
+			  ${srcdir}/Typing.ml \
+			  ${srcdir}/TreeLower.ml \
+			  ${srcdir}/TreeSSA.ml \
+			  ${srcdir}/TreeFold.ml \
+			  ${srcdir}/TreeDef.ml \
+			  ${srcdir}/TreeLife.ml \
+			  ${srcdir}/TreeFree.ml \
+			  ${srcdir}/TreeBury.ml \
+			  ${srcdir}/TreeDevirt.ml \
+			  ${srcdir}/TreeTailcall.ml \
+			  ${srcdir}/Lexer.ml ${srcdir}/Lexer.mli \
+			  ${srcdir}/Parser.ml ${srcdir}/Parser.mli \
+			  ${srcdir}/BackendCreol.ml \
+			  ${srcdir}/BackendMaude.ml \
+			  ${srcdir}/BackendXML.ml \
+			  ${srcdir}/BackendDot.ml \
+			  ${srcdir}/Passes.ml \
+			  ${srcdir}/Driver.ml
 
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 			  Typing.cmo TreeLower.cmo TreeSSA.cmo TreeFold.cmo \
@@ -70,8 +76,11 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  Passes.cmx Driver.cmx
 
 # This is the subset for which we want to generate documentation.
-creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
-			  Lexer.mll Parser.mly \
+creolc_DOCSOURCES	= Driver.ml \
+			  Passes.ml \
+			  Messages.ml \
+			  Lexer.mll \
+			  Parser.mly \
 			  Creol.ml \
 			  Typing.ml \
 			  TreeLower.ml \
@@ -83,7 +92,9 @@ creolc_DOCSOURCES	= Driver.ml Passes.ml Messages.ml \
 			  TreeBury.ml \
 			  TreeDevirt.ml \
 			  TreeTailcall.ml \
-			  BackendCreol.ml BackendMaude.ml BackendXML.ml \
+			  BackendCreol.ml \
+			  BackendMaude.ml \
+			  BackendXML.ml \
 			  BackendDot.ml \
 			  Misc.ml
 
@@ -114,10 +125,10 @@ SVNDATE = \
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
 
-creolc: $(creolc_cmi) $(creolc_cmo)
+creolc: $(creolc_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(creolc_cmo)
 
-creolc.opt: $(creolc_cmi) $(creolc_cmx)
+creolc.opt: $(creolc_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(creolc_cmx)
 
 .PRECIOUS: *.cmo *.cmi *.cmx
@@ -147,22 +158,21 @@ Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
 	sed 's,_menhir_shifted = .*$$,_menhir_shifted = max_int,g' $$t > Parser.ml && \
 	rm $$t)
 
+
 Lexer.ml: Lexer.mll
 	$(OCAMLLEX) -o $@ $<
 
 
-all-local: depend-tmp version-tmp
+all-local: version-tmp
 
 
-${srcdir}/.depend: depend-tmp
-
-.PHONY: depend-tmp
-depend-tmp: ${srcdir}/Makefile.am $(creolc_SOURCES)
-	@$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
-		> depend-tmp
-	@cmp -s depend-tmp $@ || \
-		(echo "Updated dependencies." ; cp depend-tmp $@ )
-	@rm -f depend-tmp
+${srcdir}/.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
+	(t=`mktemp depend.XXXXXXXX` && \
+	  $(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
+	    > $$t && \
+	  cmp -s $$t ${srcdir}/.depend || \
+	    ( echo "Updated dependencies." ; cp $$t ${srcdir}/.depend ) && \
+	  rm -f $$t)
 
 
 Version.ml: version-tmp
@@ -192,5 +202,5 @@ code.tex: ${srcdir}/Makefile.am ${creolc_DOCSOURCES}
 	${OCAMLWEB} --no-preamble --no-index ${creolc_DOCSOURCES} -o $@
 
 # Dependencies.
-Lexer.cmo: Parser.cmi
+Parser.cmi: Parser.mli
 -include ${srcdir}/.depend

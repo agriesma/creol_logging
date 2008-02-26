@@ -17,8 +17,8 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([Creol Tools], 0.0h, kyas@ifi.uio.no, [creoltools])
-RELEASE_DATE='2008-01-11'
+AC_INIT([Creol Tools], [0.0i], [kyas@ifi.uio.no], [creoltools])
+RELEASE_DATE='2008-02-26'
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.ml])

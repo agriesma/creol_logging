@@ -17,7 +17,7 @@ BuildRequires: ocaml-findlib-devel
 BuildRequires: /usr/bin/texi2pdf
 BuildRequires: ocaml-libxml2-devel
 
-Requires: maude >= 2.2
+Requires: maude >= 2.3
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 
