@@ -399,8 +399,6 @@ let out_of_ssa tree =
 	  let no = List.map left_hand_side_of_ssa outs in
 	    AwaitSyncCall (n, nc, m, s, ni, no)
       | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
-	  (* XXX: This should not happen, but if we resolve this, we need to
-	     rerun this for updating the chain... *)
 	  LocalAsyncCall (n, None, m, s, ub, lb, List.map expression_of_ssa i)
       | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
 	  LocalAsyncCall (n, Some (left_hand_side_of_ssa l), m, s, ub, lb,
