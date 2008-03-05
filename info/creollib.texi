@@ -289,7 +289,7 @@ The function @code{sub} returns a slice of the list, beginning at
 
 @item fun after(l: List[`a], n: Int): List[`a]
 The function @code{after} returns a list containing all elements after
-@code{p}.  If @code{p} is larger than the length of the list, the
+@code{n}.  If @code{n} is larger than the length of the list, the
 empty list is returned.
 
 @item fun in(l: List[`a], e: `a): Bool
