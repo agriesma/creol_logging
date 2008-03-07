@@ -228,11 +228,12 @@ endfm
 fmod CREOL-COMMUNICATION is
   protecting CREOL-CLASS .
 
-  sort Body .
+  sort Body Invoc Comp .
+  subsorts Invoc Comp < Body .
 
   *** INVOCATION and REPLY
-  op invoc : Oid Label Mid DataList -> Body [ctor `format'(b o)] .  
-  op comp : Label DataList -> Body [ctor `format' (b o)] .  
+  op invoc : Oid Label Mid DataList -> Invoc [ctor `format'(b o)] .  
+  op comp : Label DataList -> Comp [ctor `format' (b o)] .  
 
   --- Messages.  Messages have at least a receiver.
 
@@ -492,7 +493,8 @@ mod CREOL-SIMULATOR is
   var G : Expr .
   var M : Mid .
   var Q : String .
-  var MsgBody : Body .
+  var cmsg : Comp .
+  var imsg : Invoc .
   var cnf : Configuration .
 
 dnl Define the clock and the variables needed to address clocks.
@@ -687,22 +689,25 @@ eq < O : C | Att: S, Pr: (L, A ?(AL); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F 
   < O : C | Att: S, Pr: (L, (L[A])?(AL); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > .
 
 
---- receive-invoc
----
---- Receive an invocation message and try to bind the process.
----
-STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
-            Ev: MM + invoc(O'`,' Lab`,' Q`,' DL)`,' Lcnt: N >,
-  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
-    bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
-`[label receive-invoc]')
-
-
-STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
-            Ev: MM + invoc(O'`,' Lab`,' Q @ CC`,' DL)`,' Lcnt: N >,
-  < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
-    bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' CC < emp >),
-`[label receive-static-invoc]')
+dnl receive-invoc
+dnl
+dnl Receive an invocation message and try to bind the process.
+dnl
+dnl The next rule should not be triggered anymore, because it is
+dnl superseded by [transport-imsg] below.
+dnl
+dnl STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
+dnl            Ev: MM + invoc(O'`,' Lab`,' Q`,' DL)`,' Lcnt: N >,
+dnl   < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
+dnl     bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
+dnl `[label receive-invoc]')
+dnl
+dnl
+dnl STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
+dnl             Ev: MM + invoc(O'`,' Lab`,' Q @ CC`,' DL)`,' Lcnt: N >,
+dnl   < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
+dnl     bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' CC < emp >),
+dnl `[label receive-static-invoc]')
 
 
 --- Method binding with multiple inheritance
@@ -770,8 +775,8 @@ ifdef(`MODELCHECK',
 `eq
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > CLOCK
   =
-  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM +
-    invoc(O, label(O, O, Q, EVALLIST(EL, (S :: L), T)), Q, EVALLIST(EL, (S :: L), T)), Lcnt: F > CLOCK'
+  < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  bindMtd(O, O, label(O, O, Q, EVALLIST(EL, (S :: L), T)), Q, EVALLIST(EL, (S :: L), T), C < emp >) CLOCK'
 ,
 `rl
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
@@ -790,14 +795,13 @@ ifdef(`MODELCHECK',
   CLOCK
   =
   < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  invoc(O, label(O, O, Q @ CC, EVALLIST(EL, (S :: L), T)), Q @ CC,
-        EVALLIST(EL, (S :: L), T)) from O to O CLOCK'
+  bindMtd(O`,' O`,' label(O, O, Q @ CC, EVALLIST(EL, (S :: L), T))`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
 ,
 `rl
   < O : C | Att: S, Pr: (L, ( A ! Q @ CC(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
   < O : C | Att: S, Pr: (insert (A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q @ CC, EVALLIST(EL, (S :: L), T)) from O to O CLOCK'
+  bindMtd(O`,' O`,' label(O, N)`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
 )dnl
   [label local-async-static-call] .
 
@@ -835,10 +839,18 @@ STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM,
 ---
 eq
   < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  MsgBody from O' to O
+  cmsg from O' to O
   =
-  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM + MsgBody, Lcnt: N >
-  [label transport] .
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM + cmsg, Lcnt: N >
+  [label transport-cmsg] .
+
+eq
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  invoc(O', Lab, Q, DL) from O' to O
+  =
+  < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  bindMtd(O, O', Lab, Q, DL, C < emp >)
+  [label transport-imsg] .
 
 --- free
 ---

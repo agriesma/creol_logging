@@ -30,24 +30,37 @@ SUFFIXES	= .maude .prof
 CREOL_LIBRARY_PATH	= ${top_srcdir}/share
 MAUDE_LIB		:= ${top_builddir}/share:${MAUDE_LIB}
 
-GENERATE	= $(SHELL) ${srcdir}/generate.sh
+PROFILE		= $(SHELL) ${srcdir}/profile.sh
+BENCHMARK	= $(SHELL) ${srcdir}/benchmark.sh
 CREOLC		= ${top_builddir}/creolc/creolc
 
 export CREOL_LIBRARY_PATH MAUDE_LIB
 
-check-local: Phil1.prof Phil2.prof
+check-local: Phil1b.prof Phil1p.prof Phil2b.prof Phil2p.prof
 
 .maude.prof:
 	${MAUDE} $< > $@
 
-Phil1.maude: Philosophers.creol Philosophers.tests ${srcdir}/generate.sh
+Phil1p.maude: Philosophers.creol Philosophers.tests ${srcdir}/profile.sh
 	rm -f model.maude
 	$(CREOLC) -T maudemc -o model.maude $<
-	$(GENERATE) model.maude ${srcdir}/Philosophers.tests $@
+	$(PROFILE) model.maude ${srcdir}/Philosophers.tests $@
 	rm -f model.maude
 
-Phil2.maude: Philosophers.creol Philosophers.tests ${srcdir}/generate.sh
+Phil2p.maude: Philosophers.creol Philosophers.tests ${srcdir}/profile.sh
 	rm -f model.maude
 	$(CREOLC) -T maudemc -p devirt -o model.maude $<
-	$(GENERATE) model.maude ${srcdir}/Philosophers.tests $@
+	$(PROFILE) model.maude ${srcdir}/Philosophers.tests $@
+	rm -f model.maude
+
+Phil1b.maude: Philosophers.creol Philosophers.tests ${srcdir}/benchmark.sh
+	rm -f model.maude
+	$(CREOLC) -T maudemc -o model.maude $<
+	$(BENCHMARK) model.maude ${srcdir}/Philosophers.tests $@
+	rm -f model.maude
+
+Phil2b.maude: Philosophers.creol Philosophers.tests ${srcdir}/benchmark.sh
+	rm -f model.maude
+	$(CREOLC) -T maudemc -p devirt -o model.maude $<
+	$(BENCHMARK) model.maude ${srcdir}/Philosophers.tests $@
 	rm -f model.maude
