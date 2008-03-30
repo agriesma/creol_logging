@@ -22,7 +22,7 @@ CLEANFILES		= *.prof
 DISTCLEANFILES		= *.maude
 MAINTAINERCLEANFILES	= Makefile.in
 
-EXTRA_DIST	= generate.sh \
+EXTRA_DIST	= benchmark.sh profile.sh \
 		  Philosophers.creol Philosophers.tests
 
 SUFFIXES	= .maude .prof

@@ -46,8 +46,8 @@ creolc_SOURCES		= ${srcdir}/Version.ml \
 			  ${srcdir}/TreeBury.ml \
 			  ${srcdir}/TreeDevirt.ml \
 			  ${srcdir}/TreeTailcall.ml \
-			  ${srcdir}/Lexer.ml ${srcdir}/Lexer.mli \
-			  ${srcdir}/Parser.ml ${srcdir}/Parser.mli \
+			  ${srcdir}/Lexer.mli ${srcdir}/Lexer.ml \
+			  ${srcdir}/Parser.mli ${srcdir}/Parser.ml \
 			  ${srcdir}/BackendCreol.ml \
 			  ${srcdir}/BackendMaude.ml \
 			  ${srcdir}/BackendXML.ml \
