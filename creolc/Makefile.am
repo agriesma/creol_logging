@@ -171,7 +171,8 @@ ${srcdir}/.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
 	  $(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
 	    > $$t && \
 	  cmp -s $$t ${srcdir}/.depend || \
-	    ( echo "Updated dependencies." ; cp $$t ${srcdir}/.depend ) && \
+	    ( echo "Updated dependencies." ; \
+	      test ! -w ${srcdir}/.depend || cp $$t ${srcdir}/.depend ) && \
 	  rm -f $$t)
 
 
