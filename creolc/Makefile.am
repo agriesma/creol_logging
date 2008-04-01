@@ -170,10 +170,10 @@ ${srcdir}/.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
 	@(t=`mktemp depend.XXXXXXXX` && \
 	  $(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
 	    > $$t && \
-	  cmp -s $$t ${srcdir}/.depend || \
-	    ( echo "Updated dependencies." ; \
-	      test ! -w ${srcdir}/.depend || cp $$t ${srcdir}/.depend ) && \
-	  rm -f $$t)
+	   cmp -s $$t ${srcdir}/.depend || \
+	   (if [ \( ! -e ${srcdir}/.depend \) -o -w ${srcdir}/.depend ] ; \
+	    then cp -v $$t ${srcdir}/.depend ; echo "Updated dependencies" ; \
+	    else : ; fi ) ; rm -f $$t)
 
 
 Version.ml: version-tmp
