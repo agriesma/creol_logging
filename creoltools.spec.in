@@ -1,16 +1,15 @@
-%define opt %(test -x %{_bindir}/ocamlopt && echo 1 || echo 0)
 %define debug_package %{nil}
 
 Summary:	Environment for the Creol Language
 Name:		creoltools
-Version:	0.0h
+Version:	@VERSION@
 Release:	0%{?dist}
 Vendor:		Universitetet i Oslo
-URL:		http://creol.berlios.de/
+URL:		http://heim.ifi.uio.no/~kyas/creoltools/
 License:	GPLv3+
 Group:		Development/Languages
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Source0:	%{name}-%{version}.tar.bz2
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: ocaml >= 3.09
 BuildRequires: ocaml-findlib-devel
@@ -92,7 +91,3 @@ fi
 %{_datadir}/%{name}
 %{_infodir}/*.info*
 %config(noreplace) %{_sysconfdir}/profile.d/creol.sh
-
-%changelog
-* Thu Apr 17 2007 Marcel Kyas <kyas@ifi.uio.no> - 0.0b-0
-- Initial build

@@ -23,8 +23,14 @@ DIST_SUBDIRS		= share info creolc tests
 SUBDIRS			= share info creolc tests
 
 MOSTLYCLEANFILES	= *~
+DISTCLEANFILES		= creoltools.spec
 MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
 			  depcomp elisp-comp missing install-sh
 
 bin_SCRIPTS		= creolshell creolbug
 dist_noinst_SCRIPTS	= maude-sh
+
+EXTRA_DIST		= creoltools.spec creoltools.spec.in
+
+creoltools.spec: ${srcdir}/creoltools.spec.in ${srcdir}/configure.ac
+	rm -f $@ && sed "s/@VERSION\@/${VERSION}/" < $< > $@
