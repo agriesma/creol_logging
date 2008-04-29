@@ -19,7 +19,9 @@
 
 MOSTLYCLEANFILES	= *~
 CLEANFILES		= 
-DISTCLEANFILES		=
+DISTCLEANFILES		= creol-interpreter.maude \
+			  creol-modelchecker.maude \
+			  creol-realtime.maude \
 MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README macros.m4 interpreter.m4
