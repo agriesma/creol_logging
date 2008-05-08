@@ -214,7 +214,7 @@ fmod CREOL-CLASS is
   eq get(Q, noMtd, O, Lab, DL) = noProc .
   eq get(Q, MM * < Q' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, DL) =
     if Q == Q' then
-      (insert("caller", O, insert(".label", Lab, S)), assign(AL, DL) ; SL)
+      (insert(".method", str(Q), insert("caller", O, insert(".label", Lab, S))), assign(AL, DL) ; SL)
     else
       get(Q, MM, O, Lab, DL)
     fi .

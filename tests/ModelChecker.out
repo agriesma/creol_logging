@@ -10,8 +10,8 @@ result Configuration:
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(5),
   Pr: (".label" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp),
-    "caller" |-> ob("Tailcall0")), cont(label(ob("Tailcall0"), ob("Tailcall0"),
-    "init", emp)),
+    ".method" |-> str("init"), "caller" |-> ob("Tailcall0")), cont(label(ob(
+    "Tailcall0"), ob("Tailcall0"), "init", emp)),
   PrQ: ".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), label(
     ob("Tailcall0"), ob("Tailcall0"), "init", emp) ?(noVid) ; ".anon" ! "run"(
     emp) ; free(".anon"),
