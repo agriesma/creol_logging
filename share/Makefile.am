@@ -33,11 +33,11 @@ dist_pkgdata_DATA	= creol.xsd \
 			  creol-realtime.maude \
 			  prelude.creol
 
-creol-interpreter.maude: ${srcdir}/interpreter.m4 ${srcdir}/macros.m4
+creol-interpreter.maude:  ${srcdir}/macros.m4 ${srcdir}/interpreter.m4
 	$(M4) -I${srcdir} ${CREOL_VARIANT} $^ > $@
 
-creol-modelchecker.maude: ${srcdir}/interpreter.m4 ${srcdir}/macros.m4
+creol-modelchecker.maude: ${srcdir}/macros.m4 ${srcdir}/interpreter.m4
 	$(M4) -I${srcdir} -DMODELCHECK ${CREOL_VARIANT} $^ > $@
 
-creol-realtime.maude: ${srcdir}/interpreter.m4 ${srcdir}/macros.m4
+creol-realtime.maude: ${srcdir}/macros.m4 ${srcdir}/interpreter.m4
 	$(M4) -I${srcdir} -DTIME ${CREOL_VARIANT} $^ > $@

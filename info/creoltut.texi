@@ -39,7 +39,7 @@ Conceptually, each object of a @acronym{CREOL} system executes on its own
 virtual processor and owns its own private resources.  The object is
 active and has its own thread of execution, where its activity starts
 immediately after the object has been created and initialised.  It is
-responsible for its own scheduling.  Other objects have very little
+responsile for its own scheduling.  Other objects have very little
 control on how an object is coordinating its activities.  It has
 private access to its data.  All communication between objects is only
 by message passing.  Object can neither read nor write attributes
@@ -108,10 +108,16 @@ end
 In order to execute this program, it has first be compiled to a
 version suitable for execution.  One possibility would be to compile
 the program into the @emph{Maude format}, which is currently the main
-execution and analysis environment for @acronym{CREOL}.  This can be achieved by
-storing the example program into a file @file{Hello.creol} and then
-executing the command @command{creolc -o Hello.maude Hello.creol}.
-This results in the Maude model of the following example:
+execution and analysis environment for @acronym{CREOL}.  This can be
+achieved by storing the example program into a file @file{Hello.creol}
+and then executing the command @command{creolc -o Hello.maude
+Hello.creol}.  If everything works as expected, executing this command
+will not produce any output onto the screen.@footnote{The Creol
+compiler @command{creolc} only prints a message if it identifies a
+problem.  This makes it easier to integrate the compiler into other
+tool chains that use Unix pipes (@pxref{Invoking creolc}).}  The
+invocation of @command{creolc -o Hello.maude Hello.creol} results in
+the Maude model of the following example:
 
 @example
 load creol-interpreter

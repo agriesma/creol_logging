@@ -64,7 +64,7 @@ fmod CREOL-SUBST is
   *** Composition operater for substitutions
   op compose : Subst Subst -> Subst .
   eq compose(S1, noSubst) = S1 .
-  eq compose(noSubst, S1) = S1 .
+  eq compose(noSubst, S2) = S2 .
   eq compose(S1, (S2, (A |-> D))) = compose(insert(A, D, S1), S2) .
 endfm
 
@@ -183,7 +183,7 @@ fmod CREOL-CLASS is
   var O : Oid .
   var N : Nat .
   var AL : VidList .
-  vars Q Q' : String .
+  vars M M' C : String .
 
   op <_: Mtdname | Param:_, Latt:_, Code:_> : 
     String VidList Subst StmList -> Mtd [ctor
@@ -210,14 +210,23 @@ fmod CREOL-CLASS is
       Ocnt: 0 > .
 
   --- fetches pair (code, vars) to bind call to process.
-  op get : String MMtd Oid Label DataList -> Process .
-  eq get(Q, noMtd, O, Lab, DL) = noProc .
-  eq get(Q, MM * < Q' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, DL) =
-    if Q == Q' then
-      (insert(".method", str(Q), insert("caller", O, insert(".label", Lab, S))), assign(AL, DL) ; SL)
+  --- M represents the name of the method.
+  --- C represents the name of the class.
+  --- MM represents the methods we search through.
+  --- O represents the identity of the caller.
+  --- Lab represents the label used to return the value computed by the method.
+  --- DL represents the list of actual arguments.
+  op get : String String MMtd Oid Label DataList -> Process .
+  eq get(M, C, MM *
+               < M' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, DL) =
+    if M == M' then
+      ((S, "caller" |-> O, ".class" |-> str(C), ".label" |-> Lab,
+        ".method" |-> str(M)),
+       assign(AL, DL) ; SL)
     else
-      get(Q, MM, O, Lab, DL)
+      get(M, C, MM, O, Lab, DL)
     fi .
+  eq get(M, C, noMtd, O, Lab, DL) = noProc .
 
 endfm
 
@@ -364,7 +373,7 @@ fmod `CREOL-EVAL' is
   eq inqueue(L, MM + comp(L', EL)) =
 	if L == L' then true else inqueue(L, MM) fi .
 
-  vars  ST ST' : Stm . 
+  vars ST ST' : Stm . 
   vars SL SL' SL'' : StmList . 
   vars NeSL NeSL' NeSL'' : NeStmList .
   var AL : VidList .
@@ -635,7 +644,7 @@ eq
 ---
 STEP(dnl
 `< O : C | Att: S, Pr: (L, release ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >',
-`< O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Dealloc: LS, Ev: MM, Lcnt: N >',
+`< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Dealloc: LS, Ev: MM, Lcnt: N >',
 `[label release]')
 
 
@@ -644,7 +653,7 @@ STEP(dnl
 CSTEP(dnl
 `< O : C | Att: S, Pr: (L, SuS ; SL), PrQ: W, Dealloc: LS, Ev: MM,
            Lcnt: N > CLOCK',
-`< O : C | Att: S, Pr: idle, PrQ: (L, SuS ; SL) ++ W, Dealloc: LS, Ev: MM,
+`< O : C | Att: S, Pr: idle, PrQ: W ++ (L, SuS ; SL), Dealloc: LS, Ev: MM,
            Lcnt: N > CLOCK',
 not ENABLED(SuS, (S :: L), MM, T),
 `[label suspend]')
@@ -672,7 +681,7 @@ eq
 --- Must be a rule to preserve confluence.
 ---
 crl
-  < O : C | Att: S, Pr: idle, PrQ: (L, SL) ++ W, Dealloc: LS, Ev: MM,
+  < O : C | Att: S, Pr: idle, PrQ: W ++ (L, SL), Dealloc: LS, Ev: MM,
             Lcnt: N > CLOCK
   =>
   < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
@@ -716,10 +725,10 @@ eq
   bindMtd(O, O', Lab, M, DL, (C < EL >) `,,' I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
-  if get(M, MS, O', Lab, DL) == noProc then
+  if get(M, C, MS, O', Lab, DL) == noProc then
     bindMtd(O, O', Lab, M, DL, I `,,' I')
   else
-    boundMtd(O, get(M, MS, O', Lab, DL))
+    boundMtd(O, get(M, C, MS, O', Lab, DL))
   fi
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   .
@@ -728,7 +737,7 @@ eq
   boundMtd(O, P')
   < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
-  < O : C | Att: S, Pr: P, PrQ: P' ++ W, Dealloc: LS, Ev: MM, Lcnt: N >
+  < O : C | Att: S, Pr: P, PrQ: W ++ P', Dealloc: LS, Ev: MM, Lcnt: N >
   .
 
 --- receive-comp
@@ -748,9 +757,9 @@ rl
 --- local-reply
 ---
 CSTEP(dnl
-< O : C | Att: S`,' Pr: (L`,' Lab ?(AL); SL)`,' PrQ: (L'`,' SL') ++ W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
+< O : C | Att: S`,' Pr: (L`,' Lab ?(AL); SL)`,' PrQ: W ++ (L'`,' SL')`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
 < O : C | Att: S`,' Pr: (L'`,' SL' ; cont(Lab))`,'
-  PrQ: (L`,' Lab ?(AL); SL) ++ W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
+  PrQ: W ++ (L`,' Lab ?(AL); SL)`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
 L'[".label"] == Lab,
 `[label local-reply]')
 
@@ -762,7 +771,7 @@ L'[".label"] == Lab,
 --- in the model checker, because there might be two processes in PrQ
 --- which await a reply to the label.
 rl
-  < O : C | Att: S, Pr: (L, cont(Lab)), PrQ: (L', (Lab ?(AL); SL')) ++ W,
+  < O : C | Att: S, Pr: (L, cont(Lab)), PrQ: W ++ (L', (Lab ?(AL); SL')),
     Dealloc: LS, Ev: MM, Lcnt: F >
   =>
   < O : C | Att: S, Pr: (L', (Lab ?(AL); SL')), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
@@ -886,7 +895,7 @@ STEP(`< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Dealloc: LS, Ev: M
 
 *** If we receive the method body, the call is accepted and the label untagged.
 crl
-  < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: (L, SL) ++ W,
+  < O : C | Att: S, Pr: (noSubst, accept(Lab)), PrQ: W ++ (L, SL),
          Dealloc: LS, Ev: MM, Lcnt: N >
   =>
   < O : C | Att: S, Pr: (insert(".label", tag(Lab), L), SL), PrQ: W,
@@ -983,7 +992,7 @@ eq posit((S `::' L), SL, T) = true [otherwise] .
 
 op posit(_,_,_) : Subst MProc Float -> Bool .
 eq posit(S, noProc, T) = true .
-eq posit(S, (L, SL) ++ W, T) = posit((S :: L),SL,T) and posit(S, W, T) .
+eq posit(S, W ++ (L, SL), T) = posit((S :: L),SL,T) and posit(S, W, T) .
 
 op posit : State -> Bool .
 eq posit ({ clock(delta, T) }) = true .
