@@ -118,11 +118,11 @@ fmod CREOL-STM-LIST is
 			  op nil : -> List{Stm} to noStm,
 			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_ [`format' (d r o d)]) .
 
-  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor strat (1 0 2 3 0)] . 
-  op while_do_od : Expr NeStmList -> Stm [ctor strat (1 0 2 0)] .
+  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor] . 
+  op while_do_od : Expr NeStmList -> Stm [ctor] .
   op _[]_  : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 45 `format' (d r d o d)] .
   op _|||_ : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 47 `format' (d r o d)] .
-  op _MERGER_  : StmList StmList -> Stm [assoc] .
+  op _MERGER_  : StmList StmList -> Stm [ctor assoc] .
 
   var SL : StmList .
   var NeSL : NeStmList .
@@ -142,7 +142,7 @@ fmod CREOL-STM-LIST is
   eq assign(noVid, emp) = noStm .
 
   sort Process .
-  op idle : -> Process [`format' (!b o)] .  
+  op idle : -> Process [ctor `format' (!b o)] .  
   op _,_ : Subst StmList -> Process [ctor `format' (o r sbu o)] . 
   var L : Subst .
   eq (L, noStm) = idle . *** if ".label" is needed this is dangerous!
@@ -202,7 +202,7 @@ fmod CREOL-CLASS is
   sort Class .
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
     Cid InhList VidList Subst MMtd Nat -> Class 
-     [`format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
+     [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
 
   op emptyClass : -> Class .
   eq emptyClass =
@@ -474,7 +474,7 @@ mod CREOL-SIMULATOR is
   extending CREOL-DATA-SIG .
   protecting `CREOL-EVAL' .
 
-  op simurev : -> String [ctor] .
+  op simurev : -> String .
   eq simurev = "KIND $Revision$" .
 
   vars O O' : Oid .
