@@ -23,7 +23,7 @@ fmod CREOL-DATA-SIG is
   protecting STRING .
   protecting NAT .
 
-  op datarev : -> String [ctor] .
+  op datarev : -> String .
   eq datarev = "$Revision$" .
 
   sorts   Expr Data Vid Oid .
@@ -72,9 +72,8 @@ fmod CREOL-DATA-SIG is
   op _,_ : NeVidList VidList -> NeVidList [ctor ditto] .
   op _,_ : VidList NeVidList -> NeVidList [ctor ditto] .
 
-  op _(_) : String DataList -> Data [prec 12 format (! o d d d)] .
-  op _(_) : String ExprList -> Expr [prec 12 format (! o d d d)] .
-  op if_th_el_fi : Expr Expr Expr -> Expr [ctor strat (1 0 2 3 0)] .
+  op _(_) : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
+  op if_th_el_fi : Expr Expr Expr -> Expr [ctor strat (1 0)] .
   op _??  : Vid -> Expr [ctor] .
   op _??  : Label -> Expr [ctor] .
   op _@@_ : String String -> Vid [ctor] .
@@ -82,26 +81,24 @@ fmod CREOL-DATA-SIG is
   op ob(_) : String -> Oid [ctor format (r d o r o)] .
 
   vars B B' : Bool .
-  op bool(_) : Bool      -> Data [ctor format(o o ! o o)] .
+  op bool(_) : Bool -> Data [ctor format(o o ! o o)] .
 
-  op _asBool            : Data -> Bool .
-  eq bool(B) asBool     = B .
+  op _asBool : Data -> Bool .
+  eq bool(B) asBool = B .
 
   vars D D'     : Data .
   
   eq "=" (D :: D') = bool(D == D') .
   eq "/=" (D :: D') = bool(D =/= D') .
 
-  var E : Expr . *** For short circuiting ||, &&, and =>
-
   eq "~" (bool(false)) = bool(true) .  
   eq "~" (bool(true)) = bool(false) . 
-  eq "&&" (bool(false) :: E) = bool(false) .
+  eq "&&" (bool(false) :: D) = bool(false) .
   eq "&&" (bool(true) ::  D) = D .
-  eq "||" (bool(true) :: E) = bool(true) .
+  eq "||" (bool(true) :: D) = bool(true) .
   eq "||" (bool(false) :: D) = D .
   eq "=>" (bool(true) :: D) = D .
-  eq "=>" (bool(false) :: E) = bool(true) .
+  eq "=>" (bool(false) :: D) = bool(true) .
   eq "^" (bool(B) :: bool(B')) = bool(B xor B') .
   eq "<=>" (bool(B) :: bool(B')) = bool(B == B') .
 endfm
@@ -132,7 +129,7 @@ fmod CREOL-DATA-INT is
   eq int(I) asInt = I .
 
   op _asNat : Data -> Nat .
-  eq int(N)  asNat      = N .
+  eq int(N) asNat = N .
 
   eq "-" (int(I)) = int(-(I)) .
   eq "+" (int(I) :: int(I')) = int(I + I') .
@@ -202,7 +199,7 @@ endfm
 fmod CREOL-DATA-LIST is
   extending CREOL-DATA-INT .
 
-  op list : ExprList -> Expr .
+  op list : ExprList -> Expr [ctor] .
   op list : DataList -> Data [ctor] .
 
   vars N M : Nat .
@@ -312,7 +309,7 @@ fmod CREOL-DATA-SET is
   op _:_ : NeExprSet ExprSet -> NeExprSet [ctor ditto] .
   op _:_ : ExprSet NeExprSet -> ExprSet [ctor ditto] .
 
-  op set : ExprSet -> Expr .
+  op set : ExprSet -> Expr [ctor] .
   op set : DataSet -> Data [ctor] .
 
   vars N    : Nat .
@@ -361,7 +358,7 @@ fmod CREOL-DATA-PAIR is
   extending CREOL-DATA-SIG .
 
   op pair : Data Data -> Data [ctor] .
-  op pair : Expr Expr -> Expr .
+  op pair : Expr Expr -> Expr [ctor] .
 
   vars D D' : Data .
 
@@ -376,7 +373,7 @@ fmod CREOL-DATA-MAP is
 				op undefined to udef,
 				op _|->_ to _|~>_ ) .
 
-  op map : ExprMap -> Expr .
+  op map : ExprMap -> Expr [ctor] .
 
   var M : ExprMap .
   vars D D' : Data .
@@ -407,8 +404,8 @@ fmod CREOL-DATA-TIME is
   *** solved later.
   op now : -> Expr [ctor] .
 
-  op time : Float -> Data . 
-  op duration : Float -> Data .
+  op time : Float -> Data [ctor] . 
+  op duration : Float -> Data [ctor] .
 
   vars T T' S : Float .
 

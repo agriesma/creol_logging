@@ -56,7 +56,7 @@ fmod CREOL-SUBST is
   vars S1 S2  : Subst .
 
   *** Lazy composition operator for substitutions
-  op _::_ : Subst Subst -> Subst .
+  op _::_ : Subst Subst -> Subst [strat (0)] .
   eq S1 :: noSubst = S1 .
   eq noSubst :: S2 = S2 .
   eq (S1 :: S2)[ A ] = if $hasMapping(S2, A) then S2[A] else S1[A] fi .
@@ -276,7 +276,7 @@ fmod CREOL-COMMUNICATION is
   sort Labels .
   subsort Label < Labels .
 
-  op noDealloc :         -> Labels  [ctor] .
+  op noDealloc :         -> Labels [ctor] .
   op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
 endfm
