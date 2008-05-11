@@ -46,20 +46,42 @@ load creol-datatypes .
 *** of the assumption, that insert behaves well in our case.
 *** 
 fmod CREOL-SUBST is
+  protecting BOOL .
   protecting EXT-BOOL .
   protecting CREOL-DATATYPES .
-  extending MAP{Vid, Data} * (sort Map{Vid, Data} to Subst,
-                              op empty : -> Map{Vid, Data} to noSubst ) .
 
+  sort Entry Subst .
+  subsort Entry < Subst .
+
+  op _|->_ : Vid Data -> Entry [ctor] .
+  op noSubst : -> Entry [ctor] .
+  op _,_ : Subst Subst -> Subst [ctor assoc comm id: noSubst prec 121 format (d r os d)] .
+  op undefined : -> [Data] [ctor] .
+  
   vars A A' : Vid .
   vars D D' : Data .
   vars S1 S2  : Subst .
 
+  op insert : Vid Data Subst -> Subst .
+  eq insert(A, D, (S1, A |-> D')) =
+     if $hasMapping(S1, A) then insert(A, D, S1)
+     else (S1, A |-> D)
+     fi .
+  eq insert(A, D, S1) = (S1, A |-> D) [owise] .
+
+  op $hasMapping : Subst Vid -> Bool .
+  eq $hasMapping((S1, A |-> D), A) = true .
+  eq $hasMapping(S1, A) = false [owise] .
+
   *** Lazy composition operator for substitutions
   op _::_ : Subst Subst -> Subst [strat (0)] .
-  eq S1 :: noSubst = S1 .
-  eq noSubst :: S2 = S2 .
-  eq (S1 :: S2)[ A ] = if $hasMapping(S2, A) then S2[A] else S1[A] fi .
+
+  *** Get a value
+  op _[_] : Subst Vid -> [Data] [prec 23] .
+  eq (S1 :: (S2, A |-> D))[ A ] = D .
+  eq ((S1, A |-> D) :: S2)[ A ] = D .
+  eq (S1, A |-> D)[A] = D .
+  eq S1[A] = undefined [owise] .
 
   *** Composition operater for substitutions
   op compose : Subst Subst -> Subst .
