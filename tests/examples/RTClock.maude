@@ -1,0 +1,11 @@
+load creol-realtime
+mod PROGRAM is
+protecting CREOL-SIMULATOR .
+op init : -> Configuration [ctor] .
+eq init =
+< "RTClock" : Cl | Inh: noInh, Par: noVid, Att: "hrs" |-> null , "min" |-> null , "sec" |-> null, Mtds: 
+  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code:  ( ( "hrs" @@ "RTClock" ), ( "min" @@ "RTClock" ), ( "sec" @@ "RTClock" ) )  ::= int(1) :: int(0) :: now ; return ( emp ) > *
+  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: ( posit "<=" ( "sec" :: "+" ( now :: "dur" ( int(1) ) ) ) ) ; ( await ">=" ( "sec" :: "+" ( now :: "dur" ( int(1) ) ) ) ) ; if "<" ( "min" :: int(60) ) th "min" ::= "+" ( "min" :: int(1) ) el  ( "min", "hrs" )  ::= int(0) :: (if "=" ( "hrs" :: int(12) ) th int(1) el "+" ( "hrs" :: int(1) ) fi) fi ; ( posit "<=" ( "sec" :: "+" ( now :: "dur" ( int(1) ) ) ) ) ; "sec" ::= now ; return ( emp ) >, Ocnt: 0 >
+
+.
+endm
