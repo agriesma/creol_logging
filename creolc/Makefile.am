@@ -38,6 +38,7 @@ creolc_SOURCES		= ${srcdir}/Version.ml \
 			  ${srcdir}/Creol.ml \
 			  ${srcdir}/Typing.ml \
 			  ${srcdir}/TreeLower.ml \
+			  ${srcdir}/TreeSplitAss.ml \
 			  ${srcdir}/TreeSSA.ml \
 			  ${srcdir}/TreeFold.ml \
 			  ${srcdir}/TreeDef.ml \
@@ -58,7 +59,7 @@ creolc_SOURCES		= ${srcdir}/Version.ml \
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 			  Typing.cmo TreeLower.cmo TreeSSA.cmo TreeFold.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
-			  TreeDevirt.cmo TreeTailcall.cmo \
+			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  Lexer.cmo Parser.cmo \
 			  BackendCreol.cmo BackendMaude.cmo BackendXML.cmo \
 			  BackendDot.cmo \
@@ -69,7 +70,7 @@ creolc_opt_SOURCES	= $(creolc_SOURCES)
 creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  Typing.cmx TreeLower.cmx TreeSSA.cmx TreeFold.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
-			  TreeDevirt.cmx TreeTailcall.cmx \
+			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  Lexer.cmx Parser.cmx \
 			  BackendCreol.cmx BackendMaude.cmx BackendXML.cmx \
 			  BackendDot.cmx \

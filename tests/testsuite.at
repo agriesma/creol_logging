@@ -398,6 +398,10 @@ dnl Test PASS: into-ssa
 dnl
 TEST_CREOLC_PASS([into-ssa], [Assign])
 
+dnl Test PASS: split-add
+dnl
+TEST_CREOLC_PASS([split-ass], [Assign])
+
 dnl Test PASS: bury
 dnl
 TEST_CREOLC_PASS([bury], [Assign])

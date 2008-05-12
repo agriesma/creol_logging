@@ -100,6 +100,11 @@ let passes = [
       dependencies = "";
       pass = TreeSSA.into_ssa ;
       elapsed = 0.0; enabled = false; dump = false } ) ;
+  ( "split-ass" ,
+    { help = "Split multiple assignments into single assignments." ;
+      dependencies = TreeSplitAss.dependencies;
+      pass = TreeSplitAss.split ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "def-vars" ,
     { help = "Compute data flow." ;
       dependencies = "";
