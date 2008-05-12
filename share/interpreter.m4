@@ -125,18 +125,17 @@ fmod CREOL-STATEMENT is
 
   *** SuspStm is a statement which can be suspended.  It includes
   *** await, [] and ||| (the later two defined in CREOL-STM-LIST.
-  sorts Mid Cid Stm SuspStm .
+  sorts Mid Stm SuspStm .
   subsort SuspStm < Stm .
-  subsort String < Cid .
   subsort String < Mid .
 
   op _._ : Expr String -> Mid [ctor prec 33] .
-  op _@_ : String Cid -> Mid [ctor prec 33] .
+  op _@_ : String String -> Mid [ctor prec 33] .
 
   op skip : -> Stm [ctor] .
   op release : -> Stm [ctor] .
   op _::=_ : VidList ExprList -> Stm [ctor prec 35] .
-  op _::= new_(_) : Vid Cid ExprList -> Stm [ctor prec 35 `format' (d b d o d d d d)] .
+  op _::= new_(_) : Vid String ExprList -> Stm [ctor prec 35 `format' (d b d o d d d d)] .
   op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Vid VidList -> Stm [ctor prec 39 `format' (d c o d d d)] .
   op _?(_)  : Label VidList -> Stm [ctor ditto] .
@@ -210,10 +209,10 @@ endfm
 
 --- An inherits declaration
 fmod CREOL-INHERIT is
-  protecting CREOL-STATEMENT .  --- For Cid and ExprList.
+  protecting CREOL-DATATYPES .
   sort Inh .
 
-  op  _<_> : Cid  ExprList -> Inh [ctor prec 15] .
+  op  _<_> : String  ExprList -> Inh [ctor prec 15] .
 
 endfm
 
@@ -262,7 +261,7 @@ fmod CREOL-CLASS is
   ***
   sort Class .
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
-    Cid InhList VidList Subst MMtd Nat -> Class 
+    String InhList VidList Subst MMtd Nat -> Class 
      [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
 
   op emptyClass : -> Class .
@@ -353,7 +352,7 @@ fmod CREOL-OBJECT is
 
   op noObj : -> Object [ctor] .
   op <_:_ | Att:_, Pr:_, PrQ:_, Dealloc:_, Ev:_, Lcnt:_> : 
-       Oid Cid Subst Process MProc Labels MMsg Nat -> Object 
+       Oid String Subst Process MProc Labels MMsg Nat -> Object 
          [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o  r ni o  r ni o--  r o)] .
 
 endfm
@@ -390,9 +389,9 @@ ifdef(`MODELCHECK',dnl
   op {_} : Configuration -> State [ctor] .
 
   *** System initialisation
-  var C : Cid .
+  var C : String .
   var DL : DataList .
-  op main : Cid DataList -> Configuration .
+  op main : String DataList -> Configuration .
   eq main(C,DL) =
     < ob("main") : "" | Att: noSubst, 
       Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
@@ -422,10 +421,10 @@ fmod `CREOL-EVAL' is
   var Q : String .
   var S S' : Subst .
   var MM : MMsg .
-  var C : Cid .
+  var C : String .
 
   *** Create a new fresh name for an object.
-  op newId : Cid Nat -> Oid .
+  op newId : String Nat -> Oid .
   eq newId(C, N)  = ob(C + string(N,10)) .
 
   *** Check if a message is in the queue.
@@ -539,7 +538,7 @@ mod CREOL-SIMULATOR is
   eq simurev = "KIND $Revision$" .
 
   vars O O' : Oid .
-  vars C CC : Cid .
+  vars C CC : String .
   vars A A' : Vid .
   var a : String .
   var AL : VidList .
@@ -1081,11 +1080,11 @@ ifdef(`MODELCHECK',dnl
 *** The predicates we can define on configurations.
 mod CREOL-PREDICATES is
   protecting CREOL-SIMULATOR .
-  ops objcnt maxobjcnt minobjcnt : Cid Nat -> Prop .
+  ops objcnt maxobjcnt minobjcnt : String Nat -> Prop .
   op hasvalue : Oid Vid Data -> Prop .
   var A : Vid .
   var D : Data .
-  var C : Cid .
+  var C : String .
   var O : Oid .
   vars S S' L L' : Subst .
   var LS : Labels .
