@@ -301,7 +301,7 @@ fmod CREOL-COMMUNICATION is
   subsorts Invoc Comp < Body .
 
   *** INVOCATION and REPLY
-  op invoc : Oid Label Mid DataList -> Invoc [ctor `format'(b o)] .  
+  op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
   op comp : Label DataList -> Comp [ctor `format' (b o)] .  
 
   --- Messages.  Messages have at least a receiver.
@@ -313,7 +313,7 @@ fmod CREOL-COMMUNICATION is
 
   --- Method binding messages.
   --- Bind method request
-  --- Given: caller callee method params (list of classes to look in)
+  --- Given: caller callee label method params (list of classes to look in)
   op bindMtd : Oid Oid Label String DataList InhList -> Msg [ctor `format'(!r d)] .
 
   --- Successfully bound method body. 
@@ -434,8 +434,8 @@ fmod `CREOL-EVAL' is
 	if L == L' then true else inqueue(L, MM) fi .
 
   vars ST ST' : Stm . 
-  vars SL SL' SL'' : StmList . 
-  vars NeSL NeSL' NeSL'' : NeStmList .
+  vars SL SL1 SL2 : StmList . 
+  vars NeSL NeSL1 NeSL2 : NeStmList .
   var AL : VidList .
   var M : ExprMap .
 dnl
@@ -504,26 +504,26 @@ ifdef(`TIME',dnl
    (EVALGUARD(E, S, MM, T) |~> EVALGUARD(E', S, MM, T) ,
    EVALGUARDMAP(M, S, MM, T)) .
 
-  eq ENABLED((NeSL [] NeSL') ; SL'',  S, MM, T) =
-       ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
-  eq ENABLED((NeSL ||| NeSL') ; SL'', S, MM, T) =
-       ENABLED(NeSL, S, MM, T) or ENABLED(NeSL', S, MM, T) .
-  eq ENABLED((NeSL MERGER SL') ; SL'', S, MM, T) = ENABLED(NeSL, S, MM, T) .
-  eq ENABLED(await E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+  eq ENABLED((NeSL [] NeSL1) ; SL2,  S, MM, T) =
+       ENABLED(NeSL, S, MM, T) or ENABLED(NeSL1, S, MM, T) .
+  eq ENABLED((NeSL ||| NeSL1) ; SL2, S, MM, T) =
+       ENABLED(NeSL, S, MM, T) or ENABLED(NeSL1, S, MM, T) .
+  eq ENABLED((NeSL MERGER SL1) ; SL2, S, MM, T) = ENABLED(NeSL, S, MM, T) .
+  eq ENABLED(await E ; SL2, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
 ifdef(`TIME',dnl
-  eq ENABLED(posit E ; SL'', S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+  eq ENABLED(posit E ; SL2, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
 )dnl
   eq ENABLED(NeSL, S, MM, T) = true [owise] .
 
   *** The ready predicate holds, if a statement is ready for execution,
   *** i.e., the corresponding process may be waken up.
-  eq READY((NeSL [] NeSL') ; SL'', S, MM, T) =
-        READY(NeSL, S, MM, T) or READY(NeSL', S, MM, T) .
-  eq READY((NeSL ||| NeSL') ; SL'', S, MM, T) =
-	READY(NeSL, S, MM, T) or READY(NeSL', S, MM, T) .
-  eq READY((NeSL MERGER SL') ; SL'', S, MM, T) = READY(NeSL, S, MM, T) .
-  eq READY((A ?(AL)) ; SL'' , S, MM, T) = inqueue(S[A], MM) . 
-  eq READY((L ?(AL)) ; SL'' , S, MM, T) = inqueue(L, MM) . 
+  eq READY((NeSL [] NeSL1) ; SL2, S, MM, T) =
+        READY(NeSL, S, MM, T) or READY(NeSL1, S, MM, T) .
+  eq READY((NeSL ||| NeSL1) ; SL2, S, MM, T) =
+	READY(NeSL, S, MM, T) or READY(NeSL1, S, MM, T) .
+  eq READY((NeSL MERGER SL1) ; SL2, S, MM, T) = READY(NeSL, S, MM, T) .
+  eq READY((A ?(AL)) ; SL2 , S, MM, T) = inqueue(S[A], MM) . 
+  eq READY((L ?(AL)) ; SL2 , S, MM, T) = inqueue(L, MM) . 
   eq READY(NeSL, S, MM, T) = ENABLED(NeSL, S, MM, T) [owise] .
 
 endfm
@@ -537,34 +537,29 @@ mod CREOL-SIMULATOR is
   op simurev : -> String .
   eq simurev = "KIND $Revision$" .
 
-  vars O O' : Oid .
-  vars C CC : String .
-  vars A A' : Vid .
-  var a : String .
-  var AL : VidList .
-  var D : Data .
-  var DL : DataList .
-  vars E E' : Expr .
-  vars EL EL' : ExprList .
-  var ST : Stm .
-  var SuS : SuspStm .
-  vars SL SL' SL'' : StmList .
-  vars NeSL NeSL' : NeStmList .
+  vars O O' : Oid .                    --- Object identifiers
+  vars C CC : String .                 --- Class names
+  vars A A' : Vid .                    --- Generic attribute names
+  vars Q Q' : String .                 --- Generic names (attribute and method)
+  var AL : VidList .                   --- List of LHS
+  var D : Data .                       --- Value
+  var DL : DataList .                  --- List of values
+  vars E E' G : Expr .                 --- Expressions E, E' and Guard G
+  vars EL EL' : ExprList .             --- List of Expressions
+  var ST : Stm .                       --- Statement
+  var SuS : SuspStm .                  --- Suspendable statement
+  vars SL SL1 SL2 : StmList .          --- List of statements
+  vars NeSL NeSL1 : NeStmList .
   vars P P' : Process .
   var W : MProc .
   vars S S' L L' : Subst .
-  vars N F Sz : Nat .
+  vars N F : Nat .
   vars I I' : InhList .
   var MS : MMtd .
   vars Lab Lab' : Label .
   var LS : Labels .
   var MM : MMsg .
-  var G : Expr .
-  var M : Mid .
-  var Q : String .
   var cmsg : Comp .
-  var imsg : Invoc .
-  var cnf : Configuration .
 
 dnl Define the clock and the variables needed to address clocks.
 dnl
@@ -575,8 +570,8 @@ ifdef(`TIME',
 `define(`CLOCK', `')')dnl
 
 ifdef(`MODELCHECK',dnl
-  op label : Oid Oid Mid DataList -> Label [ctor ``format'' (! o)] .
-  eq caller(label(O, O', M, DL)) = O . 
+  op label : Oid Oid String DataList -> Label [ctor ``format'' (! o)] .
+  eq caller(label(O, O', Q, DL)) = O . 
 ,dnl
  op label : Oid Nat -> Label [ctor ``format'' (o o)] .
  eq caller(label(O, N)) = O .
@@ -596,22 +591,22 @@ STEP(dnl
 `[label assignment]')
 
 eq
-  < O : C | Att: S, Pr: (L, ( assign(((a @@ CC), AL), D :: DL) ; SL)),
+  < O : C | Att: S, Pr: (L, ( assign(((Q @@ CC), AL), D :: DL) ; SL)),
     PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
-    < O : C | Att: insert(a, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
+    < O : C | Att: insert(Q, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
       Dealloc: LS, Ev: MM, Lcnt: N > 
   [label do-static-assign] .
 
 eq
-  < O : C | Att: S, Pr: (L,( assign( (a , AL), D :: DL) ; SL)), PrQ: W,
+  < O : C | Att: S, Pr: (L,( assign( (Q, AL), D :: DL) ; SL)), PrQ: W,
     Dealloc: LS, Ev: MM, Lcnt: N >
   =
-  if $hasMapping(L, a) then
-    < O : C | Att: S, Pr: (insert(a, D, L), assign(AL, DL) ; SL), PrQ: W,
+  if $hasMapping(L, Q) then
+    < O : C | Att: S, Pr: (insert(Q, D, L), assign(AL, DL) ; SL), PrQ: W,
       Dealloc: LS, Ev: MM, Lcnt: N > 
   else
-    < O : C | Att: insert(a, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
+    < O : C | Att: insert(Q, D, S), Pr: (L, assign(AL, DL) ; SL), PrQ: W,
       Dealloc: LS, Ev: MM, Lcnt: N >
   fi
   [label do-assign] .
@@ -629,12 +624,12 @@ STEP(dnl
 --- if_then_else
 ---
 STEP(dnl
-< O : C | Att: S`,' Pr: (L`,' if E th SL' el SL'' fi ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
+< O : C | Att: S`,' Pr: (L`,' if E th SL1 el SL2 fi ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   CLOCK,
 if EVAL(E, (S :: L), T) asBool then
-    < O : C | Att: S`,' Pr: (L`,' SL' ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
+    < O : C | Att: S`,' Pr: (L`,' SL1 ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   else
-    < O : C | Att: S`,' Pr: (L`,' SL'' ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
+    < O : C | Att: S`,' Pr: (L`,' SL2 ; SL)`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
   fi
   CLOCK,
 `[label if-then-else]')
@@ -646,20 +641,20 @@ if EVAL(E, (S :: L), T) asBool then
 --- Therefore, it is always a rule.
 ---
 rl
-  < O : C | Att: S, Pr: (L, while E do SL od ; SL'), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  < O : C | Att: S, Pr: (L, while E do SL od ; SL1), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =>
   < O : C | Att: S,
-            Pr: (L, (if E th (SL ; while E do SL od) el skip fi); SL'),
+            Pr: (L, (if E th (SL ; while E do SL od) el skip fi); SL1),
             PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   [label while] .
 
 
 --- Non-deterministic choice
 ---
---- Choice is comm, so [choice] considers both NeSL and NeSL'.
+--- Choice is comm, so [choice] considers both NeSL and NeSL1.
 ---
 crl
-  < O : C | Att: S, Pr: (L, (NeSL [] NeSL'); SL), PrQ: W, Dealloc: LS,
+  < O : C | Att: S, Pr: (L, (NeSL [] NeSL1); SL), PrQ: W, Dealloc: LS,
             Ev: MM, Lcnt: N > CLOCK
   =>
   < O : C | Att: S, Pr: (L, (NeSL ; SL)), PrQ: W, Dealloc: LS, Ev: MM,
@@ -670,13 +665,13 @@ crl
 
 --- Merge
 ---
---- Merge is comm, so [merge] considers both NeSL and NeSL'.
+--- Merge is comm, so [merge] considers both NeSL and NeSL1.
 ---
 crl
-  < O : C | Att: S, Pr: (L, (NeSL ||| NeSL'); SL), PrQ: W, Dealloc: LS,
+  < O : C | Att: S, Pr: (L, (NeSL ||| NeSL1); SL), PrQ: W, Dealloc: LS,
             Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL'); SL), PrQ: W, Dealloc: LS,
+  < O : C | Att: S, Pr: (L, (NeSL MERGER NeSL1); SL), PrQ: W, Dealloc: LS,
             Ev: MM, Lcnt: N > CLOCK
   if READY(NeSL,(S :: L), MM, T)
   [label merge] .
@@ -684,14 +679,14 @@ crl
 --- merger
 ---
 eq
-  < O : C | Att: S,  Pr:  (L, ((ST ; SL') MERGER NeSL'); SL), PrQ: W,
+  < O : C | Att: S,  Pr:  (L, ((ST ; SL1) MERGER NeSL1); SL), PrQ: W,
             Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =
   if ENABLED(ST, (S :: L), MM, T) then
-    < O : C | Att: S, Pr: (L, ((ST ; (SL' MERGER NeSL')); SL)), PrQ: W,
+    < O : C | Att: S, Pr: (L, ((ST ; (SL1 MERGER NeSL1)); SL)), PrQ: W,
       Dealloc: LS, Ev: MM, Lcnt: N >
   else
-    < O : C | Att: S, Pr: (L, ((ST ; SL') ||| NeSL'); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >   
+    < O : C | Att: S, Pr: (L, ((ST ; SL1) ||| NeSL1); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >   
   fi CLOCK
  [label merger] .
 
@@ -782,13 +777,13 @@ dnl `[label receive-static-invoc]')
 --- Method binding with multiple inheritance
 ---
 eq
-  bindMtd(O, O', Lab, M, DL, (C < EL >) I')
+  bindMtd(O, O', Lab, Q, DL, (C < EL >) I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
-  if get(M, C, MS, O', Lab, DL) == noProc then
-    bindMtd(O, O', Lab, M, DL, I I')
+  if get(Q, C, MS, O', Lab, DL) == noProc then
+    bindMtd(O, O', Lab, Q, DL, I I')
   else
-    boundMtd(O, get(M, C, MS, O', Lab, DL))
+    boundMtd(O, get(Q, C, MS, O', Lab, DL))
   fi
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   .
@@ -817,8 +812,8 @@ rl
 --- local-reply
 ---
 CSTEP(dnl
-< O : C | Att: S`,' Pr: (L`,' Lab ?(AL); SL)`,' PrQ: W ++ (L'`,' SL')`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
-< O : C | Att: S`,' Pr: (L'`,' SL' ; cont(Lab))`,'
+< O : C | Att: S`,' Pr: (L`,' Lab ?(AL); SL)`,' PrQ: W ++ (L'`,' SL1)`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
+< O : C | Att: S`,' Pr: (L'`,' SL1 ; cont(Lab))`,'
   PrQ: W ++ (L`,' Lab ?(AL); SL)`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
 L'[".label"] == Lab,
 `[label local-reply]')
@@ -831,10 +826,10 @@ L'[".label"] == Lab,
 --- in the model checker, because there might be two processes in PrQ
 --- which await a reply to the label.
 rl
-  < O : C | Att: S, Pr: (L, cont(Lab)), PrQ: W ++ (L', (Lab ?(AL); SL')),
+  < O : C | Att: S, Pr: (L, cont(Lab)), PrQ: W ++ (L', (Lab ?(AL); SL1)),
     Dealloc: LS, Ev: MM, Lcnt: F >
   =>
-  < O : C | Att: S, Pr: (L', (Lab ?(AL); SL')), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  < O : C | Att: S, Pr: (L', (Lab ?(AL); SL1)), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   [label continue] .
 
 
@@ -860,11 +855,11 @@ ifdef(`MODELCHECK',
 ---
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: (L, ( A ! Q @ CC (EL) ); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  < O : C | Att: S, Pr: (L, ( A ! (Q @ CC) (EL) ); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   CLOCK
   =
   < O : C | Att: S, Pr: (insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  bindMtd(O`,' O`,' label(O, O, Q @ CC, EVALLIST(EL, (S :: L), T))`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
+  bindMtd(O`,' O`,' label(O, O, Q, EVALLIST(EL, (S :: L), T))`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
 ,
 `rl
   < O : C | Att: S, Pr: (L, ( A ! Q @ CC(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
@@ -947,11 +942,17 @@ eq
 --- Fake the caller and the label and tag the label.  Since we do not
 --- want to interleave, this can also be an equation.
 ---
-STEP(`< O : C | Att: S, Pr: (L, tailcall M(EL) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
+STEP(`< O : C | Att: S, Pr: (L, tailcall Q(EL) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
 `< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  bindMtd(O, O, tag(L[".label"]), M, EVALLIST(EL, (S :: L), T), C < emp >)'
+  bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), C < emp >)'
   CLOCK,
 `[label tailcall]')
+
+STEP(`< O : C | Att: S, Pr: (L, tailcall Q @ CC (EL) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
+`< O : C | Att: S, Pr: (noSubst, accept(tag(L[".label"]))), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), CC < emp >)'
+  CLOCK,
+`[label tailcall-static]')
 
 *** If we receive the method body, the call is accepted and the label untagged.
 crl
@@ -1007,19 +1008,19 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 --- consistent state.
 ---
 eq
-  findAttr(O,(C < EL > I), S, SL, (L', SL')) 
+  findAttr(O,(C < EL > I), S, SL, (L', SL1)) 
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
   =
   findAttr(O, I I', compose(S', S),
            SL ; (AL ::= EL), 
-           (L', (".init" ! "init" @ C(emp)) ; (".init" ?(noVid)) ; SL'))
+           (L', (".init" ! "init" @ C(emp)) ; (".init" ?(noVid)) ; SL1))
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F > .
 
 eq
-  foundAttr(O, S', SL, (L', SL'))
+  foundAttr(O, S', SL, (L', SL1))
   < O : C | Att: S, Pr: idle, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
-  < O : C | Att: ("this" |-> O, S'), Pr: (L', SL ; SL'), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > .
+  < O : C | Att: ("this" |-> O, S'), Pr: (L', SL ; SL1), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > .
 
 
 
