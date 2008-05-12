@@ -329,13 +329,13 @@ let emit options out_channel input =
     function
 	(i, l) -> output_string out_channel ("\"" ^ i ^ "\" < ");
 	  of_expression_list l;
-	  output_string out_channel " > "
+	  output_string out_channel " >"
   and of_inherits_list =
     function
 	[] -> output_string out_channel "noInh"
       | [i] -> of_inherits i
       | i::r -> of_inherits i;
-	  output_string out_channel " ,, ";
+	  output_string out_channel " ";
 	  of_inherits_list r
   and of_parameter_list =
     function

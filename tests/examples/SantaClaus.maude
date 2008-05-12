@@ -28,7 +28,7 @@ eq init =
   < "showIn" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "talkToSanta" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
   < "showOut" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "work" (emp ) )  ; free( "label:0" ) ; return ( emp ) >, Ocnt: 0 >
 
-< "LeaderElf" : Cl | Inh: "Elf" < emp > , Par: "sc" , "elves", Att: "sc" |-> null , "elves" |-> null, Mtds: 
+< "LeaderElf" : Cl | Inh: "Elf" < emp >, Par: "sc" , "elves", Att: "sc" |-> null , "elves" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "run" @ "Elf" ( emp ) )  ; ( "label:0" ? ( noVid ) )  ; return ( emp ) > *
   < "work" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "sc" . "haveProblem" ( emp ) ; free( "label:0" ) ; return ( emp ) >, Ocnt: 0 >

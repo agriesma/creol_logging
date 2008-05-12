@@ -7,7 +7,7 @@ eq init =
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) >, Ocnt: 0 >
 
-< "B" : Cl | Inh: "A" < "b" > , Par: "b", Att: "b" |-> null, Mtds: 
+< "B" : Cl | Inh: "A" < "b" >, Par: "b", Att: "b" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) >, Ocnt: 0 >
 

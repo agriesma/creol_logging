@@ -208,19 +208,30 @@ fmod CREOL-STM-LIST is
 
 endfm
 
+--- An inherits declaration
+fmod CREOL-INHERIT is
+  protecting CREOL-STATEMENT .  --- For Cid and ExprList.
+  sort Inh .
+
+  op  _<_> : Cid  ExprList -> Inh [ctor prec 15] .
+
+endfm
+
+view Inh from TRIV to CREOL-INHERIT is
+  sort Elt to Inh .
+endv
+
+
 
 ***
 *** CREOL Classes
 ***
 fmod CREOL-CLASS is
   protecting CREOL-STM-LIST .
-
-  sorts Inh InhList .
-  subsort Inh < InhList .
-
-  op  _<_> : Cid  ExprList -> Inh [ctor prec 15] .
-  op noInh : -> InhList [ctor] .
-  op  _,,_   : InhList InhList -> InhList [ctor assoc id: noInh] .
+  protecting LIST{Inh} * (sort List{Inh} to InhList,
+			  sort NeList{Inh} to NeInhList,
+			  op nil : -> List{Inh} to noInh,
+			  op __ : List{Inh} List{Inh} -> List{Inh} to __) .
 
   var Ih : Inh . 
   var IL : InhList .
@@ -772,11 +783,11 @@ dnl `[label receive-static-invoc]')
 --- Method binding with multiple inheritance
 ---
 eq
-  bindMtd(O, O', Lab, M, DL, (C < EL >) `,,' I')
+  bindMtd(O, O', Lab, M, DL, (C < EL >) I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
   if get(M, C, MS, O', Lab, DL) == noProc then
-    bindMtd(O, O', Lab, M, DL, I `,,' I')
+    bindMtd(O, O', Lab, M, DL, I I')
   else
     boundMtd(O, get(M, C, MS, O', Lab, DL))
   fi
@@ -997,10 +1008,10 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 --- consistent state.
 ---
 eq
-  findAttr(O,(C < EL > `,,' I), S, SL, (L', SL')) 
+  findAttr(O,(C < EL > I), S, SL, (L', SL')) 
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
   =
-  findAttr(O, I ,, I', compose(S', S),
+  findAttr(O, I I', compose(S', S),
            SL ; (AL ::= EL), 
            (L', (".init" ! "init" @ C(emp)) ; (".init" ?(noVid)) ; SL'))
   < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F > .
