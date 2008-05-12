@@ -38,16 +38,17 @@ load creol-datatypes .
 ***
 *** Binding variables to values.
 ***
-*** A note on performance:  The binding is using MAP from the prelude.
-*** In Maude 2.3, MAP checks whether the variable is bound for each insert.
-*** This check, however, is the main performance issue of the model
-*** checker:  over 7% of the rewrites are for $hasMapping from MAP this
+ifdef(`FAILED-EXPERIMENTS',dnl
+*** In Maude 2.3`,' MAP checks whether the variable is bound for each insert.
+*** This check`,' however`,' is the main performance issue of the model
+*** checker:  over 13% of the rewrites are for $hasMapping from MAP this
 *** map implementation.  We could replace map with our own and making use
-*** of the assumption, that insert behaves well in our case.
+*** of the assumption`,' that insert behaves well in our case.
 *** 
-ifdef(`EXPERIMENTAL',
---- This is the experimental version`,' where we roll our own version of a
---- substitution
+*** This is an experimental version`,' where we roll our own version of a
+*** substitution.  It saves a lot of rewrites`,' but matching becomes much
+*** more expensive with this version`,' which causes a substantial run-time
+*** regression.
 fmod CREOL-SUBST is
   protecting BOOL .
   protecting EXT-BOOL .
@@ -93,6 +94,8 @@ fmod CREOL-SUBST is
   eq compose(S1`,' (S2`,' (A |-> D))) = compose(insert(A`,' D`,' S1)`,' S2) .
 endfm
 ,dnl
+*** Use MAP from prelude.  This seems to be the fastest solution.
+***
 fmod CREOL-SUBST is
   protecting CREOL-DATATYPES .
   extending MAP{Vid`,' Data} * (sort Map{Vid`,'Data} to Subst`,'
@@ -104,7 +107,7 @@ fmod CREOL-SUBST is
   vars S1 S2  : Subst .
 
   *** Lazy composition operator for substitutions
-  op _::_ : Subst Subst -> Subst [strat (0)] .
+  op _::_ : Subst Subst -> Subst .
   eq (S1 :: S2)[A] = if $hasMapping(S2`,' A) then S2[A] else S1[A] fi .
 
   *** Composition operater for substitutions
