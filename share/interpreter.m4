@@ -365,16 +365,17 @@ fmod CREOL-CONFIG is
   sort Configuration .
 ifdef(`TIME', `  sort Clock .')
 
-  subsorts Object Msg Class < Configuration .
-ifdef(`TIME', `  subsort Clock < Configuration .')
+  subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
 
-ifdef(`TIME',
-  *** Definition of a global clock in the system
-  op clock : Float Float -> Clock [ctor ``format'' (b o)] .
-)dnl
   op noConf : -> Configuration [ctor] .
   op __ : Configuration Configuration -> Configuration
 	[ctor assoc comm id: noConf `format' (d n d)] .
+
+ifdef(`TIME',dnl
+  *** Definition of a global clock in the system
+  op < _: Clock | delta: _> : Float Float -> Clock
+    [ctor ``format'' (d d d d d d d d d)] .
+)dnl
 
   *** Useful for real-time maude and some other tricks.
 ifdef(`MODELCHECK',dnl
@@ -560,13 +561,16 @@ mod CREOL-SIMULATOR is
   var LS : Labels .
   var MM : MMsg .
   var cmsg : Comp .
+ifdef(`TIME',dnl
+  var cnf : Configuration .            --- Configuration
+)dnl
 
 dnl Define the clock and the variables needed to address clocks.
 dnl
 dnl If TIME is not defined, CLOCK will be defined to empty.
 ifdef(`TIME',
   vars delta T : Float .
-`define(`CLOCK', `clock(delta, T)')',dnl
+`define(`CLOCK', `< T : Clock | delta: delta >')',dnl
 `define(`CLOCK', `')')dnl
 
 ifdef(`MODELCHECK',dnl
@@ -845,8 +849,8 @@ ifdef(`MODELCHECK',
 `rl
   < O : C | Att: S, Pr: (L, (A ! Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q, EVALLIST(EL, (S :: L), T)) from O to O CLOCK'
+  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >  CLOCK
+  invoc(O, label(O, N), Q, EVALLIST(EL, (S :: L), T)) from O to O'
 )dnl
   [label local-async-call] .
 
@@ -882,17 +886,16 @@ ifdef(`MODELCHECK',
 `rl
   < O : C | Att: S, Pr: (L, (A ! E . Q(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 >
-  invoc(O, label(O, N), Q , EVALLIST(EL, (S :: L), T)) from O to EVAL(E, (S :: L), T) CLOCK'
+  < O : C | Att: S, Pr: (insert(A, label(O, N), L), SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N + 1 > CLOCK
+  invoc(O, label(O, N), Q , EVALLIST(EL, (S :: L), T)) from O to EVAL(E, (S :: L), T)'
 )dnl
   [label remote-async-call] .
 
 
 --- return
 ---
-STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
-`< O : C |  Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-  CLOCK
+STEP(`< O : C |  Att: S, Pr: (L, (return(EL)); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
+`< O : C |  Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
   comp(L[".label"], EVALLIST(EL, (S :: L), T)) from O to caller(L[".label"])',
 `[label return]')
 
@@ -1056,22 +1059,21 @@ eq posit(S, noProc, T) = true .
 eq posit(S, W ++ (L, SL), T) = posit((S :: L),SL,T) and posit(S, W, T) .
 
 op posit : State -> Bool .
-eq posit ({ clock(delta, T) }) = true .
+eq posit ({ < T : Clock | delta: delta > }) = true .
 eq posit ({ c:Class cnf }) = posit ({ cnf }) .
-eq posit ({ cnf }) = posit ({ cnf }) .
 eq posit ({ < O : C | Att: S, Pr: idle, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-            cnf clock(delta, T) }) =
-  *** posit (S, W, T + delta) and
-    posit ({ cnf clock(delta, T) }) .
+            < T : Clock | delta: delta > cnf }) =
+    posit (S, W, T + delta) and
+    posit ({ cnf < T : Clock | delta: delta > }) .
 eq posit ({ < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-            cnf clock(delta, T) }) =
-  posit((S :: L), SL, T + delta) and *** posit (S, W, T + delta) and
-    posit ({ cnf clock(delta, T) }) .
+            < T : Clock | delta: delta >  cnf }) =
+    posit((S :: L), SL, T + delta) and posit (S, W, T + delta) and
+    posit ({ cnf < T : Clock | delta: delta > }) .
 
 *** A very simple discrete time clock.
 crl
-  { cnf clock(delta, T) } => { cnf clock(delta, T + delta) }
-  if posit ({ cnf clock(delta, T) })
+  { cnf < T : Clock | delta: delta > } => { cnf < T + delta : Clock | delta: delta >  }
+  if posit ({ cnf < T : Clock | delta: delta > })
   [label tick] .
 )dnl
 
