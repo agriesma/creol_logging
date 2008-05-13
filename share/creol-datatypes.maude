@@ -408,12 +408,8 @@ fmod CREOL-DATA-TIME is
   op time : Float -> Data [ctor] . 
   op duration : Float -> Data [ctor] .
 
-  vars T T' S : Float .
+  vars T T' D D' S : Float .
   var I : Int .
-
-  --- Constructing Durations.
-  eq "dur" ( int(I) ) = duration(float(I)) .
-  eq "dur" ( float(S) ) = duration(S) .
 
   *** Define the usual predicates on time.
   eq "<" ( time(T) :: time(T') ) = bool(T < T') .
@@ -421,20 +417,25 @@ fmod CREOL-DATA-TIME is
   eq ">" ( time(T) :: time(T') ) = bool(T > T') .
   eq ">=" ( time(T) :: time(T') ) = bool(T >= T') .
 
+  --- Constructing Durations.
+  eq "dur" ( int(I) ) = duration(float(I)) .
+  eq "dur" ( float(S) ) = duration(S) .
+
+  eq "+" ( time(T) :: duration(D) ) = time(T + D) .
+  eq "-" ( time(T) :: duration(D) ) = time(T - D) .
+  eq "+" ( duration(D) :: duration(D') ) = duration(D * D') .
+  eq "-" ( duration(D) :: duration(D') ) = duration(D - D') .
+  eq "*" ( duration(D) :: float(S)) = duration(D * S) .
+  eq "*" ( float(S) :: duration(D) ) = duration(S * D) .
+  eq "/" ( duration(D) :: float(S)) = duration(S / D) .
   eq "<" ( duration(T) :: duration(T') ) = bool(T < T') .
   eq "<=" ( duration(T) :: duration(T') ) = bool(T <= T') .
   eq ">" ( duration(T) :: duration(T') ) = bool(T > T') .
   eq ">=" ( duration(T) :: duration(T') ) = bool(T >= T') .
 
-  *** Arithmetic on time
-  eq "+" ( time(T) :: duration(T') ) = time(T + T') .
+  --- Arithmetic on time
   eq "-" ( time(T) :: time(T') ) = duration(T - T') .
 
-  *** We can always multiply by a scalar.
-  eq "*" ( float(S) :: duration(T') ) = duration(S * T') .
-  eq "*" ( float(S) :: time(T') ) = time(S * T') .
-
-  *** Division et al. does not make any sense in this domain.
 endfm
 
 fmod CREOL-DATATYPES is

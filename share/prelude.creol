@@ -124,6 +124,7 @@ datatype Duration
 fun dur(a: Real): Duration == extern "duration"
 fun +(a: Time, d: Duration): Time == extern "+"
 fun -(a: Time, d: Duration): Time == extern "-"
+fun -(a: Time, b: Time): Duration == extern "-"
 fun +(a: Duration, d: Duration): Duration == extern "+"
 fun -(a: Duration, d: Duration): Duration == extern "-"
 fun *(a: Duration, s: Real): Duration == extern "*"
