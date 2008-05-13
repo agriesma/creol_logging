@@ -225,12 +225,14 @@ endv
 ***
 *** CREOL Classes
 ***
+changequote(`[[[[', `]]]]')dnl
 fmod CREOL-CLASS is
   protecting CREOL-STM-LIST .
   protecting LIST{Inh} * (sort List{Inh} to InhList,
 			  sort NeList{Inh} to NeInhList,
 			  op nil : -> List{Inh} to noInh,
-			  op __ : List{Inh} List{Inh} -> List{Inh} to __) .
+			  op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
+changequote dnl
 
   var Ih : Inh . 
   var IL : InhList .
@@ -782,11 +784,11 @@ dnl `[label receive-static-invoc]')
 --- Method binding with multiple inheritance
 ---
 eq
-  bindMtd(O, O', Lab, Q, DL, (C < EL >) I')
+  bindMtd(O, O', Lab, Q, DL, (C < EL >) ,, I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
   if get(Q, C, MS, O', Lab, DL) == noProc then
-    bindMtd(O, O', Lab, Q, DL, I I')
+    bindMtd(O, O', Lab, Q, DL, I ,, I')
   else
     boundMtd(O, get(Q, C, MS, O', Lab, DL))
   fi
@@ -1012,13 +1014,13 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 --- consistent state.
 ---
 eq
-  findAttr(O,(C < EL > I), S, SL, (L', SL1)) 
-  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F >
+  findAttr(O,(C < EL > ,, I'), S, SL, (L', SL1)) 
+  < C : Cl | Inh: I, Par: AL, Att: S', Mtds: MS, Ocnt: F >
   =
-  findAttr(O, I I', compose(S', S),
+  findAttr(O, I' ,, I, compose(S', S),
            SL ; (AL ::= EL), 
            (L', (".init" ! "init" @ C(emp)) ; (".init" ?(noVid)) ; SL1))
-  < C : Cl | Inh: I', Par: AL, Att: S', Mtds: MS, Ocnt: F > .
+  < C : Cl | Inh: I, Par: AL, Att: S', Mtds: MS, Ocnt: F > .
 
 eq
   foundAttr(O, S', SL, (L', SL1))

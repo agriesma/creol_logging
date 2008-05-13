@@ -338,15 +338,15 @@ result GroundTerm: '_<_>['"A".Char,'emp.DataList]
 reduce in CREOL-CLASS : downTerm(upTerm("A" < emp >), noInh) .
 result Inh: "A" < emp >
 ==========================================
-reduce in CREOL-CLASS : "A" < emp > "B" < "x" > .
-result NeInhList: "A" < emp > "B" < "x" >
+reduce in CREOL-CLASS : "A" < emp >,,"B" < "x" > .
+result NeInhList: "A" < emp >,,"B" < "x" >
 ==========================================
-reduce in CREOL-CLASS : upTerm("A" < emp > "B" < "x" >) .
-result GroundTerm: '__['_<_>['"A".Char,'emp.DataList],'_<_>['"B".Char,
+reduce in CREOL-CLASS : upTerm("A" < emp >,,"B" < "x" >) .
+result GroundTerm: '_`,`,_['_<_>['"A".Char,'emp.DataList],'_<_>['"B".Char,
     '"x".Char]]
 ==========================================
-reduce in CREOL-CLASS : downTerm(upTerm("A" < emp > "B" < "x" >), noInh) .
-result NeInhList: "A" < emp > "B" < "x" >
+reduce in CREOL-CLASS : downTerm(upTerm("A" < emp >,,"B" < "x" >), noInh) .
+result NeInhList: "A" < emp >,,"B" < "x" >
 ==========================================
 reduce in CREOL-OBJECT : 
 < ob("object1") : "Class" |

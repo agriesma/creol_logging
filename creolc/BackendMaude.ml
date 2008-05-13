@@ -335,7 +335,7 @@ let emit options out_channel input =
 	[] -> output_string out_channel "noInh"
       | [i] -> of_inherits i
       | i::r -> of_inherits i;
-	  output_string out_channel " ";
+	  output_string out_channel " ,, ";
 	  of_inherits_list r
   and of_parameter_list =
     function
