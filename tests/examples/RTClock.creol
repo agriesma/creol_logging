@@ -24,7 +24,7 @@ begin
   var min: Int := 0
   var sec: Time := now
 
-  op run == posit sec <= now + dur(1); await sec >= now + dur(1);
+  op run == await sec <= now + dur(1); posit sec >= now + dur(1);
     if min < 60 then
       min := min + 1
     else
