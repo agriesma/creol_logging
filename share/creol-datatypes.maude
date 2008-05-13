@@ -73,7 +73,7 @@ fmod CREOL-DATA-SIG is
   op _,_ : VidList NeVidList -> NeVidList [ctor ditto] .
 
   op _(_) : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
-  op if_th_el_fi : Expr Expr Expr -> Expr [ctor strat (1 0)] .
+  op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
   op _??  : Vid -> Expr [ctor] .
   op _??  : Label -> Expr [ctor] .
   op _@@_ : String String -> Vid [ctor] .
@@ -397,6 +397,7 @@ endfm
 
 fmod CREOL-DATA-TIME is
   extending CREOL-DATA-SIG .
+  extending CREOL-DATA-INT .
   extending CREOL-DATA-FLOAT .
 
   *** The central problem will be to evaluate this "expression", since the
@@ -408,6 +409,11 @@ fmod CREOL-DATA-TIME is
   op duration : Float -> Data [ctor] .
 
   vars T T' S : Float .
+  var I : Int .
+
+  --- Constructing Durations.
+  eq "dur" ( int(I) ) = duration(float(I)) .
+  eq "dur" ( float(S) ) = duration(S) .
 
   *** Define the usual predicates on time.
   eq "<" ( time(T) :: time(T') ) = bool(T < T') .

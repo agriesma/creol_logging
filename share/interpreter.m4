@@ -139,8 +139,8 @@ fmod CREOL-STATEMENT is
   op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
   op _?(_)  : Vid VidList -> Stm [ctor prec 39 `format' (d c o d d d)] .
   op _?(_)  : Label VidList -> Stm [ctor ditto] .
-  op await_ : Expr -> SuspStm [ctor] .
-  op posit_ : Expr -> SuspStm [ctor] .
+  op await_ : Expr -> SuspStm [ctor `format' (! o d)] .
+  op posit_ : Expr -> SuspStm [ctor `format' (! o d)] .
   op return : ExprList -> Stm [ctor `format' (c o)] .
   op free : Vid -> Stm [ctor `format' (c o)] .
   op cont : Label -> Stm [ctor `format' (c o)] .
@@ -374,7 +374,7 @@ ifdef(`TIME', `  sort Clock .')
 ifdef(`TIME',dnl
   *** Definition of a global clock in the system
   op < _: Clock | delta: _> : Float Float -> Clock
-    [ctor ``format'' (d d d d d d d d d)] .
+    [ctor ``format'' (c o c c c c o c o)] .
 )dnl
 
   *** Useful for real-time maude and some other tricks.
@@ -463,6 +463,7 @@ ifdef(`TIME',dnl
 )dnl
 
   eq EVALGUARD(D, S, MM, T) = D .
+  eq EVALGUARD(now, S, MM, T) = ifdef(`TIME', time(T), time(0.0)) .
   eq EVALGUARD((Q @@ C), (S :: S'), MM, T) =  S [Q] .
   eq EVALGUARD(Q, (S :: S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
   eq EVALGUARD(A, S, MM, T) =  S [A] .
@@ -511,9 +512,9 @@ ifdef(`TIME',dnl
        ENABLED(NeSL, S, MM, T) or ENABLED(NeSL1, S, MM, T) .
   eq ENABLED((NeSL MERGER SL1) ; SL2, S, MM, T) = ENABLED(NeSL, S, MM, T) .
   eq ENABLED(await E ; SL2, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
-ifdef(`TIME',dnl
-  eq ENABLED(posit E ; SL2, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
-)dnl
+dnl ifdef(`TIME',dnl
+dnl  eq ENABLED(posit E ; SL2, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+dnl)dnl
   eq ENABLED(NeSL, S, MM, T) = true [owise] .
 
   *** The ready predicate holds, if a statement is ready for execution,
@@ -1035,7 +1036,7 @@ ifdef(`TIME',dnl
 `CSTEP(
 `< O : C | Att: S, Pr: (L, posit G ; SL), PrQ: W,
            Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
-`< O : C | Att: S, Pr: (L,SL) , PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
+`< O : C | Att: S, Pr: (L, SL) , PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > CLOCK',
 EVALGUARD(G, (S :: L), MM, T) asBool,
 `[label posit]')',
 `STEP(
@@ -1051,29 +1052,28 @@ ifdef(`TIME',dnl
 --- the global state at the new time.
 
 op posit(_,_,_) : Subst StmList Float -> Bool .
-eq posit((S `::' L), posit E ; SL, T) = EVAL(E,(S `::' L), T) asBool .
-eq posit((S `::' L), SL, T) = true [otherwise] .
+eq posit(S, posit E ; SL, T) = EVAL(E, S, T) asBool .
+eq posit(S, (SL1 [] SL2); SL, T) = posit(S, SL1, T) or posit(S, SL2, T) .
+eq posit(S, (SL1 ||| SL2); SL, T) = posit(S, SL1, T) or posit(S, SL2, T) .
+eq posit(S, SL, T) = true [owise] .
 
 op posit(_,_,_) : Subst MProc Float -> Bool .
+eq posit(S, W ++ idle, T) = posit(S, W, T) .
+eq posit(S, W ++ (L, SL), T) = posit((S :: L), SL, T) and posit(S, W, T) .
 eq posit(S, noProc, T) = true .
-eq posit(S, W ++ (L, SL), T) = posit((S :: L),SL,T) and posit(S, W, T) .
 
-op posit : State -> Bool .
-eq posit ({ < T : Clock | delta: delta > }) = true .
-eq posit ({ c:Class cnf }) = posit ({ cnf }) .
-eq posit ({ < O : C | Att: S, Pr: idle, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-            < T : Clock | delta: delta > cnf }) =
-    posit (S, W, T + delta) and
-    posit ({ cnf < T : Clock | delta: delta > }) .
-eq posit ({ < O : C | Att: S, Pr: (L, SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
-            < T : Clock | delta: delta >  cnf }) =
-    posit((S :: L), SL, T + delta) and posit (S, W, T + delta) and
-    posit ({ cnf < T : Clock | delta: delta > }) .
+op posit : Configuration Float -> Bool .
+eq posit (c:Class cnf, T) = posit (cnf, T) .
+eq posit (< O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N > cnf, T) =
+    posit (S, W ++ P, T) and posit (cnf, T) .
+eq posit (noConf, T) = true .
 
 *** A very simple discrete time clock.
 crl
-  { cnf < T : Clock | delta: delta > } => { cnf < T + delta : Clock | delta: delta >  }
-  if posit ({ cnf < T : Clock | delta: delta > })
+  { cnf < T : Clock | delta: delta > }
+  =>
+  { cnf < T + delta : Clock | delta: delta >  }
+  if posit (cnf, T + delta)
   [label tick] .
 )dnl
 

@@ -30,6 +30,6 @@ begin
     else
       min, hrs := 0, if hrs = 12 then 1 else hrs + 1 end
     end ;
-    posit sec <= now + dur(1); sec := now
+    posit sec <= now + dur(1); sec := now ; !run()
 
 end
