@@ -14,10 +14,12 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: ocaml >= 3.09
 BuildRequires: ocaml-findlib-devel
-BuildRequires: /usr/bin/texi2pdf
 BuildRequires: ocaml-libxml2-devel
+# For formatting the documentation
+BuildRequires: /usr/bin/texi2pdf
+# For running the test suite.
+BuildRequires: maude >= 2.3
 
-Requires: maude >= 2.3
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 
@@ -36,7 +38,7 @@ in Maude.
 
 %build
 # We have no need to hurry.
-%configure OCAMLOPT_FLAGS="-inline 10 -noassert -unsafe"
+%configure OCAMLOPT_FLAGS="-inline 10 -noassert -unsafe" OCAMLWEB=":"
 make %{?_smp_mflags}
 
 # Build the pdf, because most people seem to prefer hard copy stuff.
