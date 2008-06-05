@@ -48,5 +48,7 @@ red in CREOL-DATA-SIG : "/=" ( null :: null ) .
 red in CREOL-DATA-SIG : "~" ( "=" ( null :: null ) ) .
 red in CREOL-DATA-SIG : "||" ( ("=" ( null :: null )) :: ("=" ( null :: null )) ) .
 red in CREOL-DATA-LIST : "|-" (list(int(1) :: int(2)) :: "head" (list(int(1) :: int(2))) ) .
+red in CREOL-DATA-LIST : "#" (list(emp)) .
+red in CREOL-DATA-LIST : "#" (list(int(1) :: int(2))) .
 
 quit

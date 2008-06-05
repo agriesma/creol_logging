@@ -62,4 +62,10 @@ result Data: bool(true)
 reduce in CREOL-DATA-LIST : "|-"(list(int(1) :: int(2)) :: "head"(list(int(1)
     :: int(2)))) .
 result Data: list(int(1) :: int(2) :: int(1))
+==========================================
+reduce in CREOL-DATA-LIST : "#"(list(emp)) .
+result Data: int(0)
+==========================================
+reduce in CREOL-DATA-LIST : "#"(list(int(1) :: int(2))) .
+result Data: int(2)
 Bye.

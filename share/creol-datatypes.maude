@@ -222,6 +222,8 @@ fmod CREOL-DATA-LIST is
 
   eq "length" (list(emp)) = int(0) .
   eq "length" (list(E :: L)) = "+" ("length" (list(L)) :: int(1)) .
+  eq "#" (list(emp)) = int(0) .
+  eq "#" (list(E :: L)) = "+" ("#" (list(L)) :: int(1)) .
   
   eq "isempty" (list(emp))  = bool(true) .
   eq "isempty" (list(E :: L))= bool(false) .
