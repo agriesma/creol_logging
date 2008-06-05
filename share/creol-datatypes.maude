@@ -119,6 +119,7 @@ fmod CREOL-DATA-INT is
   extending CREOL-DATA-SIG .
 
   protecting INT .
+  protecting RANDOM .
 
   op int(_)  : Int -> Data [ctor format(o o ! o o)] . 
 
@@ -139,6 +140,7 @@ fmod CREOL-DATA-INT is
   eq "div" (int(I) :: int(I')) = int(I quo I') .
   eq "%" (int(I) :: int(I')) = int(I rem I') .
   eq "**" (int(I) :: int(I')) = int(I ^ I') .
+  eq "random" (int(I)) = int(random(I)) .
 
   eq "<"  (int(I) :: int(I')) = bool(I < I') .
   eq "<=" (int(I) :: int(I')) = bool(I <= I') .

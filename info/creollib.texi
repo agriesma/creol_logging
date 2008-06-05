@@ -189,6 +189,8 @@ The binary relation @code{>=} represents ``less than or equal''.
 The function @code{real_of_int} converts an integer value into a real
 value such that both represent the same number.
 
+@item rnd(s: Int): Int
+Returns the next pseudo random number for seed @code{s}.
 @end table
 
 The compiler can represent integer numbers with arbitrary precision.

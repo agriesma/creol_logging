@@ -57,6 +57,7 @@ fun / (a: Int, b: Int): Int == extern "/"
 fun div(a: Int, b: Int): Int == extern "div"
 fun % (a: Int, b: Int): Int == extern "%"
 fun ** (a: Int, b: Int): Int == extern "**"
+fun random(seed: Int): Int == extern "random"
 
 fun < (a: Int, b: Int): Bool == extern "<"
 fun <= (a: Int, b: Int): Bool == extern "<="
