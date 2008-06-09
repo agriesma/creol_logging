@@ -51,6 +51,6 @@ begin
 
     doit(list; );
 
-    await length(results) = length(results)
+    await #(results) = #(list)
 
 end

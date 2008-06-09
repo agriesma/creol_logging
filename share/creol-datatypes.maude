@@ -115,11 +115,37 @@ view Expr from TRIV to CREOL-DATA-SIG is
   sort Elt to Expr .
 endv
 
-fmod CREOL-DATA-INT is
+fmod CREOL-DATA-FLOAT is
   extending CREOL-DATA-SIG .
+  protecting FLOAT .
+
+  op float(_): Float -> Data [ctor format(o o ! o o)] . 
+
+  vars F F' : Float .
+
+  op _asFloat : Data -> Float .
+  eq float(F) asFloat = F .
+
+  eq "-" (float(F)) = float(-(F)) .
+  eq "+" (float(F) :: float(F')) = float(F + F') .
+  eq "-" (float(F) :: float(F')) = float( _-_(F, F')) .
+  eq "*" (float(F) :: float(F')) = float(F * F') .
+  eq "/" (float(F) :: float(F')) = float(F / F') .
+  eq "%" (float(F) :: float(F')) = float(F rem F') .
+  eq "**" (float(F) :: float(F')) = float(F ^ F') .
+
+  eq "<"  (float(F) :: float(F')) = bool(F < F') .
+  eq "<=" (float(F) :: float(F')) = bool(F <= F') .
+  eq ">"  (float(F) :: float(F')) = bool(F > F') .
+  eq ">=" (float(F) :: float(F')) = bool(F >= F') .
+endfm
+
+fmod CREOL-DATA-INT is
+  extending CREOL-DATA-FLOAT .
 
   protecting INT .
   protecting RANDOM .
+  protecting CONVERSION .
 
   op int(_)  : Int -> Data [ctor format(o o ! o o)] . 
 
@@ -141,6 +167,7 @@ fmod CREOL-DATA-INT is
   eq "%" (int(I) :: int(I')) = int(I rem I') .
   eq "**" (int(I) :: int(I')) = int(I ^ I') .
   eq "random" (int(I)) = int(random(I)) .
+  eq "real_of_int" (int(I)) = float(float(I)) .
 
   eq "<"  (int(I) :: int(I')) = bool(I < I') .
   eq "<=" (int(I) :: int(I')) = bool(I <= I') .
@@ -148,36 +175,8 @@ fmod CREOL-DATA-INT is
   eq ">=" (int(I) :: int(I')) = bool(I >= I') .
 endfm
 
-fmod CREOL-DATA-FLOAT is
-  protecting CONVERSION .
-  protecting FLOAT .
-  extending CREOL-DATA-INT .
-
-  op float(_): Float -> Data [ctor format(o o ! o o)] . 
-
-  vars F F' : Float .
-  var I : Int .
-
-  op _asFloat : Data -> Float .
-  eq float(F) asFloat = F .
-
-  eq "-" (float(F)) = float(-(F)) .
-  eq "<"  (float(F) :: float(F')) = bool(F < F') .
-  eq "<=" (float(F) :: float(F')) = bool(F <= F') .
-  eq ">"  (float(F) :: float(F')) = bool(F > F') .
-  eq ">=" (float(F) :: float(F')) = bool(F >= F') .
-  eq "+" (float(F) :: float(F')) = float(F + F') .
-  eq "-" (float(F) :: float(F')) = float( _-_(F, F')) .
-  eq "*" (float(F) :: float(F')) = float(F * F') .
-  eq "/" (float(F) :: float(F')) = float(F / F') .
-  eq "div" (float(F) :: float(F')) = float(F / F') . --- That is wrong.
-  eq "%" (float(F) :: float(F')) = float(F rem F') .
-  eq "**" (float(F) :: float(F')) = float(F ^ F') .
-  eq "real_of_int" (int(I)) = float(float(I)) .
-endfm
-
 fmod CREOL-DATA-STRING is
-  extending CREOL-DATA-SIG .
+  extending CREOL-DATA-INT .
 
   protecting STRING .
 
@@ -188,9 +187,10 @@ fmod CREOL-DATA-STRING is
   op _asString : Data -> String .
   eq str(S) asString = S .
 
+  eq "|-" (str(S) :: str(S')) = str(S + S') .
   eq "-|" (str(S) :: str(S')) = str(S + S') .
   eq "|-|" (str(S) :: str(S')) = str(S + S') .
-  eq "|-" (str(S) :: str(S')) = str(S + S') .
+  eq "#" (str(S)) = int(length(S)) .
 
   eq "<" (str(S):: str(S')) = bool(S < S') .
   eq "<=" (str(S):: str(S')) = bool(S <= S') .
@@ -212,26 +212,41 @@ fmod CREOL-DATA-LIST is
   --- list-functions
   eq "head" (list(emp))	= null .
   eq "head" (list(E :: L)) = E .
+
   eq "tail" (list(emp))	= null .
   eq "tail" (list(E :: L)) = list(L) .
 
   eq "last" (list(emp))	= null .
   eq "last" (list(L :: E)) = E .
+
   eq "rest" (list(emp))	= null .
   eq "rest" (list(L :: E)) = list(L) .
 
-  eq "length" (list(emp)) = int(0) .
-  eq "length" (list(E :: L)) = "+" ("length" (list(L)) :: int(1)) .
-  eq "#" (list(emp)) = int(0) .
-  eq "#" (list(E :: L)) = "+" ("#" (list(L)) :: int(1)) .
-  
-  eq "isempty" (list(emp))  = bool(true) .
-  eq "isempty" (list(E :: L))= bool(false) .
-  
+  eq "nth" ((list(L)) :: int(0))  = null .
+  eq "nth" ((list(emp)) :: int(N))  = null .
+  eq "nth" ((list(E :: L)) :: int(N)) =
+    if (N == 1) then E else "nth" (list(L) :: int(_-_(N, 1))) fi .
+
+  eq "rnth" (list(L) :: int(N)) = "nth" ("reverse" (list(L)) :: int(N)) .
+
+  eq "in" (list(emp) :: E ) = bool(false) .
+  eq "in" (list(E :: L) :: E') =
+    if E == E' then bool(true) else "in" (list(L) :: E') fi .
+
   eq "remove" (list(emp) :: E )  = list(emp) .
   eq "remove" (list(E :: L) :: E') =
     if E == E' then "remove" ((list(L)):: E') 
       else "|-|" (list(E) :: ("remove" (list(L) :: E'))) fi .
+
+  eq "-|" (D :: list(L)) = list(D :: L) .
+  eq "|-" (list(L) :: D) = list(L :: D) .
+  eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
+
+  eq "#" (list(emp)) = int(0) .
+  eq "#" (list(E :: L)) = "+" ("#" (list(L)) :: int(1)) .
+  
+  eq "isempty" (list(emp)) = bool(true) .
+  eq "isempty" (list(L :: E)) = bool(false) .
 
   --- Reverse a list
   eq "reverse" (list(emp)) = list (emp) .
@@ -251,21 +266,6 @@ fmod CREOL-DATA-LIST is
   ceq ".sub" (list(E :: L) :: int(1) :: int(M) :: list(L')) =
     ".sub" (list(L) :: int(1) :: int(_-_(M, 1)) :: list(L' :: E)) if M >= 1 .
   eq ".sub" (list(L) :: int(1) :: int(0) :: list(L')) = list(L') .
-
-  eq "-|" (D :: list(L)) = list(D :: L) .
-  eq "|-" (list(L) :: D) = list(L :: D) .
-  eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
-
-  eq "in" (list(emp) :: E ) = bool(false) .
-  eq "in" (list(E :: L) :: E') =
-    if E == E' then bool(true) else "in" (list(L) :: E') fi .
-
-  eq "nth" ((list(L)) :: int(0))  = null .
-  eq "nth" ((list(emp)) :: int(N))  = null .
-  eq "nth" ((list(E :: L)) :: int(N)) =
-    if (N == 1) then E else "nth" (list(L) :: int(_-_(N, 1))) fi .
-
-  eq "rnth" (list(L) :: int(N)) = "nth" ("reverse" (list(L)) :: int(N)) .
 
   eq "begwith" (list(emp) :: list(L :: E)) = bool(false) .
   eq "begwith" (list(L) :: list(emp)) = bool(true) .
@@ -290,6 +290,7 @@ fmod CREOL-DATA-LIST is
   eq ".rindex" (list(emp) :: E') = null .
   eq ".rindex" (list(L :: E) :: E') =
     if E == E' then int(1) else "+" (int(1) :: "rindex" (list(L) :: E')) fi .
+
 endfm
 
 fmod CREOL-DATA-SET is
@@ -323,8 +324,8 @@ fmod CREOL-DATA-SET is
 
   eq D : D = D . --- Collapse multiple elements.
 
-  eq "::" (set(emptyset)) = int(0) .
-  eq "::" (set(S : D)) = "+" (int(1) :: ("::" (set(S)))) .
+  eq "#" (set(emptyset)) = int(0) .
+  eq "#" (set(S : D)) = "+" (int(1) :: ("#" (set(S)))) .
 
   eq "remove" (set(emptyset) :: E)  = set(emptyset) .
   eq "remove" (set(S : D) :: D') =

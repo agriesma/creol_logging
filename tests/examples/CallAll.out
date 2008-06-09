@@ -5,8 +5,8 @@ result Class:
     |-> null, "results" |-> null, Mtds:
   < "call_all" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |->
     null, Code: "results" ::= list(emp) ; "label:0" ! "this" . "doit"("list") ;
-    "label:0" ?(noVid) ; await "="("length"("results") :: "length"("results"))
-    ; return(emp) > *
+    "label:0" ?(noVid) ; await "="("#"("results") :: "#"("list")) ; return(emp)
+    > *
   < "doit" : Mtdname | Param: "l", Latt: "_" |-> null, "i" |-> null, "l" |->
     null, "label:0" |-> null, "o" |-> null, "r" |-> null, Code: if "/="("l" ::
     list(emp)) th "r" ! "fst"("i") . "m"("snd"("i")) ; "label:0" ! "this" .
