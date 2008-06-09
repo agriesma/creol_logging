@@ -1,3 +1,13 @@
+creoltools 0.0j (2007-06-09): alpha release.
+
+In the standard library:
+* Synchronised with the documentation.
+
+In the interpreters:
+* Cleaned up the declaration of constructors.
+* Smaller optimisations.
+* Correct the implementation of the timed interpreter.
+
 creoltools 0.0i (2007-02-26): alpha release.
 
 This is one of the latest release which allows to disable type checking
