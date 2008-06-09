@@ -294,7 +294,7 @@ The function @code{after} returns a list containing all elements after
 @code{n}.  If @code{n} is larger than the length of the list, the
 empty list is returned.
 
-@item fun in(l: List[`a], e: `a): Bool
+@item fun in(e: `a, l: List[`a]): Bool
 The function @code{in} tests, whether the list @code{l} contains the
 element @code{e}.
 
@@ -359,7 +359,7 @@ The function @code{remove} returns the argument set without element
 The function @code{add} returns the argument set with the addition of
 element @code{e}.
 
-@item fun in(s: Set[`a], e: `a): Bool
+@item fun in(e: `a, s: Set[`a]): Bool
 The function @code{in} tests, whether the list @code{s} contains the
 element @code{e}.
 
