@@ -206,47 +206,46 @@ fmod CREOL-DATA-LIST is
 
   vars N M : Nat .
   vars D D' : Data .
-  vars E E' : Expr .
-  vars L L' L'' : ExprList .
+  vars L L' : DataList .
 
   --- list-functions
   eq "head" (list(emp))	= null .
-  eq "head" (list(E :: L)) = E .
+  eq "head" (list(D :: L)) = D .
 
   eq "tail" (list(emp))	= null .
-  eq "tail" (list(E :: L)) = list(L) .
+  eq "tail" (list(D :: L)) = list(L) .
 
   eq "last" (list(emp))	= null .
-  eq "last" (list(L :: E)) = E .
+  eq "last" (list(L :: D)) = D .
 
   eq "rest" (list(emp))	= null .
-  eq "rest" (list(L :: E)) = list(L) .
+  eq "rest" (list(L :: D)) = list(L) .
 
   eq "nth" ((list(L)) :: int(0))  = null .
   eq "nth" ((list(emp)) :: int(N))  = null .
-  eq "nth" ((list(E :: L)) :: int(N)) =
-    if (N == 1) then E else "nth" (list(L) :: int(_-_(N, 1))) fi .
+  eq "nth" ((list(D :: L)) :: int(N)) =
+    if (N == 1) then D else "nth" (list(L) :: int(_-_(N, 1))) fi .
 
   eq "rnth" (list(L) :: int(N)) = "nth" ("reverse" (list(L)) :: int(N)) .
 
-  eq "in" (list(emp) :: E ) = bool(false) .
-  eq "in" (list(E :: L) :: E') =
-    if E == E' then bool(true) else "in" (list(L) :: E') fi .
+  eq "in" (D :: list(emp)) = bool(false) .
+  eq "in" (D' :: list(D :: L)) =
+    if D == D' then bool(true) else "in" (D' :: list(L)) fi .
 
-  eq "remove" (list(emp) :: E )  = list(emp) .
-  eq "remove" (list(E :: L) :: E') =
-    if E == E' then "remove" ((list(L)):: E') 
-      else "|-|" (list(E) :: ("remove" (list(L) :: E'))) fi .
+  eq "remove" (list(emp) :: D)  = list(emp) .
+  eq "remove" (list(D :: L) :: D') =
+    if D == D' then "remove" ((list(L)):: D') 
+      else "|-|" (list(D) :: ("remove" (list(L) :: D'))) fi .
 
   eq "-|" (D :: list(L)) = list(D :: L) .
   eq "|-" (list(L) :: D) = list(L :: D) .
   eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
 
   eq "#" (list(emp)) = int(0) .
-  eq "#" (list(E :: L)) = "+" ("#" (list(L)) :: int(1)) .
+  eq "#" (list(D :: L)) = "+" ("#" (list(L)) :: int(1)) .
   
   eq "isempty" (list(emp)) = bool(true) .
-  eq "isempty" (list(L :: E)) = bool(false) .
+  eq "isempty" (list(L :: D)) = bool(false) .
 
   --- Reverse a list
   eq "reverse" (list(emp)) = list (emp) .
@@ -254,42 +253,42 @@ fmod CREOL-DATA-LIST is
 
   --- index starts at 1
   eq "after" (list(emp) :: int(N))    = null . 
-  eq "after" (list(E :: L) :: int(0))  = list(E :: L) .
-  eq "after" (list(E :: L) :: int(N))  =
+  eq "after" (list(L) :: int(0))  = list(L) .
+  eq "after" (list(D :: L) :: int(N))  =
     "after" (list(L) :: int(_-_(N, 1))) .
 
   --- Compute a slice of a sequence.
   eq "sub" (list(L) :: int(N) :: int(M)) =
     ".sub" (list(L) :: int(N) :: int(M) :: list(emp)) .
-  ceq ".sub" (list(E :: L) :: int(N) :: int(M) :: list(L')) =
+  ceq ".sub" (list(D :: L) :: int(N) :: int(M) :: list(L')) =
     ".sub" (list(L) :: int(_-_(N, 1)) :: int(_-_(M, 1)) :: list(L')) if N > 1 .
-  ceq ".sub" (list(E :: L) :: int(1) :: int(M) :: list(L')) =
-    ".sub" (list(L) :: int(1) :: int(_-_(M, 1)) :: list(L' :: E)) if M >= 1 .
+  ceq ".sub" (list(D :: L) :: int(1) :: int(M) :: list(L')) =
+    ".sub" (list(L) :: int(1) :: int(_-_(M, 1)) :: list(L' :: D)) if M >= 1 .
   eq ".sub" (list(L) :: int(1) :: int(0) :: list(L')) = list(L') .
 
-  eq "begwith" (list(emp) :: list(L :: E)) = bool(false) .
+  eq "begwith" (list(emp) :: list(L :: D)) = bool(false) .
   eq "begwith" (list(L) :: list(emp)) = bool(true) .
   eq "begwith" (list(D :: L) :: list(D' :: L')) =
     if D == D' then "begwith" (list(L) :: list(L')) else bool(false) fi .
 
-  eq "endswith" (list(emp) :: list(L :: E)) = bool(false) .
+  eq "endswith" (list(emp) :: list(L :: D)) = bool(false) .
   eq "endswith" (list(L) :: list(emp)) = bool(true) .
   eq "endswith" (list(L :: D) :: list(L' :: D')) =
     if D == D' then "endswith" (list(L) :: list(L')) else bool(false) fi .
 
   --- If E is not in the list, these will fail with the term
   --- "+" (int(N) :: null)
-  eq "index" (list(emp) :: E) = null .
-  eq "index" (list(E :: L) :: E') =
-    if E == E' then int(1) else "+" (int(1) :: "index" (list(L) :: E')) fi .
+  eq "index" (list(emp) :: D) = null .
+  eq "index" (list(D :: L) :: D') =
+    if D == D' then int(1) else "+" (int(1) :: "index" (list(L) :: D')) fi .
 
   --- If E is not in the list, these will fail with the term
   --- "-" (int(N) :: null)
-  eq "rindex" (list(L) :: E) =
-    "-" ("length" (list(L)) :: ".rindex" (list(L) :: E)) .
-  eq ".rindex" (list(emp) :: E') = null .
-  eq ".rindex" (list(L :: E) :: E') =
-    if E == E' then int(1) else "+" (int(1) :: "rindex" (list(L) :: E')) fi .
+  eq "rindex" (list(L) :: D) =
+    "-" ("length" (list(L)) :: ".rindex" (list(L) :: D)) .
+  eq ".rindex" (list(emp) :: D') = null .
+  eq ".rindex" (list(L :: D) :: D') =
+    if D == D' then int(1) else "+" (int(1) :: "rindex" (list(L) :: D')) fi .
 
 endfm
 
@@ -333,28 +332,28 @@ fmod CREOL-DATA-SET is
                     "add" (set(D) :: "remove" (set(S) :: D')) fi .
 
   eq "add" (set(S) :: D) =
-    if "in" (set(S) :: D) asBool then set(S) else set(S : D) fi .    
+    if "in" (D :: set(S)) asBool then set(S) else set(D : S) fi .    
 
-  eq "in" (set(emptyset) ::  E) = bool(false) .
-  eq "in" (set(S : D) :: D') =
-    if D == D' then bool(true) else "in" (set(S) :: D') fi .
+  eq "in" (E :: set(emptyset)) = bool(false) .
+  eq "in" (D' :: set(S : D)) =
+    if D == D' then bool(true) else "in" (D' :: set(S)) fi .
 
   eq "union" (set(emptyset) :: set(S)) = set(S) .
   eq "union" (set(S) :: set(emptyset)) = set(S) .
   eq "union" (set(S : D) :: set(S')) =
-    if "in" (set(S') :: D) asBool then "union" (set(S) :: set(S'))
+    if "in" (D :: set(S')) asBool then "union" (set(S) :: set(S'))
                                   else "union" (set(S) :: set(S' : D)) fi .
 
   eq "inter" (set(emptyset) :: set(S)) = set(emptyset) .
   eq "inter" (set(S) :: set(emptyset)) = set(emptyset) .
   eq "inter" (set(S : D) :: set(S')) =
-    if "in" (set(S') :: D) asBool then "add" ("inter" (set(S) :: set(S')) :: D)
+    if "in" (D :: set(S')) asBool then "add" ("inter" (set(S) :: set(S')) :: D)
                                   else "inter" (set(S) :: set(S')) fi .
 
   eq "diff" (set(S) :: set(emptyset)) = set(S) .
   eq "diff" (set(emptyset) :: set(S)) = set(emptyset) .
   eq "diff" (set(S : D) :: set(S')) =
-    if "in" (set(S') :: D) asBool then "diff" (set(S) :: set(S'))
+    if "in" (D :: set(S')) asBool then "diff" (set(S) :: set(S'))
                                 else "add" ("diff" (set(S) :: set(S')) :: D) fi .
 
 endfm

@@ -28,6 +28,7 @@ EXTRA_DIST		= README macros.m4 interpreter.m4
 dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-interpreter.maude \
+			  creol-loopmode.maude \
 			  creol-metaexec.maude \
 			  creol-modelchecker.maude \
 			  creol-realtime.maude \
