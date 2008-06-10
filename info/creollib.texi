@@ -285,7 +285,7 @@ is undefined.
 The function @code{reverse} returns a list in which all elements occur
 in reverse order.
 
-@item fun sub(l: List[`a], i: Int, j: Int)
+@item fun sub(l: List[`a], i: Int, j: Int): List[`a]
 The function @code{sub} returns a slice of the list, beginning at
 @code{i} and ending at @code{j}.
 
@@ -336,15 +336,23 @@ The function @code{rindex} returns the index of the last occurrence of
 an element @code{e}.  If @code{e} does not occur in the list, the
 result is undefined.
 
-@item fun replace(l: List[`a], e: `a, p: Int): List[`a] == extern "replace"
+@item fun replace(l: List[`a], e: `a, p: Int): List[`a]
 The function @code{replace} replaces the @code{p}th item of the list
 @code{l} with the data item @code{e}.  If @code{p} is @code{0} or
 larger than the length of the list @code{l}, then the result is not
 defined.
 
-@item fun make_list(e: `a, n: Int): List[`a] == extern "gen_list"
+@item fun make_list(e: `a, n: Int): List[`a]
 Make a list that contains @code{n} times the data item @code{e}.  If
 @code{n} is @code{0}, the empty list is generated.
+
+@item fun make_range(e: Int): List[Int]
+@item fun make_range(s: Int, e: Int): List[Int]
+@item fun make_range(s: Int, e: Int, t: Int): List[Int]
+Make a list of integers.  @code{s} represents the initial element of the
+list, @code{e} the final element.  @code{t} is a stride value.  The
+result is undefined if @code{t} is @code{0}, if @code{s < e} and
+@code{t < 0}, or if @code{s > e} and @code{t > 0}.
 @end table
 
 

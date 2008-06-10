@@ -100,6 +100,9 @@ fun index(l: List[`a], e: `a): Int == extern "index"
 fun rindex(l: List[`a], e: `a): Int == extern "rindex"
 fun replace(l: List[`a], e: `a, p: Int): List[`a] == extern "replace"
 fun make_list(e: `a, p: Int): List[`a] == extern "gen_list"
+fun make_range(e: Int): List[Int] == extern "make_range"
+fun make_range(s: Int, e: Int): List[Int] == extern "make_range"
+fun make_range(s: Int, e: Int, t: Int): List[Int] == extern "make_range"
 
 // More to come.
 

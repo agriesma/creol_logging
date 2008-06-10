@@ -204,7 +204,8 @@ fmod CREOL-DATA-LIST is
   op list : ExprList -> Expr [ctor] .
   op list : DataList -> Data [ctor] .
 
-  vars N M : Nat .
+  vars M N : Nat .
+  vars I J K : Int .
   vars D D' : Data .
   vars L L' : DataList .
 
@@ -300,6 +301,25 @@ fmod CREOL-DATA-LIST is
   eq "make_list" (D :: int(0)) = list(emp) .
   ceq "make_list" (D :: int(N)) = "|-"("make_list" (D :: int(_-_(N, 1))) :: D)
     if N > 0 .
+
+  eq "make_range" (int(I)) = "make_range" (int(1) :: int(I)) .
+
+  eq "make_range" (int(I) :: int(J)) =
+    if M < N then "make_range" (int(I) :: int(J) :: int(1))
+    else  "make_range" (int(I) :: int(J) :: int(-1))
+    fi .
+
+  eq "make_range" (int(I) :: int(J) :: int(K)) =
+    if K > 0 and I <= J then
+      "-|"(int(M) :: "make_range" (int(I + K) :: int(J) :: int(K)))
+    else
+      if K < 0 and I >= J  then
+        "-|"(int(M) :: "make_range" (int(I + K) :: int(J) :: int(K)))
+      else
+        list(emp)
+      fi
+    fi
+    .
 
 endfm
 
