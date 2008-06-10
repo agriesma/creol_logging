@@ -17,3 +17,34 @@
 *** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***
 
+*** Once we initialised the loop, we cannot load our source program anymore.
+*** So the compiler should arrange for loading the generated Maude
+*** representation and then load the loop mode.
+
+load creol-interpreter .
+
+mod CREOL-LOOP-MODE is
+  protecting CREOL-SIMULATOR .
+  protecting LOOP-MODE .
+  subsort Configuration < State .
+
+  op init : -> System .
+
+  vars QIL QIL' : QidList .
+
+  rl [init] :
+    init =>
+      [nil,
+       noConf,
+       ('\n '\t '\t '\s '\s '\s '\s '\s '\s '\! 'Creol 'Simulator '0.0 '\o
+        '\n '\t '\t '\t '\s '\s 'June '9 '`, '\s '2008 '\n)] .
+
+  rl [in] :
+    ['load QIL, noConf, QIL'] => [QIL, noConf, QIL' 'done] .
+
+  rl [in] :
+    ['show QIL, noConf, QIL'] => [nil, noConf, QIL' 'showed QIL] .
+
+endm
+
+loop init .

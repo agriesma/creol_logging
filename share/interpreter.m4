@@ -384,12 +384,11 @@ ifdef(`MODELCHECK',dnl
   *** Maude's model checker asks us to provide State.
   including SATISFACTION .
   including MODEL-CHECKER .
-,dnl
-  *** In the interpreter we define our own sort state.
-  sort State .
-)dnl
 
   op {_} : Configuration -> State [ctor] .
+,dnl
+  *** We should not provide sort State, since this is used in LOOP-MODE.
+)dnl
 
   *** System initialisation
   var C : String .
