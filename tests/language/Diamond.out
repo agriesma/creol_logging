@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
@@ -39,7 +39,7 @@ result Configuration:
     ; "label:1" ! "this" . "o"(emp) ; "label:1" ?("y") ; skip ; return(emp) >,
   Ocnt: 0 >
 ==========================================
-rewrite in PROGRAM : init
+rewrite in PROGRAM : classes
 main("D", emp) .
 result Configuration: 
 < "A" : Cl | Inh: noInh, Par: "a", Att: "a" |-> null, Mtds:

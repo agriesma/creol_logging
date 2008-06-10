@@ -1,8 +1,8 @@
 load creol-interpreter
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
-op init : -> Configuration [ctor] .
-eq init =
+op classes : -> Configuration [ctor] .
+eq classes =
 < "BoundedBuffer" : Cl | Inh: noInh, Par: noVid, Att: "buffer" |-> null , "max" |-> null , "n" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code:  ( ( "buffer" @@ "BoundedBuffer" ), ( "max" @@ "BoundedBuffer" ), ( "n" @@ "BoundedBuffer" ) )  ::= list(emp) :: int(10) :: int(0) ; skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *

@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "MutRec" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
   < "doit" : Mtdname | Param: "other", Latt: "_" |-> null, "label:0" |-> null,

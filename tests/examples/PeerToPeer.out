@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Class: 
 < "Node" : Cl | Inh: noInh, Par: "db", Att: "db" |-> null, Mtds:
   < "availFiles" : Mtdname | Param: "sList", Latt: "_" |-> null, "fList" |->

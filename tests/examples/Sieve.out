@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null, "next" |->
     null, Mtds:

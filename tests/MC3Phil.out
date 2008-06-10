@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM-CHECKER : init .
+reduce in PROGRAM-CHECKER : classes .
 result Configuration: 
 < "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, Mtds:

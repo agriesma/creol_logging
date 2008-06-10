@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Class: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "depth" |-> null, "max" |-> null,
     Mtds:

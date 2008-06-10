@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
@@ -27,7 +27,7 @@ result Configuration:
     emp) >,
   Ocnt: 0 >
 ==========================================
-rewrite in PROGRAM : init
+rewrite in PROGRAM : classes
 main("Init", emp) .
 result Configuration: 
 < "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"

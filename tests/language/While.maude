@@ -1,8 +1,8 @@
 load creol-interpreter
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
-op init : -> Configuration [ctor] .
-eq init =
+op classes : -> Configuration [ctor] .
+eq classes =
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "l" |-> null , "f" |-> null , "_" |-> null, Code: while "/=" ( "l" :: list(emp) ) do  ( "f", "l" )  ::= "head" ( "l" ) :: "tail" ( "l" ) od  ; return ( emp ) >, Ocnt: 0 >

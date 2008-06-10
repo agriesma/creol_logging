@@ -1,8 +1,8 @@
 load creol-interpreter
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
-op init : -> Configuration [ctor] .
-eq init =
+op classes : -> Configuration [ctor] .
+eq classes =
 < "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null , "hist" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "hist" ::= str("") ; "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "label:0" ! "butler" . "getNeighbor" ( emp ) ; ( "label:0" ? ( "neighbor" ) )  ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "label:2" |-> null , "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "think" (emp ) )  ; free( "label:0" ) ; ( "label:1" ! "this" . "eat" (emp ) )  ; free( "label:1" ) ; ( "label:2" ! "this" . "digest" (emp ) )  ; free( "label:2" ) ; return ( emp ) > *

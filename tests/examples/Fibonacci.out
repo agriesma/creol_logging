@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "FibTester" : Cl | Inh: noInh, Par: "n", Att: "f" |-> null, "n" |-> null,
     "res" |-> null, Mtds:

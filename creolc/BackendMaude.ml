@@ -423,7 +423,7 @@ let emit options out_channel input =
 	| Realtime -> "load creol-realtime\n") ;
     output_string out_channel "mod PROGRAM is\n" ;
     output_string out_channel ("protecting CREOL-SIMULATOR .\n" ^
-      "op init : -> Configuration [ctor] .\n" ^ "eq init =\n") ;
+      "op classes : -> Configuration [ctor] .\n" ^ "eq classes =\n") ;
     of_decl_list input ;
     begin
       match options.main with
@@ -441,5 +441,5 @@ let emit options out_channel input =
 	      "  protecting CREOL-PREDICATES .\n" ^
 	      "endm\n")
       end ;
-    if options.red_init then output_string out_channel "\nred init .\n" ;
+    if options.red_init then output_string out_channel "\nred classes .\n" ;
     flush out_channel

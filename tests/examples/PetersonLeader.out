@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, "p4" |-> null, "p5" |-> null, Mtds:
@@ -36,7 +36,7 @@ result Configuration:
     "send"("u") ; free("label:2") fi ; return(emp) >,
   Ocnt: 0 >
 ==========================================
-rewrite in PROGRAM : init
+rewrite in PROGRAM : classes
 main("Main", emp) .
 result Configuration: 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"

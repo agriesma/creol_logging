@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Class: 
 < "Alarmclock" : Cl | Inh: noInh, Par: noVid, Att: "clock" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "clock" ::= int(

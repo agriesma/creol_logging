@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Class: 
 < "Buffer" : Cl | Inh: noInh, Par: noVid, Att: "cell" |-> null, "ctr" |-> null,
     "next" |-> null, Mtds:

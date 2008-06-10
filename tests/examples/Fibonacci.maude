@@ -1,8 +1,8 @@
 load creol-interpreter
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
-op init : -> Configuration [ctor] .
-eq init =
+op classes : -> Configuration [ctor] .
+eq classes =
 < "Fibonacci" : Cl | Inh: noInh, Par: "n", Att: "n" |-> null, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
   < "run" : Mtdname | Param: noVid, Latt: "res" |-> null , "t" |-> null , "_" |-> null, Code: ( "t" ! "this" . "fib" ("n" ) )  ; ( await ( "t" ?? ) ) ; ( "t" ? ( "res" ) )  ; return ( emp ) > *

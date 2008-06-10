@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Class: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(
@@ -8,7 +8,7 @@ result Class:
     emp) >,
   Ocnt: 0 >
 ==========================================
-rewrite in PROGRAM : init
+rewrite in PROGRAM : classes
 main("Test", emp) .
 result Configuration: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds:

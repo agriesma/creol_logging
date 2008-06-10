@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
   < "hello" : Mtdname | Param: noVid, Latt: "_" |-> null, "result" |-> null,

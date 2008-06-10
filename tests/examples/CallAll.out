@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Class: 
 < "CallAll" : Cl | Inh: noInh, Par: noVid, Att: "list" |-> null, "outstanding"
     |-> null, "results" |-> null, Mtds:

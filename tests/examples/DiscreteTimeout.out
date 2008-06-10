@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Class: 
 < "DiscreteTimeout" : Cl | Inh: noInh, Par: "other", Att: "clock" |-> null,
     "other" |-> null, Mtds:

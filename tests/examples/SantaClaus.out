@@ -1,5 +1,5 @@
 ==========================================
-reduce in PROGRAM : init .
+reduce in PROGRAM : classes .
 result Configuration: 
 < "Christmas" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
