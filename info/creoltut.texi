@@ -81,7 +81,7 @@ implementation of the @code{hello} method.
 The class @code{Main} does not declare to implement any interface, but
 all classes implicitly implement the @code{Any} interface.  Each
 instance of @code{Main} will create an instance of @code{Hello} during
-initialisation in the @code{init} method and will as its only activity
+initialisation in the @code{classes} method and will as its only activity
 call the method @code{hello} of that instance and store the result
 value in the attribute @code{result}.
 
@@ -211,7 +211,7 @@ Maude>
 @end example
 
 The command @command{rew init main("Main", emp) .} instructs the Maude
-interpreter to rewrite the program text @code{init} and a first object
+interpreter to rewrite the program text @code{classes} and a first object
 @code{main("Main", emp)}, which is an instance of class @code{"Main"}
 and which is created without class parameters.  Maude responds with
 the a term repeating the input program and a collection of queues and
@@ -468,7 +468,7 @@ type of @code{caller} is @var{A}.  Within the body of @var{m}, the
 programmer can call all methods of @code{caller} that are defined in
 interface @code{A}.
 
-Some methods, most prominently @code{run} and @code{init}
+Some methods, most prominently @code{run} and @code{classes}
 (@pxref{Object Activity}), do not define a co-interface, because they
 are listed before the first @code{with} clause.  Such methods do not
 define the variable @code{caller}, because @code{caller} does not have
@@ -689,22 +689,22 @@ The segment of class @code{A} is re-initialised, because class
 to @code{2}, the value of @code{b}
 
 @item
-The @code{init} method of class @code{A}, which is empty, is run.
+The @code{classes} method of class @code{A}, which is empty, is run.
 
 @item
-The @code{init} method of class @code{C} is run.  The assertion
+The @code{classes} method of class @code{C} is run.  The assertion
 @code{a = c} holds.
 
 @item
-The @code{init} method of class @code{A} is re-run.
+The @code{classes} method of class @code{A} is re-run.
 
 @item
-The @code{init} method of class @code{B} is run.  The assertion
+The @code{classes} method of class @code{B} is run.  The assertion
 @code{a = b} does @emph{not} hold, since it has been reinitialised to
 @code{2} after creating a segment for class @code{C}.
 
 @item
-The @code{init} method of class @code{D}, which is empty, is run.
+The @code{classes} method of class @code{D}, which is empty, is run.
 
 @end enumerate
 
@@ -712,15 +712,15 @@ Observe, that the actual problem is, that class @code{D} inherits from
 both @code{B} and @code{C}.  Creating instances of class @code{B} or
 of class @code{C} does not have these issues.
 
-Additionally, observe the order in which the @code{init} method's are
+Additionally, observe the order in which the @code{classes} method's are
 run:  it is the reverse order in which the segments of the attributes
 are initialised.  This ensures, that the class parameters are present
 and initialised once the method is run.
 
-The @code{init} method should not be called explicitly.  This is
+The @code{classes} method should not be called explicitly.  This is
 currently not enforced by the compiler, because it may be useful to
 ``reset'' the attribute segment of a class during run-time.  If
-@code{init} is called explicitly, it will behave like an ordinary
+@code{classes} is called explicitly, it will behave like an ordinary
 internal method and only execute the statements defined in its method
 body.  In addition, it may be dynamically bound.
 
