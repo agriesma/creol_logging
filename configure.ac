@@ -134,13 +134,13 @@ fi
 AC_SUBST([OCAML_LIBXML2_VERSION])
 
 dnl check for ocamlweb and latex for literate programming.
-AC_CHECK_PROG([DOT], [dot], [dot], [${top_srcdir}/missing dot])
+AC_CHECK_PROG([DOT], [dot], [dot], ['${top_srcdir}/missing dot'])
 AC_CHECK_PROG([OCAMLWEB], [ocamlweb], [ocamlweb],
-	      [${top_srcdir}/missing ocamlweb])
+	      ['${top_srcdir}/missing ocamlweb'])
 AC_CHECK_PROG([LATEX], [latex], [latex],
-	      [${top_srcdir}/missing latex])
+	      ['${top_srcdir}/missing latex'])
 AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex],
-	      [${top_srcdir}/missing pdflatex])
+	      ['${top_srcdir}/missing pdflatex'])
 
 # if we have ocamlweb, build the documentation.
 if test "$OCAMLWEB" = "ocamlweb" -a "$PDFLATEX" = "pdflatex"
