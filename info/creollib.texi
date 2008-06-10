@@ -336,6 +336,11 @@ The function @code{rindex} returns the index of the last occurrence of
 an element @code{e}.  If @code{e} does not occur in the list, the
 result is undefined.
 
+@item fun replace(l: List[`a], e: `a, p: Int): List[`a] == extern "replace"
+The function @code{replace} replaces the @code{p}th item of the list
+@code{l} with the data item @code{e}.  If @code{p} is @code{0} or
+larger than the length of the list @code{l}, then the result is not
+defined.
 @end table
 
 

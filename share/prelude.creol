@@ -98,6 +98,7 @@ fun begwith(l: List[`a], m: List[`a]): Bool == extern "begwith"
 fun endswith(l: List[`a], m: List[`a]): Bool == extern "endswith"
 fun index(l: List[`a], e: `a): Int == extern "index"
 fun rindex(l: List[`a], e: `a): Int == extern "rindex"
+fun replace(l: List[`a], e: `a, p: Int): List[`a] == extern "replace"
 
 // More to come.
 

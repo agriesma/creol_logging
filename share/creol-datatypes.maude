@@ -290,6 +290,13 @@ fmod CREOL-DATA-LIST is
   eq ".rindex" (list(L :: D) :: D') =
     if D == D' then int(1) else "+" (int(1) :: "rindex" (list(L) :: D')) fi .
 
+  eq "replace" (list(emp) :: D :: int(N)) = null .
+  eq "replace" (list(L) :: D :: int(0)) = null .
+  eq "replace" (list(D :: L) :: D' :: int(1)) = list(D' :: L) .
+  ceq "replace" (list(D :: L) :: D' :: int(N)) =
+    "|-|"(list(D) :: "replace" (list(L) :: D' :: int(_-_(N, 1))))
+    if N > 1 .
+
 endfm
 
 fmod CREOL-DATA-SET is
