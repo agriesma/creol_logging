@@ -387,7 +387,7 @@ ifdef(`MODELCHECK',dnl
 
   op {_} : Configuration -> State [ctor] .
 ,dnl
-  *** We should not provide sort State, since this is used in LOOP-MODE.
+  *** We should not provide sort State`,' since this is used in LOOP-MODE.
 )dnl
 
   *** System initialisation
