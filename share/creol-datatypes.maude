@@ -294,8 +294,12 @@ fmod CREOL-DATA-LIST is
   eq "replace" (list(L) :: D :: int(0)) = null .
   eq "replace" (list(D :: L) :: D' :: int(1)) = list(D' :: L) .
   ceq "replace" (list(D :: L) :: D' :: int(N)) =
-    "|-|"(list(D) :: "replace" (list(L) :: D' :: int(_-_(N, 1))))
+    "-|"(D :: "replace" (list(L) :: D' :: int(_-_(N, 1))))
     if N > 1 .
+
+  eq "make_list" (D :: int(0)) = list(emp) .
+  ceq "make_list" (D :: int(N)) = "|-"("make_list" (D :: int(_-_(N, 1))) :: D)
+    if N > 0 .
 
 endfm
 

@@ -341,6 +341,10 @@ The function @code{replace} replaces the @code{p}th item of the list
 @code{l} with the data item @code{e}.  If @code{p} is @code{0} or
 larger than the length of the list @code{l}, then the result is not
 defined.
+
+@item fun make_list(e: `a, n: Int): List[`a] == extern "gen_list"
+Make a list that contains @code{n} times the data item @code{e}.  If
+@code{n} is @code{0}, the empty list is generated.
 @end table
 
 

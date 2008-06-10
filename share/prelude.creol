@@ -99,6 +99,7 @@ fun endswith(l: List[`a], m: List[`a]): Bool == extern "endswith"
 fun index(l: List[`a], e: `a): Int == extern "index"
 fun rindex(l: List[`a], e: `a): Int == extern "rindex"
 fun replace(l: List[`a], e: `a, p: Int): List[`a] == extern "replace"
+fun make_list(e: `a, p: Int): List[`a] == extern "gen_list"
 
 // More to come.
 
