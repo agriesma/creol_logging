@@ -256,65 +256,66 @@ reduce in CREOL-STM-LIST : downTerm(upTerm("var" ::= int(4)[]"var" ::= new "C"(
     null) ||| skip ||| skip), noStm) .
 result SuspStm: skip ||| skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)
 ==========================================
-reduce in CREOL-STM-LIST : idle .
+reduce in CREOL-PROCESS : idle .
 result Process: idle
 ==========================================
-reduce in CREOL-STM-LIST : upTerm(idle) .
+reduce in CREOL-PROCESS : upTerm(idle) .
 result Constant: 'idle.Process
 ==========================================
-reduce in CREOL-STM-LIST : downTerm(upTerm(idle), idle) .
+reduce in CREOL-PROCESS : downTerm(upTerm(idle), idle) .
 result Process: idle
 ==========================================
-reduce in CREOL-STM-LIST : insert("var2", int(4), insert("var1", str("test"),
+reduce in CREOL-PROCESS : insert("var2", int(4), insert("var1", str("test"),
     noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)) .
 result Process: ("var1" |-> str("test"), "var2" |-> int(4)), (skip ||| "var"
     ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
-reduce in CREOL-STM-LIST : upTerm(insert("var2", int(4), insert("var1", str(
+reduce in CREOL-PROCESS : upTerm(insert("var2", int(4), insert("var1", str(
     "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null))) .
 result GroundTerm: '_`,_['_`,_['_|->_['"var1".String,'str`(_`)[
     '"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4['0.Zero]]]],'_|||_[
     'skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)['s_^4['0.Zero]]],
     '_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]]
 ==========================================
-reduce in CREOL-STM-LIST : downTerm(upTerm(insert("var2", int(4), insert(
-    "var1", str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new
-    "C"(null))), noProc) .
+reduce in CREOL-PROCESS : downTerm(upTerm(insert("var2", int(4), insert("var1",
+    str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(
+    null))), idle) .
 result Process: ("var1" |-> str("test"), "var2" |-> int(4)), (skip ||| "var"
     ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
-reduce in CREOL-STM-LIST : noProc .
+reduce in CREOL-PROCESS-POOL : noProc .
 result MProc: noProc
 ==========================================
-reduce in CREOL-STM-LIST : upTerm(noProc) .
+reduce in CREOL-PROCESS-POOL : upTerm(noProc) .
 result Constant: 'noProc.MProc
 ==========================================
-reduce in CREOL-STM-LIST : downTerm(upTerm(noProc), idle) .
+reduce in CREOL-PROCESS-POOL : downTerm(upTerm(noProc), idle) .
 result MProc: noProc
 ==========================================
-reduce in CREOL-STM-LIST : idle .
+reduce in CREOL-PROCESS-POOL : idle .
 result Process: idle
 ==========================================
-reduce in CREOL-STM-LIST : upTerm(idle) .
+reduce in CREOL-PROCESS-POOL : upTerm(idle) .
 result Constant: 'idle.Process
 ==========================================
-reduce in CREOL-STM-LIST : downTerm(upTerm(idle), noProc) .
+reduce in CREOL-PROCESS-POOL : downTerm(upTerm(idle), noProc) .
 result Process: idle
 ==========================================
-reduce in CREOL-STM-LIST : idle ++ insert("var2", int(4), insert("var1", str(
-    "test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(null)) .
+reduce in CREOL-PROCESS-POOL : idle ++ insert("var2", int(4), insert("var1",
+    str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(
+    null)) .
 result MProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
     "var" ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
-reduce in CREOL-STM-LIST : upTerm(idle ++ insert("var2", int(4), insert("var1",
-    str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new "C"(
-    null))) .
+reduce in CREOL-PROCESS-POOL : upTerm(idle ++ insert("var2", int(4), insert(
+    "var1", str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var" ::= new
+    "C"(null))) .
 result GroundTerm: '_++_['idle.Process,'_`,_['_`,_['_|->_['"var1".String,
     'str`(_`)['"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4[
     '0.Zero]]]],'_|||_['skip.Stm,'_`[`]_['_::=_['"var".String,'int`(_`)['s_^4[
     '0.Zero]]],'_::=`new_`(_`)['"var".String,'"C".Char,'null.Data]]]]]
 ==========================================
-reduce in CREOL-STM-LIST : downTerm(upTerm(idle ++ insert("var2", int(4),
+reduce in CREOL-PROCESS-POOL : downTerm(upTerm(idle ++ insert("var2", int(4),
     insert("var1", str("test"), noSubst)), (skip ||| "var" ::= int(4)[]"var"
     ::= new "C"(null))), noProc) .
 result MProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||

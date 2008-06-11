@@ -164,8 +164,12 @@ view Stm from TRIV to CREOL-STATEMENT is
    sort Elt to Stm .
 endv
 
+
+
+*** Specification of compound statements.
+***
 fmod CREOL-STM-LIST is
-  pr CREOL-STATEMENT .                
+  protecting CREOL-STATEMENT .                
   protecting LIST{Stm} * (sort List{Stm} to StmList,
                           sort NeList{Stm} to NeStmList,
 			  op nil : -> List{Stm} to noStm,
@@ -194,15 +198,32 @@ fmod CREOL-STM-LIST is
   eq (noVid ::= emp) = noStm .
   eq assign(noVid, emp) = noStm .
 
+endfm
+
+fmod CREOL-PROCESS is
+
+  protecting CREOL-STM-LIST .
+
   sort Process .
+
   op idle : -> Process [ctor `format' (!b o)] .  
+  op notFound : -> Process [ctor `format' (!b o)] .  
   op _,_ : Subst StmList -> Process [ctor `format' (o r sbu o)] . 
+
   var L : Subst .
-  eq (L, noStm) = idle . *** if ".label" is needed this is dangerous!
+  eq (L, noStm) = idle . --- if ".label" is needed this is dangerous!
   eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
 
+endfm
 
-  *** Multiset of Processes
+
+
+*** Specifies a process pool, here a multiset of Processes
+***
+fmod CREOL-PROCESS-POOL is
+
+  protecting CREOL-PROCESS .
+
   sort MProc .
   subsort Process < MProc .
   op noProc : -> MProc [ctor] .
@@ -211,7 +232,10 @@ fmod CREOL-STM-LIST is
 
 endfm
 
---- An inherits declaration
+
+
+*** An inherits declaration
+***
 fmod CREOL-INHERIT is
   protecting CREOL-DATATYPES .
   sort Inh .
@@ -252,6 +276,7 @@ fmod CREOL-CLASS is
 			    op empty : -> Set{Method} to noMethod,
                             op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
 changequote dnl
+  protecting CREOL-PROCESS .
 
   var Ih : Inh . 
   var IL : InhList .
@@ -290,7 +315,8 @@ changequote dnl
     else
       get(M, C, MM, O, Lab, DL)
     fi .
-  eq get(M, C, noMethod, O, Lab, DL) = noProc .
+
+  eq get(M, C, noMethod, O, Lab, DL) = notFound .
 
 endfm
 
@@ -372,6 +398,7 @@ endfm
 fmod CREOL-OBJECT is
   protecting CREOL-MESSAGES .
   protecting CREOL-LABELS .
+  protecting CREOL-PROCESS-POOL .
 
   sort Object .
 
@@ -805,7 +832,7 @@ eq
   bindMtd(O, O', Lab, Q, DL, (C < EL >) ,, I')
   < C : Cl | Inh: I , Par: AL, Att: S , Mtds: MS , Ocnt: F >
   =
-  if get(Q, C, MS, O', Lab, DL) == noProc then
+  if get(Q, C, MS, O', Lab, DL) == notFound then
     bindMtd(O, O', Lab, Q, DL, I ,, I')
   else
     boundMtd(O, get(Q, C, MS, O', Lab, DL))
