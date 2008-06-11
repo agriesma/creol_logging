@@ -1,7 +1,7 @@
 dnl
-dnl interpreter.m4 -- Source for modelchecker.maude and interpreter.maude
+dnl macros.m4 -- Macros used to enerate interpreters.
 dnl
-dnl Copyright (c) 2007
+dnl Copyright (c) 2007, 2008
 dnl
 dnl The purpose of this file is to create the files `interpreter.maude'
 dnl and `modelchecker.maude'.  These files have to be processed with
@@ -80,4 +80,4 @@ define(`EVALGUARDLIST', evalGuardList($1, $2, $3))dnl
 define(`EVALGUARDSET', evalGuardSet($1, $2, $3))dnl
 define(`EVALGUARDMAP', evalGuardMap($1, $2, $3))dnl
 define(`ENABLED', enabled($1, $2, $3))dnl
-define(`READY', ready($1, $2, $3))')dnl
+define(`READY', ready($1, $2, $3))')
