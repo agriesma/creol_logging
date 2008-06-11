@@ -41,9 +41,6 @@ result NeExprList: "a"("a") :: null
 reduce in CREOL-DATA-VIDLIST : null, "a" .
 result [ExprList,VidList]: null, "a"
 ==========================================
-reduce in CREOL-DATA-OID : ob("a") .
-result Oid: ob("a")
-==========================================
 reduce in CREOL-DATA-BOOL : bool(true) .
 result Data: bool(true)
 ==========================================

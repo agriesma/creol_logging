@@ -263,6 +263,35 @@ view Method from TRIV to CREOL-METHOD is
 endv
 
 
+*** Define object identifiers.
+***
+fmod CREOL-DATA-OID is
+  extending CREOL-DATA-SIG .
+  protecting CONVERSION .
+  protecting STRING .
+  protecting NAT .
+
+  sort Oid .
+  subsort Oid < Data .
+
+  op ob : String -> Oid [ctor] .
+
+  var C : String .
+  var N : Nat .
+
+  --- Create a new fresh name for an object.
+  op newId : String Nat -> Oid .
+  eq newId(C, N)  = ob(C + string(N,10)) .
+
+endfm
+
+view Oid from TRIV to CREOL-DATA-OID is
+  sort Elt to Oid .
+endv
+
+
+
+
 ***
 *** CREOL Classes
 ***
@@ -276,6 +305,7 @@ fmod CREOL-CLASS is
 			    op empty : -> Set{Method} to noMethod,
                             op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
 changequote dnl
+  protecting CREOL-DATA-OID .
   protecting CREOL-PROCESS .
 
   var Ih : Inh . 
@@ -325,7 +355,8 @@ endfm
 *** CREOL messages and queues
 ***
 fmod CREOL-MESSAGE is
-  protecting CREOL-CLASS .
+  protecting CREOL-DATA-OID .
+  protecting CREOL-DATA-LABEL .
 
   sort Body Invoc Comp .
   subsorts Invoc Comp < Body .
@@ -340,16 +371,6 @@ fmod CREOL-MESSAGE is
 
   --- Invocation and completion message.
   op _from_to_ : Body Oid Oid -> Message [ctor `format' (o ! o ! o on)] .
-
-  --- Method binding messages.
-  --- Bind method request
-  --- Given: caller callee label method params (list of classes to look in)
-  op bindMtd : Oid Oid Label String DataList InhList -> Message [ctor `format'(!r d)] .
-
-  --- Successfully bound method body. 
-  --- Consider the call O.Q(I). bindMtd(O,Q,I,C S) tries to find Q in
-  --- class C or superclasses, then in S. boundMtd(O,Mt) is the result.
-  op boundMtd : Oid Process -> Message [ctor `format'(!r d)] .
 
   --- Error and warning messages are intended to stop the machine.
   --- For now, nothing is emitting these.
@@ -414,6 +435,7 @@ fmod `CREOL-EVAL' is
 
   protecting CREOL-DATA-SIG .
   protecting CREOL-SUBST .
+  protecting CREOL-STM-LIST .
   protecting CREOL-MESSAGES .
 
   vars N N' : Nat .
@@ -538,6 +560,7 @@ endfm
 *** STATE CONFIGURATION ***
 fmod CREOL-CONFIG is
   protecting CREOL-OBJECT .
+  protecting CREOL-CLASS .
 
   sort Configuration .
 

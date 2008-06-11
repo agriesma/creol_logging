@@ -88,6 +88,7 @@ GRAMMAR_TEST(MESSAGES, noMsg, noMsg)
 
 fmod CREOL-LABEL-TEST is
   extending CREOL-DATA-SIG .
+  extending CREOL-STATEMENT .
   extending CREOL-MESSAGE .
   op label : Nat -> Label .
 endfm

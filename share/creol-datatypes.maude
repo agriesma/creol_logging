@@ -132,44 +132,18 @@ fmod CREOL-DATA-VIDLIST is
 endfm
 
 
-fmod CREOL-DATA-OID is
-  extending CREOL-DATA-SIG .
-  protecting CONVERSION .
-  protecting STRING .
-  protecting NAT .
-
-  sort Oid .
-  subsort Oid < Data .
-
-  op ob : String -> Oid [ctor] .
-
-  var C : String .
-  var N : Nat .
-
-  --- Create a new fresh name for an object.
-  op newId : String Nat -> Oid .
-  eq newId(C, N)  = ob(C + string(N,10)) .
-
-endfm
-
-view Oid from TRIV to CREOL-DATA-OID is
-  sort Elt to Oid .
-endv
-
-
-
 *** The interpreter should extend this module with his own definition
 *** of label values.  For example, the model checker uses his own version
 *** of labels.  This definition is the one used in the interpreter.
 *** op label : Nat -> Label [ctor] .
 fmod CREOL-DATA-LABEL is
 
-    extending CREOL-DATA-OID .
+    extending CREOL-DATA-SIG .
 
     sort Label .
     subsort Label < Data .
 
-    op caller : Label -> Oid .
+    op caller : Label -> Data .
 
     --- Needed in the model checker for tail recursion.
     op tag : Label -> Label [ctor format (c o)] .

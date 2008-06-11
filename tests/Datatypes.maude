@@ -41,7 +41,6 @@ red in CREOL-DATA-SIG : null :: "a" .
 red in CREOL-EXPRESSION : null :: ("a" ( "a" )) :: null .
 red in CREOL-EXPRESSION : ("a" ( "a" )) :: null .
 red in CREOL-DATA-VIDLIST : null , "a" .
-red in CREOL-DATA-OID : ob("a") .
 red in CREOL-DATA-BOOL : bool(true) .
 red in CREOL-DATA-BOOL : "=" ( null :: null ) .
 red in CREOL-DATA-BOOL : "/=" ( null :: null ) .
