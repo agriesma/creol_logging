@@ -17,106 +17,203 @@
 *** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***
 
-fmod CREOL-DATA-SIG is
 
-  protecting META-LEVEL .
-  protecting STRING .
+fmod CREOL-DATA-BANNER is
+    protecting STRING .
+    op datarev : -> String .
+    eq datarev = "$Revision$" .
+endfm
+
+
+*** This module specifies multisets.  It has been derived from the set
+*** module.
+fmod MULTISET{X :: TRIV} is
+  protecting EXT-BOOL .
   protecting NAT .
 
-  op datarev : -> String .
-  eq datarev = "$Revision$" .
+  sorts NeMSet{X} MSet{X} .
+  subsort X$Elt < NeMSet{X} < MSet{X} .
 
-  sorts   Expr Data Vid Oid .
-  subsort Oid < Data < Expr .
-  subsort String < Vid < Expr .
+  op empty : -> MSet{X} [ctor] .
+  op _,_ : MSet{X} MSet{X} -> MSet{X} [ctor assoc comm id: empty prec 121 format (d r os d)] .
+  op _,_ : NeMSet{X} MSet{X} -> NeMSet{X} [ctor ditto] .
 
-  op null : -> Data [ctor format (! o)] .
+  var E : X$Elt .
+  var N : NeMSet{X} .
+  var M : MSet{X} .
+  var C : Nat .
 
-  *** The interpreter should extend this module with his own definition
-  *** of label values.  For example, the model checker uses his own version
-  *** of labels.  This definition is the one used in the interpreter.
-  *** op label : Nat -> Label [ctor] .
-  sort Label .
-  subsort Label < Data .
+  op insert : X$Elt MSet{X} -> NeMSet{X} .
+  eq insert(E, M) = E, M .
 
-  op caller : Label -> Oid .
+  op delete : X$Elt MSet{X} -> MSet{X} .
+  eq delete(E, (E, M)) = delete (E, M) .
+  eq delete(E, M) = M [owise] .
 
-  *** Needed in the model checker for tail recursion.
-  op tag : Label -> Label [ctor format(c o)] .
-  var L : Label .
-  eq tag(tag(L)) = L .
+  op _in_ : X$Elt MSet{X} -> Bool .
+  eq E in (E, M) = true .
+  eq E in M = false [owise] .
 
-  sorts   NeExprList ExprList NeDataList DataList .
-  subsort Expr < NeExprList < ExprList .
-  subsort Data < NeDataList < DataList .
-  subsort DataList < ExprList .
-  subsort NeDataList < NeExprList .
+  op count : X$Elt MSet{X} -> Nat .
+  eq count(E, (E, M)) = 1 + count(E, M) .
+  eq count(E, M) = 0 [owise] .
 
-  op emp : -> DataList [ctor] .
+  op |_| : MSet{X} -> Nat .
+  op |_| : NeMSet{X} -> NzNat .
+  eq | M | = $card(M, 0) .
 
-  op _::_ : ExprList ExprList -> ExprList
+  op $card : MSet{X} Nat -> Nat .
+  eq $card(empty, C) = C .
+  eq $card((E, M), C) = $card(M, C + 1) [owise] .
+endfm
+
+
+*** The basic concepts of Creol's data type.
+***
+fmod CREOL-DATA-SIG is
+
+    protecting META-LEVEL .
+    protecting STRING .
+
+    sorts   Expr Data Vid .
+    subsort Data < Expr .
+    subsort String < Vid < Expr .
+
+    op null : -> Data [ctor format (! o)] .
+
+    sorts   NeExprList ExprList NeDataList DataList .
+    subsort Expr < NeExprList < ExprList .
+    subsort Data < NeDataList < DataList .
+    subsort DataList < ExprList .
+    subsort NeDataList < NeExprList .
+
+    op emp : -> DataList [ctor] .
+
+    op _::_ : ExprList ExprList -> ExprList
 	[ctor assoc id: emp prec 27 format (d r os d)] .
-  op _::_ : NeExprList ExprList -> NeExprList [ctor ditto] .
-  op _::_ : ExprList NeExprList -> NeExprList [ctor ditto] .
-  op _::_ : DataList DataList  -> DataList [ctor ditto] .
-  op _::_ : NeDataList DataList  -> NeDataList [ctor ditto] .
-  op _::_ : DataList NeDataList  -> NeDataList [ctor ditto] .
+    op _::_ : NeExprList ExprList -> NeExprList [ctor ditto] .
+    op _::_ : ExprList NeExprList -> NeExprList [ctor ditto] .
+    op _::_ : DataList DataList  -> DataList [ctor ditto] .
+    op _::_ : NeDataList DataList  -> NeDataList [ctor ditto] .
+    op _::_ : DataList NeDataList  -> NeDataList [ctor ditto] .
 
-  sorts NeVidList VidList .
-  subsort Vid < NeVidList < VidList .
-
-  op noVid : -> VidList [ctor] .
-
-  op _,_ : VidList VidList -> VidList
-	[ctor assoc id: noVid format (d r os d)] .
-  op _,_ : NeVidList VidList -> NeVidList [ctor ditto] .
-  op _,_ : VidList NeVidList -> NeVidList [ctor ditto] .
-
-  op _(_) : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
-  op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
-  op _??  : Vid -> Expr [ctor] .
-  op _??  : Label -> Expr [ctor] .
-  op _@@_ : String String -> Vid [ctor] .
-
-  op ob(_) : String -> Oid [ctor format (r d o r o)] .
-
-  vars B B' : Bool .
-  op bool(_) : Bool -> Data [ctor format(o o ! o o)] .
-
-  op _asBool : Data -> Bool .
-  eq bool(B) asBool = B .
-
-  vars D D'     : Data .
-  
-  eq "=" (D :: D') = bool(D == D') .
-  eq "/=" (D :: D') = bool(D =/= D') .
-
-  eq "~" (bool(false)) = bool(true) .  
-  eq "~" (bool(true)) = bool(false) . 
-  eq "&&" (bool(false) :: D) = bool(false) .
-  eq "&&" (bool(true) ::  D) = D .
-  eq "||" (bool(true) :: D) = bool(true) .
-  eq "||" (bool(false) :: D) = D .
-  eq "=>" (bool(true) :: D) = D .
-  eq "=>" (bool(false) :: D) = bool(true) .
-  eq "^" (bool(B) :: bool(B')) = bool(B xor B') .
-  eq "<=>" (bool(B) :: bool(B')) = bool(B == B') .
 endfm
 
 view Vid from TRIV to CREOL-DATA-SIG is
-  sort Elt to Vid .
+    sort Elt to Vid .
 endv
 
 view Data from TRIV to CREOL-DATA-SIG is
-  sort Elt to Data .
+    sort Elt to Data .
 endv
 
 view Expr from TRIV to CREOL-DATA-SIG is
-  sort Elt to Expr .
+    sort Elt to Expr .
 endv
 
-fmod CREOL-DATA-FLOAT is
+
+fmod CREOL-DATA-VIDLIST is
+    protecting LIST{Vid} * (sort List{Vid} to VidList,
+			    sort NeList{Vid} to NeVidList,
+			    op nil : -> List{Vid} to noVid,
+			    op __ : List{Vid} List{Vid} -> List{Vid} to _`,_ [format (d r os d)]) .
+endfm
+
+
+fmod CREOL-EXPRESSION is
+
+    protecting STRING .
+    protecting CREOL-DATA-SIG .
+
+    op _(_) : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
+    op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
+    op _??  : Expr -> Expr [ctor] .
+    op _@@_ : String String -> Vid [ctor] .
+
+endfm
+
+fmod CREOL-DATA-BOOL is
+
+    protecting CREOL-EXPRESSION .
+
+    op bool(_) : Bool -> Data [ctor format(o o ! o o)] .
+
+    vars B B' : Bool .
+    vars D D'     : Data .
+
+    op _asBool : Data -> Bool .
+    eq bool(B) asBool = B .
+
+    eq "=" (D :: D') = bool(D == D') .
+    eq "/=" (D :: D') = bool(D =/= D') .
+
+    eq "~" (bool(false)) = bool(true) .  
+    eq "~" (bool(true)) = bool(false) . 
+    eq "&&" (bool(false) :: D) = bool(false) .
+    eq "&&" (bool(true) ::  D) = D .
+    eq "||" (bool(true) :: D) = bool(true) .
+    eq "||" (bool(false) :: D) = D .
+    eq "=>" (bool(true) :: D) = D .
+    eq "=>" (bool(false) :: D) = bool(true) .
+    eq "^" (bool(B) :: bool(B')) = bool(B xor B') .
+    eq "<=>" (bool(B) :: bool(B')) = bool(B == B') .
+
+endfm
+
+fmod CREOL-DATA-OID is
   extending CREOL-DATA-SIG .
+  protecting CONVERSION .
+  protecting STRING .
+  protecting NAT .
+
+  sort Oid .
+  subsort Oid < Data .
+
+  op ob : String -> Oid [ctor] .
+
+  var C : String .
+  var N : Nat .
+
+  *** Create a new fresh name for an object.
+  op newId : String Nat -> Oid .
+  eq newId(C, N)  = ob(C + string(N,10)) .
+
+endfm
+
+view Oid from TRIV to CREOL-DATA-OID is
+  sort Elt to Oid .
+endv
+
+
+
+*** The interpreter should extend this module with his own definition
+*** of label values.  For example, the model checker uses his own version
+*** of labels.  This definition is the one used in the interpreter.
+*** op label : Nat -> Label [ctor] .
+fmod CREOL-DATA-LABEL is
+
+    extending CREOL-DATA-OID .
+
+    sort Label .
+    subsort Label < Data .
+
+    op caller : Label -> Oid .
+
+    --- Needed in the model checker for tail recursion.
+    op tag : Label -> Label [ctor format (c o)] .
+    var L : Label .
+    eq tag(tag(L)) = L .
+
+endfm
+
+view Label from TRIV to CREOL-DATA-LABEL is
+  sort Elt to Label .
+endv
+
+
+
+fmod CREOL-DATA-FLOAT is
+  extending CREOL-DATA-BOOL .
   protecting FLOAT .
 
   op float(_): Float -> Data [ctor format(o o ! o o)] . 
@@ -390,7 +487,7 @@ fmod CREOL-DATA-SET is
 endfm
 
 fmod CREOL-DATA-PAIR is
-  extending CREOL-DATA-SIG .
+  extending CREOL-EXPRESSION .
 
   op pair : Data Data -> Data [ctor] .
   op pair : Expr Expr -> Expr [ctor] .
@@ -403,7 +500,8 @@ fmod CREOL-DATA-PAIR is
 endfm
 
 fmod CREOL-DATA-MAP is
-  protecting CREOL-DATA-SIG .
+  protecting CREOL-DATA-BOOL .
+
   protecting MAP{Expr, Expr} * (sort Map{Expr, Expr} to ExprMap,
 				op undefined to udef,
 				op _|->_ to _|~>_ ) .
@@ -474,17 +572,21 @@ fmod CREOL-DATA-TIME is
 endfm
 
 fmod CREOL-DATATYPES is
-  *** may easily keep various data types on separate file(s), 
-  *** and plug in upon need.
+    *** may easily keep various data types on separate file(s), 
+    *** and plug in upon need.
 
-  extending CREOL-DATA-SIG .
-  extending CREOL-DATA-INT .
-  extending CREOL-DATA-FLOAT .
-  extending CREOL-DATA-STRING .
-  extending CREOL-DATA-LIST .
-  extending CREOL-DATA-SET .
-  extending CREOL-DATA-MAP .
-  extending CREOL-DATA-PAIR .
-  extending CREOL-DATA-TIME .
+    extending CREOL-DATA-SIG .
+    extending CREOL-EXPRESSION .
+    extending CREOL-DATA-BOOL .
+    extending CREOL-DATA-OID .
+    extending CREOL-DATA-LABEL .
+    extending CREOL-DATA-FLOAT .
+    extending CREOL-DATA-INT .
+    extending CREOL-DATA-STRING .
+    extending CREOL-DATA-LIST .
+    extending CREOL-DATA-SET .
+    extending CREOL-DATA-MAP .
+    extending CREOL-DATA-PAIR .
+    extending CREOL-DATA-TIME .
 
 endfm

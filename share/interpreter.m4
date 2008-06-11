@@ -119,8 +119,12 @@ endfm
 )
 
 
+*** Creol Statements
+***
+*** The following module defines all elementary statements of Creol.
 fmod CREOL-STATEMENT is
-  protecting CREOL-DATATYPES .
+  protecting CREOL-DATA-VIDLIST .
+  protecting CREOL-EXPRESSION .
   protecting CREOL-SUBST .
 
   *** SuspStm is a statement which can be suspended.  It includes
@@ -147,10 +151,10 @@ fmod CREOL-STATEMENT is
   op tailcall_(_) : Mid ExprList -> Stm [ctor `format' (c o c o c o)] .
   op accept : Label -> Stm [ctor `format' (c o)] .
 
-  *** multiple assignment
-  ***
-  *** For the model checker the following will be evaluated as an
-  *** equation and the old rule is not confluent.
+  --- multiple assignment
+  ---
+  --- For the model checker the following will be evaluated as an
+  --- equation and the old rule is not confluent.
 
   op assign : VidList DataList -> Stm [ctor `format' (c o)] .
 
@@ -220,6 +224,19 @@ view Inh from TRIV to CREOL-INHERIT is
   sort Elt to Inh .
 endv
 
+fmod CREOL-METHOD is
+  protecting CREOL-STM-LIST .
+  sort Method .
+
+  op <_: Mtdname | Param:_, Latt:_, Code:_> : 
+    String VidList Subst StmList -> Method [ctor
+      `format' (b d o d d sb o d sb o d sb o b o)] .
+
+endfm
+
+view Method from TRIV to CREOL-METHOD is
+  sort Elt to Method .
+endv
 
 
 ***
@@ -227,11 +244,13 @@ endv
 ***
 changequote(`[[[[', `]]]]')dnl
 fmod CREOL-CLASS is
-  protecting CREOL-STM-LIST .
   protecting LIST{Inh} * (sort List{Inh} to InhList,
 			  sort NeList{Inh} to NeInhList,
 			  op nil : -> List{Inh} to noInh,
 			  op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
+  protecting SET{Method} * (sort Set{Method} to MMtd,
+			    op empty : -> Set{Method} to noMethod,
+                            op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
 changequote dnl
 
   var Ih : Inh . 
@@ -247,29 +266,12 @@ changequote dnl
   var AL : VidList .
   vars M M' C : String .
 
-  op <_: Mtdname | Param:_, Latt:_, Code:_> : 
-    String VidList Subst StmList -> Mtd [ctor
-      `format' (b d o d d sb o d sb o d sb o b o)] .
-
-  *** Methods and multi-sets of methods.
-  ***
-  sorts Mtd MMtd .
-  subsort Mtd < MMtd .
-
-  op noMtd : -> Mtd [ctor] .
-  op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd `format' (d d ni d)] .
-
-  *** Class declaration.
-  ***
+  --- Class declaration.
+  ---
   sort Class .
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
     String InhList VidList Subst MMtd Nat -> Class 
      [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
-
-  op emptyClass : -> Class .
-  eq emptyClass =
-    < "" : Cl | Inh: noInh , Par: noVid, Att: noSubst, Mtds: noMtd ,
-      Ocnt: 0 > .
 
   --- fetches pair (code, vars) to bind call to process.
   --- M represents the name of the method.
@@ -288,7 +290,7 @@ changequote dnl
     else
       get(M, C, MM, O, Lab, DL)
     fi .
-  eq get(M, C, noMtd, O, Lab, DL) = noProc .
+  eq get(M, C, noMethod, O, Lab, DL) = noProc .
 
 endfm
 
@@ -296,7 +298,7 @@ endfm
 ***
 *** CREOL messages and queues
 ***
-fmod CREOL-COMMUNICATION is
+fmod CREOL-MESSAGE is
   protecting CREOL-CLASS .
 
   sort Body Invoc Comp .
@@ -328,27 +330,48 @@ fmod CREOL-COMMUNICATION is
   --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
   op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
 
-  --- A multiset of messages.
+endfm
+
+view Msg from TRIV to CREOL-MESSAGE is
+   sort Elt to Msg .
+endv
+
+view Body from TRIV to CREOL-MESSAGE is
+   sort Elt to Body .
+endv
+
+--- A multiset of messages.
+fmod CREOL-MESSAGES is
+  protecting CREOL-MESSAGE .
+
   sort MMsg .
   subsort Body < MMsg .
+
   op noMsg : -> MMsg [ctor] .
   op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
 
-  --- Multiset of labels for deallocation.
+endfm
+
+fmod CREOL-LABELS is
+
+  protecting CREOL-DATA-LABEL .
+
   sort Labels .
   subsort Label < Labels .
 
-  op noDealloc :         -> Labels [ctor] .
+  op noDealloc : -> Labels [ctor] .
   op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
 endfm
+
 
 
 ***
 *** CREOL objects
 ***
 fmod CREOL-OBJECT is
-  protecting CREOL-COMMUNICATION .
+  protecting CREOL-MESSAGES .
+  protecting CREOL-LABELS .
 
   sort Object .
 
@@ -424,10 +447,6 @@ fmod `CREOL-EVAL' is
   var S S' : Subst .
   var MM : MMsg .
   var C : String .
-
-  *** Create a new fresh name for an object.
-  op newId : String Nat -> Oid .
-  eq newId(C, N)  = ob(C + string(N,10)) .
 
   *** Check if a message is in the queue.
   op inqueue  : Label MMsg -> Bool .
@@ -534,7 +553,7 @@ endfm
 *** THE MACHINE ***
 mod CREOL-SIMULATOR is
 
-  extending CREOL-DATA-SIG .
+  protecting CREOL-DATA-SIG .
   protecting `CREOL-EVAL' .
 
   op simurev : -> String .

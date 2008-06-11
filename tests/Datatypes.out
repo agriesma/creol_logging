@@ -5,10 +5,10 @@ result DataList: emp
 reduce in CREOL-DATA-SIG : emp .
 result DataList: emp
 ==========================================
-reduce in CREOL-DATA-SIG : noVid .
+reduce in CREOL-DATA-VIDLIST : noVid .
 result VidList: noVid
 ==========================================
-reduce in CREOL-DATA-SIG : noVid .
+reduce in CREOL-DATA-VIDLIST : noVid .
 result VidList: noVid
 ==========================================
 reduce in CREOL-DATA-SIG : "a" .
@@ -17,10 +17,10 @@ result Char: "a"
 reduce in CREOL-DATA-SIG : "a" :: "a" .
 result NeExprList: "a" :: "a"
 ==========================================
-reduce in CREOL-DATA-SIG : "a", "a" .
+reduce in CREOL-DATA-VIDLIST : "a", "a" .
 result NeVidList: "a", "a"
 ==========================================
-reduce in CREOL-DATA-SIG : "a"("a") .
+reduce in CREOL-EXPRESSION : "a"("a") .
 result Expr: "a"("a")
 ==========================================
 reduce in CREOL-DATA-SIG : null .
@@ -32,31 +32,31 @@ result NeDataList: null :: null
 reduce in CREOL-DATA-SIG : null :: "a" .
 result NeExprList: null :: "a"
 ==========================================
-reduce in CREOL-DATA-SIG : null :: "a"("a") :: null .
+reduce in CREOL-EXPRESSION : null :: "a"("a") :: null .
 result NeExprList: null :: "a"("a") :: null
 ==========================================
-reduce in CREOL-DATA-SIG : "a"("a") :: null .
+reduce in CREOL-EXPRESSION : "a"("a") :: null .
 result NeExprList: "a"("a") :: null
 ==========================================
-reduce in CREOL-DATA-SIG : null, "a" .
+reduce in CREOL-DATA-VIDLIST : null, "a" .
 result [ExprList,VidList]: null, "a"
 ==========================================
-reduce in CREOL-DATA-SIG : ob("a") .
+reduce in CREOL-DATA-OID : ob("a") .
 result Oid: ob("a")
 ==========================================
-reduce in CREOL-DATA-SIG : bool(true) .
+reduce in CREOL-DATA-BOOL : bool(true) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-DATA-SIG : "="(null :: null) .
+reduce in CREOL-DATA-BOOL : "="(null :: null) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-DATA-SIG : "/="(null :: null) .
+reduce in CREOL-DATA-BOOL : "/="(null :: null) .
 result Data: bool(false)
 ==========================================
-reduce in CREOL-DATA-SIG : "~"("="(null :: null)) .
+reduce in CREOL-DATA-BOOL : "~"("="(null :: null)) .
 result Data: bool(false)
 ==========================================
-reduce in CREOL-DATA-SIG : "||"("="(null :: null) :: "="(null :: null)) .
+reduce in CREOL-DATA-BOOL : "||"("="(null :: null) :: "="(null :: null)) .
 result Data: bool(true)
 ==========================================
 reduce in CREOL-DATA-LIST : "|-"(list(int(1) :: int(2)) :: "head"(list(int(1)

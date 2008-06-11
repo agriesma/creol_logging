@@ -43,8 +43,8 @@ red in CREOL-SUBST : downTerm(upTerm(insert("var1", bool(false), noSubst)),noSub
 red in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", bool(false), noSubst)) ["var1"]), null) .
 red in CREOL-SUBST : $hasMapping(insert("var2", bool(true), insert("var1", bool(false), noSubst)), "var1") .
 
-GRAMMAR_TEST(DATA-SIG, bool(true), null)
-GRAMMAR_TEST(DATA-SIG, "test" ??, null)
+GRAMMAR_TEST(DATA-BOOL, bool(true), null)
+GRAMMAR_TEST(EXPRESSION, "test" ??, null)
 
 GRAMMAR_TEST(STATEMENT, "a" . "a", "a")
 GRAMMAR_TEST(STATEMENT, "a" @ "a", "a")
@@ -84,18 +84,18 @@ GRAMMAR_TEST(CLASS, {| "A" < emp > ,, "B" < "x" > |}, noInh)
 
 GRAMMAR_TEST(OBJECT, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
 
-GRAMMAR_TEST(COMMUNICATION, noMsg, noMsg)
+GRAMMAR_TEST(MESSAGES, noMsg, noMsg)
 
 fmod CREOL-LABEL-TEST is
   extending CREOL-DATA-SIG .
-  extending CREOL-COMMUNICATION .
+  extending CREOL-MESSAGE .
   op label : Nat -> Label .
 endfm
 
 GRAMMAR_TEST(LABEL-TEST, cont(label(1)), skip)
 GRAMMAR_TEST(LABEL-TEST, accept(label(1)), skip)
 GRAMMAR_TEST(LABEL-TEST, cont (label(5)), skip)
-GRAMMAR_TEST(LABEL-TEST, {| comp(label(5), emp) |}, noMsg)
-GRAMMAR_TEST(LABEL-TEST, {| invoc(ob("object1"), label(5), "method1", emp) |}, noMsg)
+GRAMMAR_TEST(LABEL-TEST, {| comp(label(5), emp) |}, warning(""))
+GRAMMAR_TEST(LABEL-TEST, {| invoc(ob("object1"), label(5), "method1", emp) |}, warning(""))
 
 quit

@@ -25,22 +25,22 @@ reduce in CREOL-SUBST : $hasMapping(insert("var2", bool(true), insert("var1",
     bool(false), noSubst)), "var1") .
 result Bool: true
 ==========================================
-reduce in CREOL-DATA-SIG : bool(true) .
+reduce in CREOL-DATA-BOOL : bool(true) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-DATA-SIG : upTerm(bool(true)) .
+reduce in CREOL-DATA-BOOL : upTerm(bool(true)) .
 result GroundTerm: 'bool`(_`)['true.Bool]
 ==========================================
-reduce in CREOL-DATA-SIG : downTerm(upTerm(bool(true)), null) .
+reduce in CREOL-DATA-BOOL : downTerm(upTerm(bool(true)), null) .
 result Data: bool(true)
 ==========================================
-reduce in CREOL-DATA-SIG : "test" ?? .
+reduce in CREOL-EXPRESSION : "test" ?? .
 result Expr: "test" ??
 ==========================================
-reduce in CREOL-DATA-SIG : upTerm("test" ??) .
+reduce in CREOL-EXPRESSION : upTerm("test" ??) .
 result GroundTerm: '_??['"test".String]
 ==========================================
-reduce in CREOL-DATA-SIG : downTerm(upTerm("test" ??), null) .
+reduce in CREOL-EXPRESSION : downTerm(upTerm("test" ??), null) .
 result Expr: "test" ??
 ==========================================
 reduce in CREOL-STATEMENT : "a" . "a" .
@@ -373,8 +373,8 @@ reduce in CREOL-OBJECT : upTerm(
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >) .
-result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>[
-    'ob`(_`)['"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
+result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>['ob[
+    '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
     'noProc.MProc,'noDealloc.Labels,'noMsg.MMsg,'0.Zero]
 ==========================================
 reduce in CREOL-OBJECT : downTerm(upTerm(
@@ -394,13 +394,13 @@ result Object:
   Ev: noMsg,
   Lcnt: 0 >
 ==========================================
-reduce in CREOL-COMMUNICATION : noMsg .
+reduce in CREOL-MESSAGES : noMsg .
 result MMsg: noMsg
 ==========================================
-reduce in CREOL-COMMUNICATION : upTerm(noMsg) .
+reduce in CREOL-MESSAGES : upTerm(noMsg) .
 result Constant: 'noMsg.MMsg
 ==========================================
-reduce in CREOL-COMMUNICATION : downTerm(upTerm(noMsg), noMsg) .
+reduce in CREOL-MESSAGES : downTerm(upTerm(noMsg), noMsg) .
 result MMsg: noMsg
 ==========================================
 reduce in CREOL-LABEL-TEST : cont(label(1)) .
@@ -436,7 +436,11 @@ result Comp: comp(label(5), emp)
 reduce in CREOL-LABEL-TEST : upTerm(comp(label(5), emp)) .
 result GroundTerm: 'comp['label['s_^5['0.Zero]],'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5), emp)), noMsg) .
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5), emp)), 
+
+warning("")
+
+) .
 result Comp: comp(label(5), emp)
 ==========================================
 reduce in CREOL-LABEL-TEST : invoc(ob("object1"), label(5), "method1", emp) .
@@ -444,10 +448,14 @@ result Invoc: invoc(ob("object1"), label(5), "method1", emp)
 ==========================================
 reduce in CREOL-LABEL-TEST : upTerm(invoc(ob("object1"), label(5), "method1",
     emp)) .
-result GroundTerm: 'invoc['ob`(_`)['"object1".String],'label['s_^5['0.Zero]],
+result GroundTerm: 'invoc['ob['"object1".String],'label['s_^5['0.Zero]],
     '"method1".String,'emp.DataList]
 ==========================================
 reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob("object1"), label(5),
-    "method1", emp)), noMsg) .
+    "method1", emp)), 
+
+warning("")
+
+) .
 result Invoc: invoc(ob("object1"), label(5), "method1", emp)
 Bye.
