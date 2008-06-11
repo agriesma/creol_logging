@@ -630,11 +630,11 @@ ifdef(`MODELCHECK',dnl
 )dnl
 
 
---- assignment
----
---- Execute an assignment.  First, all expressions on the left hand side
---- of the assignment are evaluated and the statement is rewritten to
---- an assign form.
+    --- assignment
+    ---
+    --- Execute an assignment.  First, all expressions on the left hand side
+    --- of the assignment are evaluated and the statement is rewritten to
+    --- an assign form.
 STEP(dnl
 `< O : C | Att: S, Pr: (L, AL ::= EL ; SL),
 	    PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >' CLOCK,
@@ -1126,30 +1126,6 @@ crl
 
 endm
 
-ifdef(`MODELCHECK',dnl
-*** The predicates we can define on configurations.
-mod CREOL-PREDICATES is
-  protecting CREOL-SIMULATOR .
-  ops objcnt maxobjcnt minobjcnt : String Nat -> Prop .
-  op hasvalue : Oid Vid Data -> Prop .
-  var A : Vid .
-  var D : Data .
-  var C : String .
-  var O : Oid .
-  vars S S' L L' : Subst .
-  var LS : Labels .
-  var MM : MMsg .
-  var P : Process .
-  var Q : MProc .
-  vars N N' : Nat .
-  var c : Configuration .
-
-  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= objcnt(C`,' N') = N == N' .
-  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= maxobjcnt(C`,' N') = N <= N' .
-  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= minobjcnt(C`,' N') = N >= N' .
-  eq { c < O : C | Att: S`,' Pr: P`,' PrQ: Q`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N > } |= hasvalue(O`,' A`,' D) = D == S[A] .
-
-endm
-)dnl
+ifdef(`MODELCHECK', include(`predicates.m4'))dnl
 
 eof

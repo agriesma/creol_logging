@@ -80,4 +80,4 @@ define(`EVALGUARDLIST', evalGuardList($1, $2, $3))dnl
 define(`EVALGUARDSET', evalGuardSet($1, $2, $3))dnl
 define(`EVALGUARDMAP', evalGuardMap($1, $2, $3))dnl
 define(`ENABLED', enabled($1, $2, $3))dnl
-define(`READY', ready($1, $2, $3))')
+define(`READY', ready($1, $2, $3))')dnl

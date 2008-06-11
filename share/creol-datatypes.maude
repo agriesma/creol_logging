@@ -76,11 +76,10 @@ endfm
 fmod CREOL-DATA-SIG is
 
     protecting META-LEVEL .
-    protecting STRING .
 
-    sorts Vid Expr Data .
+    sorts Expr Data .
     subsort Data < Expr .
-    subsort String < Vid < Expr .
+    subsort String < Expr .
 
     op null : -> Data [ctor format (! o)] .
 
@@ -102,10 +101,6 @@ fmod CREOL-DATA-SIG is
 
 endfm
 
-view Vid from TRIV to CREOL-DATA-SIG is
-    sort Elt to Vid .
-endv
-
 view Data from TRIV to CREOL-DATA-SIG is
     sort Elt to Data .
 endv
@@ -115,6 +110,20 @@ view Expr from TRIV to CREOL-DATA-SIG is
 endv
 
 
+fmod CREOL-DATA-VID is
+    extending CREOL-DATA-SIG .
+    protecting STRING .
+
+    sort Vid .
+    subsort String < Vid < Expr .
+
+    op _@@_ : String String -> Vid [ctor] .
+endfm
+
+view Vid from TRIV to CREOL-DATA-VID is
+    sort Elt to Vid .
+endv
+
 fmod CREOL-DATA-VIDLIST is
     protecting LIST{Vid} * (sort List{Vid} to VidList,
 			    sort NeList{Vid} to NeVidList,
@@ -122,51 +131,6 @@ fmod CREOL-DATA-VIDLIST is
 			    op __ : List{Vid} List{Vid} -> List{Vid} to _`,_ [format (d r os d)]) .
 endfm
 
-
-*** Specification of all Creol expressions.  This is the abstract syntax.
-*** Semantics will be provided by the different modules.
-***
-fmod CREOL-EXPRESSION is
-
-    protecting STRING .
-    protecting CREOL-DATA-SIG .
-
-    op _(_) : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
-    op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
-    op _??  : Expr -> Expr [ctor] .
-    op _@@_ : String String -> Vid [ctor] .
-
-endfm
-
-*** Specification of the Bool datatype.
-***
-fmod CREOL-DATA-BOOL is
-
-    protecting CREOL-EXPRESSION .
-
-    op bool(_) : Bool -> Data [ctor format(o o ! o o)] .
-
-    vars B B' : Bool .
-    vars D D' : Data .
-
-    op _asBool : Data -> Bool .
-    eq bool(B) asBool = B .
-
-    eq "=" (D :: D') = bool(D == D') .
-    eq "/=" (D :: D') = bool(D =/= D') .
-
-    eq "~" (bool(false)) = bool(true) .  
-    eq "~" (bool(true)) = bool(false) . 
-    eq "&&" (bool(false) :: D) = bool(false) .
-    eq "&&" (bool(true) ::  D) = D .
-    eq "||" (bool(true) :: D) = bool(true) .
-    eq "||" (bool(false) :: D) = D .
-    eq "=>" (bool(true) :: D) = D .
-    eq "=>" (bool(false) :: D) = bool(true) .
-    eq "^" (bool(B) :: bool(B')) = bool(B xor B') .
-    eq "<=>" (bool(B) :: bool(B')) = bool(B == B') .
-
-endfm
 
 fmod CREOL-DATA-OID is
   extending CREOL-DATA-SIG .
@@ -217,6 +181,52 @@ endfm
 view Label from TRIV to CREOL-DATA-LABEL is
   sort Elt to Label .
 endv
+
+
+
+*** Specification of all Creol expressions.  This is the abstract syntax.
+*** Semantics will be provided by the different modules.
+***
+fmod CREOL-EXPRESSION is
+
+    protecting CREOL-DATA-SIG .
+    protecting STRING .
+
+    op _(_) : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
+    op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
+    op _??  : Expr -> Expr [ctor] .
+
+endfm
+
+*** Specification of the Bool datatype.
+***
+fmod CREOL-DATA-BOOL is
+
+    protecting CREOL-EXPRESSION .
+
+    op bool(_) : Bool -> Data [ctor format(o o ! o o)] .
+
+    vars B B' : Bool .
+    vars D D' : Data .
+
+    op _asBool : Data -> Bool .
+    eq bool(B) asBool = B .
+
+    eq "=" (D :: D') = bool(D == D') .
+    eq "/=" (D :: D') = bool(D =/= D') .
+
+    eq "~" (bool(false)) = bool(true) .  
+    eq "~" (bool(true)) = bool(false) . 
+    eq "&&" (bool(false) :: D) = bool(false) .
+    eq "&&" (bool(true) ::  D) = D .
+    eq "||" (bool(true) :: D) = bool(true) .
+    eq "||" (bool(false) :: D) = D .
+    eq "=>" (bool(true) :: D) = D .
+    eq "=>" (bool(false) :: D) = bool(true) .
+    eq "^" (bool(B) :: bool(B')) = bool(B xor B') .
+    eq "<=>" (bool(B) :: bool(B')) = bool(B == B') .
+
+endfm
 
 
 
