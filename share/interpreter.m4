@@ -305,21 +305,7 @@ fmod CREOL-CLASS is
 			    op empty : -> Set{Method} to noMethod,
                             op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
 changequote dnl
-  protecting CREOL-DATA-OID .
   protecting CREOL-PROCESS .
-
-  var Ih : Inh . 
-  var IL : InhList .
-  var S : Subst . 
-  var SL : StmList . 
-  var MM : MMtd .
-  var DL : DataList .
-  var EL : ExprList .
-  var Lab : Label .
-  var O : Oid .
-  var N : Nat .
-  var AL : VidList .
-  vars M M' C : String .
 
   --- Class declaration.
   ---
@@ -327,26 +313,6 @@ changequote dnl
   op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
     String InhList VidList Subst MMtd Nat -> Class 
      [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
-
-  --- fetches pair (code, vars) to bind call to process.
-  --- M represents the name of the method.
-  --- C represents the name of the class.
-  --- MM represents the methods we search through.
-  --- O represents the identity of the caller.
-  --- Lab represents the label used to return the value computed by the method.
-  --- DL represents the list of actual arguments.
-  op get : String String MMtd Oid Label DataList -> Process .
-  eq get(M, C, MM *
-               < M' : Mtdname | Param: AL, Latt: S, Code: SL >, O, Lab, DL) =
-    if M == M' then
-      ((S, "caller" |-> O, ".class" |-> str(C), ".label" |-> Lab,
-        ".method" |-> str(M)),
-       assign(AL, DL) ; SL)
-    else
-      get(M, C, MM, O, Lab, DL)
-    fi .
-
-  eq get(M, C, noMethod, O, Lab, DL) = notFound .
 
 endfm
 
