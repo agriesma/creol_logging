@@ -1,7 +1,7 @@
 ***
-*** creol-datatypes.maude -- Datatypes for Creol ($Revision$)
+*** creol-datatypes.maude -- Datatypes for Creol
 ***
-*** Copyright (c) 2007
+*** Copyright (c) 2007, 2008
 ***
 *** This program is free software; you can redistribute it and/or
 *** modify it under the terms of the GNU General Public License as
@@ -17,7 +17,9 @@
 *** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***
 
-
+--- The banner is useful for debugging.  It allows us to figure out the
+--- exact version of that file in our subversion repository.
+---
 fmod CREOL-DATA-BANNER is
     protecting STRING .
     op datarev : -> String .
@@ -27,6 +29,7 @@ endfm
 
 *** This module specifies multisets.  It has been derived from the set
 *** module.
+***
 fmod MULTISET{X :: TRIV} is
   protecting EXT-BOOL .
   protecting NAT .
@@ -75,7 +78,7 @@ fmod CREOL-DATA-SIG is
     protecting META-LEVEL .
     protecting STRING .
 
-    sorts   Expr Data Vid .
+    sorts Vid Expr Data .
     subsort Data < Expr .
     subsort String < Vid < Expr .
 
@@ -120,6 +123,9 @@ fmod CREOL-DATA-VIDLIST is
 endfm
 
 
+*** Specification of all Creol expressions.  This is the abstract syntax.
+*** Semantics will be provided by the different modules.
+***
 fmod CREOL-EXPRESSION is
 
     protecting STRING .
@@ -132,6 +138,8 @@ fmod CREOL-EXPRESSION is
 
 endfm
 
+*** Specification of the Bool datatype.
+***
 fmod CREOL-DATA-BOOL is
 
     protecting CREOL-EXPRESSION .
@@ -139,7 +147,7 @@ fmod CREOL-DATA-BOOL is
     op bool(_) : Bool -> Data [ctor format(o o ! o o)] .
 
     vars B B' : Bool .
-    vars D D'     : Data .
+    vars D D' : Data .
 
     op _asBool : Data -> Bool .
     eq bool(B) asBool = B .
@@ -174,7 +182,7 @@ fmod CREOL-DATA-OID is
   var C : String .
   var N : Nat .
 
-  *** Create a new fresh name for an object.
+  --- Create a new fresh name for an object.
   op newId : String Nat -> Oid .
   eq newId(C, N)  = ob(C + string(N,10)) .
 
@@ -212,6 +220,8 @@ endv
 
 
 
+*** Specification of floats and functions on floats.
+***
 fmod CREOL-DATA-FLOAT is
   extending CREOL-DATA-BOOL .
   protecting FLOAT .
@@ -237,6 +247,10 @@ fmod CREOL-DATA-FLOAT is
   eq ">=" (float(F) :: float(F')) = bool(F >= F') .
 endfm
 
+
+
+*** Specification of integers and functions on integers.
+***
 fmod CREOL-DATA-INT is
   extending CREOL-DATA-FLOAT .
 
@@ -272,6 +286,10 @@ fmod CREOL-DATA-INT is
   eq ">=" (int(I) :: int(I')) = bool(I >= I') .
 endfm
 
+
+
+*** Specification of strings and functions on strings.
+***
 fmod CREOL-DATA-STRING is
   extending CREOL-DATA-INT .
 
@@ -295,6 +313,10 @@ fmod CREOL-DATA-STRING is
   eq ">=" (str(S):: str(S')) = bool(S >= S') .
 endfm
 
+
+
+*** Specification of lists and functions on lists.
+***
 fmod CREOL-DATA-LIST is
   extending CREOL-DATA-INT .
 
@@ -420,6 +442,10 @@ fmod CREOL-DATA-LIST is
 
 endfm
 
+
+
+*** Specification of sets and functions on sets.
+***
 fmod CREOL-DATA-SET is
 
   extending CREOL-DATA-SIG .
@@ -486,6 +512,10 @@ fmod CREOL-DATA-SET is
 
 endfm
 
+
+
+*** Specification of paits and functions on paits.
+***
 fmod CREOL-DATA-PAIR is
   extending CREOL-EXPRESSION .
 
@@ -499,6 +529,10 @@ fmod CREOL-DATA-PAIR is
   eq "snd" (pair(D, D')) = D' .
 endfm
 
+
+
+*** Specification of maps and functions on maps.
+***
 fmod CREOL-DATA-MAP is
   protecting CREOL-DATA-BOOL .
 
@@ -514,8 +548,8 @@ fmod CREOL-DATA-MAP is
   eq "get" (map(M) :: D) = M[D] .
   eq "insert" (map(M) :: D :: D') = map(insert(D, D', M)) .
 
-  *** We have to carefully evaluate whether this makes things better or
-  *** worse.
+  --- We have to carefully evaluate whether this makes things better or
+  --- worse.
   sort DataMap .
   subsort DataMap < ExprMap .
 
@@ -528,6 +562,10 @@ fmod CREOL-DATA-MAP is
 
 endfm
 
+
+
+*** Specification of times and functions on times.
+***
 fmod CREOL-DATA-TIME is
   extending CREOL-DATA-SIG .
   extending CREOL-DATA-INT .
@@ -571,9 +609,13 @@ fmod CREOL-DATA-TIME is
 
 endfm
 
+
+
+*** The DATATYPES module collects all data types into one module.
+*** One may easily keep various data types in separate file(s),
+*** and them plug in upon need.
+***
 fmod CREOL-DATATYPES is
-    *** may easily keep various data types on separate file(s), 
-    *** and plug in upon need.
 
     extending CREOL-DATA-SIG .
     extending CREOL-EXPRESSION .
