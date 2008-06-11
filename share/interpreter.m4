@@ -336,30 +336,30 @@ fmod CREOL-MESSAGE is
 
   --- Messages.  Messages have at least a receiver.
 
-  sort Msg .
+  sort Message .
 
   --- Invocation and completion message.
-  op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
+  op _from_to_ : Body Oid Oid -> Message [ctor `format' (o ! o ! o on)] .
 
   --- Method binding messages.
   --- Bind method request
   --- Given: caller callee label method params (list of classes to look in)
-  op bindMtd : Oid Oid Label String DataList InhList -> Msg [ctor `format'(!r d)] .
+  op bindMtd : Oid Oid Label String DataList InhList -> Message [ctor `format'(!r d)] .
 
   --- Successfully bound method body. 
   --- Consider the call O.Q(I). bindMtd(O,Q,I,C S) tries to find Q in
   --- class C or superclasses, then in S. boundMtd(O,Mt) is the result.
-  op boundMtd : Oid Process -> Msg [ctor `format'(!r d)] .
+  op boundMtd : Oid Process -> Message [ctor `format'(!r d)] .
 
   --- Error and warning messages are intended to stop the machine.
   --- For now, nothing is emitting these.
-  --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
-  op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
+  --- op error(_) : String -> [Message] [ctor `format' (nnr r o! or onn)] .
+  op warning(_) : String -> [Message] [ctor `format' (nnr! r! r! or onn)] .
 
 endfm
 
-view Msg from TRIV to CREOL-MESSAGE is
-   sort Elt to Msg .
+view Message from TRIV to CREOL-MESSAGE is
+   sort Elt to Message .
 endv
 
 view Body from TRIV to CREOL-MESSAGE is
@@ -410,53 +410,11 @@ fmod CREOL-OBJECT is
 endfm
 
 
-*** STATE CONFIGURATION ***
-fmod CREOL-CONFIG is
-  protecting CREOL-OBJECT .
-
-  sort Configuration .
-ifdef(`TIME', `  sort Clock .')
-
-  subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
-
-  op noConf : -> Configuration [ctor] .
-  op __ : Configuration Configuration -> Configuration
-	[ctor assoc comm id: noConf `format' (d n d)] .
-
-ifdef(`TIME',dnl
-  *** Definition of a global clock in the system
-  op < _: Clock | delta: _> : Float Float -> Clock
-    [ctor ``format'' (c o c c c c o c o)] .
-)dnl
-
-  *** Useful for real-time maude and some other tricks.
-ifdef(`MODELCHECK',dnl
-  *** Maude's model checker asks us to provide State.
-  including SATISFACTION .
-  including MODEL-CHECKER .
-
-  op {_} : Configuration -> State [ctor] .
-,dnl
-  *** We should not provide sort State`,' since this is used in LOOP-MODE.
-)dnl
-
-  *** System initialisation
-  var C : String .
-  var DL : DataList .
-  op main : String DataList -> Configuration .
-  eq main(C,DL) =
-    < ob("main") : "" | Att: noSubst, 
-      Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
-      Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
-
-endfm
-
 fmod `CREOL-EVAL' is
 
   protecting CREOL-DATA-SIG .
   protecting CREOL-SUBST .
-  protecting CREOL-CONFIG .
-  protecting CONVERSION .
+  protecting CREOL-MESSAGES .
 
   vars N N' : Nat .
   vars L L' : Label .
@@ -574,6 +532,48 @@ dnl)dnl
   eq READY((A ?(AL)) ; SL2 , S, MM, T) = inqueue(S[A], MM) . 
   eq READY((L ?(AL)) ; SL2 , S, MM, T) = inqueue(L, MM) . 
   eq READY(NeSL, S, MM, T) = ENABLED(NeSL, S, MM, T) [owise] .
+
+endfm
+
+*** STATE CONFIGURATION ***
+fmod CREOL-CONFIG is
+  protecting CREOL-OBJECT .
+
+  sort Configuration .
+
+ifdef(`TIME', `  sort Clock .')
+
+  subsorts Class ifdef(`TIME', `Clock ')Message Object < Configuration .
+
+  op noConf : -> Configuration [ctor] .
+  op __ : Configuration Configuration -> Configuration
+	[ctor assoc comm id: noConf `format' (d n d)] .
+
+ifdef(`TIME',dnl
+  *** Definition of a global clock in the system
+  op < _: Clock | delta: _> : Float Float -> Clock
+    [ctor ``format'' (c o c c c c o c o)] .
+)dnl
+
+  *** Useful for real-time maude and some other tricks.
+ifdef(`MODELCHECK',dnl
+  *** Maude's model checker asks us to provide State.
+  including SATISFACTION .
+  including MODEL-CHECKER .
+
+  op {_} : Configuration -> State [ctor] .
+,dnl
+  *** We should not provide sort State`,' since this is used in LOOP-MODE.
+)dnl
+
+  *** System initialisation
+  var C : String .
+  var DL : DataList .
+  op main : String DataList -> Configuration .
+  eq main(C,DL) =
+    < ob("main") : "" | Att: noSubst, 
+      Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
+      Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
 
 endfm
 

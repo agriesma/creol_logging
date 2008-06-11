@@ -630,7 +630,6 @@ fmod CREOL-DATATYPES is
     extending CREOL-DATA-SIG .
     extending CREOL-EXPRESSION .
     extending CREOL-DATA-BOOL .
-    extending CREOL-DATA-OID .
     extending CREOL-DATA-LABEL .
     extending CREOL-DATA-FLOAT .
     extending CREOL-DATA-INT .
