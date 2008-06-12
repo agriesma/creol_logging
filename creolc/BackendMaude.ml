@@ -409,7 +409,7 @@ let emit options out_channel input =
       | Declaration.Function f -> of_function f
   and of_decl_list =
     function
-	[] -> output_string out_channel "noConf\n"
+	[] -> output_string out_channel "none\n"
       | [d] -> of_declaration d
       | d::l -> of_declaration d; of_decl_list l
   in

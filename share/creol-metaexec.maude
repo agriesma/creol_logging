@@ -76,7 +76,7 @@ if size(LABELS) > 0 /\ LABEL := select(LABELS, random(RAND) rem J) .
 ceq state[term: T , mod: MOD, labels: nil, failed: FAILED, 
       numRls: J, rand: RAND, steps: N, max: I ]
 =
-state[term: upTerm(downTerm(T, noConf) 
+state[term: upTerm(downTerm(T, none) 
                    warning("Program terminates after " + string(_-_(I,N),10) + " steps")), 
       mod: MOD, labels: nil, failed: FAILED, numRls: J, rand: RAND, steps: 0, max: I ] 
 if N =/= I .
@@ -94,7 +94,7 @@ state[term: T, mod: MOD, labels: getRuleLabels(MOD), failed: nil,
 op downState : MetaState -> Configuration .
 eq downState(state[term: T , mod: MOD, labels: LABELS, failed: FAILED, 
       numRls: I, rand: RAND, steps: 0, max: N ])
-= downTerm(T, noConf) .
+= downTerm(T, none) .
 
 *** Metaexecution with seed I and steps J
 op simulate : Qid Term Int Int -> Configuration .

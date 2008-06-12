@@ -26,7 +26,7 @@ load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
   op init : -> Configuration .
-  eq init = noConf .
+  eq init = none .
 endm
 
 load creol-metaexec .

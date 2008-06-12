@@ -15,7 +15,7 @@ mod CREOL-SIMULATOR is
 
   protecting CREOL-DATA-SIG .
   protecting `CREOL-EVAL' .
-  protecting `CREOL-CONFIG' .
+  protecting `CREOL-CONFIGURATION' .
 
   op simurev : -> String .
   eq simurev = "KIND $Revision: 1466 $" .
@@ -239,37 +239,16 @@ eq < O : C | Att: S, Pr: (L, A ?(AL); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F 
   < O : C | Att: S, Pr: (L, (L[A])?(AL); SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > .
 
 
-dnl receive-invoc
-dnl
-dnl Receive an invocation message and try to bind the process.
-dnl
-dnl The next rule should not be triggered anymore, because it is
-dnl superseded by [transport-imsg] below.
-dnl
-dnl STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
-dnl            Ev: MM + invoc(O'`,' Lab`,' Q`,' DL)`,' Lcnt: N >,
-dnl   < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
-dnl     bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' C < emp >),
-dnl `[label receive-invoc]')
-dnl
-dnl
-dnl STEP(< O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,'
-dnl             Ev: MM + invoc(O'`,' Lab`,' Q @ CC`,' DL)`,' Lcnt: N >,
-dnl   < O : C | Att: S`,' Pr: P`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N >
-dnl     bindMtd(O`,' O'`,' Lab`,' Q`,' DL`,' CC < emp >),
-dnl `[label receive-static-invoc]')
-
-
     --- Method binding messages.
     --- Bind method request
     --- Given: caller callee label method params (list of classes to look in)
-    op bindMtd : Oid Oid Label String DataList InhList -> Message
-       [ctor `format'(!r d)] .
+    op bindMtd : Oid Oid Label String DataList InhList -> Msg
+        [ctor `format'(!r d)] .
 
     --- Successfully bound method body. 
     --- Consider the call O.Q(I). bindMtd(O,Q,I,C S) tries to find Q in
     --- class C or superclasses, then in S. boundMtd(O,Mt) is the result.
-    op boundMtd : Oid Process -> Message [ctor `format'(!r d)] .
+    op boundMtd : Oid Process -> Msg [ctor `format'(!r d)] .
 
 --- Method binding with multiple inheritance
 ---
@@ -505,8 +484,8 @@ STEP(dnl
 --- For the purpose of the CMC the class parameters are treated as
 --- attributes!
 ---
-op findAttr  : Oid InhList Subst StmList Process -> Message [ctor `format' (n d)] .
-op foundAttr : Oid Subst  StmList Process -> Message [ctor `format' (n d)] .
+op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor `format' (n d)] .
+op foundAttr : Oid Subst  StmList Process -> Msg [ctor `format' (n d)] .
 
 eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 

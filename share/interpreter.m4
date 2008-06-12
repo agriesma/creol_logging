@@ -263,6 +263,31 @@ view Method from TRIV to CREOL-METHOD is
 endv
 
 
+***
+*** CREOL Classes
+***
+changequote(`[[[[', `]]]]')dnl
+fmod CREOL-CLASS is
+  protecting LIST{Inh} * (sort List{Inh} to InhList,
+			  sort NeList{Inh} to NeInhList,
+			  op nil : -> List{Inh} to noInh,
+			  op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
+  protecting SET{Method} * (sort Set{Method} to MMtd,
+			    op empty : -> Set{Method} to noMethod,
+                            op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
+changequote dnl
+  protecting CREOL-PROCESS .
+
+  --- Class declaration.
+  ---
+  sort Class .
+  op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
+    String InhList VidList Subst MMtd Nat -> Class 
+     [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
+
+endfm
+
+
 *** Define object identifiers.
 ***
 fmod CREOL-DATA-OID is
@@ -293,31 +318,6 @@ endv
 
 
 ***
-*** CREOL Classes
-***
-changequote(`[[[[', `]]]]')dnl
-fmod CREOL-CLASS is
-  protecting LIST{Inh} * (sort List{Inh} to InhList,
-			  sort NeList{Inh} to NeInhList,
-			  op nil : -> List{Inh} to noInh,
-			  op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
-  protecting SET{Method} * (sort Set{Method} to MMtd,
-			    op empty : -> Set{Method} to noMethod,
-                            op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
-changequote dnl
-  protecting CREOL-PROCESS .
-
-  --- Class declaration.
-  ---
-  sort Class .
-  op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
-    String InhList VidList Subst MMtd Nat -> Class 
-     [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g o)] .
-
-endfm
-
-
-***
 *** CREOL messages and queues
 ***
 fmod CREOL-MESSAGE is
@@ -333,20 +333,20 @@ fmod CREOL-MESSAGE is
 
   --- Messages.  Messages have at least a receiver.
 
-  sort Message .
+  sort Msg .
 
   --- Invocation and completion message.
-  op _from_to_ : Body Oid Oid -> Message [ctor `format' (o ! o ! o on)] .
+  op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
 
   --- Error and warning messages are intended to stop the machine.
   --- For now, nothing is emitting these.
-  --- op error(_) : String -> [Message] [ctor `format' (nnr r o! or onn)] .
-  op warning(_) : String -> [Message] [ctor `format' (nnr! r! r! or onn)] .
+  --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
+  op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
 
 endfm
 
-view Message from TRIV to CREOL-MESSAGE is
-   sort Elt to Message .
+view Msg from TRIV to CREOL-MESSAGE is
+   sort Elt to Msg .
 endv
 
 view Body from TRIV to CREOL-MESSAGE is
@@ -387,7 +387,10 @@ fmod CREOL-OBJECT is
   protecting CREOL-LABELS .
   protecting CREOL-PROCESS-POOL .
 
-  sort Object .
+  sorts Object Cid .
+  subsort String < Cid .
+
+  op Cl : -> Cid [ctor `format' (c o)] .
 
   op noObj : -> Object [ctor] .
   op <_:_ | Att:_, Pr:_, PrQ:_, Dealloc:_, Ev:_, Lcnt:_> : 
@@ -523,20 +526,22 @@ dnl)dnl
 
 endfm
 
-*** STATE CONFIGURATION ***
-fmod CREOL-CONFIG is
-  protecting CREOL-OBJECT .
-  protecting CREOL-CLASS .
 
-  sort Configuration .
 
-ifdef(`TIME', `  sort Clock .')
+*** Creol's state configuration.
+*** Modeled after the CONFIGURATION module in "prelude.maude"
+***
+mod CREOL-CONFIGURATION is
+    protecting CREOL-OBJECT .
+    protecting CREOL-CLASS .
 
-  subsorts Class ifdef(`TIME', `Clock ')Message Object < Configuration .
+    sorts ifdef(`TIME', `Clock ')Configuration .
 
-  op noConf : -> Configuration [ctor] .
-  op __ : Configuration Configuration -> Configuration
-	[ctor assoc comm id: noConf `format' (d n d)] .
+    subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
+
+    op none : -> Configuration [ctor] .
+    op __ : Configuration Configuration -> Configuration
+	  [ctor assoc comm id: none `format' (d n d)] .
 
 ifdef(`TIME',dnl
   *** Definition of a global clock in the system
@@ -564,7 +569,7 @@ ifdef(`MODELCHECK',dnl
       Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
       Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
 
-endfm
+endm
 
 include(`machine.m4')
 
