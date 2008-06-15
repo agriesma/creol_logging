@@ -321,35 +321,36 @@ reduce in CREOL-PROCESS-POOL : downTerm(upTerm(idle ++ insert("var2", int(4),
 result MProc: idle ++ ("var1" |-> str("test"), "var2" |-> int(4)), (skip |||
     "var" ::= int(4)[]"var" ::= new "C"(null))
 ==========================================
-reduce in CREOL-CLASS : noInh .
+reduce in CREOL-CONFIGURATION : noInh .
 result InhList: noInh
 ==========================================
-reduce in CREOL-CLASS : upTerm(noInh) .
+reduce in CREOL-CONFIGURATION : upTerm(noInh) .
 result Constant: 'noInh.InhList
 ==========================================
-reduce in CREOL-CLASS : downTerm(upTerm(noInh), noInh) .
+reduce in CREOL-CONFIGURATION : downTerm(upTerm(noInh), noInh) .
 result InhList: noInh
 ==========================================
-reduce in CREOL-CLASS : "A" < emp > .
+reduce in CREOL-CONFIGURATION : "A" < emp > .
 result Inh: "A" < emp >
 ==========================================
-reduce in CREOL-CLASS : upTerm("A" < emp >) .
+reduce in CREOL-CONFIGURATION : upTerm("A" < emp >) .
 result GroundTerm: '_<_>['"A".Char,'emp.DataList]
 ==========================================
-reduce in CREOL-CLASS : downTerm(upTerm("A" < emp >), noInh) .
+reduce in CREOL-CONFIGURATION : downTerm(upTerm("A" < emp >), noInh) .
 result Inh: "A" < emp >
 ==========================================
-reduce in CREOL-CLASS : "A" < emp >,,"B" < "x" > .
+reduce in CREOL-CONFIGURATION : "A" < emp >,,"B" < "x" > .
 result NeInhList: "A" < emp >,,"B" < "x" >
 ==========================================
-reduce in CREOL-CLASS : upTerm("A" < emp >,,"B" < "x" >) .
+reduce in CREOL-CONFIGURATION : upTerm("A" < emp >,,"B" < "x" >) .
 result GroundTerm: '_`,`,_['_<_>['"A".Char,'emp.DataList],'_<_>['"B".Char,
     '"x".Char]]
 ==========================================
-reduce in CREOL-CLASS : downTerm(upTerm("A" < emp >,,"B" < "x" >), noInh) .
+reduce in CREOL-CONFIGURATION : downTerm(upTerm("A" < emp >,,"B" < "x" >),
+    noInh) .
 result NeInhList: "A" < emp >,,"B" < "x" >
 ==========================================
-reduce in CREOL-OBJECT : 
+reduce in CREOL-CONFIGURATION : 
 < ob("object1") : "Class" |
   Att: noSubst,
   Pr: idle,
@@ -366,7 +367,7 @@ result Object:
   Ev: noMsg,
   Lcnt: 0 >
 ==========================================
-reduce in CREOL-OBJECT : upTerm(
+reduce in CREOL-CONFIGURATION : upTerm(
 < ob("object1") : "Class" |
   Att: noSubst,
   Pr: idle,
@@ -378,7 +379,7 @@ result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>['ob[
     '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
     'noProc.MProc,'noDealloc.Labels,'noMsg.MMsg,'0.Zero]
 ==========================================
-reduce in CREOL-OBJECT : downTerm(upTerm(
+reduce in CREOL-CONFIGURATION : downTerm(upTerm(
 < ob("object1") : "Class" |
   Att: noSubst,
   Pr: idle,

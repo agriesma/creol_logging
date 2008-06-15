@@ -14,7 +14,6 @@ dnl
 mod CREOL-SIMULATOR is
 
   protecting CREOL-DATA-SIG .
-  protecting `CREOL-EVAL' .
   protecting `CREOL-CONFIGURATION' .
 
   op simurev : -> String .

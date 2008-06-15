@@ -78,11 +78,11 @@ GRAMMAR_TEST(PROCESS-POOL, noProc, idle)
 GRAMMAR_TEST(PROCESS-POOL, idle, noProc)
 GRAMMAR_TEST(PROCESS-POOL, {| (insert("var2", int(4), insert("var1", str("test"), noSubst)), ((("var" ::= int(4)) [] ("var" ::= new "C" (null))) ||| skip)) ++ idle |}, noProc)
 
-GRAMMAR_TEST(CLASS, {| noInh |}, noInh)
-GRAMMAR_TEST(CLASS, {| "A" < emp > |}, noInh)
-GRAMMAR_TEST(CLASS, {| "A" < emp > ,, "B" < "x" > |}, noInh)
+GRAMMAR_TEST(CONFIGURATION, {| noInh |}, noInh)
+GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > |}, noInh)
+GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > ,, "B" < "x" > |}, noInh)
 
-GRAMMAR_TEST(OBJECT, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
+GRAMMAR_TEST(CONFIGURATION, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
 
 GRAMMAR_TEST(MESSAGES, noMsg, noMsg)
 
