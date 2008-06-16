@@ -86,12 +86,10 @@ GRAMMAR_TEST(CONFIGURATION, {| < ob("object1") : "Class" | Att: noSubst, Pr: idl
 
 GRAMMAR_TEST(CONFIGURATION, noMsg, noMsg)
 
-fmod CREOL-LABEL-TEST is
-  extending CREOL-DATA-SIG .
-  extending CREOL-STATEMENT .
-  extending CREOL-MESSAGE .
+mod CREOL-LABEL-TEST is
+  extending CREOL-CONFIGURATION .
   op label : Nat -> Label .
-endfm
+endm
 
 GRAMMAR_TEST(LABEL-TEST, cont(label(1)), skip)
 GRAMMAR_TEST(LABEL-TEST, accept(label(1)), skip)

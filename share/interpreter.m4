@@ -297,47 +297,37 @@ endv
 *** CREOL messages and queues
 ***
 fmod CREOL-MESSAGE is
-  protecting CREOL-DATA-OID .
-  protecting CREOL-DATA-LABEL .
-
-  sort Body Invoc Comp .
-  subsorts Invoc Comp < Body .
-
-  *** INVOCATION and REPLY
-  op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
-  op comp : Label DataList -> Comp [ctor `format' (b o)] .  
-
-  --- Messages.  Messages have at least a receiver.
-
-  sort Msg .
-
-  --- Invocation and completion message.
-  op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
-
-  --- Error and warning messages are intended to stop the machine.
-  --- For now, nothing is emitting these.
-  --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
-  op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
-
 endfm
-
-view Msg from TRIV to CREOL-MESSAGE is
-   sort Elt to Msg .
-endv
-
-view Body from TRIV to CREOL-MESSAGE is
-   sort Elt to Body .
-endv
-
-
 
 *** Creol's state configuration.
 *** Modeled after the CONFIGURATION module in "prelude.maude"
 ***
 mod CREOL-CONFIGURATION is
 
-    protecting CREOL-MESSAGE .
+    protecting CREOL-PROCESS .
     protecting CREOL-PROCESS-POOL .
+
+    protecting CREOL-DATA-OID .
+    protecting CREOL-DATA-LABEL .
+
+    sort Body Invoc Comp .
+    subsorts Invoc Comp < Body .
+
+    --- INVOCATION and REPLY
+    op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
+    op comp : Label DataList -> Comp [ctor `format' (b o)] .  
+
+    --- Messages.  Messages have at least a receiver.
+
+    sort Msg .
+
+    --- Invocation and completion message.
+    op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
+
+    --- Error and warning messages are intended to stop the machine.
+    --- For now, nothing is emitting these.
+    --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
+    op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
 
     sort MMsg .
     subsort Body < MMsg .
@@ -382,8 +372,6 @@ changequote(`[[[[', `]]]]')dnl
 			      op empty : -> Set{Method} to noMethod,
                               op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
 changequote dnl
-    protecting CREOL-PROCESS .
-
     --- Class declaration.
     ---
     op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
