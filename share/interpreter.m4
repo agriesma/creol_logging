@@ -430,12 +430,18 @@ ifdef(`MODELCHECK',dnl
 
 
 
-    --- Now we proceed to define the family of eval functions.
+endm
+
+*** Now we proceed to define the family of eval functions.
+mod `CREOL-EVAL' is
+
+    protecting CREOL-CONFIGURATION .
 
     vars N N' : Nat .
     vars L L' : Label .
     vars E E' E'' : Expr .
     vars D D' : Data .
+    var DL : DataList .
     var EL : ExprList .
     var NeEL : NeExprList .
     var ES : ExprSet .
@@ -443,8 +449,8 @@ ifdef(`MODELCHECK',dnl
     var DS : DataSet .
     var NeDS : NeDataSet .
     var A : Vid .
-    var Q : String .
-    var S S' : Subst .
+    vars Q C : String .
+    vars S S' : Subst .
     var MM : MMsg .
 
     --- Check if a message is in the queue.

@@ -13,8 +13,7 @@ dnl
 ***
 mod CREOL-SIMULATOR is
 
-  protecting CREOL-DATA-SIG .
-  protecting `CREOL-CONFIGURATION' .
+  protecting `CREOL-EVAL' .
 
   op simurev : -> String .
   eq simurev = "KIND $Revision: 1466 $" .
