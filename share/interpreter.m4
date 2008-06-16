@@ -264,35 +264,6 @@ endv
 
 
 
-*** Define object identifiers.
-***
-fmod CREOL-DATA-OID is
-  extending CREOL-DATA-SIG .
-  protecting CONVERSION .
-  protecting STRING .
-  protecting NAT .
-
-  sort Oid .
-  subsort Oid < Data .
-
-  op ob : String -> Oid [ctor] .
-
-  var C : String .
-  var N : Nat .
-
-  --- Create a new fresh name for an object.
-  op newId : String Nat -> Oid .
-  eq newId(C, N)  = ob(C + string(N,10)) .
-
-endfm
-
-view Oid from TRIV to CREOL-DATA-OID is
-  sort Elt to Oid .
-endv
-
-
-
-
 ***
 *** CREOL messages and queues
 ***
@@ -307,7 +278,23 @@ mod CREOL-CONFIGURATION is
     protecting CREOL-PROCESS .
     protecting CREOL-PROCESS-POOL .
 
-    protecting CREOL-DATA-OID .
+    --- Define object identifiers.
+    protecting CONVERSION .
+    protecting STRING .
+    protecting NAT .
+
+    sort Oid .
+    subsort Oid < Data .
+
+    op ob : String -> Oid [ctor] .
+
+    var C : String .
+    var N : Nat .
+
+    --- Create a new fresh name for an object.
+    op newId : String Nat -> Oid .
+    eq newId(C, N)  = ob(C + string(N,10)) .
+
     protecting CREOL-DATA-LABEL .
 
     sort Body Invoc Comp .
@@ -402,7 +389,6 @@ ifdef(`MODELCHECK',dnl
 
 
     --- System initialisation
-    var C : String .
     var DL : DataList .
     op main : String DataList -> Configuration .
     eq main(C,DL) =
