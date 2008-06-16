@@ -329,18 +329,6 @@ view Body from TRIV to CREOL-MESSAGE is
    sort Elt to Body .
 endv
 
-*** A multiset of messages.
-fmod CREOL-MESSAGES is
-  protecting CREOL-MESSAGE .
-
-  sort MMsg .
-  subsort Body < MMsg .
-
-  op noMsg : -> MMsg [ctor] .
-  op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
-
-endfm
-
 
 
 *** Creol's state configuration.
@@ -348,8 +336,14 @@ endfm
 ***
 mod CREOL-CONFIGURATION is
 
-    protecting CREOL-MESSAGES .
+    protecting CREOL-MESSAGE .
     protecting CREOL-PROCESS-POOL .
+
+    sort MMsg .
+    subsort Body < MMsg .
+
+    op noMsg : -> MMsg [ctor] .
+    op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
 
     sorts Class ifdef(`TIME', `Clock ')Object Configuration .
 

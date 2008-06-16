@@ -396,13 +396,13 @@ result Object:
   Ev: noMsg,
   Lcnt: 0 >
 ==========================================
-reduce in CREOL-MESSAGES : noMsg .
+reduce in CREOL-CONFIGURATION : noMsg .
 result MMsg: noMsg
 ==========================================
-reduce in CREOL-MESSAGES : upTerm(noMsg) .
+reduce in CREOL-CONFIGURATION : upTerm(noMsg) .
 result Constant: 'noMsg.MMsg
 ==========================================
-reduce in CREOL-MESSAGES : downTerm(upTerm(noMsg), noMsg) .
+reduce in CREOL-CONFIGURATION : downTerm(upTerm(noMsg), noMsg) .
 result MMsg: noMsg
 ==========================================
 reduce in CREOL-LABEL-TEST : cont(label(1)) .
