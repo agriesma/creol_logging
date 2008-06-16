@@ -25,7 +25,7 @@ DISTCLEANFILES		= creol-interpreter.maude \
 MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README macros.m4 interpreter.m4 predicates.m4 \
-			  machine.m4 
+			  configuration.m4 machine.m4 
 dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-interpreter.maude \
