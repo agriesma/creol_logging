@@ -264,27 +264,34 @@ endv
 
 
 
-***
-*** CREOL messages and queues
-***
-fmod CREOL-MESSAGE is
-endfm
-
 *** Creol's state configuration.
 *** Modeled after the CONFIGURATION module in "prelude.maude"
 ***
 mod CREOL-CONFIGURATION is
 
-    protecting CREOL-PROCESS .
+    protecting CREOL-DATA-LABEL .
     protecting CREOL-PROCESS-POOL .
+changequote(`[[[[', `]]]]')dnl
+    protecting LIST{Inh} * (sort List{Inh} to InhList,
+			    sort NeList{Inh} to NeInhList,
+			    op nil : -> List{Inh} to noInh,
+			    op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
+    protecting SET{Method} * (sort Set{Method} to MMtd,
+			      op empty : -> Set{Method} to noMethod,
+                              op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
+changequote dnl
 
     --- Define object identifiers.
     protecting CONVERSION .
     protecting STRING .
     protecting NAT .
 
-    sort Oid .
+    sorts Oid Cid Msg Class ifdef(`TIME', `Clock ')Object Configuration .
     subsort Oid < Data .
+    subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
+
+    sorts Body Invoc Comp .
+    subsorts Invoc Comp < Body .
 
     op ob : String -> Oid [ctor] .
 
@@ -295,18 +302,11 @@ mod CREOL-CONFIGURATION is
     op newId : String Nat -> Oid .
     eq newId(C, N)  = ob(C + string(N,10)) .
 
-    protecting CREOL-DATA-LABEL .
-
-    sort Body Invoc Comp .
-    subsorts Invoc Comp < Body .
-
     --- INVOCATION and REPLY
     op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
     op comp : Label DataList -> Comp [ctor `format' (b o)] .  
 
     --- Messages.  Messages have at least a receiver.
-
-    sort Msg .
 
     --- Invocation and completion message.
     op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
@@ -322,9 +322,6 @@ mod CREOL-CONFIGURATION is
     op noMsg : -> MMsg [ctor] .
     op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
 
-    sorts Class ifdef(`TIME', `Clock ')Object Configuration .
-
-    subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
 
     --- Terms of sort Labels are multi-sets of Labels.
     sort Labels .
@@ -337,7 +334,6 @@ mod CREOL-CONFIGURATION is
     --- run-time configuration.
     ---
     --- Terms of sort Cid represent class names.
-    sort Cid .
     subsort String < Cid .
 
     --- This term is the class name of "class objects."
@@ -350,15 +346,6 @@ mod CREOL-CONFIGURATION is
 
 
     --- Define Classes.
-changequote(`[[[[', `]]]]')dnl
-    protecting LIST{Inh} * (sort List{Inh} to InhList,
-			    sort NeList{Inh} to NeInhList,
-			    op nil : -> List{Inh} to noInh,
-			    op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
-    protecting SET{Method} * (sort Set{Method} to MMtd,
-			      op empty : -> Set{Method} to noMethod,
-                              op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
-changequote dnl
     --- Class declaration.
     ---
     op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
