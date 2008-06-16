@@ -27,12 +27,15 @@ changequote(`[[[[', `]]]]')dnl
                               op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
 changequote dnl
 
+    --- The standard configuration of Maude.
+    protecting CONFIGURATION .
+
     --- Define object identifiers.
     protecting CONVERSION .
 
-    sorts Oid Cid Msg Class ifdef(`TIME', `Clock ')Object Configuration .
+    sorts Class ifdef(`TIME', `Clock ').
+    subsorts Class ifdef(`TIME', `Clock ') < Configuration .
     subsort Oid < Data .
-    subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
 
     sorts Body Invoc Comp .
     subsorts Invoc Comp < Body .
@@ -95,12 +98,6 @@ changequote dnl
     op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
       String InhList VidList Subst MMtd Nat -> Class 
        [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .
-
-
-    --- Define a configuration
-    op none : -> Configuration [ctor] .
-    op __ : Configuration Configuration -> Configuration
-	  [ctor assoc comm id: none] .
 
 ifdef(`TIME',dnl
   *** Definition of a global clock in the system

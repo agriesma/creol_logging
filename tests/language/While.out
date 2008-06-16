@@ -8,4 +8,5 @@ result Class:
     null, Code: while "/="("l" :: list(emp)) do ("f", "l") ::= "head"("l") ::
     "tail"("l") od ; return(emp) >,
   Ocnt: 0 >
+
 Bye.

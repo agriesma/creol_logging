@@ -12,7 +12,7 @@ result Configuration:
     "e" ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc")
     ; "e" ::= new "Elf"("sc") ; return(emp) >,
   Ocnt: 0 >
-
+ 
 < "Elf" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) > *
@@ -29,7 +29,7 @@ result Configuration:
     Code: "label:0" ! "sc" . "haveProblem"(emp) ; free("label:0") ; return(emp)
     >,
   Ocnt: 0 >
-
+ 
 < "LeaderElf" : Cl | Inh: "Elf" < emp >, Par: "sc", "elves", Att: "elves" |->
     null, "sc" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
@@ -40,7 +40,7 @@ result Configuration:
     Code: "label:0" ! "sc" . "haveProblem"(emp) ; free("label:0") ; return(emp)
     >,
   Ocnt: 0 >
-
+ 
 < "Reindeer" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
   < "deliverToys" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ;
     return(emp) > *
@@ -59,7 +59,7 @@ result Configuration:
     null, Code: "label:0" ! "this" . "holiday"(emp) ; free("label:0") ; return(
     emp) >,
   Ocnt: 0 >
-
+ 
 < "SantaClaus" : Cl | Inh: noInh, Par: noVid, Att: "ctElves" |-> null,
     "ctReindeers" |-> null, "harnessedReindeers" |-> null, "inofficeElves" |->
     null, "waitElves" |-> null, "waitReindeers" |-> null, Mtds:
@@ -121,4 +121,5 @@ result Configuration:
     "t2" ??) :: "t3" ??) ; free("t3") ; free("t2") ; free("t1") ; return(emp)
     >,
   Ocnt: 0 >
+
 Bye.

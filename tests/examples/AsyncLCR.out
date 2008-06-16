@@ -12,7 +12,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 0 >
-
+ 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
@@ -26,9 +26,9 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 0 >
+
 ==========================================
-rewrite in PROGRAM : classes
-main("Init", emp) .
+rewrite in PROGRAM : classes main("Init", emp) .
 result Configuration: 
 < "Init" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
     |-> null, Mtds:
@@ -41,7 +41,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 1 >
-
+ 
 < "Process" : Cl | Inh: noInh, Par: "i", "u", Att: "i" |-> null, "neighbor" |->
     null, "status" |-> null, "u" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
@@ -55,7 +55,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 3 >
-
+ 
 < ob("Init0") : "Init" |
   Att: "p1" |-> ob("Process0"), "p2" |-> ob("Process1"), "p3" |-> ob(
     "Process2"), "this" |-> ob("Init0"),
@@ -64,7 +64,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
-
+ 
 < ob("Process0") : "Process" |
   Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process2"), "status" |-> int(0),
     "this" |-> ob("Process0"), "u" |-> int(1),
@@ -73,7 +73,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 6 >
-
+ 
 < ob("Process1") : "Process" |
   Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process0"), "status" |-> int(0),
     "this" |-> ob("Process1"), "u" |-> int(2),
@@ -82,7 +82,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 5 >
-
+ 
 < ob("Process2") : "Process" |
   Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process1"), "status" |-> int(1),
     "this" |-> ob("Process2"), "u" |-> int(3),
@@ -91,7 +91,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 4 >
-
+ 
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
@@ -99,4 +99,5 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
+
 Bye.

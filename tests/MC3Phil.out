@@ -13,7 +13,7 @@ result Configuration:
     "Philosopher"("this") ; "p2" ::= new "Philosopher"("this") ; "p3" ::= new
     "Philosopher"("this") ; return(emp) >,
   Ocnt: 0 >
-
+ 
 < "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null,
     "chopstick" |-> null, "hungry" |-> null, "neighbor" |-> null, Mtds:
   < "borrowStick" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: await
@@ -37,4 +37,5 @@ result Configuration:
     Code: await "~"("hungry") ; release ; "hungry" ::= bool(true) ; "label:0" !
     "this" . "think"(emp) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
+
 Bye.

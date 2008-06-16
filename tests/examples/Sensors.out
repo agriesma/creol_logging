@@ -24,7 +24,7 @@ result Configuration:
   < "switchOn" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ;
     return(emp) >,
   Ocnt: 0 >
-
+ 
 < "PassiveTempSensor" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) > *
@@ -43,7 +43,7 @@ result Configuration:
   < "switchOn" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ;
     return(emp) >,
   Ocnt: 0 >
-
+ 
 < "SimpleSensorNode" : Cl | Inh: noInh, Par: "sensor", "radio", "size",
     "initialRate", Att: "buffer" |-> null, "initialRate" |-> null, "radio" |->
     null, "rate" |-> null, "sensor" |-> null, "size" |-> null, "slots" |->
@@ -74,7 +74,7 @@ result Configuration:
   < "write" : Mtdname | Param: "data", Latt: "_" |-> null, "data" |-> null,
     Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+ 
 < "TwoSimpleSensorNode" : Cl | Inh: noInh, Par: "sensor0", "sensor1", "radio",
     "size", "initialRate0", "initialRate1", Att: "buffer" |-> null,
     "initialRate0" |-> null, "initialRate1" |-> null, "radio" |-> null, "rate0"
@@ -121,4 +121,5 @@ result Configuration:
   < "write" : Mtdname | Param: "data", Latt: "_" |-> null, "data" |-> null,
     Code: skip ; return(emp) >,
   Ocnt: 0 >
+
 Bye.

@@ -15,7 +15,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 0 >
-
+ 
 < "Consumer" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) > *
@@ -24,7 +24,7 @@ result Configuration:
     "label:0" ?("y") ; "label:1" ! "this" . "run"(emp) ; free("label:1") ;
     return(emp) >,
   Ocnt: 0 >
-
+ 
 < "Producer" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) > *
@@ -36,7 +36,7 @@ result Configuration:
     Code: "label:0" ! "this" . "loop"(int(0)) ; free("label:0") ; return(emp)
     >,
   Ocnt: 0 >
-
+ 
 < "Starter" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) > *
@@ -44,4 +44,5 @@ result Configuration:
     null, "p" |-> null, Code: "b" ::= new "BoundedBuffer"(emp) ; "p" ::= new
     "Producer"("b") ; "c" ::= new "Consumer"("b") ; return(emp) >,
   Ocnt: 0 >
+
 Bye.

@@ -25,7 +25,7 @@ DISTCLEANFILES		= creol-interpreter.maude \
 MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README macros.m4 interpreter.m4 predicates.m4 \
-			  configuration.m4 machine.m4 
+			  configuration.m4 configuration2.m4 machine.m4
 dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-interpreter.maude \
@@ -46,6 +46,10 @@ creol-realtime.maude: ${srcdir}/interpreter.m4
 	$(M4) -I${srcdir} -DTIME ${CREOL_VARIANT} $< > $@
 
 creol-interpreter.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
+creol-interpreter.maude: ${srcdir}/configuration.m4
+creol-interpreter.maude: ${srcdir}/configuration2.m4
 creol-modelchecker.maude: ${srcdir}/macros.m4  ${srcdir}/machine.m4
+creol-modelchecker.maude: ${srcdir}/configuration.m4
 creol-modelchecker.maude: ${srcdir}/predicates.m4
 creol-realtime.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
+creol-realtime.maude: ${srcdir}/configuration.m4

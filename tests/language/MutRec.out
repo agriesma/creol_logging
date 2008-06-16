@@ -10,7 +10,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 0 >
-
+ 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "m1" |-> null, "m2" |-> null,
     Mtds:
   < "doit" : Mtdname | Param: "other", Latt: "_" |-> null, "other" |-> null,
@@ -20,4 +20,5 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
     Code: "label:0" ! "m1" . "doit"("m2") ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
+
 Bye.

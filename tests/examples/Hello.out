@@ -9,7 +9,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 0 >
-
+ 
 < "Main" : Cl | Inh: noInh, Par: noVid, Att: "hello" |-> null, "result" |->
     null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "hello" ::= new
@@ -18,4 +18,5 @@ result Configuration:
     Code: "label:0" ! "hello" . "hello"(emp) ; "label:0" ?("result") ; return(
     emp) >,
   Ocnt: 0 >
+
 Bye.

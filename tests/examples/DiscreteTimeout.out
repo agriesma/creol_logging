@@ -15,4 +15,5 @@ result Class:
     ">"("clock" :: "timeout") ; free("l") ; "result" ::= bool(false)) ; return(
     "result") >,
   Ocnt: 0 >
+
 Bye.

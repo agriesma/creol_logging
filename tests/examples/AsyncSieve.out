@@ -10,7 +10,7 @@ result Configuration:
     "+"("n" :: int(1)) ; "label:0" ! "this" . "run"(emp) ; free("label:0") ;
     await ("l" ??) ; "l" ?("r") ; return(emp) >,
   Ocnt: 0 >
-
+ 
 < "Sieve" : Cl | Inh: noInh, Par: "p", Att: "ins" |-> null, "next" |-> null,
     "outs" |-> null, "p" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: (("ins" @@
@@ -25,4 +25,5 @@ result Configuration:
     el "next" ::= new "Sieve"("n") ; "res" ::= bool(true) fi fi ; return("res")
     >,
   Ocnt: 0 >
+
 Bye.

@@ -11,4 +11,5 @@ result Class:
     null, "n" |-> null, Code: "alarmsetting" ::= "+"("clock" :: "n") ; await
     ">="("clock" :: "alarmsetting") ; return(emp) >,
   Ocnt: 0 >
+
 Bye.

@@ -15,7 +15,7 @@ result Configuration:
     "Philosopher"("this") ; "p4" ::= new "Philosopher"("this") ; "p5" ::= new
     "Philosopher"("this") ; return(emp) >,
   Ocnt: 0 >
-
+ 
 < "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null,
     "chopstick" |-> null, "hist" |-> null, "hungry" |-> null, "neighbor" |->
     null, Mtds:
@@ -45,4 +45,5 @@ result Configuration:
     Code: await "~"("hungry") ; "hist" ::= "|-"("hist" :: str("t")) ; release ;
     "label:0" ! "this" . "think"(emp) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
+
 Bye.

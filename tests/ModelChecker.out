@@ -6,7 +6,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) :: "x")
     th "x" ::= "-"("x" :: int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
-
+ 
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(5),
   Pr: (".class" |-> str("Tailcall"), ".label" |-> label(ob("Tailcall0"), ob(
@@ -18,7 +18,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp),
   Lcnt: 0 >
-
+ 
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
@@ -26,6 +26,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
+
 ==========================================
 rewrite [1] in TEST-TAILCALL : init .
 result Configuration: 
@@ -34,7 +35,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) :: "x")
     th "x" ::= "-"("x" :: int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
-
+ 
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(5),
   Pr: ".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), label(
@@ -44,7 +45,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp),
   Lcnt: 0 >
-
+ 
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
@@ -52,6 +53,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
+
 ==========================================
 rewrite in TEST-TAILCALL : init .
 result Configuration: 
@@ -60,7 +62,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: if "<"(int(0) :: "x")
     th "x" ::= "-"("x" :: int(1)) ; tailcall "run"(emp) el return(emp) fi >,
   Ocnt: 1 >
-
+ 
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(0),
   Pr: idle,
@@ -68,7 +70,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
-
+ 
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
@@ -76,4 +78,5 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
+
 Bye.

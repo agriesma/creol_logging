@@ -357,7 +357,8 @@ reduce in CREOL-CONFIGURATION :
   PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 0 > .
+  Lcnt: 0 >
+ .
 result Object: 
 < ob("object1") : "Class" |
   Att: noSubst,
@@ -366,6 +367,7 @@ result Object:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
+
 ==========================================
 reduce in CREOL-CONFIGURATION : upTerm(
 < ob("object1") : "Class" |
@@ -374,7 +376,8 @@ reduce in CREOL-CONFIGURATION : upTerm(
   PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 0 >) .
+  Lcnt: 0 >
+) .
 result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>['ob[
     '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
     'noProc.MProc,'noDealloc.Labels,'noMsg.MMsg,'0.Zero]
@@ -386,7 +389,8 @@ reduce in CREOL-CONFIGURATION : downTerm(upTerm(
   PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 0 >), noObj) .
+  Lcnt: 0 >
+), noObj) .
 result Object: 
 < ob("object1") : "Class" |
   Att: noSubst,
@@ -395,6 +399,7 @@ result Object:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
+
 ==========================================
 reduce in CREOL-CONFIGURATION : noMsg .
 result MMsg: noMsg

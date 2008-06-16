@@ -7,9 +7,9 @@ result Class:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 0 >
+
 ==========================================
-rewrite in PROGRAM : classes
-main("Test", emp) .
+rewrite in PROGRAM : classes main("Test", emp) .
 result Configuration: 
 < "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds:
   < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(
@@ -17,7 +17,7 @@ result Configuration:
   < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
     emp) >,
   Ocnt: 1 >
-
+ 
 < ob("Test0") : "Test" |
   Att: "this" |-> ob("Test0"), "x" |-> pair(int(1), int(2)),
   Pr: idle,
@@ -25,7 +25,7 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
-
+ 
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
@@ -33,4 +33,5 @@ result Configuration:
   Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
+
 Bye.
