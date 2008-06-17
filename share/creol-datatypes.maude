@@ -275,26 +275,44 @@ endfm
 *** Specification of strings and functions on strings.
 ***
 fmod CREOL-DATA-STRING is
-  extending CREOL-DATA-INT .
+    extending CREOL-DATA-INT .
 
-  protecting STRING .
+    protecting STRING .
 
-  op str(_) : String    -> Data [ctor format(o o ! o o)] .
+    op str(_) : String    -> Data [ctor format(o o ! o o)] .
 
-  vars S S' : String .
+    vars S S' : String .
+    vars M N : Nat .
 
-  op _asString : Data -> String .
-  eq str(S) asString = S .
+    op _asString : Data -> String .
+    eq str(S) asString = S .
 
-  eq "|-" (str(S) :: str(S')) = str(S + S') .
-  eq "-|" (str(S) :: str(S')) = str(S + S') .
-  eq "|-|" (str(S) :: str(S')) = str(S + S') .
-  eq "#" (str(S)) = int(length(S)) .
+    eq "|-" (str(S) :: str(S')) = str(S + S') .
+    eq "-|" (str(S) :: str(S')) = str(S + S') .
+    eq "|-|" (str(S) :: str(S')) = str(S + S') .
+    eq "#" (str(S)) = int(length(S)) .
+    eq "ascii" (str(S)) = int(ascii(S)) .
+    eq "char" (int(N)) = str(char(N)) .
+    eq "substr" (str(S) :: int(M) :: int(N)) = str(substr(S, M, N)) .
+    eq "find" (str(S) :: str(S') :: int(N)) = int(find(S, S', N)) .
+    eq "rfind" (str(S) :: str(S') :: int(N)) = int(rfind(S, S', N)) .
 
-  eq "<" (str(S):: str(S')) = bool(S < S') .
-  eq "<=" (str(S):: str(S')) = bool(S <= S') .
-  eq ">" (str(S):: str(S')) = bool(S > S') .
-  eq ">=" (str(S):: str(S')) = bool(S >= S') .
+    eq "<" (str(S):: str(S')) = bool(S < S') .
+    eq "<=" (str(S):: str(S')) = bool(S <= S') .
+    eq ">" (str(S):: str(S')) = bool(S > S') .
+    eq ">=" (str(S):: str(S')) = bool(S >= S') .
+
+
+    --- Conversions.  Since Creol does not support rational numbers yet,
+    --- we may have failures here which will remain unchecked.
+    protecting CONVERSION .
+    var I : Int .
+    var F : Float .
+
+    eq "string_of_int" (int(I)) = str(string(I, 10)) .
+    eq "int_of_string" (str(S)) = int(rat(S, 10)) .
+    eq "string_of_real" (float(F)) = str(string(F)) .
+    eq "real_of_string" (str(S)) = float(float(S)) .
 endfm
 
 

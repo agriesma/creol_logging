@@ -66,15 +66,25 @@ fun real_of_int(a: Int) : Real == extern "real_of_int"
 
 datatype String
 
+fun # (a: String): Int == extern "#"
 fun |- (a: String, b: String): String == extern "|-"
 fun -| (a: String, b: String): String == extern "-|"
 fun |-| (a: String, b: String): String == extern "|-|"
-fun # (a: String): Int == extern "#"
+fun ascii(a: String): Int == extern "ascii"
+fun char(a: Int): String == extern "char"
+fun substr(a: String, b: Int, c: Int): String == extern "substr"
+fun find(a: String, b: String, c: Int): Int == extern "find"
+fun rfind(a: String, b: String, c: Int): Int == extern "rfind"
 
 fun < (a: String, b: String): Bool == extern "<"
 fun <= (a: String, b: String): Bool == extern "<="
 fun > (a: String, b: String): Bool == extern ">"
 fun >= (a: String, b: String): Bool == extern ">="
+
+fun string_of_int(i: Int): String == extern "string_of_int"
+fun int_of_string(s: String): Int == extern "int_of_string"
+fun string_of_real(r: Real): String == extern "string_of_real"
+fun real_of_string(s: String): Real == extern "real_of_string"
 
 datatype List[`a]
 

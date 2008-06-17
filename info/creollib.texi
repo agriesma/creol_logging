@@ -222,6 +222,28 @@ The binary operator @code{-|} represent string concatenation.
 @item fun |-| (a: String, b: String): String
 The binary operator @code{|-|} represent string concatenation.
 
+@item fun ascii(a: String): Int
+If the string @code{a} has length @code{1}, this function will return
+the ASCII code number of the character in the string.  Otherwise, the
+behaviour is not defined.
+
+@item fun char(a: Int): String
+If @code{a} is a valid ASCII code number for some character, this
+function returnts a string that consists of this character.  Otherwise,
+the behaviour is not defined.
+
+@item fun substr(a: String, b: Int, c: Int): String
+Returns the substring of @code{a} between the positions @code{b} and
+@code{c}.
+
+@item fun find(a: String, b: String, c: Int): Int
+Returns the index of the first letter of the first string @code{b} in
+the string @code{a} that starts after (or including) position @code{c}.
+
+@item rfind(a: String, b: String, c: Int): Int
+Returns the index of the first letter of the last string @code{b} in the
+string @code{a} that starts before (or including) position @code{c}.
+
 @item fun < (a: String, b: String): Bool
 This binary relation compares two strings with respect to their
 lexicographic order.
@@ -238,11 +260,29 @@ lexicographic order.
 This binary relation compares two strings with respect to their
 lexicographic order.
 
+@item fun string_of_int(i: Int): String
+Convert the integer @code{i} to a string.
+
+@item fun int_of_string(s: String): Int
+Convert a string to an integer number.  If @code{s} does not represent
+an integer literal, the behaviour is undefined.  Integer literals must,
+for now, be recognizable to the @emph{Maude} parser.
+
+@item fun string_of_real(r: Real): String
+Convert a floating point number @code{r} to a string.
+
+@item fun real_of_string(s: String): Real
+Convert a string to a floating point number.  If @code{s} does not
+represent a floating point literal, the behaviour is undefined.
+Floating point literals must, for now, be recognizable to the
+@emph{Maude} parser.
+
 @end table
 
-@acronym{CREOL} does not define the representation of strings and how the
-lexicographic ordering is defined.  All implementations will probably
-behave as expected with all characters from the original US-ASCII set.
+@acronym{CREOL} does not define the representation of strings and does
+not specify a lexicographic ordering on strings.  All implementations
+will probably behave as expected with all characters from the original
+US-ASCII set.
 
 
 @node Data Type List
