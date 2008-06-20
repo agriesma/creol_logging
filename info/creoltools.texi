@@ -71,6 +71,7 @@ Documentation License.''
 @c * Bibliography::          Further reading.
 * Licenses::              Your rights and freedoms.
 * Index::                 Index of concepts.
+* Function Index::        Index of predefined functions.
 @end menu
 
 @include introduction.texi
@@ -110,6 +111,11 @@ the GNU Free Documentation License.
 @unnumbered Index
 
 @printindex cp
+
+
+@node Function Index
+@unnumbered Function Index
+@printindex fn
 
 @bye
 @c The release history is maintained here to force an update of this file
