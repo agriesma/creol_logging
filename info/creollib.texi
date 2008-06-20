@@ -22,6 +22,7 @@ classes defined for all @acronym{CREOL} programs.
 
 @node Data Type Data
 @section Data Type Data
+@tindex Data
 
 The type @code{Data} is the implicit super-type of all other types.
 Two functions are predefined on all instances of @code{Data}: equality
@@ -53,6 +54,7 @@ This operator represents inequality.
 
 @node Data Type Bool
 @section Data Type Bool
+@tindex Bool
 
 The type @code{Bool} comprises the truth values.  The literals
 @code{true} and @code{false} have the type @code{Bool}.  In addition,
@@ -98,6 +100,7 @@ b}.
 
 @node Data Type Real
 @section Data Type Real
+@tindex Real
 
 The type @code{Real} is supposed to include all values from the real
 number field.
@@ -163,6 +166,7 @@ arbitrary precision.
 
 @node Data Type Int
 @section Data Type Int
+@tindex Int
 
 The data type @code{Int} includes all integer numbers.  It is a subtype
 of @code{Real}.
@@ -233,6 +237,7 @@ represent.
 
 @node Data Type String
 @section Data Type String
+@tindex String
 
 The data type @code{String} represents all character strings.
 
@@ -337,6 +342,7 @@ US-ASCII set.
 
 @node Data Type List
 @section Data Type List
+@tindex List
 
 The type constructor @code{List[`a]} generates monomorphic list
 types.  A list that may contain anything has type @code{List[Data]}
@@ -472,6 +478,7 @@ result is undefined if @code{t} is @code{0}, if @code{s < e} and
 
 @node  Data Type Set
 @section Data Type Set
+@tindex Set
 
 The type constructor @code{Set[`a]} generates monomorphic set
 types.  A set that may contain anything has type @code{Set[Data]}
@@ -522,6 +529,7 @@ The predicate @code{isempty} tests, whether the argument set is empty.
 
 @node Data Type Pair
 @section Data Type Pair
+@tindex Pair
 
 The pair type constructor is defined in @ref{Types}.  For example, a
 pair of integers has the type @code{[Int, Int]}.  The standard library
@@ -542,6 +550,8 @@ Returns the second element of a pair.
 
 @node Data Types Time and Duration
 @section Data Types Time and Duration
+@tindex Time
+@tindex Duration
 
 The types @code{Time} and @code{Duration} are used for real-time
 modelling.  They should not be used in untimed models.  The semantics
@@ -635,6 +645,7 @@ division.  It is a shorthand for @code{a * (1.0 / s)}.
 
 @node Data Type Event
 @section Data Type Event
+@tindex Event
 
 THE INFORMATION IN THIS SECTION IS SUBJECT TO CHANGE.
 
@@ -686,6 +697,7 @@ untimed models, its meaning is not defined.
 
 @node Interface Any
 @section Interface Any
+@tindex Any
 
 The prelude provides the interface @code{Any}, which each class is
 implicitly contracting.  The interface @code{Any} does not provide any

@@ -71,6 +71,7 @@ Documentation License.''
 @c * Bibliography::          Further reading.
 * Licenses::              Your rights and freedoms.
 * Index::                 Index of concepts.
+* Datatype Index::        Index of predefined data types.
 * Function Index::        Index of predefined functions.
 @end menu
 
@@ -112,6 +113,10 @@ the GNU Free Documentation License.
 
 @printindex cp
 
+
+@node Datatype Index
+@unnumbered Datatupe Index
+@printindex tp
 
 @node Function Index
 @unnumbered Function Index
