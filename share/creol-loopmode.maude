@@ -31,19 +31,20 @@ mod CREOL-LOOP-MODE is
   op init : -> System .
 
   vars QIL QIL' : QidList .
+  var C : Configuration .
 
   rl [init] :
     init =>
       [nil,
-       noConf,
+       none,
        ('\n '\t '\t '\s '\s '\s '\s '\s '\s '\! 'Creol 'Simulator '0.0 '\o
         '\n '\t '\t '\t '\s '\s 'June '9 '`, '\s '2008 '\n)] .
 
-  rl [in] :
-    ['load QIL, noConf, QIL'] => [QIL, noConf, QIL' 'done] .
+  rl [load] :
+    ['load QIL, C, QIL'] => [QIL, C, QIL' 'done] .
 
-  rl [in] :
-    ['show QIL, noConf, QIL'] => [nil, noConf, QIL' 'showed QIL] .
+  rl [show] :
+    ['show QIL, C, QIL'] => [nil, C, QIL' 'showed QIL] .
 
 endm
 
