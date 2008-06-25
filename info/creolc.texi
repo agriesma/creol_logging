@@ -117,11 +117,11 @@ emitted if an input variable is never read.
 @item undefined
 Warn if a variable is used before it is defined.  This will also warn
 if there is an output variable to which no assignment has been made
-within a method and if an attribute is left unassigned to in the @code{classes}
-method.
+within a method and if an attribute is left unassigned to in the
+@code{init} method.
 
 @item init
-Warn if the class does not provide an internal @code{classes} method.
+Warn if the class does not provide an internal @code{init} method.
 
 @item run
 Warn if the class does not define an internal run method.

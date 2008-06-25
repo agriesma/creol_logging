@@ -935,17 +935,17 @@ The function @code{main(@var{class}, @var{args})} will create a
 class-less object which creates an instance of @var{class} with the
 expression list @var{args} as argument to the constructor.  For
 example, the initial configuration of the Sieve system can be started
-using the Maude command @code{red init main("Generator", emp) .}
+using the Maude command @code{red classes main("Generator", emp) .}
 
 The rewrite command can be used to have the system run.  This is using
 Maude's built-in rewrite command.  The parameter in square brackets is
 the number of rule-applications to perform, e.g.,
-@code{rew[1000] init main("Generator", emp) .} obtains a state after
+@code{rew[1000] classes main("Generator", emp) .} obtains a state after
 1000 rule applications from the initial configuration.
 
 A slightly different state can be obtained using Maude's @emph{fair}
 execution strategy with
-@code{frew[1000] init main("Generator", emp) .}
+@code{frew[1000] classes main("Generator", emp) .}
 
 It is often the case, that these commands will show some state but will
 not show the desired behaviour.  For small systems we advise to use
@@ -969,7 +969,7 @@ This provides one additional term @command{simulate}.  It accepts a
 @code{Qid} designating the module on the meta-level, usually
 @code{'PROGRAM}, the meta-representation of the initial configuration,
 a random @var{seed}, and the number of @var{steps}.  Often, the
-command as @command{downTerm(simulate('PROGRAM, upTerm(init
+command as @command{downTerm(simulate('PROGRAM, upTerm(classes
 main(@var{Main}, @var{args})), @var{seed}, @var{steps}))}.
 
 The @var{seed} is used to seed the random generator, which drives the

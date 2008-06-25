@@ -123,8 +123,8 @@ the Maude model of the following example:
 load creol-interpreter
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
-op init : -> Configuration [ctor] .
-eq init =
+op classes : -> Configuration [ctor] .
+eq classes =
 < "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
   < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
     return ( emp ) > *
@@ -159,8 +159,8 @@ $ maude Hello.maude
             Maude 2.3 built: Feb 14 2007 17:43:55
             Copyright 1997-2007 SRI International
                    Wed Feb 13 12:28:13 2008
-Maude> rew init main("Main", emp) .
-rewrite in PROGRAM : init
+Maude> rew classes main("Main", emp) .
+rewrite in PROGRAM : classes
 main("Main", emp) .
 rewrites: 259 in 2ms cpu (2ms real) (129500 rewrites/second)
 result Configuration: 
@@ -210,7 +210,7 @@ result Configuration:
 Maude> 
 @end example
 
-The command @command{rew init main("Main", emp) .} instructs the Maude
+The command @command{rew classes main("Main", emp) .} instructs the Maude
 interpreter to rewrite the program text @code{classes} and a first object
 @code{main("Main", emp)}, which is an instance of class @code{"Main"}
 and which is created without class parameters.  Maude responds with
@@ -366,7 +366,7 @@ steps.@footnote{The depth of @code{75} is the depth of the first
 example Maude finds and has been determined empirically.}
 
 @example
-search [1, 75] in PROGRAM : init main("Generator", emp) =>+
+search [1, 75] in PROGRAM : classes main("Generator", emp) =>+
  < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
                      L:Subst, SL:StmList, PrQ: W:MProc,
                      Dealloc: F:Labels, Ev: MM:MMsg, Lcnt: N:Nat >
@@ -375,7 +375,7 @@ search [1, 75] in PROGRAM : init main("Generator", emp) =>+
 
 This search command is written in the language of Maude and uses terms
 in the run-time syntax of @acronym{CREOL}.  The meaning of this
-expression is, that we search from the initial state @code{init
+expression is, that we search from the initial state @code{classes
 main("Generator", emp)} a state that matches the @emph{pattern} where
 one object of type @code{Sieve} has an attribute @code{p} with value
 @code{p}, designated @code{"p" |-> int(9)} in the
