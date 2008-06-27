@@ -1755,11 +1755,12 @@ struct
 
   let find_method_in_with ~program ~name ~signature w =
     let (_, ins, outs) = signature in
-    let dom = match ins with None -> Type.data | Some t -> Type.Tuple t in
     let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
     let p m =
       m.Method.name = name &&
-      (subtype_p program dom (Method.domain_type m)) &&
+      (match ins with
+	   None -> true
+	 | Some t -> subtype_p program (Type.Tuple t) (Method.domain_type m)) &&
       (subtype_p program (Method.range_type m) rng)
     in
       List.filter p w.With.methods
