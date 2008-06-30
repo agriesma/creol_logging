@@ -94,7 +94,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  syntax/MissingEnd5.creol \
 		  syntax/StrayChar.creol \
 		  typecheck/Nil.creol typecheck/Nil2.creol \
-		  typecheck/ExprFailure.creol \
+		  typecheck/Nil3.creol typecheck/ExprFailure.creol \
 		  typecheck/Contracts.creol typecheck/Nat.creol \
 		  typecheck/Nat2.creol typecheck/Nat3.creol \
 		  typecheck/Nat4.creol typecheck/If.creol \
