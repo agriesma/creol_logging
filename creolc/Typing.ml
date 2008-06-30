@@ -823,13 +823,58 @@ let typecheck tree: Program.t =
 	   inferred signature. This will fail if one of the input types
 	   is not a ground type term.  *)
 
-	assert (List.for_all Type.sentence_p ins_t) ;
-	List.fold_left
-	  (fun a iface ->
-	     List.fold_left (fun a' e' -> MSet.add e' a') a
-	       (Program.interface_find_methods program iface m
-		  (Some co', Some ins_t, outs_t)))
-	  MSet.empty ifaces
+	if List.for_all Type.sentence_p ins_t then
+	  List.fold_left
+	    (fun a iface ->
+	       List.fold_left (fun a' e' -> MSet.add e' a') a
+		 (Program.interface_find_methods program iface m
+		    (Some co', Some ins_t, outs_t)))
+	    MSet.empty ifaces
+	else
+	  begin
+
+	    (* One of the input types is not a ground term.  We need
+	       to build a unification problem.  Get all possible
+	       methods by their name and by their possible output
+	       type, but ignore the input type for that set. *)
+	    let cands' =
+	      List.fold_left
+		(fun a iface ->
+		   List.fold_left (fun a' e' -> MSet.add e' a') a
+		     (Program.interface_find_methods program iface m
+			(Some co', None, outs_t)))
+		MSet.empty ifaces
+	    in
+	    let cands_type =
+	      (* Build a disjunctive type from all the inputs. *)
+	      Type.Disjunction
+		(List.map
+		   (fun m ->
+		      Type.Function (Method.domain_type m, Method.range_type m))
+		   (MSet.elements cands'))
+
+	    and call_type =
+	      (* the actual call will have a parameterised type. *)
+	      match outs_t with
+		  None -> Type.Function (Type.Tuple ins_t, Type.Variable "__")
+		| Some t -> Type.Function (Type.Tuple ins_t, Type.Tuple t)
+	    in
+	    let
+		_ = 
+	      try
+		unify program [(call_type, cands_type)]
+	      with
+		  Unify_failure (s, t) ->
+		    raise (Type_error (n.file, n.line,
+				       (Type.as_string s) ^
+					 " but expected is type " ^
+					 (Type.as_string t) ^
+					 "\n  Cannot satisfy constraints: " ^
+					 (string_of_constraint_set
+					    [(call_type, cands_type)])))
+	    in
+	      cands'
+	  end
       in
       let co =
 	match MSet.cardinal cands with
