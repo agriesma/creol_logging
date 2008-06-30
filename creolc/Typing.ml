@@ -282,9 +282,9 @@ let typecheck tree: Program.t =
   let error_ambigous note name callee_t cands =
     let f m = "    " ^ (Method.name_as_string m) in
     let rec g = function
-	| [] -> assert false
-	| [m] -> f m
-	| m::r -> (f m) ^ "\n" ^ (g r)
+      | [] -> assert false
+      | [m] -> f m
+      | m::r -> (f m) ^ "\n" ^ (g r)
     in
     let tmp = g (MSet.elements cands) in
       raise (Type_error (note.file, note.line,
@@ -741,38 +741,15 @@ let typecheck tree: Program.t =
   let rec type_check_statement program cls meth coiface =
 
     (* Check all the constraints on method calls.  This is the generic
-       rule. *)
+       rule.
+
+       First we check the type of the callee and determine the interface
+       of [this].  *)
 
     let check_method_call n label callee m (asco, _, _) ins outs =
       let (callee', callee_t) =
 	let c = type_check_expression program cls meth coiface [] callee in
 	  (c , Expression.get_type c)
-      and (ins', ins_t) =
-	let i =
-	  List.map (type_check_expression program cls meth coiface []) ins
-	in
-	  (i, Some (List.map Expression.get_type i))
-      and label' =
-	match label with
-	    None -> label
-	  | Some l -> Some (type_check_lhs program cls meth coiface l)
-      in
-      let (outs', outs_t) =
-
-	(* Here we have to guess a correct output type.  If [label]
-	   has been provided, then [outs_t] must be [None] and get it
-	   from the label. *)
-	
-	match (label', outs) with
-	    (None, None) -> (None, None)
-	  | (None, Some ol) ->
-	      let o =
-		List.map (type_check_lhs program cls meth coiface) ol
-	      in
-		(Some o, Some (List.map Expression.get_lhs_type o))
-	  | (Some l, None) ->
-	      (None, Some (Type.get_from_label (Expression.get_lhs_type l)))
-	  | (Some _, Some _) -> assert false
       in
       let ifaces =
 	try
@@ -791,45 +768,83 @@ let typecheck tree: Program.t =
 	      raise (Type_error (n.file, n.line,
 				 "Interface " ^ (Type.as_string callee_t) ^
 				   " not defined."))
+      and label' =
+	match label with
+	    None -> label
+	  | Some l -> Some (type_check_lhs program cls meth coiface l)
+      and (ins', ins_t) =
+	(* Observe that ins' and ins_t may still contain parameterised types
+	   and we cannot use these too look up the method we want to call. *)
+	let i =
+	  List.map (type_check_expression program cls meth coiface []) ins
+	in
+	  (i, List.map Expression.get_type i)
+      in
+      let (outs', outs_t) =
+
+	(* Here we have to guess a correct output type.  If [label]
+	   has been provided, then [outs_t] must be [None] and get it
+	   from the label. *)
+	
+	match (label', outs) with
+	    (None, None) -> (None, None)
+	  | (None, Some ol) ->
+	      let o =
+		List.map (type_check_lhs program cls meth coiface) ol
+	      in
+		(Some o, Some (List.map Expression.get_lhs_type o))
+	  | (Some l, None) ->
+	      (None, Some (Type.get_from_label (Expression.get_lhs_type l)))
+	  | (Some _, Some _) -> assert false
+      in
+      let co' =
+
+	(* Infer the co-interface.  This is either the type of the class
+	   or a provided co-interface using the \textbf{as} annotation. *)
+
+	match asco with
+	    None -> Class.get_type cls
+	  | Some c ->
+	      
+	      (* Make sure the provided cointerface is actually implemented
+		 by the current class. *)
+	      
+	      if Program.subtype_p program (Class.get_type cls) c then
+		c
+	      else
+		raise (Type_error (n.file, n.line, (Type.as_string c) ^
+				     " is not implemented by class " ^
+				     cls.Class.name ^ " of type " ^
+				     (Type.as_string (Class.get_type cls))))
+      in
+      let cands =
+
+	(* Find the set of all possible candidate methods for the
+	   inferred signature. This will fail if one of the input types
+	   is not a ground type term.  *)
+
+	assert (List.for_all Type.sentence_p ins_t) ;
+	List.fold_left
+	  (fun a iface ->
+	     List.fold_left (fun a' e' -> MSet.add e' a') a
+	       (Program.interface_find_methods program iface m
+		  (Some co', Some ins_t, outs_t)))
+	  MSet.empty ifaces
       in
       let co =
-	let co' =
-	  match asco with
-	      None -> Class.get_type cls
-	    | Some c -> 
-
-		(* Make sure the provided cointerface is actually implemented
-		   by the current class. *)
-		
-		if Program.subtype_p program (Class.get_type cls) c then
-		  c
-		else
-		  raise (Type_error (n.file, n.line, (Type.as_string c) ^
-				       " is not implemented by class " ^
-				       cls.Class.name ^ " of type " ^
-				       (Type.as_string (Class.get_type cls))))
-	in
-	let cands =
-	  List.fold_left
-	    (fun a iface ->
-	       List.fold_left (fun a' e' -> MSet.add e' a') a
-	       (Program.interface_find_methods program iface m
-		  (Some co', ins_t, outs_t)))
-	    MSet.empty ifaces
-	in
-	    match MSet.cardinal cands with
-	      0 -> raise (Type_error (n.file, n.line,
-				       "Interface " ^
-					 (Type.as_string callee_t) ^
-					 " does not provide a method " ^ m ^ 
-					 " with signature " ^
-					 (Type.string_of_sig
-					    (Some co', ins_t, outs_t))))
-	    | 1 -> (MSet.choose cands).Method.coiface
-	    | _ -> error_ambigous n m callee_t cands
+	match MSet.cardinal cands with
+	    0 -> raise (Type_error (n.file, n.line,
+				    "Interface " ^
+				      (Type.as_string callee_t) ^
+				      " does not provide a method " ^ m ^ 
+				      " with signature " ^
+				      (Type.string_of_sig
+					 (Some co', Some ins_t, outs_t))))
+	  | 1 -> (MSet.choose cands).Method.coiface
+	  | _ -> error_ambigous n m callee_t cands
       in
 	if (Program.contracts_p program cls co) then
-	  (label', callee', (Some co, ins_t, outs_t), ins', outs')
+	  (label', callee', (Some co, Some ins_t, outs_t), ins', outs')
 	else
 	  raise (Type_error (n.file, n.line,
 	  		     "Class " ^ cls.Class.name ^
