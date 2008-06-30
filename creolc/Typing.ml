@@ -793,8 +793,8 @@ let typecheck tree: Program.t =
 	match label with
 	    None -> label
 	  | Some l -> Some (type_check_lhs program cls meth coiface l)
-      and (ins', ins_t) =
-	(* Observe that ins' and ins_t may still contain parameterised types
+      and (ins'', ins_t'') =
+	(* Observe that ins'' and ins_t may still contain parameterised types
 	   and we cannot use these too look up the method we want to call. *)
 	let i =
 	  type_check_expression_list program cls meth coiface [] ins
@@ -838,79 +838,80 @@ let typecheck tree: Program.t =
 				     cls.Class.name ^ " of type " ^
 				     (Type.as_string (Class.get_type cls))))
       in
-      let cands =
+      let (ins', ins_t') =
 
 	(* Find the set of all possible candidate methods for the
-	   inferred signature. This will fail if one of the input types
-	   is not a ground type term.  *)
+	   inferred signature. Here we cannot assume that the types
+	   inferred for the input parameters are all ground type
+	   terms.  Therefore, we have to build a unification problem
+	   first and resolve the types.  *)
 
-	if List.for_all Type.sentence_p ins_t then
+	let cands' =
 	  List.fold_left
 	    (fun a iface ->
 	       List.fold_left (fun a' e' -> MSet.add e' a') a
 		 (Program.interface_find_methods program iface m
-		    (Some co', Some ins_t, outs_t)))
+		    (Some co', None, outs_t)))
 	    MSet.empty ifaces
-	else
-	  begin
+	in
+	let cands_type =
+	  (* Build a disjunctive type from all the inputs. *)
+	  Type.Disjunction
+	    (List.map
+	       (fun m ->
+		  Type.Function (Method.domain_type m, Method.range_type m))
+	       (MSet.elements cands'))
 
-	    (* One of the input types is not a ground term.  We need
-	       to build a unification problem.  Get all possible
-	       methods by their name and by their possible output
-	       type, but ignore the input type for that set. *)
-	    let cands' =
-	      List.fold_left
-		(fun a iface ->
-		   List.fold_left (fun a' e' -> MSet.add e' a') a
-		     (Program.interface_find_methods program iface m
-			(Some co', None, outs_t)))
-		MSet.empty ifaces
-	    in
-	    let cands_type =
-	      (* Build a disjunctive type from all the inputs. *)
-	      Type.Disjunction
-		(List.map
-		   (fun m ->
-		      Type.Function (Method.domain_type m, Method.range_type m))
-		   (MSet.elements cands'))
-
-	    and call_type =
-	      (* the actual call will have a parameterised type. *)
-	      match outs_t with
-		  None -> Type.Function (Type.Tuple ins_t, Type.Variable "__")
-		| Some t -> Type.Function (Type.Tuple ins_t, Type.Tuple t)
-	    in
-	    let
-		_ = 
-	      try
-		unify program [(call_type, cands_type)]
-	      with
-		  Unify_failure (s, t) ->
-		    raise (Type_error (n.file, n.line,
-				       (Type.as_string s) ^
-					 " but expected is type " ^
-					 (Type.as_string t) ^
-					 "\n  Cannot satisfy constraints: " ^
-					 (string_of_constraint_set
-					    [(call_type, cands_type)])))
-	    in
-	      cands'
-	  end
+	and call_type =
+	  (* the actual call will have a parameterised type. *)
+	  match outs_t with
+	      None -> Type.Function (Type.Tuple ins_t'', Type.Variable "__")
+	    | Some t -> Type.Function (Type.Tuple ins_t'', Type.Tuple t)
+	in
+	let subst = 
+	  try
+	    unify program [(call_type, cands_type)]
+	  with
+	      Unify_failure (s, t) ->
+		raise (Type_error (n.file, n.line,
+				   (Type.as_string s) ^
+				     " but expected is type " ^
+				     (Type.as_string t) ^
+				     "\n  Cannot satisfy constraints: " ^
+				     (string_of_constraint_set
+					[(call_type, cands_type)])))
+	in
+	let i = List.map (substitute_types_in_expression subst) ins'' in
+	  (i, List.map Expression.get_type i)
       in
       let co =
-	match MSet.cardinal cands with
-	    0 -> raise (Type_error (n.file, n.line,
-				    "Interface " ^
-				      (Type.as_string callee_t) ^
-				      " does not provide a method " ^ m ^ 
-				      " with signature " ^
-				      (Type.string_of_sig
-					 (Some co', Some ins_t, outs_t))))
-	  | 1 -> (MSet.choose cands).Method.coiface
-	  | _ -> error_ambigous n m callee_t cands
+	let cands =
+	  (* Now the type of the input parameters have been resolved.
+	     We must recheck the signature of the call, because the
+	     unification algorithm could have guessed something more
+	     precise or a signature from the wrong co-interface.
+
+	     TODO: Make sure this statement is actually correct. *)
+	  List.fold_left
+	    (fun a iface ->
+	       List.fold_left (fun a' e' -> MSet.add e' a') a
+		 (Program.interface_find_methods program iface m
+		    (Some co', Some ins_t', outs_t)))
+	    MSet.empty ifaces
+	in
+	  match MSet.cardinal cands with
+	      0 -> raise (Type_error (n.file, n.line,
+				      "Interface " ^
+					(Type.as_string callee_t) ^
+					" does not provide a method " ^ m ^ 
+					" with signature " ^
+					(Type.string_of_sig
+					   (Some co', Some ins_t', outs_t))))
+	    | 1 -> (MSet.choose cands).Method.coiface
+	    | _ -> error_ambigous n m callee_t cands
       in
 	if (Program.contracts_p program cls co) then
-	  (label', callee', (Some co, Some ins_t, outs_t), ins', outs')
+	  (label', callee', (Some co, Some ins_t', outs_t), ins', outs')
 	else
 	  raise (Type_error (n.file, n.line,
 	  		     "Class " ^ cls.Class.name ^
