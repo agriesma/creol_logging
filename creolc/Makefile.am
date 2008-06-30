@@ -156,7 +156,7 @@ Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
 	rm -f Parser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --infer $<
 	(t=`mktemp menhir.XXXXXXXX` && mv Parser.ml $$t && \
-	sed 's,_menhir_shifted = [0123456789]*\(.*\)$$,_menhir_shifted = max_int \1,g' $$t > Parser.ml && \
+	sed 's,_menhir_shifted = [0123456789][0123456789]*\(.*\)$$,_menhir_shifted = max_int \1,g' $$t > Parser.ml && \
 	rm $$t)
 
 
