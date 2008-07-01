@@ -207,7 +207,7 @@ CSTEP(dnl
 `EVALGUARD(G, (S :: L), MM, T) asBool'
 `[label await]')
 
---- Optimze label access in await statements.
+--- Optimize label access in await statements.
 eq
   < O : C | Att: S, Pr: (L, await (A ??) ; SL), PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =
