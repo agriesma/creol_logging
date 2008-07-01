@@ -24,7 +24,7 @@ changequote(`[[[[', `]]]]')dnl
 			    op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
     protecting SET{Method} * (sort Set{Method} to MMtd,
 			      op empty : -> Set{Method} to noMethod,
-                              op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
+                              op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d r o d)] ) .
 changequote dnl
 
     --- The standard configuration of Maude.
@@ -38,7 +38,7 @@ changequote dnl
     sorts Body Invoc Comp .
     subsorts Invoc Comp < Body .
 
-    op ob : String -> Oid [ctor] .
+    op ob : String -> Oid [ctor `format' (r o)] .
 
     var C : String .
     var N : Nat .
@@ -77,8 +77,8 @@ changequote dnl
 
     --- Define class declarations as an object.
     ---
-    subsort String < Oid .
     op Cl : -> Cid [ctor `format' (c o)] .
+    op cl : String -> Oid [ctor `format' (c o)] .
     op Inh:_ : InhList -> Attribute [ctor] .
     op Par:_ : VidList -> Attribute [ctor] .
     op Att:_ : Subst -> Attribute [ctor] .
