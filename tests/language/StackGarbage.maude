@@ -1,12 +1,15 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "r" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( emp ) > *
-  < "m" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: ( ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; "r" ::= "+" ( "r" :: int(1) ) [] "r" ::= int(1) ) ; return ( "r" ) >, Ocnt: 0 >
+< "Test" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: (noSubst),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "r" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( emp ) > *
+    < "m" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: ( ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; "r" ::= "+" ( "r" :: int(1) ) [] "r" ::= int(1) ) ; return ( "r" ) >),
+  Ocnt: 0 >
 
 .
 endm

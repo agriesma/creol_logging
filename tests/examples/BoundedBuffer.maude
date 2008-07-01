@@ -1,26 +1,38 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "BoundedBuffer" : Cl | Inh: noInh, Par: noVid, Att: "buffer" |-> null , "max" |-> null , "n" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code:  ( ( "buffer" @@ "BoundedBuffer" ), ( "max" @@ "BoundedBuffer" ), ( "n" @@ "BoundedBuffer" ) )  ::= list(emp) :: int(10) :: int(0) ; skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "append" : Mtdname | Param: "d", Latt: "d" |-> null , "_" |-> null, Code: ( await "<" ( "n" :: "max" ) ) ;  ( "buffer", "n" )  ::= "|-" ( "buffer" :: "d" ) :: "+" ( "n" :: int(1) ) ; return ( emp ) > *
-  < "remove" : Mtdname | Param: noVid, Latt: "d" |-> null , "_" |-> null, Code: ( await ">" ( "n" :: int(0) ) ) ; "d" ::= "head" ( "buffer" ) ;  ( "buffer", "n" )  ::= "tail" ( "buffer" ) :: "-" ( "n" :: int(1) ) ; return ( "d" ) >, Ocnt: 0 >
+< "BoundedBuffer" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: ("buffer" |-> null , "max" |-> null , "n" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code:  ( ( "buffer" @@ "BoundedBuffer" ), ( "max" @@ "BoundedBuffer" ), ( "n" @@ "BoundedBuffer" ) )  ::= list(emp) :: int(10) :: int(0) ; skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "append" : Mtdname | Param: "d", Latt: "d" |-> null , "_" |-> null, Code: ( await "<" ( "n" :: "max" ) ) ;  ( "buffer", "n" )  ::= "|-" ( "buffer" :: "d" ) :: "+" ( "n" :: int(1) ) ; return ( emp ) > *
+    < "remove" : Mtdname | Param: noVid, Latt: "d" |-> null , "_" |-> null, Code: ( await ">" ( "n" :: int(0) ) ) ; "d" ::= "head" ( "buffer" ) ;  ( "buffer", "n" )  ::= "tail" ( "buffer" ) :: "-" ( "n" :: int(1) ) ; return ( "d" ) >),
+  Ocnt: 0 >
 
-< "Producer" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "loop" (int(0) ) )  ; free( "label:0" ) ; return ( emp ) > *
-  < "loop" : Mtdname | Param: "i", Latt: "i" |-> null , "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: "label:0" ! "b" . "append" ( "i" ) ; ( "label:0" ? ( noVid ) )  ; ( "label:1" ! "this" . "loop" ("+" ( "i" :: int(1) ) ) )  ; free( "label:1" ) ; return ( emp ) >, Ocnt: 0 >
+< "Producer" : Cl | Inh: (noInh),
+  Par: ("b"),
+  Att: ("b" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "loop" (int(0) ) )  ; free( "label:0" ) ; return ( emp ) > *
+    < "loop" : Mtdname | Param: "i", Latt: "i" |-> null , "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: "label:0" ! "b" . "append" ( "i" ) ; ( "label:0" ? ( noVid ) )  ; ( "label:1" ! "this" . "loop" ("+" ( "i" :: int(1) ) ) )  ; free( "label:1" ) ; return ( emp ) >),
+  Ocnt: 0 >
 
-< "Consumer" : Cl | Inh: noInh, Par: "b", Att: "b" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "y" |-> null , "_" |-> null, Code: "label:0" ! "b" . "remove" ( emp ) ; ( "label:0" ? ( "y" ) )  ; ( "label:1" ! "this" . "run" (emp ) )  ; free( "label:1" ) ; return ( emp ) >, Ocnt: 0 >
+< "Consumer" : Cl | Inh: (noInh),
+  Par: ("b"),
+  Att: ("b" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "y" |-> null , "_" |-> null, Code: "label:0" ! "b" . "remove" ( emp ) ; ( "label:0" ? ( "y" ) )  ; ( "label:1" ! "this" . "run" (emp ) )  ; free( "label:1" ) ; return ( emp ) >),
+  Ocnt: 0 >
 
-< "Starter" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "b" |-> null , "p" |-> null , "c" |-> null , "_" |-> null, Code: "b" ::= new "BoundedBuffer" ( emp ) ; "p" ::= new "Producer" ( "b" ) ; "c" ::= new "Consumer" ( "b" ) ; return ( emp ) >, Ocnt: 0 >
+< "Starter" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: (noSubst),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "b" |-> null , "p" |-> null , "c" |-> null , "_" |-> null, Code: "b" ::= new "BoundedBuffer" ( emp ) ; "p" ::= new "Producer" ( "b" ) ; "c" ::= new "Consumer" ( "b" ) ; return ( emp ) >),
+  Ocnt: 0 >
 
 .
 endm

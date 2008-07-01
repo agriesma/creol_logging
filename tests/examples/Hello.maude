@@ -1,16 +1,22 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null , "_" |-> null, Code: "result" ::= str("Hello, world") ; return ( "result" ) >, Ocnt: 0 >
+< "Hello" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: (noSubst),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null , "_" |-> null, Code: "result" ::= str("Hello, world") ; return ( "result" ) >),
+  Ocnt: 0 >
 
-< "Main" : Cl | Inh: noInh, Par: noVid, Att: "result" |-> null , "hello" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "hello" ::= new "Hello" ( emp ) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "hello" . "hello" ( emp ) ; ( "label:0" ? ( "result" ) )  ; return ( emp ) >, Ocnt: 0 >
+< "Main" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: ("result" |-> null , "hello" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "hello" ::= new "Hello" ( emp ) ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "hello" . "hello" ( emp ) ; ( "label:0" ? ( "result" ) )  ; return ( emp ) >),
+  Ocnt: 0 >
 
 .
 endm

@@ -1,17 +1,23 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "MutRec" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "doit" : Mtdname | Param: "other", Latt: "other" |-> null , "label:0" |-> null , "_" |-> null, Code: "label:0" ! "other" . "doit" ( "this" ) ; ( "label:0" ? ( noVid ) )  ; return ( emp ) >, Ocnt: 0 >
+< "MutRec" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: (noSubst),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "doit" : Mtdname | Param: "other", Latt: "other" |-> null , "label:0" |-> null , "_" |-> null, Code: "label:0" ! "other" . "doit" ( "this" ) ; ( "label:0" ? ( noVid ) )  ; return ( emp ) >),
+  Ocnt: 0 >
 
-< "Test" : Cl | Inh: noInh, Par: noVid, Att: "m1" |-> null , "m2" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "m1" ::= new "MutRec" ( emp ) ; "m2" ::= new "MutRec" ( emp ) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "m1" . "doit" ( "m2" ) ; free( "label:0" ) ; return ( emp ) > *
-  < "doit" : Mtdname | Param: "other", Latt: "other" |-> null , "_" |-> null, Code: skip ; return ( emp ) >, Ocnt: 0 >
+< "Test" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: ("m1" |-> null , "m2" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "m1" ::= new "MutRec" ( emp ) ; "m2" ::= new "MutRec" ( emp ) ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "m1" . "doit" ( "m2" ) ; free( "label:0" ) ; return ( emp ) > *
+    < "doit" : Mtdname | Param: "other", Latt: "other" |-> null , "_" |-> null, Code: skip ; return ( emp ) >),
+  Ocnt: 0 >
 
 .
 endm

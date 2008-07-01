@@ -1,16 +1,22 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null , "next" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: ( "n" @@ "Generator" ) ::= int(3) ; "next" ::= new "Sieve" ( int(2) ) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "r" |-> null , "l" |-> null , "_" |-> null, Code: "l" ! "next" . "send" ( "n" :: "n" ) ; "n" ::= "+" ( "n" :: int(1) ) ; ( "label:0" ! "this" . "run" (emp ) )  ; free( "label:0" ) ; ( await ( "l" ?? ) ) ; ( "l" ? ( "r" ) )  ; return ( emp ) >, Ocnt: 0 >
+< "Generator" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: ("n" |-> null , "next" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: ( "n" @@ "Generator" ) ::= int(3) ; "next" ::= new "Sieve" ( int(2) ) ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "r" |-> null , "l" |-> null , "_" |-> null, Code: "l" ! "next" . "send" ( "n" :: "n" ) ; "n" ::= "+" ( "n" :: int(1) ) ; ( "label:0" ! "this" . "run" (emp ) )  ; free( "label:0" ) ; ( await ( "l" ?? ) ) ; ( "l" ? ( "r" ) )  ; return ( emp ) >),
+  Ocnt: 0 >
 
-< "Sieve" : Cl | Inh: noInh, Par: "p", Att: "p" |-> null , "next" |-> null , "ins" |-> null , "outs" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code:  ( ( "ins" @@ "Sieve" ), ( "outs" @@ "Sieve" ) )  ::= int(0) :: int(0) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "send" : Mtdname | Param: "n" , "seq", Latt: "n" |-> null , "seq" |-> null , "res" |-> null , "l" |-> null , "_" |-> null, Code: ( await "=" ( "seq" :: "ins" ) ) ; "ins" ::= "+" ( "ins" :: int(1) ) ; if "=" ( "%" ( "n" :: "p" ) :: int(0) ) th "res" ::= bool(false) el if "/=" ( "next" :: null ) th "l" ! "next" . "send" ( "n" :: "outs" ) ; "outs" ::= "+" ( "outs" :: int(1) ) ; ( await ( "l" ?? ) ) ; ( "l" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >, Ocnt: 0 >
+< "Sieve" : Cl | Inh: (noInh),
+  Par: ("p"),
+  Att: ("p" |-> null , "next" |-> null , "ins" |-> null , "outs" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code:  ( ( "ins" @@ "Sieve" ), ( "outs" @@ "Sieve" ) )  ::= int(0) :: int(0) ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "send" : Mtdname | Param: "n" , "seq", Latt: "n" |-> null , "seq" |-> null , "res" |-> null , "l" |-> null , "_" |-> null, Code: ( await "=" ( "seq" :: "ins" ) ) ; "ins" ::= "+" ( "ins" :: int(1) ) ; if "=" ( "%" ( "n" :: "p" ) :: int(0) ) th "res" ::= bool(false) el if "/=" ( "next" :: null ) th "l" ! "next" . "send" ( "n" :: "outs" ) ; "outs" ::= "+" ( "outs" :: int(1) ) ; ( await ( "l" ?? ) ) ; ( "l" ? ( "res" ) )  el "next" ::= new "Sieve" ( "n" ) ; "res" ::= bool(true) fi fi ; return ( "res" ) >),
+  Ocnt: 0 >
 
 .
 endm

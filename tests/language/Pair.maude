@@ -1,11 +1,14 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Test" : Cl | Inh: noInh, Par: noVid, Att: "x" |-> null, Mtds: 
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(int(1) , int(2)) ; return ( emp ) >, Ocnt: 0 >
+< "Test" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: ("x" |-> null),
+  Mtds: (< "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(int(1) , int(2)) ; return ( emp ) >),
+  Ocnt: 0 >
 
 .
 endm

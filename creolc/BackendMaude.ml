@@ -357,7 +357,7 @@ let emit options out_channel input =
       | n::l -> output_string out_channel ("\"" ^ n.VarDecl.name ^ "\" # ");
           of_method_return l
   and of_method cls m =
-    output_string out_channel ("\n  < \"" ^ m.Method.name ^
+    output_string out_channel ("< \"" ^ m.Method.name ^
 				  "\" : Mtdname | Param: ");
     of_parameter_list m.Method.inpars;
     output_string out_channel ", Latt: " ;
@@ -380,22 +380,22 @@ let emit options out_channel input =
 	[] -> output_string out_channel "noMtd" 
       | [m] -> of_method cls m
       | m::r -> of_method cls m ;
-	  output_string out_channel " *" ;
+	  output_string out_channel " *\n    " ;
 	  of_method_list cls r
   and of_with_defs cls ws =
     let methods = List.flatten (List.map (function w -> w.With.methods) ws)
     in
       of_method_list cls methods
   and of_class c =
-    output_string out_channel ("< \"" ^ c.Class.name ^ "\" : Cl | Inh: ");
+    output_string out_channel ("< \"" ^ c.Class.name ^ "\" : Cl | Inh: (");
     of_inherits_list c.Class.inherits;
-    output_string out_channel ", Par: ";
+    output_string out_channel "),\n  Par: (";
     of_parameter_list c.Class.parameters;
-    output_string out_channel ", Att: ";
+    output_string out_channel "),\n  Att: (";
     of_class_attribute_list (c.Class.parameters @ c.Class.attributes);
-    output_string out_channel ", Mtds: ";
+    output_string out_channel "),\n  Mtds: (";
     of_with_defs c.Class.name c.Class.with_defs;
-    output_string out_channel ", Ocnt: 0 >\n\n"
+    output_string out_channel "),\n  Ocnt: 0 >\n\n"
   and of_interface i = ()
   and of_exception e = ()
   and of_datatype d = ()
@@ -418,9 +418,9 @@ let emit options out_channel input =
 	output channel out. *)
     output_string out_channel
       (match options.target with
-          Interpreter -> "load creol-interpreter\n" 
-	| Modelchecker -> "load creol-modelchecker\n"
-	| Realtime -> "load creol-realtime\n") ;
+          Interpreter -> "load creol-interpreter .\n" 
+	| Modelchecker -> "load creol-modelchecker .\n"
+	| Realtime -> "load creol-realtime .\n") ;
     output_string out_channel "mod PROGRAM is\n" ;
     output_string out_channel ("protecting CREOL-SIMULATOR .\n" ^
       "op classes : -> Configuration [ctor] .\n" ^ "eq classes =\n") ;

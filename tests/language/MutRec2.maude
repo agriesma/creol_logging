@@ -1,12 +1,15 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "a" |-> null , "_" |-> null, Code: "a" ::= new "Test" ( emp ) ; "label:0" ! "a" . "m" ( emp ) ; ( "label:0" ? ( noVid ) )  ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "m" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "caller" . "m" ( emp ) ; ( "label:0" ? ( noVid ) )  ; return ( emp ) >, Ocnt: 0 >
+< "Test" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: (noSubst),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "a" |-> null , "_" |-> null, Code: "a" ::= new "Test" ( emp ) ; "label:0" ! "a" . "m" ( emp ) ; ( "label:0" ? ( noVid ) )  ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "m" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "caller" . "m" ( emp ) ; ( "label:0" ? ( noVid ) )  ; return ( emp ) >),
+  Ocnt: 0 >
 
 .
 endm

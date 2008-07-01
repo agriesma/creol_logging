@@ -1,13 +1,16 @@
-load creol-interpreter
+load creol-interpreter .
 mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "CallAll" : Cl | Inh: noInh, Par: noVid, Att: "outstanding" |-> null , "list" |-> null , "results" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-  < "doit" : Mtdname | Param: "l", Latt: "l" |-> null , "label:0" |-> null , "i" |-> null , "r" |-> null , "o" |-> null , "_" |-> null, Code: if "/=" ( "l" :: list(emp) ) th "r" ! "fst" ( "i" ) . "m" ( "snd" ( "i" ) ) ; ( "label:0" ! "this" . "doit" ("tail" ( "l" ) ) )  ; ( "label:0" ? ( noVid ) )  ; ( await ( "r" ?? ) ) ; ( "r" ? ( "o" ) )  ; "results" ::= "|-" ( "results" :: pair("fst" ( "i" ) , "o") ) el skip fi ; return ( emp ) > *
-  < "call_all" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "results" ::= list(emp) ; ( "label:0" ! "this" . "doit" ("list" ) )  ; ( "label:0" ? ( noVid ) )  ; ( await "=" ( "#" ( "results" ) :: "#" ( "list" ) ) ) ; return ( emp ) >, Ocnt: 0 >
+< "CallAll" : Cl | Inh: (noInh),
+  Par: (noVid),
+  Att: ("outstanding" |-> null , "list" |-> null , "results" |-> null),
+  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
+    < "doit" : Mtdname | Param: "l", Latt: "l" |-> null , "label:0" |-> null , "i" |-> null , "r" |-> null , "o" |-> null , "_" |-> null, Code: if "/=" ( "l" :: list(emp) ) th "r" ! "fst" ( "i" ) . "m" ( "snd" ( "i" ) ) ; ( "label:0" ! "this" . "doit" ("tail" ( "l" ) ) )  ; ( "label:0" ? ( noVid ) )  ; ( await ( "r" ?? ) ) ; ( "r" ? ( "o" ) )  ; "results" ::= "|-" ( "results" :: pair("fst" ( "i" ) , "o") ) el skip fi ; return ( emp ) > *
+    < "call_all" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "results" ::= list(emp) ; ( "label:0" ! "this" . "doit" ("list" ) )  ; ( "label:0" ? ( noVid ) )  ; ( await "=" ( "#" ( "results" ) :: "#" ( "list" ) ) ) ; return ( emp ) >),
+  Ocnt: 0 >
 
 .
 endm
