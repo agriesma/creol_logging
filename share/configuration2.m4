@@ -30,12 +30,10 @@ changequote dnl
     --- The standard configuration of Maude.
     protecting CONFIGURATION .
 
+    subsort Oid < Data .
+
     --- Define object identifiers.
     protecting CONVERSION .
-
-    sorts Class ifdef(`TIME', `Clock ').
-    subsorts Class ifdef(`TIME', `Clock ') < Configuration .
-    subsort Oid < Data .
 
     sorts Body Invoc Comp .
     subsorts Invoc Comp < Body .
@@ -77,32 +75,36 @@ changequote dnl
     op noDealloc : -> Labels [ctor] .
     op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
+    --- Define class declarations as an object.
+    ---
+    subsort String < Oid .
+    op Cl : -> Cid [ctor `format' (c o)] .
+    op Inh:_ : InhList -> Attribute [ctor] .
+    op Par:_ : VidList -> Attribute [ctor] .
+    op Att:_ : Subst -> Attribute [ctor] .
+    op Mtds:_ : MMtd -> Attribute [ctor] .
+    op Ocnt:_ : Nat -> Attribute [ctor] .
+
     --- Terms of sort Object represent objects (and classes) in the
     --- run-time configuration.
     ---
     --- Terms of sort Cid represent class names.
     subsort String < Cid .
-
-    --- This term is the class name of "class objects."
-    op Cl : -> Cid [ctor `format' (c o)] .
-
     op noObj : -> Object [ctor] .
-    op <_:_ | Att:_, Pr:_, PrQ:_, Dealloc:_, Ev:_, Lcnt:_> : 
-       Oid String Subst Process MProc Labels MMsg Nat -> Object 
-         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o  r ni o  r ni o--  r on)] .
 
-
-    --- Define Classes.
-    --- Class declaration.
-    ---
-    op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
-      String InhList VidList Subst MMtd Nat -> Class 
-       [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .
+    op Pr:_ : Process -> Attribute [ctor] .
+    op PrQ:_ : MProc -> Attribute [ctor] .
+    op Dealloc:_ : Labels -> Attribute [ctor] .
+    op Ev:_ : MMsg -> Attribute [ctor] .
+    op Lcnt:_ : Nat -> Attribute [ctor] .
 
 ifdef(`TIME',dnl
-  *** Definition of a global clock in the system
-  op < _: Clock | delta: _> : Float Float -> Clock
-    [ctor ``format'' (c o c c c c o c o)] .
+    sort Clock .
+    subsort Clock < Configuration .
+
+    *** Definition of a global clock in the system
+    op < _: Clock | delta: _> : Float Float -> Clock
+      [ctor ``format'' (c o c c c c o c o)] .
 )dnl
 
   *** Useful for real-time maude and some other tricks.
