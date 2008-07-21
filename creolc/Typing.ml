@@ -54,6 +54,12 @@ let log l = Messages.message (l + 2)
 
 module Env = Map.Make(String)
 
+type environment =
+  { program: Program.t;
+    cls: Class.t;
+    meth: Method.t;
+    env: Type.t Env.t;
+  }
 
 (* Method candidates are collected in a set. *)
 
@@ -342,12 +348,12 @@ let typecheck tree: Program.t =
      this would be the type), the function generating a new fresh
      type variable, and the new constraint set.  *)
 
-  let rec type_recon_expression program cls meth coiface env constr fresh_name =
+  let rec type_recon_expression env coiface constr fresh_name =
     function
 	This n ->
-	  (This (set_type n (Class.get_type cls)), constr, fresh_name)
+	  (This (set_type n (Class.get_type env.cls)), constr, fresh_name)
       | QualifiedThis (n, t) ->
-	  if Program.subtype_p program (Class.get_type cls) t then
+	  if Program.subtype_p env.program (Class.get_type env.cls) t then
 	    (QualifiedThis (set_type n t, t), constr, fresh_name)
 	  else
 	    raise (Type_error (Expression.file n, Expression.line n,
@@ -376,13 +382,13 @@ let typecheck tree: Program.t =
 	  (String (set_type n Type.string, value), constr, fresh_name)
       | Tuple (n, l) ->
 	  let (l', constr', fresh_name') =
-	    type_recon_expression_list program cls meth coiface env constr fresh_name l
+	    type_recon_expression_list env coiface constr fresh_name l
 	  in
 	    (Tuple (set_type n (Type.Tuple (List.map get_type l')), l'),
 	     constr', fresh_name')
       | ListLit (n, l) ->
 	  let (l', constr', fresh_name') = 
-	    type_recon_expression_list program cls meth coiface env constr fresh_name l in
+	    type_recon_expression_list env coiface constr fresh_name l in
 	  let (v, fresh_name'') = fresh_var fresh_name' in
 	  let ty = Type.Application ("List", [v]) in
 	    (ListLit (set_type n ty, l'),
@@ -390,7 +396,7 @@ let typecheck tree: Program.t =
 	     fresh_name'')
       | SetLit (n, l) ->
 	  let (l', constr', fresh_name') = 
-	    type_recon_expression_list program cls meth coiface env constr fresh_name l in
+	    type_recon_expression_list env coiface constr fresh_name l in
 	  let (v, fresh_name'') = fresh_var fresh_name' in
 	  let ty = Type.set [v] in
 	    (SetLit (set_type n ty, l'),
@@ -401,12 +407,12 @@ let typecheck tree: Program.t =
 	    try
 	      try
 		try
-		  Env.find name env
+		  Env.find name env.env
 		with
 		    Not_found ->
-		      (Method.find_variable meth name).VarDecl.var_type
+		      (Method.find_variable env.meth name).VarDecl.var_type
 	      with Not_found ->
-		(Program.find_attr_decl program cls name).VarDecl.var_type
+		(Program.find_attr_decl env.program env.cls name).VarDecl.var_type
 	    with
 		Not_found ->
 		  raise (Type_error ((n.Expression.file),
@@ -417,19 +423,20 @@ let typecheck tree: Program.t =
 	    (Id (set_type n res, name), constr, fresh_name)
       | StaticAttr (n, name, ((Type.Basic c) as t)) ->
 	  let res =
-	    Program.find_attr_decl program (Program.find_class program c)
-	      name
+	    let program = env.program in 
+	      Program.find_attr_decl program (Program.find_class program c)
+	          name
 	  in
 	    (StaticAttr (set_type n res.VarDecl.var_type, name, t),
 	     constr, fresh_name)
       | StaticAttr _ -> assert false
       | Unary (n, op, arg) ->
 	  let (arg', constr', fresh_name') =
-	    type_recon_expression program cls meth coiface env constr fresh_name arg 
+	    type_recon_expression env coiface constr fresh_name arg 
 	  in
 	  let name = string_of_unaryop op in
 	  let (fresh_name'', ty1) =
-	    match Program.find_functions program name with
+	    match Program.find_functions env.program name with
 		[] ->
 		  raise (Type_error (Expression.file n, Expression.line n,
 				     "Unary operator " ^ name ^
@@ -462,14 +469,14 @@ let typecheck tree: Program.t =
 	     (Type.Function (ty2, v), ty1)::constr', fresh_name''')
       | Binary (n, op, arg1, arg2) ->
 	  let (arg1', constr', fresh_name') =
-	    type_recon_expression program cls meth coiface env constr fresh_name arg1
+	    type_recon_expression env coiface constr fresh_name arg1
 	  in
 	  let (arg2', constr'', fresh_name'') =
-	    type_recon_expression program cls meth coiface env constr' fresh_name' arg2
+	    type_recon_expression env coiface constr' fresh_name' arg2
 	  in
 	  let name = string_of_binaryop op in
 	  let (fresh_name''', ty1) =
-	    match Program.find_functions program name with
+	    match Program.find_functions env.program name with
 		[] ->
 		  raise (Type_error (Expression.file n, Expression.line n,
 				     "Binary operator " ^ name ^
@@ -502,13 +509,13 @@ let typecheck tree: Program.t =
 	     (Type.Function (ty2, v), ty1)::constr'', fresh_name'''')
       | Expression.If (n, cond, iftrue, iffalse) ->
 	  let (cond', constr', fresh_name') =
-	    type_recon_expression program cls meth coiface env constr fresh_name cond
+	    type_recon_expression env coiface constr fresh_name cond
 	  in
 	  let  (iftrue', constr'', fresh_name'') =
-	    type_recon_expression program cls meth coiface env constr' fresh_name' iftrue
+	    type_recon_expression env coiface constr' fresh_name' iftrue
 	  in
 	  let (iffalse', constr''', fresh_name''') =
-	    type_recon_expression program cls meth coiface env constr'' fresh_name'' iffalse
+	    type_recon_expression env coiface constr'' fresh_name'' iffalse
 	  in
 	  let (rt, fresh_name'''') = fresh_var fresh_name'''  in
 	    (Expression.If (set_type n rt, cond', iftrue', iffalse'),
@@ -516,10 +523,10 @@ let typecheck tree: Program.t =
 	      (get_type iffalse', rt)] @ constr''', fresh_name'''')
       | FuncCall (n, name, args) ->
 	  let (nargs, constr', fresh_name') =
-	    type_recon_expression_list program cls meth coiface env constr fresh_name args 
+	    type_recon_expression_list env coiface constr fresh_name args 
 	  in
 	  let (fresh_name'', ty1) =
-	    match Program.find_functions program name with
+	    match Program.find_functions env.program name with
 		[] ->
 		  raise (Type_error (Expression.file n, Expression.line n,
 				     "Function " ^ name ^ " not defined"))
@@ -552,7 +559,7 @@ let typecheck tree: Program.t =
       | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
 	  begin
 	    try
-	      if Method.label_p meth name then
+	      if Method.label_p env.meth name then
 		(Label (set_type n (Type.Basic "Bool"), l), constr,
 		 fresh_name)
 	      else
@@ -567,11 +574,11 @@ let typecheck tree: Program.t =
       | Label _ -> assert false
       | New (n, Type.Basic c, args) ->
 	  let (args', constr', fresh_name') =
-	    type_recon_expression_list program cls meth coiface env constr fresh_name args
+	    type_recon_expression_list env coiface constr fresh_name args
 	  in
 	  let cls' =
 	    try
-	      Program.find_class program c
+	      Program.find_class env.program c
 	    with
 		Not_found ->
 		  raise (Type_error (Expression.file n, Expression.line n,
@@ -596,11 +603,11 @@ let typecheck tree: Program.t =
 	     is \texttt{Bool} in an environment where [v] has type
 	     [t]. Then the result type is [t]. *)
 	  
-	  if Env.mem v env then
+	  if Env.mem v env.env then
 	    Messages.warn Messages.Shadow n.Expression.file n.Expression.line
 	      ("Variable " ^ v ^ " hides a different variable") ;
 	  let (e', constr', fresh_name') =
-	    type_recon_expression program cls meth coiface (Env.add v t env) constr fresh_name e
+	    type_recon_expression { env with env = (Env.add v t env.env) } coiface constr fresh_name e
 	  in
 	    (Choose (set_type n t, v, t, e'),
 	     (get_type e', Type.bool)::constr', fresh_name')
@@ -610,20 +617,20 @@ let typecheck tree: Program.t =
 	     is \texttt{Bool} in an environment where [v] has type
 	     [t]. Then the result type is \texttt{Bool}. *)
 	  
-	  if Env.mem v env then
+	  if Env.mem v env.env then
 	    Messages.warn Messages.Shadow n.Expression.file n.Expression.line
 	      ("Variable " ^ v ^ " hides a different variable") ;
 	  let (e', constr', fresh_name') =
-	    type_recon_expression program cls meth coiface (Env.add v t env) constr fresh_name e
+	    type_recon_expression { env with env = (Env.add v t env.env) } coiface constr fresh_name e
 	  in
 	    (Exists (set_type n Type.bool, v, t, e'),
 	     (get_type e', Type.bool)::constr', fresh_name')
       | Forall (n, v, t, e) ->
-	  if Env.mem v env then
+	  if Env.mem v env.env then
 	    Messages.warn Messages.Shadow n.Expression.file n.Expression.line
 	      ("Variable " ^ v ^ " hides a different variable") ;
 	  let (e', constr', fresh_name') =
-	    type_recon_expression program cls meth coiface (Env.add v t env) constr fresh_name e
+	    type_recon_expression { env with env = (Env.add v t env.env) } coiface constr fresh_name e
 	  in
 	    (Forall (set_type n Type.bool, v, t, e'),
 	     (get_type e', Type.bool)::constr', fresh_name')
@@ -632,10 +639,10 @@ let typecheck tree: Program.t =
 	  let res =
 	    try
 	      try
-		Env.find name env
+		Env.find name env.env
 	      with
 		  Not_found ->
-		    (Method.find_variable meth name).VarDecl.var_type
+		    (Method.find_variable env.meth name).VarDecl.var_type
 	    with
 		Not_found ->
 		  raise (Type_error ((Expression.file n),
@@ -645,32 +652,32 @@ let typecheck tree: Program.t =
 	    (SSAId (set_type n res, name, version), constr, fresh_name)
       | Phi (n, args) ->
 	  let (args', constr', fresh_name') =
-	    type_recon_expression_list program cls meth coiface env constr fresh_name args
+	    type_recon_expression_list env coiface constr fresh_name args
 	  in
 	  let ty' =
-	    Program.meet program (List.map get_type args')
+	    Program.meet env.program (List.map get_type args')
 	  in
 	    (Phi (set_type n ty', args'), constr', fresh_name')
-  and type_recon_expression_list program cls meth coiface env constr fresh_name =
+  and type_recon_expression_list env coiface constr fresh_name =
     function
 	[] -> ([], constr, fresh_name)
       | e::l ->
-	  let (e', c', f') = type_recon_expression program cls meth coiface env constr fresh_name e in
-	  let (l', c'', f'') = type_recon_expression_list program cls meth coiface env c' f' l in
+	  let (e', c', f') = type_recon_expression env coiface constr fresh_name e in
+	  let (l', c'', f'') = type_recon_expression_list env coiface c' f' l in
 	    (e'::l', c'', f'')
   in
-  let type_check_expression program cls meth coiface constr expr =
+  let type_check_expression env coiface constr expr =
     let file = Expression.file (Expression.note expr)
     and line = Expression.line (Expression.note expr)
     and (expr', constr', _) =
-      type_recon_expression program cls meth coiface Env.empty constr
+      type_recon_expression env coiface constr
 	(Misc.fresh_name_gen "_") expr
     in
     let subst =
       try
 	Messages.message 2
 	  ("Unify expression in " ^ file ^ ":" ^ (string_of_int line)) ;
-	unify program constr'
+	unify env.program constr'
       with
 	  Unify_failure (s, t) ->
 	    raise (Type_error (file, line, "expression has type " ^
@@ -680,14 +687,14 @@ let typecheck tree: Program.t =
 				 (string_of_constraint_set constr')))
     in
       substitute_types_in_expression subst expr'
-  and type_check_expression_list program cls meth coiface constr =
+  and type_check_expression_list env coiface constr =
     function
 	[] -> []
       | exprs ->
 	  let file = Expression.file (Expression.note (List.hd exprs))
 	  and line = Expression.line (Expression.note (List.hd exprs))
 	  and (exprs', constr', _) =
-	    type_recon_expression_list program cls meth coiface Env.empty constr
+	    type_recon_expression_list env coiface constr
 	      (Misc.fresh_name_gen "_") exprs
 	  in
 	  let subst =
@@ -695,7 +702,7 @@ let typecheck tree: Program.t =
 	      Messages.message 2
 		("Unify expression list in " ^ file ^ ":" ^
 		   (string_of_int line));
-	      unify program constr'
+	      unify env.program constr'
 	    with
 		Unify_failure (s, t) ->
 		  raise (Type_error (file, line,
@@ -708,9 +715,9 @@ let typecheck tree: Program.t =
 	  in
 	    List.map (substitute_types_in_expression subst) exprs'
   in
-  let type_check_assertion program cls coiface meth e =
+  let type_check_assertion env coiface e =
     let e' =
-      type_check_expression program cls meth coiface [] e
+      type_check_expression env coiface [] e
     in
       if Type.bool_p (get_type e') then
 	e'
@@ -719,16 +726,16 @@ let typecheck tree: Program.t =
 			   Expression.line (Expression.note e'),
 			   "Expression is not of type Bool"))
   in
-  let type_check_lhs program (cls: Class.t) meth coiface =
+  let type_check_lhs env coiface =
     function
 	LhsId (n, name) ->
 	  let res =
 	    try
 	      try
-		(Method.find_variable meth name).VarDecl.var_type
+		(Method.find_variable env.meth name).VarDecl.var_type
 	      with
 		  Not_found ->
-		    (Program.find_attr_decl program cls name).VarDecl.var_type
+		    (Program.find_attr_decl env.program env.cls name).VarDecl.var_type
 	    with
 		Not_found ->
 		  raise (Type_error ((Expression.file n),
@@ -738,8 +745,8 @@ let typecheck tree: Program.t =
 	    LhsId (set_type n res, name)
       | LhsAttr (n, name, (Type.Basic c)) ->
 	  let res =
-	    (Program.find_attr_decl program
-	       (Program.find_class program c) name).VarDecl.var_type
+	    (Program.find_attr_decl env.program
+	       (Program.find_class env.program c) name).VarDecl.var_type
 	  in
 	    LhsAttr (set_type n res, name, (Type.Basic c))
       | LhsAttr _ -> assert false
@@ -750,7 +757,7 @@ let typecheck tree: Program.t =
       | LhsSSAId (n, name, version) ->
 	  let res =
 	    try
-	      (Method.find_variable meth name).VarDecl.var_type
+	      (Method.find_variable env.meth name).VarDecl.var_type
 	    with
 		Not_found ->
 		  raise (Type_error ((Expression.file n),
@@ -759,7 +766,7 @@ let typecheck tree: Program.t =
 	  in
 	    LhsSSAId (set_type n res, name, version)
   in
-  let rec type_check_statement program cls meth coiface =
+  let rec type_check_statement env coiface =
 
     (* Check all the constraints on method calls.  This is the generic
        rule.
@@ -769,7 +776,7 @@ let typecheck tree: Program.t =
 
     let check_method_call n label callee m (asco, _, _) ins outs =
       let (callee', callee_t) =
-	let c = type_check_expression program cls meth coiface [] callee in
+	let c = type_check_expression env coiface [] callee in
 	  (c , Expression.get_type c)
       in
       let ifaces =
@@ -777,11 +784,11 @@ let typecheck tree: Program.t =
 	  match callee_t with
 	    | Type.Intersection l ->
 		List.map
-		  (fun i -> Program.find_interface program (Type.name i)) l
+		  (fun i -> Program.find_interface env.program (Type.name i)) l
 	    | Type.Internal ->
 		[]
 	    | Type.Basic n | Type.Application (n, _) ->
-		[Program.find_interface program n]
+		[Program.find_interface env.program n]
 	    | _ ->
 		assert false
 	with
@@ -792,12 +799,12 @@ let typecheck tree: Program.t =
       and label' =
 	match label with
 	    None -> label
-	  | Some l -> Some (type_check_lhs program cls meth coiface l)
+	  | Some l -> Some (type_check_lhs env coiface l)
       and (ins'', ins_t'') =
 	(* Observe that ins'' and ins_t may still contain parameterised types
 	   and we cannot use these too look up the method we want to call. *)
 	let i =
-	  type_check_expression_list program cls meth coiface [] ins
+	  type_check_expression_list env coiface [] ins
 	in
 	  (i, List.map Expression.get_type i)
       in
@@ -811,7 +818,7 @@ let typecheck tree: Program.t =
 	    (None, None) -> (None, None)
 	  | (None, Some ol) ->
 	      let o =
-		List.map (type_check_lhs program cls meth coiface) ol
+		List.map (type_check_lhs env coiface) ol
 	      in
 		(Some o, Some (List.map Expression.get_lhs_type o))
 	  | (Some l, None) ->
@@ -824,19 +831,19 @@ let typecheck tree: Program.t =
 	   or a provided co-interface using the \textbf{as} annotation. *)
 
 	match asco with
-	    None -> Class.get_type cls
+	    None -> Class.get_type env.cls
 	  | Some c ->
 	      
 	      (* Make sure the provided cointerface is actually implemented
 		 by the current class. *)
 	      
-	      if Program.subtype_p program (Class.get_type cls) c then
+	      if Program.subtype_p env.program (Class.get_type env.cls) c then
 		c
 	      else
 		raise (Type_error (n.file, n.line, (Type.as_string c) ^
 				     " is not implemented by class " ^
-				     cls.Class.name ^ " of type " ^
-				     (Type.as_string (Class.get_type cls))))
+				     env.cls.Class.name ^ " of type " ^
+				     (Type.as_string (Class.get_type env.cls))))
       in
       let (ins', ins_t') =
 
@@ -850,7 +857,7 @@ let typecheck tree: Program.t =
 	  List.fold_left
 	    (fun a iface ->
 	       List.fold_left (fun a' e' -> MSet.add e' a') a
-		 (Program.interface_find_methods program iface m
+		 (Program.interface_find_methods env.program iface m
 		    (Some co', None, outs_t)))
 	    MSet.empty ifaces
 	in
@@ -870,7 +877,7 @@ let typecheck tree: Program.t =
 	in
 	let subst = 
 	  try
-	    unify program [(call_type, cands_type)]
+	    unify env.program [(call_type, cands_type)]
 	  with
 	      Unify_failure (s, t) ->
 		raise (Type_error (n.file, n.line,
@@ -895,7 +902,7 @@ let typecheck tree: Program.t =
 	  List.fold_left
 	    (fun a iface ->
 	       List.fold_left (fun a' e' -> MSet.add e' a') a
-		 (Program.interface_find_methods program iface m
+		 (Program.interface_find_methods env.program iface m
 		    (Some co', Some ins_t', outs_t)))
 	    MSet.empty ifaces
 	in
@@ -910,11 +917,11 @@ let typecheck tree: Program.t =
 	    | 1 -> (MSet.choose cands).Method.coiface
 	    | _ -> error_ambigous n m callee_t cands
       in
-	if (Program.contracts_p program cls co) then
+	if (Program.contracts_p env.program env.cls co) then
 	  (label', callee', (Some co, Some ins_t', outs_t), ins', outs')
 	else
 	  raise (Type_error (n.file, n.line,
-	  		     "Class " ^ cls.Class.name ^
+	  		     "Class " ^ env.cls.Class.name ^
 			       " does not contract interface " ^
 			       (Type.as_string co)))
     in
@@ -934,14 +941,14 @@ let typecheck tree: Program.t =
     let check_method_bounds n m signature lb ub =
       let c' =
 	match lb with
-	    None -> cls
+	    None -> env.cls
 	  | Some x ->
-	      if Program.subclass_p program cls.Class.name x then
-		Program.find_class program x
+	      if Program.subclass_p env.program env.cls.Class.name x then
+		Program.find_class env.program x
 	      else
 	        raise (Type_error (n.file, n.line,
 			           "Class " ^ x ^ " is not a subclass of " ^
-				     cls.Class.name))
+				     env.cls.Class.name))
       in
 
         (* FIXME: We check for an internal method only, but in the
@@ -951,7 +958,7 @@ let typecheck tree: Program.t =
 
 	match ub with
 	    None -> 
-	      if Program.class_provides_method_p program c' m signature then
+	      if Program.class_provides_method_p env.program c' m signature then
 		()
 	      else
 		raise (Type_error (n.file, n.line,
@@ -960,10 +967,10 @@ let typecheck tree: Program.t =
 				     (Type.string_of_sig signature)))
 	  | Some y ->
 	      let cands =
-		Program.class_find_methods program c' m signature
+		Program.class_find_methods env.program c' m signature
 	      in
 	      let p m =
-		Program.subclass_p program y m.Method.location
+		Program.subclass_p env.program y m.Method.location
 	      in
 		if List.exists p cands then
 		  ()
@@ -975,7 +982,7 @@ let typecheck tree: Program.t =
     in
     let check_local_async_call n m lb ub ins outs_t =
       let ins' =
-	type_check_expression_list program cls meth coiface [] ins
+	type_check_expression_list env coiface [] ins
       in
       let ins_t = List.map Expression.get_type ins' in
       let signature = (Some Type.Internal, Some ins_t, outs_t) in
@@ -985,12 +992,12 @@ let typecheck tree: Program.t =
     let check_local_sync_call n m lb ub ins outs =
       let (ins', ins_t) =
 	let i =
-	  type_check_expression_list program cls meth coiface [] ins
+	  type_check_expression_list env coiface [] ins
 	in
 	  (i, List.map Expression.get_type i)
       and (outs', outs_t) =
 	let o =
-	  List.map (type_check_lhs program cls meth coiface) outs
+	  List.map (type_check_lhs env coiface) outs
 	in
 	  (o, List.map Expression.get_lhs_type o)
       in
@@ -1002,16 +1009,16 @@ let typecheck tree: Program.t =
 	  Skip n -> Skip n
         | Release n -> Release n
         | Assert (n, e) ->
-	    let e' = type_check_assertion program cls coiface meth e in
+	    let e' = type_check_assertion env coiface e in
 	      Assert (n, e')
         | Prove (n, e) ->
-	    let e' = type_check_assertion program cls coiface meth e in
+	    let e' = type_check_assertion env coiface e in
 	      Prove (n, e')
         | Assign (n, lhs, rhs) ->
 	    let lhs' =
-	      List.map (type_check_lhs program cls meth coiface) lhs
+	      List.map (type_check_lhs env coiface) lhs
 	    and rhs' =
-	      type_check_expression_list program cls meth coiface [] rhs
+	      type_check_expression_list env coiface [] rhs
 	    in
 	    let check_assignment_pair lhs rhs =
 	      (* It has to be checked whether for each assignment part
@@ -1029,14 +1036,14 @@ let typecheck tree: Program.t =
 				     (Type.as_string rhs_t)))
 	      in
 		if Type.sentence_p rhs_t then
-		  if Program.subtype_p program rhs_t lhs_t then
+		  if Program.subtype_p env.program rhs_t lhs_t then
 		    rhs
 		  else
 		    die ()
 		else
 		  let s =
 		    try
-		      unify program [(rhs_t, lhs_t)]
+		      unify env.program [(rhs_t, lhs_t)]
 		    with
 			Unify_failure _ -> die ()
 		  in
@@ -1053,10 +1060,10 @@ let typecheck tree: Program.t =
 	    in
 	      Assign (n, lhs', rhs'')
         | Await (n, e) ->
-	    let e' = type_check_assertion program cls coiface meth e in
+	    let e' = type_check_assertion env coiface e in
 	      Await (n, e')
         | Posit (n, e) ->
-	    let e' = type_check_assertion program cls coiface meth e in
+	    let e' = type_check_assertion env coiface e in
 	      Posit (n, e')
         | AsyncCall (n, label, callee, m, sign, ins) ->
 	    let (label', callee', sign', ins') =
@@ -1065,11 +1072,11 @@ let typecheck tree: Program.t =
 	      AsyncCall (n, label', callee', m, sign', ins')
         | Reply (n, label, retvals) -> 
 	    let nlabel =
-	      type_check_expression program cls meth coiface [] label
+	      type_check_expression env coiface [] label
 	    and nretvals =
-	      List.map (type_check_lhs program cls meth coiface) retvals
+	      List.map (type_check_lhs env coiface) retvals
 	    in
-	      if Program.subtype_p program
+	      if Program.subtype_p env.program
 	        (Type.Tuple (List.map get_lhs_type nretvals))
 	        (Type.Tuple (Type.get_from_label (Expression.get_type nlabel)))
 	      then
@@ -1084,7 +1091,7 @@ let typecheck tree: Program.t =
 	    in
 	      LocalAsyncCall (n, None, m, signature, lb, ub, args')
         | LocalAsyncCall (n, Some label, m, _, lb, ub, args) ->
-	    let l' = type_check_lhs program cls meth coiface label in
+	    let l' = type_check_lhs env coiface label in
 	    let lt = Type.get_from_label (Expression.get_lhs_type l') in
 	    let (signature, args') =
 	      check_local_async_call n m lb ub args (Some lt)
@@ -1112,32 +1119,34 @@ let typecheck tree: Program.t =
 	      AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	| Tailcall _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
-	    let cond' = type_check_assertion program cls coiface meth cond in
+	    let cond' = type_check_assertion env coiface cond in
 	      If (n, cond',
-		  type_check_statement program cls meth coiface iftrue,
-		  type_check_statement program cls meth coiface iffalse)
+		  type_check_statement env coiface iftrue,
+		  type_check_statement env coiface iffalse)
 	| While (n, cond, inv, body) ->
-	    let cond' = type_check_assertion program cls coiface meth cond
-	    and inv' = type_check_assertion program cls coiface meth inv
+	    let cond' = type_check_assertion env coiface cond
+	    and inv' = type_check_assertion env coiface inv
 	    in
 	      While (n, cond', inv',
-		     type_check_statement program cls meth coiface body)
+		     type_check_statement env coiface body)
 	| DoWhile (n, cond, inv, body) ->
-	    let cond' = type_check_assertion program cls coiface meth cond
-	    and inv' = type_check_assertion program cls coiface meth inv
+	    let cond' = type_check_assertion env coiface cond
+	    and inv' = type_check_assertion env coiface inv
 	    in
 	      DoWhile (n, cond', inv',
-		       type_check_statement program cls meth coiface body)
+		       type_check_statement env coiface body)
 	| Sequence (n, s1, s2) ->
-	    let ns1 = type_check_statement program cls meth coiface s1 in
-	    let ns2 = type_check_statement program cls meth coiface s2 in
-	      Sequence (n, ns1, ns2)
+	    let s1' = type_check_statement env coiface s1 in
+	    let s2' = type_check_statement env coiface s2 in
+	      Sequence (n, s1', s2')
 	| Merge (n, s1, s2) ->
-	    Merge (n, type_check_statement program cls meth coiface s1,
-		   type_check_statement program cls meth coiface s2)
+	    let s1' = type_check_statement env coiface s1
+	    and s2' = type_check_statement env coiface s2 in
+	      Merge (n, s1', s2')
 	| Choice (n, s1, s2) ->
-	    Choice (n, type_check_statement program cls meth coiface s1,
-		    type_check_statement program cls meth coiface s2)
+	    let s1' = type_check_statement env coiface s1
+	    and s2' = type_check_statement env coiface s2 in
+	      Choice (n, s1', s2')
 	| Extern _ as s -> s
   and type_check_method program cls coiface meth =
     let () =
@@ -1150,13 +1159,13 @@ let typecheck tree: Program.t =
 	List.iter (f "input") meth.Method.inpars ;
 	List.iter (f "output") meth.Method.outpars
     in
-    let m' = { meth with Method.vars = [] } in
-    let r' = type_check_assertion program cls coiface m' meth.Method.requires
-    and e' = type_check_assertion program cls coiface m' meth.Method.ensures
+    let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
+    let env' = { env with meth = { meth with Method.vars = [] } }  in
+    let r' = type_check_assertion env' coiface meth.Method.requires
+    and e' = type_check_assertion env' coiface meth.Method.ensures
     and b' = match meth.Method.body with
 	None -> None
-      | Some s ->
-	  Some (type_check_statement program cls meth coiface s)
+      | Some s -> Some (type_check_statement env coiface s)
     in
       if Type.bool_p (get_type r') then
 	if Type.bool_p (get_type e') then
@@ -1181,8 +1190,8 @@ let typecheck tree: Program.t =
 			   "cointerface " ^ coiface ^ " is not an interface"))
     in
     let i' =
-      List.map (type_check_assertion program cls coiface Method.empty)
-	w.With.invariants
+      let env = { program = program; cls = cls; meth = Method.empty; env = Env.empty } in
+      List.map (type_check_assertion env coiface) w.With.invariants
     in
     let m' =
       List.map (type_check_method program cls coiface) w.With.methods
