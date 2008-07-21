@@ -114,7 +114,7 @@ still can compile the compiler, however.  To rectify this problem, please
 install Maude from <http://maude.cs.uiuc.edu/>.
 
 If you are sure that you have maude installed, rerun $as_me with
---with-maude=/path/to/your/maude
+MAUDE=/path/to/your/maude
 ])
 fi
 
