@@ -193,8 +193,16 @@ let pass input =
 	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i'),
 		     Sequence (a, Await (a, Label(a'', Id (a', l))),
 			      Reply (a, Id (a', l), o))))
-      | Tailcall (a, m, (co, dom, rng), l, u, i) ->
-	  (label_decls, Tailcall (a, m, (co, dom, rng), l, u, List.map lower_expression i))
+      | MultiCast (a, t, m, s, i) ->
+	  (* If a label name is not given, we create a new label name.
+             We cannot give a correct type to the label.  If the type
+             checker is run after lowering, it may report errors for
+             this call.  *)
+	  let i' = List.map lower_expression i in
+            (label_decls, MultiCast (a, t, m, s, i'))
+      | Tailcall (a, m, s, l, u, i) ->
+	  let i' = List.map lower_expression i in
+	  (label_decls, Tailcall (a, m, s, l, u, i'))
       | If (a, c, t, f) ->
 	  let (label_decls', t') = lower_statement label_decls t in
 	  let (label_decls'', f') = lower_statement label_decls' f in

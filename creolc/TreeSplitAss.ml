@@ -40,7 +40,7 @@ let rec split_in_statement =
 	    (List.hd s') (List.tl s')
     | (Await _ | Posit _ | AsyncCall _ | Free _ | Bury _ | Reply _ |
        SyncCall _ | AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ |
-       AwaitLocalSyncCall _ | Tailcall _) as s -> s
+       AwaitLocalSyncCall _ | MultiCast _ | Tailcall _) as s -> s
     | If (a, c, t, f) -> If(a, c, split_in_statement t, split_in_statement f)
     | While (a, c, i, b) -> While (a, c, i, split_in_statement b)
     | DoWhile (a, c, i, b) -> DoWhile (a, c, i, split_in_statement b)

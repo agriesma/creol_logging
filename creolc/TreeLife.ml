@@ -227,6 +227,11 @@ let compute_in_body ~program ~cls ~meth =
 	  let n' = { n with life = IdSet.union g (IdSet.diff outs k) } in
 	    logio stmt outs n'.life ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
+      | MultiCast (n, t, m, s, a) ->
+	  let g = List.fold_left (add gen) IdSet.empty a in
+	  let n' = { n with life = IdSet.union g outs } in
+	    logio stmt outs n'.life ;
+	    MultiCast (n', t, m, s, a)
       | Tailcall (n, m, s, u, l, ins) ->
 	  let g = List.fold_left (add gen) IdSet.empty ins in
 	  let n' = { n with life = IdSet.union g outs } in

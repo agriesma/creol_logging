@@ -221,6 +221,9 @@ let into_ssa program =
 	  let i' = List.map (expression_to_ssa meth env) i in
 	  let (env', o') = lhs_list_to_ssa meth env o in
 	    (env', AwaitLocalSyncCall (n, m, s, ub, lb, i', o'))
+      | MultiCast (a, t, m, s, i) ->
+	  let i' = List.map (expression_to_ssa meth env) i in
+	    (env, MultiCast (a, t, m, s, i'))
       | Tailcall (n, m, s, ub, lb, i) ->
 	  let i' = List.map (expression_to_ssa meth env) i in
             (env, Tailcall (n, m, s, ub, lb, i'))
@@ -411,6 +414,9 @@ let out_of_ssa tree =
 	  let ni = List.map expression_of_ssa ins in
 	  let no = List.map left_hand_side_of_ssa outs in
 	    AwaitLocalSyncCall (n, m, s, u, l, ni, no)
+      | MultiCast (a, t, m, s, i) ->
+	  let i' = List.map expression_of_ssa i in
+            MultiCast (a, t, m, s, i')
       | Tailcall (n, m, s, u, l, ins) ->
 	  let ni = List.map expression_of_ssa ins in
 	    Tailcall (n, m, s, u, l, ni)

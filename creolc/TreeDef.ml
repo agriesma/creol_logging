@@ -210,6 +210,10 @@ let compute_in_statement ~meth ins stmt =
 	  let n' = { n with def = IdSet.union g ins } in
 	    logio stmt ins n'.def ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
+      | MultiCast (n, t, m, s, i) ->
+	  let a' = { n with def = ins } in
+	    logio stmt ins a'.def ;
+	    MultiCast (a', t, m, s, i)
       | Tailcall (n, m, s, ub, lb, i) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;

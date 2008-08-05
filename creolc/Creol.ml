@@ -849,6 +849,7 @@ struct
 	string option * Expression.t list * Expression.lhs list
     | AwaitLocalSyncCall of note * string * Type.signature * string option *
 	string option * Expression.t list * Expression.lhs list
+    | MultiCast of note * Type.t * string * Type.signature * Expression.t list
     | Tailcall of note * string * Type.signature * string option *
 	string option * Expression.t list
     | If of note * Expression.t * t * t
@@ -879,6 +880,7 @@ struct
       | LocalAsyncCall (a, _, _, _, _, _, _)
       | LocalSyncCall (a, _, _, _, _, _, _)
       | AwaitLocalSyncCall (a, _, _, _, _, _, _)
+      | MultiCast (a, _, _, _, _)
       | Tailcall (a, _, _, _, _, _)
       | If (a, _, _, _) | While (a, _, _, _) | DoWhile (a, _, _, _)
       | Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
@@ -911,6 +913,7 @@ struct
           LocalSyncCall (n, m, s, l, u, i, o)
       | AwaitLocalSyncCall (_, m, s, l, u, i, o) ->
           AwaitLocalSyncCall (n, m, s, l, u, i, o)
+      | MultiCast (_, t, m, s, i) -> MultiCast (n, t, m, s, i)
       | Tailcall (_, a, b, c, d, e) -> Tailcall (n, a, b, c, d, e)
       | If (_, c, s1, s2) -> If (n, c, s1, s2)
       | While (_, c, i, s) -> While (n, c, i, s)
@@ -940,6 +943,7 @@ struct
       | LocalAsyncCall (_, _, _, _, _, _, _) -> "_!_<:_:>_(_)"
       | LocalSyncCall (_, _, _, _, _, _, _) -> "_<:_:>_(_;_)"
       | AwaitLocalSyncCall (_, _, _, _, _, _, _) -> "await _<:_:>_(_;_)"
+      | MultiCast (_, _, _, _, _) -> "!_._(_) as _ *** MultiCast"
       | Tailcall (_, _, _, _, _, _) -> "tailcall _<:_:>_(_)"
       | If (_, _, _, _) -> "if _ then _ else _ end"
       | While (_, _, _, _) -> "while _ do _ end"
@@ -1035,7 +1039,8 @@ struct
 	(Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _ |
 	     AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _ |
 		 AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ | 
-		     AwaitLocalSyncCall _ | Tailcall _ | Extern _) as s -> s
+		     AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ |
+		         Extern _) as s -> s
       | Skip note -> Skip note
       | If (note, c, t, f) ->
 	  If (note, c, remove_redundant_skips t, remove_redundant_skips f)

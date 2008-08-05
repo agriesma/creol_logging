@@ -313,6 +313,12 @@ let emit out_channel input =
 	    output_string out_channel "; " ;
 	    pretty_print_lhs_list o;
 	    output_string out_channel ")"
+	| Statement.MultiCast (_, t, m, _, a) ->
+	    output_string out_channel "!";
+	    output_string out_channel (Type.as_string t) ;
+	    output_string out_channel ("." ^ m ^ "(");
+	    pretty_print_expression_list a;
+	    output_string out_channel ")"
 	| Statement.Tailcall (_, m, _, l, u, i) -> assert false
 	| Statement.If (_, c, t, f) ->
 	    output_string out_channel "if ";
