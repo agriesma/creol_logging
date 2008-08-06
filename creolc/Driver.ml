@@ -133,7 +133,7 @@ end
 
 (* The license under which this software is distributed. *)
 let license =
-  "Copyright (c) 2007 Marcel Kyas\n" ^
+  "Copyright (c) 2007, 2008 Marcel Kyas\n" ^
   "This is free software; see the source for copying conditions.\n" ^
   "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n" ^
   "PARTICULAR PURPOSE.\n"

@@ -75,9 +75,9 @@ let time_dump = ref 0.0
    dependent passes in the list.
 *)
 let passes = [
-  ( "typecheck" ,
-    { help = "Undocumented." ;
-      dependencies = "";
+  ( "typecheck",
+    { help = "Undocumented.";
+      dependencies = Typing.dependencies;
       pass = Typing.typecheck;
       elapsed = 0.0; enabled = true; dump = false } );
   ( "fold",
@@ -87,12 +87,12 @@ let passes = [
       elapsed = 0.0; enabled = false; dump = false } );
   ( "lower" ,
     { help = "Expand statements to Core Creol" ;
-      dependencies = "";
+      dependencies = TreeFold.dependencies;
       pass = TreeLower.pass;
       elapsed = 0.0; enabled = true; dump = false } );
   ( "devirt" ,
     { help = "Devirtualise attribute access.";
-      dependencies = "";
+      dependencies = "typecheck";
       pass = TreeDevirt.transform;
       elapsed = 0.0; enabled = false; dump = false } );
   ( "into-ssa" ,
@@ -117,7 +117,7 @@ let passes = [
       elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "free" ,
     { help = "Insert statements to free labels" ;
-      dependencies = "def-vars,life-vars" ;
+      dependencies = TreeFree.dependencies;
       pass = TreeFree.optimize ;
       elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "bury" ,

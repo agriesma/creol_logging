@@ -29,6 +29,11 @@ open Statement
 open VarDecl
 open Method
 
+(* The passes which must have been executed before using any of the
+   functions defined in this module. *)
+
+let dependencies = "typecheck"
+
 let log l = Messages.message (l + 1)
 let is_zero = Big_int.eq_big_int Big_int.zero_big_int
 let is_one = Big_int.eq_big_int Big_int.unit_big_int

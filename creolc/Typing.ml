@@ -42,6 +42,9 @@ open Creol
 open Expression
 open Statement
 
+(* Passes which must have been executed before this pass. *)
+
+let dependencies = ""
 
 (* Report messages from this module. *)
 

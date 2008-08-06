@@ -28,6 +28,12 @@ open Creol
 open Expression
 open Statement
 
+(* Passes which must have been executed before calling any of the functions
+   defined in this module. *)
+
+let dependencies = "typecheck"
+
+
 (* A counter used to generate the next fresh label *)
 let next_fresh_label = ref 0
 

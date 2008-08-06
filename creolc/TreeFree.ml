@@ -29,6 +29,8 @@ open Statement
 open VarDecl
 open Method
 
+let dependencies =  "def-vars,life-vars"
+
 let log l = Messages.message (l + 1)
 
 (* This function inserts free statements for all label variables at
