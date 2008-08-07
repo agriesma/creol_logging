@@ -25,9 +25,10 @@ MOSTLYCLEANFILES	= *~ *.aux *.log *.out \
 CLEANFILES		=
 DISTCLEANFILES		= .depend Version.ml Driver.ml Passes.ml \
 			   creolc.dvi creolc.pdf
-MAINTAINERCLEANFILES	= .depend Lexer.ml Parser.ml Parser.mli 
+MAINTAINERCLEANFILES	= Lexer.ml Parser.ml Parser.mli 
 
-EXTRA_DIST		= Lexer.mll Parser.mly creol.sty creolc.tex
+EXTRA_DIST		= Lexer.mll Parser.mly \
+			  creol.sty creolc.tex
 
 bin_PROGRAMS		= creolc creolc.opt
 
@@ -108,7 +109,7 @@ OCAMLFINDFLAGS		+= -package "num unix ${OCAML_LIBXML2} str"
 # The compilers.
 OCAMLC		= $(OCAMLFIND) ocamlc
 OCAMLOPT	= $(OCAMLFIND) ocamlopt
-OCAMLDEP	= $(OCAMLFIND) ocamldep
+OCAMLDEP	= $(OCAMLFIND) ocamldep -I $(srcdir)
 
 SVNVERSION = \
 	if test -d ${top_srcdir}/.svn ; \
@@ -134,6 +135,7 @@ creolc: $(creolc_cmo)
 creolc.opt: $(creolc_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(creolc_cmx)
 
+# These generic rules compile an OCaml source file to an object file.
 .PRECIOUS: *.cmo *.cmi *.cmx
 .ml.cmo:
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $< -o $@
@@ -142,28 +144,30 @@ creolc.opt: $(creolc_cmx)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $< -o $@ 
 
 .ml.cmx:
-	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -c $< -o $@ 
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -c $< -o $@
 
-# We must make sure that Creol.cmi is build before Parser.ml, but we
-# do not want that Parser.ml depends on Creol.cmi, because then the
-# end user needs to have menhir installed in order to rebuild the parser
-# sources.  We build Creol.cmi by hand here.  Same goes for Messages.cmi.
+.mll.ml:
+	$(OCAMLLEX) -o $@ $<
+
+
+# We must make sure that Creol.cmi and Mesages.cmi are built before
+# Parser.ml, because we use the --infer flag during the compilation
+# of Parser.ml.  We do not want that Parser.ml depends on Creol.cmi or
+# Messages.cmi, because then compiling the project at the end user
+# requires recompilation of Parser.ml, which only works if the end user
+# has menhir installed.
 #
-# Nonetheless, we depend on the source files, since type inference needs
-# to be redone after those files have been changed.
+# Nonetheless, we depend on the source files, since the parser should
+# be checked when these headers change.
 #
 Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c ${srcdir}/Messages.ml -o Messages.cmo
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c ${srcdir}/Creol.ml -o Creol.cmo
 	rm -f Parser.conflicts
-	$(MENHIR) $(MENHIR_FLAGS) --infer $<
+	$(MENHIR) $(MENHIR_FLAGS) --infer --base Parser $<
 	(t=`mktemp menhir.XXXXXXXX` && mv Parser.ml $$t && \
 	sed 's,_menhir_shifted = [0123456789][0123456789]*\(.*\)$$,_menhir_shifted = max_int \1,g' $$t > Parser.ml && \
 	rm $$t)
-
-
-Lexer.ml: Lexer.mll
-	$(OCAMLLEX) -o $@ $<
 
 Driver.ml: ${srcdir}/Driver.m4 Makefile
 	$(M4) $(BACKEND_XML) $< > $@
@@ -173,16 +177,6 @@ Passes.ml: ${srcdir}/Passes.m4 Makefile
 
 
 all-local: version-tmp
-
-
-.depend: Makefile $(creolc_SOURCES:.m4=.ml)
-	@(t=`mktemp depend.XXXXXXXX` && \
-	  $(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
-	    > $$t && \
-	   cmp -s $$t .depend || \
-	   (if [ \( ! -e .depend \) -o -w .depend ] ; \
-	    then cp -v $$t .depend ; echo "Updated dependencies" ; \
-	    else : ; fi ) ; rm -f $$t)
 
 
 Version.ml: version-tmp
@@ -211,8 +205,15 @@ creolc.pdf: creolc.tex code.tex
 code.tex: ${srcdir}/Makefile.am ${creolc_DOCSOURCES}
 	${OCAMLWEB} --no-preamble --no-index ${creolc_DOCSOURCES} -o $@
 
+
+# Compute the dependencies
+.depend: Makefile $(creolc_SOURCES:.m4=.ml)
+	$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $^ | \
+	  sed s,${srcdir}/,,g > $@
+
 # Dependencies.
 Parser.cmi: Parser.mli
 Lexer.cmi: Parser.cmi
 Lexer.cmo Lexer.cmx: Lexer.cmi
+
 -include .depend
