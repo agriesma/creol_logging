@@ -66,6 +66,8 @@ Documentation License.''
 * Model-checking CREOL::  Using Maude to Model-Check @acronym{CREOL} programs.
 * creolc::                How to use the @command{creolc} compiler.
 * creolshell::            How to use the @command{creolshell}.
+* Installation Instructions::	Installation instructions.
+@c Appendices start here
 * Grammar::               The grammar definition of @acronym{CREOL}.
 * FAQ::                   Frequently asked questions.
 @c * Bibliography::          Further reading.
@@ -84,6 +86,30 @@ Documentation License.''
 @include creolmc.texi
 @include creolc.texi
 @include creolshell.texi
+
+
+@node Installation Instructions
+@chapter Installation Instructions
+
+@menu
+* Basic Installation::		Basic Installation.
+* Compilers and Options::       Selecting compilers and optimization
+* Multiple Architectures::      Compiling for multiple architectures at once
+* Installation Names::          Installing in different directories
+* Optional Features::           Selecting optional features
+* System Type::                 Specifying the system type
+* Sharing Defaults::            Setting site-wide defaults for @command{configur
+e}
+* Defining Variables::          Specifying the compiler etc.
+* configure Invocation::        Changing how @command{configure} runs
+@end menu
+
+@include install.texi
+
+
+
+@c Appendices start here.
+
 @include grammar.texi
 @include faq.texi
 
