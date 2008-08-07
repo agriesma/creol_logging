@@ -106,7 +106,10 @@ AT_SETUP([Prelude])
 AT_CHECK([${CREOLC} -T creol -o prelude-pp1.creol ${top_srcdir}/share/prelude.creol])
 AT_CHECK([${CREOLC} -T creol -o prelude-pp2.creol prelude-pp1.creol])
 DIFF([prelude-pp1.creol], [prelude-pp2.creol])
-AT_CHECK([${CREOLC} -T xml -o prelude-pass1.xml ${top_srcdir}/share/prelude.creol])
+AT_CHECK([if test -n "$BACKEND_XML"
+then
+    ${CREOLC} -T xml -o prelude-pass1.xml ${top_srcdir}/share/prelude.creol
+fi])
 AT_CLEANUP
 
 TEST_CREOLC([Pair], [language], [dnl

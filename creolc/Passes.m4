@@ -322,7 +322,7 @@ let execute_dump ~filename ~pass ~tree =
   in
   let f () =
     let () = message 1 ("Writing dump to " ^ file) in
-    let () = BackendXML.emit file tree in
+    ifdef(`BACKEND_XML', `let () = BackendXML.emit file tree in')
     let () = message 1 ("Finished writing dump to " ^ file) in
       ()
   in

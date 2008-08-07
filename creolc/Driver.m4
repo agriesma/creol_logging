@@ -40,7 +40,7 @@ let times = ref false
 
 module Target =
 struct
-  type t = Null | Creol | Dot | Maude | XML
+  type t = Null | Creol | Dot | Maude ifdef(`BACKEND_XML', `| XML')
 
   let target = ref Maude
 
@@ -60,9 +60,9 @@ struct
       | Maude ->
 	  Passes.conflicts (BackendMaude.conflicts options) ;
 	  Passes.requires (BackendMaude.requires options)
-      | XML ->
+      ifdef(`BACKEND_XML', `| XML ->
 	  Passes.conflicts (BackendXML.conflicts ()) ;
-	  Passes.requires (BackendXML.requires ())
+	  Passes.requires (BackendXML.requires ())')
 
   let targets =
     [ ("none", (fun () -> target := Null), "Do not generate any results.");
@@ -83,7 +83,7 @@ struct
 	options.BackendMaude.target <- BackendMaude.Realtime ;
 	target := Maude),
       "Generate a Maude file optimized for real-time simulation");
-      ("xml", (fun () -> target := XML), "Generate an XML document") ]
+      ifdef(`BACKEND_XML', ("xml", (fun () -> target := XML), "Generate an XML document")) ]
 
   let set s =
     let (_, f, _) =
@@ -113,7 +113,7 @@ struct
 	| Creol -> BackendCreol.emit out tree
 	| Dot -> BackendDot.emit out tree
 	| Maude -> BackendMaude.emit options out tree
-	| XML -> BackendXML.emit !file tree
+	ifdef(`BACKEND_XML', `| XML -> BackendXML.emit !file tree', `')
     in
       if !target <> Null then
 	match !file with
@@ -174,9 +174,9 @@ let options = [
   ("-P",
   Arg.String Passes.disable,
   "  Disable the pass [name].  [name]s are the same as for `-p'");
-  ("-d",
+  ifdef(`BACKEND_XML', `("-d",
   Arg.String Passes.dump_after,
-  "  Dump tree after [name] to out.[name].  [name]s are identical to `-p'");
+  "  Dump tree after [name] to out.[name].  [name]s are identical to ``-p''");')
   ("-times",
   Arg.Unit (function () -> times := true),
   "  Print timing information");

@@ -23,45 +23,47 @@
 MOSTLYCLEANFILES	= *~ *.aux *.log *.out \
 			  *.cma *.cmxa *.cmi *.cmo *.cmx *.o
 CLEANFILES		=
-DISTCLEANFILES		= Version.ml creolc.dvi creolc.pdf
+DISTCLEANFILES		= .depend Version.ml Driver.ml Passes.ml \
+			   creolc.dvi creolc.pdf
 MAINTAINERCLEANFILES	= .depend Lexer.ml Parser.ml Parser.mli 
 
-EXTRA_DIST		= .depend Lexer.mll Parser.mly creol.sty creolc.tex
+EXTRA_DIST		= Lexer.mll Parser.mly creol.sty creolc.tex
 
 bin_PROGRAMS		= creolc creolc.opt
 
-BUILT_SOURCES		= Version.ml Lexer.ml Parser.ml Parser.mli
+BUILT_SOURCES		= Version.ml Driver.ml Lexer.ml Parser.ml Parser.mli \
+			  Passes.ml
 
-creolc_SOURCES		= ${srcdir}/Version.ml \
-			  ${srcdir}/Misc.ml \
-			  ${srcdir}/Messages.ml \
-			  ${srcdir}/Creol.ml \
-			  ${srcdir}/Typing.ml \
-			  ${srcdir}/TreeLower.ml \
-			  ${srcdir}/TreeSplitAss.ml \
-			  ${srcdir}/TreeSSA.ml \
-			  ${srcdir}/TreeFold.ml \
-			  ${srcdir}/TreeDef.ml \
-			  ${srcdir}/TreeLife.ml \
-			  ${srcdir}/TreeFree.ml \
-			  ${srcdir}/TreeBury.ml \
-			  ${srcdir}/TreeDevirt.ml \
-			  ${srcdir}/TreeTailcall.ml \
-			  ${srcdir}/Lexer.mli ${srcdir}/Lexer.ml \
-			  ${srcdir}/Parser.mli ${srcdir}/Parser.ml \
-			  ${srcdir}/BackendCreol.ml \
-			  ${srcdir}/BackendMaude.ml \
-			  ${srcdir}/BackendXML.ml \
-			  ${srcdir}/BackendDot.ml \
-			  ${srcdir}/Passes.ml \
-			  ${srcdir}/Driver.ml
+creolc_SOURCES		= Version.ml \
+			  Misc.ml \
+			  Messages.ml \
+			  Creol.ml \
+			  Typing.ml \
+			  TreeLower.ml \
+			  TreeSplitAss.ml \
+			  TreeSSA.ml \
+			  TreeFold.ml \
+			  TreeDef.ml \
+			  TreeLife.ml \
+			  TreeFree.ml \
+			  TreeBury.ml \
+			  TreeDevirt.ml \
+			  TreeTailcall.ml \
+			  Lexer.mli Lexer.ml \
+			  Parser.mli Parser.ml \
+			  BackendCreol.ml \
+			  BackendMaude.ml \
+			  BackendXML.ml \
+			  BackendDot.ml \
+			  Passes.m4 \
+			  Driver.m4
 
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 			  Typing.cmo TreeLower.cmo TreeSSA.cmo TreeFold.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  Lexer.cmo Parser.cmo \
-			  BackendCreol.cmo BackendMaude.cmo BackendXML.cmo \
+			  BackendCreol.cmo BackendMaude.cmo ${BACKEND_XML_CMO} \
 			  BackendDot.cmo \
 			  Passes.cmo Driver.cmo
 
@@ -72,7 +74,7 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  Lexer.cmx Parser.cmx \
-			  BackendCreol.cmx BackendMaude.cmx BackendXML.cmx \
+			  BackendCreol.cmx BackendMaude.cmx ${BACKEND_XML_CMX} \
 			  BackendDot.cmx \
 			  Passes.cmx Driver.cmx
 
@@ -101,7 +103,7 @@ creolc_DOCSOURCES	= Driver.ml \
 
 OCAMLCFLAGS		+= -g
 OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 10
-OCAMLFINDFLAGS		+= -package "num unix libxml2 str"
+OCAMLFINDFLAGS		+= -package "num unix ${OCAML_LIBXML2} str"
 
 # The compilers.
 OCAMLC		= $(OCAMLFIND) ocamlc
@@ -163,17 +165,23 @@ Parser.ml Parser.mli: Parser.mly Creol.ml Messages.ml
 Lexer.ml: Lexer.mll
 	$(OCAMLLEX) -o $@ $<
 
+Driver.ml: ${srcdir}/Driver.m4 Makefile
+	$(M4) $(BACKEND_XML) $< > $@
+
+Passes.ml: ${srcdir}/Passes.m4 Makefile
+	$(M4) $(BACKEND_XML) $< > $@
+
 
 all-local: version-tmp
 
 
-${srcdir}/.depend: ${srcdir}/Makefile.am $(creolc_SOURCES)
+.depend: Makefile $(creolc_SOURCES:.m4=.ml)
 	@(t=`mktemp depend.XXXXXXXX` && \
 	  $(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $(creolc_SOURCES) \
 	    > $$t && \
-	   cmp -s $$t ${srcdir}/.depend || \
-	   (if [ \( ! -e ${srcdir}/.depend \) -o -w ${srcdir}/.depend ] ; \
-	    then cp -v $$t ${srcdir}/.depend ; echo "Updated dependencies" ; \
+	   cmp -s $$t .depend || \
+	   (if [ \( ! -e .depend \) -o -w .depend ] ; \
+	    then cp -v $$t .depend ; echo "Updated dependencies" ; \
 	    else : ; fi ) ; rm -f $$t)
 
 
@@ -205,4 +213,6 @@ code.tex: ${srcdir}/Makefile.am ${creolc_DOCSOURCES}
 
 # Dependencies.
 Parser.cmi: Parser.mli
--include ${srcdir}/.depend
+Lexer.cmi: Parser.cmi
+Lexer.cmo Lexer.cmx: Lexer.cmi
+-include .depend

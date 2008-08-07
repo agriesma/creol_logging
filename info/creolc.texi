@@ -143,6 +143,9 @@ users.
 @item -d @var{name}
 Write the tree returned after the pass @var{name} to the file
 @file{out.@var{name}} as an XML document.  @xref{Pass Options}.
+This option is only understood if the compiler has been built with
+support for @emph{libxml2}.  Consult the installation instructions
+for details.
 
 @item -times
 Measure the time used for a pass and print a summary of time spent for
@@ -259,7 +262,10 @@ the resulting Maude file uses the @emph{timed simulator} for @acronym{CREOL}.
 @item xml
 Output the transformed program as an XML document.  The resulting XML
 file is equivalent to the debugging dump after the final pass, but its
-name is determined by the @option{-o} option.
+name is determined by the @option{-o} option.  This target is only
+avaliable if the compiler has been built with support for @emph{libxml2}.
+Consult the installation instructions for details.
+
 @end table
 
 If the target is either @option{maude} or @option{maudemc}, the

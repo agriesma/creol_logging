@@ -21,7 +21,7 @@ AC_INIT([Creol Tools], [0.0j], [kyas@ifi.uio.no], [creoltools])
 RELEASE_DATE='2008-06-09'
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
-AC_CONFIG_SRCDIR([creolc/Driver.ml])
+AC_CONFIG_SRCDIR([creolc/Driver.m4])
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_SUBST([RELEASE_DATE])
 
@@ -118,20 +118,50 @@ MAUDE=/path/to/your/maude
 ])
 fi
 
+AC_ARG_WITH([libxml2],
+    AS_HELP_STRING([--without-libxml2],
+		   [use libxml2 and the XML Backend (default=check).]),
+[],
+[with_libxml2=check])
+
 AC_MSG_CHECKING([for ocaml-libxml2])
-OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' libxml2 2>/dev/null`
-if test "$?" = "0"
+if test "$with_libxml2" = "yes" || test "$with_libxml2" = "check"
 then
-  AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
-else
-  AC_MSG_RESULT([no])
-  AC_MSG_ERROR([ocaml-libxml2 cannot be found.
+    OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' libxml2 2>/dev/null`
+    if test "$?" = "0"
+    then
+        AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
+        OCAML_LIBXML2="libxml2"
+        BACKEND_XML="-DBACKEND_XML"
+        BACKEND_XML_CMO="BackendXML.cmo"
+        BACKEND_XML_CMX="BackendXML.cmx"
+    else
+        AC_MSG_RESULT([no])
+        AC_MSG_WARN([ocaml-libxml2 cannot be found.
 
 You have to install ocaml-libxml2 from
 <http://heim.ifi.uio.no/~kyas/creoltools/> to compile the creoltools.
 ])
+        OCAML_LIBXML2_VERSION=""
+        OCAML_LIBXML2=""
+        BACKEND_XML=""
+        BACKEND_XML_CMO=""
+        BACKEND_XML_CMX=""
+    fi
+else
+    AC_MSG_RESULT([disabled])
+    OCAML_LIBXML2_VERSION=""
+    OCAML_LIBXML2=""
+    BACKEND_XML=""
+    BACKEND_XML_CMO=""
+    BACKEND_XML_CMX=""
 fi
+
 AC_SUBST([OCAML_LIBXML2_VERSION])
+AC_SUBST([OCAML_LIBXML2])
+AC_SUBST([BACKEND_XML])
+AC_SUBST([BACKEND_XML_CMO])
+AC_SUBST([BACKEND_XML_CMX])
 
 dnl check for ocamlweb and latex for literate programming.
 AC_CHECK_PROG([DOT], [dot], [dot], [[\${top_srcdir}/missing dot]])
@@ -155,13 +185,13 @@ AC_SUBST([OCAMLFINDFLAGS])
 AC_SUBST([CREOL_VARIANTS])
 AC_SUBST([CREOLC_PDF])
 
-AC_ARG_WITH([metatests],
+AC_ARG_ENABLE([metatests],
   [AS_HELP_STRING([--with-metatests], [Run meta-execution tests.  Slow!])],
   [WITH_METATESTS=yes],
   [WITH_METATESTS=no])
 AC_SUBST([WITH_METATESTS])
 
-AC_ARG_WITH([profiling],
+AC_ARG_ENABLE([profiling],
   [AS_HELP_STRING([--with-profiling], [Generate profiles.  Slow!])],
   [WITH_PROFILING=profiling],
   [WITH_PROFILING=""])
