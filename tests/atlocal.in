@@ -23,10 +23,10 @@ fi
 # Modify the path of maude to find our interpreter definitions
 if test -z "$MAUDE_LIB"
 then
-    MAUDE_LIB=@abs_top_srcdir@/share
+    MAUDE_LIB=@abs_top_builddir@/share:$CREOL_LIBRARY_PATH
     export MAUDE_LIB
 else
-    MAUDE_LIB=@abs_top_srcdir@/share:$MAUDE_LIB
+    MAUDE_LIB=@abs_top_builddir@/share:$CREOL_LIBRARY_PATH:$MAUDE_LIB
     export MAUDE_LIB
 fi
 
