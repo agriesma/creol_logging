@@ -69,6 +69,7 @@ Documentation License.''
 * Installation Instructions::	Installation instructions.
 @c Appendices start here
 * Grammar::               The grammar definition of @acronym{CREOL}.
+* CMC Grammar::           The grammar definition of the @acronym{CMC}.
 * FAQ::                   Frequently asked questions.
 @c * Bibliography::          Further reading.
 * Licenses::              Your rights and freedoms.
@@ -104,6 +105,7 @@ e}
 * configure Invocation::        Changing how @command{configure} runs
 @end menu
 
+@set autoconf
 @include install.texi
 
 
@@ -111,6 +113,7 @@ e}
 @c Appendices start here.
 
 @include grammar.texi
+@include cmcgrammar.texi
 @include faq.texi
 
 @c @include bibliography.texi
