@@ -293,6 +293,8 @@ struct
       | Extern of note * string
       | SSAId of note * string * int
       | Phi of note * t list
+      | ObjLit of note * string (* The name of an object. *)
+      | LabelLit of note * t list (* The value of the label. *)
   and lhs =
       LhsId of note * string
       | LhsAttr of note * string * Type.t
@@ -852,6 +854,7 @@ struct
     | MultiCast of note * Type.t * string * Type.signature * Expression.t list
     | Tailcall of note * string * Type.signature * string option *
 	string option * Expression.t list
+    | Continue of note * Expression.t
     | If of note * Expression.t * t * t
     | While of note * Expression.t * Expression.t * t
     | DoWhile of note * Expression.t * Expression.t * t
@@ -1360,6 +1363,18 @@ struct
 end
 
 
+module Object =
+struct
+
+  type t = {
+    name: string;
+    cls: Type.t;
+    hidden: bool;
+  }
+
+end
+
+
 
 
 
@@ -1372,6 +1387,7 @@ struct
       | Datatype of Datatype.t
       | Exception of Exception.t
       | Function of Function.t
+      | Object of Object.t
 
 
   let hide =
@@ -1381,6 +1397,7 @@ struct
       | Datatype d -> Datatype { d with Datatype.hidden = true }
       | Exception e -> Exception { e with Exception.hidden = true }
       | Function f -> Function { f with Function.hidden = true }
+      | Object o -> Object { o with Object.hidden = true }
 
 
   let show =
@@ -1390,6 +1407,7 @@ struct
       | Datatype d -> Datatype { d with Datatype.hidden = false }
       | Exception e -> Exception { e with Exception.hidden = false }
       | Function f -> Function { f with Function.hidden = false }
+      | Object o -> Object { o with Object.hidden = false }
 
 end
 

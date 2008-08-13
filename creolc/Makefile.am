@@ -30,7 +30,7 @@ MAINTAINERCLEANFILES	= Lexer.ml Parser.ml Parser.mli
 EXTRA_DIST		= Lexer.mll Parser.mly \
 			  creol.sty creolc.tex
 
-bin_PROGRAMS		= creolc creolc.opt
+bin_PROGRAMS		= creolc creolc.opt cmcvalid cmcvalid.opt
 
 BUILT_SOURCES		= Version.ml Driver.ml Lexer.ml Parser.ml Parser.mli \
 			  Passes.ml
@@ -78,6 +78,17 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  BackendCreol.cmx BackendMaude.cmx ${BACKEND_XML_CMX} \
 			  BackendDot.cmx \
 			  Passes.cmx Driver.cmx
+
+cmcvalid_SOURCES	= Version.ml Creol.ml Misc.ml BackendCreol.ml \
+			  CMCParser.ml
+
+cmcvalid_cmo		= Version.cmo Creol.cmo Misc.cmo BackendCreol.cmo \
+			  CMCParser.cmo
+
+cmcvalid_opt_SOURCES	= $(cmcvalid_SOURCES)
+
+cmcvalid_cmx		= Version.cmx Creol.cmx Misc.cmx BackendCreol.cmx \
+			  CMCParser.cmx
 
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Driver.ml \
@@ -134,6 +145,12 @@ creolc: $(creolc_cmo)
 
 creolc.opt: $(creolc_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(creolc_cmx)
+
+cmcvalid: $(cmcvalid_cmo)
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(cmcvalid_cmo)
+
+cmcvalid.opt: $(cmcvalid_cmx)
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(cmcvalid_cmx)
 
 # These generic rules compile an OCaml source file to an object file.
 .PRECIOUS: *.cmo *.cmi *.cmx
@@ -207,7 +224,7 @@ code.tex: ${srcdir}/Makefile.am ${creolc_DOCSOURCES}
 
 
 # Compute the dependencies
-.depend: Makefile $(creolc_SOURCES:.m4=.ml)
+.depend: Makefile $(creolc_SOURCES:.m4=.ml) $(cmcvalid_SOURCES)
 	$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $^ | \
 	  sed s,${srcdir}/,,g > $@
 
