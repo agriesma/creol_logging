@@ -178,8 +178,8 @@ $(srcdir)/Lexer.ml: $(srcdir)/Lexer.mll
 # Nonetheless, we depend on the source files, since the parser should
 # be checked when these headers change.
 #
-$(srcdir)/Parser.ml $(srcdir)/Parser.mli: $(srcdir)/Parser.mly \
-	  $(srcdir)/Creol.ml $(srcdir)/Messages.ml
+$(srcdir)/Parser.ml: $(srcdir)/Parser.mly $(srcdir)/Creol.ml \
+	  $(srcdir)/Messages.ml
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Messages.cmo
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Creol.ml -o Creol.cmo
 	rm -f Parser.conflicts
@@ -187,6 +187,15 @@ $(srcdir)/Parser.ml $(srcdir)/Parser.mli: $(srcdir)/Parser.mly \
 	(t=`mktemp menhir.XXXXXXXX` && mv $(srcdir)/Parser.ml $$t && \
 	sed 's,_menhir_shifted = [0123456789][0123456789]*\(.*\)$$,_menhir_shifted = max_int \1,g' $$t > $(srcdir)/Parser.ml && \
 	rm $$t)
+
+$(srcdir)/Parser.mli: $(srcdir)/Parser.ml
+	@if test -f $@ ; \
+	then \
+	    touch $@ ; \
+	else \
+	    rm -f $(srcdir)/Parser.ml ; \
+	    $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/Parser.ml ; \
+	fi
 
 Driver.ml: $(srcdir)/Driver.m4 Makefile
 	$(M4) $(BACKEND_XML) $< > $@
