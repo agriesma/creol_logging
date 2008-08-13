@@ -77,7 +77,7 @@ changequote dnl
 
     --- Define class declarations as an object.
     ---
-    op Cl : -> Cid [ctor `format' (c o)] .
+    op Class : -> Cid [ctor `format' (c o)] .
     op cl : String -> Oid [ctor `format' (c o)] .
     op Inh:_ : InhList -> Attribute [ctor] .
     op Par:_ : VidList -> Attribute [ctor] .

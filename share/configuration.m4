@@ -21,10 +21,9 @@ changequote(`[[[[', `]]]]')dnl
     protecting LIST{Inh} * (sort List{Inh} to InhList,
 			    sort NeList{Inh} to NeInhList,
 			    op nil : -> List{Inh} to noInh,
-			    op __ : List{Inh} List{Inh} -> List{Inh} to _`,`,_) .
+			    op __ : List{Inh} List{Inh} -> List{Inh} to _`,_) .
     protecting SET{Method} * (sort Set{Method} to MMtd,
-			      op empty : -> Set{Method} to noMethod,
-                              op _`,_ : Set{Method} Set{Method} -> Set{Method} to _*_ [[[[[format]]]] (d d ni d)] ) .
+			      op empty : -> Set{Method} to noMethod) .
 changequote dnl
 
     --- Define object identifiers.
@@ -81,7 +80,7 @@ changequote dnl
     subsort String < Cid .
 
     --- This term is the class name of "class objects."
-    op Cl : -> Cid [ctor `format' (c o)] .
+    op Class : -> Cid [ctor `format' (c o)] .
 
     op noObj : -> Object [ctor] .
     op <_:_ | Att:_, Pr:_, PrQ:_, Dealloc:_, Ev:_, Lcnt:_> : 
@@ -92,9 +91,9 @@ changequote dnl
     --- Define Classes.
     --- Class declaration.
     ---
-    op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> : 
+    op <_: Class | Inh:_, Param:_, Att:_, Mtds:_, Ocnt:_> : 
       String InhList VidList Subst MMtd Nat -> Class 
-       [ctor `format' (ng d o d d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .
+       [ctor `format' (ng ! og o d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .
 
 
     --- Define a configuration
@@ -126,7 +125,7 @@ ifdef(`MODELCHECK',dnl
     op main : String DataList -> Configuration .
     eq main(C,DL) =
       < ob("main") : "" | Att: noSubst, 
-        Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
+        Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
         Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
 
 endm

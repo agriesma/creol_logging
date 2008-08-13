@@ -20,9 +20,12 @@ dnl
 *** The predicates we can define on configurations.
 ***
 mod CREOL-PREDICATES is
+
   protecting CREOL-SIMULATOR .
+
   ops objcnt maxobjcnt minobjcnt : String Nat -> Prop .
   op hasvalue : Oid Vid Data -> Prop .
+
   var A : Vid .
   var D : Data .
   var C : String .
@@ -35,9 +38,9 @@ mod CREOL-PREDICATES is
   vars N N' : Nat .
   var c : Configuration .
 
-  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= objcnt(C`,' N') = N == N' .
-  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= maxobjcnt(C`,' N') = N <= N' .
-  eq { c < C : Cl | Inh: I:InhList`,' Par: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= minobjcnt(C`,' N') = N >= N' .
+  eq { c < C : Class | Inh: I:InhList`,' Param: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= objcnt(C`,' N') = N == N' .
+  eq { c < C : Class | Inh: I:InhList`,' Param: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= maxobjcnt(C`,' N') = N <= N' .
+  eq { c < C : Class | Inh: I:InhList`,' Param: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= minobjcnt(C`,' N') = N >= N' .
   eq { c < O : C | Att: S`,' Pr: P`,' PrQ: Q`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N > } |= hasvalue(O`,' A`,' D) = D == S[A] .
 
 endm

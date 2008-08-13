@@ -117,7 +117,7 @@ fmod CREOL-DATA-VID is
     sort Vid .
     subsort String < Vid < Expr .
 
-    op _@@_ : String String -> Vid [ctor] .
+    op _@_ : String String -> Vid [ctor] .
 endfm
 
 view Vid from TRIV to CREOL-DATA-VID is
@@ -168,7 +168,7 @@ fmod CREOL-EXPRESSION is
 
     op _(_) : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
     op if_th_el_fi : Expr Expr Expr -> Expr [ctor] .
-    op _??  : Expr -> Expr [ctor] .
+    op ?(_)  : Expr -> Expr [ctor format (! o d d d)] .
 
 endfm
 
@@ -519,16 +519,13 @@ endfm
 *** Specification of paits and functions on paits.
 ***
 fmod CREOL-DATA-PAIR is
-  extending CREOL-EXPRESSION .
-
-  op pair : Data Data -> Data [ctor] .
-  op pair : Expr Expr -> Expr [ctor] .
+  extending CREOL-DATA-LIST .
 
   vars D D' : Data .
 
-  eq "pair" (D :: D') = pair(D, D') .
-  eq "fst" (pair(D, D')) = D . 
-  eq "snd" (pair(D, D')) = D' .
+  eq "pair" (D :: D') = list(D :: D') .
+  eq "fst" (list(D :: D')) = D . 
+  eq "snd" (list(D :: D')) = D' .
 endfm
 
 

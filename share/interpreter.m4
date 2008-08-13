@@ -129,34 +129,33 @@ fmod CREOL-STATEMENT is
 
   *** SuspStm is a statement which can be suspended.  It includes
   *** await, [] and ||| (the later two defined in CREOL-STM-LIST.
-  sorts Mid Stm SuspStm .
+  sorts Stm SuspStm .
   subsort SuspStm < Stm .
-  subsort String < Mid .
 
-  op _._ : Expr String -> Mid [ctor prec 33] .
-  op _@_ : String String -> Mid [ctor prec 33] .
-
-  op skip : -> Stm [ctor] .
-  op release : -> Stm [ctor] .
-  op _::=_ : VidList ExprList -> Stm [ctor prec 35] .
-  op _::= new_(_) : Vid String ExprList -> Stm [ctor prec 35 `format' (d b d o d d d d)] .
-  op _!_(_) : Vid Mid ExprList -> Stm [ctor prec 39] .
-  op _?(_)  : Vid VidList -> Stm [ctor prec 39 `format' (d c o d d d)] .
-  op _?(_)  : Label VidList -> Stm [ctor ditto] .
-  op await_ : Expr -> SuspStm [ctor `format' (! o d)] .
-  op posit_ : Expr -> SuspStm [ctor `format' (! o d)] .
+  op skip : -> Stm [ctor `format' (b o)] .
+  op release : -> Stm [ctor `format' (b o)] .
+  op assign(_;_) : VidList ExprList -> Stm [ctor `format' (b d o b o b o)] .
+  op new(_;_;_) : Vid String ExprList -> Stm [ctor `format' (b d o b o b o b o)] .
+  op call(_;_;_;_) : Vid Expr String ExprList -> Stm [ctor `format' (b d o b o b o b o b o)] . 
+  op static(_;_;_;_) : Vid String String ExprList -> Stm [ctor `format' (b d o b o b o b o b o)] . 
+  op get(_;_)  : Vid VidList -> Stm [ctor prec 39 `format' (b d o b o b o)] .
+  op get(_;_)  : Label VidList -> Stm [ctor ditto] .
+  op await_ : Expr -> SuspStm [ctor `format' (b o d)] .
+  op posit_ : Expr -> SuspStm [ctor `format' (b o d)] .
   op return : ExprList -> Stm [ctor `format' (c o)] .
   op free : Vid -> Stm [ctor `format' (c o)] .
-  op cont : Label -> Stm [ctor `format' (c o)] .
-  op tailcall_(_) : Mid ExprList -> Stm [ctor `format' (c o c o c o)] .
-  op accept : Label -> Stm [ctor `format' (c o)] .
+  op tailcall(_;_) : String ExprList -> Stm [ctor `format' (c d o c o c o)] .
+  op tailcall(_;_;_) : String String ExprList -> Stm [ctor `format' (c d o c o c o c o)] .
+
+  op $cont : Label -> Stm [ctor `format' (c o)] .
+  op $accept : Label -> Stm [ctor `format' (c o)] .
 
   --- multiple assignment
   ---
   --- For the model checker the following will be evaluated as an
   --- equation and the old rule is not confluent.
 
-  op assign : VidList DataList -> Stm [ctor `format' (c o)] .
+  op $assign(_;_) : VidList DataList -> Stm  [`format' (c d o c o c o)] .
 
 endfm
 
@@ -175,11 +174,11 @@ fmod CREOL-STM-LIST is
 			  op nil : -> List{Stm} to noStm,
 			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_ [`format' (d r o d)]) .
 
-  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor] . 
-  op while_do_od : Expr NeStmList -> Stm [ctor] .
+  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor `format' (b o b o b o b o)] . 
+  op while_do_od : Expr NeStmList -> Stm [ctor `format' (b o b o b o)] .
   op _[]_  : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 45 `format' (d r d o d)] .
   op _|||_ : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 47 `format' (d r o d)] .
-  op _MERGER_  : StmList StmList -> Stm [ctor assoc] .
+  op _MERGER_  : StmList StmList -> Stm [ctor assoc `format' (d c! o d)] .
 
   var SL : StmList .
   var NeSL : NeStmList .
@@ -195,8 +194,8 @@ fmod CREOL-STM-LIST is
   --- Optimize assignments.  This way we save reducing a skip.  Also note
   --- that the empty assignment is /not/ programmer syntax, it is inserted
   --- during run-time.
-  eq (noVid ::= emp) = noStm .
-  eq assign(noVid, emp) = noStm .
+  eq assign(noVid ; emp) = noStm .
+  eq $assign(noVid ; emp) = noStm .
 
 endfm
 
@@ -208,11 +207,11 @@ fmod CREOL-PROCESS is
 
   op idle : -> Process [ctor `format' (!b o)] .  
   op notFound : -> Process [ctor `format' (!b o)] .  
-  op _,_ : Subst StmList -> Process [ctor `format' (o r sbu o)] . 
+  op {_|_} : Subst StmList -> Process [ctor `format' (r o r o r o)] . 
 
   var L : Subst .
-  eq (L, noStm) = idle . --- if ".label" is needed this is dangerous!
-  eq idle = (noSubst, noStm) [nonexec metadata "Will cause infinite loops."] .
+  eq { L | noStm } = idle . --- if ".label" is needed this is dangerous!
+  eq idle = { noSubst | noStm } [nonexec metadata "Causes infinite loops."] .
 
 endfm
 
@@ -227,7 +226,7 @@ fmod CREOL-PROCESS-POOL is
   sort MProc .
   subsort Process < MProc .
   op noProc : -> MProc [ctor] .
-  op _++_ : MProc MProc -> MProc
+  op _,_ : MProc MProc -> MProc
     [ctor assoc comm id: noProc prec 41 `format' (d r os d)] .
 
 endfm
@@ -252,9 +251,9 @@ fmod CREOL-METHOD is
   protecting CREOL-STM-LIST .
   sort Method .
 
-  op <_: Mtdname | Param:_, Latt:_, Code:_> : 
+  op <_: Method | Param:_, Att:_, Code:_> : 
     String VidList Subst StmList -> Method [ctor
-      `format' (b d o d d sb o d sb o d sb o b o)] .
+      `format' (c ! oc o d sc o d sc o d sc o c o)] .
 
 endfm
 
@@ -325,15 +324,13 @@ ifdef(`TIME',dnl
 
     eq EVALGUARD(D, S, MM, T) = D .
     eq EVALGUARD(now, S, MM, T) = ifdef(`TIME', time(T), time(0.0)) .
-    eq EVALGUARD((Q @@ C), (S :: S'), MM, T) =  S [Q] .
+    eq EVALGUARD((Q @ C), (S :: S'), MM, T) =  S [Q] .
     eq EVALGUARD(Q, (S :: S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
     eq EVALGUARD(A, S, MM, T) =  S [A] .
     eq EVALGUARD(Q (EL), S, MM, T) = Q ( EVALGUARDLIST(EL, S, MM, T) ) .
-    eq EVALGUARD((A ??), S, MM, T) = bool(inqueue(S[A], MM)) .
-    eq EVALGUARD((L ??), S, MM, T) = bool(inqueue(L, MM)) .
+    eq EVALGUARD(?(A), S, MM, T) = bool(inqueue(S[A], MM)) .
+    eq EVALGUARD(?(L), S, MM, T) = bool(inqueue(L, MM)) .
     eq EVALGUARD(list(EL), S, MM, T) = list(EVALGUARDLIST(EL, S, MM, T)) .
-    eq EVALGUARD(pair(E,E'),S, MM, T) =
-      pair(EVALGUARD(E, S, MM, T), EVALGUARD(E', S, MM, T)) .
     eq EVALGUARD(set(ES), S, MM, T) = set(EVALGUARDSET(ES, S, MM, T)) .
     eq EVALGUARD(map(M), S, MM, T) = map(EVALGUARDMAP(M, S, MM, T)) .
     eq EVALGUARD(if E th E' el E'' fi, S, MM, T) =
@@ -386,8 +383,8 @@ dnl)dnl
     eq READY((NeSL ||| NeSL1) ; SL2, S, MM, T) =
 	  READY(NeSL, S, MM, T) or READY(NeSL1, S, MM, T) .
     eq READY((NeSL MERGER SL1) ; SL2, S, MM, T) = READY(NeSL, S, MM, T) .
-    eq READY((A ?(AL)) ; SL2 , S, MM, T) = inqueue(S[A], MM) . 
-    eq READY((L ?(AL)) ; SL2 , S, MM, T) = inqueue(L, MM) . 
+    eq READY(get(A ; AL) ; SL2 , S, MM, T) = inqueue(S[A], MM) . 
+    eq READY(get(L ; AL) ; SL2 , S, MM, T) = inqueue(L, MM) . 
     eq READY(NeSL, S, MM, T) = ENABLED(NeSL, S, MM, T) [owise] .
 
 endm
