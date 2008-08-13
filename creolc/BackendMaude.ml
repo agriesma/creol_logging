@@ -78,30 +78,13 @@ let emit options out_channel input =
 	  output_string out_channel ("str(\"" ^ s ^ "\")")
       | Expression.Id (_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
       | Expression.StaticAttr (_, a, c) ->
-	  output_string out_channel ("( \"" ^ a ^ "\" @@ \"");
+	  output_string out_channel ("( \"" ^ a ^ "\" @ \"");
 	  of_type c ;
 	  output_string out_channel "\" )"
-      | Expression.Tuple (_, l) ->
-	  (* FIXME: The CMC does not distinguish tuples of length two
-	     from pairs.  On the other hand, this is also conceptually
-	     bogus.  Can't tuples and list be identified? *)
-	  begin
-	    match l with
-		[x; y] ->
-	          output_string out_channel "pair(" ;
-	          of_expression x ;
-	          output_string out_channel " , " ;
-	          of_expression y ;
-	          output_string out_channel ")"
-	      | _ ->
-		  output_string out_channel "list(" ;
-		  of_expression_list l ;
-		  output_string out_channel ")"
-	  end
-      | Expression.ListLit (_, l) ->
+      | Expression.Tuple (_, l) | Expression.ListLit (_, l) ->
 	  output_string out_channel "list(" ;
 	  of_expression_list l ;
-	  output_string out_channel ")" ;
+	  output_string out_channel ")"
       | Expression.SetLit (_, l) ->
 	  output_string out_channel "list(" ;
 	  of_expression_list l ; (* Hope to overload \# for set in maude *)
@@ -118,14 +101,10 @@ let emit options out_channel input =
 	  of_expression
 	    (Expression.FuncCall(n, Expression.string_of_binaryop o, [l; r]))
       | Expression.Label(_, l) ->
-	  output_string out_channel "( " ;
+	  output_string out_channel "?(" ;
 	  of_expression l ;
-	  output_string out_channel " ?? )"
-      | Expression.New (_, c, a) ->
-	  output_string out_channel
-	    ("new \"" ^ (Type.as_string c) ^ "\" ( ") ;
-	  of_expression_list a ;
-	  output_string out_channel " )"
+	  output_string out_channel ")"
+      | Expression.New (_, c, a) -> assert false
       | Expression.If (_, c, t, f) ->
 	  output_string out_channel "(if " ;
 	  of_expression c ;
@@ -162,7 +141,7 @@ let emit options out_channel input =
     function
 	Expression.LhsId (_, i) -> output_string out_channel ("\"" ^ i ^ "\"")
       | Expression.LhsAttr (_, i, c) ->
-	  output_string out_channel ("( \"" ^ i ^ "\" @@ \"") ;
+	  output_string out_channel ("( \"" ^ i ^ "\" @ \"") ;
 	  of_type c ;
 	  output_string out_channel "\" )"
       | Expression.LhsWildcard _ -> output_string out_channel "_"
@@ -194,33 +173,38 @@ let emit options out_channel input =
 	    of_expression e;
 	    output_string out_channel " )"
 	| Statement.Release _ -> output_string out_channel "release"
+	| Statement.Assign (_, [n], [Expression.New (_, c, e)]) ->
+	    output_string out_channel "new( " ;
+	    of_lhs n ;
+	    output_string out_channel " ; \"" ;
+	    of_type c ;
+	    output_string out_channel "\" ; " ;
+	    of_expression_list e ;
+	    output_string out_channel " )" ;
 	| Statement.Assign (_, i, e) ->
-	    if List.length i > 1 then
-	      output_string out_channel " ( " ;
+	    output_string out_channel "assign( " ;
 	    of_lhs_list i;
-	    if List.length i > 1 then
-	      output_string out_channel " ) " ;
-	    output_string out_channel " ::= " ;
-	    of_expression_list e
-	| Statement.SyncCall _ ->
-	    assert false
-	| Statement.AwaitSyncCall _ ->
-	    assert false
+	    output_string out_channel " ; " ;
+	    of_expression_list e ;
+	    output_string out_channel " )" ;
+	| Statement.SyncCall _
+	| Statement.AwaitSyncCall _
 	| Statement.AsyncCall (_, None, _, _, _, _) ->
 	    assert false
 	| Statement.AsyncCall (_, Some l, c, m, _, a) ->
+	    output_string out_channel "call( ";
 	    of_lhs l ;
-	    output_string out_channel " ! ";
+	    output_string out_channel " ; ";
 	    of_expression c ;
-	    output_string out_channel (" . \"" ^ m ^ "\" ( ") ;
+	    output_string out_channel (" ; \"" ^ m ^ "\" ; ") ;
 	    of_expression_list a;
 	    output_string out_channel " )"
 	| Statement.Reply (_, l, o) ->
-	    output_string out_channel "( " ;
+	    output_string out_channel "get( " ;
 	    of_expression l ;
-	    output_string out_channel " ? ( " ;
+	    output_string out_channel " ; " ;
 	    of_lhs_list o;
-	    output_string out_channel " ) ) "
+	    output_string out_channel " )"
         | Statement.Free (_, [l]) ->
 	    output_string out_channel "free( " ;
 	    of_lhs l ;
@@ -232,46 +216,29 @@ let emit options out_channel input =
 	    assert false
 	| Statement.Bury _ as s ->
 	    print prec (Statement.assignment_of_bury s)
-	| Statement.LocalSyncCall _ ->
-	    assert false
-	| Statement.AwaitLocalSyncCall _ ->
-	    assert false
+	| Statement.LocalSyncCall _ | Statement.AwaitLocalSyncCall _
 	| Statement.LocalAsyncCall (_, None, _, _, _, _, _) ->
 	    assert false
 	| Statement.LocalAsyncCall (_, Some l, m, _, None, None, i) ->
 	    (* An unqualified local synchronous call should use this in
 	       order to get late binding correct. *)
-	    output_string out_channel "( " ;
+	    output_string out_channel "call( " ;
 	    of_lhs l ;
-	    output_string out_channel (" ! \"this\" . \"" ^ m ^ "\" (");
+	    output_string out_channel (" ; \"this\" ; \"" ^ m ^ "\" ; ");
 	    of_expression_list i ;
-	    output_string out_channel " ) ) "
-	| Statement.LocalAsyncCall (_, Some l, m, _, lb, ub, i) ->
-	    output_string out_channel "( " ;
+	    output_string out_channel " )"
+	| Statement.LocalAsyncCall (_, Some l, m, _, Some lb, None, i) ->
+	    output_string out_channel "static( " ;
 	    of_lhs l ;
-	    output_string out_channel (" ! \"" ^ m ^ "\" ") ;
-	    (match lb with
-		None -> output_string out_channel ("@ \"" ^ cls ^ "\" ")
-	      | Some n -> output_string out_channel ("@ \"" ^ n ^ "\" "));
-	    (match ub with
-		None -> ()
-	      | Some n -> output_string out_channel ("<< \"" ^ n ^ "\" "));
-	    output_string out_channel "( " ;
+	    output_string out_channel (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; ");
 	    of_expression_list i;
-	    output_string out_channel " ) ) "
+	    output_string out_channel " )"
 	| Statement.Assert (n, _) ->
 	    print prec (Statement.Skip n)
 	| Statement.Prove (n, _) ->
 	    print prec (Statement.Skip n)
-	| Statement.Tailcall (_, m, _, l, u, i) ->
-	    output_string out_channel ( "\"" ^ m ^ "\"");
-	    (match l with
-		None -> ()
-	      | Some n -> output_string out_channel (" @ \"" ^ n ^ "\""));
-	    (match u with
-		None -> ()
-	      | Some n -> output_string out_channel (" << \"" ^ n ^ "\""));
-	    output_string out_channel " ( " ;
+	| Statement.Tailcall (_, m, _, None, None, i) ->
+	    output_string out_channel ( "tailcall (\"" ^ m ^ "\" ; ");
 	    of_expression_list i;
 	    output_string out_channel " )"
 	| Statement.If (_, c, t, f) ->
@@ -335,7 +302,7 @@ let emit options out_channel input =
 	[] -> output_string out_channel "noInh"
       | [i] -> of_inherits i
       | i::r -> of_inherits i;
-	  output_string out_channel " ,, ";
+	  output_string out_channel " , ";
 	  of_inherits_list r
   and of_parameter_list =
     function
@@ -358,9 +325,9 @@ let emit options out_channel input =
           of_method_return l
   and of_method cls m =
     output_string out_channel ("< \"" ^ m.Method.name ^
-				  "\" : Mtdname | Param: ");
+				  "\" : Method | Param: ");
     of_parameter_list m.Method.inpars;
-    output_string out_channel ", Latt: " ;
+    output_string out_channel ", Att: " ;
     of_class_attribute_list (List.concat
 			       [ m.Method.inpars ; m.Method.outpars ;
 				 m.Method.vars ;
@@ -380,16 +347,16 @@ let emit options out_channel input =
 	[] -> output_string out_channel "noMtd" 
       | [m] -> of_method cls m
       | m::r -> of_method cls m ;
-	  output_string out_channel " *\n    " ;
+	  output_string out_channel " ,\n    " ;
 	  of_method_list cls r
   and of_with_defs cls ws =
     let methods = List.flatten (List.map (function w -> w.With.methods) ws)
     in
       of_method_list cls methods
   and of_class c =
-    output_string out_channel ("< \"" ^ c.Class.name ^ "\" : Cl | Inh: (");
+    output_string out_channel ("< \"" ^ c.Class.name ^ "\" : Class | Inh: (");
     of_inherits_list c.Class.inherits;
-    output_string out_channel "),\n  Par: (";
+    output_string out_channel "),\n  Param: (";
     of_parameter_list c.Class.parameters;
     output_string out_channel "),\n  Att: (";
     of_class_attribute_list (c.Class.parameters @ c.Class.attributes);
