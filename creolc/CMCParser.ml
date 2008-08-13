@@ -279,47 +279,73 @@ module PropMap = Map.Make(String)
 
 (* The type of the value of this map is given below. *)
 
-type v =
-  | Ignored
-  | Code of Statement.t
-  | Inh of Inherits.t list
-  | Substitution of (string * Expression.t) list
-  | Parameters of string list
-  | Process of (string * Expression.t) list * Statement.t
-  | ProcessQueue of ((string * Expression.t) list * Statement.t) list
-
 type t =
   | Cls of Class.t
   | Mtd of Method.t
   | Obj of Object.t
 
+type v =
+  | Ignored
+  | Attr of (string * Expression.t) list
+  | Code of Statement.t
+  | Inh of Inherits.t list
+  | Mtds of Method.t list
+  | Parameters of string list
+  | Process of Process.t
+  | ProcessQueue of Process.t list
+
+let vardecl_of_binding (n, i) =
+  { VarDecl.name = n; var_type = Type.data; init = Some i }
+
+let vardecl_of_name n =
+  { VarDecl.name = n; var_type = Type.data; init = None }
+
 let parse name input =
   let build_term oid cid props =
     match cid with
       | "~Class" ->
-	  Cls { Class.name = oid ;
-		parameters = [] ;
-		inherits = [] ;
-		contracts = [] ;
-		implements = [] ;
-		attributes = [] ;
-		with_defs = [] ;
-		hidden = false ;
-		file = "";
-		line = 0 }
-      | "~Method" -> 
-	  Mtd { Method.name = oid;
+	  let Parameters p = PropMap.find "Param" props
+	  and Inh i = PropMap.find "Inh" props
+	  and Mtds m = PropMap.find "Mtds" props
+	  and Attr a = PropMap.find "Att" props
+	  in
+	    Cls { Class.name = oid ;
+		  parameters = (List.map vardecl_of_name p) ;
+		  inherits = i ;
+		  contracts = [] ;
+		  implements = [] ;
+		  attributes = (List.map vardecl_of_binding a);
+		  with_defs = [{ With.co_interface = Type.any;
+				 methods = m;
+				 invariants = []}] ;
+		  hidden = false ;
+		  file = "";
+		  line = 0 }
+      | "~Method" ->
+	  let Code c = PropMap.find "Code" props
+	  and Parameters p = PropMap.find "Param" props
+	  and Attr a = PropMap.find "Att" props
+	  in
+	    Mtd { Method.name = oid;
 		coiface = Type.any;
 		inpars = [];
 		outpars = [];
 		requires = Expression.Bool (Expression.make_note (), true);
 		ensures = Expression.Bool (Expression.make_note (), true);
-		vars = [];
-		body = None;
+		vars = (List.map vardecl_of_binding a);
+		body = Some c;
 		location = "" }
-      | t -> Obj { Object.name = "";
-		   cls = Type.Basic t;
-		   hidden = false }
+      | t ->
+	  let Attr a = PropMap.find "Att" props
+	  and Process p = PropMap.find "Pr" props
+	  and ProcessQueue q = PropMap.find "PrQ" props
+	  in
+	    Obj { Object.name = oid;
+		  cls = Type.Basic t;
+		  attributes = (List.map vardecl_of_binding a);
+		  process = p;
+		  process_queue = q;
+		  hidden = false }
   in
   let rec parse_configuration input =
     match Stream.peek input with
@@ -336,6 +362,26 @@ let parse name input =
 	    raise (BadToken (tl, get_token_line t, "configuration"))
       | None ->
 	  []
+  and parse_object_term_list input =
+    match Stream.peek input with
+      | Some Key (_, _) ->
+	  []
+      | Some Lt _ ->
+	  begin
+	    let t = parse_object_term input in
+	      match Stream.npeek 2 input with
+		| [Comma _; Property _] | (Gt _)::_ ->
+		    [t]
+		| (Comma _)::_ ->
+		    let () = Stream.junk input in
+		    let r = parse_object_term_list input in
+		      t::r
+	  end
+      | Some t ->
+	  raise (BadToken (error_tokens input, get_token_line t,
+			   "<<key>>, `<'"))
+      | None ->
+	  raise (Eof "")
   and parse_object_term input =
     let () = junk_left_bracket input in
     let oid = parse_oid input in
@@ -376,13 +422,13 @@ let parse name input =
       | Some Property (p, _) ->
 	  begin
 	    let v = parse_property input in
+	    let map' = PropMap.add p v map in
 	      match Stream.npeek 2 input with
 		| [ Comma _; Property _] ->
 		    let () = Stream.junk input in
-		    let map' = PropMap.add p v map in
 		      parse_properties map' input
 		| _ ->
-		    map
+		    map'
 	  end
       | Some _ -> assert false
       | None -> raise (Eof "")
@@ -391,7 +437,7 @@ let parse name input =
       | Some Property ("Att", _) ->
 	  let () = Stream.junk input in
 	  let v = parse_substitution input in
-	    Substitution v
+	    Attr v
       | Some Property ("Code", _) ->
 	  let () = Stream.junk input in
 	  let v = parse_merge_statement input in
@@ -400,14 +446,18 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let v = parse_inherit_list input in
 	    Inh v
+      | Some Property ("Mtds", _) ->
+	  let () = Stream.junk input in
+	    Mtds (List.map (function (Mtd m) -> m)
+		    (parse_object_term_list input))
       | Some Property ("Param", _) ->
 	  let () = Stream.junk input in
 	  let v = parse_parameters input in
 	    Parameters v
       | Some Property ("Pr", _) ->
 	  let () = Stream.junk input in
-	  let (v1, v2) = parse_process input in
-	    Process (v1, v2)
+	  let p = parse_process input in
+	    Process p
       | Some Property ("PrQ", _) ->
 	  let () = Stream.junk input in
 	  let q = parse_process_queue input in
@@ -508,7 +558,8 @@ let parse name input =
       | Some Key ("idle", _) ->
 	  begin
 	    let () = Stream.junk input in
-	      ([], Statement.Skip (Statement.make_note ()))
+	      { Process.attributes = [];
+		code = Statement.Skip (Statement.make_note ()) }
 	  end
       | Some LBrace _ ->
 	  let () = Stream.junk input in
@@ -516,7 +567,7 @@ let parse name input =
           let () = junk_bar input in
 	  let p = parse_merge_statement input in
 	  let () = junk_right_brace input in
-	    (s, p)
+	    { Process.attributes = List.map vardecl_of_binding s; code = p }
       | Some t ->
 	  raise (BadToken (error_tokens input, get_token_line t, "{"))
       | None ->

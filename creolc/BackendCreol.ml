@@ -44,6 +44,8 @@ let emit out_channel input =
 	  pretty_print_class c
       | Declaration.Interface i when not i.Interface.hidden ->
 	  pretty_print_iface i
+      | Declaration.Object o when not o.Object.hidden ->
+	  pretty_print_object o
       | Declaration.Exception e when not e.Exception.hidden ->
 	  pretty_print_exception e
       | Declaration.Datatype d when not d.Datatype.hidden ->
@@ -51,6 +53,15 @@ let emit out_channel input =
       | Declaration.Function f when not f.Function.hidden ->
 	  pretty_print_function f
       | _ -> ()
+  and pretty_print_function f =
+    output_string out_channel ("  fun " ^ f.Function.name) ;
+    output_string out_channel " (" ;
+    pretty_print_vardecls 0 "" ", " "" f.Function.parameters ;
+    output_string out_channel ")" ;
+    output_string out_channel
+      (" : " ^ (Type.as_string f.Function.result_type) ^ " == ") ;
+    pretty_print_expression f.Function.body ;
+    output_string out_channel "\n"
   and pretty_print_datatype d =
     output_string out_channel ("datatype " ^ (Type.as_string d.Datatype.name));
     if d.Datatype.supers <> [] then
@@ -60,15 +71,6 @@ let emit out_channel input =
 	  (Type.as_string t))
 	  (function () -> output_string out_channel ", ") d.Datatype.supers
       end ;
-    output_string out_channel "\n"
-  and pretty_print_function f =
-    output_string out_channel ("  fun " ^ f.Function.name) ;
-    output_string out_channel " (" ;
-    pretty_print_vardecls 0 "" ", " "" f.Function.parameters ;
-    output_string out_channel ")" ;
-    output_string out_channel
-      (" : " ^ (Type.as_string f.Function.result_type) ^ " == ") ;
-    pretty_print_expression f.Function.body ;
     output_string out_channel "\n"
   and pretty_print_exception e =
     output_string out_channel ("exception " ^ e.Exception.name) ;
@@ -80,6 +82,60 @@ let emit out_channel input =
 	    output_string out_channel ")" 
     end ;
     output_string out_channel "\n"
+  and pretty_print_object obj =
+    output_string out_channel ("object " ^ obj.Object.name ^ " : " ^
+				 (Type.as_string obj.Object.cls)) ;
+    output_string out_channel "\nbegin" ;
+    if [] <> obj.Object.attributes then
+      begin
+	do_indent 1 ;
+	pretty_print_vardecls 1 "var " "" "\n" obj.Object.attributes;
+	output_string out_channel "\n"
+      end ;
+    begin
+      match obj.Object.process with
+	| { Process.attributes = []; code = (Statement.Skip _) } ->
+	    do_indent 1 ;
+	    output_string out_channel "No active process.\n"
+	| { Process.attributes = []; code = c } ->
+	    do_indent 1 ;
+	    output_string out_channel "Active Process:\n" ;
+	    do_indent 2 ;
+	    pretty_print_statement 2 c
+	| { Process.attributes = a; code = c } ->
+	    do_indent 1 ;
+	    output_string out_channel "Active Process:\n" ;
+	    do_indent 2 ;
+	    pretty_print_vardecls 2 "var " "" "\n" a ;
+	    do_indent 2 ;
+	    pretty_print_statement 2 c
+    end ;
+    output_string out_channel "\n" ;
+    if [] <> obj.Object.process_queue then
+      begin
+	do_indent 1 ;
+	output_string out_channel "Process Queue:\n" ;
+	List.iter (function
+		     | { Process.attributes = []; code = (Statement.Skip _) } ->
+			 assert false
+		     | { Process.attributes = []; code = c } ->
+			 do_indent 2 ;
+			 output_string out_channel "Process:\n" ;
+			 do_indent 3 ;
+			 pretty_print_statement 3 c ;
+			 output_string out_channel "\n"
+		     | { Process.attributes = a; code = c } ->
+			 do_indent 2 ;
+			 output_string out_channel "Process:\n" ;
+			 do_indent 3 ;
+			 pretty_print_vardecls 3 "var " "" "\n" a;
+			 do_indent 3 ;
+			 pretty_print_statement 3 c;
+			 output_string out_channel "\n")
+	  obj.Object.process_queue ;
+	output_string out_channel "\n"
+      end ;
+    output_string out_channel "end"
   and pretty_print_iface i =
     output_string out_channel "interface ";
     output_string out_channel i.Interface.name;
@@ -394,6 +450,10 @@ let emit out_channel input =
 	      do_indent nl;
 	      print nl op_prec r;
 	      close_block prec op_prec
+	| Statement.Continue (_, e) ->
+	    output_string out_channel "/* continue " ;
+	    pretty_print_expression e ;
+	    output_string out_channel "*/"
 	| Statement.Extern (_, s) ->
 	    output_string out_channel ("extern \"" ^ s ^ "\"")
     in
@@ -479,6 +539,12 @@ let emit out_channel input =
 	    output_string out_channel ")"
         | Expression.Extern (_, s) ->
             output_string out_channel ("extern \"" ^ s ^ "\"");
+	| Expression.ObjLit (_, s) ->
+	    output_string out_channel ("object " ^ s)
+	| Expression.LabelLit (_, e) ->
+	    output_string out_channel "label(" ;
+	    pretty_print_expression_list e ;
+	    output_string out_channel ")"
 	| Expression.SSAId (_, v, n) ->
 	    output_string out_channel ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
 	| Expression.Phi (_, l) ->

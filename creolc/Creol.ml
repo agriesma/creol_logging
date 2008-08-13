@@ -1363,12 +1363,26 @@ struct
 end
 
 
+module Process =
+struct
+
+  type t = {
+    attributes: VarDecl.t list;
+    code: Statement.t
+  }
+
+end
+
+
 module Object =
 struct
 
   type t = {
     name: string;
     cls: Type.t;
+    attributes: VarDecl.t list;
+    process: Process.t;
+    process_queue: Process.t list;
     hidden: bool;
   }
 
