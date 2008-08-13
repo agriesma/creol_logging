@@ -27,40 +27,39 @@ EXTRA_DIST	= benchmark.sh profile.sh \
 
 SUFFIXES	= .maude .prof
 
-CREOL_LIBRARY_PATH	= ${top_srcdir}/share
-MAUDE_LIB		:= ${top_builddir}/share:${MAUDE_LIB}
+CREOL_LIBRARY_PATH	= $(top_srcdir)/share
 
-PROFILE		= $(SHELL) ${srcdir}/profile.sh
-BENCHMARK	= $(SHELL) ${srcdir}/benchmark.sh
-CREOLC		= ${top_builddir}/creolc/creolc
+PROFILE		= $(SHELL) $(srcdir)/profile.sh
+BENCHMARK	= $(SHELL) $(srcdir)/benchmark.sh
+CREOLC		= $(top_builddir)/creolc/creolc
 
-export CREOL_LIBRARY_PATH MAUDE_LIB
+export CREOL_LIBRARY_PATH
 
 check-local: Phil1b.prof Phil1p.prof Phil2b.prof Phil2p.prof
 
 .maude.prof:
-	${MAUDE} $< > $@
+	env MAUDE_LIB=$(top_builddir)/share:$$MAUDE_LIB $(MAUDE) $< > $@
 
-Phil1p.maude: Philosophers.creol Philosophers.tests ${srcdir}/profile.sh
+Phil1p.maude: Philosophers.creol Philosophers.tests $(srcdir)/profile.sh
 	rm -f model.maude
 	$(CREOLC) -T maudemc -o model.maude $<
-	$(PROFILE) model.maude ${srcdir}/Philosophers.tests $@
+	$(PROFILE) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
 
-Phil2p.maude: Philosophers.creol Philosophers.tests ${srcdir}/profile.sh
+Phil2p.maude: Philosophers.creol Philosophers.tests $(srcdir)/profile.sh
 	rm -f model.maude
 	$(CREOLC) -T maudemc -p devirt -o model.maude $<
-	$(PROFILE) model.maude ${srcdir}/Philosophers.tests $@
+	$(PROFILE) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
 
-Phil1b.maude: Philosophers.creol Philosophers.tests ${srcdir}/benchmark.sh
+Phil1b.maude: Philosophers.creol Philosophers.tests $(srcdir)/benchmark.sh
 	rm -f model.maude
 	$(CREOLC) -T maudemc -o model.maude $<
-	$(BENCHMARK) model.maude ${srcdir}/Philosophers.tests $@
+	$(BENCHMARK) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
 
-Phil2b.maude: Philosophers.creol Philosophers.tests ${srcdir}/benchmark.sh
+Phil2b.maude: Philosophers.creol Philosophers.tests $(srcdir)/benchmark.sh
 	rm -f model.maude
 	$(CREOLC) -T maudemc -p devirt -o model.maude $<
-	$(BENCHMARK) model.maude ${srcdir}/Philosophers.tests $@
+	$(BENCHMARK) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
