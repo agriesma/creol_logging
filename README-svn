@@ -9,6 +9,17 @@ time into the file, causing new and different versions to be created).
 If you do not observe this rule, we also have to expect check-in and
 check-out times in the area of hours.
 
+The only exception to this rule is the file README.  This file must be
+present in order to regenerate the Makefile.in files using the command
+`autoreconf' (see below).
+
+This single exception gives rise to a second rule:  Whenever the file
+info/readme.texi, which is the source for README, is commited to the
+repository, the file README must be remade and commited in the same
+transaction.  It is a serious error if a check-out triggers a rebuild
+of the README file.
+
+
 1. Installing the dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Building the creol tools from a subversion check-out requires more tools
@@ -39,6 +50,8 @@ repository.  Make sure that you have the following programs installed:
 
      c. libxslt 1.1.11 or later
 
+  8. graphviz (for the dot utility).
+
 and what ever these tools will require in addition.
 
 
@@ -52,6 +65,10 @@ are recreated.  Fortunately, this is a very simple procedure.
      command `autoreconf -i -s'.  This will create the configure
      script and the templates for the `Makefiles.in'.
 
+  2. Execute the configure script to setup the build environment.
+     make will then rebuild all files when needed.  Please respect
+     the golden rule above.
+
 
 * share/interpreter.m4:
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,3 +79,6 @@ the files interpreter.maude and modelchecker.maude.
 If you need to apply changes to the interpreter, you have to edit the
 file interpreter.m4, since all changes to the other files may be
 overwritten.
+
+Additional parts of the interpreter are found in the files configuration.m4,
+machine.m4, and predicates.m4.
