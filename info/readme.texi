@@ -1,0 +1,141 @@
+@ifclear creoltools
+@unnumbered Creoltools
+
+Copyright @copyright{} 2007, 2008 Marcel Kyas
+
+This file is free documentation; the Free Software Foundation gives
+unlimited permission to copy, distribute and modify it.
+
+These are the creoltools, tools for writing, simulating, and analysing
+Creol programs.
+
+Creol is a formal language for modelling (and eventually
+programming) distributed, object-oriented systems.  Creol supports
+inter-object communication using asynchronous communication, multiple
+inheritance, and active objects.
+
+This package contains:
+
+@itemize
+@item
+An interpreter for Creol models, written in Maude.
+
+@item
+A compiler from the surface language into the representation of the
+interpreter.
+
+@end itemize
+
+This package comes with extensive documentation in the @file{info}
+directory.  You can access it using the @command{info} reader, e.g.,
+by invoking @samp{info -f info/creoltools.info}.
+
+The documentation can also be formatted for printing.  The command
+@samp{make pdf} can format the documentation into the pdf document
+@file{info/creoltools.pdf}, which is suitable for online reading
+and printing.  You will need the program @command{texi2pdf} to
+format the documentation as a pdf document.  See below for
+details.
+
+
+@section Installation Instructions
+@end ifclear
+
+Briefly, the shell commands @samp{./configure; make; make install}
+should configure, build, and install this package.
+
+@ifclear creoltools
+The file @file{INSTALL} contains general installation instructions.
+This file explains the specific installation instructions.
+@end ifclear
+@ifset creoltools
+The Section @ref{Basic Installation} contains general installation
+instructions.
+@end ifset
+
+After installing the tool, the environment variable @env{MAUDE_LIB}
+should be edited to include the directory
+@file{@var{datadir}/creoltools}, e.g., by adding the line @samp{export
+MAUDE_LIB=$MAUDE_LIB:@var{datadir}/creoltools} to your @file{~/.profile}
+file, where @file{@var{datadir}} should be replaced by the installation
+directory.  The default is @file{/usr/local/share}.  Please consult your
+system's manual or your system administrator for the file and the exact
+commands for this change.
+
+The creoltools will by default be installed into @file{/usr/local}, or
+the directories specified by the @samp{--prefix} and related options.
+The run-time support files will be installed into the directory
+@file{@var{datadir}/creoltools}, where @file{@var{datadir}} defaults to
+@file{@var{prefix}/share}.
+
+@ifset creoltools
+Section @ref{Environment Variables} provides more information on the
+environment variables that influence the behaviour of the creoltools.
+@end ifset
+
+
+@node Dependencies
+@section Dependencies
+
+This software is written in OCaml.  You will need to have a working
+OCaml development environment, including findlib installed.  Please
+consult your system administrator or your distribution provider on
+how to install this environment.  You will find some distribution
+specific instructions below.  You can obtain the source code and some
+binary packages for OCaml from
+@url{http://caml.inria.fr/ocaml/index.en.html}.  The creoltools should
+compile with versions 3.09.3, 3.10.0, 3.10.1, and 3.10.2.  Other versions
+may work but have not been tested.
+
+The creoltools use findlib for compilation.  
+
+@url{http://projects.camlcity.org/projects/findlib.html}
+
+An alternative is to obtain the required package from GODI
+@url{http://godi.camlcity.org/godi/index.html}, which helps
+in managing some of the dependencies.
+
+The compiler can be configured to generate XML documents.  In order to
+use this feature, you need to have ocaml-libxml2 installed on your
+system.  See below on how to obtain this library.
+
+
+@node OS Specific Instructions
+@section Operating System Specific Notes
+
+We collect notes that are specific to different operating systems and
+distributions in this section.  The author of the software develops
+the software using the Fedora 9 Linux distribution.  Therefore, this
+distribution is supported best.
+
+
+@subsection Linux
+
+@subsubsection Fedora 9
+
+The command
+@samp{yum install ocaml ocaml-findlib libxml2-devel libxslt-devel}
+installs all dependencies when executed with the proper privileges.
+
+
+@subsubsection Ubuntu 7.10
+
+Apparently, the command
+@samp{apt-get install ocaml ocaml-findlib libxml2-dev libxslt1-dev}
+installs all dependencies needed to compile creoltools as described
+above.
+
+
+@subsection MacOS
+
+The tools are known to compile under MacOS.  The dependencies were
+satisfied from Darwin Ports (@url{http://darwinports.com/}.
+The caml-menhir package is installed incorrectly. Rebuilding the
+parser may fail with ``/share/lib/standard.mly'' not found. In this
+case, install a link from /share to /opt/share.
+
+
+@subsection Windows
+
+We do not know how to install the tools under Windows.  Since I
+do not use Windows at all, I cannot provide support.

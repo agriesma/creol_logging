@@ -93,6 +93,8 @@ Documentation License.''
 @chapter Installation Instructions
 
 @menu
+* Dependencies::		Thinks needed for compiling and installing.
+* OS Specific Instructions::	Operating system specific instructions.
 * Basic Installation::		Basic Installation.
 * Compilers and Options::       Selecting compilers and optimization
 * Multiple Architectures::      Compiling for multiple architectures at once
@@ -105,7 +107,8 @@ e}
 * configure Invocation::        Changing how @command{configure} runs
 @end menu
 
-@set autoconf
+@set creoltools
+@include readme.texi
 @include install.texi
 
 

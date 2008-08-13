@@ -24,19 +24,27 @@ SUBDIRS			= share info creolc tests
 
 MOSTLYCLEANFILES	= *~
 DISTCLEANFILES		= 
-MAINTAINERCLEANFILES	= .depend Makefile.in configure aclocal.m4 \
-			  depcomp elisp-comp missing install-sh INSTALL \
-			  creoltools.spec
+MAINTAINERCLEANFILES	= $(srcdir)/Makefile.in $(srcdir)/configure \
+			  $(srcdir)/aclocal.m4 $(srcdir)/missing \
+			  $(srcdir)/install-sh \
+			  $(srcdir)/INSTALL \
+			  $(srcdir)/creoltools.spec
 
 bin_SCRIPTS		= creolshell creolbug
-dist_noinst_SCRIPTS	= maude-sh
 
 EXTRA_DIST		= creoltools.spec creoltools.spec.in
 
 AM_MAKEINFOFLAGS = --no-headers --no-validate --no-split
+
 $(srcdir)/INSTALL: $(top_srcdir)/info/install.texi
+	rm -f $@
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -o $@ \
 	  $(top_srcdir)/info/install.texi
+
+$(srcdir)/README: $(top_srcdir)/info/readme.texi
+	rm -f $@
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -o $@ \
+	  $(top_srcdir)/info/readme.texi
 
 $(srcdir)/creoltools.spec: $(srcdir)/creoltools.spec.in $(srcdir)/configure.ac
 	rm -f $@
