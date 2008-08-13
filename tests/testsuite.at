@@ -28,7 +28,7 @@ TEST_MAUDE([Datatypes], ${abs_srcdir}/Datatypes.maude, [.])
 AT_CLEANUP
 
 AT_SETUP([Signature])
-TEST_MAUDE([Signature], ${abs_srcdir}/Signature.maude, [.])
+TEST_MAUDE([Signature], ${abs_builddir}/Signature.maude, [.])
 AT_CLEANUP
 
 AT_SETUP([Interpreter])
@@ -117,21 +117,21 @@ red classes .
 rew classes main("Test", emp) .
 ],[dnl
 red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
-])
+], [no])
 
 TEST_CREOLC([Inheritance], [language], [dnl
 red classes .
 rew classes main("B", int(1)) .
 ],[dnl
 red simulate('PROGRAM, upTerm(classes main("B", int(1))), 0, 1) .
-])
+], [no])
 
 TEST_CREOLC([Diamond], [language], [dnl
 red classes .
 rew classes main("D", emp) .
 ],[dnl
 red simulate('PROGRAM, upTerm(classes main("D", emp)), 0, 1) .
-])
+], [no])
 
 TEST_CREOLC([Deadlock], [language], [dnl
 red classes .
@@ -189,14 +189,14 @@ red classes .
 rew classes main("Init", emp) .
 ],[
 red simulate('PROGRAM, upTerm(classes main("Init", emp)), 0, 1) .
-])
+], [no])
 
 TEST_CREOLC([PetersonLeader], [examples], [dnl
 red classes .
 rew classes main("Main", emp) .
 ],[
 red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
-])
+], [no])
 
 TEST_CREOLC([AsyncSieveBuggy], [examples], [dnl
 red classes .
@@ -294,6 +294,8 @@ red classes .
 red simulate('PROGRAM, upTerm(classes main("Butler", emp)), 0, 1) .
 ])
 
+dnl Test the CMC validator.
+m4_include(cmcvalid.at)
 
 dnl test cases for the parser.
 TEST_CREOLC_SYNTAX([AttrDecl])
@@ -396,7 +398,6 @@ TEST_CREOLC_TYPECHECK([Ambiguous7],
     K::m[ K |  ->  ]
 ]])
 TEST_CREOLC_TYPECHECK([Ambiguous8], [])
-
 
 dnl Test PASS: devirt
 dnl

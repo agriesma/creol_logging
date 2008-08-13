@@ -1,125 +1,118 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Configuration: 
-< "Christmas" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "e" |-> null, "r" |->
-    null, "sc" |-> null, Code: "sc" ::= new "SantaClaus"(emp) ; "r" ::= new
-    "Reindeer"("sc") ; "r" ::= new "Reindeer"("sc") ; "r" ::= new "Reindeer"(
-    "sc") ; "r" ::= new "Reindeer"("sc") ; "r" ::= new "Reindeer"("sc") ; "e"
-    ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc") ;
-    "e" ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc") ; "e" ::= new "Elf"("sc")
-    ; "e" ::= new "Elf"("sc") ; return(emp) >,
+< "Christmas" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "e" |-> null, "r"
+    |-> null, "sc" |-> null, Code: new("sc" ; "SantaClaus" ; emp) ; new("r" ;
+    "Reindeer" ; "sc") ; new("r" ; "Reindeer" ; "sc") ; new("r" ; "Reindeer" ;
+    "sc") ; new("r" ; "Reindeer" ; "sc") ; new("r" ; "Reindeer" ; "sc") ; new(
+    "e" ; "Elf" ; "sc") ; new("e" ; "Elf" ; "sc") ; new("e" ; "Elf" ; "sc") ;
+    new("e" ; "Elf" ; "sc") ; new("e" ; "Elf" ; "sc") ; new("e" ; "Elf" ; "sc")
+    ; new("e" ; "Elf" ; "sc") ; return(emp) >,
   Ocnt: 0 >
  
-< "Elf" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "this" . "work"(emp) ; free("label:0") ; return(emp) > *
-  < "showIn" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "this" . "talkToSanta"(emp) ; free("label:0") ; return(
-    emp) > *
-  < "showOut" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "this" . "work"(emp) ; free("label:0") ; return(emp) > *
-  < "talkToSanta" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ;
-    return(emp) > *
-  < "work" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "sc" . "haveProblem"(emp) ; free("label:0") ; return(emp)
-    >,
+< "Elf" : Class | Inh: noInh, Param: "sc", Att: "sc" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    Code: call("label:0" ; "this" ; "work" ; emp) ; free("label:0") ; return(
+    emp) >, < "showIn" : Method | Param: noVid, Att: "_" |-> null, "label:0"
+    |-> null, Code: call("label:0" ; "this" ; "talkToSanta" ; emp) ; free(
+    "label:0") ; return(emp) >, < "showOut" : Method | Param: noVid, Att: "_"
+    |-> null, "label:0" |-> null, Code: call("label:0" ; "this" ; "work" ; emp)
+    ; free("label:0") ; return(emp) >, < "talkToSanta" : Method | Param: noVid,
+    Att: "_" |-> null, Code: skip ; return(emp) >, < "work" : Method | Param:
+    noVid, Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
+    "haveProblem" ; emp) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
  
-< "LeaderElf" : Cl | Inh: "Elf" < emp >, Par: "sc", "elves", Att: "elves" |->
-    null, "sc" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "run" @ "Elf"(emp) ; "label:0" ?(noVid) ; return(emp) > *
-  < "work" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "sc" . "haveProblem"(emp) ; free("label:0") ; return(emp)
-    >,
+< "LeaderElf" : Class | Inh: "Elf" < emp >, Param: "sc", "elves", Att: "elves"
+    |-> null, "sc" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    Code: static("label:0" ; "run" ; "Elf" ; emp) ; get("label:0" ; noVid) ;
+    return(emp) >, < "work" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, Code: call("label:0" ; "sc" ; "haveProblem" ; emp) ;
+    free("label:0") ; return(emp) >,
   Ocnt: 0 >
  
-< "Reindeer" : Cl | Inh: noInh, Par: "sc", Att: "sc" |-> null, Mtds:
-  < "deliverToys" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ;
-    return(emp) > *
-  < "harness" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "this" . "deliverToys"(emp) ; free("label:0") ; return(
-    emp) > *
-  < "holiday" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "sc" . "backFromHoliday"(emp) ; free("label:0") ; return(
-    emp) > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "this" . "holiday"(emp) ; free("label:0") ; return(emp) >
-    *
-  < "unharness" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |->
-    null, Code: "label:0" ! "this" . "holiday"(emp) ; free("label:0") ; return(
-    emp) >,
+< "Reindeer" : Class | Inh: noInh, Param: "sc", Att: "sc" |-> null, Mtds:
+  < "deliverToys" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+    return(emp) >, < "harness" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, Code: call("label:0" ; "this" ; "deliverToys" ; emp) ;
+    free("label:0") ; return(emp) >, < "holiday" : Method | Param: noVid, Att:
+    "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
+    "backFromHoliday" ; emp) ; free("label:0") ; return(emp) >, < "init" :
+    Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, <
+    "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code:
+    call("label:0" ; "this" ; "holiday" ; emp) ; free("label:0") ; return(emp)
+    >, < "unharness" : Method | Param: noVid, Att: "_" |-> null, "label:0" |->
+    null, Code: call("label:0" ; "this" ; "holiday" ; emp) ; free("label:0") ;
+    return(emp) >,
   Ocnt: 0 >
  
-< "SantaClaus" : Cl | Inh: noInh, Par: noVid, Att: "ctElves" |-> null,
+< "SantaClaus" : Class | Inh: noInh, Param: noVid, Att: "ctElves" |-> null,
     "ctReindeers" |-> null, "harnessedReindeers" |-> null, "inofficeElves" |->
     null, "waitElves" |-> null, "waitReindeers" |-> null, Mtds:
-  < "backFromHoliday" : Mtdname | Param: noVid, Latt: "_" |-> null, Code:
-    "ctReindeers" ::= "+"("ctReindeers" :: int(1)) ; "waitReindeers" ::= "|-"(
-    "waitReindeers" :: "caller") ; return(emp) > *
-  < "deliverToys" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |->
-    null, "label:1" |-> null, "t1" |-> null, "t2" |-> null, "t3" |-> null, "t4"
-    |-> null, "t5" |-> null, Code: "ctReindeers" ::= int(0) ; "t1" ! "head"(
-    "waitReindeers") . "harness"(emp) ; "harnessedReindeers" ::= "|-"(
-    "harnessedReindeers" :: "head"("waitReindeers")) ; "waitReindeers" ::=
-    "tail"("waitReindeers") ; "t2" ! "head"("waitReindeers") . "harness"(emp) ;
-    "harnessedReindeers" ::= "|-"("harnessedReindeers" :: "head"(
-    "waitReindeers")) ; "waitReindeers" ::= "tail"("waitReindeers") ; "t3" !
-    "head"("waitReindeers") . "harness"(emp) ; "harnessedReindeers" ::= "|-"(
-    "harnessedReindeers" :: "head"("waitReindeers")) ; "waitReindeers" ::=
-    "tail"("waitReindeers") ; "t4" ! "head"("waitReindeers") . "harness"(emp) ;
-    "harnessedReindeers" ::= "|-"("harnessedReindeers" :: "head"(
-    "waitReindeers")) ; "waitReindeers" ::= "tail"("waitReindeers") ; "t5" !
-    "head"("waitReindeers") . "harness"(emp) ; "harnessedReindeers" ::= "|-"(
-    "harnessedReindeers" :: "head"("waitReindeers")) ; "waitReindeers" ::=
-    "tail"("waitReindeers") ; await "&&"("&&"("&&"("&&"("t1" ?? :: "t2" ??) ::
-    "t3" ??) :: "t4" ??) :: "t5" ??) ; free("t5") ; free("t4") ; free("t3") ;
-    free("t2") ; free("t1") ; "label:0" ! "head"("harnessedReindeers") .
-    "unharness"(emp) ; free("label:0") ; "harnessedReindeers" ::= "tail"(
-    "harnessedReindeers") ; "label:1" ! "head"("harnessedReindeers") .
-    "unharness"(emp) ; free("label:1") ; "harnessedReindeers" ::= "tail"(
-    "harnessedReindeers") ; return(emp) > *
-  < "haveProblem" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "ctElves"
-    ::= "+"("ctElves" :: int(1)) ; "waitElves" ::= "|-"("waitElves" ::
-    "caller") ; return(emp) > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: (("ctReindeers"
-    @@ "SantaClaus"), ("waitReindeers" @@ "SantaClaus"), ("harnessedReindeers"
-    @@ "SantaClaus"), ("ctElves" @@ "SantaClaus"), ("waitElves" @@
-    "SantaClaus"), ("inofficeElves" @@ "SantaClaus")) ::= int(0) :: list(emp)
-    :: list(emp) :: int(0) :: list(emp) :: list(emp) ; return(emp) > *
-  < "loop" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, "label:2" |-> null, Code: (await "&&"("<="(int(3) ::
-    "ctElves") :: "~"("="("ctReindeers" :: int(9)))) ; "label:1" ! "this" .
-    "talkToElves"(emp) ; "label:1" ?(noVid)[]await "="("ctReindeers" :: int(5))
-    ; "label:0" ! "this" . "deliverToys"(emp) ; "label:0" ?(noVid)) ; "label:2"
-    ! "this" . "loop"(emp) ; free("label:2") ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "this" . "loop"(emp) ; free("label:0") ; return(emp) > *
-  < "talkToElves" : Mtdname | Param: noVid, Latt: "_" |-> null, "t1" |-> null,
-    "t2" |-> null, "t3" |-> null, Code: "ctElves" ::= "-"("ctElves" :: int(3))
-    ; "t1" ! "head"("waitElves") . "showIn"(emp) ; "inofficeElves" ::= "|-"(
-    "inofficeElves" :: "head"("waitElves")) ; "waitElves" ::= "tail"(
-    "waitElves") ; "t2" ! "head"("waitElves") . "showIn"(emp) ; "inofficeElves"
-    ::= "|-"("inofficeElves" :: "head"("waitElves")) ; "waitElves" ::= "tail"(
-    "waitElves") ; "t3" ! "head"("waitElves") . "showIn"(emp) ; "inofficeElves"
-    ::= "|-"("inofficeElves" :: "head"("waitElves")) ; "waitElves" ::= "tail"(
-    "waitElves") ; await "&&"("&&"("t1" ?? :: "t2" ??) :: "t3" ??) ; free("t3")
-    ; free("t2") ; free("t1") ; "t1" ! "head"("inofficeElves") . "showOut"(emp)
-    ; "inofficeElves" ::= "tail"("inofficeElves") ; "t2" ! "head"(
-    "inofficeElves") . "showOut"(emp) ; "inofficeElves" ::= "tail"(
-    "inofficeElves") ; "t3" ! "head"("inofficeElves") . "showOut"(emp) ;
-    "inofficeElves" ::= "tail"("inofficeElves") ; await "&&"("&&"("t1" ?? ::
-    "t2" ??) :: "t3" ??) ; free("t3") ; free("t2") ; free("t1") ; return(emp)
-    >,
+  < "backFromHoliday" : Method | Param: noVid, Att: "_" |-> null, Code: assign(
+    "ctReindeers" ; "+"("ctReindeers" :: int(1))) ; assign("waitReindeers" ;
+    "|-"("waitReindeers" :: "caller")) ; return(emp) >, < "deliverToys" :
+    Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, "label:1" |->
+    null, "t1" |-> null, "t2" |-> null, "t3" |-> null, "t4" |-> null, "t5" |->
+    null, Code: assign("ctReindeers" ; int(0)) ; call("t1" ; "head"(
+    "waitReindeers") ; "harness" ; emp) ; assign("harnessedReindeers" ; "|-"(
+    "harnessedReindeers" :: "head"("waitReindeers"))) ; assign("waitReindeers"
+    ; "tail"("waitReindeers")) ; call("t2" ; "head"("waitReindeers") ;
+    "harness" ; emp) ; assign("harnessedReindeers" ; "|-"("harnessedReindeers"
+    :: "head"("waitReindeers"))) ; assign("waitReindeers" ; "tail"(
+    "waitReindeers")) ; call("t3" ; "head"("waitReindeers") ; "harness" ; emp)
+    ; assign("harnessedReindeers" ; "|-"("harnessedReindeers" :: "head"(
+    "waitReindeers"))) ; assign("waitReindeers" ; "tail"("waitReindeers")) ;
+    call("t4" ; "head"("waitReindeers") ; "harness" ; emp) ; assign(
+    "harnessedReindeers" ; "|-"("harnessedReindeers" :: "head"(
+    "waitReindeers"))) ; assign("waitReindeers" ; "tail"("waitReindeers")) ;
+    call("t5" ; "head"("waitReindeers") ; "harness" ; emp) ; assign(
+    "harnessedReindeers" ; "|-"("harnessedReindeers" :: "head"(
+    "waitReindeers"))) ; assign("waitReindeers" ; "tail"("waitReindeers")) ;
+    await "&&"("&&"("&&"("&&"(?("t1") :: ?("t2")) :: ?("t3")) :: ?("t4")) :: ?(
+    "t5")) ; free("t5") ; free("t4") ; free("t3") ; free("t2") ; free("t1") ;
+    call("label:0" ; "head"("harnessedReindeers") ; "unharness" ; emp) ; free(
+    "label:0") ; assign("harnessedReindeers" ; "tail"("harnessedReindeers")) ;
+    call("label:1" ; "head"("harnessedReindeers") ; "unharness" ; emp) ; free(
+    "label:1") ; assign("harnessedReindeers" ; "tail"("harnessedReindeers")) ;
+    return(emp) >, < "haveProblem" : Method | Param: noVid, Att: "_" |-> null,
+    Code: assign("ctElves" ; "+"("ctElves" :: int(1))) ; assign("waitElves" ;
+    "|-"("waitElves" :: "caller")) ; return(emp) >, < "init" : Method | Param:
+    noVid, Att: "_" |-> null, Code: assign(("ctReindeers" @ "SantaClaus"), (
+    "waitReindeers" @ "SantaClaus"), ("harnessedReindeers" @ "SantaClaus"), (
+    "ctElves" @ "SantaClaus"), ("waitElves" @ "SantaClaus"), ("inofficeElves" @
+    "SantaClaus") ; int(0) :: list(emp) :: list(emp) :: int(0) :: list(emp) ::
+    list(emp)) ; return(emp) >, < "loop" : Method | Param: noVid, Att: "_" |->
+    null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, Code: (
+    await "&&"("<="(int(3) :: "ctElves") :: "~"("="("ctReindeers" :: int(9))))
+    ; call("label:1" ; "this" ; "talkToElves" ; emp) ; get("label:1" ; noVid)[
+    ]await "="("ctReindeers" :: int(5)) ; call("label:0" ; "this" ;
+    "deliverToys" ; emp) ; get("label:0" ; noVid)) ; call("label:2" ; "this" ;
+    "loop" ; emp) ; free("label:2") ; return(emp) >, < "run" : Method | Param:
+    noVid, Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "this"
+    ; "loop" ; emp) ; free("label:0") ; return(emp) >, < "talkToElves" : Method
+    | Param: noVid, Att: "_" |-> null, "t1" |-> null, "t2" |-> null, "t3" |->
+    null, Code: assign("ctElves" ; "-"("ctElves" :: int(3))) ; call("t1" ;
+    "head"("waitElves") ; "showIn" ; emp) ; assign("inofficeElves" ; "|-"(
+    "inofficeElves" :: "head"("waitElves"))) ; assign("waitElves" ; "tail"(
+    "waitElves")) ; call("t2" ; "head"("waitElves") ; "showIn" ; emp) ; assign(
+    "inofficeElves" ; "|-"("inofficeElves" :: "head"("waitElves"))) ; assign(
+    "waitElves" ; "tail"("waitElves")) ; call("t3" ; "head"("waitElves") ;
+    "showIn" ; emp) ; assign("inofficeElves" ; "|-"("inofficeElves" :: "head"(
+    "waitElves"))) ; assign("waitElves" ; "tail"("waitElves")) ; await "&&"(
+    "&&"(?("t1") :: ?("t2")) :: ?("t3")) ; free("t3") ; free("t2") ; free("t1")
+    ; call("t1" ; "head"("inofficeElves") ; "showOut" ; emp) ; assign(
+    "inofficeElves" ; "tail"("inofficeElves")) ; call("t2" ; "head"(
+    "inofficeElves") ; "showOut" ; emp) ; assign("inofficeElves" ; "tail"(
+    "inofficeElves")) ; call("t3" ; "head"("inofficeElves") ; "showOut" ; emp)
+    ; assign("inofficeElves" ; "tail"("inofficeElves")) ; await "&&"("&&"(?(
+    "t1") :: ?("t2")) :: ?("t3")) ; free("t3") ; free("t2") ; free("t1") ;
+    return(emp) >,
   Ocnt: 0 >
 
 Bye.

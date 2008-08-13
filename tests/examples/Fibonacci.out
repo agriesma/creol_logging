@@ -1,30 +1,27 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Configuration: 
-< "FibTester" : Cl | Inh: noInh, Par: "n", Att: "f" |-> null, "n" |-> null,
-    "res" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "f" ::= new
-    "Fibonacci"("n") ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "f" . "fibonacci"("n") ; "label:0" ?("res") ; return(emp)
-    >,
+< "FibTester" : Class | Inh: noInh, Param: "n", Att: "f" |-> null, "n" |->
+    null, "res" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("f" ;
+    "Fibonacci" ; "n") ; return(emp) >, < "run" : Method | Param: noVid, Att:
+    "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "f" ; "fibonacci"
+    ; "n") ; get("label:0" ; "res") ; return(emp) >,
   Ocnt: 0 >
  
-< "Fibonacci" : Cl | Inh: noInh, Par: "n", Att: "n" |-> null, Mtds:
-  < "fib" : Mtdname | Param: "n", Latt: "_" |-> null, "a" |-> null, "b" |->
-    null, "f" |-> null, "n" |-> null, "s" |-> null, "t" |-> null, Code: if "="(
-    "n" :: int(0)) th "f" ::= int(1) el if "="("n" :: int(1)) th "f" ::= int(1)
-    el "s" ! "this" . "fib"("-"("n" :: int(1))) ; "t" ! "this" . "fib"("-"("n"
-    :: int(2))) ; "s" ?("a") ; "t" ?("b") ; "f" ::= "+"("a" :: "b") fi fi ;
-    return("f") > *
-  < "fibonacci" : Mtdname | Param: "n", Latt: "_" |-> null, "f" |-> null, "n"
-    |-> null, "t" |-> null, Code: "t" ! "this" . "fib"("n") ; "t" ?("f") ;
-    return("f") > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "res" |-> null, "t" |->
-    null, Code: "t" ! "this" . "fib"("n") ; await ("t" ??) ; "t" ?("res") ;
-    return(emp) >,
+< "Fibonacci" : Class | Inh: noInh, Param: "n", Att: "n" |-> null, Mtds:
+  < "fib" : Method | Param: "n", Att: "_" |-> null, "a" |-> null, "b" |-> null,
+    "f" |-> null, "n" |-> null, "s" |-> null, "t" |-> null, Code: if "="("n" ::
+    int(0)) th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ;
+    int(1)) el call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ;
+    "this" ; "fib" ; "-"("n" :: int(2))) ; get("s" ; "a") ; get("t" ; "b") ;
+    assign("f" ; "+"("a" :: "b")) fi fi ; return("f") >, < "fibonacci" : Method
+    | Param: "n", Att: "_" |-> null, "f" |-> null, "n" |-> null, "t" |-> null,
+    Code: call("t" ; "this" ; "fib" ; "n") ; get("t" ; "f") ; return("f") >, <
+    "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "res" |-> null, "t"
+    |-> null, Code: call("t" ; "this" ; "fib" ; "n") ; await ?("t") ; get("t" ;
+    "res") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

@@ -3,20 +3,20 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Process" : Cl | Inh: (noInh),
-  Par: ("i" , "u"),
+< "Process" : Class | Inh: (noInh),
+  Param: ("i" , "u"),
   Att: ("i" |-> null , "u" |-> null , "status" |-> null , "neighbor" |-> null),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: "status" ::= int(0) ; "label:0" ! "i" . "getNeighbor" ( emp ) ; ( "label:0" ? ( "neighbor" ) )  ; "label:1" ! "neighbor" . "receive" ( "u" ) ; free( "label:1" ) ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "receive" : Mtdname | Param: "v", Latt: "v" |-> null , "label:0" |-> null , "_" |-> null, Code: if ">" ( "v" :: "u" ) th "label:0" ! "neighbor" . "receive" ( "v" ) ; free( "label:0" ) el if "=" ( "v" :: "u" ) th "status" ::= int(1) el skip fi fi ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: assign( "status" ; int(0) ) ; call( "label:0" ; "i" ; "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ; call( "label:1" ; "neighbor" ; "receive" ; "u" ) ; free( "label:1" ) ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "receive" : Method | Param: "v", Att: "v" |-> null , "label:0" |-> null , "_" |-> null, Code: if ">" ( "v" :: "u" ) th call( "label:0" ; "neighbor" ; "receive" ; "v" ) ; free( "label:0" ) el if "=" ( "v" :: "u" ) th assign( "status" ; int(1) ) el skip fi fi ; return ( emp ) >),
   Ocnt: 0 >
 
-< "Init" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Init" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: ("p1" |-> null , "p2" |-> null , "p3" |-> null),
-  Mtds: (< "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "p1" ::= new "Process" ( "this" :: int(1) ) ; "p2" ::= new "Process" ( "this" :: int(2) ) ; "p3" ::= new "Process" ( "this" :: int(3) ) ; return ( emp ) > *
-    < "getNeighbor" : Mtdname | Param: noVid, Latt: "p" |-> null , "_" |-> null, Code: if "=" ( "caller" :: "p1" ) th "p" ::= "p3" el if "=" ( "caller" :: "p2" ) th "p" ::= "p1" el "p" ::= "p2" fi fi ; return ( "p" ) >),
+  Mtds: (< "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new( "p1" ; "Process" ; "this" :: int(1) ) ; new( "p2" ; "Process" ; "this" :: int(2) ) ; new( "p3" ; "Process" ; "this" :: int(3) ) ; return ( emp ) > ,
+    < "getNeighbor" : Method | Param: noVid, Att: "p" |-> null , "_" |-> null, Code: if "=" ( "caller" :: "p1" ) th assign( "p" ; "p3" ) el if "=" ( "caller" :: "p2" ) th assign( "p" ; "p1" ) el assign( "p" ; "p2" ) fi fi ; return ( "p" ) >),
   Ocnt: 0 >
 
 .

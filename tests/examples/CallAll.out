@@ -1,22 +1,19 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Class: 
-< "CallAll" : Cl | Inh: noInh, Par: noVid, Att: "list" |-> null, "outstanding"
-    |-> null, "results" |-> null, Mtds:
-  < "call_all" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |->
-    null, Code: "results" ::= list(emp) ; "label:0" ! "this" . "doit"("list") ;
-    "label:0" ?(noVid) ; await "="("#"("results") :: "#"("list")) ; return(emp)
-    > *
-  < "doit" : Mtdname | Param: "l", Latt: "_" |-> null, "i" |-> null, "l" |->
-    null, "label:0" |-> null, "o" |-> null, "r" |-> null, Code: if "/="("l" ::
-    list(emp)) th "r" ! "fst"("i") . "m"("snd"("i")) ; "label:0" ! "this" .
-    "doit"("tail"("l")) ; "label:0" ?(noVid) ; await ("r" ??) ; "r" ?("o") ;
-    "results" ::= "|-"("results" :: pair("fst"("i"), "o")) el skip fi ; return(
-    emp) > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) >,
+< "CallAll" : Class | Inh: noInh, Param: noVid, Att: "list" |-> null,
+    "outstanding" |-> null, "results" |-> null, Mtds:
+  < "call_all" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    Code: assign("results" ; list(emp)) ; call("label:0" ; "this" ; "doit" ;
+    "list") ; get("label:0" ; noVid) ; await "="("#"("results") :: "#"("list"))
+    ; return(emp) >, < "doit" : Method | Param: "l", Att: "_" |-> null, "i" |->
+    null, "l" |-> null, "label:0" |-> null, "o" |-> null, "r" |-> null, Code:
+    if "/="("l" :: list(emp)) th call("r" ; "fst"("i") ; "m" ; "snd"("i")) ;
+    call("label:0" ; "this" ; "doit" ; "tail"("l")) ; get("label:0" ; noVid) ;
+    await ?("r") ; get("r" ; "o") ; assign("results" ; "|-"("results" :: list(
+    "fst"("i") :: "o"))) el skip fi ; return(emp) >, < "init" : Method | Param:
+    noVid, Att: "_" |-> null, Code: skip ; return(emp) >, < "run" : Method |
+    Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

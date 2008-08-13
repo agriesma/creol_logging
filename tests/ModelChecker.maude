@@ -28,11 +28,11 @@ mod TEST-TAILCALL is
   op init : -> Configuration .
   eq init =
 
-    < "Tailcall" : Cl | Inh: noInh, Par: "x", Att: "x" |-> null, Mtds:
-	< "init" : Mtdname | Param: noVid, Latt: noSubst, Code: return(emp) > *
-	< "run" : Mtdname | Param: noVid, Latt: noSubst, Code:
-          if "<" ( int(0) :: "x" ) th "x" ::= "-" ( "x" :: int(1) ) ;
-	    tailcall "run"(emp) el return(emp) fi >,
+    < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
+	< "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) > ,
+	< "run" : Method | Param: noVid, Att: noSubst, Code:
+          if "<" ( int(0) :: "x" ) th assign ( "x" ; "-" ( "x" :: int(1) ) ) ;
+	    tailcall("run" ; emp) el return(emp) fi >,
       Ocnt: 0 >
 
   main("Tailcall", int(5)) .

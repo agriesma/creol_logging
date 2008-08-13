@@ -3,18 +3,18 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "A" : Cl | Inh: (noInh),
-  Par: ("a"),
+< "A" : Class | Inh: (noInh),
+  Param: ("a"),
   Att: ("a" |-> null),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) >),
   Ocnt: 0 >
 
-< "B" : Cl | Inh: ("A" < "b" >),
-  Par: ("b"),
+< "B" : Class | Inh: ("A" < "b" >),
+  Param: ("b"),
   Att: ("b" |-> null),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) >),
   Ocnt: 0 >
 
 .

@@ -3,12 +3,12 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Alarmclock" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Alarmclock" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: ("clock" |-> null),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "clock" ::= int(0) ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "clock" ::= "+" ( "clock" :: int(1) ) ; ( "label:0" ! "this" . "run" (emp ) )  ; free( "label:0" ) ; return ( emp ) > *
-    < "wakeme" : Mtdname | Param: "n", Latt: "n" |-> null , "alarmsetting" |-> null , "_" |-> null, Code: "alarmsetting" ::= "+" ( "clock" :: "n" ) ; ( await ">=" ( "clock" :: "alarmsetting" ) ) ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign( "clock" ; int(0) ) ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: assign( "clock" ; "+" ( "clock" :: int(1) ) ) ; call( "label:0" ; "this" ; "run" ; emp ) ; free( "label:0" ) ; return ( emp ) > ,
+    < "wakeme" : Method | Param: "n", Att: "n" |-> null , "alarmsetting" |-> null , "_" |-> null, Code: assign( "alarmsetting" ; "+" ( "clock" :: "n" ) ) ; ( await ">=" ( "clock" :: "alarmsetting" ) ) ; return ( emp ) >),
   Ocnt: 0 >
 
 .

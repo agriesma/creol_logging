@@ -29,6 +29,7 @@ AT_CHECK([$MAUDE -no-banner -no-advise -batch $2 | /bin/sed -f ${abs_srcdir}/mau
 DIFF([${abs_srcdir}/$3/$1.out], [$1.out])
 ])
 
+
 dnl Test our tool chain.  Requires maude,
 dnl
 dnl The test works as follows:
@@ -37,6 +38,8 @@ dnl system.  This will be compared to some expected results.
 dnl Then a set of tests, defined in [name]-tests.maude are run on this
 dnl model and the output of maude is again compared to some expected
 dnl results.
+dnl
+dnl The optional fifth argument is used to disable cmc validation.
 m4_define([TEST_CREOLC], [dnl
 AT_SETUP([$1])
 AT_CHECK([${CREOLC} -T maude -W all ${abs_srcdir}/$2/$1.creol -o $1.maude])
@@ -54,7 +57,7 @@ quit .
 ])
 TEST_MAUDE([$1], test.maude, $2)
 
-if [ "x$WITH_METATESTS" = "xyes" ]
+if test "x$WITH_METATESTS" = "xyes"
 then
 AT_DATA([metatest.maude], [
 set show timing off .
@@ -69,6 +72,13 @@ $4
 quit .
 ])
 TEST_MAUDE([meta-$1], metatest.maude, $2)
+fi
+
+if test "x$5" != "xno"
+then
+    l=`wc -l < ${abs_srcdir}/$2/$1.out`
+    l=`expr $l - 2`
+    AT_CHECK([/bin/sed -e 1d -e 2d -e 3d -e "$l"q ${abs_srcdir}/$2/$1.out | cmcvalid -], [0], [ignore], [])
 fi
 
 AT_CLEANUP
@@ -102,6 +112,10 @@ quit .
 ])
 TEST_MAUDE([meta-$1], metatest.maude, $2)
 fi
+
+l=`wc -l < ${abs_srcdir}/$2/$1.out`
+l=`expr $l - 2`
+AT_CHECK([/bin/sed -e 1d -e 2d -e 3d -e "$l"q ${abs_srcdir}/$2/$1.out | cmcvalid -], [0], [ignore], [])
 
 AT_CLEANUP
 ])

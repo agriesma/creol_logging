@@ -3,20 +3,20 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "MutRec" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "MutRec" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: (noSubst),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "doit" : Mtdname | Param: "other", Latt: "other" |-> null , "label:0" |-> null , "_" |-> null, Code: "label:0" ! "other" . "doit" ( "this" ) ; ( "label:0" ? ( noVid ) )  ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "doit" : Method | Param: "other", Att: "other" |-> null , "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "other" ; "doit" ; "this" ) ; get( "label:0" ; noVid ) ; return ( emp ) >),
   Ocnt: 0 >
 
-< "Test" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Test" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: ("m1" |-> null , "m2" |-> null),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "m1" ::= new "MutRec" ( emp ) ; "m2" ::= new "MutRec" ( emp ) ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "m1" . "doit" ( "m2" ) ; free( "label:0" ) ; return ( emp ) > *
-    < "doit" : Mtdname | Param: "other", Latt: "other" |-> null , "_" |-> null, Code: skip ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: new( "m1" ; "MutRec" ; emp ) ; new( "m2" ; "MutRec" ; emp ) ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "m1" ; "doit" ; "m2" ) ; free( "label:0" ) ; return ( emp ) > ,
+    < "doit" : Method | Param: "other", Att: "other" |-> null , "_" |-> null, Code: skip ; return ( emp ) >),
   Ocnt: 0 >
 
 .

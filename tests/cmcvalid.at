@@ -1,0 +1,41 @@
+dnl cmcvalid.at  -- Test the CMC Parser
+dnl
+dnl This file is part of creoltools
+dnl
+dnl Written and Copyright (c) 2008 by Marcel Kyas
+dnl
+dnl This program is free software; you can redistribute it and/or
+dnl modify it under the terms of the GNU General Public License as
+dnl published by the Free Software Foundation; either version 3 of the
+dnl License, or (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+
+AT_SETUP([Parse-CMC])
+cp ${abs_srcdir}/examples/PetersonLeader.maude .
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load PetersonLeader .
+frew [[42]] classes main("Main", emp) .
+quit .
+])
+TEST_MAUDE([./PetersonLeader-cmc], test.maude, [examples])
+
+l=`wc -l < ./PetersonLeader-cmc.out`
+l=`expr $l - 2`
+/bin/sed -e 1d -e 2d -e 3d -e "$l"q ./PetersonLeader-cmc.out > ./output
+AT_CHECK([cmcvalid ./output], [0], [ignore], [])
+
+AT_CLEANUP

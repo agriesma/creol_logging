@@ -3,11 +3,11 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Test" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Test" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: ("x" |-> null),
-  Mtds: (< "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "x" ::= pair(int(1) , int(2)) ; return ( emp ) >),
+  Mtds: (< "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign( "x" ; list(int(1) :: int(2)) ) ; return ( emp ) >),
   Ocnt: 0 >
 
 .

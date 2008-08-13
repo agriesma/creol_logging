@@ -1,13 +1,12 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Class: 
-< "Deadlock" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "n" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: release ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "l" |-> null, Code: "l"
-    ! "this" . "n"(emp) ; release ; skip ; "l" ?(noVid) ; return(emp) >,
+< "Deadlock" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "n" : Method | Param: noVid, Att: "_" |-> null, Code: release ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, "l" |->
+    null, Code: call("l" ; "this" ; "n" ; emp) ; release ; skip ; get("l" ;
+    noVid) ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

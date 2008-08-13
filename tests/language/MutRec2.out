@@ -1,14 +1,13 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Class: 
-< "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, "a" |-> null,
-    "label:0" |-> null, Code: "a" ::= new "Test"(emp) ; "label:0" ! "a" . "m"(
-    emp) ; "label:0" ?(noVid) ; return(emp) > *
-  < "m" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null, Code:
-    "label:0" ! "caller" . "m"(emp) ; "label:0" ?(noVid) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) >,
+< "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "a" |-> null, "label:0"
+    |-> null, Code: new("a" ; "Test" ; emp) ; call("label:0" ; "a" ; "m" ; emp)
+    ; get("label:0" ; noVid) ; return(emp) >, < "m" : Method | Param: noVid,
+    Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "caller" ;
+    "m" ; emp) ; get("label:0" ; noVid) ; return(emp) >, < "run" : Method |
+    Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

@@ -3,12 +3,12 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Deadlock" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Deadlock" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: (noSubst),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "l" |-> null , "_" |-> null, Code: ( "l" ! "this" . "n" (emp ) )  ; release ; skip ; ( "l" ? ( noVid ) )  ; return ( emp ) > *
-    < "n" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: release ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "l" |-> null , "_" |-> null, Code: call( "l" ; "this" ; "n" ; emp ) ; release ; skip ; get( "l" ; noVid ) ; return ( emp ) > ,
+    < "n" : Method | Param: noVid, Att: "_" |-> null, Code: release ; return ( emp ) >),
   Ocnt: 0 >
 
 .

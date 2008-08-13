@@ -3,19 +3,19 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op init : -> Configuration [ctor] .
 eq init =
-< "Philosopher" : Cl | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "sync.0" ! "butler" . "getNeighbor" ( emp ) ; ( "sync.0" ? ( "neighbor" ) )  ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: ( ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ||| ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ) ; return ( emp ) > *
-  < "digest" : Mtdname | Param: noVid, Latt: noSubst, Code: "hungry" ::= bool(true) ; ( ".anon" ! "this" . "digest" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
-  < "eat" : Mtdname | Param: noVid, Latt: noSubst, Code: ( await "hungry" ) ; "sync.0" ! "neighbor" . "borrowStick" ( emp ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( noVid ) )  ; ( await "chopstick" ) ; "hungry" ::= bool(false) ; ".anon" ! "neighbor" . "returnStick" ( emp ) ; free( ".anon" ) ; ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
-  < "think" : Mtdname | Param: noVid, Latt: noSubst, Code: ( await "~" ( "hungry" ) ) ; release ; ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
-  < "borrowStick" : Mtdname | Param: noVid, Latt: noSubst, Code: ( await "chopstick" ) ; "chopstick" ::= bool(false) ; return ( emp ) > *
-  < "returnStick" : Mtdname | Param: noVid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; return ( emp ) >, Ocnt: 0 >
+< "Philosopher" : Class | Inh: noInh, Par: "butler", Att: "butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null, Mtds: 
+  < "init" : Method | Param: noVid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; "hungry" ::= bool(false) ; "sync.0" ! "butler" . "getNeighbor" ( emp ) ; ( "sync.0" ? ( "neighbor" ) )  ; return ( emp ) > *
+  < "run" : Method | Param: noVid, Latt: noSubst, Code: ( ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ||| ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ) ; return ( emp ) > *
+  < "digest" : Method | Param: noVid, Latt: noSubst, Code: "hungry" ::= bool(true) ; ( ".anon" ! "this" . "digest" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
+  < "eat" : Method | Param: noVid, Latt: noSubst, Code: ( await "hungry" ) ; "sync.0" ! "neighbor" . "borrowStick" ( emp ) ; ( await ( "sync.0" ?? ) ) ; ( "sync.0" ? ( noVid ) )  ; ( await "chopstick" ) ; "hungry" ::= bool(false) ; ".anon" ! "neighbor" . "returnStick" ( emp ) ; free( ".anon" ) ; ( ".anon" ! "this" . "eat" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
+  < "think" : Method | Param: noVid, Latt: noSubst, Code: ( await "~" ( "hungry" ) ) ; release ; ( ".anon" ! "this" . "think" (emp ) )  ; free( ".anon" ) ; return ( emp ) > *
+  < "borrowStick" : Method | Param: noVid, Latt: noSubst, Code: ( await "chopstick" ) ; "chopstick" ::= bool(false) ; return ( emp ) > *
+  < "returnStick" : Method | Param: noVid, Latt: noSubst, Code: "chopstick" ::= bool(true) ; return ( emp ) >, Ocnt: 0 >
 
-< "Butler" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null , "p4" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: "p1" ::= new "Philosopher" ( "this" ) ; "p2" ::= new "Philosopher" ( "this" ) ; "p3" ::= new "Philosopher" ( "this" ) ; "p4" ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
-  < "getNeighbor" : Mtdname | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" # "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" # "p2" ) th "neighbor" ::= "p3" el if "=" ( "caller" # "p3" ) th "neighbor" ::= "p4" el "neighbor" ::= "p1" fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
+< "Butler" : Class | Inh: noInh, Par: noVid, Att: "p1" |-> null , "p2" |-> null , "p3" |-> null , "p4" |-> null, Mtds: 
+  < "init" : Method | Param: noVid, Latt: noSubst, Code: skip ; return ( emp ) > *
+  < "run" : Method | Param: noVid, Latt: noSubst, Code: "p1" ::= new "Philosopher" ( "this" ) ; "p2" ::= new "Philosopher" ( "this" ) ; "p3" ::= new "Philosopher" ( "this" ) ; "p4" ::= new "Philosopher" ( "this" ) ; return ( emp ) > *
+  < "getNeighbor" : Method | Param: noVid, Latt: "neighbor" |-> null, Code: if "=" ( "caller" # "p1" ) th "neighbor" ::= "p2" el if "=" ( "caller" # "p2" ) th "neighbor" ::= "p3" el if "=" ( "caller" # "p3" ) th "neighbor" ::= "p4" el "neighbor" ::= "p1" fi fi fi ; return ( "neighbor" ) >, Ocnt: 0 >
 
 .
 endm

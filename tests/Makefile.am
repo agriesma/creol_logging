@@ -19,14 +19,19 @@
 
 MOSTLYCLEANFILES	= *~
 CLEANFILES		= testsuite.log
-DISTCLEANFILES		= atconfig atlocal
-MAINTAINERCLEANFILES	= Makefile.in testsuite package.m4
+DISTCLEANFILES		= atconfig atlocal Signature.maude
+MAINTAINERCLEANFILES	= Makefile.in $(srcdir)/testsuite \
+			  $(srcdir)/package.m4
 
 DIST_SUBDIRS		= profiling
 SUBDIRS			= @WITH_PROFILING@
 
-AUTOTEST		= ${AUTOM4TE} --language=autotest
-TESTSUITE		= ${srcdir}/testsuite
+AUTOTEST		= $(AUTOM4TE) --language=autotest
+TESTSUITE		= $(srcdir)/testsuite
+
+TESTPARTS		= $(srcdir)/cmcvalid.at \
+			  $(srcdir)/macros.at \
+			  $(srcdir)/testsuite.at
 
 TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Alarmclock.out \
@@ -56,6 +61,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/PetersonLeader.creol \
 		  examples/PetersonLeader.maude \
 		  examples/PetersonLeader.out \
+		  examples/PetersonLeader-cmc.out \
 		  examples/Philosophers.creol \
 		  examples/Philosophers.maude examples/Philosophers.out \
 		  examples/SantaClaus.creol examples/SantaClaus.maude \
@@ -121,7 +127,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  into-ssa/Assign.creol into-ssa/Assign.xml \
 		  split-ass/Assign.creol split-ass/Assign.xml \
 		  Datatypes.maude Datatypes.out \
-		  Signature.maude Signature.out \
+		  Signature.out \
 		  Interpreter.maude Interpreter.out \
 		  MetaExec.maude MetaExec.out \
 		  ModelChecker.maude ModelChecker.out \
@@ -129,33 +135,37 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  MC4Phil.creol MC4Phil.maude MC4PhilTest.maude \
 		  MC5Phil.creol MC5Phil.maude MC5PhilTest.maude
 
-EXTRA_DIST	= ${srcdir}/atlocal.in \
-		  ${srcdir}/macros.at \
-		  ${srcdir}/testsuite.at \
-		  ${srcdir}/maude.sed \
-		  package.m4 \
-		  testsuite \
-		  ${TESTFILES} \
-		  ${srcdir}/Signature.m4
+EXTRA_DIST	= $(srcdir)/atlocal.in \
+		  $(srcdir)/package.m4 \
+		  $(TESTPARTS) \
+		  $(TESTSUITE) \
+		  $(TESTFILES) \
+		  $(srcdir)/Signature.m4 \
+		  $(srcdir)/maude.sed
 
-check-local: atconfig atlocal ${TESTSUITE} Signature.maude
-	$(SHELL) $(TESTSUITE)
+check-local: atconfig atlocal $(TESTSUITE) Signature.maude
+	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
 
-Signature.maude: ${srcdir}/Signature.m4
+installcheck-local: atconfig atlocal $(TESTSUITE) Signature.maude
+	$(SHELL) $(TESTSUITE) AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
+
+
+Signature.maude: $(srcdir)/Signature.m4
 	m4 $< > $@
 
+$(TESTSUITE): $(TESTPARTS) $(srcdir)/package.m4
+	$(AUTOTEST) -I $(srcdir) $(srcdir)/testsuite.at -o $@.tmp
+	mv $@.tmp $@
+
 clean-local:
-	rm -rf testsuite.dir
+	test ! -f $(TESTSUITE) || \
+	  $(SHELL) $(TESTSUITE) --clean $(TESTSUITEFLAGS)
 
-${TESTSUITE}: ${srcdir}/testsuite.at ${srcdir}/macros.at package.m4
-	  ${AUTOTEST} -I ${srcdir} $< -o $@.tmp
-	  mv $@.tmp $@
-
-package.m4: ${top_srcdir}/configure.ac
+$(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	@{ echo '# Signature of the current package.';			      \
 	   echo 'm4_define([AT_PACKAGE_NAME],      [@PACKAGE_NAME@])';	      \
 	   echo 'm4_define([AT_PACKAGE_TARNAME],   [@PACKAGE_TARNAME@])';     \
 	   echo 'm4_define([AT_PACKAGE_VERSION],   [@PACKAGE_VERSION@])';     \
 	   echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])';      \
 	   echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])';   \
-	} > package.m4
+	} > $(srcdir)/package.m4

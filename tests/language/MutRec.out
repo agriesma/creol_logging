@@ -1,24 +1,22 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Configuration: 
-< "MutRec" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "doit" : Mtdname | Param: "other", Latt: "_" |-> null, "label:0" |-> null,
-    "other" |-> null, Code: "label:0" ! "other" . "doit"("this") ; "label:0" ?(
-    noVid) ; return(emp) > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) >,
+< "MutRec" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "doit" : Method | Param: "other", Att: "_" |-> null, "label:0" |-> null,
+    "other" |-> null, Code: call("label:0" ; "other" ; "doit" ; "this") ; get(
+    "label:0" ; noVid) ; return(emp) >, < "init" : Method | Param: noVid, Att:
+    "_" |-> null, Code: skip ; return(emp) >, < "run" : Method | Param: noVid,
+    Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
  
-< "Test" : Cl | Inh: noInh, Par: noVid, Att: "m1" |-> null, "m2" |-> null,
+< "Test" : Class | Inh: noInh, Param: noVid, Att: "m1" |-> null, "m2" |-> null,
     Mtds:
-  < "doit" : Mtdname | Param: "other", Latt: "_" |-> null, "other" |-> null,
-    Code: skip ; return(emp) > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "m1" ::= new
-    "MutRec"(emp) ; "m2" ::= new "MutRec"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "m1" . "doit"("m2") ; free("label:0") ; return(emp) >,
+  < "doit" : Method | Param: "other", Att: "_" |-> null, "other" |-> null,
+    Code: skip ; return(emp) >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: new("m1" ; "MutRec" ; emp) ; new("m2" ; "MutRec" ; emp) ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, Code: call("label:0" ; "m1" ; "doit" ; "m2") ; free(
+    "label:0") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

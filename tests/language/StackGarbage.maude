@@ -3,12 +3,12 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Test" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Test" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: (noSubst),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "r" |-> null , "_" |-> null, Code: ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; return ( emp ) > *
-    < "m" : Mtdname | Param: noVid, Latt: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: ( ( "label:0" ! "this" . "m" (emp ) )  ; ( "label:0" ? ( "r" ) )  ; "r" ::= "+" ( "r" :: int(1) ) [] "r" ::= int(1) ) ; return ( "r" ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "r" |-> null , "_" |-> null, Code: call( "label:0" ; "this" ; "m" ; emp ) ; get( "label:0" ; "r" ) ; return ( emp ) > ,
+    < "m" : Method | Param: noVid, Att: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: ( call( "label:0" ; "this" ; "m" ; emp ) ; get( "label:0" ; "r" ) ; assign( "r" ; "+" ( "r" :: int(1) ) ) [] assign( "r" ; int(1) ) ) ; return ( "r" ) >),
   Ocnt: 0 >
 
 .

@@ -1,77 +1,75 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Configuration: 
-< "Main" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
-    |-> null, "p4" |-> null, "p5" |-> null, Mtds:
-  < "getNeighbour" : Mtdname | Param: noVid, Latt: "_" |-> null, "n" |-> null,
-    Code: if "="("caller" :: "p1") th "n" ::= "p2" el if "="("caller" :: "p2")
-    th "n" ::= "p3" el if "="("caller" :: "p3") th "n" ::= "p4" el if "="(
-    "caller" :: "p4") th "n" ::= "p5" el if "="("caller" :: "p5") th "n" ::=
-    "p1" el skip fi fi fi fi fi ; return("n") > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "p1" ::= new
-    "Process"(int(1) :: "this") ; "p2" ::= new "Process"(int(3) :: "this") ;
-    "p3" ::= new "Process"(int(5) :: "this") ; "p4" ::= new "Process"(int(4) ::
-    "this") ; "p5" ::= new "Process"(int(2) :: "this") ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) >,
+< "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
+    "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
+  < "getNeighbour" : Method | Param: noVid, Att: "_" |-> null, "n" |-> null,
+    Code: if "="("caller" :: "p1") th assign("n" ; "p2") el if "="("caller" ::
+    "p2") th assign("n" ; "p3") el if "="("caller" :: "p3") th assign("n" ;
+    "p4") el if "="("caller" :: "p4") th assign("n" ; "p5") el if "="("caller"
+    :: "p5") th assign("n" ; "p1") el skip fi fi fi fi fi ; return("n") >, <
+    "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("p1" ;
+    "Process" ; int(1) :: "this") ; new("p2" ; "Process" ; int(3) :: "this") ;
+    new("p3" ; "Process" ; int(5) :: "this") ; new("p4" ; "Process" ; int(4) ::
+    "this") ; new("p5" ; "Process" ; int(2) :: "this") ; return(emp) >, < "run"
+    : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
  
-< "Process" : Cl | Inh: noInh, Par: "i", "main", Att: "i" |-> null, "main" |->
-    null, "mode" |-> null, "neighbour" |-> null, "status" |-> null, "uid1" |->
-    null, "uid2" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, Code: (("mode" @@ "Process"), ("status" @@ "Process"),
-    ("uid1" @@ "Process")) ::= bool(true) :: int(0) :: "i" ; "label:0" ! "main"
-    . "getNeighbour"(emp) ; "label:0" ?("neighbour") ; "label:1" ! "neighbour"
-    . "send"("i") ; free("label:1") ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "send" : Mtdname | Param: "u", Latt: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, "label:2" |-> null, "u" |-> null, Code: if "mode" th if
-    "="("uid2" :: null) th if "="("u" :: "uid1") th "status" ::= int(1) el
-    "uid2" ::= "u" ; "label:0" ! "neighbour" . "send"("u") ; free("label:0") fi
-    el if "&&"(">"("uid2" :: "uid1") :: ">"("uid2" :: "u")) th ("uid1", "uid2")
-    ::= "uid2" :: null ; "label:1" ! "neighbour" . "send"("uid1") ; free(
-    "label:1") el "mode" ::= bool(false) fi fi el "label:2" ! "neighbour" .
-    "send"("u") ; free("label:2") fi ; return(emp) >,
+< "Process" : Class | Inh: noInh, Param: "i", "main", Att: "i" |-> null, "main"
+    |-> null, "mode" |-> null, "neighbour" |-> null, "status" |-> null, "uid1"
+    |-> null, "uid2" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    "label:1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
+    "Process"), ("uid1" @ "Process") ; bool(true) :: int(0) :: "i") ; call(
+    "label:0" ; "main" ; "getNeighbour" ; emp) ; get("label:0" ; "neighbour") ;
+    call("label:1" ; "neighbour" ; "send" ; "i") ; free("label:1") ; return(
+    emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+    return(emp) >, < "send" : Method | Param: "u", Att: "_" |-> null, "label:0"
+    |-> null, "label:1" |-> null, "label:2" |-> null, "u" |-> null, Code: if
+    "mode" th if "="("uid2" :: null) th if "="("u" :: "uid1") th assign(
+    "status" ; int(1)) el assign("uid2" ; "u") ; call("label:0" ; "neighbour" ;
+    "send" ; "u") ; free("label:0") fi el if "&&"(">"("uid2" :: "uid1") :: ">"(
+    "uid2" :: "u")) th assign("uid1", "uid2" ; "uid2" :: null) ; call("label:1"
+    ; "neighbour" ; "send" ; "uid1") ; free("label:1") el assign("mode" ; bool(
+    false)) fi fi el call("label:2" ; "neighbour" ; "send" ; "u") ; free(
+    "label:2") fi ; return(emp) >,
   Ocnt: 0 >
 
 ==========================================
 rewrite in PROGRAM : classes main("Main", emp) .
 result Configuration: 
-< "Main" : Cl | Inh: noInh, Par: noVid, Att: "p1" |-> null, "p2" |-> null, "p3"
-    |-> null, "p4" |-> null, "p5" |-> null, Mtds:
-  < "getNeighbour" : Mtdname | Param: noVid, Latt: "_" |-> null, "n" |-> null,
-    Code: if "="("caller" :: "p1") th "n" ::= "p2" el if "="("caller" :: "p2")
-    th "n" ::= "p3" el if "="("caller" :: "p3") th "n" ::= "p4" el if "="(
-    "caller" :: "p4") th "n" ::= "p5" el if "="("caller" :: "p5") th "n" ::=
-    "p1" el skip fi fi fi fi fi ; return("n") > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "p1" ::= new
-    "Process"(int(1) :: "this") ; "p2" ::= new "Process"(int(3) :: "this") ;
-    "p3" ::= new "Process"(int(5) :: "this") ; "p4" ::= new "Process"(int(4) ::
-    "this") ; "p5" ::= new "Process"(int(2) :: "this") ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) >,
+< "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
+    "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
+  < "getNeighbour" : Method | Param: noVid, Att: "_" |-> null, "n" |-> null,
+    Code: if "="("caller" :: "p1") th assign("n" ; "p2") el if "="("caller" ::
+    "p2") th assign("n" ; "p3") el if "="("caller" :: "p3") th assign("n" ;
+    "p4") el if "="("caller" :: "p4") th assign("n" ; "p5") el if "="("caller"
+    :: "p5") th assign("n" ; "p1") el skip fi fi fi fi fi ; return("n") >, <
+    "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("p1" ;
+    "Process" ; int(1) :: "this") ; new("p2" ; "Process" ; int(3) :: "this") ;
+    new("p3" ; "Process" ; int(5) :: "this") ; new("p4" ; "Process" ; int(4) ::
+    "this") ; new("p5" ; "Process" ; int(2) :: "this") ; return(emp) >, < "run"
+    : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 1 >
  
-< "Process" : Cl | Inh: noInh, Par: "i", "main", Att: "i" |-> null, "main" |->
-    null, "mode" |-> null, "neighbour" |-> null, "status" |-> null, "uid1" |->
-    null, "uid2" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, Code: (("mode" @@ "Process"), ("status" @@ "Process"),
-    ("uid1" @@ "Process")) ::= bool(true) :: int(0) :: "i" ; "label:0" ! "main"
-    . "getNeighbour"(emp) ; "label:0" ?("neighbour") ; "label:1" ! "neighbour"
-    . "send"("i") ; free("label:1") ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "send" : Mtdname | Param: "u", Latt: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, "label:2" |-> null, "u" |-> null, Code: if "mode" th if
-    "="("uid2" :: null) th if "="("u" :: "uid1") th "status" ::= int(1) el
-    "uid2" ::= "u" ; "label:0" ! "neighbour" . "send"("u") ; free("label:0") fi
-    el if "&&"(">"("uid2" :: "uid1") :: ">"("uid2" :: "u")) th ("uid1", "uid2")
-    ::= "uid2" :: null ; "label:1" ! "neighbour" . "send"("uid1") ; free(
-    "label:1") el "mode" ::= bool(false) fi fi el "label:2" ! "neighbour" .
-    "send"("u") ; free("label:2") fi ; return(emp) >,
+< "Process" : Class | Inh: noInh, Param: "i", "main", Att: "i" |-> null, "main"
+    |-> null, "mode" |-> null, "neighbour" |-> null, "status" |-> null, "uid1"
+    |-> null, "uid2" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    "label:1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
+    "Process"), ("uid1" @ "Process") ; bool(true) :: int(0) :: "i") ; call(
+    "label:0" ; "main" ; "getNeighbour" ; emp) ; get("label:0" ; "neighbour") ;
+    call("label:1" ; "neighbour" ; "send" ; "i") ; free("label:1") ; return(
+    emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+    return(emp) >, < "send" : Method | Param: "u", Att: "_" |-> null, "label:0"
+    |-> null, "label:1" |-> null, "label:2" |-> null, "u" |-> null, Code: if
+    "mode" th if "="("uid2" :: null) th if "="("u" :: "uid1") th assign(
+    "status" ; int(1)) el assign("uid2" ; "u") ; call("label:0" ; "neighbour" ;
+    "send" ; "u") ; free("label:0") fi el if "&&"(">"("uid2" :: "uid1") :: ">"(
+    "uid2" :: "u")) th assign("uid1", "uid2" ; "uid2" :: null) ; call("label:1"
+    ; "neighbour" ; "send" ; "uid1") ; free("label:1") el assign("mode" ; bool(
+    false)) fi fi el call("label:2" ; "neighbour" ; "send" ; "u") ; free(
+    "label:2") fi ; return(emp) >,
   Ocnt: 5 >
  
 < ob("Main0") : "Main" |

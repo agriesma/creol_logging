@@ -1,12 +1,11 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Class: 
-< "Test" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "f" |-> null, "l" |->
-    null, Code: while "/="("l" :: list(emp)) do ("f", "l") ::= "head"("l") ::
-    "tail"("l") od ; return(emp) >,
+< "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "f" |-> null, "l"
+    |-> null, Code: while "/="("l" :: list(emp)) do assign("f", "l" ; "head"(
+    "l") :: "tail"("l")) od ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

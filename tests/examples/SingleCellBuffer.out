@@ -1,21 +1,20 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Class: 
-< "Buffer" : Cl | Inh: noInh, Par: noVid, Att: "cell" |-> null, "ctr" |-> null,
-    "next" |-> null, Mtds:
-  < "get" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null, "x"
-    |-> null, Code: await ">"("ctr" :: int(0)) ; if "/="("cell" :: null) th "x"
-    ::= "cell" el "label:0" ! "next" . "get"(emp) ; "label:0" ?("x") fi ; "ctr"
-    ::= "-"("ctr" :: int(1)) ; "cell" ::= null ; return("x") > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "ctr" ::= int(0)
-    ; return(emp) > *
-  < "put" : Mtdname | Param: "x", Latt: "_" |-> null, "label:0" |-> null, "x"
-    |-> null, Code: if "="("ctr" :: int(0)) th "cell" ::= "x" el if "="("next"
-    :: null) th "next" ::= new "Buffer"(emp) el skip fi ; "label:0" ! "next" .
-    "put"("x") ; "label:0" ?(noVid) fi ; "ctr" ::= "+"("ctr" :: int(1)) ;
-    return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) >,
+< "Buffer" : Class | Inh: noInh, Param: noVid, Att: "cell" |-> null, "ctr" |->
+    null, "next" |-> null, Mtds:
+  < "get" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, "x"
+    |-> null, Code: await ">"("ctr" :: int(0)) ; if "/="("cell" :: null) th
+    assign("x" ; "cell") el call("label:0" ; "next" ; "get" ; emp) ; get(
+    "label:0" ; "x") fi ; assign("ctr" ; "-"("ctr" :: int(1))) ; assign("cell"
+    ; null) ; return("x") >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: assign("ctr" ; int(0)) ; return(emp) >, < "put" : Method |
+    Param: "x", Att: "_" |-> null, "label:0" |-> null, "x" |-> null, Code: if
+    "="("ctr" :: int(0)) th assign("cell" ; "x") el if "="("next" :: null) th
+    new("next" ; "Buffer" ; emp) el skip fi ; call("label:0" ; "next" ; "put" ;
+    "x") ; get("label:0" ; noVid) fi ; assign("ctr" ; "+"("ctr" :: int(1))) ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code:
+    skip ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

@@ -3,19 +3,19 @@ mod PROGRAM is
 protecting CREOL-SIMULATOR .
 op classes : -> Configuration [ctor] .
 eq classes =
-< "Hello" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Hello" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: (noSubst),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return ( emp ) > *
-    < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null , "_" |-> null, Code: "result" ::= str("Hello, world") ; return ( "result" ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "hello" : Method | Param: noVid, Att: "result" |-> null , "_" |-> null, Code: assign( "result" ; str("Hello, world") ) ; return ( "result" ) >),
   Ocnt: 0 >
 
-< "Main" : Cl | Inh: (noInh),
-  Par: (noVid),
+< "Main" : Class | Inh: (noInh),
+  Param: (noVid),
   Att: ("result" |-> null , "hello" |-> null),
-  Mtds: (< "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "hello" ::= new "Hello" ( emp ) ; return ( emp ) > *
-    < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null , "_" |-> null, Code: "label:0" ! "hello" . "hello" ( emp ) ; ( "label:0" ? ( "result" ) )  ; return ( emp ) >),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: new( "hello" ; "Hello" ; emp ) ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "hello" ; "hello" ; emp ) ; get( "label:0" ; "result" ) ; return ( emp ) >),
   Ocnt: 0 >
 
 .

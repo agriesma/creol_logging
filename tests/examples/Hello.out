@@ -1,22 +1,20 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Configuration: 
-< "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "hello" : Mtdname | Param: noVid, Latt: "_" |-> null, "result" |-> null,
-    Code: "result" ::= str("Hello, world") ; return("result") > *
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) >,
+< "Hello" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "hello" : Method | Param: noVid, Att: "_" |-> null, "result" |-> null,
+    Code: assign("result" ; str("Hello, world")) ; return("result") >, < "init"
+    : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, <
+    "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >,
   Ocnt: 0 >
  
-< "Main" : Cl | Inh: noInh, Par: noVid, Att: "hello" |-> null, "result" |->
-    null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: "hello" ::= new
-    "Hello"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "label:0" |-> null,
-    Code: "label:0" ! "hello" . "hello"(emp) ; "label:0" ?("result") ; return(
-    emp) >,
+< "Main" : Class | Inh: noInh, Param: noVid, Att: "hello" |-> null, "result"
+    |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("hello" ;
+    "Hello" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, "label:0" |-> null, Code: call("label:0" ; "hello" ; "hello" ;
+    emp) ; get("label:0" ; "result") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

@@ -44,43 +44,41 @@ red in CREOL-SUBST : downTerm(upTerm(insert("var2", bool(true), insert("var1", b
 red in CREOL-SUBST : $hasMapping(insert("var2", bool(true), insert("var1", bool(false), noSubst)), "var1") .
 
 GRAMMAR_TEST(DATA-BOOL, bool(true), null)
-GRAMMAR_TEST(EXPRESSION, "test" ??, null)
+GRAMMAR_TEST(EXPRESSION, ?("test"), null)
 
-GRAMMAR_TEST(STATEMENT, "a" . "a", "a")
-GRAMMAR_TEST(STATEMENT, "a" @ "a", "a")
-GRAMMAR_TEST(STATEMENT, skip, "a" ::= "a")
-GRAMMAR_TEST(STATEMENT, "a" ::= "a", skip)
-GRAMMAR_TEST(STATEMENT, {| "var" ::= new "C" (int(5) :: bool(true)) |}, skip)
-GRAMMAR_TEST(STATEMENT, "l" ! "m" (emp), skip)
-GRAMMAR_TEST(STATEMENT, {| "l" ! "m" (null :: null) |}, skip)
-GRAMMAR_TEST(STATEMENT, {| "l" ! "o" . "m" (null :: "a") |}, skip)
-GRAMMAR_TEST(STATEMENT, {| (("l")?(noVid)) |}, skip)
-GRAMMAR_TEST(STATEMENT, (("l")?("l")), skip)
-GRAMMAR_TEST(STATEMENT, await ("test" ??) , skip)
+GRAMMAR_TEST(STATEMENT, skip, assign("a" ; "a"))
+GRAMMAR_TEST(STATEMENT, assign ("a" ; "a"), skip)
+GRAMMAR_TEST(STATEMENT, {| new("var" ; "C" ; int(5) :: bool(true)) |}, skip)
+GRAMMAR_TEST(STATEMENT, call("l" ; "this" ; "m" ; emp), skip)
+GRAMMAR_TEST(STATEMENT, {| call("l" ; "this" ; "m" ; null :: null) |}, skip)
+GRAMMAR_TEST(STATEMENT, {| call("l" ; "o" ; "m" ; null :: "a") |}, skip)
+GRAMMAR_TEST(STATEMENT, {| get("l" ; noVid ) |}, skip)
+GRAMMAR_TEST(STATEMENT, get ("l" ; "l" ), skip)
+GRAMMAR_TEST(STATEMENT, await ?("test") , skip)
 GRAMMAR_TEST(STATEMENT, return (emp), skip)
 GRAMMAR_TEST(STATEMENT, {| return ("a" :: null :: "c") |}, skip)
 GRAMMAR_TEST(STATEMENT, free ("a" ), skip)
-GRAMMAR_TEST(STATEMENT, tailcall "m" (emp), skip)
-GRAMMAR_TEST(STATEMENT, {| tailcall "m" (null :: "a") |}, skip)
+GRAMMAR_TEST(STATEMENT, tailcall("m" ; emp), skip)
+GRAMMAR_TEST(STATEMENT, {| tailcall("m" ; null :: "a") |}, skip)
 dnl Should not be accepted, but is with an ambigous parse!
 dnl GRAMMAR_TEST(STATEMENT, "l" ! "this" . "m" @ "C" ( emp ) , skip)
 
 GRAMMAR_TEST(STM-LIST, noStm, skip)
 GRAMMAR_TEST(STM-LIST, skip, noStm)
 GRAMMAR_TEST(STM-LIST, skip ; noStm, noStm)
-GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new "C" (null), noStm)
-GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new "C" (null) ||| skip, noStm)
-GRAMMAR_TEST(STM-LIST, "var" ::= int(4) [] "var" ::= new "C" (null) ||| skip ||| skip, noStm)
+GRAMMAR_TEST(STM-LIST, assign("var" ; int(4)) [] new("var" ; "C" ; null), noStm)
+GRAMMAR_TEST(STM-LIST, assign("var" ; int(4)) [] new("var" ; "C" ; null) ||| skip, noStm)
+GRAMMAR_TEST(STM-LIST, assign("var" ; int(4)) [] new("var" ; "C" ; null) ||| skip ||| skip, noStm)
 
 GRAMMAR_TEST(PROCESS, idle, idle)
-GRAMMAR_TEST(PROCESS, {| (insert("var2", int(4), insert("var1", str("test"), noSubst)), ((("var" ::= int(4)) [] ("var" ::= new "C" (null))) ||| skip)) |}, idle)
+GRAMMAR_TEST(PROCESS, {| { insert("var2", int(4), insert("var1", str("test"), noSubst)) | ((assign("var" ; int(4)) [] new ("var" ; "C" ; null)) ||| skip) } |}, idle)
 GRAMMAR_TEST(PROCESS-POOL, noProc, idle)
 GRAMMAR_TEST(PROCESS-POOL, idle, noProc)
-GRAMMAR_TEST(PROCESS-POOL, {| (insert("var2", int(4), insert("var1", str("test"), noSubst)), ((("var" ::= int(4)) [] ("var" ::= new "C" (null))) ||| skip)) ++ idle |}, noProc)
+GRAMMAR_TEST(PROCESS-POOL, {| { insert("var2", int(4), insert("var1", str("test"), noSubst)) | ((assign("var" ; int(4)) [] (new("var" ; "C" ; null))) ||| skip) } , idle |}, noProc)
 
 GRAMMAR_TEST(CONFIGURATION, {| noInh |}, noInh)
 GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > |}, noInh)
-GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > ,, "B" < "x" > |}, noInh)
+GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > , "B" < "x" > |}, noInh)
 
 GRAMMAR_TEST(CONFIGURATION, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
 
@@ -91,9 +89,9 @@ mod CREOL-LABEL-TEST is
   op label : Nat -> Label .
 endm
 
-GRAMMAR_TEST(LABEL-TEST, cont(label(1)), skip)
-GRAMMAR_TEST(LABEL-TEST, accept(label(1)), skip)
-GRAMMAR_TEST(LABEL-TEST, cont (label(5)), skip)
+GRAMMAR_TEST(LABEL-TEST, $cont(label(1)), skip)
+GRAMMAR_TEST(LABEL-TEST, $accept(label(1)), skip)
+GRAMMAR_TEST(LABEL-TEST, $cont (label(5)), skip)
 GRAMMAR_TEST(LABEL-TEST, {| comp(label(5), emp) |}, warning(""))
 GRAMMAR_TEST(LABEL-TEST, {| invoc(ob("object1"), label(5), "method1", emp) |}, warning(""))
 

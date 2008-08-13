@@ -1,29 +1,28 @@
 ==========================================
 reduce in PROGRAM : classes .
 result Configuration: 
-< "Generator" : Cl | Inh: noInh, Par: noVid, Att: "n" |-> null, "next" |->
+< "Generator" : Class | Inh: noInh, Param: noVid, Att: "n" |-> null, "next" |->
     null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: ("n" @@
-    "Generator") ::= int(3) ; "next" ::= new "Sieve"(int(2)) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, "l" |-> null, "label:0"
-    |-> null, "r" |-> null, Code: "l" ! "next" . "send"("n" :: "n") ; "n" ::=
-    "+"("n" :: int(1)) ; "label:0" ! "this" . "run"(emp) ; free("label:0") ;
-    await ("l" ??) ; "l" ?("r") ; return(emp) >,
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("n" @
+    "Generator" ; int(3)) ; new("next" ; "Sieve" ; int(2)) ; return(emp) >, <
+    "run" : Method | Param: noVid, Att: "_" |-> null, "l" |-> null, "label:0"
+    |-> null, "r" |-> null, Code: call("l" ; "next" ; "send" ; "n" :: "n") ;
+    assign("n" ; "+"("n" :: int(1))) ; call("label:0" ; "this" ; "run" ; emp) ;
+    free("label:0") ; await ?("l") ; get("l" ; "r") ; return(emp) >,
   Ocnt: 0 >
  
-< "Sieve" : Cl | Inh: noInh, Par: "p", Att: "ins" |-> null, "next" |-> null,
-    "outs" |-> null, "p" |-> null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: (("ins" @@
-    "Sieve"), ("outs" @@ "Sieve")) ::= int(0) :: int(0) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "_" |-> null, Code: skip ; return(
-    emp) > *
-  < "send" : Mtdname | Param: "n", "seq", Latt: "_" |-> null, "l" |-> null, "n"
+< "Sieve" : Class | Inh: noInh, Param: "p", Att: "ins" |-> null, "next" |->
+    null, "outs" |-> null, "p" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign(("ins" @
+    "Sieve"), ("outs" @ "Sieve") ; int(0) :: int(0)) ; return(emp) >, < "run" :
+    Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, <
+    "send" : Method | Param: "n", "seq", Att: "_" |-> null, "l" |-> null, "n"
     |-> null, "res" |-> null, "seq" |-> null, Code: await "="("seq" :: "ins") ;
-    "ins" ::= "+"("ins" :: int(1)) ; if "="("%"("n" :: "p") :: int(0)) th "res"
-    ::= bool(false) el if "/="("next" :: null) th "l" ! "next" . "send"("n" ::
-    "outs") ; "outs" ::= "+"("outs" :: int(1)) ; await ("l" ??) ; "l" ?("res")
-    el "next" ::= new "Sieve"("n") ; "res" ::= bool(true) fi fi ; return("res")
-    >,
+    assign("ins" ; "+"("ins" :: int(1))) ; if "="("%"("n" :: "p") :: int(0)) th
+    assign("res" ; bool(false)) el if "/="("next" :: null) th call("l" ; "next"
+    ; "send" ; "n" :: "outs") ; assign("outs" ; "+"("outs" :: int(1))) ; await
+    ?("l") ; get("l" ; "res") el new("next" ; "Sieve" ; "n") ; assign("res" ;
+    bool(true)) fi fi ; return("res") >,
   Ocnt: 0 >
 
 Bye.
