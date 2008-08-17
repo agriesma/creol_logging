@@ -1,1 +1,1 @@
-red modelCheck({ init main("Butler", emp) }, <> [] objcnt("Philosopher", 5)) .
+red modelCheck({ classes main("Butler", emp) }, <> [] objcnt("Philosopher", 5)) .
