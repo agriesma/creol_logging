@@ -750,8 +750,8 @@ classes attributes, but not to the attributes of the current class.
 
 The programmer may not assume any order in which these initialisations
 are evaluated.  If such an order is necessary, then the initialisation
-has to be done in the @code{classes} method.  However, the direct initialisation
-of class parameters is executed before the body of the @code{classes} method is
+has to be done in the @code{init} method.  However, the direct initialisation
+of class parameters is executed before the body of the @code{init} method is
 executed.
 
 
