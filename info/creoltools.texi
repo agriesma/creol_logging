@@ -71,8 +71,10 @@ Documentation License.''
 * Grammar::               The grammar definition of @acronym{CREOL}.
 * CMC Grammar::           The grammar definition of the @acronym{CMC}.
 * FAQ::                   Frequently asked questions.
+* Reporting Bugs::        Reporting bugs well.
 @c * Bibliography::          Further reading.
-* Licenses::              Your rights and freedoms.
+* Copying::               License for copying the described software.
+* GNU Free Documentation License:: License for copying this manual.
 * Index::                 Index of concepts.
 * Datatype Index::        Index of predefined data types.
 * Function Index::        Index of predefined functions.
@@ -118,27 +120,18 @@ e}
 @include grammar.texi
 @include cmcgrammar.texi
 @include faq.texi
+@include bugs.texi
 
 @c @include bibliography.texi
 @c @include bugs.texi
 
-
-@node Licenses
-@appendix Licenses
-
-The software is licensed under the terms of the GNU General Public
-License.  The accompanying documentation is licensed under the terms of
-the GNU Free Documentation License.
-
-@menu
-* Copying::
-* GNU Free Documentation License::
-@end menu
-
-@lowersections
 @include gpl.texi
-@raisesections
+
+@node GNU Free Documentation License
+@unnumbered GNU Free Documentation License
+@c @raisesections
 @include fdl.texi
+@c @lowersections
 
 @node Index
 @unnumbered Index
@@ -147,7 +140,7 @@ the GNU Free Documentation License.
 
 
 @node Datatype Index
-@unnumbered Datatupe Index
+@unnumbered Datatype Index
 @printindex tp
 
 @node Function Index
