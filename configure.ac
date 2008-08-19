@@ -101,10 +101,12 @@ dnl Check for maude.
 AC_CHECK_PROGS([MAUDE], [maude.linux maude.darwin maude],
 	       [[\${abs_top_srcdir}/maude-sh]])
 
-# Check whether the maude we found is usable.
-if (${MAUDE} --version >/dev/null 2>&1 || exit)
+dnl Check whether the maude we found is usable.
+AC_MSG_CHECKING([for version of maude])
+MAUDE_VERSION=`${MAUDE} --version 2>/dev/null` 
+if test "$?" = "0"
 then
-(exit)
+  AC_MSG_RESULT([$MAUDE_VERSION])
 else
 AC_MSG_WARN([Failed to execute maude (${MAUDE})
 
@@ -117,6 +119,7 @@ If you are sure that you have maude installed, rerun $as_me with
 MAUDE=/path/to/your/maude
 ])
 fi
+AC_SUBST([MAUDE_VERSION])
 
 AC_ARG_WITH([libxml2],
     AS_HELP_STRING([--without-libxml2],
