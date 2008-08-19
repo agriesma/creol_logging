@@ -14,6 +14,7 @@ classes defined for all @acronym{CREOL} programs.
 * Data Type List::               Lists of elements.
 * Data Type Set::                Sets of elements.
 * Data Type Pair::               Pairs.
+* Data Type Map::                Maps.
 * Data Types Time and Duration:: Time and durations.
 * Data Type Event::              Observations and histories.
 * Interface Any::                The super type of all references.
@@ -48,7 +49,6 @@ This operator represents equality.
 @item fun /= (a: Data, b: Data): Bool
 @findex /=
 This operator represents inequality.
-
 @end table
 
 
@@ -87,7 +87,6 @@ is a synonym for inequality (@code{/=}).
 @findex <=>
 The function @code{<=>} represents equivalence or by-implication.  It
 is a synonym for equality (@code{=}).
-
 @end table
 
 The functions @code{<=>} and @code{^} are provided, because they have
@@ -156,7 +155,6 @@ The binary relation @code{>} represents ``greater than''.
 @item fun >= (a: Real, b: Real): Bool
 @findex >=
 The binary relation @code{>=} represents ``less than or equal''.
-
 @end table
 
 The compiler encodes literals of type @code{Real} as fractions with
@@ -331,7 +329,6 @@ Convert a string to a floating point number.  If @code{s} does not
 represent a floating point literal, the behaviour is undefined.
 Floating point literals must, for now, be recognizable to the
 @emph{Maude} parser.
-
 @end table
 
 @acronym{CREOL} does not define the representation of strings and does
@@ -472,7 +469,6 @@ Make a list of integers.  @code{s} represents the initial element of the
 list, @code{e} the final element.  @code{t} is a stride value.  The
 result is undefined if @code{t} is @code{0}, if @code{s < e} and
 @code{t < 0}, or if @code{s > e} and @code{t > 0}.
-
 @end table
 
 
@@ -523,7 +519,6 @@ argument sets.
 @item fun isempty(s: Set[`a]): Bool
 @findex isempty
 The predicate @code{isempty} tests, whether the argument set is empty.
-
 @end table
 
 
@@ -537,15 +532,67 @@ defines two projections on pairs:  @code{fst} projects on the first
 element and @code{snd} projects on the second element.
 
 @table @code
-@item fun fst (a: [`a, `b]): `a == extern "fst"
+@item fun fst (a: [`a, `b]): `a
 @findex fst
 Returns the first element of a pair.
 
-@item fun snd (a: [`a, `b]): `b == extern "snd"
+@item fun snd (a: [`a, `b]): `b
 @findex snd
 Returns the second element of a pair.
-
 @end table
+
+
+
+@node Data Type Map
+@section Data Type Map
+@tindex Map
+@cindex Map Type
+
+The type of @emph{finite maps} is @code{Map[`a, `b]}, where @code{`a}
+represents the key type and @var{`b} represents the range type of the
+map.  The following functions are defined on maps:
+
+@table @code
+@item fun empty () : Map[`a, `b]
+@findex empty
+Generate an empty map.
+
+@item fun isempty(m: Map[`a, `b]): Bool
+@findex isempty
+Tests whether the map @code{m} is empty.
+
+@item fun get(m: Map[`a, `b], k: `a): `b
+@findex get
+Get the value for the key @code{k} from map @code{m}, or @code{null} if
+no such value exists in that map.
+
+@item fun insert(m: Map[`a, `b], k: `a, v: `b): Map[`a, `b]
+@findex insert
+Insert a new binding from @code{k} to @code{v} into the map @code{m}.
+If @code{k} is already bound, then the value is replaced in the result.
+
+@item fun remove(m: Map[`a, `b], k: `a): Map[`a, `b]
+@findex remove
+Remove any binding of @code{k} from @code{m}.
+
+@item fun in(k: `a, m: Map[`a, `b]): Bool
+@findex in
+Tests whether @code{k} is bound in @code{m}.
+
+@item fun keys(m: Map[`a, `b]): Set[`a]
+@findex keys
+Get the set of all keys used in the map.
+
+@item fun values(m: Map[`a, `b]): Set[`b]
+@findex values
+Get the set of all values used in the map.
+
+@item fun #(m: Map[`a, `b]): Int
+@findex #
+Results in the number of bindings in @code{m}.
+@end table
+
+
 
 
 @node Data Types Time and Duration

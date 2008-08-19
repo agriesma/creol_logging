@@ -31,43 +31,43 @@ endfm
 *** module.
 ***
 fmod MULTISET{X :: TRIV} is
-  protecting EXT-BOOL .
-  protecting NAT .
+    protecting EXT-BOOL .
+    protecting NAT .
 
-  sorts NeMSet{X} MSet{X} .
-  subsort X$Elt < NeMSet{X} < MSet{X} .
+    sorts NeMSet{X} MSet{X} .
+    subsort X$Elt < NeMSet{X} < MSet{X} .
 
-  op empty : -> MSet{X} [ctor] .
-  op _,_ : MSet{X} MSet{X} -> MSet{X} [ctor assoc comm id: empty prec 121 format (d r os d)] .
-  op _,_ : NeMSet{X} MSet{X} -> NeMSet{X} [ctor ditto] .
+    op empty : -> MSet{X} [ctor] .
+    op _,_ : MSet{X} MSet{X} -> MSet{X} [ctor assoc comm id: empty prec 121 format (d r os d)] .
+    op _,_ : NeMSet{X} MSet{X} -> NeMSet{X} [ctor ditto] .
 
-  var E : X$Elt .
-  var N : NeMSet{X} .
-  var M : MSet{X} .
-  var C : Nat .
+    var E : X$Elt .
+    var N : NeMSet{X} .
+    var M : MSet{X} .
+    var C : Nat .
 
-  op insert : X$Elt MSet{X} -> NeMSet{X} .
-  eq insert(E, M) = E, M .
+    op insert : X$Elt MSet{X} -> NeMSet{X} .
+    eq insert(E, M) = E, M .
 
-  op delete : X$Elt MSet{X} -> MSet{X} .
-  eq delete(E, (E, M)) = delete (E, M) .
-  eq delete(E, M) = M [owise] .
+    op delete : X$Elt MSet{X} -> MSet{X} .
+    eq delete(E, (E, M)) = delete (E, M) .
+    eq delete(E, M) = M [owise] .
 
-  op _in_ : X$Elt MSet{X} -> Bool .
-  eq E in (E, M) = true .
-  eq E in M = false [owise] .
+    op _in_ : X$Elt MSet{X} -> Bool .
+    eq E in (E, M) = true .
+    eq E in M = false [owise] .
 
-  op count : X$Elt MSet{X} -> Nat .
-  eq count(E, (E, M)) = 1 + count(E, M) .
-  eq count(E, M) = 0 [owise] .
+    op count : X$Elt MSet{X} -> Nat .
+    eq count(E, (E, M)) = 1 + count(E, M) .
+    eq count(E, M) = 0 [owise] .
 
-  op |_| : MSet{X} -> Nat .
-  op |_| : NeMSet{X} -> NzNat .
-  eq | M | = $card(M, 0) .
+    op |_| : MSet{X} -> Nat .
+    op |_| : NeMSet{X} -> NzNat .
+    eq | M | = $card(M, 0) .
 
-  op $card : MSet{X} Nat -> Nat .
-  eq $card(empty, C) = C .
-  eq $card((E, M), C) = $card(M, C + 1) [owise] .
+    op $card : MSet{X} Nat -> Nat .
+    eq $card(empty, C) = C .
+    eq $card((E, M), C) = $card(M, C + 1) [owise] .
 endfm
 
 
@@ -178,7 +178,7 @@ fmod CREOL-DATA-BOOL is
 
     protecting CREOL-EXPRESSION .
 
-    op bool(_) : Bool -> Data [ctor format(o o ! o o)] .
+    op bool(_) : Bool -> Data [ctor format(o d ! o d)] .
 
     vars B B' : Bool .
     vars D D' : Data .
@@ -210,7 +210,7 @@ fmod CREOL-DATA-FLOAT is
   extending CREOL-DATA-BOOL .
   protecting FLOAT .
 
-  op float(_): Float -> Data [ctor format(o o ! o o)] . 
+  op float(_): Float -> Data [ctor format(o d ! o d)] . 
 
   vars F F' : Float .
 
@@ -242,7 +242,7 @@ fmod CREOL-DATA-INT is
   protecting RANDOM .
   protecting CONVERSION .
 
-  op int(_)  : Int -> Data [ctor format(o o ! o o)] . 
+  op int(_)  : Int -> Data [ctor format(o d ! o d)] . 
 
   vars I I' : Int .
   var N : Nat .
@@ -279,7 +279,7 @@ fmod CREOL-DATA-STRING is
 
     protecting STRING .
 
-    op str(_) : String    -> Data [ctor format(o o ! o o)] .
+    op str(_) : String    -> Data [ctor format(o d ! o d)] .
 
     vars S S' : String .
     vars M N : Nat .
@@ -320,127 +320,127 @@ endfm
 *** Specification of lists and functions on lists.
 ***
 fmod CREOL-DATA-LIST is
-  extending CREOL-DATA-INT .
+    extending CREOL-DATA-INT .
 
-  op list : ExprList -> Expr [ctor] .
-  op list : DataList -> Data [ctor] .
+    op list(_) : ExprList -> Expr [ctor format (o d ! o d)] .
+    op list(_) : DataList -> Data [ctor ditto] .
 
-  vars M N : Nat .
-  vars I J K : Int .
-  vars D D' : Data .
-  vars L L' : DataList .
+    vars M N : Nat .
+    vars I J K : Int .
+    vars D D' : Data .
+    vars L L' : DataList .
 
-  --- list-functions
-  eq "head" (list(emp))	= null .
-  eq "head" (list(D :: L)) = D .
+    --- list-functions
+    eq "head" (list(emp)) = null .
+    eq "head" (list(D :: L)) = D .
 
-  eq "tail" (list(emp))	= null .
-  eq "tail" (list(D :: L)) = list(L) .
+    eq "tail" (list(emp)) = null .
+    eq "tail" (list(D :: L)) = list(L) .
 
-  eq "last" (list(emp))	= null .
-  eq "last" (list(L :: D)) = D .
+    eq "last" (list(emp)) = null .
+    eq "last" (list(L :: D)) = D .
 
-  eq "rest" (list(emp))	= null .
-  eq "rest" (list(L :: D)) = list(L) .
+    eq "rest" (list(emp)) = null .
+    eq "rest" (list(L :: D)) = list(L) .
 
-  eq "nth" ((list(L)) :: int(0))  = null .
-  eq "nth" ((list(emp)) :: int(N))  = null .
-  eq "nth" ((list(D :: L)) :: int(N)) =
-    if (N == 1) then D else "nth" (list(L) :: int(_-_(N, 1))) fi .
+    eq "nth" ((list(L)) :: int(0)) = null .
+    eq "nth" ((list(emp)) :: int(N)) = null .
+    eq "nth" ((list(D :: L)) :: int(N)) =
+      if (N == 1) then D else "nth" (list(L) :: int(_-_(N, 1))) fi .
 
-  eq "rnth" (list(L) :: int(N)) = "nth" ("reverse" (list(L)) :: int(N)) .
+    eq "rnth" (list(L) :: int(N)) = "nth" ("reverse" (list(L)) :: int(N)) .
 
-  eq "in" (D :: list(emp)) = bool(false) .
-  eq "in" (D' :: list(D :: L)) =
-    if D == D' then bool(true) else "in" (D' :: list(L)) fi .
+    eq "in" (D :: list(emp)) = bool(false) .
+    eq "in" (D' :: list(D :: L)) =
+      if D == D' then bool(true) else "in" (D' :: list(L)) fi .
 
-  eq "remove" (list(emp) :: D)  = list(emp) .
-  eq "remove" (list(D :: L) :: D') =
-    if D == D' then "remove" ((list(L)):: D') 
-      else "|-|" (list(D) :: ("remove" (list(L) :: D'))) fi .
+    eq "remove" (list(emp) :: D) = list(emp) .
+    eq "remove" (list(D :: L) :: D') =
+      if D == D'
+	then "remove" ((list(L)):: D') 
+	else "|-|" (list(D) :: ("remove" (list(L) :: D'))) fi .
 
-  eq "-|" (D :: list(L)) = list(D :: L) .
-  eq "|-" (list(L) :: D) = list(L :: D) .
-  eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
+    eq "-|" (D :: list(L)) = list(D :: L) .
+    eq "|-" (list(L) :: D) = list(L :: D) .
+    eq "|-|" (list(L) :: list(L'))   = list(L :: L') .
 
-  eq "#" (list(emp)) = int(0) .
-  eq "#" (list(D :: L)) = "+" ("#" (list(L)) :: int(1)) .
+    eq "#" (list(emp)) = int(0) .
+    eq "#" (list(D :: L)) = "+" ("#" (list(L)) :: int(1)) .
   
-  eq "isempty" (list(emp)) = bool(true) .
-  eq "isempty" (list(L :: D)) = bool(false) .
+    eq "isempty" (list(emp)) = bool(true) .
+    eq "isempty" (list(L :: D)) = bool(false) .
 
-  --- Reverse a list
-  eq "reverse" (list(emp)) = list (emp) .
-  eq "reverse" (list(D :: L)) = "|-" ("reverse" (list(L)) :: D) .
+    --- Reverse a list
+    eq "reverse" (list(emp)) = list (emp) .
+    eq "reverse" (list(D :: L)) = "|-" ("reverse" (list(L)) :: D) .
 
-  --- index starts at 1
-  eq "after" (list(emp) :: int(N))    = null . 
-  eq "after" (list(L) :: int(0))  = list(L) .
-  eq "after" (list(D :: L) :: int(N))  =
-    "after" (list(L) :: int(_-_(N, 1))) .
+    --- index starts at 1
+    eq "after" (list(emp) :: int(N)) = null . 
+    eq "after" (list(L) :: int(0)) = list(L) .
+    eq "after" (list(D :: L) :: int(N)) = "after" (list(L) :: int(_-_(N, 1))) .
 
-  --- Compute a slice of a sequence.
-  eq "sub" (list(L) :: int(N) :: int(M)) =
-    ".sub" (list(L) :: int(N) :: int(M) :: list(emp)) .
-  ceq ".sub" (list(D :: L) :: int(N) :: int(M) :: list(L')) =
-    ".sub" (list(L) :: int(_-_(N, 1)) :: int(_-_(M, 1)) :: list(L')) if N > 1 .
-  ceq ".sub" (list(D :: L) :: int(1) :: int(M) :: list(L')) =
-    ".sub" (list(L) :: int(1) :: int(_-_(M, 1)) :: list(L' :: D)) if M >= 1 .
-  eq ".sub" (list(L) :: int(1) :: int(0) :: list(L')) = list(L') .
+    --- Compute a slice of a sequence.
+    eq "sub" (list(L) :: int(N) :: int(M)) =
+	".sub" (list(L) :: int(N) :: int(M) :: list(emp)) .
+    ceq ".sub" (list(D :: L) :: int(N) :: int(M) :: list(L')) =
+	".sub" (list(L) :: int(_-_(N, 1)) :: int(_-_(M, 1)) :: list(L'))
+      if N > 1 .
+    ceq ".sub" (list(D :: L) :: int(1) :: int(M) :: list(L')) =
+	".sub" (list(L) :: int(1) :: int(_-_(M, 1)) :: list(L' :: D))
+      if M >= 1 .
+    eq ".sub" (list(L) :: int(1) :: int(0) :: list(L')) = list(L') .
 
-  eq "begwith" (list(emp) :: list(L :: D)) = bool(false) .
-  eq "begwith" (list(L) :: list(emp)) = bool(true) .
-  eq "begwith" (list(D :: L) :: list(D' :: L')) =
-    if D == D' then "begwith" (list(L) :: list(L')) else bool(false) fi .
+    eq "begwith" (list(emp) :: list(L :: D)) = bool(false) .
+    eq "begwith" (list(L) :: list(emp)) = bool(true) .
+    eq "begwith" (list(D :: L) :: list(D' :: L')) =
+      if D == D' then "begwith" (list(L) :: list(L')) else bool(false) fi .
 
-  eq "endswith" (list(emp) :: list(L :: D)) = bool(false) .
-  eq "endswith" (list(L) :: list(emp)) = bool(true) .
-  eq "endswith" (list(L :: D) :: list(L' :: D')) =
-    if D == D' then "endswith" (list(L) :: list(L')) else bool(false) fi .
+    eq "endswith" (list(emp) :: list(L :: D)) = bool(false) .
+    eq "endswith" (list(L) :: list(emp)) = bool(true) .
+    eq "endswith" (list(L :: D) :: list(L' :: D')) =
+      if D == D' then "endswith" (list(L) :: list(L')) else bool(false) fi .
 
-  --- If E is not in the list, these will fail with the term
-  --- "+" (int(N) :: null)
-  eq "index" (list(emp) :: D) = null .
-  eq "index" (list(D :: L) :: D') =
-    if D == D' then int(1) else "+" (int(1) :: "index" (list(L) :: D')) fi .
+    --- If E is not in the list, these will fail with the term
+    --- "+" (int(N) :: null)
+    eq "index" (list(emp) :: D) = null .
+    eq "index" (list(D :: L) :: D') =
+      if D == D' then int(1) else "+" (int(1) :: "index" (list(L) :: D')) fi .
 
-  --- If E is not in the list, these will fail with the term
-  --- "-" (int(N) :: null)
-  eq "rindex" (list(L) :: D) =
-    "-" ("length" (list(L)) :: ".rindex" (list(L) :: D)) .
-  eq ".rindex" (list(emp) :: D') = null .
-  eq ".rindex" (list(L :: D) :: D') =
-    if D == D' then int(1) else "+" (int(1) :: "rindex" (list(L) :: D')) fi .
+    --- If E is not in the list, these will fail with the term
+    --- "-" (int(N) :: null)
+    eq "rindex" (list(L) :: D) =
+	"-" ("#" (list(L)) :: ".rindex" (list(L) :: D)) .
+    eq ".rindex" (list(emp) :: D') = null .
+    eq ".rindex" (list(L :: D) :: D') =
+      if D == D' then int(1) else "+" (int(1) :: "rindex" (list(L) :: D')) fi .
 
-  eq "replace" (list(emp) :: D :: int(N)) = null .
-  eq "replace" (list(L) :: D :: int(0)) = null .
-  eq "replace" (list(D :: L) :: D' :: int(1)) = list(D' :: L) .
-  ceq "replace" (list(D :: L) :: D' :: int(N)) =
-    "-|"(D :: "replace" (list(L) :: D' :: int(_-_(N, 1))))
-    if N > 1 .
+    eq "replace" (list(emp) :: D :: int(N)) = null .
+    eq "replace" (list(L) :: D :: int(0)) = null .
+    eq "replace" (list(D :: L) :: D' :: int(1)) = list(D' :: L) .
+    ceq "replace" (list(D :: L) :: D' :: int(N)) =
+	"-|"(D :: "replace" (list(L) :: D' :: int(_-_(N, 1)))) if N > 1 .
 
-  eq "make_list" (D :: int(0)) = list(emp) .
-  ceq "make_list" (D :: int(N)) = "|-"("make_list" (D :: int(_-_(N, 1))) :: D)
-    if N > 0 .
+    eq "make_list" (D :: int(0)) = list(emp) .
+    ceq "make_list" (D :: int(N)) = "|-"("make_list" (D :: int(_-_(N, 1))) :: D)
+      if N > 0 .
 
-  eq "make_range" (int(I)) = "make_range" (int(1) :: int(I)) .
+    eq "make_range" (int(I)) = "make_range" (int(1) :: int(I)) .
 
-  eq "make_range" (int(I) :: int(J)) =
-    if I < J then "make_range" (int(I) :: int(J) :: int(1))
-    else  "make_range" (int(I) :: int(J) :: int(-1))
-    fi .
+    eq "make_range" (int(I) :: int(J)) =
+      if I < J then "make_range" (int(I) :: int(J) :: int(1))
+	else  "make_range" (int(I) :: int(J) :: int(-1))
+	fi .
 
-  eq "make_range" (int(I) :: int(J) :: int(K)) =
-    if K > 0 and I <= J then
-      "-|"(int(I) :: "make_range" (int(I + K) :: int(J) :: int(K)))
-    else
-      if K < 0 and I >= J  then
-        "-|"(int(I) :: "make_range" (int(I + K) :: int(J) :: int(K)))
-      else
-        list(emp)
-      fi
-    fi
-    .
+    eq "make_range" (int(I) :: int(J) :: int(K)) =
+      if K > 0 and I <= J then
+	  "-|"(int(I) :: "make_range" (int(I + K) :: int(J) :: int(K)))
+	else
+	if K < 0 and I >= J  then
+            "-|"(int(I) :: "make_range" (int(I + K) :: int(J) :: int(K)))
+	  else
+            list(emp)
+	  fi
+	fi .
 
 endfm
 
@@ -450,67 +450,73 @@ endfm
 ***
 fmod CREOL-DATA-SET is
 
-  extending CREOL-DATA-SIG .
-  extending CREOL-DATA-INT .
+    extending CREOL-DATA-SIG .
+    extending CREOL-DATA-INT .
 
-  sorts DataSet NeDataSet ExprSet NeExprSet .
-  subsort NeDataSet < DataSet .
-  subsort NeExprSet < ExprSet .
-  subsort DataSet < ExprSet .
-  subsort NeDataSet < NeExprSet .
-  subsort Data < NeDataSet .
-  subsort Expr < NeExprSet .
+    sorts DataSet NeDataSet ExprSet NeExprSet .
+    subsort NeDataSet < DataSet .
+    subsort NeExprSet < ExprSet .
+    subsort DataSet < ExprSet .
+    subsort NeDataSet < NeExprSet .
+    subsort Data < NeDataSet .
+    subsort Expr < NeExprSet .
 
-  op emptyset : -> DataSet [ctor] .
-  op _:_ : DataSet DataSet -> DataSet [ctor comm assoc id: emptyset] .
-  op _:_ : NeDataSet DataSet -> NeDataSet [ctor ditto] .
-  op _:_ : DataSet NeDataSet -> DataSet [ctor ditto] .
-  op _:_ : ExprSet ExprSet -> ExprSet [ctor ditto] .
-  op _:_ : NeExprSet ExprSet -> NeExprSet [ctor ditto] .
-  op _:_ : ExprSet NeExprSet -> ExprSet [ctor ditto] .
+    op emptyset : -> DataSet [ctor] .
+    op _:_ : DataSet DataSet -> DataSet [ctor comm assoc id: emptyset format (d r o d)] .
+    op _:_ : NeDataSet DataSet -> NeDataSet [ctor ditto] .
+    op _:_ : DataSet NeDataSet -> DataSet [ctor ditto] .
+    op _:_ : ExprSet ExprSet -> ExprSet [ctor ditto] .
+    op _:_ : NeExprSet ExprSet -> NeExprSet [ctor ditto] .
+    op _:_ : ExprSet NeExprSet -> ExprSet [ctor ditto] .
 
-  op set : ExprSet -> Expr [ctor] .
-  op set : DataSet -> Data [ctor] .
+    op set : ExprSet -> Expr [ctor] .
+    op set : DataSet -> Data [ctor] .
 
-  vars N    : Nat .
-  vars D D' : Data .
-  vars E E' : Expr .
-  vars S S' : DataSet .
+    var N : Nat .
+    vars D D' : Data .
+    vars E E' : Expr .
+    vars S S' : DataSet .
 
-  eq D : D = D . --- Collapse multiple elements.
+    eq D : D = D . --- Collapse multiple elements.
 
-  eq "#" (set(emptyset)) = int(0) .
-  eq "#" (set(S : D)) = "+" (int(1) :: ("#" (set(S)))) .
+    eq "#" (set(emptyset)) = int(0) .
+    eq "#" (set(S : D)) = "+" (int(1) :: ("#" (set(S)))) .
 
-  eq "remove" (set(emptyset) :: E)  = set(emptyset) .
-  eq "remove" (set(S : D) :: D') =
-    if D == D' then "remove" (set(S) :: D') else
-                    "add" (set(D) :: "remove" (set(S) :: D')) fi .
+    eq "remove" (set(emptyset) :: E)  = set(emptyset) .
+    eq "remove" (set(S : D) :: D') =
+      if D == D' then "remove" (set(S) :: D') else
+          "add" (set(D) :: "remove" (set(S) :: D')) fi .
 
-  eq "add" (set(S) :: D) =
-    if "in" (D :: set(S)) asBool then set(S) else set(D : S) fi .    
+    eq "add" (set(S) :: D) =
+      if "in" (D :: set(S)) asBool then set(S) else set(D : S) fi .    
 
-  eq "in" (E :: set(emptyset)) = bool(false) .
-  eq "in" (D' :: set(S : D)) =
-    if D == D' then bool(true) else "in" (D' :: set(S)) fi .
+    eq "in" (E :: set(emptyset)) = bool(false) .
+    eq "in" (D' :: set(S : D)) =
+      if D == D' then bool(true) else "in" (D' :: set(S)) fi .
 
-  eq "union" (set(emptyset) :: set(S)) = set(S) .
-  eq "union" (set(S) :: set(emptyset)) = set(S) .
-  eq "union" (set(S : D) :: set(S')) =
-    if "in" (D :: set(S')) asBool then "union" (set(S) :: set(S'))
-                                  else "union" (set(S) :: set(S' : D)) fi .
+    eq "union" (set(emptyset) :: set(S)) = set(S) .
+    eq "union" (set(S) :: set(emptyset)) = set(S) .
+    eq "union" (set(S : D) :: set(S')) =
+      if "in" (D :: set(S')) asBool
+	then "union" (set(S) :: set(S'))
+        else "union" (set(S) :: set(S' : D))
+	fi .
 
-  eq "inter" (set(emptyset) :: set(S)) = set(emptyset) .
-  eq "inter" (set(S) :: set(emptyset)) = set(emptyset) .
-  eq "inter" (set(S : D) :: set(S')) =
-    if "in" (D :: set(S')) asBool then "add" ("inter" (set(S) :: set(S')) :: D)
-                                  else "inter" (set(S) :: set(S')) fi .
+    eq "inter" (set(emptyset) :: set(S)) = set(emptyset) .
+    eq "inter" (set(S) :: set(emptyset)) = set(emptyset) .
+    eq "inter" (set(S : D) :: set(S')) =
+      if "in" (D :: set(S')) asBool
+	then "add" ("inter" (set(S) :: set(S')) :: D)
+        else "inter" (set(S) :: set(S'))
+	fi .
 
-  eq "diff" (set(S) :: set(emptyset)) = set(S) .
-  eq "diff" (set(emptyset) :: set(S)) = set(emptyset) .
-  eq "diff" (set(S : D) :: set(S')) =
-    if "in" (D :: set(S')) asBool then "diff" (set(S) :: set(S'))
-                                else "add" ("diff" (set(S) :: set(S')) :: D) fi .
+    eq "diff" (set(S) :: set(emptyset)) = set(S) .
+    eq "diff" (set(emptyset) :: set(S)) = set(emptyset) .
+    eq "diff" (set(S : D) :: set(S')) =
+      if "in" (D :: set(S')) asBool
+	then "diff" (set(S) :: set(S'))
+        else "add" ("diff" (set(S) :: set(S')) :: D)
+	fi .
 
 endfm
 
@@ -519,13 +525,13 @@ endfm
 *** Specification of paits and functions on paits.
 ***
 fmod CREOL-DATA-PAIR is
-  extending CREOL-DATA-LIST .
+    extending CREOL-DATA-LIST .
 
-  vars D D' : Data .
+    vars D D' : Data .
 
-  eq "pair" (D :: D') = list(D :: D') .
-  eq "fst" (list(D :: D')) = D . 
-  eq "snd" (list(D :: D')) = D' .
+    eq "pair" (D :: D') = list(D :: D') .
+    eq "fst" (list(D :: D')) = D . 
+    eq "snd" (list(D :: D')) = D' .
 endfm
 
 
@@ -533,31 +539,65 @@ endfm
 *** Specification of maps and functions on maps.
 ***
 fmod CREOL-DATA-MAP is
-  protecting CREOL-DATA-BOOL .
 
-  protecting MAP{Expr, Expr} * (sort Map{Expr, Expr} to ExprMap,
-				op undefined to udef,
-				op _|->_ to _|~>_ ) .
+    protecting CREOL-DATA-SET .
 
-  op map : ExprMap -> Expr [ctor] .
+    --- We have to define our own map here, again.
+    sorts ExprEntry DataEntry ExprMap DataMap .
 
-  var M : ExprMap .
-  vars D D' : Data .
+    subsorts DataEntry < ExprEntry < ExprMap .
+    subsorts DataEntry < DataMap < ExprMap .
 
-  eq "get" (map(M) :: D) = M[D] .
-  eq "insert" (map(M) :: D :: D') = map(insert(D, D', M)) .
+    op _|=>_ : Expr Expr -> ExprEntry [ctor] .
+    op _|=>_ : Data Data -> DataEntry [ctor ditto] .
+    op empty : -> DataMap [ctor] .
+    op _,_ : ExprMap ExprMap -> ExprMap [ctor assoc comm id: empty prec 121 format (d r os d)] .
+    op _,_ : DataMap DataMap -> DataMap [ctor ditto] .
 
-  --- We have to carefully evaluate whether this makes things better or
-  --- worse.
-  sort DataMap .
-  subsort DataMap < ExprMap .
+    op map(_) : ExprMap -> Expr [ctor format (o d ! o d)] .
+    op map(_) : DataMap -> Data [ctor ditto] .
 
-  var DM : DataMap .
+    vars DM DM' : DataMap .
+    vars D D' D'' : Data .
 
-  mb empty : DataMap .
-  mb (D |~> D') : DataMap .
-  --- mb (DM, D |~> D') : DataMap .
-  mb map(DM) : Data .
+    --- We have to carefully evaluate whether this makes things better or
+    --- worse.
+
+    eq "empty" (null) = map(empty) .
+
+    eq "isempty" (map(DM)) =
+      if DM == empty then bool(true) else bool(false) fi .
+
+    eq "get" (map(empty) :: D'') = null .
+    eq "get" (map(DM, D |=> D') :: D'') = 
+      if D == D'' then D' else "get" (map(DM) :: D'') fi .
+
+    eq "insert" (map(DM) :: D :: D') =
+      if "in" (map(DM) :: D) asBool
+	then "insert" ("remove" (map(DM) :: D) :: D :: D')
+	else map(DM, D |=> D')
+	fi .
+
+    eq "remove" (map(DM) :: D) = ".remove"(map(DM) :: D :: map(empty)) .
+    eq ".remove" (map(empty) :: D :: map(DM)) = map(DM) .
+    eq ".remove" (map(DM , D |=> D') :: D'' :: map(DM')) =
+      if D == D''
+	then ".remove" (map(DM) :: D'' :: map(DM'))
+	else ".remove" (map(DM) :: D'' :: map(DM', D |=> D'))
+	fi .
+
+    eq "in" (D :: map(empty)) = bool(false) .
+    eq "in" (D :: map(D' |=> D'', DM)) =
+      if D == D' then bool(true) else "in" (D :: map(DM)) fi .
+
+    eq "keys" (map(empty)) = set(emptyset) .
+    eq "keys" (map(D |=> D', DM)) = "add" ("keys" (map(DM)) :: D) .
+
+    eq "values" (map(empty)) = set(emptyset) .
+    eq "values" (map(D |=> D', DM)) = "add" ("values" (map(DM)) :: D') .
+
+    eq "#" (map(empty)) = int(0) .
+    eq "#" (map(D |=> D', DM)) = "+" ("#" (map(DM)) :: int(1)) .
 
 endfm
 

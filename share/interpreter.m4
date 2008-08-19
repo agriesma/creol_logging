@@ -359,14 +359,14 @@ ifdef(`TIME',dnl
 
     --- Evaluate a map.
     eq EVALGUARDMAP(empty, S, MM, T) = empty .
-   eq EVALGUARDMAP((D |~> D', M), S, MM, T) =
-     (D |~> D' , EVALGUARDMAP(M, S, MM, T)) .  --- No need to evaluate .
-   eq EVALGUARDMAP((D |~> E', M), S, MM, T) =
-     (D |~> EVALGUARD(E', S, MM, T) , EVALGUARDMAP(M, S, MM, T)) .
-   eq EVALGUARDMAP((E |~> D', M), S, MM, T) =
-     (EVALGUARD(E, S, MM, T) |~> D' , EVALGUARDMAP(M, S, MM, T)) .
-   eq EVALGUARDMAP((E |~> E', M), S, MM, T) =
-     (EVALGUARD(E, S, MM, T) |~> EVALGUARD(E', S, MM, T) ,
+   eq EVALGUARDMAP((D |=> D', M), S, MM, T) =
+     (D |=> D' , EVALGUARDMAP(M, S, MM, T)) .  --- No need to evaluate .
+   eq EVALGUARDMAP((D |=> E', M), S, MM, T) =
+     (D |=> EVALGUARD(E', S, MM, T) , EVALGUARDMAP(M, S, MM, T)) .
+   eq EVALGUARDMAP((E |=> D', M), S, MM, T) =
+     (EVALGUARD(E, S, MM, T) |=> D' , EVALGUARDMAP(M, S, MM, T)) .
+   eq EVALGUARDMAP((E |=> E', M), S, MM, T) =
+     (EVALGUARD(E, S, MM, T) |=> EVALGUARD(E', S, MM, T) ,
      EVALGUARDMAP(M, S, MM, T)) .
 
     --- Enabledness

@@ -18,20 +18,45 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 info_TEXINFOS		= creoltools.texi
-creoltools_TEXINFOS	= introduction.texi invocation.texi creol.texi \
-			  cmc.texi creolc.texi creolshell.texi faq.texi \
-			  bugs.texi bibliography.texi creoltut.texi \
-			  creollib.texi creolmc.texi creolrt.texi \
-			  grammar.texi cmcgrammar.texi fdl.texi gpl.texi \
-			  readme.texi install.texi
 
-BUILT_SOURCES		= sorts.eps sorts.pdf sorts.png
-EXTRA_DIST		= sorts.dot sorts.txt sorts.eps sorts.pdf sorts.png
+creoltools_TEXINFOS	= introduction.texi \
+			  creoltut.texi \
+			  creolexpr.texi \
+			  creolcls.texi \
+			  creolflow.texi \
+			  creollib.texi \
+			  creol.texi \
+			  creolmc.texi \
+			  creolrt.texi \
+			  cmc.texi \
+			  creolc.texi \
+			  creolshell.texi \
+			  faq.texi \
+			  bugs.texi \
+			  bibliography.texi \
+			  grammar.texi \
+			  cmcgrammar.texi \
+			  fdl.texi \
+			  gpl.texi \
+			  readme.texi \
+			  install.texi
+
+BUILT_SOURCES		= $(srcdir)/sorts.eps \
+			  $(srcdir)/sorts.pdf \
+			  $(srcdir)/sorts.png
+
+EXTRA_DIST		= $(srcdir)/sorts.dot \
+			  $(srcdir)/sorts.txt \
+			  $(srcdir)/sorts.eps \
+			  $(srcdir)/sorts.pdf \
+			  $(srcdir)/sorts.png
 
 MOSTLYCLEANFILES	= *~ *.cps
 CLEANFILES		=
 DISTCLEANFILES		=
-MAINTAINERCLEANFILES	= sorts.eps sorts.pdf sorts.png
+MAINTAINERCLEANFILES	= $(srcdir)/sorts.eps \
+			  $(srcdir)/sorts.pdf \
+			  $(srcdir)/sorts.png
 
 .dot.eps:
 	${DOT} -T ps2 -o $@ $<
@@ -41,3 +66,7 @@ MAINTAINERCLEANFILES	= sorts.eps sorts.pdf sorts.png
 
 .dot.png:
 	${DOT} -T png -o $@ $<
+
+creoltools.dvi: $(creoltools_TEXINFOS) sorts.eps
+creoltools.pdf: $(creoltools_TEXINFOS) sorts.pdf
+creoltools.info: sorts.txt

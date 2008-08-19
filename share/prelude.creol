@@ -134,6 +134,19 @@ fun diff(s: Set[`a], t: Set[`a]): Set[`a] == extern "diff"
 fun fst (a: [`a, `b]): `a == extern "fst"
 fun snd (a: [`a, `b]): `b == extern "snd"
 
+datatype Map[`a, `b]
+
+fun empty () : Map[`a, `b] == extern "empty"
+fun isempty(m: Map[`a, `b]): Bool == extern "isempty"
+fun get(m: Map[`a, `b], k: `a): `b == extern "get"
+fun insert(m: Map[`a, `b], k: `a, v: `b): Map[`a, `b] == extern "insert"
+fun remove(m: Map[`a, `b], k: `a): Map[`a, `b] == extern "remove"
+fun in(k: `a, m: Map[`a, `b]): Bool == extern "in"
+fun keys(m: Map[`a, `b]): Set[`a] == extern "keys"
+fun values(m: Map[`a, `b]): Set[`b] == extern "values"
+fun #(m: Map[`a, `b]): Int == extern "#"
+
+
 datatype Time
 
 fun <(a: Time, b: Time): Bool == extern "<"
