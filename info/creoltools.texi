@@ -20,7 +20,7 @@ IST-33826 Credo and IST-2001-33522 Omega, the German Research Council,
 and the Norwegian Research Council.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.2 or
 any later version published by the Free Software Foundation.
 @c ; with no Invariant Sections, with the Front-Cover texts being
 @c ``A GNU Manual,'' and with the Back-Cover Texts as in (a) below.
@@ -59,6 +59,9 @@ Documentation License.''
 @menu
 * Introduction::          Introduction to @acronym{CREOL} and its tools.
 * CREOL Tutorial::        An introduction to the @acronym{CREOL} language.
+* Types and Expressions::
+* Classes and Interfaces::
+* Control Flow::
 * CREOL Language::        A description of the @acronym{CREOL} language.
 * CREOL Prelude::         The standard library for @acronym{CREOL}.
 * Real-time CREOL::       Using @acronym{CREOL} for Timed Models.
@@ -82,6 +85,9 @@ Documentation License.''
 
 @include introduction.texi
 @include creoltut.texi
+@include creolexpr.texi
+@include creolcls.texi
+@include creolflow.texi
 @include creol.texi
 @include creollib.texi
 @include creolrt.texi
