@@ -9,19 +9,19 @@ result Configuration:
   Ocnt: 0 >
  
 < "B" : Class | Inh: "A" < "b" >, Param: "b", Att: "b" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "n" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "r" |-> null, Code: call("label:0" ; "this" ; "m" ; emp) ; get("label:0" ;
-    "r") ; return("r") >, < "run" : Method | Param: noVid, Att: "_" |-> null,
-    Code: skip ; return(emp) >,
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert("="("a" ::
+    "b")) ; return(emp) >, < "n" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, "r" |-> null, Code: call("label:0" ; "this" ; "m" ;
+    emp) ; get("label:0" ; "r") ; return("r") >, < "run" : Method | Param:
+    noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
  
 < "C" : Class | Inh: "A" < "c" >, Param: "c", Att: "c" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "o" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "r" |-> null, Code: call("label:0" ; "this" ; "m" ; emp) ; get("label:0" ;
-    "r") ; return("r") >, < "run" : Method | Param: noVid, Att: "_" |-> null,
-    Code: skip ; return(emp) >,
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert("="("a" ::
+    "c")) ; return(emp) >, < "o" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, "r" |-> null, Code: call("label:0" ; "this" ; "m" ;
+    emp) ; get("label:0" ; "r") ; return("r") >, < "run" : Method | Param:
+    noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
  
 < "D" : Class | Inh: "B" < int(1) >,"C" < int(2) >, Param: noVid, Att: "x" |->
@@ -30,12 +30,13 @@ result Configuration:
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
     "label:1" |-> null, Code: call("label:0" ; "this" ; "n" ; emp) ; get(
     "label:0" ; "x") ; call("label:1" ; "this" ; "o" ; emp) ; get("label:1" ;
-    "y") ; skip ; return(emp) >,
+    "y") ; assert("&&"("="("x" :: int(1)) :: "="("y" :: int(2)))) ; return(emp)
+    >,
   Ocnt: 0 >
 
 ==========================================
 rewrite in PROGRAM : classes main("D", emp) .
-result Configuration: 
+result [Configuration]: 
 < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "m" : Method | Param: noVid, Att: "_" |-> null, "r" |-> null, Code:
@@ -44,19 +45,19 @@ result Configuration:
   Ocnt: 0 >
  
 < "B" : Class | Inh: "A" < "b" >, Param: "b", Att: "b" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "n" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "r" |-> null, Code: call("label:0" ; "this" ; "m" ; emp) ; get("label:0" ;
-    "r") ; return("r") >, < "run" : Method | Param: noVid, Att: "_" |-> null,
-    Code: skip ; return(emp) >,
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert("="("a" ::
+    "b")) ; return(emp) >, < "n" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, "r" |-> null, Code: call("label:0" ; "this" ; "m" ;
+    emp) ; get("label:0" ; "r") ; return("r") >, < "run" : Method | Param:
+    noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
  
 < "C" : Class | Inh: "A" < "c" >, Param: "c", Att: "c" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "o" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "r" |-> null, Code: call("label:0" ; "this" ; "m" ; emp) ; get("label:0" ;
-    "r") ; return("r") >, < "run" : Method | Param: noVid, Att: "_" |-> null,
-    Code: skip ; return(emp) >,
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert("="("a" ::
+    "c")) ; return(emp) >, < "o" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, "r" |-> null, Code: call("label:0" ; "this" ; "m" ;
+    emp) ; get("label:0" ; "r") ; return("r") >, < "run" : Method | Param:
+    noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
  
 < "D" : Class | Inh: "B" < int(1) >,"C" < int(2) >, Param: noVid, Att: "x" |->
@@ -65,17 +66,22 @@ result Configuration:
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
     "label:1" |-> null, Code: call("label:0" ; "this" ; "n" ; emp) ; get(
     "label:0" ; "x") ; call("label:1" ; "this" ; "o" ; emp) ; get("label:1" ;
-    "y") ; skip ; return(emp) >,
+    "y") ; assert("&&"("="("x" :: int(1)) :: "="("y" :: int(2)))) ; return(emp)
+    >,
   Ocnt: 1 >
  
 < ob("D0") : "D" |
   Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this" |-> ob("D0"), "x"
-    |-> int(2), "y" |-> int(2),
-  Pr: idle,
-  PrQ: noProc,
+    |-> null, "y" |-> null,
+  Pr: {".class" |-> str("B"), ".label" |-> label(ob("D0"), 3), ".method" |->
+    str("init"), "_" |-> null, "caller" |-> ob("D0") | failure("="("a" :: "b"))
+    ; return(emp) ; $cont(label(ob("D0"), 3))},
+  PrQ: {".init" |-> label(ob("D0"), 3) | get(label(ob("D0"), 3) ; noVid) ;
+    call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ; call(".anon"
+    ; "this" ; "run" ; emp) ; free(".anon")},
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 10 >
+  Lcnt: 4 >
  
 < ob("main") : "" |
   Att: noSubst,

@@ -233,8 +233,10 @@ let emit options out_channel input =
 	    output_string out_channel (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; ");
 	    of_expression_list i;
 	    output_string out_channel " )"
-	| Statement.Assert (n, _) ->
-	    print prec (Statement.Skip n)
+	| Statement.Assert (_, e) ->
+	    output_string out_channel "assert( ";
+	    of_expression e;
+	    output_string out_channel " )"
 	| Statement.Prove (n, _) ->
 	    print prec (Statement.Skip n)
 	| Statement.Tailcall (_, m, _, None, None, i) ->

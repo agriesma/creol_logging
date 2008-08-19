@@ -136,7 +136,7 @@ reduce in CREOL-STATEMENT : return(emp) .
 result Stm: return(emp)
 ==========================================
 reduce in CREOL-STATEMENT : upTerm(return(emp)) .
-result GroundTerm: 'return['emp.DataList]
+result GroundTerm: 'return`(_`)['emp.DataList]
 ==========================================
 reduce in CREOL-STATEMENT : downTerm(upTerm(return(emp)), skip) .
 result Stm: return(emp)
@@ -145,7 +145,7 @@ reduce in CREOL-STATEMENT : return("a" :: null :: "c") .
 result Stm: return("a" :: null :: "c")
 ==========================================
 reduce in CREOL-STATEMENT : upTerm(return("a" :: null :: "c")) .
-result GroundTerm: 'return['_::_['"a".Char,'null.Data,'"c".Char]]
+result GroundTerm: 'return`(_`)['_::_['"a".Char,'null.Data,'"c".Char]]
 ==========================================
 reduce in CREOL-STATEMENT : downTerm(upTerm(return("a" :: null :: "c")), skip)
     .
@@ -155,7 +155,7 @@ reduce in CREOL-STATEMENT : free("a") .
 result Stm: free("a")
 ==========================================
 reduce in CREOL-STATEMENT : upTerm(free("a")) .
-result GroundTerm: 'free['"a".Char]
+result GroundTerm: 'free`(_`)['"a".Char]
 ==========================================
 reduce in CREOL-STATEMENT : downTerm(upTerm(free("a")), skip) .
 result Stm: free("a")
@@ -178,6 +178,24 @@ result GroundTerm: 'tailcall`(_;_`)['"m".Char,'_::_['null.Data,'"a".Char]]
 reduce in CREOL-STATEMENT : downTerm(upTerm(tailcall("m" ; null :: "a")), skip)
     .
 result Stm: tailcall("m" ; null :: "a")
+==========================================
+reduce in CREOL-STATEMENT : assert(bool(true)) .
+result Stm: assert(bool(true))
+==========================================
+reduce in CREOL-STATEMENT : upTerm(assert(bool(true))) .
+result GroundTerm: 'assert`(_`)['bool`(_`)['true.Bool]]
+==========================================
+reduce in CREOL-STATEMENT : downTerm(upTerm(assert(bool(true))), skip) .
+result Stm: assert(bool(true))
+==========================================
+reduce in CREOL-STATEMENT : failure(bool(true)) .
+result [Stm]: failure(bool(true))
+==========================================
+reduce in CREOL-STATEMENT : upTerm(failure(bool(true))) .
+result GroundTerm: 'failure`(_`)['bool`(_`)['true.Bool]]
+==========================================
+reduce in CREOL-STATEMENT : downTerm(upTerm(failure(bool(true))), skip) .
+result [Stm]: failure(bool(true))
 ==========================================
 reduce in CREOL-STM-LIST : noStm .
 result StmList: noStm
@@ -408,7 +426,7 @@ reduce in CREOL-LABEL-TEST : $cont(label(1)) .
 result Stm: $cont(label(1))
 ==========================================
 reduce in CREOL-LABEL-TEST : upTerm($cont(label(1))) .
-result GroundTerm: '$cont['label['s_['0.Zero]]]
+result GroundTerm: '$cont`(_`)['label['s_['0.Zero]]]
 ==========================================
 reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont(label(1))), skip) .
 result Stm: $cont(label(1))
@@ -417,7 +435,7 @@ reduce in CREOL-LABEL-TEST : $accept(label(1)) .
 result Stm: $accept(label(1))
 ==========================================
 reduce in CREOL-LABEL-TEST : upTerm($accept(label(1))) .
-result GroundTerm: '$accept['label['s_['0.Zero]]]
+result GroundTerm: '$accept`(_`)['label['s_['0.Zero]]]
 ==========================================
 reduce in CREOL-LABEL-TEST : downTerm(upTerm($accept(label(1))), skip) .
 result Stm: $accept(label(1))
@@ -426,7 +444,7 @@ reduce in CREOL-LABEL-TEST : $cont(label(5)) .
 result Stm: $cont(label(5))
 ==========================================
 reduce in CREOL-LABEL-TEST : upTerm($cont(label(5))) .
-result GroundTerm: '$cont['label['s_^5['0.Zero]]]
+result GroundTerm: '$cont`(_`)['label['s_^5['0.Zero]]]
 ==========================================
 reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont(label(5))), skip) .
 result Stm: $cont(label(5))

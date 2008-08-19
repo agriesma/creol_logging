@@ -62,6 +62,8 @@ GRAMMAR_TEST(STATEMENT, tailcall("m" ; emp), skip)
 GRAMMAR_TEST(STATEMENT, {| tailcall("m" ; null :: "a") |}, skip)
 dnl Should not be accepted, but is with an ambigous parse!
 dnl GRAMMAR_TEST(STATEMENT, "l" ! "this" . "m" @ "C" ( emp ) , skip)
+GRAMMAR_TEST(STATEMENT, {| assert(bool(true)) |}, skip)
+GRAMMAR_TEST(STATEMENT, {| failure(bool(true)) |}, skip)
 
 GRAMMAR_TEST(STM-LIST, noStm, skip)
 GRAMMAR_TEST(STM-LIST, skip, noStm)

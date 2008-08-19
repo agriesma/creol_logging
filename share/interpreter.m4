@@ -142,13 +142,14 @@ fmod CREOL-STATEMENT is
   op get(_;_)  : Label VidList -> Stm [ctor ditto] .
   op await_ : Expr -> SuspStm [ctor `format' (b o d)] .
   op posit_ : Expr -> SuspStm [ctor `format' (b o d)] .
-  op return : ExprList -> Stm [ctor `format' (c o)] .
-  op free : Vid -> Stm [ctor `format' (c o)] .
+  op assert(_) : Expr -> Stm [ctor `format' (b o d b o)] .
+  op return(_) : ExprList -> Stm [ctor `format' (c d o c o)] .
+  op free(_) : Vid -> Stm [ctor `format' (c d o c o)] .
   op tailcall(_;_) : String ExprList -> Stm [ctor `format' (c d o c o c o)] .
   op tailcall(_;_;_) : String String ExprList -> Stm [ctor `format' (c d o c o c o c o)] .
 
-  op $cont : Label -> Stm [ctor `format' (c o)] .
-  op $accept : Label -> Stm [ctor `format' (c o)] .
+  op $cont(_) : Label -> Stm [ctor `format' (c d o c o)] .
+  op $accept(_) : Label -> Stm [ctor `format' (c d o c o)] .
 
   --- multiple assignment
   ---
@@ -156,6 +157,10 @@ fmod CREOL-STATEMENT is
   --- equation and the old rule is not confluent.
 
   op $assign(_;_) : VidList DataList -> Stm  [`format' (c d o c o c o)] .
+
+  --- This ``statement'' represents an assertion failure.  It 
+  --- stops evaluation of the executing object at that point.
+  op failure(_) : Expr -> [Stm] [ctor `format' (r! d o r! o)] .
 
 endfm
 

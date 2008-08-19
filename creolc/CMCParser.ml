@@ -741,9 +741,12 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let c = parse_expression input in
 	    Statement.Posit (Statement.make_note (), c)
-      | Some Key ("assert", _) ->
+      | Some Key ( ("assert" | "failure") , _) ->
+	  (* We map the failure back to the assert statement for now. *)
 	  let () = Stream.junk input in
+	  let () = junk_lparen input in
 	  let c = parse_expression input in
+	  let () = junk_rparen input in
 	    Statement.Assert (Statement.make_note (), c)
       | Some LParen _ ->
 	  let () = Stream.junk input in

@@ -494,6 +494,21 @@ eq
 
 
 
+--- assert
+---
+STEP(dnl
+`< O : C | Att: S, Pr: { L | assert(G) ; SL }, PrQ: W, Dealloc: LS, Ev: MM,
+           Lcnt: N > CLOCK',
+`if EVALGUARD(G, (S :: L), MM, T) asBool then
+    < O : C | Att: S, Pr: { L | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  else
+    < O : C | Att: S, Pr: { L | failure(G) ; SL }, PrQ: W, Dealloc: LS,
+      Ev: MM, Lcnt: N >
+  fi CLOCK',
+`[label assert]')
+
+
+
 --- REAL-TIME CREOL
 ---
 --- posit
