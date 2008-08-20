@@ -86,8 +86,8 @@ let emit options out_channel input =
 	  of_expression_list l ;
 	  output_string out_channel ")"
       | Expression.SetLit (_, l) ->
-	  output_string out_channel "list(" ;
-	  of_expression_list l ; (* Hope to overload \# for set in maude *)
+	  output_string out_channel "set(" ;
+	  of_expression_list ~separator:" : " l ;
 	  output_string out_channel ")" ;
       | Expression.FuncCall(_, f, a) ->
 	  output_string out_channel ("\"" ^ f ^ "\" ( " );
@@ -122,13 +122,13 @@ let emit options out_channel input =
 	  of_expression_list (i::l) ;
 	  output_string out_channel ")";
       | Expression.Phi (_, []) -> assert false
-  and of_expression_list =
+  and of_expression_list ?(separator = " :: ") =
     (** Compile a list of expressions into the Creol Maude Machine. *)
     function
 	[] -> output_string out_channel "emp"
       | [e] -> of_expression e
       | e::l -> of_expression e;
-	  output_string out_channel " :: ";
+	  output_string out_channel separator;
 	  of_expression_list l
   and of_identifier_list =
     (** Convert a list of identifiers into a list of Attribute identifiers. *)
