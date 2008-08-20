@@ -80,6 +80,11 @@ let passes = [
       dependencies = Typing.dependencies;
       pass = Typing.typecheck;
       elapsed = 0.0; enabled = true; dump = false } );
+  ( "unassert",
+    { help = "Remove all assertions." ;
+      dependencies = TreeUnassert.dependencies ;
+      pass = TreeUnassert.unassert ;
+      elapsed = 0.0; enabled = false; dump = false } );
   ( "fold",
     { help = "Fold all constants." ;
       dependencies = "typecheck" ;

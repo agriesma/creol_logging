@@ -41,6 +41,7 @@ creolc_SOURCES		= Version.ml \
 			  Messages.ml \
 			  Creol.ml \
 			  Typing.ml \
+			  TreeUnassert.ml \
 			  TreeLower.ml \
 			  TreeSplitAss.ml \
 			  TreeSSA.ml \
@@ -61,7 +62,8 @@ creolc_SOURCES		= Version.ml \
 			  Driver.m4
 
 creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
-			  Typing.cmo TreeLower.cmo TreeSSA.cmo TreeFold.cmo \
+			  Typing.cmo TreeUnassert.cmo TreeLower.cmo \
+			  TreeSSA.cmo TreeFold.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  Lexer.cmo Parser.cmo \
@@ -72,7 +74,8 @@ creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
-			  Typing.cmx TreeLower.cmx TreeSSA.cmx TreeFold.cmx \
+			  Typing.cmx TreeUnassert.cmx TreeLower.cmx \
+			  TreeSSA.cmx TreeFold.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  Lexer.cmx Parser.cmx \
@@ -99,6 +102,7 @@ creolc_DOCSOURCES	= Driver.ml \
 			  Parser.mly \
 			  Creol.ml \
 			  Typing.ml \
+			  TreeUnassert.ml \
 			  TreeLower.ml \
 			  TreeSSA.ml \
 			  TreeFold.ml \

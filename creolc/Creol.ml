@@ -1056,8 +1056,10 @@ struct
       | Sequence (note, stmt1, stmt2) -> 
 	  Sequence (note, remove_redundant_skips stmt1,
 		    remove_redundant_skips stmt2)
-      | Merge (note, l, r) -> Merge (note, l, r)
-      | Choice (note, l, r) -> Choice (note, l, r)
+      | Merge (note, l, r) ->
+	  Merge (note, remove_redundant_skips l, remove_redundant_skips r)
+      | Choice (note, l, r) ->
+	  Choice (note, remove_redundant_skips l, remove_redundant_skips r)
 
   let assignment_of_bury =
     function
