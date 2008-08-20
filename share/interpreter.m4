@@ -1,7 +1,7 @@
 include(macros.m4)dnl
 dnl The usual header.
 ***
-*** Reimplementation of the CREOL KIND, 2007, 2008
+*** Reimplementation of the CREOL KIND
 ***
 *** Copyright (c) 2007, 2008
 ***
@@ -123,49 +123,50 @@ endfm
 ***
 *** The following module defines all elementary statements of Creol.
 fmod CREOL-STATEMENT is
+
   protecting CREOL-DATA-VIDLIST .
   protecting CREOL-EXPRESSION .
   protecting CREOL-SUBST .
 
-  *** SuspStm is a statement which can be suspended.  It includes
+  *** SuspStmt is a statement which can be suspended.  It includes
   *** await, [] and ||| (the later two defined in CREOL-STM-LIST.
-  sorts Stm SuspStm .
-  subsort SuspStm < Stm .
+  sorts Stmt SuspStmt .
+  subsort SuspStmt < Stmt .
 
-  op skip : -> Stm [ctor `format' (b o)] .
-  op release : -> Stm [ctor `format' (b o)] .
-  op assign(_;_) : VidList ExprList -> Stm [ctor `format' (b d o b o b o)] .
-  op new(_;_;_) : Vid String ExprList -> Stm [ctor `format' (b d o b o b o b o)] .
-  op call(_;_;_;_) : Vid Expr String ExprList -> Stm [ctor `format' (b d o b o b o b o b o)] . 
-  op static(_;_;_;_) : Vid String String ExprList -> Stm [ctor `format' (b d o b o b o b o b o)] . 
-  op get(_;_)  : Vid VidList -> Stm [ctor prec 39 `format' (b d o b o b o)] .
-  op get(_;_)  : Label VidList -> Stm [ctor ditto] .
-  op await_ : Expr -> SuspStm [ctor `format' (b o d)] .
-  op posit_ : Expr -> SuspStm [ctor `format' (b o d)] .
-  op assert(_) : Expr -> Stm [ctor `format' (b o d b o)] .
-  op return(_) : ExprList -> Stm [ctor `format' (c d o c o)] .
-  op free(_) : Vid -> Stm [ctor `format' (c d o c o)] .
-  op tailcall(_;_) : String ExprList -> Stm [ctor `format' (c d o c o c o)] .
-  op tailcall(_;_;_) : String String ExprList -> Stm [ctor `format' (c d o c o c o c o)] .
+  op skip : -> Stmt [ctor `format' (b o)] .
+  op release : -> Stmt [ctor `format' (b o)] .
+  op assign(_;_) : VidList ExprList -> Stmt [ctor `format' (b d o b o b o)] .
+  op new(_;_;_) : Vid String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
+  op call(_;_;_;_) : Vid Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o)] . 
+  op static(_;_;_;_) : Vid String String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o)] . 
+  op get(_;_)  : Vid VidList -> Stmt [ctor prec 39 `format' (b d o b o b o)] .
+  op get(_;_)  : Label VidList -> Stmt [ctor ditto] .
+  op await_ : Expr -> SuspStmt [ctor `format' (b o d)] .
+  op posit_ : Expr -> SuspStmt [ctor `format' (b o d)] .
+  op assert(_) : Expr -> Stmt [ctor `format' (b o d b o)] .
+  op return(_) : ExprList -> Stmt [ctor `format' (c d o c o)] .
+  op free(_) : Vid -> Stmt [ctor `format' (c d o c o)] .
+  op tailcall(_;_) : String ExprList -> Stmt [ctor `format' (c d o c o c o)] .
+  op tailcall(_;_;_) : String String ExprList -> Stmt [ctor `format' (c d o c o c o c o)] .
 
-  op $cont(_) : Label -> Stm [ctor `format' (c d o c o)] .
-  op $accept(_) : Label -> Stm [ctor `format' (c d o c o)] .
+  op $cont(_) : Label -> Stmt [ctor `format' (c d o c o)] .
+  op $accept(_) : Label -> Stmt [ctor `format' (c d o c o)] .
 
   --- multiple assignment
   ---
   --- For the model checker the following will be evaluated as an
   --- equation and the old rule is not confluent.
 
-  op $assign(_;_) : VidList DataList -> Stm  [`format' (c d o c o c o)] .
+  op $assign(_;_) : VidList DataList -> Stmt  [`format' (c d o c o c o)] .
 
   --- This ``statement'' represents an assertion failure.  It 
   --- stops evaluation of the executing object at that point.
-  op failure(_) : Expr -> [Stm] [ctor `format' (r! d o r! o)] .
+  op failure(_) : Expr -> [Stmt] [ctor `format' (r! d o r! o)] .
 
 endfm
 
-view Stm from TRIV to CREOL-STATEMENT is
-   sort Elt to Stm .
+view Stmt from TRIV to CREOL-STATEMENT is
+   sort Elt to Stmt .
 endv
 
 
@@ -174,33 +175,33 @@ endv
 ***
 fmod CREOL-STM-LIST is
   protecting CREOL-STATEMENT .                
-  protecting LIST{Stm} * (sort List{Stm} to StmList,
-                          sort NeList{Stm} to NeStmList,
-			  op nil : -> List{Stm} to noStm,
-			  op __ : List{Stm} List{Stm} -> List{Stm} to _;_ [`format' (d r o d)]) .
+  protecting LIST{Stmt} * (sort List{Stmt} to StmtList,
+                          sort NeList{Stmt} to NeStmtList,
+			  op nil : -> List{Stmt} to noStmt,
+			  op __ : List{Stmt} List{Stmt} -> List{Stmt} to _;_ [`format' (d r o d)]) .
 
-  op if_th_el_fi : Expr NeStmList NeStmList -> Stm [ctor `format' (b o b o b o b o)] . 
-  op while_do_od : Expr NeStmList -> Stm [ctor `format' (b o b o b o)] .
-  op _[]_  : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 45 `format' (d r d o d)] .
-  op _|||_ : NeStmList NeStmList -> SuspStm [ctor comm assoc prec 47 `format' (d r o d)] .
-  op _MERGER_  : StmList StmList -> Stm [ctor assoc `format' (d c! o d)] .
+  op if_th_el_fi : Expr NeStmtList NeStmtList -> Stmt [ctor `format' (b o b o b o b o)] . 
+  op while_do_od : Expr NeStmtList -> Stmt [ctor `format' (b o b o b o)] .
+  op _[]_  : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 45 `format' (d r d o d)] .
+  op _|||_ : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d r o d)] .
+  op _MERGER_  : StmtList StmtList -> Stmt [ctor assoc `format' (d c! o d)] .
 
-  var SL : StmList .
-  var NeSL : NeStmList .
+  var SL : StmtList .
+  var NeSL : NeStmtList .
   var AL : VidList .
   var DL : DataList .
   var EL : ExprList .
   var B : Expr .
 
   *** Some simplifications:
-  eq noStm MERGER SL = SL .
-  eq SL MERGER noStm = SL .
+  eq noStmt MERGER SL = SL .
+  eq SL MERGER noStmt = SL .
 
   --- Optimize assignments.  This way we save reducing a skip.  Also note
   --- that the empty assignment is /not/ programmer syntax, it is inserted
   --- during run-time.
-  eq assign(noVid ; emp) = noStm .
-  eq $assign(noVid ; emp) = noStm .
+  eq assign(noVid ; emp) = noStmt .
+  eq $assign(noVid ; emp) = noStmt .
 
 endfm
 
@@ -212,11 +213,11 @@ fmod CREOL-PROCESS is
 
   op idle : -> Process [ctor `format' (!b o)] .  
   op notFound : -> Process [ctor `format' (!b o)] .  
-  op {_|_} : Subst StmList -> Process [ctor `format' (r o r o r o)] . 
+  op {_|_} : Subst StmtList -> Process [ctor `format' (r o r o r o)] . 
 
   var L : Subst .
-  eq { L | noStm } = idle . --- if ".label" is needed this is dangerous!
-  eq idle = { noSubst | noStm } [nonexec metadata "Causes infinite loops."] .
+  eq { L | noStmt } = idle . --- if ".label" is needed this is dangerous!
+  eq idle = { noSubst | noStmt } [nonexec metadata "Causes infinite loops."] .
 
 endfm
 
@@ -257,7 +258,7 @@ fmod CREOL-METHOD is
   sort Method .
 
   op <_: Method | Param:_, Att:_, Code:_> : 
-    String VidList Subst StmList -> Method [ctor
+    String VidList Subst StmtList -> Method [ctor
       `format' (c ! oc o d sc o d sc o d sc o c o)] .
 
 endfm
@@ -299,9 +300,9 @@ mod `CREOL-EVAL' is
     eq inqueue(L, MM + comp(L', EL)) =
 	  if L == L' then true else inqueue(L, MM) fi .
 
-    vars ST ST' : Stm . 
-    vars SL SL1 SL2 : StmList . 
-    vars NeSL NeSL1 NeSL2 : NeStmList .
+    vars ST ST' : Stmt . 
+    vars SL SL1 SL2 : StmtList . 
+    vars NeSL NeSL1 NeSL2 : NeStmtList .
     var AL : VidList .
     var M : ExprMap .
 dnl
@@ -315,16 +316,16 @@ ifdef(`TIME',dnl
     op evalGuardList : ExprList Subst MMsg Float -> DataList [strat (1 0 0 0 0)] .
     op evalGuardSet : ExprSet Subst MMsg Float -> DataSet [strat (1 0 0 0 0)] .
     op evalGuardMap : ExprMap Subst MMsg Float -> DataMap [strat (1 0 0 0 0)] .
-    op enabled : NeStmList Subst MMsg Float -> Bool .
-    op ready : NeStmList Subst MMsg Float -> Bool .
+    op enabled : NeStmtList Subst MMsg Float -> Bool .
+    op ready : NeStmtList Subst MMsg Float -> Bool .
 ,dnl Untimed:
 
     op evalGuard : Expr Subst MMsg -> Data .
     op evalGuardList : ExprList Subst MMsg -> DataList [strat (1 0 0 0)] .
     op evalGuardSet : ExprSet Subst MMsg -> DataSet [strat (1 0 0 0)] .
     op evalGuardMap : ExprMap Subst MMsg -> DataMap [strat (1 0 0 0)] .
-    op enabled : NeStmList Subst MMsg -> Bool .
-    op ready : NeStmList Subst MMsg -> Bool .
+    op enabled : NeStmtList Subst MMsg -> Bool .
+    op ready : NeStmtList Subst MMsg -> Bool .
 )dnl
 
     eq EVALGUARD(D, S, MM, T) = D .

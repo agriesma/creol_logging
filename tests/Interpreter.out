@@ -20,7 +20,7 @@ result Configuration:
 search in TEST-TAILCALL : init =>+ conf:Configuration 
 < ob("Tailcall0") : "Tailcall" |
   Att: A:Subst,
-  Pr: {L:Subst | $accept(tag(label(ob("Tailcall0"), 1))) ; SL:StmList},
+  Pr: {L:Subst | $accept(tag(label(ob("Tailcall0"), 1))) ; SL:StmtList},
   PrQ: W:MProc,
   Dealloc: LS:Labels,
   Ev: MM:MMsg,
@@ -46,7 +46,7 @@ conf:Configuration -->
 
 A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
 L:Subst --> noSubst
-SL:StmList --> noStm
+SL:StmtList --> noStmt
 W:MProc --> {".class" |-> str("Tailcall"), ".label" |-> tag(label(ob(
     "Tailcall0"), 1)), ".method" |-> str("run"), "caller" |-> ob("Tailcall0") |
     if "<"(int(0) :: "x") th assign("x" ; "-"("x" :: int(1))) ; tailcall("run"
@@ -58,7 +58,7 @@ N:Nat --> 2
 search in TEST-TAILCALL : init =>+ conf:Configuration 
 < ob("Tailcall0") : "Tailcall" |
   Att: A:Subst,
-  Pr: {L:Subst | $accept(tag(label(ob("Tailcall0"), 2))) ; SL:StmList},
+  Pr: {L:Subst | $accept(tag(label(ob("Tailcall0"), 2))) ; SL:StmtList},
   PrQ: W:MProc,
   Dealloc: LS:Labels,
   Ev: MM:MMsg,

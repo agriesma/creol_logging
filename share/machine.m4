@@ -27,10 +27,10 @@ mod CREOL-SIMULATOR is
   var DL : DataList .                  --- List of values
   vars E E' G : Expr .                 --- Expressions E, E' and Guard G
   vars EL EL' : ExprList .             --- List of Expressions
-  var ST : Stm .                       --- Statement
-  var SuS : SuspStm .                  --- Suspendable statement
-  vars SL SL1 SL2 : StmList .          --- List of statements
-  vars NeSL NeSL1 : NeStmList .
+  var ST : Stmt .                       --- Statement
+  var SuS : SuspStmt .                  --- Suspendable statement
+  vars SL SL1 SL2 : StmtList .          --- List of statements
+  vars NeSL NeSL1 : NeStmtList .
   vars P P' : Process .
   var W : MProc .
   vars S S' L L' : Subst .
@@ -465,8 +465,8 @@ STEP(dnl
 --- For the purpose of the CMC the class parameters are treated as
 --- attributes!
 ---
-op findAttr  : Oid InhList Subst StmList Process -> Msg [ctor `format' (n d)] .
-op foundAttr : Oid Subst  StmList Process -> Msg [ctor `format' (n d)] .
+op findAttr  : Oid InhList Subst StmtList Process -> Msg [ctor `format' (n d)] .
+op foundAttr : Oid Subst  StmtList Process -> Msg [ctor `format' (n d)] .
 
 eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 
@@ -532,7 +532,7 @@ ifdef(`TIME',dnl
 --- is only enabled if and only if all posit constraints are satisfied in
 --- the global state at the new time.
 
-op posit(_,_,_) : Subst StmList Float -> Bool .
+op posit(_,_,_) : Subst StmtList Float -> Bool .
 eq posit(S, posit E ; SL, T) = EVAL(E, S, T) asBool .
 eq posit(S, (SL1 [] SL2); SL, T) = posit(S, SL1, T) or posit(S, SL2, T) .
 eq posit(S, (SL1 ||| SL2); SL, T) = posit(S, SL1, T) or posit(S, SL2, T) .
