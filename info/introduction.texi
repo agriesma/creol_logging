@@ -14,7 +14,6 @@ correctness of the overall system.
 @menu
 * Overview::            What is @acronym{CREOL} about?
 * Features of CREOL::   Features of @acronym{CREOL}.
-* Reporting Bugs::      Where do I report bugs to?
 @end menu
 
 
@@ -78,53 +77,3 @@ name @code{caller}.
 The @code{caller} mechanism is similar to @code{context} in Smalltalk-80,
 but it does not, e.g., provide information on the call-chain.
 
-
-
-@node Reporting Bugs
-@section Reporting Bugs
-
-@acronym{CREOL} and its tools contain probably mistakes.  We try hard
-to find all of them and correct them.  If You find an error in the
-tools, the language, or its documentation, we will appreciate Your
-report, investigate the issue, and repair it in some manner.
-
-Writing a Bug report that is useful to us is not simple.  We ask you
-to read @cite{E.@: Hendrickson, Writing Effective Bug Reports, p.@:
-10--11, @acronym{STQE}, July/August 2001}, available from
-@url{http://testobsessed.com/wordpress/wp-content/uploads/2007/01/webr.pdf}
-(accessed February 13, 2008), and follow the guide lines described in
-that paper.  The better Your report is, the easier it is to identify
-the cause of the error and to correct it.
-
-Generally speaking, we ask You to include at least this information in
-your report:
-@itemize @bullet
-@item
-the version number of @code{creoltools} and the program(s) or
-manual(s) involved.
-
-@item
-hardware and operating system names and versions.
-
-@item
-the version of the Objective Caml compiler, findlib, ocaml-libxml2 and
-how they have been configured.
-
-@item
-the contents of any input files necessary to reproduce the bug.  The
-smaller the input, the better.
-
-@item
-a description of the problem and samples of any erroneous output or
-behaviour.
-
-@item
-any unusual options you gave to configure.
-
-@item
-anything else that you think would be helpful. 
-@end itemize
-
-Once you have written your report, please send it as an e-mail in
-plain ASCII format to @email{kyas@@ifi.uio.no}.  We are afraid that we
-cannot accept bug reports sent as HTML e-mails.
