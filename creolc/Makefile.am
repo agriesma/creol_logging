@@ -253,10 +253,11 @@ Lexer.cmo Lexer.cmx: Lexer.cmi
 
 # Count lines.
 #
-# Parameters are for an organic project (Effort 2.4 1.05, Schedule 2.5 0.38)
+# Parameters are for a semi-detached project
+# (Effort 3.0 1.12, Schedule 2.5 0.38)
 #
 # RELY Low 0.88
-# DATA N/A
+# DATA Low 0.94
 # CPLX Nominal 1.0
 # TIME Nominal 1.0
 # STOR Nominal 1.0
@@ -264,20 +265,20 @@ Lexer.cmo Lexer.cmx: Lexer.cmi
 # TURN Nominal 1.0
 # ACAP Low 1.19
 # AEXP Low 1.13
-# PCAP Nominal 1.0
+# PCAP Low 1.17
 # VEXP High 0.9
 # LEXP High 0.95
 # MODP Very High 0.82
-# TOOL Very High 0.83
+# TOOL High 0.91
 # SCED High 1.04
 #
-# Total: 0.72
+# Total: 0.86
 #
 sloccount: Driver.ml Passes.ml Version.ml
 	@if test "$(srcdir)" != "." ; then \
 	  for i in $^ ; do cp $$i $(srcdir)/$$i ; done ; \
 	fi
-	@sloccount --effort 1.72 1.05 --schedule 2.5 0.38 --personcost 424000 \
+	@sloccount --effort 2.59 1.12 --schedule 2.5 0.35 --personcost 424000 \
 	  $(srcdir)
 	@if test "$(srcdir)" != "." ; then \
 	  for i in $^ ; do rm $(srcdir)/$$i ; done ; \
