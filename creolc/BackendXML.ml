@@ -403,6 +403,11 @@ let emit ~name ~tree =
 	  creol_statement_to_xml n ;
 	  creol_statement_note_to_xml a ;
           XmlTextWriter.end_element writer
+      | Statement.Continue (a, e) ->
+	  XmlTextWriter.start_element writer "creol:continue" ; 
+	  creol_expression_to_xml e ;
+	  creol_statement_note_to_xml a ;
+          XmlTextWriter.end_element writer
       | Statement.Extern (a, s) ->
 	  XmlTextWriter.start_element writer "creol:extern" ;
 	  XmlTextWriter.write_attribute writer "symbol" s ;
@@ -650,6 +655,19 @@ let emit ~name ~tree =
 	  XmlTextWriter.start_element writer "creol:else" ;
 	  creol_expression_to_xml f ;
           XmlTextWriter.end_element writer ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Expression.ObjLit (a, n) ->
+	  XmlTextWriter.start_element writer "creol:object-literal" ;
+	  XmlTextWriter.write_attribute writer "name" n ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Expression.LabelLit (a, l) ->
+	  XmlTextWriter.start_element writer "creol:label-literal" ;
+	  List.iter (function e -> 
+	    XmlTextWriter.start_element writer "part" ;
+	    creol_expression_to_xml e ;
+            XmlTextWriter.end_element writer ) l ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.Extern (a, s) ->

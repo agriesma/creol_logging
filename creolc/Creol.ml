@@ -399,33 +399,35 @@ struct
   (* Extract the annotation of an expression *)
   let note =
     function
-	This a -> a
-      | QualifiedThis (a, _) -> a
-      | Caller a -> a
-      | Now a -> a
-      | Null a -> a
-      | Nil a -> a
-      | History a -> a
-      | Bool (a, _) -> a
-      | Int (a, _) -> a
-      | Float (a, _) -> a
-      | String (a, _) -> a
-      | Id (a, _) -> a
-      | StaticAttr(a, _, _) -> a
-      | Tuple (a, _) -> a
-      | ListLit (a, _) -> a
-      | SetLit (a, _) -> a
-      | Unary (a, _, _) -> a
-      | Binary (a, _, _, _) -> a
-      | If (a, _, _, _) -> a
-      | FuncCall (a, _, _) -> a
-      | Label (a, _) -> a
-      | New (a, _, _) -> a
-      | Choose (a, _, _, _) -> a
-      | Forall (a, _, _, _) -> a
-      | Exists (a, _, _, _) -> a 
-      | Extern (a, _) -> a
-      | SSAId (a, _, _) -> a
+      | This a
+      | QualifiedThis (a, _)
+      | Caller a
+      | Now a
+      | Null a
+      | Nil a
+      | History a
+      | Bool (a, _)
+      | Int (a, _)
+      | Float (a, _)
+      | String (a, _)
+      | Id (a, _)
+      | StaticAttr(a, _, _)
+      | Tuple (a, _)
+      | ListLit (a, _)
+      | SetLit (a, _)
+      | Unary (a, _, _)
+      | Binary (a, _, _, _)
+      | If (a, _, _, _)
+      | FuncCall (a, _, _)
+      | Label (a, _)
+      | New (a, _, _)
+      | Choose (a, _, _, _)
+      | Forall (a, _, _, _)
+      | Exists (a, _, _, _)
+      | Extern (a, _)
+      | LabelLit (a, _)
+      | ObjLit (a, _)
+      | SSAId (a, _, _)
       | Phi (a, _) -> a
 
   let get_type expr = (note expr).ty
@@ -458,6 +460,8 @@ struct
       | Forall (_, v, t, p) -> Forall (note, v, t, p)
       | Exists (_, v, t, p) -> Exists (note, v, t, p)
       | Extern (_, i) -> Extern (note, i)
+      | LabelLit (_, l) -> LabelLit (note, l)
+      | ObjLit (_, o) -> ObjLit (note, o)
       | SSAId (_, i, n) -> SSAId (note, i, n)
       | Phi (_, l) -> Phi (note, l)
 
@@ -517,7 +521,9 @@ struct
       | Choose _ -> false
       | Forall (_, _, _, p) -> constant_p p
       | Exists (_, _, _, p) -> constant_p p
-      | Extern (_, i) -> false
+      | Extern _ -> false
+      | LabelLit (_, l) -> List.for_all constant_p l
+      | ObjLit _ -> true
       | SSAId _ -> false
       | Phi _ -> false
 
@@ -618,6 +624,11 @@ struct
 		    Type.apply_substitution subst t,
 		    substitute_types_in_expression subst e)
 	| Extern _ as e -> e
+	| LabelLit (n, l) ->
+	    LabelLit (subst_in_note n,
+		      List.map (substitute_types_in_expression subst) l)
+	| ObjLit (n, o) ->
+	    ObjLit (subst_in_note n, o)
 	| SSAId (n, name, version) ->
 	    SSAId (subst_in_note n, name, version)
 	| Phi (n, args) ->
@@ -887,6 +898,7 @@ struct
       | Tailcall (a, _, _, _, _, _)
       | If (a, _, _, _) | While (a, _, _, _) | DoWhile (a, _, _, _)
       | Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
+      | Continue (a, _)
       | Extern (a, _) -> a
 
 
@@ -924,6 +936,7 @@ struct
       | Sequence (_, s1, s2) -> Sequence (n, s1, s2)
       | Merge (_, s1, s2) -> Merge (n, s1, s2)
       | Choice (_, s1, s2) -> Choice (n, s1, s2)
+      | Continue (_, e) -> Continue (n, e)
       | Extern (_, s) -> Extern(n, s)
 
 
@@ -954,6 +967,7 @@ struct
       | Sequence (_, _, _) -> "_;_"
       | Merge (_, _, _) -> "_|||_"
       | Choice (_, _, _) -> "_[]_"
+      | Continue _ -> "continue _"
       | Extern (_, s) -> "extern \"" ^ s ^ "\""
 
 
@@ -1043,7 +1057,7 @@ struct
 	     AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _ |
 		 AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ | 
 		     AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ |
-		         Extern _) as s -> s
+		         Continue _ | Extern _) as s -> s
       | Skip note -> Skip note
       | If (note, c, t, f) ->
 	  If (note, c, remove_redundant_skips t, remove_redundant_skips f)
@@ -1960,6 +1974,7 @@ struct
 	| Declaration.Exception _ -> d
 	| Declaration.Datatype _ -> d
 	| Declaration.Function _ -> d
+	| Declaration.Object _ -> d
     in
       List.map for_decl program
 

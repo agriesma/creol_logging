@@ -638,6 +638,15 @@ let typecheck tree: Program.t =
 	    (Forall (set_type n Type.bool, v, t, e'),
 	     (get_type e', Type.bool)::constr', fresh_name')
       | Expression.Extern _ -> assert false
+      | LabelLit (n, l) ->
+	  let (l', constr', fresh_name') = 
+	    type_recon_expression_list env coiface constr fresh_name l in
+	  let (v, fresh_name'') = fresh_var fresh_name' in
+	  let ty = Type.Application ("Label", [v]) in
+	    (LabelLit (set_type n ty, l'),
+	     (List.map (fun e -> (get_type e, v)) l') @ constr',
+	     fresh_name'')
+      | ObjLit _ -> assert false
       | SSAId (n, name, version) ->
 	  let res =
 	    try
@@ -1150,6 +1159,7 @@ let typecheck tree: Program.t =
 	    let s1' = type_check_statement env coiface s1
 	    and s2' = type_check_statement env coiface s2 in
 	      Choice (n, s1', s2')
+	| Continue _ -> assert false
 	| Extern _ as s -> s
   and type_check_method program cls coiface meth =
     let () =

@@ -230,6 +230,7 @@ let pass input =
 	  let (label_decls', s1') = lower_statement label_decls s1 in
 	  let (label_decls'', s2') = lower_statement label_decls' s2 in
 	    (label_decls'', Choice (a, s1', s2'))
+      | Continue (a, e) -> (label_decls, Continue (a, lower_expression e))
       | Extern _ as s -> (label_decls, s)
   and lower_method_variables note vars =
 
@@ -435,8 +436,9 @@ let pass input =
     function
 	Declaration.Class c -> Declaration.Class (lower_class c)
       | Declaration.Interface i -> Declaration.Interface (lower_interface i)
-      | Declaration.Exception e -> Declaration.Exception e
-      | Declaration.Datatype d -> Declaration.Datatype d
-      | Declaration.Function f -> Declaration.Function f
+      | (Declaration.Exception _
+	| Declaration.Datatype _
+	| Declaration.Function _
+	| Declaration.Object _) as d -> d
   in
     List.map lower_declaration input

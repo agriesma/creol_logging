@@ -50,7 +50,7 @@ let rec split_in_statement =
 	Merge (a, split_in_statement s1, split_in_statement s2)
     | Choice (a, s1, s2) ->
 	Choice (a, split_in_statement s1, split_in_statement s2)
-    | Extern _ as s -> s
+    | (Continue _ | Extern _) as s -> s
 
 let split_in_method program cls = Method.apply_to_body split_in_statement
 

@@ -64,6 +64,8 @@ let devirt_statement program cls meth stmt =
 	  Exists (n, v, t, devirt_expression e)
       | Forall (n, v, t, e) ->
 	  Forall (n, v, t, devirt_expression e)
+      | ObjLit _ as e -> e
+      | LabelLit (n, l) -> LabelLit (n, List.map devirt_expression l)
       | Expression.Extern _ as e -> e
       | SSAId (_, v, _) as e -> assert (Method.local_p meth v); e
       | Phi (n, l) -> Phi (n, List.map devirt_expression l)

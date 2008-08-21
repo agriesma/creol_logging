@@ -102,6 +102,9 @@ let compute_in_body ~program ~cls ~meth =
 	  List.fold_left (add gen) IdSet.empty l
       | Choose (_, _, _, e) | Exists (_, _, _, e) | Forall (_, _, _, e) ->
 	  gen e
+      | ObjLit _ -> IdSet.empty
+      | LabelLit (_, l) ->
+	  List.fold_left (add gen) IdSet.empty l
       | Expression.Extern _ ->
 	  IdSet.empty
       | SSAId (a, v, n) ->
@@ -276,6 +279,11 @@ let compute_in_body ~program ~cls ~meth =
 	  let n' = { n with life = IdSet.union (life s1') (life s2') } in
 	    logio stmt outs n'.life ;
 	    Choice (n', s1', s2')
+      | Continue (n, e) ->
+	  let g = gen e in
+	  let n' = { n with life = IdSet.union g outs } in
+	    logio stmt outs n'.life ;
+	    Continue (n', e)
       | Extern (n, s) ->
 	  let n' = { n with life = outs } in
 	    logio stmt outs n'.life ;

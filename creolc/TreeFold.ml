@@ -371,6 +371,8 @@ let optimise_in_statement stmt =
 	      | Bool(_, false) -> Bool(n, false)
 	      | _ -> Exists (n, v, t, p')
 	  end
+    | ObjLit _ as e -> e
+    | LabelLit (n, l) -> LabelLit (n, List.map fold_expr l)
     | Expression.Extern _ as e -> e
     | SSAId _ as e -> e
     | Phi (n, l) -> Phi (n, List.map fold_expr l)
@@ -409,6 +411,7 @@ let optimise_in_statement stmt =
       | Sequence (n, s1, s2) -> Sequence (n, work s1, work s2)
       | Merge (n, s1, s2) -> Merge (n, work s1, work s2)
       | Choice (n, s1, s2) -> Choice (n, work s1, work s2)
+      | Continue (n, c) -> Continue (n, fold_expr c)
       | Extern (n, s) -> Extern (n, s)
   in
     work stmt

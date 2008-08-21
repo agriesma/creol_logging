@@ -101,6 +101,10 @@ let compute_in_statement ~meth ins stmt =
 	  List.fold_left (add kill) IdSet.empty l
       | Choose (_, _, _, e) | Exists (_, _, _, e) | Forall (_, _, _, e) ->
 	  kill e
+      | ObjLit _ ->
+	  IdSet.empty
+      | LabelLit (_, l) ->
+	  List.fold_left (add kill) IdSet.empty l
       | Expression.Extern _ ->
 	  IdSet.empty
       | SSAId (_, v, _) ->
@@ -248,6 +252,10 @@ let compute_in_statement ~meth ins stmt =
 	  let n' = { n with def = IdSet.inter (def s1') (def s2') } in
 	    logio stmt ins n'.def ;
 	    Choice (n', s1', s2')
+      | Continue (n, e) ->
+	  let n' = { n with def = ins } in
+	    logio stmt ins n'.def ;
+	    Continue (n', e)
       | Extern (n, s) ->
 	  let n' = { n with def = ins } in
 	    logio stmt ins n'.def ;

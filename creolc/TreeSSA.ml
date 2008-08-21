@@ -71,7 +71,7 @@ let into_ssa program =
        the environment. *)
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
-         Bool _ | Int _ | Float _ | String _ | History _) as e -> e
+         Bool _ | Int _ | Float _ | String _ | History _ | ObjLit _) as e -> e
       | Id (n, name) when Method.local_p meth name ->
 	  SSAId (n, name, Env.find name env)
       | Id (n, name) ->
@@ -100,6 +100,8 @@ let into_ssa program =
       | Forall (n, v, t, e) ->
 	  (* [v] is actually a binder and should not be converted to SSA. *)
 	  Forall (n, v, t, expression_to_ssa meth env e)
+      | LabelLit (a, l) ->
+	  LabelLit (a, List.map (expression_to_ssa meth env) l)
       | Expression.Extern _ as e -> e
       | (SSAId _ | Phi _) as e -> e
   in
@@ -299,10 +301,11 @@ let into_ssa program =
   let declaration_to_ssa =
     function
 	Declaration.Class c -> Declaration.Class (class_to_ssa c)
-      | Declaration.Interface i -> Declaration.Interface i
-      | Declaration.Exception e -> Declaration.Exception e
-      | Declaration.Datatype d -> Declaration.Datatype d
-      | Declaration.Function f -> Declaration.Function f
+      | (Declaration.Interface _
+	| Declaration.Exception _
+	| Declaration.Datatype _
+	| Declaration.Function _
+	| Declaration.Object _) as d -> d
   in
     List.map declaration_to_ssa program
 
@@ -315,7 +318,7 @@ let out_of_ssa tree =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
          Bool _ | Int _ | Float _ | String _ | History _ | Id _ |
-	 StaticAttr _ ) as e -> e
+	 StaticAttr _ | ObjLit _) as e -> e
       | Tuple (a, l) -> Tuple (a, List.map expression_of_ssa l)
       | ListLit (a, l) -> ListLit (a, List.map expression_of_ssa l)
       | SetLit (a, l) -> SetLit (a, List.map expression_of_ssa l)
@@ -343,6 +346,7 @@ let out_of_ssa tree =
 	  (* [v] is actually a binder and should not have been converted
 	     to SSA. *)
 	  Forall (n, v, t, expression_of_ssa e)
+      | LabelLit (a, l) -> LabelLit (a, List.map expression_of_ssa l)
       | SSAId (a, v, n) -> (* Just drop the version *) Id (a, v)
       | Phi (a, l) ->
 	  let same_base_p lst = List.fold_left
@@ -458,10 +462,11 @@ let out_of_ssa tree =
   in
   let declaration_of_ssa =
     function
-	Declaration.Class c -> Declaration.Class (class_of_ssa c)
-      | Declaration.Interface i -> Declaration.Interface i
-      | Declaration.Exception e -> Declaration.Exception e
-      | Declaration.Datatype d -> Declaration.Datatype d
-      | Declaration.Function f -> Declaration.Function f
+      | Declaration.Class c -> Declaration.Class (class_of_ssa c)
+      | (Declaration.Interface _
+	| Declaration.Exception _
+	| Declaration.Datatype _
+	| Declaration.Function _
+	| Declaration.Object _) as d -> d
   in
     List.map declaration_of_ssa tree

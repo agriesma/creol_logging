@@ -328,7 +328,7 @@ let parse name input =
 	  in
 	    Mtd { Method.name = oid;
 		coiface = Type.any;
-		inpars = [];
+		inpars = List.map vardecl_of_name p;
 		outpars = [];
 		requires = Expression.Bool (Expression.make_note (), true);
 		ensures = Expression.Bool (Expression.make_note (), true);
@@ -376,6 +376,7 @@ let parse name input =
 		    let () = Stream.junk input in
 		    let r = parse_object_term_list input in
 		      t::r
+		| [] -> []
 	  end
       | Some t ->
 	  raise (BadToken (error_tokens input, get_token_line t,
