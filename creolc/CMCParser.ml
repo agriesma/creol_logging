@@ -294,6 +294,41 @@ type v =
   | Process of Process.t
   | ProcessQueue of Process.t list
 
+let get_attr =
+  function
+    | Attr res -> res
+    | _ -> assert false
+
+let get_code =
+  function
+    | Code res -> res
+    | _ -> assert false
+
+let get_inh =
+  function
+    | Inh res -> res
+    | _ -> assert false
+
+let get_mtds =
+  function
+    | Mtds res -> res
+    | _ -> assert false
+
+let get_parameters =
+  function
+    | Parameters res -> res
+    | _ -> assert false
+
+let get_process =
+  function
+    | Process res -> res
+    | _ -> assert false
+
+let get_process_queue =
+  function
+    | ProcessQueue res -> res
+    | _ -> assert false
+
 let vardecl_of_binding (n, i) =
   { VarDecl.name = n; var_type = Type.data; init = Some i }
 
@@ -304,10 +339,10 @@ let parse name input =
   let build_term oid cid props =
     match cid with
       | "~Class" ->
-	  let Parameters p = PropMap.find "Param" props
-	  and Inh i = PropMap.find "Inh" props
-	  and Mtds m = PropMap.find "Mtds" props
-	  and Attr a = PropMap.find "Att" props
+	  let p = get_parameters (PropMap.find "Param" props)
+	  and i = get_inh (PropMap.find "Inh" props)
+	  and m = get_mtds (PropMap.find "Mtds" props)
+	  and a = get_attr (PropMap.find "Att" props)
 	  in
 	    Cls { Class.name = oid ;
 		  parameters = (List.map vardecl_of_name p) ;
@@ -322,9 +357,9 @@ let parse name input =
 		  file = "";
 		  line = 0 }
       | "~Method" ->
-	  let Code c = PropMap.find "Code" props
-	  and Parameters p = PropMap.find "Param" props
-	  and Attr a = PropMap.find "Att" props
+	  let c = get_code (PropMap.find "Code" props)
+	  and p = get_parameters (PropMap.find "Param" props)
+	  and a = get_attr (PropMap.find "Att" props)
 	  in
 	    Mtd { Method.name = oid;
 		coiface = Type.any;
@@ -336,9 +371,9 @@ let parse name input =
 		body = Some c;
 		location = "" }
       | t ->
-	  let Attr a = PropMap.find "Att" props
-	  and Process p = PropMap.find "Pr" props
-	  and ProcessQueue q = PropMap.find "PrQ" props
+	  let a = get_attr (PropMap.find "Att" props)
+	  and p = get_process (PropMap.find "Pr" props)
+	  and q = get_process_queue (PropMap.find "PrQ" props)
 	  in
 	    Obj { Object.name = oid;
 		  cls = Type.Basic t;
@@ -376,7 +411,7 @@ let parse name input =
 		    let () = Stream.junk input in
 		    let r = parse_object_term_list input in
 		      t::r
-		| [] -> []
+		| _ -> [t]
 	  end
       | Some t ->
 	  raise (BadToken (error_tokens input, get_token_line t,
@@ -449,7 +484,7 @@ let parse name input =
 	    Inh v
       | Some Property ("Mtds", _) ->
 	  let () = Stream.junk input in
-	    Mtds (List.map (function (Mtd m) -> m)
+	    Mtds (List.map (function (Mtd m) -> m | _ -> assert false)
 		    (parse_object_term_list input))
       | Some Property ("Param", _) ->
 	  let () = Stream.junk input in
