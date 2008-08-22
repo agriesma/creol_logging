@@ -38,7 +38,7 @@ export CREOL_LIBRARY_PATH
 check-local: Phil1b.prof Phil1p.prof Phil2b.prof Phil2p.prof
 
 .maude.prof:
-	env MAUDE_LIB=$(top_builddir)/share:$$MAUDE_LIB $(MAUDE) $< > $@
+	env MAUDE_LIB=$(top_builddir)/share:${top_srcdir}/share:$$MAUDE_LIB $(MAUDE) $< > $@
 
 Phil1p.maude: Philosophers.creol Philosophers.tests $(srcdir)/profile.sh
 	rm -f model.maude
