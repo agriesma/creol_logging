@@ -181,7 +181,12 @@ struct
 	Internal -> Internal
       | Basic b -> Basic b
       | Variable x ->
-	  if Subst.mem x s then Subst.find x s else Variable x
+	  begin
+	    try
+	      Subst.find x s 
+	    with
+	      | Not_found -> Variable x
+	  end
       | Application (c, l) ->
 	  Application(c, List.map (apply_substitution s) l)
       | Tuple l ->
@@ -634,6 +639,55 @@ struct
 	| Phi (n, args) ->
 	    Phi (subst_in_note n,
 		 List.map (substitute_types_in_expression subst) args)
+
+  (* Similar to the type substitution we also define a term substitution. *)
+  module Subst = Map.Make(String)
+
+  let rec substitute subst =
+    function
+      | (This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _
+	| History _ | Bool _ | Int _ | Float _ | String _) as e -> e
+      | Id (n, v) as e ->
+	  begin
+	    try
+	      set_note n (Subst.find v subst)
+            with
+	      | Not_found -> e
+          end
+      | StaticAttr _ as e -> e
+      | Tuple (n, l) ->
+	  Tuple (n, List.map (substitute subst) l)
+      | ListLit (n, l) ->
+	  ListLit (n, List.map (substitute subst) l)
+      | SetLit (n, l) ->
+	  SetLit (n, List.map (substitute subst) l)
+      | Unary (n, o, a) ->
+	  Unary (n, o, substitute subst a)
+      | Binary (n, o, l, r) ->
+	  Binary (n, o, substitute subst l, substitute subst r)
+      | If (n, c, t, f) ->
+	  If (n, substitute subst c, substitute subst t, substitute subst f)
+      | FuncCall (n, f, a) ->
+	  FuncCall (n, f, List.map (substitute subst) a)
+      | Label (n, e) ->
+	  Label (n, substitute subst e)
+      | New (n, t, a) ->
+	  New (n, t, List.map (substitute subst) a)
+      | Choose _ ->
+	  assert false
+      | Forall _ ->
+	  assert false
+      | Exists _ ->
+	  assert false
+      | Extern _ as e -> e
+      | LabelLit (n, l) ->
+	  LabelLit (n, List.map (substitute subst) l)
+      | ObjLit _ as e -> e
+      | SSAId _ ->
+	  assert false
+      | Phi _ ->
+	  assert false
+
 
 
   (* Determines, whether a term is a boolean atom.
