@@ -453,7 +453,8 @@ let emit ~name ~tree =
       XmlTextWriter.write_attribute writer "line"
         (string_of_int note.Statement.line) ;
       emit_idset "creol:def-var" note.Statement.def ;
-      emit_idset "creol:life-var" note.Statement.life ;
+      emit_idset "creol:maybe-life-var" note.Statement.may_live ;
+      emit_idset "creol:mustbe-life-var" note.Statement.must_live ;
       XmlTextWriter.end_element writer
   and creol_vardecl_to_xml v =
     XmlTextWriter.start_element writer "creol:vardecl";

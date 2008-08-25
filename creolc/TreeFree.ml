@@ -94,7 +94,7 @@ let optimise_in_statement meth stmt =
 	  let s' = append_free (work lv s) lv in
 	    append_free (DoWhile ({ n with def = def s' }, c, i, s')) lv
       | Sequence (n, s1, s2) ->
-	  let s1' = work (life s2) s1 in
+	  let s1' = work (note s2).may_live s1 in
 	  let s2' = TreeDef.compute_in_statement meth (def s1') s2 in
 	  let s2'' = work lv s2' in
 	    Sequence ({ n with def = def s2'' }, s1', s2'')

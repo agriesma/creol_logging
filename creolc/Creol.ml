@@ -858,14 +858,16 @@ struct
     file: string;
     line: int;
     def: IdSet.t;
-    life: IdSet.t;
+    may_live: IdSet.t;
+    must_live: IdSet.t;
   }
 
   let make_note ?(file = "**dummy**") ?(line = 0) () = {
     file = file;
     line = line;
     def = IdSet.empty;
-    life = IdSet.empty;
+    may_live = IdSet.empty;
+    must_live = IdSet.empty;
   }
 
 
@@ -1044,17 +1046,8 @@ struct
     IdSet.mem v (def s)
 
 
-  (* Get the variables life at a statement. *)
-  let life s = (note s).life
-
-
-  (* Set the variables life at a statement. *)
-  let set_life s l =
-    let note' = { (note s) with life = l } in set_note s note'
-
-
   (* Check whether a variable is life at a statement. *)
-  let life_p stmt v = IdSet.mem v (life stmt)
+  let life_p stmt v = IdSet.mem v (note stmt).may_live
 
 
   (* Transform an arbitrary statement [stmt] into a statement in which
