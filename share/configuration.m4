@@ -47,7 +47,7 @@ changequote dnl
 
     --- INVOCATION and REPLY
     op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
-    op comp : Label DataList -> Comp [ctor `format' (b o)] .  
+    op comp(_,_) : Label DataList -> Comp [ctor `format' (b d o b so b o)] .  
 
     --- Messages.  Messages have at least a receiver.
 

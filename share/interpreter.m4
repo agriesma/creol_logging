@@ -186,16 +186,11 @@ fmod CREOL-STM-LIST is
   op _|||_ : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d r o d)] .
   op _MERGER_  : StmtList StmtList -> Stmt [ctor assoc `format' (d c! o d)] .
 
-  var SL : StmtList .
   var NeSL : NeStmtList .
-  var AL : VidList .
-  var DL : DataList .
-  var EL : ExprList .
-  var B : Expr .
 
   *** Some simplifications:
-  eq noStmt MERGER SL = SL .
-  eq SL MERGER noStmt = SL .
+  eq noStmt MERGER NeSL = NeSL .
+  eq NeSL MERGER noStmt = NeSL .
 
   --- Optimize assignments.  This way we save reducing a skip.  Also note
   --- that the empty assignment is /not/ programmer syntax, it is inserted
@@ -288,23 +283,22 @@ mod `CREOL-EVAL' is
     var ES : ExprSet .
     var NeES : NeExprSet .
     var DS : DataSet .
-    var NeDS : NeDataSet .
+    var EM : ExprMap .
     var A : Vid .
+    var AL : VidList .
     vars Q C : String .
     vars S S' : Subst .
     var MM : MMsg .
+    vars ST ST' : Stmt . 
+    vars SL : StmtList . 
+    vars NeSL1 NeSL2 : NeStmtList .
 
     --- Check if a message is in the queue.
     op inqueue  : Label MMsg -> Bool .
     eq inqueue(L, noMsg) = false .
-    eq inqueue(L, MM + comp(L', EL)) =
+    eq inqueue(L, MM + comp(L', DL)) =
 	  if L == L' then true else inqueue(L, MM) fi .
 
-    vars ST ST' : Stmt . 
-    vars SL SL1 SL2 : StmtList . 
-    vars NeSL NeSL1 NeSL2 : NeStmtList .
-    var AL : VidList .
-    var M : ExprMap .
 dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
 dnl untimed cases.
@@ -331,14 +325,13 @@ ifdef(`TIME',dnl
     eq EVALGUARD(D, S, MM, T) = D .
     eq EVALGUARD(now, S, MM, T) = ifdef(`TIME', time(T), time(0.0)) .
     eq EVALGUARD((Q @ C), (S :: S'), MM, T) =  S [Q] .
-    eq EVALGUARD(Q, (S :: S'), MM, T) =  S' [Q] [nonexec] . *** XXX: Later
     eq EVALGUARD(A, S, MM, T) =  S [A] .
     eq EVALGUARD(Q (EL), S, MM, T) = Q ( EVALGUARDLIST(EL, S, MM, T) ) .
     eq EVALGUARD(?(A), S, MM, T) = bool(inqueue(S[A], MM)) .
     eq EVALGUARD(?(L), S, MM, T) = bool(inqueue(L, MM)) .
     eq EVALGUARD(list(EL), S, MM, T) = list(EVALGUARDLIST(EL, S, MM, T)) .
     eq EVALGUARD(set(ES), S, MM, T) = set(EVALGUARDSET(ES, S, MM, T)) .
-    eq EVALGUARD(map(M), S, MM, T) = map(EVALGUARDMAP(M, S, MM, T)) .
+    eq EVALGUARD(map(EM), S, MM, T) = map(EVALGUARDMAP(EM, S, MM, T)) .
     eq EVALGUARD(if E th E' el E'' fi, S, MM, T) =
       if EVALGUARD(E, S, MM, T) asBool
       then EVALGUARD(E', S, MM, T)
@@ -360,38 +353,38 @@ ifdef(`TIME',dnl
 
     --- Evaluate a map.
     eq EVALGUARDMAP(empty, S, MM, T) = empty .
-   eq EVALGUARDMAP((D |=> D', M), S, MM, T) =
-     (D |=> D' , EVALGUARDMAP(M, S, MM, T)) .  --- No need to evaluate .
-   eq EVALGUARDMAP((D |=> E', M), S, MM, T) =
-     (D |=> EVALGUARD(E', S, MM, T) , EVALGUARDMAP(M, S, MM, T)) .
-   eq EVALGUARDMAP((E |=> D', M), S, MM, T) =
-     (EVALGUARD(E, S, MM, T) |=> D' , EVALGUARDMAP(M, S, MM, T)) .
-   eq EVALGUARDMAP((E |=> E', M), S, MM, T) =
+   eq EVALGUARDMAP((D |=> D', EM), S, MM, T) =
+     (D |=> D' , EVALGUARDMAP(EM, S, MM, T)) .  --- No need to evaluate .
+   eq EVALGUARDMAP((D |=> E', EM), S, MM, T) =
+     (D |=> EVALGUARD(E', S, MM, T) , EVALGUARDMAP(EM, S, MM, T)) .
+   eq EVALGUARDMAP((E |=> D', EM), S, MM, T) =
+     (EVALGUARD(E, S, MM, T) |=> D' , EVALGUARDMAP(EM, S, MM, T)) .
+   eq EVALGUARDMAP((E |=> E', EM), S, MM, T) =
      (EVALGUARD(E, S, MM, T) |=> EVALGUARD(E', S, MM, T) ,
-     EVALGUARDMAP(M, S, MM, T)) .
+     EVALGUARDMAP(EM, S, MM, T)) .
 
     --- Enabledness
-    eq ENABLED((NeSL [] NeSL1) ; SL2,  S, MM, T) =
-         ENABLED(NeSL, S, MM, T) or ENABLED(NeSL1, S, MM, T) .
-    eq ENABLED((NeSL ||| NeSL1) ; SL2, S, MM, T) =
-         ENABLED(NeSL, S, MM, T) or ENABLED(NeSL1, S, MM, T) .
-    eq ENABLED((NeSL MERGER SL1) ; SL2, S, MM, T) = ENABLED(NeSL, S, MM, T) .
-    eq ENABLED(await E ; SL2, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+    eq ENABLED(await E ; SL, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
 dnl ifdef(`TIME',dnl
-dnl  eq ENABLED(posit E ; SL2, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
+dnl  eq ENABLED(posit E ; SL, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
 dnl)dnl
-    eq ENABLED(NeSL, S, MM, T) = true [owise] .
+    eq ENABLED((NeSL1 [] NeSL2) ; SL,  S, MM, T) =
+         ENABLED(NeSL1, S, MM, T) or ENABLED(NeSL2, S, MM, T) .
+    eq ENABLED((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
+         ENABLED(NeSL1, S, MM, T) or ENABLED(NeSL2, S, MM, T) .
+    eq ENABLED((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = ENABLED(NeSL1, S, MM, T) .
+    eq ENABLED(SL, S, MM, T) = true [owise] .
 
     --- The ready predicate holds, if a statement is ready for execution,
     --- i.e., the corresponding process may be waken up.
-    eq READY((NeSL [] NeSL1) ; SL2, S, MM, T) =
-          READY(NeSL, S, MM, T) or READY(NeSL1, S, MM, T) .
-    eq READY((NeSL ||| NeSL1) ; SL2, S, MM, T) =
-	  READY(NeSL, S, MM, T) or READY(NeSL1, S, MM, T) .
-    eq READY((NeSL MERGER SL1) ; SL2, S, MM, T) = READY(NeSL, S, MM, T) .
-    eq READY(get(A ; AL) ; SL2 , S, MM, T) = inqueue(S[A], MM) . 
-    eq READY(get(L ; AL) ; SL2 , S, MM, T) = inqueue(L, MM) . 
-    eq READY(NeSL, S, MM, T) = ENABLED(NeSL, S, MM, T) [owise] .
+    eq READY(get(A ; AL) ; SL , S, MM, T) = inqueue(S[A], MM) . 
+    eq READY(get(L ; AL) ; SL , S, MM, T) = inqueue(L, MM) . 
+    eq READY((NeSL1 [] NeSL2) ; SL, S, MM, T) =
+          READY(NeSL1, S, MM, T) or READY(NeSL2, S, MM, T) .
+    eq READY((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
+	  READY(NeSL1, S, MM, T) or READY(NeSL2, S, MM, T) .
+    eq READY((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = READY(NeSL1, S, MM, T) .
+    eq READY(SL, S, MM, T) = ENABLED(SL, S, MM, T) [owise] .
 
 endm
 

@@ -236,36 +236,6 @@ reduce in CREOL-STM-LIST : downTerm(upTerm(assign("var" ; int(4))[]new("var" ;
     "C" ; null)), noStmt) .
 result SuspStmt: assign("var" ; int(4))[]new("var" ; "C" ; null)
 ==========================================
-reduce in CREOL-STM-LIST : skip ||| assign("var" ; int(4))[]new("var" ; "C" ;
-    null) .
-result SuspStmt: skip ||| assign("var" ; int(4))[]new("var" ; "C" ; null)
-==========================================
-reduce in CREOL-STM-LIST : upTerm(skip ||| assign("var" ; int(4))[]new("var" ;
-    "C" ; null)) .
-result GroundTerm: '_|||_['skip.Stmt,'_`[`]_['assign`(_;_`)['"var".String,
-    'int`(_`)['s_^4['0.Zero]]],'new`(_;_;_`)['"var".String,'"C".Char,
-    'null.Data]]]
-==========================================
-reduce in CREOL-STM-LIST : downTerm(upTerm(skip ||| assign("var" ; int(4))[
-    ]new("var" ; "C" ; null)), noStmt) .
-result SuspStmt: skip ||| assign("var" ; int(4))[]new("var" ; "C" ; null)
-==========================================
-reduce in CREOL-STM-LIST : assign("var" ; int(4))[]new("var" ; "C" ; null) |||
-    skip ||| skip .
-result SuspStmt: skip ||| skip ||| assign("var" ; int(4))[]new("var" ; "C" ;
-    null)
-==========================================
-reduce in CREOL-STM-LIST : upTerm(assign("var" ; int(4))[]new("var" ; "C" ;
-    null) ||| skip ||| skip) .
-result GroundTerm: '_|||_['skip.Stmt,'skip.Stmt,'_`[`]_['assign`(_;_`)[
-    '"var".String,'int`(_`)['s_^4['0.Zero]]],'new`(_;_;_`)['"var".String,
-    '"C".Char,'null.Data]]]
-==========================================
-reduce in CREOL-STM-LIST : downTerm(upTerm(assign("var" ; int(4))[]new("var" ;
-    "C" ; null) ||| skip ||| skip), noStmt) .
-result SuspStmt: skip ||| skip ||| assign("var" ; int(4))[]new("var" ; "C" ;
-    null)
-==========================================
 reduce in CREOL-PROCESS : idle .
 result Process: idle
 ==========================================
@@ -274,25 +244,6 @@ result Constant: 'idle.Process
 ==========================================
 reduce in CREOL-PROCESS : downTerm(upTerm(idle), idle) .
 result Process: idle
-==========================================
-reduce in CREOL-PROCESS : {insert("var2", int(4), insert("var1", str("test"),
-    noSubst)) | skip ||| assign("var" ; int(4))[]new("var" ; "C" ; null)} .
-result Process: {"var1" |-> str("test"), "var2" |-> int(4) | skip ||| assign(
-    "var" ; int(4))[]new("var" ; "C" ; null)}
-==========================================
-reduce in CREOL-PROCESS : upTerm({insert("var2", int(4), insert("var1", str(
-    "test"), noSubst)) | skip ||| assign("var" ; int(4))[]new("var" ; "C" ;
-    null)}) .
-result GroundTerm: '`{_|_`}['_`,_['_|->_['"var1".String,'str`(_`)[
-    '"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4['0.Zero]]]],'_|||_[
-    'skip.Stmt,'_`[`]_['assign`(_;_`)['"var".String,'int`(_`)['s_^4['0.Zero]]],
-    'new`(_;_;_`)['"var".String,'"C".Char,'null.Data]]]]
-==========================================
-reduce in CREOL-PROCESS : downTerm(upTerm({insert("var2", int(4), insert(
-    "var1", str("test"), noSubst)) | skip ||| assign("var" ; int(4))[]new("var"
-    ; "C" ; null)}), idle) .
-result Process: {"var1" |-> str("test"), "var2" |-> int(4) | skip ||| assign(
-    "var" ; int(4))[]new("var" ; "C" ; null)}
 ==========================================
 reduce in CREOL-PROCESS-POOL : noProc .
 result MProc: noProc
@@ -311,27 +262,6 @@ result Constant: 'idle.Process
 ==========================================
 reduce in CREOL-PROCESS-POOL : downTerm(upTerm(idle), noProc) .
 result Process: idle
-==========================================
-reduce in CREOL-PROCESS-POOL : idle, {insert("var2", int(4), insert("var1",
-    str("test"), noSubst)) | skip ||| assign("var" ; int(4))[]new("var" ; "C" ;
-    null)} .
-result MProc: idle, {"var1" |-> str("test"), "var2" |-> int(4) | skip |||
-    assign("var" ; int(4))[]new("var" ; "C" ; null)}
-==========================================
-reduce in CREOL-PROCESS-POOL : upTerm(idle, {insert("var2", int(4), insert(
-    "var1", str("test"), noSubst)) | skip ||| assign("var" ; int(4))[]new("var"
-    ; "C" ; null)}) .
-result GroundTerm: '_`,_['idle.Process,'`{_|_`}['_`,_['_|->_['"var1".String,
-    'str`(_`)['"test".String]],'_|->_['"var2".String,'int`(_`)['s_^4[
-    '0.Zero]]]],'_|||_['skip.Stmt,'_`[`]_['assign`(_;_`)['"var".String,
-    'int`(_`)['s_^4['0.Zero]]],'new`(_;_;_`)['"var".String,'"C".Char,
-    'null.Data]]]]]
-==========================================
-reduce in CREOL-PROCESS-POOL : downTerm(upTerm(idle, {insert("var2", int(4),
-    insert("var1", str("test"), noSubst)) | skip ||| assign("var" ; int(4))[
-    ]new("var" ; "C" ; null)}), noProc) .
-result MProc: idle, {"var1" |-> str("test"), "var2" |-> int(4) | skip |||
-    assign("var" ; int(4))[]new("var" ; "C" ; null)}
 ==========================================
 reduce in CREOL-CONFIGURATION : noInh .
 result InhList: noInh
@@ -453,7 +383,7 @@ reduce in CREOL-LABEL-TEST : comp(label(5), emp) .
 result Comp: comp(label(5), emp)
 ==========================================
 reduce in CREOL-LABEL-TEST : upTerm(comp(label(5), emp)) .
-result GroundTerm: 'comp['label['s_^5['0.Zero]],'emp.DataList]
+result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
 ==========================================
 reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5), emp)), 
 
