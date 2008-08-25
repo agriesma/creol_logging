@@ -183,7 +183,8 @@ fmod CREOL-STM-LIST is
   op if_th_el_fi : Expr NeStmtList NeStmtList -> Stmt [ctor `format' (b o b o b o b o)] . 
   op while_do_od : Expr NeStmtList -> Stmt [ctor `format' (b o b o b o)] .
   op _[]_  : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 45 `format' (d r d o d)] .
-  op _|||_ : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d r o d)] .
+ifdef(`WITH_MERGE',
+`  op _|||_ : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d r o d)] .
   op _MERGER_  : StmtList StmtList -> Stmt [ctor assoc `format' (d c! o d)] .
 
   var NeSL : NeStmtList .
@@ -191,7 +192,7 @@ fmod CREOL-STM-LIST is
   *** Some simplifications:
   eq noStmt MERGER NeSL = NeSL .
   eq NeSL MERGER noStmt = NeSL .
-
+')
   --- Optimize assignments.  This way we save reducing a skip.  Also note
   --- that the empty assignment is /not/ programmer syntax, it is inserted
   --- during run-time.
@@ -370,9 +371,10 @@ dnl  eq ENABLED(posit E ; SL, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
 dnl)dnl
     eq ENABLED((NeSL1 [] NeSL2) ; SL,  S, MM, T) =
          ENABLED(NeSL1, S, MM, T) or ENABLED(NeSL2, S, MM, T) .
-    eq ENABLED((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
+ifdef(`WITH_MERGE',
+`    eq ENABLED((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
          ENABLED(NeSL1, S, MM, T) or ENABLED(NeSL2, S, MM, T) .
-    eq ENABLED((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = ENABLED(NeSL1, S, MM, T) .
+    eq ENABLED((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = ENABLED(NeSL1, S, MM, T) .')
     eq ENABLED(SL, S, MM, T) = true [owise] .
 
     --- The ready predicate holds, if a statement is ready for execution,
@@ -381,9 +383,10 @@ dnl)dnl
     eq READY(get(L ; AL) ; SL , S, MM, T) = inqueue(L, MM) . 
     eq READY((NeSL1 [] NeSL2) ; SL, S, MM, T) =
           READY(NeSL1, S, MM, T) or READY(NeSL2, S, MM, T) .
-    eq READY((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
+ifdef(`WITH_MERGE',
+`    eq READY((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
 	  READY(NeSL1, S, MM, T) or READY(NeSL2, S, MM, T) .
-    eq READY((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = READY(NeSL1, S, MM, T) .
+    eq READY((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = READY(NeSL1, S, MM, T) .')
     eq READY(SL, S, MM, T) = ENABLED(SL, S, MM, T) [owise] .
 
 endm

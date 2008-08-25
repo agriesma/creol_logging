@@ -148,32 +148,33 @@ crl
   [label choice] .
 
 
---- Merge
----
---- Merge is comm, so [merge] considers both NeSL and NeSL1.
----
-crl
-  < O : C | Att: S, Pr: { L | (NeSL ||| NeSL1); SL }, PrQ: W, Dealloc: LS,
-            Ev: MM, Lcnt: N > CLOCK
-  =>
-  < O : C | Att: S, Pr: { L | (NeSL MERGER NeSL1); SL }, PrQ: W, Dealloc: LS,
-            Ev: MM, Lcnt: N > CLOCK
-  if READY(NeSL,(S :: L), MM, T)
-  [label merge] .
+ifdef(`WITH_MERGE',
+`    --- Merge
+    ---
+    --- Merge is comm, so [merge] considers both NeSL and NeSL1.
+    ---
+    crl
+      < O : C | Att: S, Pr: { L | (NeSL ||| NeSL1); SL }, PrQ: W, Dealloc: LS,
+                Ev: MM, Lcnt: N > CLOCK
+      =>
+      < O : C | Att: S, Pr: { L | (NeSL MERGER NeSL1); SL }, PrQ: W, Dealloc: LS,
+                Ev: MM, Lcnt: N > CLOCK
+      if READY(NeSL,(S :: L), MM, T)
+      [label merge] .
 
---- merger
----
-eq
-  < O : C | Att: S,  Pr:  { L | ((ST ; SL1) MERGER NeSL1); SL }, PrQ: W,
-            Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
-  =
-  if ENABLED(ST, (S :: L), MM, T) then
-    < O : C | Att: S, Pr: { L | ((ST ; (SL1 MERGER NeSL1)); SL) }, PrQ: W,
-      Dealloc: LS, Ev: MM, Lcnt: N >
-  else
-    < O : C | Att: S, Pr: { L | ((ST ; SL1) ||| NeSL1); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >   
-  fi CLOCK
- [label merger] .
+    --- merger
+    ---
+    eq
+      < O : C | Att: S,  Pr:  { L | ((ST ; SL1) MERGER NeSL1); SL }, PrQ: W,
+                Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
+      =
+      if ENABLED(ST, (S :: L), MM, T) then
+        < O : C | Att: S, Pr: { L | ((ST ; (SL1 MERGER NeSL1)); SL) }, PrQ: W,
+          Dealloc: LS, Ev: MM, Lcnt: N >
+      else
+        < O : C | Att: S, Pr: { L | ((ST ; SL1) ||| NeSL1); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >   
+      fi CLOCK
+     [label merger] .')
 
 
 --- PROCESS SUSPENSION
