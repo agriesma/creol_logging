@@ -134,6 +134,7 @@ fmod CREOL-STATEMENT is
   subsort SuspStmt < Stmt .
 
   op skip : -> Stmt [ctor `format' (b o)] .
+  op commit : -> Stmt [ctor `format' (c o)] .
   op release : -> Stmt [ctor `format' (b o)] .
   op assign(_;_) : VidList ExprList -> Stmt [ctor `format' (b d o b o b o)] .
   op new(_;_;_) : Vid String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .

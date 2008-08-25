@@ -106,6 +106,14 @@ STEP(dnl
 `[label skip]')
 
 
+--- Commit a transaction.
+    rl
+      < O : C | Att: S, Pr: { L | commit ; SL }, PrQ: W, Dealloc: LS, Ev: MM,
+        Lcnt: N >
+      =>
+      < O : C | Att: S, Pr: { L | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+      [label commit] .
+
 --- if_then_else
 ---
 STEP(dnl
