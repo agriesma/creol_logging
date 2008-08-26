@@ -184,7 +184,7 @@ $(srcdir)/Lexer.ml: $(srcdir)/Lexer.mll
 #
 $(srcdir)/Parser.ml: $(srcdir)/Parser.mly $(srcdir)/Misc.ml $(srcdir)/Creol.ml \
 	  $(srcdir)/Messages.ml
-	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Misc.cmi
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Misc.ml -o Misc.cmi
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Messages.cmi
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Creol.ml -o Creol.cmi
 	rm -f Parser.conflicts
