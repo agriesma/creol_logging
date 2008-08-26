@@ -198,6 +198,10 @@ struct
       | Function (d, r) ->
 	  Function (apply_substitution s d, apply_substitution s r)
 
+  let string_of_substitution subst =
+    let f k v a =  (k ^ " |-> " ^ (as_string v))::a in
+      String.concat ", " (Subst.fold f subst [])
+
   type signature = t option * t list option * t list option
 
   let default_sig ?(coiface = None) (): signature =
@@ -1407,8 +1411,21 @@ struct
     hidden: bool
   }
 
-  let domain_type o =
-    Type.Tuple (List.map (fun v -> v.VarDecl.var_type) o.parameters)
+  let domain_type f =
+    Type.Tuple (List.map (fun v -> v.VarDecl.var_type) f.parameters)
+
+  let range_type f = f.result_type
+
+  let signature f = Type.Function(domain_type f, range_type f)
+
+
+  (* If a function has an external definition, then this function
+     returns its value.  Otherwise, raise [Not_found]. *)
+
+  let external_definition { body = b } =
+    match b with
+      | Expression.Extern (_, s) -> s
+      | _ -> raise Not_found     
 
 end
 
@@ -1498,6 +1515,11 @@ struct
      declarations. *)
 
   type t = Declaration.t list
+
+
+  (* Report messages from this module. *)
+
+  let log l = Messages.message (l + 2)
 
 
   (* Generally, if a class or an interface is not found in the
@@ -1689,12 +1711,12 @@ struct
      is found. *)
 
   let find_functions ~program ~name =
-    let f a =
+    let p a =
       function
 	  Declaration.Function f when f.Function.name  = name -> f::a
 	| _ -> a
     in
-      List.fold_left f [] program
+      List.fold_left p [] program
 
 
   (* Find the class declaration for an attribute. [cls] is the class
@@ -1763,6 +1785,7 @@ struct
     let rec work =
       function 
 	| (_, _) when s = t -> true
+	| (_, Type.Variable _) -> true
 	| (_, Type.Basic "Data") when Type.sentence_p s -> true 
 	| (Type.Basic st, Type.Basic tt) ->
 	    (sub_datatype_p program st tt) || (subinterface_p program st tt)
@@ -1795,8 +1818,8 @@ struct
 	| ((Type.Internal, _) | (_, Type.Internal)) -> false
 	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
 	    (work (d1, d2)) && (work (r2, r1))
+	| (Type.Variable _, _) -> true
 	| (Type.Function _, _) -> false
-	| (Type.Variable _, _) -> false
 	| (Type.Basic _, _) -> false
     in
       work (s, t)
@@ -1851,6 +1874,233 @@ struct
       match lst with
 	  [] -> assert false
 	| hd::tl -> List.fold_left find_join hd tl
+
+
+  (* This exception is raised by the unifier.  The argument is the
+     constrained which cannot be resolved. *)
+
+
+  exception Unify_failure of Type.t * Type.t
+
+
+  (* Generate a new fresh variable name. *)
+
+  let fresh_var f =
+    let Misc.FreshName(n, f') = f () in
+      (Type.Variable n, f')
+
+
+  (* Pretty-print a constraint set. *)
+
+  let rec string_of_constraint_set =
+    function
+	[] -> "none"
+      | [(s, t)] ->
+          (Type.as_string s) ^ " <: " ^ (Type.as_string t)
+      | (s, t)::l ->
+          (Type.as_string s) ^ " <: " ^ (Type.as_string t) ^ ", " ^
+	    (string_of_constraint_set l)
+
+
+  (* Determine whether a substitution is more specific than another
+     one.  A substitution $s$ is more specific than a substitution $t$,
+     if $s$ and $t$ have the same support (i.e., they substitute the
+     same variables), and that for each $v$ in this support, we have
+     $s<:t$. *)
+
+  let subst_more_specific_p program s t =
+    let keys = Type.Subst.fold (fun k _ a -> k::a) s [] in
+    let p k =
+      subtype_p program (Type.Subst.find k s) (Type.Subst.find k t)
+    in
+      List.for_all p keys
+
+
+  (* Find a \emph{most specific solution} from a list of possible
+     solutions.  The solution need not be unique.  If there is more
+     than one most specific solution, an undetermined one is returned.
+     The chosen one need not be the one that proves type
+     correctness.  *)
+
+  let find_most_specific program substs =
+    List.fold_left
+      (fun s t -> if subst_more_specific_p program s t then s else t)
+      (List.hd substs)
+      (List.tl substs)
+
+
+  (* Compute the most general unifier for a constraint set [c].  The
+     result is a mapping from variable names to types.
+     
+     The constraint set is usually a set of pair of types.  Such
+     a constraint states that two types are equal in the current
+     substitution. *)
+
+  let unify ~program ~constraints =
+    let rec do_unify c (res: Type.t Type.Subst.t): Type.t Type.Subst.t =
+      if c = [] then
+	res
+      else
+	(* May be we can get better results if we can select the next constraint
+           in a smarter manner. *)
+	let (s, t) = List.hd c
+	and d = List.tl c
+	in
+	  log 2 ("unify: constraint " ^ (Type.as_string s) ^ " <: " ^
+		   (Type.as_string t)) ;
+	  match (s, t) with
+	      (Type.Basic _, Type.Basic _) when subtype_p program s t ->
+		do_unify d res
+	    | (Type.Tuple l1, Type.Tuple l2) when (List.length l1) = (List.length l2) ->
+		do_unify ((List.combine l1 l2)@d) res
+	    | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
+		do_unify ((d1, d2)::(r2, r1)::d) res
+	    | (Type.Application (s1, t1), Type.Application (s2, t2)) when s1 = s2 ->
+		do_unify ((List.combine t1 t2)@d) res
+	    | (_, Type.Disjunction l) ->
+
+		(* This case is essentially handling operator
+		   overloading, but we try to solve the general case,
+		   here, anyhow, because this is probably simpler.
+
+		   We find a solution to the constraint set if there
+		   is one solution to the problem.  We will
+		   therefore split the constraint set and try each
+		   branch of the disjunction in sequence. *)
+
+		let rec try_unify_disjunctions =
+		  function
+		      [] -> []
+		    | x::r ->
+			try
+			  (do_unify ((s, x)::d) res) ::
+			    (try_unify_disjunctions r)
+			with
+			    Unify_failure _ -> (try_unify_disjunctions r)
+		in
+		  begin
+		    match try_unify_disjunctions l with
+			[] -> raise (Unify_failure (s, t))
+		      | [r] -> r
+		      | cands ->
+			  (* The solution is ambigous, and we want to
+			     get the "best" solution. *)
+			  find_most_specific program cands
+		  end
+	    | (Type.Variable x, _) when (Type.sentence_p t) ->
+		(* In this case, `x is a lower bound, i.e., `x <: t .
+		   This constraint is trivially satisfied by t, but there may
+		   be multiple constraints on x, and we need to choose the
+		   strongest one. *)
+		let p (v, w) = (v = s) && (Type.sentence_p w) in
+		let t' =
+		  meet program (t::(List.map snd (List.filter p d)))
+		and d' = List.filter (fun x -> not (p x)) d
+		in
+	          log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t')) ;
+	          do_unify
+		    (List.map
+		       (fun (t1, t2) ->
+		          (Type.substitute x t' t1, Type.substitute x t' t2)) d')
+		    (Type.Subst.add x t' res)
+	    | (Type.Variable x, _) when not (Type.occurs_p x t) ->
+		(* In this case, `x is a lower bound, i.e., `x <: t, and t
+		   contains free variables.  This constraint is trivially
+		   satisfied by t and t des not have any meets in [program].  *)
+	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t)) ;
+	        do_unify
+		  (List.map
+		     (fun (t1, t2) ->
+		        (Type.substitute x t t1, Type.substitute x t t2)) d)
+		  (Type.Subst.add x t res)
+	    | (_, Type.Variable x) when Type.sentence_p s ->
+
+		(* In this case, `x is an upper bound, i.e., t <: `x .
+		   This constraint is trivially satisfied by t, but there may
+		   be multiple constraints on x, and we need to choose the
+		   strongest one. *)
+		let s' =
+		  let p (v, w) = (w = t) && (Type.sentence_p v) in
+		    join program (List.map fst (List.filter p c))
+		in
+		let try_unify r =
+	          log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
+	          do_unify
+		    (List.map
+		       (fun (t1, t2) ->
+		          (Type.substitute x r t1, Type.substitute x r t2)) d)
+		    (Type.Subst.add x r res)
+		in
+		  begin
+		    try
+		      try_unify s'
+		    with
+			Unify_failure _ ->
+			  (* Try some supertype of t.
+
+			     FIXME: For now we just choose Data, the top type.
+			     We might try something smarter, however. *)
+	                  log 1
+			    ("try_unify: did not work, use Data for `" ^ x) ;
+	                  try_unify Type.data
+		  end
+	    | (_, Type.Variable x) when not (Type.occurs_p x s) ->
+
+		(* If s has free variables and x does not occur in s,
+		   then we choose x to be s, and if this failes, we
+		   try Any and then Data, since we cannot guess
+		   something better. *)
+
+		let try_unify r =
+	          log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
+	          do_unify
+		    (List.map
+		       (fun (t1, t2) ->
+		          (Type.substitute x r t1, Type.substitute x r t2)) d)
+		    (Type.Subst.add x r res)
+		in
+		  begin
+		    try
+		      try
+			try_unify s
+		      with
+			  Unify_failure _ -> try_unify Type.any
+		    with
+			Unify_failure _ -> try_unify Type.data
+		  end
+	    | (_, Type.Basic "Data") ->
+		(* Every type is supposed to be a subtype of data,
+		   therefore this constraint is always true. *)
+		do_unify d res
+	    | _ ->
+		log 1 ("unify: failed to unify " ^
+			 (Type.as_string s) ^ " as subtype of " ^
+			 (Type.as_string t)) ;
+		raise (Unify_failure (s, t))
+    in
+      log 1 "\n=== unify ===" ;
+      let res = do_unify constraints (Type.Subst.empty) in
+	log 1 "=== success ===\n" ; res
+
+
+
+  (* Find the definition of a function [name] in [program] that has
+     signature [sig].  The result should be unique. *)
+  let find_function ~program ~name ~sg =
+    let p f = subtype_p program sg (Function.signature f)
+    and q s t =
+      if (subtype_p program (Function.signature s) (Function.signature t)) then
+        s
+      else
+        t
+    in
+    let l = List.find_all p (find_functions program name) in
+      try
+        List.fold_left q (List.hd l) (List.tl l)
+      with
+        | Failure("tl") ->
+	    raise (Failure ("No candidate for " ^ name ^ ": " ^
+		    (Type.as_string sg)))
 
 
   let find_method_in_with ~program ~name ~signature w =
@@ -2025,5 +2275,5 @@ struct
     in
       List.map for_decl program
 
+
 end
- 

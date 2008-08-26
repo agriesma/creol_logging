@@ -89,11 +89,18 @@ let emit options out_channel input =
 	  output_string out_channel "set(" ;
 	  of_expression_list ~empty:"emptyset" ~separator:" : " l ;
 	  output_string out_channel ")" ;
-      | Expression.FuncCall(_, f, a) ->
-	  output_string out_channel ("\"" ^ f ^ "\" ( " );
-	  of_expression_list a;
-	  output_string out_channel " )"
-	    (* Queer, but parens are required for parsing Appl in ExprList. *)
+      | Expression.FuncCall(_, f, a) as e ->
+	  let rt = Expression.get_type e
+	  and dt = List.map (Expression.get_type) a in
+	  let sg = Type.Function (Type.Tuple dt, rt) in
+	  let fd =
+            Function.external_definition (Program.find_function input f sg)
+          in
+	    output_string out_channel ("\"" ^ fd ^ "\" ( " );
+	    of_expression_list a;
+	    output_string out_channel " )"
+	      (* Queer, but parens are required for parsing Appl in
+	         ExprList. *)
       | Expression.Unary (n, o, e) ->
 	  of_expression
 	    (Expression.FuncCall(n, Expression.string_of_unaryop o, [e]))

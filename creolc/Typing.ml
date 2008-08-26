@@ -698,6 +698,7 @@ let typecheck tree: Program.t =
 				 "\n  Cannot satisfy constraints: " ^
 				 (string_of_constraint_set constr')))
     in
+      Messages.message 2 (Type.string_of_substitution subst) ;
       substitute_types_in_expression subst expr'
   and type_check_expression_list env coiface constr =
     function
@@ -725,6 +726,7 @@ let typecheck tree: Program.t =
 				       "\n  Cannot satisfy constraints: " ^
 				       (string_of_constraint_set constr')))
 	  in
+            Messages.message 2 (Type.string_of_substitution subst) ;
 	    List.map (substitute_types_in_expression subst) exprs'
   in
   let type_check_assertion env coiface e =
@@ -900,6 +902,7 @@ let typecheck tree: Program.t =
 				     (string_of_constraint_set
 					[(call_type, cands_type)])))
 	in
+        Messages.message 2 (Type.string_of_substitution subst) ;
 	let i = List.map (substitute_types_in_expression subst) ins'' in
 	  (i, List.map Expression.get_type i)
       in
@@ -1059,6 +1062,7 @@ let typecheck tree: Program.t =
 		    with
 			Unify_failure _ -> die ()
 		  in
+                    Messages.message 2 (Type.string_of_substitution s) ;
 		    substitute_types_in_expression s rhs
 	    in
 	    let rhs'' =
@@ -1161,6 +1165,23 @@ let typecheck tree: Program.t =
 	      Choice (n, s1', s2')
 	| Continue _ -> assert false
 	| Extern _ as s -> s
+  and type_check_variables env coiface meth =
+    let rec type_check_inits res =
+      function
+        | [] -> res
+        | ({ VarDecl.init = None } as v)::r ->
+	    type_check_inits (v::res) r
+        | { VarDecl.name = n; var_type = t; init = Some i }::r ->
+	    let Assign (_, _, [i']) =
+	      let l = [LhsId (Expression.make_note (), n)]
+	      and r = [i]
+	      and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None }::res } }
+	      in
+	        type_check_statement e coiface (Assign (make_note (), l, r))
+	    in
+	      type_check_inits ({ VarDecl.name = n; var_type = t; init = Some i' }::res) r
+    in
+      List.rev (type_check_inits [] meth.Method.vars)
   and type_check_method program cls coiface meth =
     let () =
       let f d { VarDecl.name = n; var_type = t } =
@@ -1176,13 +1197,15 @@ let typecheck tree: Program.t =
     let env' = { env with meth = { meth with Method.vars = [] } }  in
     let r' = type_check_assertion env' coiface meth.Method.requires
     and e' = type_check_assertion env' coiface meth.Method.ensures
+    and v' = type_check_variables env' coiface meth
     and b' = match meth.Method.body with
 	None -> None
       | Some s -> Some (type_check_statement env coiface s)
     in
       if Type.bool_p (get_type r') then
 	if Type.bool_p (get_type e') then
-	  { meth with Method.requires = r'; ensures = e'; body = b' }
+	  { meth with Method.requires = r'; ensures = e'; vars = v' ;
+		      body = b' }
 	else
 	  raise (Type_error (Expression.file (Expression.note e'),
 			     Expression.line (Expression.note e'),
