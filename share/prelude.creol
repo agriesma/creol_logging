@@ -19,8 +19,8 @@
 
 datatype Data
 
-fun = (a: Data, b: Data): Bool == extern "="
-fun /= (a: Data, b: Data): Bool == extern "/="
+fun = (a: `a, b: `a): Bool == extern "="
+fun /= (a: `a, b: `a): Bool == extern "/="
 
 datatype Bool
 
@@ -99,7 +99,7 @@ fun remove(l: List[`a], e: `a): List[`a] == extern "remove"
 fun -|(e: `a, l: List[`a]): List[`a] == extern "-|"
 fun |-(l: List[`a], e: `a): List[`a] == extern "|-"
 fun |-|(l: List[`a], m: List[`a]): List[`a] == extern "|-|"
-fun #(l: List[`a]): Int == extern "length"
+fun #(l: List[`a]): Int == extern "#"
 fun isempty(l: List[`a]): Bool == extern "isempty"
 fun reverse(l: List[`a]): List[`a] == extern "reverse"
 fun after(l: List[`a], p: Int): List[`a] == extern "after"
