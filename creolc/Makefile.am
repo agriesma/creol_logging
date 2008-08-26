@@ -182,10 +182,11 @@ $(srcdir)/Lexer.ml: $(srcdir)/Lexer.mll
 # Nonetheless, we depend on the source files, since the parser should
 # be checked when these headers change.
 #
-$(srcdir)/Parser.ml: $(srcdir)/Parser.mly $(srcdir)/Creol.ml \
+$(srcdir)/Parser.ml: $(srcdir)/Parser.mly $(srcdir)/Misc.ml $(srcdir)/Creol.ml \
 	  $(srcdir)/Messages.ml
-	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Messages.cmo
-	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Creol.ml -o Creol.cmo
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Misc.cmi
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Messages.cmi
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Creol.ml -o Creol.cmi
 	rm -f Parser.conflicts
 	$(MENHIR) $(MENHIR_FLAGS) --infer --base $(srcdir)/Parser $<
 	(t=`mktemp menhir.XXXXXXXX` && mv $(srcdir)/Parser.ml $$t && \
