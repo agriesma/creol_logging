@@ -36,14 +36,15 @@ changequote dnl
     sorts Body Invoc Comp .
     subsorts Invoc Comp < Body .
 
-    op ob : String -> Oid [ctor] .
+    op ob(_) : String -> Oid [ctor `format' (d d ! o d)] .
 
     var C : String .
-    var N : Nat .
+    var F : Nat .
+    var DL : DataList .
 
     --- Create a new fresh name for an object.
     op newId : String Nat -> Oid .
-    eq newId(C, N)  = ob(C + string(N,10)) .
+    eq newId(C, F)  = ob(C + string(F,10)) .
 
     --- INVOCATION and REPLY
     op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
@@ -121,7 +122,6 @@ ifdef(`MODELCHECK',dnl
 
 
     --- System initialisation
-    var DL : DataList .
     op main : String DataList -> Configuration .
     eq main(C,DL) =
       < ob("main") : "" | Att: noSubst, 

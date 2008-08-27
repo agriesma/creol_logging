@@ -9,15 +9,21 @@ dnl m4, with either one of `CREOL' or `MODELCHECK' defined.
 dnl
 dnl See the lines below for its license
 dnl
+fmod CREOL-SIMULATOR-BANNER IS
+
+    protecting STRING .
+    op simurev : -> String .
+    eq simurev = "KIND $Revision: 1466 $" .
+
+endfm
+
 *** The machine.
 ***
 mod CREOL-SIMULATOR is
 
   protecting `CREOL-EVAL' .
 
-  op simurev : -> String .
-  eq simurev = "KIND $Revision: 1466 $" .
-
+  vars N F : Nat .
   vars O O' : Oid .                    --- Object identifiers
   vars C CC : String .                 --- Class names
   vars A A' : Vid .                    --- Generic attribute names
@@ -30,11 +36,9 @@ mod CREOL-SIMULATOR is
   var ST : Stmt .                       --- Statement
   var SuS : SuspStmt .                  --- Suspendable statement
   vars SL SL1 SL2 : StmtList .          --- List of statements
-  vars NeSL NeSL1 : NeStmtList .
   vars P P' : Process .
   var W : MProc .
   vars S S' L L' : Subst .
-  vars N F : Nat .
   vars I I' : InhList .
   var MS : MMtd .
   vars Lab Lab' : Label .
@@ -134,53 +138,53 @@ if EVAL(E, (S :: L), T) asBool then
 --- Therefore, it is always a rule.
 ---
 rl
-  < O : C | Att: S, Pr: { L | while E do SL od ; SL1 }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
+  < O : C | Att: S, Pr: { L | while E do SL1 od ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   =>
   < O : C | Att: S,
-            Pr: { L | if E th (SL ; while E do SL od) el skip fi ; SL1 },
+            Pr: { L | if E th (SL1 ; while E do SL1 od) el skip fi ; SL },
             PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >
   [label while] .
 
 
 --- Non-deterministic choice
 ---
---- Choice is comm, so [choice] considers both NeSL and NeSL1.
+--- Choice is comm, so [choice] considers both SL1 and SL2.
 ---
 crl
-  < O : C | Att: S, Pr: { L | (NeSL [] NeSL1); SL }, PrQ: W, Dealloc: LS,
+  < O : C | Att: S, Pr: { L | (SL1 [] SL2); SL }, PrQ: W, Dealloc: LS,
             Ev: MM, Lcnt: N > CLOCK
   =>
-  < O : C | Att: S, Pr: { L | NeSL ; SL }, PrQ: W, Dealloc: LS, Ev: MM,
+  < O : C | Att: S, Pr: { L | SL1 ; SL }, PrQ: W, Dealloc: LS, Ev: MM,
             Lcnt: N > CLOCK
-  if READY(NeSL, (S :: L), MM, T)
+  if READY(SL1, (S :: L), MM, T)
   [label choice] .
 
 
 ifdef(`WITH_MERGE',
 `    --- Merge
     ---
-    --- Merge is comm, so [merge] considers both NeSL and NeSL1.
+    --- Merge is comm, so [merge] considers both SL1 and SL2.
     ---
     crl
-      < O : C | Att: S, Pr: { L | (NeSL ||| NeSL1); SL }, PrQ: W, Dealloc: LS,
+      < O : C | Att: S, Pr: { L | (SL1 ||| SL2); SL }, PrQ: W, Dealloc: LS,
                 Ev: MM, Lcnt: N > CLOCK
       =>
-      < O : C | Att: S, Pr: { L | (NeSL MERGER NeSL1); SL }, PrQ: W, Dealloc: LS,
+      < O : C | Att: S, Pr: { L | (SL1 MERGER SL2); SL }, PrQ: W, Dealloc: LS,
                 Ev: MM, Lcnt: N > CLOCK
-      if READY(NeSL,(S :: L), MM, T)
+      if READY(SL1,(S :: L), MM, T)
       [label merge] .
 
     --- merger
     ---
     eq
-      < O : C | Att: S,  Pr:  { L | ((ST ; SL1) MERGER NeSL1); SL }, PrQ: W,
+      < O : C | Att: S,  Pr:  { L | ((ST ; SL1) MERGER SL2); SL }, PrQ: W,
                 Dealloc: LS, Ev: MM, Lcnt: N > CLOCK
       =
       if ENABLED(ST, (S :: L), MM, T) then
-        < O : C | Att: S, Pr: { L | ((ST ; (SL1 MERGER NeSL1)); SL) }, PrQ: W,
+        < O : C | Att: S, Pr: { L | ((ST ; (SL1 MERGER SL2)); SL) }, PrQ: W,
           Dealloc: LS, Ev: MM, Lcnt: N >
       else
-        < O : C | Att: S, Pr: { L | ((ST ; SL1) ||| NeSL1); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >   
+        < O : C | Att: S, Pr: { L | ((ST ; SL1) ||| SL2); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: N >   
       fi CLOCK
      [label merger] .')
 

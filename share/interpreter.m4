@@ -188,16 +188,23 @@ fmod CREOL-STM-LIST is
 			  op nil : -> List{Stmt} to noStmt,
 			  op __ : List{Stmt} List{Stmt} -> List{Stmt} to _;_ [`format' (d r o d)]) .
 
-  op if_th_el_fi : Expr NeStmtList NeStmtList -> Stmt [ctor `format' (b o b o b o b o)] . 
-  op while_do_od : Expr NeStmtList -> Stmt [ctor `format' (b o b o b o)] .
-  op _[]_  : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 45 `format' (d b d o d)] .
+  op if_th_el_fi : Expr StmtList StmtList -> Stmt [ctor `format' (b o b o b o b o)] . 
+  op while_do_od : Expr StmtList -> Stmt [ctor `format' (b o b o b o)] .
+  op _[]_  : StmtList StmtList -> SuspStmt [ctor comm assoc prec 45 `format' (d b d o d)] .
 ifdef(`WITH_MERGE',
-`  op _|||_ : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d b o d)] .
-  op _MERGER_  : StmtList NeStmtList -> Stmt [ctor assoc `format' (d r o d)] .
+`  op _|||_ : StmtList StmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d b o d)] .
+  op _MERGER_  : StmtList StmtList -> Stmt [ctor assoc `format' (d r o d)] .
+')
 
-  var NeSL : NeStmtList .
+  var SL : StmtList .
+  var E : Expr .
 
-  eq noStmt MERGER NeSL = NeSL .
+  --- optimize some statements.
+  eq noStmt [] SL = SL .
+ifdef(`WITH_MERGE',
+  eq noStmt ||| SL = SL .
+  eq noStmt MERGER SL = SL .
+  eq SL MERGER noStmt = SL .
 ')
   --- Optimize assignments.  This way we save reducing a skip.  Also note
   --- that the empty assignment is /not/ programmer syntax, it is inserted
@@ -289,7 +296,6 @@ mod `CREOL-EVAL' is
 
     protecting CREOL-CONFIGURATION .
 
-    vars N N' : Nat .
     vars L L' : Label .
     vars E E' E'' : Expr .
     vars D D' : Data .
@@ -306,14 +312,13 @@ mod `CREOL-EVAL' is
     vars S S' : Subst .
     var MM : MMsg .
     vars ST ST' : Stmt . 
-    vars SL : StmtList . 
-    vars NeSL1 NeSL2 : NeStmtList .
+    vars SL SL1 SL2 : StmtList .
 
     --- Check if a message is in the queue.
     op inqueue  : Label MMsg -> Bool .
     eq inqueue(L, noMsg) = false .
-    eq inqueue(L, MM + comp(L', DL)) =
-	  if L == L' then true else inqueue(L, MM) fi .
+    eq inqueue(L, comp(L', DL) + MM) =
+        if L == L' then true else inqueue(L, MM) fi .
 
 dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
@@ -326,16 +331,16 @@ ifdef(`TIME',dnl
     op evalGuardList : ExprList Subst MMsg Float -> DataList [strat (1 0 0 0 0)] .
     op evalGuardSet : ExprSet Subst MMsg Float -> DataSet [strat (1 0 0 0 0)] .
     op evalGuardMap : ExprMap Subst MMsg Float -> DataMap [strat (1 0 0 0 0)] .
-    op enabled : NeStmtList Subst MMsg Float -> Bool .
-    op ready : NeStmtList Subst MMsg Float -> Bool .
+    op enabled : StmtList Subst MMsg Float -> Bool .
+    op ready : StmtList Subst MMsg Float -> Bool .
 ,dnl Untimed:
 
     op evalGuard : Expr Subst MMsg -> Data .
     op evalGuardList : ExprList Subst MMsg -> DataList [strat (1 0 0 0)] .
     op evalGuardSet : ExprSet Subst MMsg -> DataSet [strat (1 0 0 0)] .
     op evalGuardMap : ExprMap Subst MMsg -> DataMap [strat (1 0 0 0)] .
-    op enabled : NeStmtList Subst MMsg -> Bool .
-    op ready : NeStmtList Subst MMsg -> Bool .
+    op enabled : StmtList Subst MMsg -> Bool .
+    op ready : StmtList Subst MMsg -> Bool .
 )dnl
 
     eq EVALGUARD(D, S, MM, T) = D .
@@ -384,24 +389,24 @@ ifdef(`TIME',dnl
 dnl ifdef(`TIME',dnl
 dnl  eq ENABLED(posit E ; SL, S, MM, T) = EVALGUARD(E, S, MM, T) asBool .
 dnl)dnl
-    eq ENABLED((NeSL1 [] NeSL2) ; SL,  S, MM, T) =
-         ENABLED(NeSL1, S, MM, T) or ENABLED(NeSL2, S, MM, T) .
+    eq ENABLED((SL1 [] SL2) ; SL,  S, MM, T) =
+         ENABLED(SL1, S, MM, T) or ENABLED(SL2, S, MM, T) .
 ifdef(`WITH_MERGE',
-`    eq ENABLED((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
-         ENABLED(NeSL1, S, MM, T) or ENABLED(NeSL2, S, MM, T) .
-    eq ENABLED((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = ENABLED(NeSL1, S, MM, T) .')
+`    eq ENABLED((SL1 ||| SL2) ; SL, S, MM, T) =
+         ENABLED(SL1, S, MM, T) or ENABLED(SL2, S, MM, T) .
+    eq ENABLED((SL1 MERGER SL2) ; SL, S, MM, T) = ENABLED(SL1, S, MM, T) .')
     eq ENABLED(SL, S, MM, T) = true [owise] .
 
     --- The ready predicate holds, if a statement is ready for execution,
     --- i.e., the corresponding process may be waken up.
     eq READY(get(A ; AL) ; SL , S, MM, T) = inqueue(S[A], MM) . 
     eq READY(get(L ; AL) ; SL , S, MM, T) = inqueue(L, MM) . 
-    eq READY((NeSL1 [] NeSL2) ; SL, S, MM, T) =
-          READY(NeSL1, S, MM, T) or READY(NeSL2, S, MM, T) .
+    eq READY((SL1 [] SL2) ; SL, S, MM, T) =
+          READY(SL1, S, MM, T) or READY(SL2, S, MM, T) .
 ifdef(`WITH_MERGE',
-`    eq READY((NeSL1 ||| NeSL2) ; SL, S, MM, T) =
-	  READY(NeSL1, S, MM, T) or READY(NeSL2, S, MM, T) .
-    eq READY((NeSL1 MERGER NeSL2) ; SL, S, MM, T) = READY(NeSL1, S, MM, T) .')
+`    eq READY((SL1 ||| SL2) ; SL, S, MM, T) =
+	  READY(SL1, S, MM, T) or READY(SL2, S, MM, T) .
+    eq READY((SL1 MERGER SL2) ; SL, S, MM, T) = READY(SL1, S, MM, T) .')
     eq READY(SL, S, MM, T) = ENABLED(SL, S, MM, T) [owise] .
 
 endm
