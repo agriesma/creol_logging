@@ -122,6 +122,12 @@ endfm
 *** Creol Statements
 ***
 *** The following module defines all elementary statements of Creol.
+***
+*** Colouring rules:  Statements from the programmer syntax are displayed
+*** in blue.  Statements inserted by the compiler only are displayed in
+*** cyan.  Statements inserted by the run-time system are displayed in
+*** red.  It may indicate a problem if a red term appears in a configuration.
+
 fmod CREOL-STATEMENT is
 
   protecting CREOL-DATA-VIDLIST .
@@ -145,20 +151,21 @@ fmod CREOL-STATEMENT is
   op await_ : Expr -> SuspStmt [ctor `format' (b o d)] .
   op posit_ : Expr -> SuspStmt [ctor `format' (b o d)] .
   op assert(_) : Expr -> Stmt [ctor `format' (b o d b o)] .
+
   op return(_) : ExprList -> Stmt [ctor `format' (c d o c o)] .
   op free(_) : Vid -> Stmt [ctor `format' (c d o c o)] .
   op tailcall(_;_) : String ExprList -> Stmt [ctor `format' (c d o c o c o)] .
   op tailcall(_;_;_) : String String ExprList -> Stmt [ctor `format' (c d o c o c o c o)] .
 
-  op $cont(_) : Label -> Stmt [ctor `format' (c d o c o)] .
-  op $accept(_) : Label -> Stmt [ctor `format' (c d o c o)] .
+  op $cont(_) : Label -> Stmt [ctor `format' (r d o r o)] .
+  op $accept(_) : Label -> Stmt [ctor `format' (r d o r o)] .
 
   --- multiple assignment
   ---
   --- For the model checker the following will be evaluated as an
   --- equation and the old rule is not confluent.
 
-  op $assign(_;_) : VidList DataList -> Stmt  [`format' (c d o c o c o)] .
+  op $assign(_;_) : VidList DataList -> Stmt  [`format' (r d o r o r o)] .
 
   --- This ``statement'' represents an assertion failure.  It 
   --- stops evaluation of the executing object at that point.
@@ -183,16 +190,14 @@ fmod CREOL-STM-LIST is
 
   op if_th_el_fi : Expr NeStmtList NeStmtList -> Stmt [ctor `format' (b o b o b o b o)] . 
   op while_do_od : Expr NeStmtList -> Stmt [ctor `format' (b o b o b o)] .
-  op _[]_  : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 45 `format' (d r d o d)] .
+  op _[]_  : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 45 `format' (d b d o d)] .
 ifdef(`WITH_MERGE',
-`  op _|||_ : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d r o d)] .
-  op _MERGER_  : StmtList StmtList -> Stmt [ctor assoc `format' (d c! o d)] .
+`  op _|||_ : NeStmtList NeStmtList -> SuspStmt [ctor comm assoc prec 47 `format' (d b o d)] .
+  op _MERGER_  : StmtList NeStmtList -> Stmt [ctor assoc `format' (d r o d)] .
 
   var NeSL : NeStmtList .
 
-  *** Some simplifications:
   eq noStmt MERGER NeSL = NeSL .
-  eq NeSL MERGER noStmt = NeSL .
 ')
   --- Optimize assignments.  This way we save reducing a skip.  Also note
   --- that the empty assignment is /not/ programmer syntax, it is inserted
@@ -218,19 +223,28 @@ fmod CREOL-PROCESS is
 
 endfm
 
+view Process from TRIV to CREOL-PROCESS is
+  sort Elt to Process .
+endv
 
 
 *** Specifies a process pool, here a multiset of Processes
 ***
 fmod CREOL-PROCESS-POOL is
 
-  protecting CREOL-PROCESS .
+ifdef(`EXPERIMENTAL',dnl
+    protecting MULTISET{Process} * (sort MSet{Process} to MProc,
+                                    sort NeMSet{Process} to NeMSet,
+                                    op empty : -> MSet{Process} to noProc) .
+,
+    protecting CREOL-PROCESS .
 
-  sort MProc .
-  subsort Process < MProc .
-  op noProc : -> MProc [ctor] .
-  op _,_ : MProc MProc -> MProc
+    sort MProc .
+    subsort Process < MProc .
+    op noProc : -> MProc [ctor] .
+    op _`,'_ : MProc MProc -> MProc
     [ctor assoc comm id: noProc prec 41 `format' (d r os d)] .
+)
 
 endfm
 
