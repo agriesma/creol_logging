@@ -1172,12 +1172,16 @@ let typecheck tree: Program.t =
         | ({ VarDecl.init = None } as v)::r ->
 	    type_check_inits (v::res) r
         | { VarDecl.name = n; var_type = t; init = Some i }::r ->
-	    let Assign (_, _, [i']) =
+	    let i' =
 	      let l = [LhsId (Expression.make_note (), n)]
 	      and r = [i]
 	      and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None }::res } }
 	      in
-	        type_check_statement e coiface (Assign (make_note (), l, r))
+	      let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
+		match s with
+		  | Assign (_, _, [i']) -> i'
+		  | _ -> assert false
+
 	    in
 	      type_check_inits ({ VarDecl.name = n; var_type = t; init = Some i' }::res) r
     in
