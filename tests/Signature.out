@@ -320,8 +320,8 @@ reduce in CREOL-CONFIGURATION : upTerm(
   Ev: noMsg,
   Lcnt: 0 >
 ) .
-result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>['ob[
-    '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
+result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>[
+    'ob`(_`)['"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
     'noProc.MProc,'noDealloc.Labels,'noMsg.MMsg,'0.Zero]
 ==========================================
 reduce in CREOL-CONFIGURATION : downTerm(upTerm(
@@ -397,7 +397,7 @@ result Invoc: invoc(ob("object1"), label(5), "method1", emp)
 ==========================================
 reduce in CREOL-LABEL-TEST : upTerm(invoc(ob("object1"), label(5), "method1",
     emp)) .
-result GroundTerm: 'invoc['ob['"object1".String],'label['s_^5['0.Zero]],
+result GroundTerm: 'invoc['ob`(_`)['"object1".String],'label['s_^5['0.Zero]],
     '"method1".String,'emp.DataList]
 ==========================================
 reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob("object1"), label(5),
