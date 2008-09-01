@@ -1,5 +1,6 @@
 dnl
-dnl machine.m4 -- The specification of the machine.
+dnl configuration.m4 -- The specification of state configurations, compatible
+dnl with Maude's configuration module.
 dnl
 dnl Copyright (c) 2007, 2008
 dnl
@@ -38,9 +39,35 @@ changequote dnl
 
     op ob(_) : String -> Oid [ctor `format' (d d ! o d)] .
 
-    var C : String .
-    var F : Nat .
+    sort MMsg .
+    subsort Body < MMsg .
+
+    op noMsg : -> MMsg [ctor] .
+    op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
+
+    --- Terms of sort Labels are multi-sets of Labels.
+    sort Labels .
+    subsort Label < Labels .
+
+    op noDealloc : -> Labels [ctor] .
+    op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
+
+
+    vars C M M' : String .
+    vars O O' : Oid .
+    var S : Subst .
+    vars I I' : InhList .
+    vars P P' : Process .
+    vars W : MProc .
+    var MS : MMtd .
+    var AL : VidList .
+    var SL : StmtList .
+    var EL : ExprList .
     var DL : DataList .
+    var LS : Labels .
+    var MM : MMsg .
+    var N : Label .
+    var F : Nat .
 
     --- Create a new fresh name for an object.
     op newId : String Nat -> Oid .
@@ -60,19 +87,23 @@ changequote dnl
     --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
     op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
 
-    sort MMsg .
-    subsort Body < MMsg .
 
-    op noMsg : -> MMsg [ctor] .
-    op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
+    --- Fetch pair { code |  vars } to bind call to process.
+    ---
+    --- M   represents the name of the method.
+    --- C   represents the name of the class.
+    --- MS  represents the methods we search through.
+    --- O   represents the identity of the caller.
+    --- N   represents the label used to return the value computed by the
+    ---     method.
+    --- DL  represents the list of actual arguments.
+    op get : String String MMtd Oid Label DataList -> Process .
 
+    eq get(M, C, (MS, < M : Method | Param: AL, Att: S, Code: SL >), O, N, DL) =
+        { "caller" |-> O, ".class" |-> str(C), ".label" |-> N,
+          ".method" |-> str(M), S | assign(AL ; DL) ; SL } .
+    eq get(M, C, MS, O, N, DL) = notFound [owise] .
 
-    --- Terms of sort Labels are multi-sets of Labels.
-    sort Labels .
-    subsort Label < Labels .
-
-    op noDealloc : -> Labels [ctor] .
-    op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
 
     --- Terms of sort Object represent objects (and classes) in the
     --- run-time configuration.
@@ -95,6 +126,37 @@ changequote dnl
     op <_: Class | Inh:_, Param:_, Att:_, Mtds:_, Ocnt:_> : 
       String InhList VidList Subst MMtd Nat -> Class 
        [ctor `format' (ng ! og o d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .
+
+
+    --- Method binding messages.
+    --- Bind method request
+    --- Given: caller callee label method params (list of classes to look in)
+    op bindMtd : Oid Oid Label String DataList InhList -> Msg
+        [`format'(!r d)] .
+
+    --- Successfully bound method body. 
+    --- Consider the call O.Q(I). bindMtd(O,Q,I,C S) tries to find Q in
+    --- class C or superclasses, then in S. boundMtd(O,Mt) is the result.
+    op boundMtd : Oid Process -> Msg [`format'(!r d)] .
+
+    --- Method binding with multiple inheritance
+    ---
+    eq
+      bindMtd(O, O', N, M, DL, (C < EL > , I'))
+      < C : Class | Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F >
+      =
+      if get(M, C, MS, O', N, DL) == notFound then
+        bindMtd(O, O', N, M, DL, (I , I'))
+      else
+        boundMtd(O, get(M, C, MS, O', N, DL))
+      fi
+      < C : Class | Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F > .
+
+    eq
+      boundMtd(O, P')
+      < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+      =
+      < O : C | Att: S, Pr: P, PrQ: (W , P'), Dealloc: LS, Ev: MM, Lcnt: F > .
 
 
     --- Define a configuration
