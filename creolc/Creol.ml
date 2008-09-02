@@ -342,7 +342,7 @@ struct
   (* Get the textual representation of a binary operator. *)
   let string_of_binaryop =
     function
-	Plus -> "+"
+      | Plus -> "+"
       | Minus -> "-"
       | Times -> "*"
       | Div -> "/"
@@ -366,6 +366,44 @@ struct
       | Concat -> "|-|"
       | Project -> "\\"
       | In -> "in"
+
+  (* Get the textual representation of a binary operator. *)
+  let binaryop_of_string =
+    function
+      | "+" -> Plus
+      | "-" -> Minus
+      | "*" -> Times
+      | "/" -> Div
+      | "%" -> Modulo
+      | "**" -> Power
+      | "=" -> Eq
+      | "/=" -> Ne
+      | "<=" -> Le
+      | "<" -> Lt
+      | ">=" -> Ge
+      | ">" -> Gt
+      | "&&" -> And
+      | "/\\" -> Wedge
+      | "||" -> Or
+      | "\\/" -> Vee
+      | "^" -> Xor
+      | "=>" -> Implies
+      | "<=>" -> Iff
+      | "-|" -> Prepend
+      | "|-" -> Append
+      | "|-|" ->  Concat
+      | "\\" -> Project
+      | "in" -> In
+      | _ -> raise Not_found
+
+  let binaryop_p =
+    function
+      | "+" | "-" | "*" | "/" | "%" | "**" | "=" | "/=" | "<=" | "<" | ">="
+      | ">" | "&&" | "/\\" | "||" | "\\/" | "^" | "=>" | "<=>" | "-|" | "|-"
+      | "|-|" | "\\" | "in" ->
+	true
+      | _ ->
+	false
 
   (* Precedence of binary operators. *)
   let prec_of_binaryop =
@@ -396,6 +434,18 @@ struct
 	Not -> "~"
       | UMinus -> "-"
       | Length -> "#"
+
+  let unaryop_p =
+    function
+      | "~" | "-" | "#" -> true
+      | _ -> false
+
+  let unaryop_of_string =
+    function
+      | "~" -> Not
+      | "-" -> UMinus
+      | "#" -> Length
+      | _ -> raise Not_found
 
   (* Return the precedence of a unary operator.  Only needed for
      pretty printing. *)
@@ -2275,5 +2325,25 @@ struct
     in
       List.map for_decl program
 
+
+
+(* Hide all declarations. *)
+
+  let hide_all prg =
+    List.map Declaration.hide prg
+
+  let show_only_objects prg =
+    let f = function 
+      | Declaration.Object _ as d -> Declaration.show d
+      | d -> Declaration.hide d
+    in
+      List.map f prg
+
+  let hide_all_objects prg =
+    let f = function 
+      | Declaration.Object _ as d -> Declaration.hide d
+      | d -> d
+    in
+      List.map f prg
 
 end
