@@ -87,12 +87,12 @@ cmcvalid_SOURCES	= Version.ml Creol.ml Misc.ml BackendCreol.ml \
 			  CMCParser.ml
 
 cmcvalid_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
-			  BackendCreol.cmo CMCParser.cmo
+			  TreeLift.cmo BackendCreol.cmo CMCParser.cmo
 
 cmcvalid_opt_SOURCES	= $(cmcvalid_SOURCES)
 
 cmcvalid_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
-			  BackendCreol.cmx CMCParser.cmx
+			  TreeLift.cmx BackendCreol.cmx CMCParser.cmx
 
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Driver.ml \
@@ -104,6 +104,7 @@ creolc_DOCSOURCES	= Driver.ml \
 			  Typing.ml \
 			  TreeUnassert.ml \
 			  TreeLower.ml \
+			  TreeLift.ml \
 			  TreeSSA.ml \
 			  TreeFold.ml \
 			  TreeDef.ml \

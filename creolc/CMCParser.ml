@@ -1110,7 +1110,7 @@ let options = [
   ("--version", Arg.Unit show_version, "  Show the version and exit")]
 
 let main () =
-  let action n = BackendCreol.emit stdout (parse_from_file n) in
+  let action n = BackendCreol.emit stdout (TreeLift.pass (parse_from_file n)) in
     Arg.parse options action "cmcvalid [options] [files]"
 ;;
 
