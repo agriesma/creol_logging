@@ -85,6 +85,9 @@ let pass input =
 					     lower_expression r])
       | FuncCall(a, f, args) -> FuncCall(a, f, List.map lower_expression args)
       | New (a, t, p) -> New (a, t, List.map lower_expression p)
+      | Expression.If (a, c, t, f) ->
+          Expression.If (a, lower_expression c, lower_expression t,
+                         lower_expression f)
       | t -> t
   and lower_statement label_decls =
     function
