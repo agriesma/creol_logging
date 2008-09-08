@@ -83,8 +83,8 @@ creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  BackendDot.cmx \
 			  Passes.cmx Driver.cmx
 
-cmcvalid_SOURCES	= Version.ml Creol.ml Misc.ml BackendCreol.ml \
-			  CMCParser.ml
+cmcvalid_SOURCES	= Version.ml Misc.ml Creol.ml TreeLift.ml \
+			  BackendCreol.ml CMCParser.ml
 
 cmcvalid_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 			  TreeLift.cmo BackendCreol.cmo CMCParser.cmo
