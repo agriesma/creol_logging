@@ -46,7 +46,7 @@ let optimise_in_statement meth stmt =
      subsequent defined sets.  *)
 
   let append_free ~s ~l =
-    let d = def s in
+    let d = (note s).must_def in
     let r =
       IdSet.filter
 	(fun v -> Method.label_p meth v)
@@ -73,7 +73,7 @@ let optimise_in_statement meth stmt =
 	    (fun e a -> LhsId (Expression.make_note (), e) :: a)
 	    r []
 	in
-	let n = {(note s) with def = d' } in
+	let n = {(note s) with must_def = d' } in
 	  Sequence (n, s, Free (n, r'))
   in
 
@@ -85,24 +85,24 @@ let optimise_in_statement meth stmt =
       | If (n, c, s1, s2) ->
 	  let s1' = work lv s1
 	  and s2' = work lv s2 in
-	  let def' = IdSet.inter (def s1') (def s2') in
-	    append_free (If ({n with def = def' }, c, s1', s2')) lv
+	  let def' = IdSet.inter (note s1').must_def (note s2').must_def in
+	    append_free (If ({n with must_def = def' }, c, s1', s2')) lv
       | While (n, c, i, s) ->
 	  let s' = append_free (work lv s) lv in
-	    append_free (While ({ n with def = def s' }, c, i, s')) lv
+	    append_free (While ({ n with must_def = (note s').must_def }, c, i, s')) lv
       | DoWhile (n, c, i, s) ->
 	  let s' = append_free (work lv s) lv in
-	    append_free (DoWhile ({ n with def = def s' }, c, i, s')) lv
+	    append_free (DoWhile ({ n with must_def = (note s').must_def }, c, i, s')) lv
       | Sequence (n, s1, s2) ->
 	  let s1' = work (note s2).may_live s1 in
-	  let s2' = TreeDef.compute_in_statement meth (def s1') s2 in
+	  let s2' = TreeDef.compute_in_statement meth (note s1').must_def s2 in
 	  let s2'' = work lv s2' in
-	    Sequence ({ n with def = def s2'' }, s1', s2'')
+	    Sequence ({ n with must_def = (note s2'').must_def }, s1', s2'')
       | Choice (n, s1, s2) ->
 	  let s1' = work lv s1
 	  and s2' = work lv s2 in
-	  let def' = IdSet.inter (def s1') (def s2') in
-	    Choice ({ n with def = def' }, s1', s2')
+	  let def' = IdSet.inter (note s1').must_def (note s2').must_def in
+	    Choice ({ n with must_def = def' }, s1', s2')
       | Merge _ -> assert false
       | s -> append_free s lv
   in

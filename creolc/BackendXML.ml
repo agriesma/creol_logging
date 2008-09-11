@@ -452,7 +452,8 @@ let emit ~name ~tree =
 	(Filename.basename note.Statement.file) ;
       XmlTextWriter.write_attribute writer "line"
         (string_of_int note.Statement.line) ;
-      emit_idset "creol:def-var" note.Statement.def ;
+      emit_idset "creol:maybe-def-var" note.Statement.may_def ;
+      emit_idset "creol:mustbe-def-var" note.Statement.must_def ;
       emit_idset "creol:maybe-life-var" note.Statement.may_live ;
       emit_idset "creol:mustbe-life-var" note.Statement.must_live ;
       XmlTextWriter.end_element writer

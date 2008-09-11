@@ -911,7 +911,8 @@ struct
   type note = {
     file: string;
     line: int;
-    def: IdSet.t;
+    may_def: IdSet.t;
+    must_def: IdSet.t;
     may_live: IdSet.t;
     must_live: IdSet.t;
   }
@@ -919,7 +920,8 @@ struct
   let make_note ?(file = "**dummy**") ?(line = 0) () = {
     file = file;
     line = line;
-    def = IdSet.empty;
+    may_def = IdSet.empty;
+    must_def = IdSet.empty;
     may_live = IdSet.empty;
     must_live = IdSet.empty;
   }
@@ -1081,23 +1083,9 @@ struct
       | Extern (_, s) -> "extern \"" ^ s ^ "\""
 
 
-  (* Get the variables defined at a statement.
-
-     In case of a sequence of statements, return the set of variables
-     of the final statement.  For a [Sequence] statement, the
-     invariant is, that a variable is defined if it is defined at its
-     final statement. *)
-  let def s = (note s).def
-
-
-  (* Set the variables defined at a statement. *)
-  let set_def s d =
-    let note' = { (note s) with def = d } in set_note s note'
-
-
   (* Check whether a variable is defined for a statement. *)
-  let def_p s v =
-    IdSet.mem v (def s)
+  let may_be_defined_p s v =
+    IdSet.mem v (note s).may_def
 
 
   (* Check whether a variable is life at a statement. *)
