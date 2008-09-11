@@ -147,7 +147,8 @@ check-local: atconfig atlocal $(TESTSUITE) Signature.maude
 	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
 
 installcheck-local: atconfig atlocal $(TESTSUITE) Signature.maude
-	$(SHELL) $(TESTSUITE) AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
+	$(SHELL) $(TESTSUITE) AUTOTEST_PATH='$(bindir)' \
+	  CREOL_LIBRARY_PATH="$(DESTDIR)$(pkgdatadir)" $(TESTSUITEFLAGS)
 
 
 Signature.maude: $(srcdir)/Signature.m4

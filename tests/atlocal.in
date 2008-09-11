@@ -10,25 +10,27 @@ then
 fi
 
 # Set the path to the uninstalled data files of the tool set
-CREOL_LIBRARY_PATH=@abs_top_srcdir@/share
+if test -z "$CREOL_LIBRARY_PATH"
+then
+    CREOL_LIBRARY_PATH=@abs_top_srcdir@/share
+fi
 export CREOL_LIBRARY_PATH
 
 if test -z "$CREOLC"
 then
   CREOLC=creolc
-  export CREOLC
 fi
+export CREOLC
  
 
 # Modify the path of maude to find our interpreter definitions
 if test -z "$MAUDE_LIB"
 then
-    MAUDE_LIB=@abs_top_builddir@/share:$CREOL_LIBRARY_PATH
-    export MAUDE_LIB
+    MAUDE_LIB="$CREOL_LIBRARY_PATH"
 else
-    MAUDE_LIB=@abs_top_builddir@/share:$CREOL_LIBRARY_PATH:$MAUDE_LIB
-    export MAUDE_LIB
+    MAUDE_LIB="$CREOL_LIBRARY_PATH":$MAUDE_LIB
 fi
+export MAUDE_LIB
 
 if test -z "$MAUDE"
 then
