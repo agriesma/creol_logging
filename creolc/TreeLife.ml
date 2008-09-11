@@ -121,172 +121,214 @@ let compute_in_body ~program ~cls ~meth =
       | LhsSSAId (n, i, v) -> assert (Method.local_p meth i); IdSet.singleton i
   in
 
-  (* Compute life variable information for a statement.  The parameter
-     [outs] is the output set of all successors.  The parameter [stmt]
-     is the current statement we analyse.  The statement's note will
+  (* Compute life variable information for a statement.  The parameters
+     [may] and [must] are the output set of all successors.  The parameter
+     [stmt] is the current statement we analyse.  The statement's note will
      be updated with the variables life on the input edge. *)
 
-  let rec compute_in_statement outs stmt =
+  let rec compute_in_statement may must stmt =
     match stmt with
 	Skip n ->
-	  let n' = { n with may_live = outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = may; must_live = must } in
+	    logio stmt may n'.may_live ;
 	    Skip n'
       | Assert (n, e) ->
 	  let g = gen e in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Assert (n', e)
       | Prove (n, e) ->
 	  let g = gen e in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Prove (n', e)
       | Assign (n, lhs, rhs) ->
 	  let k = List.fold_left (add kill) IdSet.empty lhs
 	  and g = List.fold_left (add gen) IdSet.empty rhs in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
+	  in
+	    logio stmt may n'.may_live ;
 	    Assign (n', lhs, rhs)
       | Await (n, c) ->
 	  let g = gen c in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Await (n', c)
       | Posit (n, c) ->
 	  let g = gen c in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Posit (n', c)
       | Release n ->
-	  let n' = { n with may_live = outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = may; must_live = must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Release n'
       | AsyncCall (n, None, c, m, s, a) ->
 	  let g = List.fold_left (add gen) IdSet.empty (c::a) in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    AsyncCall (n', None, c, m, s, a)
       | AsyncCall (n, Some l, c, m, s, a) ->
 	  let g = List.fold_left (add gen) IdSet.empty (c::a)
 	  and k =  kill l in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
+	  in
+	    logio stmt may n'.may_live ;
 	    AsyncCall (n', Some l, c, m, s, a)
       | Reply (n, l, p) ->
 	  let g = gen l in
 	  let k = List.fold_left (add kill) IdSet.empty p in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
+	  in
+	    logio stmt may n'.may_live ;
 	    Reply (n', l, p)
       | Free (n, v) ->
 	  (* This statement keeps its arguments life, even though the
 	     list of variables here is to be released. The call to [kill]
 	     is used for typing reasons only. *)
 	  let g = List.fold_left (add kill) IdSet.empty v in
-	  let n' = { n with may_live = IdSet.union outs g } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union may g;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Free (n', v)
       | Bury (n, v) ->
 	  (* This statement must not affect the life range of any value,
 	     and all its arguments must be dead at that point. *)
 	  let k = List.fold_left (add kill) IdSet.empty v in
-	  let n' = { n with may_live = IdSet.diff outs k } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.diff may k;
+			    must_live = IdSet.diff must k }
+	  in
+	    logio stmt may n'.may_live ;
 	    Bury (n', v)
       | SyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty (c::i)
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
+	  in
+	    logio stmt may n'.may_live ;
 	    SyncCall (n', c, m, s, i, o)
       | AwaitSyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty (c::i)
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
+	  in
+	    logio stmt may n'.may_live ;
 	    AwaitSyncCall (n', c, m, s, i, o)
       | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
 	  let g = List.fold_left (add gen) IdSet.empty i in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    LocalAsyncCall (n', None, m, s, ub, lb, i)
       | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
 	  let g = List.fold_left (add gen) IdSet.empty i
 	  and k = kill l in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
+	  in
+	    logio stmt may n'.may_live ;
 	    LocalAsyncCall (n', Some l, m, s, ub, lb, i)
       | LocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty i
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) }
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
 	  in
-	    logio stmt outs n'.may_live ;
+	    logio stmt may n'.may_live ;
 	    LocalSyncCall (n', m, s, u, l, i, o)
       | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty i
 	  and k = List.fold_left (add kill) IdSet.empty o in
-	  let n' = { n with may_live = IdSet.union g (IdSet.diff outs k) } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
+			    must_live = IdSet.union g (IdSet.diff must k) }
+	  in
+	    logio stmt may n'.may_live ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
       | MultiCast (n, t, m, s, a) ->
 	  let g = List.fold_left (add gen) IdSet.empty a in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may } in
+	    logio stmt may n'.may_live ;
 	    MultiCast (n', t, m, s, a)
       | Tailcall (n, m, s, u, l, ins) ->
 	  let g = List.fold_left (add gen) IdSet.empty ins in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Tailcall (n', m, s, u, l, ins)
       | If (n, c, l, r) ->
-	  let l' = compute_in_statement outs l
-	  and r' = compute_in_statement outs r in
+	  let l' = compute_in_statement may must l
+	  and r' = compute_in_statement may must r in
 	  let g = gen c in
-	  let life' = IdSet.union g (IdSet.union (note l').may_live (note r').may_live) in
-	  let n' = { n with may_live = life' }
+	  let n' = { n with may_live =  IdSet.union g (IdSet.union (note l').may_live (note r').may_live);
+			    must_live = IdSet.union g (IdSet.inter (note l').must_live (note r').must_live) }
 	  in
-	    logio stmt outs n'.may_live ;
+	    logio stmt may n'.may_live ;
 	    If (n', c, l', r')
       | While (n, c, i, b) ->
-	  let b' = compute_in_statement outs b in
-	  let outs' = (note b').may_live in
+	  let b' = compute_in_statement may must b in
 	  let g = IdSet.union (gen c) (gen i)
 	  in
-	  let n' = { n with may_live = IdSet.union g outs' } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g ((note b').may_live);
+			    must_live = IdSet.union g ((note b').must_live) }
+	  in
+	    logio stmt may n'.may_live ;
 	    While (n', c, i, b')
       | DoWhile (n, c, i, b) ->
-	  let b' = compute_in_statement outs b in
-	  let outs' = (note b').may_live in
+	  let b' = compute_in_statement may must b in
 	  let g = IdSet.union (gen c) (gen i)
 	  in
-	  let n' = { n with may_live = IdSet.union g outs' } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g ((note b').may_live);
+			    must_live = IdSet.union g ((note b').must_live) }
+	  in
+	    logio stmt may n'.may_live ;
 	    DoWhile (n', c, i, b')
       | Sequence (n, s1, s2) ->
-	  let s2' = compute_in_statement outs s2 in
-	  let s1' = compute_in_statement (note s2').may_live s1 in
+	  let s2' = compute_in_statement may must s2 in
+	  let s1' = compute_in_statement (note s2').may_live (note s2').must_live s1 in
 	    (* the out of the statement is the out of the first statement. *)
-	  let n' = { n with may_live = (note s1').may_live } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = (note s1').may_live;
+			    must_live = (note s1').must_live }
+	  in
+	    logio stmt may n'.may_live ;
 	    Sequence (n', s1', s2')
       | Merge _ -> assert false
       | Choice (n, s1, s2) -> 
-	  let s1' = compute_in_statement outs s1
-	  and s2' = compute_in_statement outs s2 in
-	  let n' = { n with may_live = IdSet.union (note s1').may_live (note s2').may_live } in
-	    logio stmt outs n'.may_live ;
+	  let s1' = compute_in_statement may must s1
+	  and s2' = compute_in_statement may must s2 in
+	  let n' = { n with may_live = IdSet.union (note s1').may_live (note s2').may_live;
+			    must_live = IdSet.inter (note s1').must_live (note s2').must_live }
+	  in
+	    logio stmt may n'.may_live ;
 	    Choice (n', s1', s2')
       | Continue (n, e) ->
 	  let g = gen e in
-	  let n' = { n with may_live = IdSet.union g outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
 	    Continue (n', e)
       | Extern (n, s) ->
-	  let n' = { n with may_live = outs } in
-	    logio stmt outs n'.may_live ;
+	  let n' = { n with may_live = may } in
+	    logio stmt may n'.may_live ;
 	    Extern (n', s)
   in
     match meth.Method.body with
@@ -295,7 +337,8 @@ let compute_in_body ~program ~cls ~meth =
 	  let () = log 1 ("Live vars in " ^ (Method.name_as_string meth)) in
 	  let add s v = IdSet.add v.VarDecl.name s in
 	  let outs = List.fold_left add IdSet.empty meth.Method.outpars in
-	    { meth with Method.body = Some (compute_in_statement outs b) }
+	    (* The set of output variables may and must live. *)
+	    { meth with Method.body = Some (compute_in_statement outs outs b) }
 
 
 let compute_in_method program cls meth =
