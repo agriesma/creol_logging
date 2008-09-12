@@ -726,6 +726,17 @@ let parse name input =
 	  let () = junk_rparen input in
 	    Statement.LocalAsyncCall (Statement.make_note (), Some l, m,
 				      Type.default_sig (), None, Some ub, a)
+      | Some Key ("multicast", _) | Some Key ("$multicast", _) ->
+          let () = Stream.junk input in
+          let () = junk_lparen input in
+          let e = parse_expression input in
+          let () = junk_semicolon input in
+          let m = parse_method_name input in
+          let () = junk_semicolon input in
+          let a = parse_expression_list input in
+          let () = junk_rparen input in
+            Statement.MultiCast (Statement.make_note (), e, m,
+				 Type.default_sig (), a)
       | Some Key ("$cont", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in

@@ -31,7 +31,8 @@ mod CREOL-SIMULATOR is
   var AL : VidList .                   --- List of LHS
   var N : Label .                      --- Call label
   var D : Data .                       --- Value
-  var DL : DataList .                  --- List of values
+  vars DL DL2 : DataList .             --- List of values
+  vars DS : DataSet .		       --- Set of data items.
   var E : Expr .                       --- Expression
   var EL : ExprList .                  --- List of Expressions
   var ST : Stmt .                      --- Statement
@@ -325,6 +326,60 @@ ifdef(`MODELCHECK',
 )dnl
   [label remote-async-call] .
 
+
+STEP(`< O : C | Att: S, Pr: { L | multicast(E ; Q ; EL) ; SL }, PrQ: W,
+            Dealloc: LS, Ev: MM, Lcnt: F > CLOCK',
+`< O : C | Att: S, Pr: { L | $multicast(EVAL(E, (S :: L), T) ; Q ; EVALLIST(EL, (S :: L), T)) ; SL }, PrQ: W,
+            Dealloc: LS, Ev: MM, Lcnt: F > CLOCK',
+`[label multicast-eval]')
+
+eq 
+  < O : C | Att: S, Pr: { L | $multicast(list(emp) ; Q ; DL) ; SL }, PrQ: W,
+            Dealloc: LS, Ev: MM, Lcnt: F >
+  =
+  < O : C | Att: S, Pr: { L | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  [label multicast-emit-list-emp] .
+
+ifdef(`MODELCHECK',
+`eq
+  < O : C | Att: S, Pr: { L | $multicast(list('O'` :: DL) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  =
+  < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: (label(O, 'O'`, Q, DL2) ^ LS), Ev: MM, Lcnt: F >
+  invoc(O, label(O, 'O'`, Q, DL2), Q, DL2) from O to' O',
+`eq
+  < O : C | Att: S, Pr: { L | $multicast(list('O'` :: DL) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  =
+  < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: (label(O, F) ^ LS), Ev: MM, Lcnt: (F + 1) >
+  invoc(O, label(O, F), Q , DL2) from O to 'O')
+  [label multicast-emit-list] .
+
+eq 
+  < O : C | Att: S, Pr: { L | $multicast(set(emptyset) ; Q ; DL); SL },
+            PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  =
+  < O : C | Att: S, Pr: { L | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  [label multicast-emit-set-emp] .
+
+ifdef(`MODELCHECK',
+`eq
+  < O : C | Att: S, Pr: { L | $multicast(set('O'` : DS) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  =
+  < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: (label(O, 'O'`, Q, DL2) ^ LS), Ev: MM, Lcnt: F >
+  invoc(O, label(O, 'O'`, Q, DL2), Q, DL2) from O to 'O',
+`eq
+  < O : C | Att: S, Pr: { L | $multicast(set('O'` : DS) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  =
+  < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
+            PrQ: W, Dealloc: (label(O, F) ^ LS), Ev: MM, Lcnt: (F + 1) >
+  invoc(O, label(O, F), Q , DL2) from O to 'O')
+  [label multicast-emit-set] .
 
 --- return
 ---

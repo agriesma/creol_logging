@@ -1,0 +1,22 @@
+load creol-interpreter .
+mod PROGRAM is
+protecting CREOL-SIMULATOR .
+op classes : -> Configuration [ctor] .
+eq classes =
+< "Test" : Class | Inh: (noInh),
+  Param: (noVid),
+  Att: (noSubst),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
+    < "m" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) >),
+  Ocnt: 0 >
+
+< "Main" : Class | Inh: (noInh),
+  Param: (noVid),
+  Att: ("l" |-> null),
+  Mtds: (< "init" : Method | Param: noVid, Att: "o" |-> null , "_" |-> null, Code: assign( ( "l" @ "Main" ) ; list(emp) ) ; new( "o" ; "Test" ; emp ) ; assign( "l" ; "-|" ( "o" :: "l" ) ) ; new( "o" ; "Test" ; emp ) ; assign( "l" ; "-|" ( "o" :: "l" ) ) ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: multicast( "l" ; "m" ; emp ) ; return ( emp ) >),
+  Ocnt: 0 >
+
+.
+endm

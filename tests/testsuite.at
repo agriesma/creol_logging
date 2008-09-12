@@ -47,6 +47,7 @@ AT_SETUP([PrettyPrinter])
 TEST_CREOLC_PP([Pair], [language])
 TEST_CREOLC_PP([Inheritance], [language])
 TEST_CREOLC_PP([Diamond], [language])
+TEST_CREOLC_PP([MultiCast], [language])
 TEST_CREOLC_PP([MutRec], [language])
 TEST_CREOLC_PP([MutRec2], [language])
 dnl TEST_CREOLC_PP([Interleave], [language])
@@ -76,6 +77,7 @@ AT_SETUP([XML-output])
 TEST_CREOLC_XML([Pair], [language])
 TEST_CREOLC_XML([Inheritance], [language])
 TEST_CREOLC_XML([Diamond], [language])
+TEST_CREOLC_XML([MultiCast], [language])
 TEST_CREOLC_XML([MutRec], [language])
 TEST_CREOLC_XML([MutRec2], [language])
 dnl TEST_CREOLC_XML([Interleave], [language])
@@ -137,6 +139,12 @@ TEST_CREOLC([Deadlock], [language], [dnl
 red classes .
 ],[dnl
 red simulate('PROGRAM, upTerm(classes main("Butler", emp)), 0, 1) .
+])
+
+TEST_CREOLC([MultiCast], [language], [dnl
+red classes .
+],[dnl
+red simulate('PROGRAM, upTerm(classes main("Test", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([MutRec], [language], [dnl
