@@ -38,6 +38,7 @@ BUILT_SOURCES		= Version.ml Driver.ml Passes.ml $(srcdir)/Lexer.ml \
 
 creolc_SOURCES		= Version.ml \
 			  Misc.ml \
+			  Config.ml \
 			  Messages.ml \
 			  Creol.ml \
 			  Typing.ml \
@@ -61,8 +62,8 @@ creolc_SOURCES		= Version.ml \
 			  Passes.m4 \
 			  Driver.m4
 
-creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
-			  Typing.cmo TreeUnassert.cmo TreeLower.cmo \
+creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
+			  Creol.cmo Typing.cmo TreeUnassert.cmo TreeLower.cmo \
 			  TreeSSA.cmo TreeFold.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
@@ -73,8 +74,8 @@ creolc_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
-creolc_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
-			  Typing.cmx TreeUnassert.cmx TreeLower.cmx \
+creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
+			  Creol.cmx Typing.cmx TreeUnassert.cmx TreeLower.cmx \
 			  TreeSSA.cmx TreeFold.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
@@ -117,7 +118,8 @@ creolc_DOCSOURCES	= Driver.ml \
 			  BackendMaude.ml \
 			  BackendXML.ml \
 			  BackendDot.ml \
-			  Misc.ml
+			  Misc.ml \
+			  Config.ml 
 
 OCAMLCFLAGS		+= -g
 OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 10

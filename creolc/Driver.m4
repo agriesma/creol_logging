@@ -148,6 +148,14 @@ let show_version () =
   print_string license ;
   exit 0
 
+let show_config_flag = ref false
+
+let show_config_p () = !show_config_flag
+
+let show_config () =
+  print_endline ("Environment") ;
+  print_endline ("CREOL_LIBRARY_PATH = " ^ (String.concat ":" (Config.get_library_path ())))
+
 
 (* A list of all command line options accepted by this program. This
    list is used by ocamls functions for parsing arguments given to the
@@ -164,13 +172,13 @@ let options = [
   "  Print some information while processing");
   ("-w",
   Arg.String Messages.enable,
-  "{name, }  Enable warning:\n" ^ (Messages.help_warnings ()));
+  "{name,}  Enable warning:\n" ^ (Messages.help_warnings ()));
   ("-W",
   Arg.String Messages.disable,
-  "{name, }  Disable the warning.  Names are the same as for `-w'");
+  "{name,}  Disable the warning.  Names are the same as for `-w'");
   ("-p",
   Arg.String Passes.enable,
-  "{name ,}  Enable passes:\n" ^ (Passes.help ()));
+  "{name,}  Enable passes:\n" ^ (Passes.help ()));
   ("-P",
   Arg.String Passes.disable,
   "  Disable the pass [name].  [name]s are the same as for `-p'");
@@ -178,7 +186,7 @@ let options = [
   Arg.String Passes.dump_after,
   "  Dump tree after [name] to out.[name].  [name]s are identical to ``-p''");')
   ("-times",
-  Arg.Unit (function () -> times := true),
+  Arg.Set times,
   "  Print timing information");
   ("-T",
   Arg.String Target.set,
@@ -187,8 +195,11 @@ let options = [
   Arg.String (function s -> Target.options.BackendMaude.main <- Some s),
   "  Declare a main class (must not have class parameters)");
   ("-red-init",
-  Arg.Unit (function () ->  Target.options.BackendMaude.red_init <- true),
+  Arg.Unit (function () -> Target.options.BackendMaude.red_init <- true),
   "  Generate an output that will reduce init as first step");
+  ("-show-config",
+   Arg.Set show_config_flag,
+   "  Show the configuration.");
   ("-V", Unit show_version, "  Show the version and exit");
   ("-version", Unit show_version, "  Show the version and exit");
   ("--version", Unit show_version, "  Show the version and exit")]
@@ -199,11 +210,16 @@ let options = [
 *)
 let main () =
   parse options add_input (Sys.executable_name ^ " [options]") ;
+  if show_config_p () then show_config () ;
   let tree =
     match !inputs with
-	[] ->  usage options (Sys.executable_name ^ " [options]"); exit 0
-      | [""] | ["-"] -> Passes.parse_from_channel "*stdin*" stdin
-      | _ ->  Passes.parse_from_files !inputs
+	[] ->
+	  print_endline "No input files given.  Use `-help' for help." ;
+	  exit 0
+      | [""] | ["-"] ->
+	  Passes.parse_from_channel "*stdin*" stdin
+      | _ -> 
+	  Passes.parse_from_files !inputs
   in
   let prelude =
     List.map Declaration.hide (Passes.parse_from_file "prelude.creol")

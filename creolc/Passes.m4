@@ -261,28 +261,10 @@ let parse_from_channel (name: string) (channel: in_channel) =
   let pos = buf.Lexing.lex_curr_p in
   let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in
   let _ = message 1 ("Reading " ^ name) in
-  let do_parse = fun () -> Parser.main Lexer.token buf in
+  let do_parse () = Parser.main Lexer.token buf in
   let (result, elapsed) = Misc.measure do_parse in
     time_parse := !time_parse +. elapsed ;
     result
-
-
-(* Construct a search path for locating the prelude files and other
-   source files.
-*)
-let search_path =
-  let home = Misc.home ()
-  and library_path =
-    try
-      (Str.split (Str.regexp ":") (Sys.getenv "CREOL_LIBRARY_PATH"))
-    with
-	Not_found -> []
-  in
-    library_path @
-      [ Version.datadir ;
-	home ^ "/../share" ^ Version.package ;
-        home ^ "/../share" ;
-        home ]
 
 
 (* Read the contents of a file and return an abstract syntax tree.
@@ -294,7 +276,7 @@ let parse_from_file (name: string) =
       name
     else
       try
-        (List.find exists_p search_path) ^ "/" ^ name
+        (List.find exists_p (Config.get_library_path ())) ^ "/" ^ name
       with
           Not_found -> prerr_endline ("cannot find " ^ name) ; exit 1
   in
