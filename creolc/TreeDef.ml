@@ -72,7 +72,7 @@ let logio stmt i o =
 
 (* Compute the defined ranges in a statement. *)
 
-let compute_in_statement ~meth ins stmt =
+let compute_in_statement ~meth may must stmt =
   let rec kill =
     function
 	(This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _ |
@@ -121,147 +121,147 @@ let compute_in_statement ~meth ins stmt =
       | LhsSSAId (_, i, _) ->
 	  assert (Method.local_p meth i); IdSet.singleton i
   in
-  let rec work ins stmt =
+  let rec work may must stmt =
     match stmt with
 	Skip n ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Skip n'
       | Assert (n, e) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Assert (n', e)
       | Prove (n, e) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Prove (n', e)
       | Assign (n, lhs, rhs) ->
 	  let g = List.fold_left (add gen) IdSet.empty lhs in
-	  let n' = { n with must_def = IdSet.union g ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.union g must } in
+	    logio stmt must n'.must_def ;
 	    Assign (n', lhs, rhs)
       | Await (n, c) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Await (n', c)
       | Posit (n, c) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Posit (n', c)
       | Release n ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Release n'
       | AsyncCall (n, None, c, m, s, a) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    AsyncCall (n', None, c, m, s, a)
       | AsyncCall (n, Some l, c, m, s, a) ->
 	  let g =  gen l in
-	  let n' = { n with must_def = IdSet.union ins g } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.union must g } in
+	    logio stmt must n'.must_def ;
 	    AsyncCall (n', Some l, c, m, s, a)
       | Reply (n, l, p) ->
 	  (* A reply statement leaves [l] undefined and defines [p]. *)
 	  let k = kill l
 	  and g = List.fold_left (add gen) IdSet.empty p in
-	  let n' = { n with must_def = IdSet.union (IdSet.diff ins k) g } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.union (IdSet.diff must k) g } in
+	    logio stmt must n'.must_def ;
 	    Reply (n', l, p)
       | Free (n, v) ->
 	  (* A free statement will leave all members of v as
 	     undefined.  The call to the gen-function is used only for
 	     typing reasons in OCaml. *)
 	  let k = List.fold_left (add gen) IdSet.empty v in
-	  let n' = { n with must_def = IdSet.diff ins k } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.diff must k } in
+	    logio stmt must n'.must_def ;
 	    Free (n', v)
       | Bury (n, v) ->
 	  (* A bury statement will leave all members of v as
 	     undefined.  The call to the gen-function is used only for
 	     typing reasons in OCaml. *)
 	  let k = List.fold_left (add gen) IdSet.empty v in
-	  let n' = { n with must_def = IdSet.diff ins k } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.diff must k } in
+	    logio stmt must n'.must_def ;
 	    Bury (n', v)
       | SyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
-	  let n' = { n with must_def = IdSet.union ins g } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.union must g } in
+	    logio stmt must n'.must_def ;
 	    SyncCall (n', c, m, s, i, o)
       | AwaitSyncCall (n, c, m, s, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
-	  let n' = { n with must_def = IdSet.union ins g } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.union must g } in
+	    logio stmt must n'.must_def ;
 	    AwaitSyncCall (n', c, m, s, i, o)
       | LocalAsyncCall (n, None, m, s, ub, lb, i) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    LocalAsyncCall (n', None, m, s, ub, lb, i)
       | LocalAsyncCall (n, Some l, m, s, ub, lb, i) ->
 	  let g = gen l in
-	  let n' = { n with must_def = IdSet.union ins g } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.union must g } in
+	    logio stmt must n'.must_def ;
 	    LocalAsyncCall (n', Some l, m, s, ub, lb, i)
       | LocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
-	  let n' = { n with must_def = IdSet.union ins g }
+	  let n' = { n with must_def = IdSet.union must g }
 	  in
-	    logio stmt ins n'.must_def ;
+	    logio stmt must n'.must_def ;
 	    LocalSyncCall (n', m, s, u, l, i, o)
       | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
 	  let g = List.fold_left (add gen) IdSet.empty o in
-	  let n' = { n with must_def = IdSet.union g ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = IdSet.union g must } in
+	    logio stmt must n'.must_def ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
       | MultiCast (n, t, m, s, i) ->
-	  let a' = { n with must_def = ins } in
-	    logio stmt ins a'.must_def ;
+	  let a' = { n with must_def = must } in
+	    logio stmt must a'.must_def ;
 	    MultiCast (a', t, m, s, i)
       | Tailcall (n, m, s, ub, lb, i) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Tailcall (n', m, s, ub, lb, i)
       | If (n, c, l, r) ->
-	  let l' = work ins l
-	  and r' = work ins r in
+	  let l' = work may must l
+	  and r' = work may must r in
 	  let n' = { n with must_def = IdSet.inter (note l').must_def (note r').must_def }
 	  in
-	    logio stmt ins n'.must_def ;
+	    logio stmt must n'.must_def ;
 	    If (n', c, l', r')
       | While (n, c, i, b) ->
-	  let b' = work ins b in
-	  let n' = { n with must_def = IdSet.union ins (note b').must_def } in
-	    logio stmt ins n'.must_def ;
+	  let b' = work may must b in
+	  let n' = { n with must_def = IdSet.union must (note b').must_def } in
+	    logio stmt must n'.must_def ;
 	    While (n', c, i, b')
       | DoWhile (n, c, i, b) ->
-	  let b' = work ins b in
-	  let n' = { n with must_def = IdSet.union ins (note b').must_def } in
-	    logio stmt ins n'.must_def ;
+	  let b' = work may must b in
+	  let n' = { n with must_def = IdSet.union must (note b').must_def } in
+	    logio stmt must n'.must_def ;
 	    DoWhile (n', c, i, b')
       | Sequence (n, s1, s2) ->
-	  let s1' = work ins s1 in
-	  let s2' = work (note s1').must_def s2 in
+	  let s1' = work may must s1 in
+	  let s2' = work (note s1').may_def (note s1').must_def s2 in
 	  let n' = { n with must_def = (note s2').must_def } in
-	    logio stmt ins n'.must_def ;
+	    logio stmt must n'.must_def ;
 	    Sequence (n', s1', s2')
       | Merge _ -> assert false
       | Choice (n, s1, s2) -> 
-	  let s1' = work ins s1
-	  and s2' = work ins s2 in
+	  let s1' = work may must s1
+	  and s2' = work may must s2 in
 	  let n' = { n with must_def = IdSet.inter (note s1').must_def (note s2').must_def } in
-	    logio stmt ins n'.must_def ;
+	    logio stmt must n'.must_def ;
 	    Choice (n', s1', s2')
       | Continue (n, e) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Continue (n', e)
       | Extern (n, s) ->
-	  let n' = { n with must_def = ins } in
-	    logio stmt ins n'.must_def ;
+	  let n' = { n with must_def = must } in
+	    logio stmt must n'.must_def ;
 	    Extern (n', s)
   in
-    work ins stmt
+    work may must stmt
 
 (* Compute defined ranges of a method body by traversing it forward. *)
 
@@ -277,7 +277,7 @@ let compute_in_body ~program ~cls ~meth =
 	let () = log 1 ("Defined vars in " ^ (Method.name_as_string meth)) in
 	let add s v = IdSet.add v.VarDecl.name s in
 	let ins = List.fold_left add IdSet.empty meth.Method.inpars in
-	  { meth with Method.body = Some (compute_in_statement meth ins b) }
+	  { meth with Method.body = Some (compute_in_statement meth ins ins b) }
 
 
 let compute_in_method program cls meth =

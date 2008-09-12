@@ -95,9 +95,10 @@ let optimise_in_statement meth stmt =
 	    append_free (DoWhile ({ n with must_def = (note s').must_def }, c, i, s')) lv
       | Sequence (n, s1, s2) ->
 	  let s1' = work (note s2).may_live s1 in
-	  let s2' = TreeDef.compute_in_statement meth (note s1').must_def s2 in
+	  let s2' = TreeDef.compute_in_statement meth (note s1').may_def (note s1').must_def s2 in
 	  let s2'' = work lv s2' in
-	    Sequence ({ n with must_def = (note s2'').must_def }, s1', s2'')
+	    Sequence ({ n with may_def = (note s2'').may_def;
+			       must_def = (note s2'').must_def }, s1', s2'')
       | Choice (n, s1, s2) ->
 	  let s1' = work lv s1
 	  and s2' = work lv s2 in
