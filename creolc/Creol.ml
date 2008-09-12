@@ -87,6 +87,8 @@ struct
 
   let set_p t = match t with Application("Set", _) -> true | _ -> false
 
+  let collection_p t = (list_p t) || (set_p t)
+
   let variable_p =
     function
 	Variable _ -> true
@@ -927,16 +929,21 @@ struct
   }
 
 
-  (* Abstract syntax of statements in Creol. *)
   type t =
-      Skip of note
+      (* Abstract syntax of statements in Creol. *)
+    | Skip of note
+        (** Skip statement. *)
     | Release of note
+	(** Release statement. *)
+    | Await of note * Expression.t
+	(** Await statement. *)
     | Assert of note * Expression.t
+	(** Assert statement. *)
     | Prove of note * Expression.t
+	(** Proof obligation statement. *)
     | Assign of note * Expression.lhs list * Expression.t list
 	(* A multiple assignment statement.  Requires that the two lists
 	   are of the same length. *)
-    | Await of note * Expression.t
     | Posit of note * Expression.t
 	(* A posit statement, which is used to define {i true} properties
            about time in a model. *)
@@ -944,6 +951,7 @@ struct
 	Type.signature *  Expression.t list
     | Reply of note * Expression.t * Expression.lhs list
     | Free of note * Expression.lhs list
+	(** Free a (list of) labels. *)
     | Bury of note * Expression.lhs list
 	(* Bury represents a special form of assignment, setting all
 	   its arguments to null.  It does not affect life ranges
@@ -974,10 +982,17 @@ struct
 	string option * Expression.t list * Expression.lhs list
     | AwaitLocalSyncCall of note * string * Type.signature * string option *
 	string option * Expression.t list * Expression.lhs list
-    | MultiCast of note * Type.t * string * Type.signature * Expression.t list
+    | MultiCast of note * Expression.t * string * Type.signature *
+	Expression.t list
+	(** Multi-cast statement.  The first expression represents the
+	    receivers and must have type List, Set, ... *)
+    | Discover of note * Type.t * string * Type.signature * Expression.t list
     | Tailcall of note * string * Type.signature * string option *
 	string option * Expression.t list
+    | Return of note * Expression.t list
+	(** Generated statement.  Usually, it lists the out parameters. *)
     | Continue of note * Expression.t
+	(** Run-time statement.  Holds a label from which to continue. *)
     | If of note * Expression.t * t * t
     | While of note * Expression.t * Expression.t * t
     | DoWhile of note * Expression.t * Expression.t * t
@@ -1008,6 +1023,7 @@ struct
       | AwaitLocalSyncCall (a, _, _, _, _, _, _)
       | MultiCast (a, _, _, _, _)
       | Tailcall (a, _, _, _, _, _)
+      | Return (a, _)
       | If (a, _, _, _) | While (a, _, _, _) | DoWhile (a, _, _, _)
       | Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
       | Continue (a, _)
@@ -1048,6 +1064,7 @@ struct
       | Sequence (_, s1, s2) -> Sequence (n, s1, s2)
       | Merge (_, s1, s2) -> Merge (n, s1, s2)
       | Choice (_, s1, s2) -> Choice (n, s1, s2)
+      | Return (_, el) -> Return (n, el)
       | Continue (_, e) -> Continue (n, e)
       | Extern (_, s) -> Extern(n, s)
 
@@ -1080,6 +1097,7 @@ struct
       | Merge (_, _, _) -> "_|||_"
       | Choice (_, _, _) -> "_[]_"
       | Continue _ -> "continue _"
+      | Return _ -> "return _"
       | Extern (_, s) -> "extern \"" ^ s ^ "\""
 
 
@@ -1146,7 +1164,7 @@ struct
 	     AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _ |
 		 AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ | 
 		     AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ |
-		         Continue _ | Extern _) as s -> s
+		         Return _ | Continue _ | Extern _) as s -> s
       | Skip note -> Skip note
       | If (note, c, t, f) ->
 	  If (note, c, remove_redundant_skips t, remove_redundant_skips f)

@@ -274,6 +274,13 @@ let compute_in_body ~program ~cls ~meth =
 	  in
 	    logio stmt may n'.may_live ;
 	    Tailcall (n', m, s, u, l, ins)
+      | Return (n, el) ->
+	  let g = List.fold_left (add gen) IdSet.empty el in
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+          in
+	    logio stmt may n'.may_live ;
+            Return (n', el)
       | If (n, c, l, r) ->
 	  let l' = compute_in_statement may must l
 	  and r' = compute_in_statement may must r in

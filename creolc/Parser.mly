@@ -425,8 +425,8 @@ basic_statement:
     | BANG t = creol_type DOT m = ID
         LPAREN i = separated_list(COMMA, expression) RPAREN
         s = ioption(preceded(AS, creol_type))
-	{ MultiCast(statement_note $startpos, t, m,
-		    Type.default_sig ~coiface:s (), i) }
+	{ Discover(statement_note $startpos, t, m,
+		   Type.default_sig ~coiface:s (), i) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN

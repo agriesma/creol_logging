@@ -232,6 +232,9 @@ let compute_in_statement ~meth may must stmt =
 	  let n' = { n with may_def = may; must_def = must } in
 	    logio stmt must n'.must_def ;
 	    Tailcall (n', m, s, ub, lb, i)
+      | Return (n, el) ->
+	  let n' = { n with may_def = may; must_def = must } in
+	    Return (n', el)
       | If (n, c, l, r) ->
 	  let l' = work may must l
 	  and r' = work may must r in

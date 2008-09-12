@@ -250,6 +250,10 @@ let emit options out_channel input =
 	    output_string out_channel ( "tailcall (\"" ^ m ^ "\" ; ");
 	    of_expression_list i;
 	    output_string out_channel " )"
+	| Statement.Return (_, el) ->
+	  output_string out_channel "return ( " ;
+	  of_expression_list el ;
+	  output_string out_channel " )"
 	| Statement.If (_, c, t, f) ->
 	    output_string out_channel "if "; of_expression c;
 	    output_string out_channel " th "; print 25 t;
@@ -326,12 +330,6 @@ let emit options out_channel input =
       | v::r ->
 	  output_string out_channel ("\"" ^ v.VarDecl.name ^ "\" |-> null , ");
 	  of_class_attribute_list r
-  and of_method_return =
-    function
-	[] -> output_string out_channel "emp" 
-      | [n] -> output_string out_channel ("\"" ^ n.VarDecl.name ^ "\"")
-      | n::l -> output_string out_channel ("\"" ^ n.VarDecl.name ^ "\" # ");
-          of_method_return l
   and of_method cls m =
     output_string out_channel ("< \"" ^ m.Method.name ^
 				  "\" : Method | Param: ");
@@ -344,12 +342,11 @@ let emit options out_channel input =
 				    var_type = Type.data;
 				    init = None }]]);
     output_string out_channel ", Code: " ;
-    ( match m.Method.body with
-	None -> output_string out_channel "skip"
-      | Some s -> of_statement cls s ;
-	  output_string out_channel " ; return ( ";
-	  of_method_return m.Method.outpars;
-	  output_string out_channel " )" ) ;
+    begin
+       match m.Method.body with
+	 | None -> output_string out_channel "skip"
+         | Some s -> of_statement cls s
+    end ;
     output_string out_channel " >"
   and of_method_list cls =
     function

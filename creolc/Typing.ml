@@ -1134,6 +1134,7 @@ let typecheck tree: Program.t =
 	    in
 	      AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	| Tailcall _ -> assert false
+	| Return _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
 	    let cond' = type_check_assertion env coiface cond in
 	      If (n, cond',

@@ -110,17 +110,26 @@ let pass input =
 	    ((label_decl l lt)::label_decls,
 	     AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'))
       | AsyncCall (a, None, e, n, s, p) ->
-	  (* If a label name is not given, we create a new label name.
-             We cannot give a correct type to the label.  If the type
-             checker is run after lowering, it may report errors for
-             this call.  *)
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p
-	  and l = fresh_label () in
-	  let lt = Type.label [] in
-	  let a' = make_expr_note_from_stmt_note a lt in
-	    ((label_decl l lt)::label_decls,
-	     AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'))
+	  in
+            if not (Type.collection_p (Expression.get_type e')) then
+	      (* If a label name is not given, we create a new label name.
+                 We cannot give a correct type to the label.  If the type
+                 checker is run after lowering, it may report errors for
+                 this call.  *)
+              begin
+	        let l = fresh_label () in
+	        let lt = Type.label [] in
+	        let a' = make_expr_note_from_stmt_note a lt in
+	          ((label_decl l lt)::label_decls,
+	           AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'))
+	      end
+	    else
+	      (* The type checker inferred that the callee expression refers
+		 to a collection type.  In this case, we convert to a
+	         MultiCast statement. *)
+	      (label_decls, MultiCast (a, e', n, s, p'))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p in
@@ -272,16 +281,24 @@ let pass input =
       match m.Method.body with
 	  None -> m
 	| Some mb  ->
-	    let (label_decls, mb') = lower_statement [] mb in
-	    let (vars', init) =
-	      lower_method_variables (Statement.note mb')
+	    let (label_decls, mb') = lower_statement [] mb 
+	    and outs =
+	      List.map
+		(fun { VarDecl.name = n } -> (Id (Expression.make_note (), n)))
+		m.Method.outpars
+	    in
+	    let mb'' = Sequence (Statement.note mb, mb',
+				 Return (Statement.note mb, outs))
+	    and (vars', init) =
+	      lower_method_variables (Statement.note mb)
 		(label_decls @ m.Method.vars)
 	    in
 	      { m with Method.vars = vars' ;
 		body = Some (if Statement.skip_p init then
-		  normalize_sequences mb'
+		    normalize_sequences mb''
 		  else
-		    Sequence(Statement.note mb, init, normalize_sequences mb')) }
+		    normalize_sequences
+		      (Sequence (Statement.note mb, init, mb''))) }
   and lower_with w =
     { w with With.methods = List.map lower_method w.With.methods }
   and lower_inherits =
@@ -440,8 +457,8 @@ let pass input =
 	Declaration.Class c -> Declaration.Class (lower_class c)
       | Declaration.Interface i -> Declaration.Interface (lower_interface i)
       | (Declaration.Exception _
-	| Declaration.Datatype _
-	| Declaration.Function _
-	| Declaration.Object _) as d -> d
+      | Declaration.Datatype _
+      | Declaration.Function _
+      | Declaration.Object _) as d -> d
   in
     List.map lower_declaration input

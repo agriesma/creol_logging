@@ -75,7 +75,8 @@ let compute_in_body ~program ~cls ~meth =
       | LocalSyncCall (n, _, _, _, _, el, _)
       | AwaitLocalSyncCall (n, _, _, _, _, el, _)
       | MultiCast (n, _, _, _, el)
-      | Tailcall (n, _, _, _, _, el) ->
+      | Tailcall (n, _, _, _, _, el)
+      | Return (n, el) ->
 	  let uses' = List.fold_left add IdSet.empty el in
 	  let undef = IdSet.diff uses' n.must_def in
 	    if (IdSet.is_empty undef) then

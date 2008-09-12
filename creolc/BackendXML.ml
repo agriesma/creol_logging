@@ -314,12 +314,12 @@ let emit ~name ~tree =
           XmlTextWriter.end_element writer ;
 	  creol_statement_note_to_xml a ;
           XmlTextWriter.end_element writer
-      | Statement.MultiCast (a, t, m, s, es) ->
+      | Statement.MultiCast (a, c, m, s, es) ->
 	  XmlTextWriter.start_element writer "creol:multicast" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  creol_signature_to_xml s ;
 	  XmlTextWriter.start_element writer "creol:interface" ;
-	  creol_type_to_xml t ;
+	  creol_expression_to_xml c ;
           XmlTextWriter.end_element writer ;
 	  XmlTextWriter.start_element writer "creol:arguments" ;
 	  List.iter (function e -> 
@@ -343,6 +343,16 @@ let emit ~name ~tree =
 	    XmlTextWriter.start_element writer "creol:expression" ;
 	    creol_expression_to_xml e ;
             XmlTextWriter.end_element writer ) es ;
+          XmlTextWriter.end_element writer ;
+	  creol_statement_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Statement.Return (a, el) ->
+	  XmlTextWriter.start_element writer "creol:return" ;
+	  XmlTextWriter.start_element writer "creol:arguments" ;
+	  List.iter (function e -> 
+	    XmlTextWriter.start_element writer "creol:expression" ;
+	    creol_expression_to_xml e ;
+            XmlTextWriter.end_element writer ) el ;
           XmlTextWriter.end_element writer ;
 	  creol_statement_note_to_xml a ;
           XmlTextWriter.end_element writer
