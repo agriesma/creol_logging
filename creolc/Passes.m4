@@ -120,6 +120,11 @@ let passes = [
       dependencies = "";
       pass = TreeLife.analyse ;
       elapsed = 0.0; enabled = false; dump = false } ) ;
+  ( "warn-undef",
+    { help = "Check whether uses occur before definitions" ;
+      dependencies = CheckUseDef.dependencies ;
+      pass = CheckUseDef.analyse ;
+      elapsed = 0.0; enabled = true; dump = false } ) ;
   ( "free" ,
     { help = "Insert statements to free labels" ;
       dependencies = TreeFree.dependencies;
@@ -149,6 +154,7 @@ let help () =
     let name = fst ps
     and help = (snd ps).help
     in
+      assert (((String.length name) > 0) && ((String.length name) < 11));
       current ^ "    " ^ name ^
 	(String.make (11 - String.length name) ' ') ^
 	help ^ "\n"
