@@ -801,7 +801,9 @@ let typecheck tree: Program.t =
 		  (fun i -> Program.find_interface env.program (Type.name i)) l
 	    | Type.Internal ->
 		[]
-	    | Type.Basic n | Type.Application (n, _) ->
+	    | Type.Application (("List" | "Set"), [Type.Basic n]) ->
+		[Program.find_interface env.program n]
+	    | Type.Basic n | Type.Application (n, _)->
 		[Program.find_interface env.program n]
 	    | _ ->
 		assert false

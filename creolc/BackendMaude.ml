@@ -172,14 +172,22 @@ let emit options out_channel input =
       function
 	  Statement.Skip _ ->
 	    output_string out_channel "skip"
+	| Statement.Release _ ->
+	    output_string out_channel "release"
 	| Statement.Await (_, e) ->
 	    output_string out_channel "( await ";
 	    of_expression e;
 	    output_string out_channel " )"
-	| Statement.Posit (_, e) -> output_string out_channel "( posit ";
+	| Statement.Posit (_, e) ->
+	    output_string out_channel "( posit ";
 	    of_expression e;
 	    output_string out_channel " )"
-	| Statement.Release _ -> output_string out_channel "release"
+	| Statement.Assert (_, e) ->
+	    output_string out_channel "assert( ";
+	    of_expression e;
+	    output_string out_channel " )"
+	| Statement.Prove (n, _) ->
+	    print prec (Statement.Skip n)
 	| Statement.Assign (_, [n], [Expression.New (_, c, e)]) ->
 	    output_string out_channel "new( " ;
 	    of_lhs n ;
@@ -202,6 +210,12 @@ let emit options out_channel input =
 	    output_string out_channel "call( ";
 	    of_lhs l ;
 	    output_string out_channel " ; ";
+	    of_expression c ;
+	    output_string out_channel (" ; \"" ^ m ^ "\" ; ") ;
+	    of_expression_list a;
+	    output_string out_channel " )"
+	| Statement.MultiCast (_, c, m, _, a) ->
+	    output_string out_channel "multicast( ";
 	    of_expression c ;
 	    output_string out_channel (" ; \"" ^ m ^ "\" ; ") ;
 	    of_expression_list a;
@@ -240,12 +254,6 @@ let emit options out_channel input =
 	    output_string out_channel (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; ");
 	    of_expression_list i;
 	    output_string out_channel " )"
-	| Statement.Assert (_, e) ->
-	    output_string out_channel "assert( ";
-	    of_expression e;
-	    output_string out_channel " )"
-	| Statement.Prove (n, _) ->
-	    print prec (Statement.Skip n)
 	| Statement.Tailcall (_, m, _, None, None, i) ->
 	    output_string out_channel ( "tailcall (\"" ^ m ^ "\" ; ");
 	    of_expression_list i;
