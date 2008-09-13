@@ -47,6 +47,9 @@ let emit out_channel input =
   	    output_string out_channel
 	      ((d (Type.name t)) ^ "[shape=ellipse, label=\"" ^
 		 (Type.as_string t) ^ "\"];\n")
+      | Declaration.Object { Object.name = n } ->
+  	    output_string out_channel
+	      (n ^ "[shape=circle label=\"" ^ n ^ "\"];\n")
       | _ -> ()
   and emit_inherits =
     function
@@ -74,10 +77,34 @@ let emit out_channel input =
       | Declaration.Class { Class.name = n; contracts = l } ->
 	  List.iter (fun t -> edge (c n) (i (fst t)) "bold") l
       | _ -> ()
+  and emit_links =
+    function
+        Declaration.Object { Object.name = n; attributes = a } ->
+	  let e f t s =
+            output_string out_channel
+              (f ^ " -> " ^ t ^ "[label=\"" ^ s ^ "\"];\n")
+	  in
+	  let f attr =
+	    let rec get =
+	      function
+		| Expression.Tuple (_, l)
+		| Expression.ListLit (_, l)
+		| Expression.SetLit (_, l) -> List.flatten (List.map get l)
+		| Expression.ObjLit (_, s) -> [s]
+		| _ -> []
+            in
+            match attr with
+	      | { VarDecl.name = l ; init = Some i } ->
+		List.iter (fun t -> e n t l) (get i)
+              | _ -> ()
+          in
+	    List.iter f a
+      | _ -> ()
   in
   output_string out_channel "digraph G {\n" ;
   List.iter emit_node input ;
   List.iter emit_inherits input ;
   List.iter emit_implements input ;
   List.iter emit_contracts input ;
+  List.iter emit_links input ;
   output_string out_channel "}\n"
