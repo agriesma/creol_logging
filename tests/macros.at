@@ -128,7 +128,7 @@ DIFF([$1-pp1.creol], [$1-pp2.creol])
 
 dnl test the xml export.
 m4_define([TEST_CREOLC_XML],[dnl
-  if test -n "$BACKEND_XML"
+  if ${WITH_XML}
   then
     AT_CHECK([${CREOLC} -T xml -P typecheck -o $1-pass1.xml ${abs_srcdir}/$2/$1.creol])
   fi
@@ -138,11 +138,12 @@ dnl Test a particular pass.
 dnl
 m4_define([TEST_CREOLC_PASS],[dnl
 AT_SETUP([$1-$2])
-AT_CHECK([if test -n "$BACKEND_XML"
+if $WITH_XML
 then
-    ${CREOLC} -T xml -p $1 ${abs_srcdir}/$1/$2.creol -o $2.xml
+    AT_CHECK([${CREOLC} -T xml -p $1 ${abs_srcdir}/$1/$2.creol -o $2.xml],
+	     [0], [], [])
     DIFF([${abs_srcdir}/$1/$2.xml], [$2.xml])
-fi])
+fi
 AT_CLEANUP
 ])
 
