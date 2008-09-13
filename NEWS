@@ -1,23 +1,58 @@
-creoltools 0.0j (2008-06-09): alpha release.
+creoltools 0.0k (2008-09-13): alpha release.
+
+In the language:
+* A new multicast statement has been added.  It looks like an asynchronous
+  call statement (!e.m(args)), but e is not of an interface type but of a
+  collection type (currently List[I], Set[I]) of object identifiers I.
 
 In the standard library:
+* A replace function has been added, which allows to use lists in a similar
+  manner to arrays and vectors.
+* A make_list function has been added that generates a list of N identical
+  elements.
+* A make range functon has been added, that generates a list of numbers
+  between two bounds.
+* More string functions have been added.
 * A map type has been added.
+* Make equality polymorphic.  Type checking is much more precise if
+  = : [`a, `a -> Bool] instead of = : [Data, Data -> Bool]
 
 In the interpreters:
 * The CMC language has been revised to make it easily parseable for external
   tools.
-*
+* The interpreter has been refactored as a step towards using the Maude
+  LOOP-MODE and the SOCKET facilities.
+* Tail calls have been expanded and corrected.
+* The interpreter supports an assert statement, that will stop the object's
+  execution once the assertion fails.
+* The interpreter includes a commit statement to have more precise model
+  checking results.
 
 In the compiler:
 * Type checking is mandatory now to ensure correct code generation.
+* Some errors in the type checker have been corrected.
+* A pass that removes all assert statements has been added.
 * The Maude backend has been updated to emit code for the new format.
-*
+* The XML backend has been made optional.
+* A couple of code generation errors have been corrected.
+* Must live analysis and must be defined analysis.
+* Reinstate an updated version of tail-call optimisation.
+* Many errors have been corrected.
 
 Other:
 * A new module demonstrates a parser for the Maude output.  This module
   may be used to pretty-print the output.
+* A program has been added that validates the CMC output of Maude and
+  that pretty prints these outputs.
+* An index has been added to the manual.
 * The CMC format has been extensively documented.
-*
+* A couple of errors in the configure/make machinery have been corrected.
+* Documentation is now licensed under the terms of the GNU Free Documentation
+  License v1.2
+
+Known Bugs:
+* This release contains a version of a check of use before definition.
+  The current implementation does not work and has been disabled.
 
 
 creoltools 0.0j (2008-06-09): alpha release.
