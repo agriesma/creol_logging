@@ -223,9 +223,15 @@ The binary relation @code{>=} represents ``less than or equal''.
 The function @code{real_of_int} converts an integer value into a real
 value such that both represent the same number.
 
-@item rnd(s: Int): Int
+@item rnd(n: Int): Int
 @findex rnd
-Returns the next pseudo random number for seed @code{s}.
+The function @code{rnd} is a pseudo-random generator.  It accepts a
+natural number @var{n} as input and generates a number in the range
+@math{[0; 2^32-1]} by @var{n} consecutive applications of the
+Mersenne Twister Pseudorandom number generator.  Observe that
+@code{rnd} is purely functional, i.e., a call @code{rnd(0)} will
+always return @code{2357136044} (if the initial seed is @code{0};
+please check the Maude manual on how to use a different seed).
 @end table
 
 The compiler can represent integer numbers with arbitrary precision.
