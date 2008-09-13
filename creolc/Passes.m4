@@ -124,7 +124,7 @@ let passes = [
     { help = "Check whether uses occur before definitions" ;
       dependencies = CheckUseDef.dependencies ;
       pass = CheckUseDef.analyse ;
-      elapsed = 0.0; enabled = true; dump = false } ) ;
+      elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "free" ,
     { help = "Insert statements to free labels" ;
       dependencies = TreeFree.dependencies;
