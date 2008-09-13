@@ -429,6 +429,18 @@ eq
   [label deallocate] .
 
 
+--- TAIL CALLS
+---
+--- Fake the caller and the label and tag the label.  Since we do not
+--- want to interleave, this can also be an equation.
+---
+STEP(`< O : C | Att: S, Pr: { L | tailcall(E ; Q ; EL) ; SL }, PrQ: W,
+            Dealloc: LS, Ev: MM, Lcnt: F >' CLOCK,
+`< O : C | Att: S, Pr: { L | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  invoc(O, L[".label"], Q, EVALLIST(EL, (S :: L), T)) from O to EVAL(E, (S :: L), T)'
+  CLOCK,
+`[label tailcall]')
+
 --- STATIC TAIL CALLS
 ---
 --- Fake the caller and the label and tag the label.  Since we do not
