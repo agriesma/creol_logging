@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:interface name="I"/>
+ <creol:class name="C">
+  <creol:parameters>
+   <creol:vardecl name="i">
+    <creol:type name="I"/>
+   </creol:vardecl>
+  </creol:parameters>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+   <creol:method name="m" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="label:0">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:tailcall method="m">
+      <creol:signature>
+       <creol:cointerface>
+        <creol:type name="Any"/>
+       </creol:cointerface>
+       <creol:input-parameters/>
+       <creol:output-parameters/>
+      </creol:signature>
+      <callee>
+       <creol:identifier name="i">
+        <creol:expression-note file="Tailcall.creol" line="31">
+         <creol:inferred-type>
+          <creol:type name="I"/>
+         </creol:inferred-type>
+        </creol:expression-note>
+       </creol:identifier>
+      </callee>
+      <creol:arguments/>
+      <creol:statement-note file="Tailcall.creol" line="31"/>
+     </creol:tailcall>
+    </creol:body>
+   </creol:method>
+   <creol:method name="n" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="l">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:tailcall method="m">
+      <creol:signature>
+       <creol:cointerface>
+        <creol:type name="Any"/>
+       </creol:cointerface>
+       <creol:input-parameters/>
+       <creol:output-parameters/>
+      </creol:signature>
+      <callee>
+       <creol:identifier name="i">
+        <creol:expression-note file="Tailcall.creol" line="32">
+         <creol:inferred-type>
+          <creol:type name="I"/>
+         </creol:inferred-type>
+        </creol:expression-note>
+       </creol:identifier>
+      </callee>
+      <creol:arguments/>
+      <creol:statement-note file="Tailcall.creol" line="32"/>
+     </creol:tailcall>
+    </creol:body>
+   </creol:method>
+   <creol:method name="p" location="C">
+    <creol:inputs/>
+    <creol:outputs>
+     <creol:vardecl name="x">
+      <creol:type name="Int"/>
+     </creol:vardecl>
+    </creol:outputs>
+    <creol:variables>
+     <creol:vardecl name="label:0">
+      <creol:typeapplication name="Label">
+       <creol:type name="Int"/>
+      </creol:typeapplication>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:tailcall method="p">
+      <creol:signature>
+       <creol:cointerface>
+        <creol:type name="Any"/>
+       </creol:cointerface>
+       <creol:input-parameters/>
+       <creol:output-parameters>
+        <creol:type name="Int"/>
+       </creol:output-parameters>
+      </creol:signature>
+      <callee>
+       <creol:identifier name="i">
+        <creol:expression-note file="Tailcall.creol" line="33">
+         <creol:inferred-type>
+          <creol:type name="I"/>
+         </creol:inferred-type>
+        </creol:expression-note>
+       </creol:identifier>
+      </callee>
+      <creol:arguments/>
+      <creol:statement-note file="Tailcall.creol" line="33"/>
+     </creol:tailcall>
+    </creol:body>
+   </creol:method>
+   <creol:method name="p" location="C">
+    <creol:inputs/>
+    <creol:outputs>
+     <creol:vardecl name="x">
+      <creol:type name="Int"/>
+     </creol:vardecl>
+    </creol:outputs>
+    <creol:variables>
+     <creol:vardecl name="l">
+      <creol:typeapplication name="Label">
+       <creol:type name="Int"/>
+      </creol:typeapplication>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:tailcall method="p">
+      <creol:signature>
+       <creol:cointerface>
+        <creol:type name="Any"/>
+       </creol:cointerface>
+       <creol:input-parameters/>
+       <creol:output-parameters>
+        <creol:type name="Int"/>
+       </creol:output-parameters>
+      </creol:signature>
+      <callee>
+       <creol:identifier name="i">
+        <creol:expression-note file="Tailcall.creol" line="34">
+         <creol:inferred-type>
+          <creol:type name="I"/>
+         </creol:inferred-type>
+        </creol:expression-note>
+       </creol:identifier>
+      </callee>
+      <creol:arguments/>
+      <creol:statement-note file="Tailcall.creol" line="34"/>
+     </creol:tailcall>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>

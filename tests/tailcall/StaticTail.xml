@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<creol:creol xmlns:creol="http://www.creol.org/" version="0.0">
+ <creol:class name="C">
+  <creol:parameters/>
+  <creol:inherits/>
+  <creol:contracts/>
+  <creol:implements/>
+  <creol:attributes/>
+  <creol:with cointerface="/* Internal */">
+   <creol:method name="init" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+   <creol:method name="run" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables/>
+    <creol:body>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
+      <creol:statement-note file="**dummy**" line="0"/>
+     </creol:sequence>
+    </creol:body>
+   </creol:method>
+   <creol:method name="m" location="C">
+    <creol:inputs/>
+    <creol:outputs/>
+    <creol:variables>
+     <creol:vardecl name="label:0">
+      <creol:typeapplication name="Label"/>
+     </creol:vardecl>
+    </creol:variables>
+    <creol:body>
+     <creol:statictail method="m">
+      <creol:signature>
+       <creol:cointerface>
+        <creol:internal/>
+       </creol:cointerface>
+       <creol:input-parameters/>
+       <creol:output-parameters/>
+      </creol:signature>
+      <creol:arguments/>
+      <creol:statement-note file="StaticTail.creol" line="24"/>
+     </creol:statictail>
+    </creol:body>
+   </creol:method>
+  </creol:with>
+ </creol:class>
+</creol:creol>

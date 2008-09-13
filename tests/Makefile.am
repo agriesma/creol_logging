@@ -126,6 +126,8 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  free/LocalAsync.creol free/LocalAsync.xml \
 		  free/If.creol free/If.xml \
 		  free/Choice.creol free/Choice.xml \
+		  tailcall/StaticTail.creol tailcall/StaticTail.xml \
+		  tailcall/Tailcall.creol tailcall/Tailcall.xml \
 		  into-ssa/Assign.creol into-ssa/Assign.xml \
 		  split-ass/Assign.creol split-ass/Assign.xml \
 		  Datatypes.maude Datatypes.out \
