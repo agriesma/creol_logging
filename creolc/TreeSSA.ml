@@ -267,6 +267,10 @@ let into_ssa program =
 	  let (e2, p2) = statement_to_ssa meth env ass2 in
 	    (e2, Sequence (n, b'', p2))
       | DoWhile _ -> assert false
+      | Return (n, r) ->
+	  let r' = List.map (expression_to_ssa meth env) r in
+	    (env, Return (n, r'))
+      | Continue _ -> assert false
       | Sequence (n, s1, s2) ->
 	  let (e1, s1') = statement_to_ssa meth env s1 in
 	  let (e2, s2') = statement_to_ssa meth e1 s2 in
@@ -444,6 +448,10 @@ let out_of_ssa tree =
       | StaticTail (n, m, s, u, l, i) ->
 	  let i' = List.map expression_of_ssa i in
 	    StaticTail (n, m, s, u, l, i')
+      | Return (n, r) ->
+	  let r' = List.map expression_of_ssa r in
+	    Return (n, r')
+      | Continue _ -> assert false
       | If (n, c, l, r) ->
 	  let nc = expression_of_ssa c in
 	  let nl = statement_of_ssa l in
