@@ -13,9 +13,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
       <creol:statement-note file="**dummy**" line="0"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
    <creol:method name="run" location="C">
@@ -48,49 +55,78 @@
         </creol:expression>
        </creol:expressions>
        <creol:statement-note file="Async.creol" line="32">
-        <creol:def-var name="i"/>
+        <creol:maybe-def-var name="i"/>
+        <creol:mustbe-def-var name="i"/>
        </creol:statement-note>
       </creol:assign>
       <creol:sequence>
-       <creol:asynccall method="m">
-        <creol:signature>
-         <creol:cointerface>
-          <creol:type name="I"/>
-         </creol:cointerface>
-         <creol:input-parameters/>
-         <creol:output-parameters/>
-        </creol:signature>
-        <creol:identifier name="l"/>
-        <creol:callee>
-         <creol:identifier name="i">
-          <creol:expression-note file="Async.creol" line="33">
-           <creol:inferred-type>
-            <creol:type name="I"/>
-           </creol:inferred-type>
-          </creol:expression-note>
-         </creol:identifier>
-        </creol:callee>
+       <creol:sequence>
+        <creol:asynccall method="m">
+         <creol:signature>
+          <creol:cointerface>
+           <creol:type name="I"/>
+          </creol:cointerface>
+          <creol:input-parameters/>
+          <creol:output-parameters/>
+         </creol:signature>
+         <creol:identifier name="l"/>
+         <creol:callee>
+          <creol:identifier name="i">
+           <creol:expression-note file="Async.creol" line="33">
+            <creol:inferred-type>
+             <creol:type name="I"/>
+            </creol:inferred-type>
+           </creol:expression-note>
+          </creol:identifier>
+         </creol:callee>
+         <creol:arguments/>
+         <creol:statement-note file="Async.creol" line="33">
+          <creol:maybe-def-var name="i"/>
+          <creol:maybe-def-var name="l"/>
+          <creol:mustbe-def-var name="i"/>
+          <creol:mustbe-def-var name="l"/>
+          <creol:maybe-life-var name="i"/>
+          <creol:mustbe-life-var name="i"/>
+         </creol:statement-note>
+        </creol:asynccall>
+        <creol:free>
+         <creol:identifier name="l"/>
+         <creol:statement-note file="Async.creol" line="33">
+          <creol:maybe-def-var name="i"/>
+          <creol:maybe-def-var name="l"/>
+          <creol:mustbe-def-var name="i"/>
+          <creol:maybe-life-var name="i"/>
+          <creol:mustbe-life-var name="i"/>
+         </creol:statement-note>
+        </creol:free>
+        <creol:statement-note file="Async.creol" line="33">
+         <creol:maybe-def-var name="i"/>
+         <creol:maybe-def-var name="l"/>
+         <creol:mustbe-def-var name="i"/>
+         <creol:maybe-life-var name="i"/>
+         <creol:mustbe-life-var name="i"/>
+        </creol:statement-note>
+       </creol:sequence>
+       <creol:return>
         <creol:arguments/>
-        <creol:statement-note file="Async.creol" line="33">
-         <creol:def-var name="i"/>
-         <creol:def-var name="l"/>
-         <creol:life-var name="i"/>
+        <creol:statement-note file="Async.creol" line="32">
+         <creol:maybe-def-var name="i"/>
+         <creol:maybe-def-var name="l"/>
+         <creol:mustbe-def-var name="i"/>
         </creol:statement-note>
-       </creol:asynccall>
-       <creol:free>
-        <creol:identifier name="l"/>
-        <creol:statement-note file="Async.creol" line="33">
-         <creol:def-var name="i"/>
-         <creol:life-var name="i"/>
-        </creol:statement-note>
-       </creol:free>
-       <creol:statement-note file="Async.creol" line="33">
-        <creol:def-var name="i"/>
-        <creol:life-var name="i"/>
+       </creol:return>
+       <creol:statement-note file="Async.creol" line="32">
+        <creol:maybe-def-var name="i"/>
+        <creol:maybe-def-var name="l"/>
+        <creol:mustbe-def-var name="i"/>
+        <creol:maybe-life-var name="i"/>
+        <creol:mustbe-life-var name="i"/>
        </creol:statement-note>
       </creol:sequence>
       <creol:statement-note file="Async.creol" line="32">
-       <creol:def-var name="i"/>
+       <creol:maybe-def-var name="i"/>
+       <creol:maybe-def-var name="l"/>
+       <creol:mustbe-def-var name="i"/>
       </creol:statement-note>
      </creol:sequence>
     </creol:body>
@@ -102,9 +138,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="Async.creol" line="36"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="Async.creol" line="36"/>
+      </creol:return>
       <creol:statement-note file="Async.creol" line="36"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
   </creol:with>

@@ -12,9 +12,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
       <creol:statement-note file="**dummy**" line="0"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
    <creol:method name="run" location="C">
@@ -27,25 +34,41 @@
     </creol:variables>
     <creol:body>
      <creol:sequence>
-      <creol:localasynccall method="run">
-       <creol:signature>
-        <creol:cointerface>
-         <creol:internal/>
-        </creol:cointerface>
-        <creol:input-parameters/>
-        <creol:output-parameters/>
-       </creol:signature>
-       <creol:identifier name="l"/>
+      <creol:sequence>
+       <creol:localasynccall method="run">
+        <creol:signature>
+         <creol:cointerface>
+          <creol:internal/>
+         </creol:cointerface>
+         <creol:input-parameters/>
+         <creol:output-parameters/>
+        </creol:signature>
+        <creol:identifier name="l"/>
+        <creol:arguments/>
+        <creol:statement-note file="LocalAsync.creol" line="24">
+         <creol:maybe-def-var name="l"/>
+         <creol:mustbe-def-var name="l"/>
+        </creol:statement-note>
+       </creol:localasynccall>
+       <creol:free>
+        <creol:identifier name="l"/>
+        <creol:statement-note file="LocalAsync.creol" line="24">
+         <creol:maybe-def-var name="l"/>
+        </creol:statement-note>
+       </creol:free>
+       <creol:statement-note file="LocalAsync.creol" line="24">
+        <creol:maybe-def-var name="l"/>
+       </creol:statement-note>
+      </creol:sequence>
+      <creol:return>
        <creol:arguments/>
        <creol:statement-note file="LocalAsync.creol" line="24">
-        <creol:def-var name="l"/>
+        <creol:maybe-def-var name="l"/>
        </creol:statement-note>
-      </creol:localasynccall>
-      <creol:free>
-       <creol:identifier name="l"/>
-       <creol:statement-note file="LocalAsync.creol" line="24"/>
-      </creol:free>
-      <creol:statement-note file="LocalAsync.creol" line="24"/>
+      </creol:return>
+      <creol:statement-note file="LocalAsync.creol" line="24">
+       <creol:maybe-def-var name="l"/>
+      </creol:statement-note>
      </creol:sequence>
     </creol:body>
    </creol:method>

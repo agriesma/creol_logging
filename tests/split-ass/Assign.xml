@@ -12,9 +12,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
       <creol:statement-note file="**dummy**" line="0"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
    <creol:method name="run" location="C">
@@ -22,9 +29,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
       <creol:statement-note file="**dummy**" line="0"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
    <creol:method name="m" location="C">
@@ -78,40 +92,47 @@
        <creol:statement-note file="Assign.creol" line="24"/>
       </creol:sequence>
       <creol:sequence>
-       <creol:assign>
-        <creol:targets>
-         <creol:ssa-name name="x" version="2"/>
-        </creol:targets>
-        <creol:expressions>
-         <creol:expression>
-          <creol:ssa-name name="y" version="1">
-           <creol:expression-note file="Assign.creol" line="24">
-            <creol:inferred-type>
-             <creol:type name="Int"/>
-            </creol:inferred-type>
-           </creol:expression-note>
-          </creol:ssa-name>
-         </creol:expression>
-        </creol:expressions>
+       <creol:sequence>
+        <creol:assign>
+         <creol:targets>
+          <creol:ssa-name name="x" version="2"/>
+         </creol:targets>
+         <creol:expressions>
+          <creol:expression>
+           <creol:ssa-name name="y" version="1">
+            <creol:expression-note file="Assign.creol" line="24">
+             <creol:inferred-type>
+              <creol:type name="Int"/>
+             </creol:inferred-type>
+            </creol:expression-note>
+           </creol:ssa-name>
+          </creol:expression>
+         </creol:expressions>
+         <creol:statement-note file="Assign.creol" line="24"/>
+        </creol:assign>
+        <creol:assign>
+         <creol:targets>
+          <creol:ssa-name name="y" version="2"/>
+         </creol:targets>
+         <creol:expressions>
+          <creol:expression>
+           <creol:ssa-name name="x" version="1">
+            <creol:expression-note file="Assign.creol" line="24">
+             <creol:inferred-type>
+              <creol:type name="Int"/>
+             </creol:inferred-type>
+            </creol:expression-note>
+           </creol:ssa-name>
+          </creol:expression>
+         </creol:expressions>
+         <creol:statement-note file="Assign.creol" line="24"/>
+        </creol:assign>
         <creol:statement-note file="Assign.creol" line="24"/>
-       </creol:assign>
-       <creol:assign>
-        <creol:targets>
-         <creol:ssa-name name="y" version="2"/>
-        </creol:targets>
-        <creol:expressions>
-         <creol:expression>
-          <creol:ssa-name name="x" version="1">
-           <creol:expression-note file="Assign.creol" line="24">
-            <creol:inferred-type>
-             <creol:type name="Int"/>
-            </creol:inferred-type>
-           </creol:expression-note>
-          </creol:ssa-name>
-         </creol:expression>
-        </creol:expressions>
+       </creol:sequence>
+       <creol:return>
+        <creol:arguments/>
         <creol:statement-note file="Assign.creol" line="24"/>
-       </creol:assign>
+       </creol:return>
        <creol:statement-note file="Assign.creol" line="24"/>
       </creol:sequence>
       <creol:statement-note file="Assign.creol" line="24"/>

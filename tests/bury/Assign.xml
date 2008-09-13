@@ -12,9 +12,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
       <creol:statement-note file="**dummy**" line="0"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
    <creol:method name="run" location="C">
@@ -44,48 +51,75 @@
          </creol:expression>
         </creol:expressions>
         <creol:statement-note file="Assign.creol" line="26">
-         <creol:def-var name="i"/>
+         <creol:maybe-def-var name="i"/>
+         <creol:mustbe-def-var name="i"/>
         </creol:statement-note>
        </creol:assign>
        <creol:bury>
         <creol:identifier name="i"/>
-        <creol:statement-note file="Assign.creol" line="26"/>
+        <creol:statement-note file="Assign.creol" line="26">
+         <creol:maybe-def-var name="i"/>
+        </creol:statement-note>
        </creol:bury>
-       <creol:statement-note file="Assign.creol" line="26"/>
+       <creol:statement-note file="Assign.creol" line="26">
+        <creol:maybe-def-var name="i"/>
+       </creol:statement-note>
       </creol:sequence>
       <creol:sequence>
        <creol:release>
-        <creol:statement-note file="Assign.creol" line="27"/>
+        <creol:statement-note file="Assign.creol" line="27">
+         <creol:maybe-def-var name="i"/>
+        </creol:statement-note>
        </creol:release>
        <creol:sequence>
-        <creol:assign>
-         <creol:targets>
+        <creol:sequence>
+         <creol:assign>
+          <creol:targets>
+           <creol:identifier name="i"/>
+          </creol:targets>
+          <creol:expressions>
+           <creol:expression>
+            <creol:int value="1">
+             <creol:expression-note file="Assign.creol" line="28">
+              <creol:inferred-type>
+               <creol:type name="Int"/>
+              </creol:inferred-type>
+             </creol:expression-note>
+            </creol:int>
+           </creol:expression>
+          </creol:expressions>
+          <creol:statement-note file="Assign.creol" line="28">
+           <creol:maybe-def-var name="i"/>
+           <creol:mustbe-def-var name="i"/>
+          </creol:statement-note>
+         </creol:assign>
+         <creol:bury>
           <creol:identifier name="i"/>
-         </creol:targets>
-         <creol:expressions>
-          <creol:expression>
-           <creol:int value="1">
-            <creol:expression-note file="Assign.creol" line="28">
-             <creol:inferred-type>
-              <creol:type name="Int"/>
-             </creol:inferred-type>
-            </creol:expression-note>
-           </creol:int>
-          </creol:expression>
-         </creol:expressions>
+          <creol:statement-note file="Assign.creol" line="28">
+           <creol:maybe-def-var name="i"/>
+          </creol:statement-note>
+         </creol:bury>
          <creol:statement-note file="Assign.creol" line="28">
-          <creol:def-var name="i"/>
+          <creol:maybe-def-var name="i"/>
          </creol:statement-note>
-        </creol:assign>
-        <creol:bury>
-         <creol:identifier name="i"/>
-         <creol:statement-note file="Assign.creol" line="28"/>
-        </creol:bury>
-        <creol:statement-note file="Assign.creol" line="28"/>
+        </creol:sequence>
+        <creol:return>
+         <creol:arguments/>
+         <creol:statement-note file="Assign.creol" line="26">
+          <creol:maybe-def-var name="i"/>
+         </creol:statement-note>
+        </creol:return>
+        <creol:statement-note file="Assign.creol" line="27">
+         <creol:maybe-def-var name="i"/>
+        </creol:statement-note>
        </creol:sequence>
-       <creol:statement-note file="Assign.creol" line="27"/>
+       <creol:statement-note file="Assign.creol" line="26">
+        <creol:maybe-def-var name="i"/>
+       </creol:statement-note>
       </creol:sequence>
-      <creol:statement-note file="Assign.creol" line="26"/>
+      <creol:statement-note file="Assign.creol" line="26">
+       <creol:maybe-def-var name="i"/>
+      </creol:statement-note>
      </creol:sequence>
     </creol:body>
    </creol:method>

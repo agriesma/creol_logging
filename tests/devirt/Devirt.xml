@@ -16,9 +16,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
       <creol:statement-note file="**dummy**" line="0"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
    <creol:method name="init" location="A">
@@ -26,23 +33,30 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:assign>
-      <creol:targets>
-       <creol:attribute name="x"/>
-      </creol:targets>
-      <creol:expressions>
-       <creol:expression>
-        <creol:int value="0">
-         <creol:expression-note file="Devirt.creol" line="25">
-          <creol:inferred-type>
-           <creol:type name="Int"/>
-          </creol:inferred-type>
-         </creol:expression-note>
-        </creol:int>
-       </creol:expression>
-      </creol:expressions>
+     <creol:sequence>
+      <creol:assign>
+       <creol:targets>
+        <creol:attribute name="x"/>
+       </creol:targets>
+       <creol:expressions>
+        <creol:expression>
+         <creol:int value="0">
+          <creol:expression-note file="Devirt.creol" line="25">
+           <creol:inferred-type>
+            <creol:type name="Int"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:int>
+        </creol:expression>
+       </creol:expressions>
+       <creol:statement-note file="Devirt.creol" line="25"/>
+      </creol:assign>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="Devirt.creol" line="25"/>
+      </creol:return>
       <creol:statement-note file="Devirt.creol" line="25"/>
-     </creol:assign>
+     </creol:sequence>
     </creol:body>
    </creol:method>
   </creol:with>
@@ -61,9 +75,16 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:skip>
+     <creol:sequence>
+      <creol:skip>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:skip>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="**dummy**" line="0"/>
+      </creol:return>
       <creol:statement-note file="**dummy**" line="0"/>
-     </creol:skip>
+     </creol:sequence>
     </creol:body>
    </creol:method>
    <creol:method name="run" location="B">
@@ -71,44 +92,51 @@
     <creol:outputs/>
     <creol:variables/>
     <creol:body>
-     <creol:assign>
-      <creol:targets>
-       <creol:attribute name="x"/>
-      </creol:targets>
-      <creol:expressions>
-       <creol:expression>
-        <creol:funccall name="+">
-         <creol:arguments>
-          <creol:argument>
-           <creol:staticattr name="x">
-            <creol:type name="A"/>
-            <creol:expression-note file="Devirt.creol" line="31">
-             <creol:inferred-type>
-              <creol:type name="Int"/>
-             </creol:inferred-type>
-            </creol:expression-note>
-           </creol:staticattr>
-          </creol:argument>
-          <creol:argument>
-           <creol:int value="1">
-            <creol:expression-note file="Devirt.creol" line="31">
-             <creol:inferred-type>
-              <creol:type name="Int"/>
-             </creol:inferred-type>
-            </creol:expression-note>
-           </creol:int>
-          </creol:argument>
-         </creol:arguments>
-         <creol:expression-note file="Devirt.creol" line="31">
-          <creol:inferred-type>
-           <creol:type name="Int"/>
-          </creol:inferred-type>
-         </creol:expression-note>
-        </creol:funccall>
-       </creol:expression>
-      </creol:expressions>
+     <creol:sequence>
+      <creol:assign>
+       <creol:targets>
+        <creol:attribute name="x"/>
+       </creol:targets>
+       <creol:expressions>
+        <creol:expression>
+         <creol:funccall name="+">
+          <creol:arguments>
+           <creol:argument>
+            <creol:staticattr name="x">
+             <creol:type name="A"/>
+             <creol:expression-note file="Devirt.creol" line="31">
+              <creol:inferred-type>
+               <creol:type name="Int"/>
+              </creol:inferred-type>
+             </creol:expression-note>
+            </creol:staticattr>
+           </creol:argument>
+           <creol:argument>
+            <creol:int value="1">
+             <creol:expression-note file="Devirt.creol" line="31">
+              <creol:inferred-type>
+               <creol:type name="Int"/>
+              </creol:inferred-type>
+             </creol:expression-note>
+            </creol:int>
+           </creol:argument>
+          </creol:arguments>
+          <creol:expression-note file="Devirt.creol" line="31">
+           <creol:inferred-type>
+            <creol:type name="Int"/>
+           </creol:inferred-type>
+          </creol:expression-note>
+         </creol:funccall>
+        </creol:expression>
+       </creol:expressions>
+       <creol:statement-note file="Devirt.creol" line="31"/>
+      </creol:assign>
+      <creol:return>
+       <creol:arguments/>
+       <creol:statement-note file="Devirt.creol" line="31"/>
+      </creol:return>
       <creol:statement-note file="Devirt.creol" line="31"/>
-     </creol:assign>
+     </creol:sequence>
     </creol:body>
    </creol:method>
   </creol:with>
