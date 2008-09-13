@@ -58,10 +58,8 @@ GRAMMAR_TEST(STATEMENT, await ?("test") , skip)
 GRAMMAR_TEST(STATEMENT, return (emp), skip)
 GRAMMAR_TEST(STATEMENT, {| return ("a" :: null :: "c") |}, skip)
 GRAMMAR_TEST(STATEMENT, free ("a" ), skip)
-GRAMMAR_TEST(STATEMENT, tailcall("m" ; emp), skip)
-GRAMMAR_TEST(STATEMENT, {| tailcall("m" ; null :: "a") |}, skip)
-dnl Should not be accepted, but is with an ambigous parse!
-dnl GRAMMAR_TEST(STATEMENT, "l" ! "this" . "m" @ "C" ( emp ) , skip)
+GRAMMAR_TEST(STATEMENT, tailcall("this" ; "m" ; emp), skip)
+GRAMMAR_TEST(STATEMENT, {| tailcall("this" ; "m" ; null :: "a") |}, skip)
 GRAMMAR_TEST(STATEMENT, {| assert(bool(true)) |}, skip)
 GRAMMAR_TEST(STATEMENT, {| failure(bool(true)) |}, skip)
 

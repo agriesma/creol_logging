@@ -41,7 +41,7 @@ eq classes =
   Param: ("sc" , "elves"),
   Att: ("sc" |-> null , "elves" |-> null),
   Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: static( "label:0" ; "run" ; "Elf" ; emp ) ; get( "label:0" ; noVid ) ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: static( "label:0" ; "run" ; "Elf" ; "" ; emp ) ; get( "label:0" ; noVid ) ; return ( emp ) > ,
     < "work" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "sc" ; "haveProblem" ; emp ) ; free( "label:0" ) ; return ( emp ) >),
   Ocnt: 0 >
 

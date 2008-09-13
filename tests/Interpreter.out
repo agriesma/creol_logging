@@ -4,8 +4,8 @@ result Configuration:
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; tailcall("run" ; emp) el return(emp) fi
-    >,
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    return(emp) fi >,
   Ocnt: 0 >
  
 < ob("main") : "" |
@@ -32,8 +32,8 @@ conf:Configuration -->
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; tailcall("run" ; emp) el return(emp) fi
-    >,
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    return(emp) fi >,
   Ocnt: 1 >
  
 < ob("main") : "" |
@@ -49,8 +49,8 @@ L:Subst --> noSubst
 SL:StmtList --> noStmt
 W:MProc --> {".class" |-> str("Tailcall"), ".label" |-> tag(label(ob(
     "Tailcall0"), 1)), ".method" |-> str("run"), "caller" |-> ob("Tailcall0") |
-    if "<"(int(0) :: "x") th assign("x" ; "-"("x" :: int(1))) ; tailcall("run"
-    ; emp) el return(emp) fi}
+    if "<"(int(0) :: "x") th assign("x" ; "-"("x" :: int(1))) ; statictail(
+    "run" ; "" ; "" ; emp) el return(emp) fi}
 LS:Labels --> label(ob("Tailcall0"), 1)
 MM:MMsg --> noMsg
 N:Nat --> 2
@@ -72,8 +72,8 @@ result Configuration:
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; tailcall("run" ; emp) el return(emp) fi
-    >,
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    return(emp) fi >,
   Ocnt: 1 >
  
 < ob("Tailcall0") : "Tailcall" |

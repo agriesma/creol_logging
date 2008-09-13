@@ -675,12 +675,28 @@ let parse name input =
 	| _ -> lhs
   and parse_statement input =
     match Stream.peek input with
-      | Some Key ("release", _) ->
-	  Stream.junk input;
-	  Statement.Release (Statement.make_note ())
       | Some Key ("skip", _) ->
 	  Stream.junk input;
 	  Statement.Skip (Statement.make_note ())
+      | Some Key ("commit", _) ->
+	  Stream.junk input;
+	  assert false
+      | Some Key ("release", _) ->
+	  Stream.junk input;
+	  Statement.Release (Statement.make_note ())
+      | Some Key ("await", _) ->
+	  let () = Stream.junk input in
+	  let c = parse_expression input in
+	    Statement.Await (Statement.make_note (), c)
+      | Some Key ("posit", _) ->
+	  let () = Stream.junk input in
+	  let c = parse_expression input in
+	    Statement.Posit (Statement.make_note (), c)
+      | Some Key ( ("assert" | "failure") , _) ->
+	  (* We map the failure back to the assert statement for now. *)
+	  let () = Stream.junk input in
+	  let c = parse_expression input in
+	    Statement.Assert (Statement.make_note (), c)
       | Some Key ("assign", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in
@@ -720,12 +736,14 @@ let parse name input =
 	  let () = junk_semicolon input in
 	  let m = parse_method_name input in
 	  let () = junk_semicolon input in
-	  let ub = parse_string input in
+	  let lb = parse_bound input in
+	  let () = junk_semicolon input in
+	  let ub = parse_bound input in
 	  let () = junk_semicolon input in
 	  let a = parse_expression_list input in
 	  let () = junk_rparen input in
 	    Statement.LocalAsyncCall (Statement.make_note (), Some l, m,
-				      Type.default_sig (), None, Some ub, a)
+				      Type.default_sig (), lb, ub, a)
       | Some Key ("multicast", _) | Some Key ("$multicast", _) ->
           let () = Stream.junk input in
           let () = junk_lparen input in
@@ -737,6 +755,50 @@ let parse name input =
           let () = junk_rparen input in
             Statement.MultiCast (Statement.make_note (), e, m,
 				 Type.default_sig (), a)
+      | Some Key ("get", _) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let e = parse_expression input in
+	  let () = junk_semicolon input in
+	  let r = parse_lhs_list input in
+	  let () = junk_rparen input in
+	    Statement.Reply (Statement.make_note (), e, r)
+      | Some Key ("return", _) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let a = parse_expression_list input in
+	  let () = junk_rparen input in
+	    Statement.Return (Statement.make_note (), a)
+      | Some Key ("free", _) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let l = parse_lhs_list input in
+	  let () = junk_rparen input in
+	    Statement.Free (Statement.make_note (), l)
+      | Some Key ("tailcall", _) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let c = parse_expression input in
+	  let () = junk_semicolon input in
+          let m = parse_method_name input in
+	  let () = junk_semicolon input in
+	  let a = parse_expression_list input in
+	  let () = junk_rparen input in
+	    Statement.Tailcall (Statement.make_note (), c, m,
+				Type.default_sig (), a)
+      | Some Key ("statictail", _) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let m = parse_method_name input in
+	  let () = junk_semicolon input in
+	  let lb = parse_bound input in
+	  let () = junk_semicolon input in
+	  let ub = parse_bound input in
+          let () = junk_semicolon input in
+	  let a = parse_expression_list input in
+	  let () = junk_rparen input in
+	    Statement.StaticTail (Statement.make_note (), m,
+				  Type.default_sig (), lb, ub, a)
       | Some Key ("$cont", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in
@@ -760,41 +822,6 @@ let parse name input =
 	  let d = parse_merge_statement input in
 	  let () = junk_keyword "od" input in
 	    Statement.While (Statement.make_note (), c, t, d)
-      | Some Key ("get", _) ->
-	  let () = Stream.junk input in
-	  let () = junk_lparen input in
-	  let e = parse_expression input in
-	  let () = junk_semicolon input in
-	  let r = parse_lhs_list input in
-	  let () = junk_rparen input in
-	    Statement.Reply (Statement.make_note (), e, r)
-      | Some Key ("return", _) ->
-	  let () = Stream.junk input in
-	  let () = junk_lparen input in
-	  let _ = parse_expression_list input in
-	  let () = junk_rparen input in
-	    Statement.Skip (Statement.make_note ())
-      | Some Key ("free", _) ->
-	  let () = Stream.junk input in
-	  let () = junk_lparen input in
-	  let l = parse_lhs_list input in
-	  let () = junk_rparen input in
-	    Statement.Free (Statement.make_note (), l)
-      | Some Key ("await", _) ->
-	  let () = Stream.junk input in
-	  let c = parse_expression input in
-	    Statement.Await (Statement.make_note (), c)
-      | Some Key ("posit", _) ->
-	  let () = Stream.junk input in
-	  let c = parse_expression input in
-	    Statement.Posit (Statement.make_note (), c)
-      | Some Key ( ("assert" | "failure") , _) ->
-	  (* We map the failure back to the assert statement for now. *)
-	  let () = Stream.junk input in
-	  let () = junk_lparen input in
-	  let c = parse_expression input in
-	  let () = junk_rparen input in
-	    Statement.Assert (Statement.make_note (), c)
       | Some LParen _ ->
 	  let () = Stream.junk input in
 	  let s = parse_merge_statement input in
@@ -986,6 +1013,10 @@ let parse name input =
 			   ")"))
       | None ->
 	  raise (Eof "")
+  and parse_bound input =
+    match parse_string input with
+      | "" -> None
+      | s -> Some s
   and parse_string input =
     match Stream.peek input with
       | Some Str (s, _) ->

@@ -183,7 +183,7 @@ let emit options out_channel input =
 	    of_expression e;
 	    output_string out_channel " )"
 	| Statement.Assert (_, e) ->
-	    output_string out_channel "assert( ";
+	    output_string out_channel "( assert ";
 	    of_expression e;
 	    output_string out_channel " )"
 	| Statement.Prove (n, _) ->
@@ -251,11 +251,19 @@ let emit options out_channel input =
 	| Statement.LocalAsyncCall (_, Some l, m, _, Some lb, None, i) ->
 	    output_string out_channel "static( " ;
 	    of_lhs l ;
-	    output_string out_channel (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; ");
+	    output_string out_channel
+	      (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; \"\" ; ");
 	    of_expression_list i;
 	    output_string out_channel " )"
-	| Statement.Tailcall (_, m, _, None, None, i) ->
-	    output_string out_channel ( "tailcall (\"" ^ m ^ "\" ; ");
+	| Statement.Tailcall (_, c, m, _, i) ->
+	    output_string out_channel "tailcall (" ;
+	    of_expression c ;
+            output_string out_channel (" ; \"" ^ m ^ "\" ; ");
+	    of_expression_list i;
+	    output_string out_channel " )"
+	| Statement.StaticTail (_, m, _, None, None, i) ->
+	    output_string out_channel
+		( "statictail (\"" ^ m ^ "\" ; \"\" ; \"\" ; ");
 	    of_expression_list i;
 	    output_string out_channel " )"
 	| Statement.Return (_, el) ->

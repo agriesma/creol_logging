@@ -74,8 +74,8 @@ let compute_in_body ~program ~cls ~meth =
       | LocalAsyncCall (n, _, _, _, _, _, el)
       | LocalSyncCall (n, _, _, _, _, el, _)
       | AwaitLocalSyncCall (n, _, _, _, _, el, _)
-      | MultiCast (n, _, _, _, el)
-      | Tailcall (n, _, _, _, _, el)
+      | Discover (n, _, _, _, el)
+      | StaticTail (n, _, _, _, _, el)
       | Return (n, el) ->
 	  let uses' = List.fold_left add IdSet.empty el in
 	  let undef = IdSet.diff uses' n.must_def in
@@ -83,8 +83,11 @@ let compute_in_body ~program ~cls ~meth =
 	      ()
 	    else
 	      warn n undef
-      | AsyncCall (n, _, c, _, _, el) | SyncCall (n, c, _, _, el, _) 
-      | AwaitSyncCall (n, c, _, _, el, _) ->
+      | AsyncCall (n, _, c, _, _, el)
+      | SyncCall (n, c, _, _, el, _) 
+      | AwaitSyncCall (n, c, _, _, el, _)
+      | MultiCast (n, c, _, _, el)
+      | Tailcall (n, c, _, _, el) ->
 	  let uses' = List.fold_left add IdSet.empty (c::el) in
 	  let undef = IdSet.diff uses' n.must_def in
 	    if (IdSet.is_empty undef) then

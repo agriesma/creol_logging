@@ -375,8 +375,33 @@ let emit out_channel input =
 	    output_string out_channel ("." ^ m ^ "(");
 	    pretty_print_expression_list a;
 	    output_string out_channel ")"
-	| Statement.Tailcall (_, m, _, l, u, i) -> assert false
-	| Statement.Return (_, l) -> assert false
+	| Statement.Discover (_, t, m, _, a) ->
+	    output_string out_channel
+	      ("!" ^ (Type.as_string t) ^ "." ^ m ^ "(");
+	    pretty_print_expression_list a;
+	    output_string out_channel ")"
+	| Statement.Tailcall (_, c, m, _, i) ->
+	    output_string out_channel "/* tailcall " ;
+	    pretty_print_expression c ;
+	    output_string out_channel ("." ^ m ^ "(");
+	    pretty_print_expression_list i ;
+	    output_string out_channel ") */"
+	| Statement.StaticTail (_, m, _, l, u, i) ->
+	    output_string out_channel "/* static tailcall " ;
+	    output_string out_channel m ;
+	    (match l with
+		None -> ()
+	      | Some n -> output_string out_channel (":>" ^ n));
+	    (match u with
+		None -> ()
+	      | Some n -> output_string out_channel ("<:" ^ n));
+	    output_string out_channel "(" ;
+	    pretty_print_expression_list i;
+	    output_string out_channel ") */"
+	| Statement.Return (_, o) ->
+	    output_string out_channel "/* return(" ;
+	    pretty_print_expression_list o ;
+	    output_string out_channel ") */"
 	| Statement.If (_, c, t, f) ->
 	    output_string out_channel "if ";
 	    pretty_print_expression c;

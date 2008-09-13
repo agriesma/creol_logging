@@ -262,18 +262,30 @@ let compute_in_body ~program ~cls ~meth =
 	  in
 	    logio stmt may n'.may_live ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
-      | MultiCast (n, t, m, s, a) ->
-	  let g = List.fold_left (add gen) IdSet.empty a in
+      | MultiCast (n, c, m, s, a) ->
+	  let g = List.fold_left (add gen) IdSet.empty (c::a) in
 	  let n' = { n with may_live = IdSet.union g may } in
 	    logio stmt may n'.may_live ;
-	    MultiCast (n', t, m, s, a)
-      | Tailcall (n, m, s, u, l, ins) ->
+	    MultiCast (n', c, m, s, a)
+      | Discover (n, t, m, s, i) ->
+	  let g = List.fold_left (add gen) IdSet.empty i in
+	  let n' = { n with may_live = IdSet.union g may } in
+	    logio stmt may n'.may_live ;
+	    Discover (n', t, m, s, i)
+      | Tailcall (n, c, m, s, i) ->
+	  let g = List.fold_left (add gen) IdSet.empty (c::i) in
+	  let n' = { n with may_live = IdSet.union g may;
+			    must_live = IdSet.union g must }
+	  in
+	    logio stmt may n'.may_live ;
+	    Tailcall (n', c, m, s, i)
+      | StaticTail (n, m, s, u, l, ins) ->
 	  let g = List.fold_left (add gen) IdSet.empty ins in
 	  let n' = { n with may_live = IdSet.union g may;
 			    must_live = IdSet.union g must }
 	  in
 	    logio stmt may n'.may_live ;
-	    Tailcall (n', m, s, u, l, ins)
+	    StaticTail (n', m, s, u, l, ins)
       | Return (n, el) ->
 	  let g = List.fold_left (add gen) IdSet.empty el in
 	  let n' = { n with may_live = IdSet.union g may;

@@ -123,8 +123,15 @@ let devirt_statement program cls meth stmt =
       | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
 	  AwaitLocalSyncCall (n, m, s, u, l, List.map devirt_expression i,
 			      List.map devirt_lhs o)
-      | Tailcall (n, m, s, ub, lb, i) ->
-	  Tailcall (n, m, s, ub, lb, List.map devirt_expression i)
+      | MultiCast (n, c, m, s, i) ->
+	  MultiCast (n, devirt_expression c, m, s,
+		     List.map devirt_expression i)
+      | Discover (n, t, m, s, i) ->
+	  Discover (n, t, m, s, List.map devirt_expression i)
+      | Tailcall (n, c, m, s, i) ->
+	  Tailcall (n, devirt_expression c, m, s, List.map devirt_expression i)
+      | StaticTail (n, m, s, ub, lb, i) ->
+	  StaticTail (n, m, s, ub, lb, List.map devirt_expression i)
       | If (n, c, l, r) ->
 	  If (n, devirt_expression c, work l, work r)
       | While (n, c, i, b) ->

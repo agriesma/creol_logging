@@ -328,8 +328,23 @@ let emit ~name ~tree =
             XmlTextWriter.end_element writer ) es ;
           XmlTextWriter.end_element writer ;
 	  creol_statement_note_to_xml a
-      | Statement.Tailcall (a, m, s, l, u, es) ->
+      | Statement.Tailcall (a, c, m, s, i) ->
 	  XmlTextWriter.start_element writer "creol:tailcall" ;
+	  XmlTextWriter.write_attribute writer "method" m ;
+	  creol_signature_to_xml s ;
+	  XmlTextWriter.start_element writer "callee" ;
+	  creol_expression_to_xml c ;
+          XmlTextWriter.end_element writer ;
+	  XmlTextWriter.start_element writer "creol:arguments" ;
+	  List.iter (function e -> 
+	    XmlTextWriter.start_element writer "creol:expression" ;
+	    creol_expression_to_xml e ;
+            XmlTextWriter.end_element writer ) i ;
+          XmlTextWriter.end_element writer ;
+	  creol_statement_note_to_xml a ;
+          XmlTextWriter.end_element writer
+      | Statement.StaticTail (a, m, s, l, u, es) ->
+	  XmlTextWriter.start_element writer "creol:statictail" ;
 	  XmlTextWriter.write_attribute writer "method" m ;
 	  (match l with
 	      None -> ()

@@ -8,8 +8,8 @@ result Configuration:
   Ocnt: 0 >
  
 < "B" : Class | Inh: "A" < "b" >, Param: "b", Att: "b" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert("="("a" ::
-    "b")) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert "="("a" ::
+    "b") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
     Code: skip ; return(emp) >,
   Ocnt: 0 >
 
@@ -23,8 +23,8 @@ result Configuration:
   Ocnt: 0 >
  
 < "B" : Class | Inh: "A" < "b" >, Param: "b", Att: "b" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert("="("a" ::
-    "b")) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert "="("a" ::
+    "b") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
     Code: skip ; return(emp) >,
   Ocnt: 1 >
  

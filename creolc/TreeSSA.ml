@@ -223,12 +223,22 @@ let into_ssa program =
 	  let i' = List.map (expression_to_ssa meth env) i in
 	  let (env', o') = lhs_list_to_ssa meth env o in
 	    (env', AwaitLocalSyncCall (n, m, s, ub, lb, i', o'))
-      | MultiCast (a, t, m, s, i) ->
+      | MultiCast (a, c, m, s, i) ->
+	  let c' = expression_to_ssa meth env c
+	  and i' = List.map (expression_to_ssa meth env) i
+	  in
+	    (env, MultiCast (a, c', m, s, i'))
+      | Discover (a, t, m, s, i) ->
 	  let i' = List.map (expression_to_ssa meth env) i in
-	    (env, MultiCast (a, t, m, s, i'))
-      | Tailcall (n, m, s, ub, lb, i) ->
+	    (env, Discover (a, t, m, s, i'))
+      | Tailcall (n, c, m, s, i) ->
+	  let c' = expression_to_ssa meth env c
+	  and i' = List.map (expression_to_ssa meth env) i
+	  in
+            (env, Tailcall (n, c', m, s, i'))
+      | StaticTail (n, m, s, ub, lb, i) ->
 	  let i' = List.map (expression_to_ssa meth env) i in
-            (env, Tailcall (n, m, s, ub, lb, i'))
+            (env, StaticTail (n, m, s, ub, lb, i'))
       | If (n, c, l, r) ->
 	  let nc = expression_to_ssa meth env c in
 	  let (env_l, nl) = statement_to_ssa meth env l in
@@ -418,12 +428,22 @@ let out_of_ssa tree =
 	  let ni = List.map expression_of_ssa ins in
 	  let no = List.map left_hand_side_of_ssa outs in
 	    AwaitLocalSyncCall (n, m, s, u, l, ni, no)
-      | MultiCast (a, t, m, s, i) ->
+      | MultiCast (a, c, m, s, i) ->
+	  let c' = expression_of_ssa c
+	  and i' = List.map expression_of_ssa i
+	  in
+            MultiCast (a, c', m, s, i')
+      | Discover (a, t, m, s, i) ->
 	  let i' = List.map expression_of_ssa i in
-            MultiCast (a, t, m, s, i')
-      | Tailcall (n, m, s, u, l, ins) ->
-	  let ni = List.map expression_of_ssa ins in
-	    Tailcall (n, m, s, u, l, ni)
+            Discover (a, t, m, s, i')
+      | Tailcall (n, c, m, s, i) ->
+	  let c' = expression_of_ssa c
+	  and i' = List.map expression_of_ssa i
+	  in
+	    Tailcall (n, c', m, s, i')
+      | StaticTail (n, m, s, u, l, i) ->
+	  let i' = List.map expression_of_ssa i in
+	    StaticTail (n, m, s, u, l, i')
       | If (n, c, l, r) ->
 	  let nc = expression_of_ssa c in
 	  let nl = statement_of_ssa l in

@@ -294,14 +294,14 @@ rl
 ---
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; EL ); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; "" ; EL ); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   CLOCK
   =
   < O : C | Att: S, Pr: { insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L) | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   bindMtd(O`,' O`,' label(O, O, Q, EVALLIST(EL, (S :: L), T))`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
 ,
 `rl
-  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; EL ); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > CLOCK
+  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; "" ; EL ); SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > CLOCK
   =>
   < O : C | Att: S, Pr: { insert (A, label(O, F), L) | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: (F + 1) >
   bindMtd(O`,' O`,' label(O, F)`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
@@ -429,22 +429,22 @@ eq
   [label deallocate] .
 
 
---- TAIL CALLS
+--- STATIC TAIL CALLS
 ---
 --- Fake the caller and the label and tag the label.  Since we do not
 --- want to interleave, this can also be an equation.
 ---
-STEP(`< O : C | Att: S, Pr: { L | tailcall(Q ; EL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >' CLOCK,
+STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; "" ; "" ; EL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >' CLOCK,
 `< O : C | Att: S, Pr: { noSubst | $accept(tag(L[".label"])) }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), C < emp >)'
   CLOCK,
-`[label tailcall]')
+`[label local-tailcall]')
 
-STEP(`< O : C | Att: S, Pr: { L | tailcall(Q ; CC ; EL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >' CLOCK,
+STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; CC ; "" ; EL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >' CLOCK,
 `< O : C | Att: S, Pr: { noSubst | $accept(tag(L[".label"])) }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), CC < emp >)'
   CLOCK,
-`[label tailcall-static]')
+`[label static-tailcall]')
 
 *** If we receive the method body, the call is accepted and the label untagged.
 crl
@@ -505,7 +505,7 @@ eq
   =
   findAttr(O, (I' , I), compose(S', S),
            SL ; assign(AL ; EL), 
-           { L' | static(".init" ; "init" ; C ; emp) ; get(".init" ; noVid) ; SL1 })
+           { L' | static(".init" ; "init" ; C ; "" ; emp) ; get(".init" ; noVid) ; SL1 })
   < C : Class | Inh: I, Param: AL, Att: S', Mtds: MS, Ocnt: G > .
 
 eq

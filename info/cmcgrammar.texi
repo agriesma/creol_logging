@@ -60,3 +60,47 @@ The key is a name that always starts with an upper case letter and
 that always ends with a colon (:).
 
 
+
+@subsection Statements
+
+The grammar of statements is:
+@format
+merge-stmt ::=
+    choice-stmt [ @code{|||} merge-stmt ]
+  | choice-stmt [ @code{MERGER} merge-stmt ]
+
+choice-stmt ::=
+    sequential-stmt [ @code{[]} choice-stmt ]
+
+sequential-stmt ::=
+    basic-stmt [ @code{;} sequential-stmt ]
+
+basic-stmt ::=
+    @code{skip}
+  | @code{commit}
+  | @code{release}
+  | @code{await}  expr
+  | @code{posit}  expr
+  | @code{assert}  expr
+  | @code{assign (} vid-list @code{;} expr-list @code{)}
+  | @code{new (} vid @code{;} cid @code{;} expr-list @code{)}
+  | @code{call (} vid @code{;} expr @code{;} string @code{;} expr-list @code{)}
+  | @code{static (} vid @code{;} string @code{;} string @code{;} string @code{;} expr-list @code{)}
+  | @code{multicast (} expr @code{;} string @code{;} expr-list @code{)}
+  | @code{get (} expr @code{;} vid-list @code{)}
+  | @code{return (} expr-list @code{)}
+  | @code{free (} vid-list @code{)}
+  | @code{tailcall (} expr @code{;} string @code{;} expr-list @code{)}
+  | @code{statictail (} string @code{;} string @code{;} string @code{;} expr-list @code{)}
+  | @code{(} merge-stmt @code{)}
+  | @code{if} expression @code{th} merge-stmt @code{el} merge-stmt @code{fi}
+  | @code{while} expression @code{do} merge-stmt @code{od}
+  | run-time-stmt
+
+run-time-stmt ::=
+    @code{$cont (} label @code{)}
+  | @code{$accept (} label @code{)}
+  | @code{$assign (}vid-list @code{;} expr-list @code{)}
+  | @code{$multicast (} expr @code{;} string @code{;} expr-list @code{)}
+  | @code{failure}  expr
+@end format

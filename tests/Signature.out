@@ -160,33 +160,35 @@ result GroundTerm: 'free`(_`)['"a".Char]
 reduce in CREOL-STATEMENT : downTerm(upTerm(free("a")), skip) .
 result Stmt: free("a")
 ==========================================
-reduce in CREOL-STATEMENT : tailcall("m" ; emp) .
-result Stmt: tailcall("m" ; emp)
+reduce in CREOL-STATEMENT : tailcall("this" ; "m" ; emp) .
+result Stmt: tailcall("this" ; "m" ; emp)
 ==========================================
-reduce in CREOL-STATEMENT : upTerm(tailcall("m" ; emp)) .
-result GroundTerm: 'tailcall`(_;_`)['"m".Char,'emp.DataList]
+reduce in CREOL-STATEMENT : upTerm(tailcall("this" ; "m" ; emp)) .
+result GroundTerm: 'tailcall`(_;_;_`)['"this".String,'"m".Char,'emp.DataList]
 ==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(tailcall("m" ; emp)), skip) .
-result Stmt: tailcall("m" ; emp)
+reduce in CREOL-STATEMENT : downTerm(upTerm(tailcall("this" ; "m" ; emp)),
+    skip) .
+result Stmt: tailcall("this" ; "m" ; emp)
 ==========================================
-reduce in CREOL-STATEMENT : tailcall("m" ; null :: "a") .
-result Stmt: tailcall("m" ; null :: "a")
+reduce in CREOL-STATEMENT : tailcall("this" ; "m" ; null :: "a") .
+result Stmt: tailcall("this" ; "m" ; null :: "a")
 ==========================================
-reduce in CREOL-STATEMENT : upTerm(tailcall("m" ; null :: "a")) .
-result GroundTerm: 'tailcall`(_;_`)['"m".Char,'_::_['null.Data,'"a".Char]]
+reduce in CREOL-STATEMENT : upTerm(tailcall("this" ; "m" ; null :: "a")) .
+result GroundTerm: 'tailcall`(_;_;_`)['"this".String,'"m".Char,'_::_[
+    'null.Data,'"a".Char]]
 ==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(tailcall("m" ; null :: "a")), skip)
-    .
-result Stmt: tailcall("m" ; null :: "a")
+reduce in CREOL-STATEMENT : downTerm(upTerm(tailcall("this" ; "m" ; null ::
+    "a")), skip) .
+result Stmt: tailcall("this" ; "m" ; null :: "a")
 ==========================================
-reduce in CREOL-STATEMENT : assert(bool(true)) .
-result Stmt: assert(bool(true))
+reduce in CREOL-STATEMENT : assert bool(true) .
+result Stmt: assert bool(true)
 ==========================================
-reduce in CREOL-STATEMENT : upTerm(assert(bool(true))) .
-result GroundTerm: 'assert`(_`)['bool`(_`)['true.Bool]]
+reduce in CREOL-STATEMENT : upTerm(assert bool(true)) .
+result GroundTerm: 'assert_['bool`(_`)['true.Bool]]
 ==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(assert(bool(true))), skip) .
-result Stmt: assert(bool(true))
+reduce in CREOL-STATEMENT : downTerm(upTerm(assert bool(true)), skip) .
+result Stmt: assert bool(true)
 ==========================================
 reduce in CREOL-STATEMENT : failure(bool(true)) .
 result [Stmt]: failure(bool(true))

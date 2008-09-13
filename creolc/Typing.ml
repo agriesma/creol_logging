@@ -1083,11 +1083,6 @@ let typecheck tree: Program.t =
         | Posit (n, e) ->
 	    let e' = type_check_assertion env coiface e in
 	      Posit (n, e')
-        | AsyncCall (n, label, callee, m, sign, ins) ->
-	    let (label', callee', sign', ins') =
-	      check_async_method_call n label callee m sign ins
-	    in
-	      AsyncCall (n, label', callee', m, sign', ins')
         | Reply (n, label, retvals) -> 
 	    let nlabel =
 	      type_check_expression env coiface [] label
@@ -1103,6 +1098,11 @@ let typecheck tree: Program.t =
 	        raise (Type_error (n.file, n.line, "Type mismatch"))
         | Free (n, args) -> assert false
         | Bury (n, args) -> assert false
+        | AsyncCall (n, label, callee, m, sign, ins) ->
+	    let (label', callee', sign', ins') =
+	      check_async_method_call n label callee m sign ins
+	    in
+	      AsyncCall (n, label', callee', m, sign', ins')
         | LocalAsyncCall (n, None, m, _, lb, ub, args) ->
 	    let (signature, args') =
 	      check_local_async_call n m lb ub args None
@@ -1115,6 +1115,13 @@ let typecheck tree: Program.t =
 	      check_local_async_call n m lb ub args (Some lt)
 	    in
 	      LocalAsyncCall (n, Some l', m, signature, lb, ub, args')
+        | MultiCast (n, callee, m, sign, ins) ->
+	    let (label', callee', sign', ins') =
+	      check_async_method_call n None callee m sign ins
+	    in
+	      AsyncCall (n, label', callee', m, sign', ins')
+        | Discover (n, callee, m, sign, ins) ->
+	    assert false
         | SyncCall (n, callee, m, sign, ins, outs) ->
 	    let (callee', signature, ins', outs') =
 	      check_sync_method_call n callee m sign ins outs
@@ -1136,6 +1143,7 @@ let typecheck tree: Program.t =
 	    in
 	      AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
 	| Tailcall _ -> assert false
+	| StaticTail _ -> assert false
 	| Return _ -> assert false
 	| If (n, cond, iftrue, iffalse) ->
 	    let cond' = type_check_assertion env coiface cond in

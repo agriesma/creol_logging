@@ -987,7 +987,9 @@ struct
 	(** Multi-cast statement.  The first expression represents the
 	    receivers and must have type List, Set, ... *)
     | Discover of note * Type.t * string * Type.signature * Expression.t list
-    | Tailcall of note * string * Type.signature * string option *
+    | Tailcall of note * Expression.t * string * Type.signature *
+	Expression.t list
+    | StaticTail of note * string * Type.signature * string option *
 	string option * Expression.t list
     | Return of note * Expression.t list
 	(** Generated statement.  Usually, it lists the out parameters. *)
@@ -1022,7 +1024,9 @@ struct
       | LocalSyncCall (a, _, _, _, _, _, _)
       | AwaitLocalSyncCall (a, _, _, _, _, _, _)
       | MultiCast (a, _, _, _, _)
-      | Tailcall (a, _, _, _, _, _)
+      | Discover (a, _, _, _, _)
+      | Tailcall (a, _, _, _, _)
+      | StaticTail (a, _, _, _, _, _)
       | Return (a, _)
       | If (a, _, _, _) | While (a, _, _, _) | DoWhile (a, _, _, _)
       | Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
@@ -1056,8 +1060,10 @@ struct
           LocalSyncCall (n, m, s, l, u, i, o)
       | AwaitLocalSyncCall (_, m, s, l, u, i, o) ->
           AwaitLocalSyncCall (n, m, s, l, u, i, o)
-      | MultiCast (_, t, m, s, i) -> MultiCast (n, t, m, s, i)
-      | Tailcall (_, a, b, c, d, e) -> Tailcall (n, a, b, c, d, e)
+      | MultiCast (_, c, m, s, i) -> MultiCast (n, c, m, s, i)
+      | Discover (_, t, m, s, i) -> Discover (n, t, m, s, i)
+      | Tailcall (_, c, m, s, a) -> Tailcall (n, c, m, s, a)
+      | StaticTail (_, m, l, u, s, a) -> StaticTail (n, m, l, u, s, a)
       | If (_, c, s1, s2) -> If (n, c, s1, s2)
       | While (_, c, i, s) -> While (n, c, i, s)
       | DoWhile (_, c, i, s) -> DoWhile (n, c, i, s)
@@ -1089,7 +1095,9 @@ struct
       | LocalSyncCall (_, _, _, _, _, _, _) -> "_<:_:>_(_;_)"
       | AwaitLocalSyncCall (_, _, _, _, _, _, _) -> "await _<:_:>_(_;_)"
       | MultiCast (_, _, _, _, _) -> "!_._(_) as _ *** MultiCast"
-      | Tailcall (_, _, _, _, _, _) -> "tailcall _<:_:>_(_)"
+      | Discover (_, _, _, _, _) -> "!_._(_) as _ *** Discover"
+      | Tailcall (_, _, _, _, _) -> "tailcall _._(_)"
+      | StaticTail (_, _, _, _, _, _) -> "statictail _<:_:>_(_)"
       | If (_, _, _, _) -> "if _ then _ else _ end"
       | While (_, _, _, _) -> "while _ do _ end"
       | DoWhile (_, _, _, _) -> "do _ while _"
@@ -1160,11 +1168,11 @@ struct
 
   let rec remove_redundant_skips =
     function
-	(Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _ |
-	     AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _ |
-		 AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ | 
-		     AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ |
-		         Return _ | Continue _ | Extern _) as s -> s
+        (Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _
+        | AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _
+        | AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _
+        | AwaitLocalSyncCall _ | MultiCast _ | Discover _ | Tailcall _
+	| StaticTail _ | Return _ | Continue _ | Extern _) as s -> s
       | Skip note -> Skip note
       | If (note, c, t, f) ->
 	  If (note, c, remove_redundant_skips t, remove_redundant_skips f)

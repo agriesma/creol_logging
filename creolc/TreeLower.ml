@@ -218,9 +218,14 @@ let pass input =
              this call.  *)
 	  let i' = List.map lower_expression i in
             (label_decls, MultiCast (a, t, m, s, i'))
-      | Tailcall (a, m, s, l, u, i) ->
+      | Tailcall (a, c, m, s, i) ->
+	  let c' = lower_expression c
+	  and i' = List.map lower_expression i
+	  in
+	    (label_decls, Tailcall (a, c', m, s, i'))
+      | StaticTail (a, m, s, l, u, i) ->
 	  let i' = List.map lower_expression i in
-	  (label_decls, Tailcall (a, m, s, l, u, i'))
+	    (label_decls, StaticTail (a, m, s, l, u, i'))
       | If (a, c, t, f) ->
 	  let (label_decls', t') = lower_statement label_decls t in
 	  let (label_decls'', f') = lower_statement label_decls' f in

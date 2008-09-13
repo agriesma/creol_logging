@@ -99,12 +99,25 @@ let pass input =
       | AwaitLocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  let i' = List.map lift_expression i in
             AwaitLocalSyncCall (a, m, s, lb, ub, i', o)
-      | MultiCast (a, t, m, s, i) ->
+      | MultiCast (a, c, m, s, i) ->
+	  let c' = lift_expression c
+	  and i' = List.map lift_expression i
+	  in
+            MultiCast (a, c', m, s, i')
+      | Discover (a, t, m, s, i) ->
 	  let i' = List.map lift_expression i in
-            MultiCast (a, t, m, s, i')
-      | Tailcall (a, m, s, l, u, i) ->
+            Discover (a, t, m, s, i')
+      | Tailcall (a, c, m, s, i) ->
+	  let c' = lift_expression c
+	  and i' = List.map lift_expression i
+	  in
+	    Tailcall (a, c', m, s, i')
+      | StaticTail (a, m, s, l, u, i) ->
 	  let i' = List.map lift_expression i in
-	    Tailcall (a, m, s, l, u, i')
+	    StaticTail (a, m, s, l, u, i')
+      | Return (n, o) ->
+	  let o' = List.map lift_expression o in
+	    Return (n, o')
       | If (a, c, t, f) ->
 	  If (a, lift_expression c, lift_statement t, lift_statement f)
       | While (a, c, i, b) ->

@@ -224,14 +224,22 @@ let compute_in_statement ~meth may must stmt =
 			    must_def = IdSet.union must g } in
 	    logio stmt must n'.must_def ;
 	    AwaitLocalSyncCall (n', m, s, u, l, i, o)
-      | MultiCast (n, t, m, s, i) ->
+      | MultiCast (n, c, m, s, i) ->
 	  let a' = { n with may_def = may; must_def = must } in
 	    logio stmt must a'.must_def ;
-	    MultiCast (a', t, m, s, i)
-      | Tailcall (n, m, s, ub, lb, i) ->
+	    MultiCast (a', c, m, s, i)
+      | Discover (n, t, m, s, i) ->
+	  let a' = { n with may_def = may; must_def = must } in
+	    logio stmt must a'.must_def ;
+	    Discover (a', t, m, s, i)
+      | Tailcall (n, c, m, s, i) ->
 	  let n' = { n with may_def = may; must_def = must } in
 	    logio stmt must n'.must_def ;
-	    Tailcall (n', m, s, ub, lb, i)
+	    Tailcall (n', c, m, s, i)
+      | StaticTail (n, m, s, ub, lb, i) ->
+	  let n' = { n with may_def = may; must_def = must } in
+	    logio stmt must n'.must_def ;
+	    StaticTail (n', m, s, ub, lb, i)
       | Return (n, el) ->
 	  let n' = { n with may_def = may; must_def = must } in
 	    Return (n', el)

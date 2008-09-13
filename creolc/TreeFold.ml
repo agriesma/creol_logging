@@ -401,10 +401,14 @@ let optimise_in_statement stmt =
 	  LocalSyncCall (n, m, s, u, l, List.map fold_expr i, o)
       | AwaitLocalSyncCall (n, m, s, u, l, i, o) ->
 	  AwaitLocalSyncCall (n, m, s, u, l, List.map fold_expr i, o)
-      | MultiCast (a, t, m, s, i) ->
-	  MultiCast (a, t, m, s, List.map fold_expr i)
-      | Tailcall (n, m, s, u, l, i) ->
-	  Tailcall (n, m, s, u, l, List.map fold_expr i)
+      | MultiCast (a, c, m, s, i) ->
+	  MultiCast (a, fold_expr c, m, s, List.map fold_expr i)
+      | Discover (a, t, m, s, i) ->
+	  Discover (a, t, m, s, List.map fold_expr i)
+      | Tailcall (n, c, m, s, i) ->
+	  Tailcall (n, fold_expr c, m, s, List.map fold_expr i)
+      | StaticTail (n, m, s, u, l, i) ->
+	  StaticTail (n, m, s, u, l, List.map fold_expr i)
       | If (n, c, l, r) -> If (n, fold_expr c, work l, work r)
       | While (n, c, i, b) -> While (n, c, fold_expr i, work b)
       | DoWhile (n, c, i, b) -> DoWhile (n, c, fold_expr i, b)

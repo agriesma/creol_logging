@@ -145,33 +145,38 @@ fmod CREOL-STATEMENT is
   op assign(_;_) : VidList ExprList -> Stmt [ctor `format' (b d o b o b o)] .
   op new(_;_;_) : Vid String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
   op call(_;_;_;_) : Vid Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o)] . 
-  op static(_;_;_;_) : Vid String String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o)] . 
+  op static(_;_;_;_;_) : Vid String String String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o b o)] . 
   op multicast(_;_;_) : Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
   op get(_;_)  : Vid VidList -> Stmt [ctor prec 39 `format' (b d o b o b o)] .
   op get(_;_)  : Label VidList -> Stmt [ctor ditto] .
   op await_ : Expr -> SuspStmt [ctor `format' (b o d)] .
   op posit_ : Expr -> SuspStmt [ctor `format' (b o d)] .
-  op assert(_) : Expr -> Stmt [ctor `format' (b o d b o)] .
+  op assert_ : Expr -> Stmt [ctor `format' (b o d)] .
 
   op return(_) : ExprList -> Stmt [ctor `format' (c d o c o)] .
   op free(_) : Vid -> Stmt [ctor `format' (c d o c o)] .
-  op tailcall(_;_) : String ExprList -> Stmt [ctor `format' (c d o c o c o)] .
-  op tailcall(_;_;_) : String String ExprList -> Stmt [ctor `format' (c d o c o c o c o)] .
+  op tailcall(_;_;_) : Expr String ExprList -> Stmt [ctor `format' (c d o c o c o c o)] .
+  op statictail(_;_;_;_) : String String String ExprList -> Stmt [ctor `format' (c d o c o c o c o c o)] .
 
   op $cont(_) : Label -> Stmt [ctor `format' (r d o r o)] .
   op $accept(_) : Label -> Stmt [ctor `format' (r d o r o)] .
-  op $multicast(_;_;_) : Data String DataList -> Stmt [ctor `format' (r d o r o r o r o)] .
 
-  --- multiple assignment
-  ---
-  --- For the model checker the following will be evaluated as an
-  --- equation and the old rule is not confluent.
 
-  op $assign(_;_) : VidList DataList -> Stmt  [`format' (r d o r o r o)] .
-
+  --- Assertion Failure.
   --- This ``statement'' represents an assertion failure.  It 
   --- stops evaluation of the executing object at that point.
   op failure(_) : Expr -> [Stmt] [ctor `format' (r! d o r! o)] .
+
+  --- Multiple Assignment.
+  --- For the model checker the following will be evaluated as an
+  --- equation and the old rule is not confluent.
+  op $assign(_;_) : VidList DataList -> Stmt  [`format' (r d o r o r o)] .
+
+  --- Multicast
+  --- This ``statement'' emanates from the ordinary mutlicast statement
+  --- after the argument and the target collection have been evaluated.
+  --- It will generate the actual invocation messages.
+  op $multicast(_;_;_) : Data String DataList -> Stmt [`format' (r d o r o r o r o)] .
 
 endfm
 
