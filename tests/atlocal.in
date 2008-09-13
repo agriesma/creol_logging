@@ -39,4 +39,11 @@ then
 fi
 
 WITH_METATESTS=@WITH_METATESTS@
-BACKEND_XML=@BACKEND_XML@
+
+if test "x@BACKEND_XML@" != "x"
+then
+    WITH_XML=true
+else
+    WITH_XML=false
+fi
+export WITH_XML
