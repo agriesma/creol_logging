@@ -71,7 +71,7 @@ let emit options out_channel input =
       | Expression.Int (_, i) ->
 	  output_string out_channel ("int(" ^ (Big_int.string_of_big_int i) ^ ")")
       | Expression.Float (_, f) -> 
-	  output_string out_channel ("float(" ^ (Num.string_of_num f) ^ ")")
+	  output_string out_channel ("float(" ^ (string_of_float f) ^ ")")
       | Expression.Bool (_, false) -> output_string out_channel "bool(false)"
       | Expression.Bool (_, true) -> output_string out_channel "bool(true)"
       | Expression.String (_, s) ->

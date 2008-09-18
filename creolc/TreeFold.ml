@@ -37,9 +37,14 @@ let dependencies = "typecheck"
 let log l = Messages.message (l + 1)
 let is_zero = Big_int.eq_big_int Big_int.zero_big_int
 let is_one = Big_int.eq_big_int Big_int.unit_big_int
-let is_zero_num = Num.eq_num (Num.num_of_int 0)
 let is_one_num = Num.eq_num (Num.num_of_int 1)
 
+let zero_float_p f =
+  match classify_float f with
+      FP_zero -> true
+    | _ -> false
+
+let one_float_p f = (abs_float (f -. 1.0)) < epsilon_float
 
 (* This function tries to fold all constant expressions to literals.
 
@@ -85,7 +90,7 @@ let optimise_in_statement stmt =
                   begin
                     match e' with
                       | Int (_, v) when is_zero v -> Int (n, v)
-                      | Float (_, v) when is_zero_num v -> Float (n, v)
+                      | Float (_, v) when zero_float_p v -> Float (n, v)
                       | Unary (n'', UMinus, e'') -> Expression.set_note n e''
                       | _ -> Unary (n, o, e')
                   end
@@ -112,10 +117,10 @@ let optimise_in_statement stmt =
                       | (_, Int (_, rv)) when is_zero rv -> l'
 		      | (Int (_, lv), Int (_, rv)) ->
                           Int (n, Big_int.add_big_int lv rv)
-		      | (Float (_, lv), _) when  is_zero_num lv -> r'
-                      | (_, Float (_, rv)) when is_zero_num rv -> l'
+		      | (Float (_, lv), _) when zero_float_p lv -> r'
+                      | (_, Float (_, rv)) when zero_float_p rv -> l'
 		      | (Float (_, lv), Float (_, rv)) ->
-                          Float (n, Num.add_num lv rv)
+                          Float (n, lv +. rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Minus ->
@@ -125,10 +130,10 @@ let optimise_in_statement stmt =
                       | (_, Int (_, rv)) when is_zero rv -> l'
 		      | (Int (_, lv), Int (_, rv)) ->
                           Int (n, Big_int.sub_big_int lv rv)
-		      | (Float (_, lv), _) when  is_zero_num lv -> r'
-                      | (_, Float (_, rv)) when is_zero_num rv -> l'
+		      | (Float (_, lv), _) when  zero_float_p lv -> r'
+                      | (_, Float (_, rv)) when zero_float_p rv -> l'
 		      | (Float (_, lv), Float (_, rv)) ->
-                          Float (n, Num.sub_num lv rv)
+                          Float (n, lv -. rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Times  ->
@@ -140,12 +145,12 @@ let optimise_in_statement stmt =
                       | (_, Int (_, rv)) when is_zero rv -> r'
 		      | (Int (_, lv), Int (_, rv)) ->
 			  Int (n, Big_int.mult_big_int lv rv)
-		      | (Float (_, lv), _) when is_one_num lv -> r'
-                      | (_, Float (_, rv)) when is_one_num rv -> l'
-		      | (Float (_, lv), _) when is_zero_num lv -> l'
-                      | (_, Float (_, rv)) when is_zero_num rv -> r'
+		      | (Float (_, lv), _) when one_float_p lv -> r'
+                      | (_, Float (_, rv)) when one_float_p rv -> l'
+		      | (Float (_, lv), _) when zero_float_p lv -> l'
+                      | (_, Float (_, rv)) when zero_float_p rv -> r'
 		      | (Float (_, lv), Float (_, rv)) ->
-			  Float (n, Num.mult_num lv rv)
+			  Float (n, lv *. rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Div ->
@@ -157,12 +162,12 @@ let optimise_in_statement stmt =
 			  assert false; (* Report division by zero? *)
 		      |	(Int (_, lv), Int (_, rv)) ->
                           Int (n, Big_int.div_big_int lv rv)
-                      | (_, Float (_, rv)) when is_one_num rv -> l'
-		      | (Float (_, lv), _) when is_zero_num lv -> l'
-                      | (_, Float (_, rv)) when is_zero_num rv ->
+                      | (_, Float (_, rv)) when one_float_p rv -> l'
+		      | (Float (_, lv), _) when zero_float_p lv -> l'
+                      | (_, Float (_, rv)) when zero_float_p rv ->
 			  assert false; (* Report division by zero? *)
 		      |	(Float (_, lv), Float (_, rv)) ->
-                          Float (n, Num.div_num lv rv)
+                          Float (n, lv /. rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Modulo  ->
@@ -174,12 +179,12 @@ let optimise_in_statement stmt =
 			  assert false; (* Report division by zero? *)
 		      | (Int (_, lv), Int (_, rv)) ->
                           Int (n, Big_int.mod_big_int lv rv)
-                      | (_, Float (_, rv)) when is_one_num rv -> l'
-		      | (Float (_, lv), _) when is_zero_num lv -> l'
-                      | (_, Float (_, rv)) when is_zero_num rv ->
+                      | (_, Float (_, rv)) when zero_float_p rv -> l'
+		      | (Float (_, lv), _) when one_float_p lv -> l'
+                      | (_, Float (_, rv)) when zero_float_p rv ->
 			  assert false; (* Report division by zero? *)
 		      | (Float (_, lv), Float (_, rv)) ->
-                          Float (n, Num.mod_num lv rv)
+                          Float (n, mod_float lv rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Power ->
@@ -192,13 +197,13 @@ let optimise_in_statement stmt =
 			  Int (n, Big_int.zero_big_int)
 		      | (Int (_, lv), Int (_, rv)) ->
                           Int (n, Big_int.power_big_int_positive_big_int lv rv)
-                      | (Float (_, lv), _) when is_one_num lv -> l'
-                      | (_, Float (_, rv)) when is_one_num rv -> l'
-		      | (Float (_, lv), _) when is_zero_num lv -> l'
-                      | (_, Float (_, rv)) when is_zero_num rv ->
-			  Float (n, Num.num_of_int 1)
+                      | (Float (_, lv), _) when one_float_p lv -> l'
+                      | (_, Float (_, rv)) when one_float_p rv -> l'
+		      | (Float (_, lv), _) when zero_float_p lv -> l'
+                      | (_, Float (_, rv)) when zero_float_p rv ->
+			  Float (n, 1.0)
 		      | (Float (_, lv), Float (_, rv)) ->
-                          Float (n, Num.power_num lv rv)
+                          Float (n, lv ** rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Eq ->
@@ -217,11 +222,11 @@ let optimise_in_statement stmt =
 		      | (Int (_, lv), Int (_, rv)) ->
 			  Bool (n, Big_int.le_big_int lv rv)
 		      | (Int (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.le_num (Num.num_of_big_int lv) rv)
+			  Bool (n, (Big_int.float_of_big_int lv) <= rv)
 		      | (Float (_, lv), Int (_, rv)) ->
-			  Bool (n, Num.le_num lv (Num.num_of_big_int rv))
+			  Bool (n, lv <= (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.le_num lv rv)
+			  Bool (n, lv <= rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Lt ->
@@ -230,11 +235,11 @@ let optimise_in_statement stmt =
 		      | (Int (_, lv), Int (_, rv)) ->
 			  Bool (n, Big_int.lt_big_int lv rv)
 		      | (Int (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.lt_num (Num.num_of_big_int lv) rv)
+			  Bool (n, (Big_int.float_of_big_int lv) < rv)
 		      | (Float (_, lv), Int (_, rv)) ->
-			  Bool (n, Num.lt_num lv (Num.num_of_big_int rv))
+			  Bool (n, lv < (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.lt_num lv rv)
+			  Bool (n, lv < rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Ge ->
@@ -243,11 +248,11 @@ let optimise_in_statement stmt =
 		      | (Int (_, lv), Int (_, rv)) ->
 			  Bool (n, Big_int.ge_big_int lv rv)
 		      | (Int (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.ge_num (Num.num_of_big_int lv) rv)
+			  Bool (n, (Big_int.float_of_big_int lv) >= rv)
 		      | (Float (_, lv), Int (_, rv)) ->
-			  Bool (n, Num.ge_num lv (Num.num_of_big_int rv))
+			  Bool (n, lv >= (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.ge_num lv rv)
+			  Bool (n, lv >= rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | Gt ->
@@ -256,11 +261,11 @@ let optimise_in_statement stmt =
 		      | (Int (_, lv), Int (_, rv)) ->
 			  Bool (n, Big_int.gt_big_int lv rv)
 		      | (Int (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.gt_num (Num.num_of_big_int lv) rv)
+			  Bool (n, (Big_int.float_of_big_int lv) > rv)
 		      | (Float (_, lv), Int (_, rv)) ->
-			  Bool (n, Num.gt_num lv (Num.num_of_big_int rv))
+			  Bool (n, lv > (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
-			  Bool (n, Num.gt_num lv rv)
+			  Bool (n, lv > rv)
 		      | _ -> Binary (n, o, l', r')
 		  end
 	      | And  ->

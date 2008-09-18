@@ -285,7 +285,7 @@ struct
       | History of note
       | Bool of note * bool
       | Int of note * Big_int.big_int
-      | Float of note * Num.num
+      | Float of note * float
       | String of note * string
       | Id of note * string
       | StaticAttr of note * string * Type.t

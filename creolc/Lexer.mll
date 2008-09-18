@@ -45,7 +45,7 @@ let reserved lexbuf =
 }
 let NEWLINE = '\n' | '\r' | ( '\r' '\n' )
 let COMMENT = '/' '/' [ ^ '\n' '\r' ]*
-let FLOAT = ['0'-'9']+'.'['0'-'9']+('e' ('+'|'-')? ['0'-'9']+)
+let FLOAT = ((['0'-'9']*'.'['0'-'9']+)|(['0'-'9']+'.'['0'-'9']*))('e' ('+'|'-')? ['0'-'9']+)?
 let CID = [ 'A'-'Z' ] [ '_' 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let ID =  [ '_' 'a'-'z' ] [ '_' '\'' 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let STRING = '"' [^ '\n' '\r' '"' ]* '"'
@@ -163,7 +163,7 @@ rule token = parse
     | "where" { reserved lexbuf }
     | "while" { WHILE }
     | "with" { WITH }
-    | FLOAT { FLOAT(Num.num_of_string (Lexing.lexeme lexbuf)) }
+    | FLOAT { FLOAT(float_of_string (Lexing.lexeme lexbuf)) }
     | ['0'-'9']+ { INT(Big_int.big_int_of_string (Lexing.lexeme lexbuf)) }
     | CID { CID(Lexing.lexeme lexbuf) }
     | ID { ID(Lexing.lexeme lexbuf) }

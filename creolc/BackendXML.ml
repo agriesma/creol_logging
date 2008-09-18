@@ -559,7 +559,7 @@ let emit ~name ~tree =
           XmlTextWriter.end_element writer
       | Expression.Float (a, v) -> 
 	  XmlTextWriter.start_element writer "creol:float" ;
-	  XmlTextWriter.write_attribute writer "value" (Num.string_of_num v) ;
+	  XmlTextWriter.write_attribute writer "value" (string_of_float v) ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Expression.String (a, v) -> 

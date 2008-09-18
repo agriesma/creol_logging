@@ -106,7 +106,7 @@ let statement_note pos =
 %token <string> CID ID STRING
 %token <bool> BOOL
 %token <Big_int.big_int>  INT
-%token <Num.num> FLOAT
+%token <float> FLOAT
 %token NIL NULL
 
 (* %left COMMA *)
