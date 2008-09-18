@@ -1,0 +1,14 @@
+load creol-interpreter .
+mod PROGRAM is
+protecting CREOL-SIMULATOR .
+op classes : -> Configuration [ctor] .
+eq classes =
+< "Test" : Class | Inh: (noInh),
+  Param: (noVid),
+  Att: ("v" |-> null , "x" |-> null , "y" |-> null),
+  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign( ( "v" @ "Test" ), ( "x" @ "Test" ), ( "y" @ "Test" ) ; float(0.5) :: float(0.01) :: "-" ( float(1.) ) ) ; return ( emp ) > ,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) >),
+  Ocnt: 0 >
+
+.
+endm

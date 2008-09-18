@@ -44,6 +44,7 @@ TEST_MAUDE([ModelChecker], ${abs_srcdir}/ModelChecker.maude, [.])
 AT_CLEANUP
 
 AT_SETUP([PrettyPrinter])
+TEST_CREOLC_PP([Float], [language])
 TEST_CREOLC_PP([Pair], [language])
 TEST_CREOLC_PP([Inheritance], [language])
 TEST_CREOLC_PP([Diamond], [language])
@@ -74,6 +75,7 @@ TEST_CREOLC_PP([MC5Phil], [.])
 AT_CLEANUP
 
 AT_SETUP([XML-output])
+TEST_CREOLC_XML([Float], [language])
 TEST_CREOLC_XML([Pair], [language])
 TEST_CREOLC_XML([Inheritance], [language])
 TEST_CREOLC_XML([Diamond], [language])
@@ -113,6 +115,13 @@ then
     ${CREOLC} -T xml -o prelude-pass1.xml ${top_srcdir}/share/prelude.creol
 fi])
 AT_CLEANUP
+
+TEST_CREOLC([Float], [language], [dnl
+red classes .
+rew classes main("Test", emp) .
+],[dnl
+red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
+], [no])
 
 TEST_CREOLC([Pair], [language], [dnl
 red classes .

@@ -73,6 +73,8 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/SingleCellBuffer.creol \
 		  examples/SingleCellBuffer.maude \
 		  examples/SingleCellBuffer.out \
+		  language/Float.creol language/Float.maude \
+		  language/Float.out \
 		  language/Pair.creol language/Pair.maude language/Pair.out \
 		  language/Inheritance.creol language/Inheritance.maude \
 		  language/Inheritance.out \

@@ -1,0 +1,40 @@
+==========================================
+reduce in PROGRAM : classes .
+result Class: 
+< "Test" : Class | Inh: noInh, Param: noVid, Att: "v" |-> null, "x" |-> null,
+    "y" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign(("v" @
+    "Test"), ("x" @ "Test"), ("y" @ "Test") ; float(5.0e-1) :: float(1.0e-2) ::
+    float(-1.0)) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
+    null, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+
+==========================================
+rewrite in PROGRAM : classes main("Test", emp) .
+result Configuration: 
+< "Test" : Class | Inh: noInh, Param: noVid, Att: "v" |-> null, "x" |-> null,
+    "y" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign(("v" @
+    "Test"), ("x" @ "Test"), ("y" @ "Test") ; float(5.0e-1) :: float(1.0e-2) ::
+    float(-1.0)) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
+    null, Code: skip ; return(emp) >,
+  Ocnt: 1 >
+ 
+< ob("Test0") : "Test" |
+  Att: "this" |-> ob("Test0"), "v" |-> float(5.0e-1), "x" |-> float(1.0e-2),
+    "y" |-> float(-1.0),
+  Pr: idle,
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 2 >
+ 
+< ob("main") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >
+
+Bye.
