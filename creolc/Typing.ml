@@ -1176,27 +1176,26 @@ let typecheck tree: Program.t =
 	      Choice (n, s1', s2')
 	| Continue _ -> assert false
 	| Extern _ as s -> s
-  and type_check_variables env coiface meth =
-    let rec type_check_inits res =
-      function
-        | [] -> res
-        | ({ VarDecl.init = None } as v)::r ->
-	    type_check_inits (v::res) r
-        | { VarDecl.name = n; var_type = t; init = Some i }::r ->
-	    let i' =
-	      let l = [LhsId (Expression.make_note (), n)]
-	      and r = [i]
-	      and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None }::res } }
-	      in
-	      let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
-		match s with
-		  | Assign (_, _, [i']) -> i'
-		  | _ -> assert false
-
+  and type_check_inits env coiface res =
+    function
+      | [] -> res
+      | ({ VarDecl.init = None } as v)::r ->
+	  type_check_inits env coiface (v::res) r
+      | { VarDecl.name = n; var_type = t; init = Some i }::r ->
+	  let i' =
+	    let l = [LhsId (Expression.make_note (), n)]
+	    and r = [i]
+	    and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None }::res } }
 	    in
-	      type_check_inits ({ VarDecl.name = n; var_type = t; init = Some i' }::res) r
-    in
-      List.rev (type_check_inits [] meth.Method.vars)
+	    let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
+	      match s with
+		| Assign (_, _, [i']) -> i'
+		| _ -> assert false
+	  in
+	    type_check_inits env coiface
+	      ({ VarDecl.name = n; var_type = t; init = Some i' }::res) r
+  and type_check_variables env coiface meth =
+    List.rev (type_check_inits env coiface [] meth.Method.vars)
   and type_check_method program cls coiface meth =
     let () =
       let f d { VarDecl.name = n; var_type = t } =
@@ -1241,8 +1240,10 @@ let typecheck tree: Program.t =
 			   "cointerface " ^ coiface ^ " is not an interface"))
     in
     let i' =
-      let env = { program = program; cls = cls; meth = Method.empty; env = Env.empty } in
-      List.map (type_check_assertion env coiface) w.With.invariants
+      let env =
+	{ program = program; cls = cls; meth = Method.empty; env = Env.empty }
+      in
+	List.map (type_check_assertion env coiface) w.With.invariants
     in
     let m' =
       List.map (type_check_method program cls coiface) w.With.methods
@@ -1256,19 +1257,35 @@ let typecheck tree: Program.t =
 
      Type checking a class starts with checking, whether the class
      provides a method for each interface it declared.  *)
-	
+
   and type_check_class program cls =
 
     let attribute_well_typed { VarDecl.name = n; var_type = t; init = i } =
       if Program.type_p program t then
-	true
+	match i with
+	  | None -> 
+	      { VarDecl.name = n; var_type = t; init = i }
+	  | Some init ->
+	      let i' =
+		let l = [LhsId (Expression.make_note (), n)]
+		and r = [init]
+		and env =
+		  { program = program; cls = cls; meth = Method.empty;
+		    env = Env.empty }
+		in
+		let s =
+		  type_check_statement env "Any" (Assign (make_note (), l, r))
+		in
+		  match s with
+		    | Assign (_, _, [i']) -> i'
+		    | _ -> assert false
+	      in
+		{ VarDecl.name = n; var_type = t; init = Some i' }
       else
-	begin
-	  Messages.error cls.Class.file cls.Class.line
-	    ("type " ^ (Type.as_string t) ^ " of attribute " ^ n ^
-	       " does not exist") ;
-	  false
-	end
+	  raise (Type_error (cls.Class.file, cls.Class.line,
+			     "type " ^
+			       (Type.as_string t) ^ " of attribute " ^ n ^
+			       " does not exist"))
 
     and parameter_well_typed { VarDecl.name = n; var_type = t } =
       if Program.type_p program t then
@@ -1323,11 +1340,8 @@ let typecheck tree: Program.t =
 		0 cls.Class.parameters) > 0 then
 	    exit 1
 	in
-	let () =
-	  if (List.fold_left
-		(fun a v -> if attribute_well_typed v then a else a + 1)
-		0 cls.Class.attributes) > 0 then
-	    exit 1
+	let attributes' =
+	  List.map attribute_well_typed cls.Class.attributes
 	in
 	  begin
 	    let methods_missing =
@@ -1350,9 +1364,9 @@ let typecheck tree: Program.t =
 		      1
 	    in
 	      if (methods_missing = 0) then
-		{ cls with Class.with_defs =
-		    List.map (type_check_with_def program cls)
-		      cls.Class.with_defs }
+		{ cls with Class.attributes = attributes';
+		    with_defs = List.map (type_check_with_def program cls)
+		    cls.Class.with_defs }
 	      else
 		exit 1
 	  end
