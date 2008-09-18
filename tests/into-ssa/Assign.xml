@@ -26,7 +26,7 @@
          <creol:int value="0">
           <creol:expression-note file="Assign.creol" line="24">
            <creol:inferred-type>
-            <creol:type name="Data"/>
+            <creol:type name="Int"/>
            </creol:inferred-type>
           </creol:expression-note>
          </creol:int>
