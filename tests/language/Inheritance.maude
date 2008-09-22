@@ -1,21 +1,20 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "A" : Class | Inh: (noInh),
-  Param: ("a"),
-  Att: ("a" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) >),
-  Ocnt: 0 >
-
-< "B" : Class | Inh: ("A" < "b" >),
-  Param: ("b"),
-  Att: ("b" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: ( assert "=" ( "a" :: "b" ) ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+      Ocnt: 0 >
+    
+    < "B" : Class | Inh: "A" < "b" >, Param: "b", Att: "b" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert
+              "=" ( "a" :: "b" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+      Ocnt: 0 > .
 endm
+

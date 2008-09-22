@@ -1,30 +1,56 @@
 load creol-modelchecker .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Philosopher" : Class | Inh: (noInh),
-  Param: ("butler"),
-  Att: ("butler" |-> null , "hungry" |-> null , "chopstick" |-> null , "neighbor" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: assign( "chopstick" ; bool(true) ) ; assign( "hungry" ; bool(false) ) ; call( "label:0" ; "butler" ; "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "this" ; "think" ; emp ) ; free( "label:0" ) ; call( "label:1" ; "this" ; "eat" ; emp ) ; free( "label:1" ) ; return ( emp ) > ,
-    < "eat" : Method | Param: noVid, Att: "label:2" |-> null , "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: ( await "hungry" ) ; call( "label:0" ; "neighbor" ; "borrowStick" ; emp ) ; ( await ?("label:0") ) ; get( "label:0" ; noVid ) ; ( await "chopstick" ) ; assign( "hungry" ; bool(false) ) ; call( "label:1" ; "neighbor" ; "returnStick" ; emp ) ; free( "label:1" ) ; call( "label:2" ; "this" ; "eat" ; emp ) ; free( "label:2" ) ; return ( emp ) > ,
-    < "think" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: ( await "~" ( "hungry" ) ) ; release ; assign( "hungry" ; bool(true) ) ; call( "label:0" ; "this" ; "think" ; emp ) ; free( "label:0" ) ; return ( emp ) > ,
-    < "borrowStick" : Method | Param: noVid, Att: "_" |-> null, Code: ( await "chopstick" ) ; assign( "chopstick" ; bool(false) ) ; return ( emp ) > ,
-    < "returnStick" : Method | Param: noVid, Att: "_" |-> null, Code: assign( "chopstick" ; bool(true) ) ; return ( emp ) >),
-  Ocnt: 0 >
-
-< "Butler" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: ("p1" |-> null , "p2" |-> null , "p3" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: new( "p1" ; "Philosopher" ; "this" ) ; new( "p2" ; "Philosopher" ; "this" ) ; new( "p3" ; "Philosopher" ; "this" ) ; return ( emp ) > ,
-    < "getNeighbor" : Method | Param: noVid, Att: "neighbor" |-> null , "_" |-> null, Code: if "=" ( "caller" :: "p1" ) th assign( "neighbor" ; "p2" ) el if "=" ( "caller" :: "p2" ) th assign( "neighbor" ; "p3" ) el assign( "neighbor" ; "p1" ) fi fi ; return ( "neighbor" ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Philosopher" : Class | Inh: noInh, Param: "butler", Att: "butler" |->
+      null, "hungry" |-> null, "chopstick" |-> null, "neighbor" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+              |-> null, Code: assign( "chopstick" ; bool(true) ) ;
+              assign( "hungry" ; bool(false) ) ;
+              call( "label:0" ; "butler" ; "getNeighbor" ; emp ) ;
+              get( "label:0" ; "neighbor" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
+              "label:0" |-> null, "_" |-> null,
+              Code: call( "label:0" ; "this" ; "think" ; emp ) ;
+              free( "label:0" ) ; call( "label:1" ; "this" ; "eat" ; emp ) ;
+              free( "label:1" ) ; return ( emp ) >,
+            < "eat" : Method | Param: noVid, Att: "label:2" |-> null,
+              "label:1" |-> null, "label:0" |-> null, "_" |-> null,
+              Code: await "hungry" ;
+              call( "label:0" ; "neighbor" ; "borrowStick" ; emp ) ; await
+              ?("label:0") ; get( "label:0" ; noVid ) ; await "chopstick" ;
+              assign( "hungry" ; bool(false) ) ;
+              call( "label:1" ; "neighbor" ; "returnStick" ; emp ) ;
+              free( "label:1" ) ; call( "label:2" ; "this" ; "eat" ; emp ) ;
+              free( "label:2" ) ; return ( emp ) >,
+            < "think" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+              |-> null, Code: await "~" ( "hungry" ) ; release ;
+              assign( "hungry" ; bool(true) ) ;
+              call( "label:0" ; "this" ; "think" ; emp ) ; free( "label:0" )
+              ; return ( emp ) >,
+            < "borrowStick" : Method | Param: noVid, Att: "_" |-> null,
+              Code: await "chopstick" ; assign( "chopstick" ; bool(false) ) ;
+              return ( emp ) >,
+            < "returnStick" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( "chopstick" ; bool(true) ) ; return ( emp ) >,
+      Ocnt: 0 >
+    
+    < "Butler" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2"
+      |-> null, "p3" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null,
+              Code: new( "p1" ; "Philosopher" ; "this" ) ;
+              new( "p2" ; "Philosopher" ; "this" ) ;
+              new( "p3" ; "Philosopher" ; "this" ) ; return ( emp ) >,
+            < "getNeighbor" : Method | Param: noVid, Att: "neighbor" |->
+              null, "_" |-> null, Code: if "=" ( "caller" :: "p1" ) th
+              assign( "neighbor" ; "p2" ) el if "=" ( "caller" :: "p2" ) th
+              assign( "neighbor" ; "p3" ) el assign( "neighbor" ; "p1" ) fi
+              fi ; return ( "neighbor" ) >,
+      Ocnt: 0 > .
 endm
-
 
 mod PROGRAM-CHECKER is
   protecting MODEL-CHECKER .

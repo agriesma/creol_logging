@@ -1,38 +1,49 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "A" : Class | Inh: (noInh),
-  Param: ("a"),
-  Att: ("a" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "m" : Method | Param: noVid, Att: "r" |-> null , "_" |-> null, Code: assign( "r" ; "a" ) ; return ( "r" ) >),
-  Ocnt: 0 >
-
-< "B" : Class | Inh: ("A" < "b" >),
-  Param: ("b"),
-  Att: ("b" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: ( assert "=" ( "a" :: "b" ) ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "n" : Method | Param: noVid, Att: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "this" ; "m" ; emp ) ; get( "label:0" ; "r" ) ; return ( "r" ) >),
-  Ocnt: 0 >
-
-< "C" : Class | Inh: ("A" < "c" >),
-  Param: ("c"),
-  Att: ("c" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: ( assert "=" ( "a" :: "c" ) ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "o" : Method | Param: noVid, Att: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "this" ; "m" ; emp ) ; get( "label:0" ; "r" ) ; return ( "r" ) >),
-  Ocnt: 0 >
-
-< "D" : Class | Inh: ("B" < int(1) > , "C" < int(2) >),
-  Param: (noVid),
-  Att: ("x" |-> null , "y" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "this" ; "n" ; emp ) ; get( "label:0" ; "x" ) ; call( "label:1" ; "this" ; "o" ; emp ) ; get( "label:1" ; "y" ) ; ( assert "&&" ( "=" ( "x" :: int(1) ) :: "=" ( "y" :: int(2) ) ) ) ; return ( emp ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "m" : Method | Param: noVid, Att: "r" |-> null, "_" |-> null,
+              Code: assign( "r" ; "a" ) ; return ( "r" ) >,
+      Ocnt: 0 >
+    
+    < "B" : Class | Inh: "A" < "b" >, Param: "b", Att: "b" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert
+              "=" ( "a" :: "b" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "n" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
+              null, "_" |-> null,
+              Code: call( "label:0" ; "this" ; "m" ; emp ) ;
+              get( "label:0" ; "r" ) ; return ( "r" ) >,
+      Ocnt: 0 >
+    
+    < "C" : Class | Inh: "A" < "c" >, Param: "c", Att: "c" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assert
+              "=" ( "a" :: "c" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "o" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
+              null, "_" |-> null,
+              Code: call( "label:0" ; "this" ; "m" ; emp ) ;
+              get( "label:0" ; "r" ) ; return ( "r" ) >,
+      Ocnt: 0 >
+    
+    < "D" : Class | Inh: "B" < int(1) >, "C" < int(2) >, Param: noVid,
+      Att: "x" |-> null, "y" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
+              "label:0" |-> null, "_" |-> null,
+              Code: call( "label:0" ; "this" ; "n" ; emp ) ;
+              get( "label:0" ; "x" ) ; call( "label:1" ; "this" ; "o" ; emp )
+              ; get( "label:1" ; "y" ) ; assert "&&" ( "=" ( "x" :: int(1) )
+              :: "=" ( "y" :: int(2) ) ) ; return ( emp ) >,
+      Ocnt: 0 > .
 endm
+

@@ -1,22 +1,37 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Generator" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: ("n" |-> null , "next" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign( ( "n" @ "Generator" ) ; int(3) ) ; new( "next" ; "Sieve" ; int(2) ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "r" |-> null , "l" |-> null , "_" |-> null, Code: call( "l" ; "next" ; "send" ; "n" :: "n" ) ; assign( "n" ; "+" ( "n" :: int(1) ) ) ; call( "label:0" ; "this" ; "run" ; emp ) ; free( "label:0" ) ; ( await ?("l") ) ; get( "l" ; "r" ) ; return ( emp ) >),
-  Ocnt: 0 >
-
-< "Sieve" : Class | Inh: (noInh),
-  Param: ("p"),
-  Att: ("p" |-> null , "next" |-> null , "ins" |-> null , "outs" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign( ( "ins" @ "Sieve" ), ( "outs" @ "Sieve" ) ; int(0) :: int(0) ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "send" : Method | Param: "n" , "seq", Att: "n" |-> null , "seq" |-> null , "res" |-> null , "l" |-> null , "_" |-> null, Code: ( await "=" ( "seq" :: "ins" ) ) ; assign( "ins" ; "+" ( "ins" :: int(1) ) ) ; if "=" ( "%" ( "n" :: "p" ) :: int(0) ) th assign( "res" ; bool(false) ) el if "/=" ( "next" :: null ) th call( "l" ; "next" ; "send" ; "n" :: "outs" ) ; assign( "outs" ; "+" ( "outs" :: int(1) ) ) ; ( await ?("l") ) ; get( "l" ; "res" ) el new( "next" ; "Sieve" ; "n" ) ; assign( "res" ; bool(true) ) fi fi ; return ( "res" ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Generator" : Class | Inh: noInh, Param: noVid, Att: "n" |-> null,
+      "next" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "n" @ "Generator" ) ; int(3) ) ;
+              new( "next" ; "Sieve" ; int(2) ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "r" |->
+              null, "l" |-> null, "_" |-> null,
+              Code: call( "l" ; "next" ; "send" ; "n" :: "n" ) ;
+              assign( "n" ; "+" ( "n" :: int(1) ) ) ;
+              call( "label:0" ; "this" ; "run" ; emp ) ; free( "label:0" ) ;
+              await ?("l") ; get( "l" ; "r" ) ; return ( emp ) >,
+      Ocnt: 0 >
+    
+    < "Sieve" : Class | Inh: noInh, Param: "p", Att: "p" |-> null, "next" |->
+      null, "ins" |-> null, "outs" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "ins" @ "Sieve" ),
+              ( "outs" @ "Sieve" ) ; int(0) :: int(0) ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "send" : Method | Param: "n", "seq", Att: "n" |-> null, "seq"
+              |-> null, "res" |-> null, "l" |-> null, "_" |-> null,
+              Code: await "=" ( "seq" :: "ins" ) ;
+              assign( "ins" ; "+" ( "ins" :: int(1) ) ) ; if "=" ( "%" ( "n"
+              :: "p" ) :: int(0) ) th assign( "res" ; bool(false) ) el if
+              "/=" ( "next" :: null ) th call( "l" ; "next" ; "send" ; "n" ::
+              "outs" ) ; assign( "outs" ; "+" ( "outs" :: int(1) ) ) ; await
+              ?("l") ; get( "l" ; "res" ) el new( "next" ; "Sieve" ; "n" ) ;
+              assign( "res" ; bool(true) ) fi fi ; return ( "res" ) >,
+      Ocnt: 0 > .
 endm
+

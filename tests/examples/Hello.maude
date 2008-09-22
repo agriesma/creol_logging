@@ -1,22 +1,25 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Hello" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: (noSubst),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "hello" : Method | Param: noVid, Att: "result" |-> null , "_" |-> null, Code: assign( "result" ; str("Hello, world") ) ; return ( "result" ) >),
-  Ocnt: 0 >
-
-< "Main" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: ("result" |-> null , "hello" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: new( "hello" ; "Hello" ; emp ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "hello" ; "hello" ; emp ) ; get( "label:0" ; "result" ) ; return ( emp ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Hello" : Class | Inh: noInh, Param: noVid, Att: noSubst,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "hello" : Method | Param: noVid, Att: "result" |-> null, "_"
+              |-> null, Code: assign( "result" ; str("Hello, world") ) ;
+              return ( "result" ) >,
+      Ocnt: 0 >
+    
+    < "Main" : Class | Inh: noInh, Param: noVid, Att: "result" |-> null,
+      "hello" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: new( "hello" ; "Hello" ; emp ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
+              null, Code: call( "label:0" ; "hello" ; "hello" ; emp ) ;
+              get( "label:0" ; "result" ) ; return ( emp ) >,
+      Ocnt: 0 > .
 endm
+

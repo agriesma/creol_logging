@@ -1,16 +1,27 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "CallAll" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: ("outstanding" |-> null , "list" |-> null , "results" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "doit" : Method | Param: "l", Att: "l" |-> null , "label:0" |-> null , "i" |-> null , "r" |-> null , "o" |-> null , "_" |-> null, Code: if "/=" ( "l" :: list(emp) ) th call( "r" ; "fst" ( "i" ) ; "m" ; "snd" ( "i" ) ) ; call( "label:0" ; "this" ; "doit" ; "tail" ( "l" ) ) ; get( "label:0" ; noVid ) ; ( await ?("r") ) ; get( "r" ; "o" ) ; assign( "results" ; "|-" ( "results" :: list("fst" ( "i" ) :: "o") ) ) el skip fi ; return ( emp ) > ,
-    < "call_all" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: assign( "results" ; list(emp) ) ; call( "label:0" ; "this" ; "doit" ; "list" ) ; get( "label:0" ; noVid ) ; ( await "=" ( "#" ( "results" ) :: "#" ( "list" ) ) ) ; return ( emp ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "CallAll" : Class | Inh: noInh, Param: noVid, Att: "outstanding" |->
+      null, "list" |-> null, "results" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "doit" : Method | Param: "l", Att: "l" |-> null, "label:0" |->
+              null, "i" |-> null, "r" |-> null, "o" |-> null, "_" |-> null,
+              Code: if "/=" ( "l" :: list(emp) ) th
+              call( "r" ; "fst" ( "i" ) ; "m" ; "snd" ( "i" ) ) ;
+              call( "label:0" ; "this" ; "doit" ; "tail" ( "l" ) ) ;
+              get( "label:0" ; noVid ) ; await ?("r") ; get( "r" ; "o" ) ;
+              assign( "results" ; "|-" ( "results" :: list("fst" ( "i" ) ::
+              "o") ) ) el skip fi ; return ( emp ) >,
+            < "call_all" : Method | Param: noVid, Att: "label:0" |-> null,
+              "_" |-> null, Code: assign( "results" ; list(emp) ) ;
+              call( "label:0" ; "this" ; "doit" ; "list" ) ;
+              get( "label:0" ; noVid ) ; await "=" ( "#" ( "results" ) ::
+              "#" ( "list" ) ) ; return ( emp ) >,
+      Ocnt: 0 > .
 endm
+

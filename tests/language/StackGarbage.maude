@@ -1,15 +1,21 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Test" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: (noSubst),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "r" |-> null , "_" |-> null, Code: call( "label:0" ; "this" ; "m" ; emp ) ; get( "label:0" ; "r" ) ; return ( emp ) > ,
-    < "m" : Method | Param: noVid, Att: "r" |-> null , "label:0" |-> null , "_" |-> null, Code: ( call( "label:0" ; "this" ; "m" ; emp ) ; get( "label:0" ; "r" ) ; assign( "r" ; "+" ( "r" :: int(1) ) ) [] assign( "r" ; int(1) ) ) ; return ( "r" ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "r" |->
+              null, "_" |-> null,
+              Code: call( "label:0" ; "this" ; "m" ; emp ) ;
+              get( "label:0" ; "r" ) ; return ( emp ) >,
+            < "m" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
+              null, "_" |-> null,
+              Code: (call( "label:0" ; "this" ; "m" ; emp ) ;
+                      get( "label:0" ; "r" ) ; assign( "r" ; "+" ( "r" ::
+                      int(1) ) ) [] assign( "r" ; int(1) ))
+              ; return ( "r" ) >,
+      Ocnt: 0 > .
 endm
+

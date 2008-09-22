@@ -1,14 +1,15 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Test" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: (noSubst),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "l" |-> null , "f" |-> null , "_" |-> null, Code: while "/=" ( "l" :: list(emp) ) do assign( "f", "l" ; "head" ( "l" ) :: "tail" ( "l" ) ) od  ; return ( emp ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "l" |-> null, "f" |-> null,
+              "_" |-> null, Code: while "/=" ( "l" :: list(emp) ) do
+              assign( "f", "l" ; "head" ( "l" ) :: "tail" ( "l" ) ) od  ;
+              return ( emp ) >,
+      Ocnt: 0 > .
 endm
+

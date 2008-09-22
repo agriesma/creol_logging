@@ -1,23 +1,35 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Fibonacci" : Class | Inh: (noInh),
-  Param: ("n"),
-  Att: ("n" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "res" |-> null , "t" |-> null , "_" |-> null, Code: call( "t" ; "this" ; "fib" ; "n" ) ; ( await ?("t") ) ; get( "t" ; "res" ) ; return ( emp ) > ,
-    < "fib" : Method | Param: "n", Att: "n" |-> null , "f" |-> null , "a" |-> null , "b" |-> null , "s" |-> null , "t" |-> null , "_" |-> null, Code: if "=" ( "n" :: int(0) ) th assign( "f" ; int(1) ) el if "=" ( "n" :: int(1) ) th assign( "f" ; int(1) ) el call( "s" ; "this" ; "fib" ; "-" ( "n" :: int(1) ) ) ; call( "t" ; "this" ; "fib" ; "-" ( "n" :: int(2) ) ) ; get( "s" ; "a" ) ; get( "t" ; "b" ) ; assign( "f" ; "+" ( "a" :: "b" ) ) fi fi ; return ( "f" ) > ,
-    < "fibonacci" : Method | Param: "n", Att: "n" |-> null , "f" |-> null , "t" |-> null , "_" |-> null, Code: call( "t" ; "this" ; "fib" ; "n" ) ; get( "t" ; "f" ) ; return ( "f" ) >),
-  Ocnt: 0 >
-
-< "FibTester" : Class | Inh: (noInh),
-  Param: ("n"),
-  Att: ("n" |-> null , "f" |-> null , "res" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: new( "f" ; "Fibonacci" ; "n" ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "f" ; "fibonacci" ; "n" ) ; get( "label:0" ; "res" ) ; return ( emp ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Fibonacci" : Class | Inh: noInh, Param: "n", Att: "n" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "res" |-> null, "t" |->
+              null, "_" |-> null, Code: call( "t" ; "this" ; "fib" ; "n" ) ;
+              await ?("t") ; get( "t" ; "res" ) ; return ( emp ) >,
+            < "fib" : Method | Param: "n", Att: "n" |-> null, "f" |-> null,
+              "a" |-> null, "b" |-> null, "s" |-> null, "t" |-> null, "_" |->
+              null, Code: if "=" ( "n" :: int(0) ) th assign( "f" ; int(1) )
+              el if "=" ( "n" :: int(1) ) th assign( "f" ; int(1) ) el
+              call( "s" ; "this" ; "fib" ; "-" ( "n" :: int(1) ) ) ;
+              call( "t" ; "this" ; "fib" ; "-" ( "n" :: int(2) ) ) ;
+              get( "s" ; "a" ) ; get( "t" ; "b" ) ; assign( "f" ; "+" ( "a"
+              :: "b" ) ) fi fi ; return ( "f" ) >,
+            < "fibonacci" : Method | Param: "n", Att: "n" |-> null, "f" |->
+              null, "t" |-> null, "_" |-> null,
+              Code: call( "t" ; "this" ; "fib" ; "n" ) ; get( "t" ; "f" ) ;
+              return ( "f" ) >,
+      Ocnt: 0 >
+    
+    < "FibTester" : Class | Inh: noInh, Param: "n", Att: "n" |-> null, "f"
+      |-> null, "res" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: new( "f" ; "Fibonacci" ; "n" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
+              null, Code: call( "label:0" ; "f" ; "fibonacci" ; "n" ) ;
+              get( "label:0" ; "res" ) ; return ( emp ) >,
+      Ocnt: 0 > .
 endm
+

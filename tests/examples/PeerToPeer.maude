@@ -1,19 +1,51 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Node" : Class | Inh: (noInh),
-  Param: ("db"),
-  Att: ("db" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "enquire" : Method | Param: noVid, Att: "files" |-> null , "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "db" ; "listFiles" ; emp ) ; ( await ?("label:0") ) ; get( "label:0" ; "files" ) ; return ( "files" ) > ,
-    < "getLength" : Method | Param: "fId", Att: "fId" |-> null , "lth" |-> null , "label:0" |-> null , "_" |-> null, Code: call( "label:0" ; "db" ; "getLength" ; "fId" ) ; ( await ?("label:0") ) ; get( "label:0" ; "lth" ) ; return ( "lth" ) > ,
-    < "getPack" : Method | Param: "fId" , "pNbr", Att: "fId" |-> null , "pNbr" |-> null , "pack" |-> null , "label:0" |-> null , "f" |-> null , "_" |-> null, Code: call( "label:0" ; "db" ; "getFile" ; "fId" ) ; ( await ?("label:0") ) ; get( "label:0" ; "f" ) ; assign( "pack" ; "nth" ( "f" :: "pNbr" ) ) ; return ( "pack" ) > ,
-    < "availFiles" : Method | Param: "sList", Att: "sList" |-> null , "files" |-> null , "l1" |-> null , "l2" |-> null , "fList" |-> null , "_" |-> null, Code: if "=" ( "sList" :: list(emp) ) th assign( "files" ; list(emp) ) el call( "l1" ; "head" ( "sList" ) ; "enquire" ; emp ) ; call( "l2" ; "this" ; "availFiles" ; "tail" ( "sList" ) ) ; ( await "&&" ( ?("l1") :: ?("l2") ) ) ; get( "l1" ; "fList" ) ; get( "l2" ; "files" ) ; assign( "files" ; "|-" ( "files" :: list("head" ( "sList" ) :: "fList") ) ) fi ; return ( "files" ) > ,
-    < "reqFile" : Method | Param: "sId" , "fId", Att: "sId" |-> null , "fId" |-> null , "label:2" |-> null , "label:1" |-> null , "label:0" |-> null , "file" |-> null , "pack" |-> null , "lth" |-> null , "_" |-> null, Code: call( "label:0" ; "sId" ; "getLength" ; "fId" ) ; ( await ?("label:0") ) ; get( "label:0" ; "lth" ) ; while ">" ( "lth" :: int(0) ) do call( "label:1" ; "sId" ; "getPack" ; "fId" :: "lth" ) ; ( await ?("label:1") ) ; get( "label:1" ; "pack" ) ; assign( "file" ; "-|" ( "pack" :: "file" ) ) ; assign( "lth" ; "-" ( "lth" :: int(1) ) ) od  ; call( "label:2" ; "db" ; "storeFile" ; "fId" :: "file" ) ; free( "label:2" ) ; return ( emp ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Node" : Class | Inh: noInh, Param: "db", Att: "db" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "enquire" : Method | Param: noVid, Att: "files" |-> null,
+              "label:0" |-> null, "_" |-> null,
+              Code: call( "label:0" ; "db" ; "listFiles" ; emp ) ; await
+              ?("label:0") ; get( "label:0" ; "files" ) ; return ( "files" )
+              >,
+            < "getLength" : Method | Param: "fId", Att: "fId" |-> null, "lth"
+              |-> null, "label:0" |-> null, "_" |-> null,
+              Code: call( "label:0" ; "db" ; "getLength" ; "fId" ) ; await
+              ?("label:0") ; get( "label:0" ; "lth" ) ; return ( "lth" ) >,
+            < "getPack" : Method | Param: "fId", "pNbr", Att: "fId" |-> null,
+              "pNbr" |-> null, "pack" |-> null, "label:0" |-> null, "f" |->
+              null, "_" |-> null,
+              Code: call( "label:0" ; "db" ; "getFile" ; "fId" ) ; await
+              ?("label:0") ; get( "label:0" ; "f" ) ;
+              assign( "pack" ; "nth" ( "f" :: "pNbr" ) ) ; return ( "pack" )
+              >,
+            < "availFiles" : Method | Param: "sList", Att: "sList" |-> null,
+              "files" |-> null, "l1" |-> null, "l2" |-> null, "fList" |->
+              null, "_" |-> null, Code: if "=" ( "sList" :: list(emp) ) th
+              assign( "files" ; list(emp) ) el
+              call( "l1" ; "head" ( "sList" ) ; "enquire" ; emp ) ;
+              call( "l2" ; "this" ; "availFiles" ; "tail" ( "sList" ) ) ;
+              await "&&" ( ?("l1") :: ?("l2") ) ; get( "l1" ; "fList" ) ;
+              get( "l2" ; "files" ) ; assign( "files" ; "|-" ( "files" ::
+              list("head" ( "sList" ) :: "fList") ) ) fi ; return ( "files" )
+              >,
+            < "reqFile" : Method | Param: "sId", "fId", Att: "sId" |-> null,
+              "fId" |-> null, "label:2" |-> null, "label:1" |-> null,
+              "label:0" |-> null, "file" |-> null, "pack" |-> null, "lth" |->
+              null, "_" |-> null,
+              Code: call( "label:0" ; "sId" ; "getLength" ; "fId" ) ; await
+              ?("label:0") ; get( "label:0" ; "lth" ) ; while ">" ( "lth" ::
+              int(0) ) do call( "label:1" ; "sId" ; "getPack" ; "fId" ::
+              "lth" ) ; await ?("label:1") ; get( "label:1" ; "pack" ) ;
+              assign( "file" ; "-|" ( "pack" :: "file" ) ) ;
+              assign( "lth" ; "-" ( "lth" :: int(1) ) ) od  ;
+              call( "label:2" ; "db" ; "storeFile" ; "fId" :: "file" ) ;
+              free( "label:2" ) ; return ( emp ) >,
+      Ocnt: 0 > .
 endm
+

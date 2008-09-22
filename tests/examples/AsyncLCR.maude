@@ -1,23 +1,39 @@
 load creol-interpreter .
 mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Process" : Class | Inh: (noInh),
-  Param: ("i" , "u"),
-  Att: ("i" |-> null , "u" |-> null , "status" |-> null , "neighbor" |-> null),
-  Mtds: (< "init" : Method | Param: noVid, Att: "label:1" |-> null , "label:0" |-> null , "_" |-> null, Code: assign( "status" ; int(0) ) ; call( "label:0" ; "i" ; "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ; call( "label:1" ; "neighbor" ; "receive" ; "u" ) ; free( "label:1" ) ; return ( emp ) > ,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "receive" : Method | Param: "v", Att: "v" |-> null , "label:0" |-> null , "_" |-> null, Code: if ">" ( "v" :: "u" ) th call( "label:0" ; "neighbor" ; "receive" ; "v" ) ; free( "label:0" ) el if "=" ( "v" :: "u" ) th assign( "status" ; int(1) ) el skip fi fi ; return ( emp ) >),
-  Ocnt: 0 >
-
-< "Init" : Class | Inh: (noInh),
-  Param: (noVid),
-  Att: ("p1" |-> null , "p2" |-> null , "p3" |-> null),
-  Mtds: (< "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return ( emp ) > ,
-    < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new( "p1" ; "Process" ; "this" :: int(1) ) ; new( "p2" ; "Process" ; "this" :: int(2) ) ; new( "p3" ; "Process" ; "this" :: int(3) ) ; return ( emp ) > ,
-    < "getNeighbor" : Method | Param: noVid, Att: "p" |-> null , "_" |-> null, Code: if "=" ( "caller" :: "p1" ) th assign( "p" ; "p3" ) el if "=" ( "caller" :: "p2" ) th assign( "p" ; "p1" ) el assign( "p" ; "p2" ) fi fi ; return ( "p" ) >),
-  Ocnt: 0 >
-
-.
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Process" : Class | Inh: noInh, Param: "i", "u", Att: "i" |-> null, "u"
+      |-> null, "status" |-> null, "neighbor" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "label:1" |-> null,
+              "label:0" |-> null, "_" |-> null,
+              Code: assign( "status" ; int(0) ) ;
+              call( "label:0" ; "i" ; "getNeighbor" ; emp ) ;
+              get( "label:0" ; "neighbor" ) ;
+              call( "label:1" ; "neighbor" ; "receive" ; "u" ) ;
+              free( "label:1" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "receive" : Method | Param: "v", Att: "v" |-> null, "label:0"
+              |-> null, "_" |-> null, Code: if ">" ( "v" :: "u" ) th
+              call( "label:0" ; "neighbor" ; "receive" ; "v" ) ;
+              free( "label:0" ) el if "=" ( "v" :: "u" ) th
+              assign( "status" ; int(1) ) el skip fi fi ; return ( emp ) >,
+      Ocnt: 0 >
+    
+    < "Init" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |->
+      null, "p3" |-> null,
+      Mtds: < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: new( "p1" ; "Process" ; "this" :: int(1) ) ;
+              new( "p2" ; "Process" ; "this" :: int(2) ) ;
+              new( "p3" ; "Process" ; "this" :: int(3) ) ; return ( emp ) >,
+            < "getNeighbor" : Method | Param: noVid, Att: "p" |-> null, "_"
+              |-> null, Code: if "=" ( "caller" :: "p1" ) th
+              assign( "p" ; "p3" ) el if "=" ( "caller" :: "p2" ) th
+              assign( "p" ; "p1" ) el assign( "p" ; "p2" ) fi fi ;
+              return ( "p" ) >,
+      Ocnt: 0 > .
 endm
+
