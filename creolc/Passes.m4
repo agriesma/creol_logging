@@ -95,6 +95,11 @@ let passes = [
       dependencies = TreeUnassert.dependencies ;
       pass = TreeUnassert.unassert ;
       elapsed = 0.0; enabled = false; dump = false } );
+  ( "unprove",
+    { help = "Remove all prove statements." ;
+      dependencies = TreeUnprove.dependencies ;
+      pass = TreeUnprove.unprove ;
+      elapsed = 0.0; enabled = false; dump = false } );
   ( "devirt" ,
     { help = "Devirtualise attribute access.";
       dependencies = "typecheck";
