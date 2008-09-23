@@ -65,27 +65,29 @@ creolc_SOURCES		= Version.ml \
 			  Driver.m4
 
 creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
-			  Creol.cmo Typing.cmo TreeLower.cmo TreeFold.cmo \
+			  Creol.cmo \
+			  BackendCreol.cmo BackendMaude.cmo \
+			  BackendDot.cmo $(BACKEND_XML_CMO) \
+			  Typing.cmo TreeLower.cmo TreeFold.cmo \
 			  TreeUnassert.cmo TreeUnprove.cmo TreeSSA.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  CheckUseDef.cmo \
 			  Lexer.cmo Parser.cmo \
-			  BackendCreol.cmo BackendMaude.cmo $(BACKEND_XML_CMO) \
-			  BackendDot.cmo \
 			  Passes.cmo Driver.cmo
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
 creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
-			  Creol.cmx Typing.cmx TreeLower.cmx TreeFold.cmx \
+			  Creol.cmx \
+			  BackendCreol.cmx BackendMaude.cmx \
+			  BackendDot.cmx $(BACKEND_XML_CMX) \
+			  Typing.cmx TreeLower.cmx TreeFold.cmx \
 			  TreeUnassert.cmx TreeUnprove.cmx TreeSSA.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  CheckUseDef.cmx \
 			  Lexer.cmx Parser.cmx \
-			  BackendCreol.cmx BackendMaude.cmx $(BACKEND_XML_CMX) \
-			  BackendDot.cmx \
 			  Passes.cmx Driver.cmx
 
 cmcvalid_SOURCES	= Version.ml Misc.ml Creol.ml TreeLift.ml \
