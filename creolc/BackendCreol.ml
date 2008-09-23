@@ -33,14 +33,149 @@ let requires _ = []
 
 let conflicts _ = ["lower"]
 
+let print_comma () = print_string "," ; print_space ()
+
+let print_semi () = print_string ";" ; print_space ()
+
+
+let rec print_expression exp =
+  let open_paren prec op_prec =
+    if prec < op_prec then begin open_box 0 ; print_string "(" end
+  and close_paren prec op_prec =
+    if prec < op_prec then begin print_string ")" ; close_box () end
+  in
+  let rec print prec =
+    function
+	Expression.This _ ->
+	  print_string "this"
+      | Expression.QualifiedThis (_, t) ->
+	  print_string ("this as " ^ (Type.as_string t))
+      | Expression.Caller _ ->
+	  print_string "caller"
+      | Expression.Now _ ->
+	  print_string "now"
+      | Expression.Nil _ ->
+	  print_string "nil"
+      | Expression.Null _ ->
+	  print_string "null"
+      | Expression.History _ ->
+	  print_string "history"
+      | Expression.Int (_, i) ->
+          print_string (Big_int.string_of_big_int i)
+      | Expression.Float (_, f) ->
+	  print_float f
+      | Expression.Bool (_, b) ->
+	  print_string (string_of_bool b)
+      | Expression.String (_, s) ->
+	  print_string ("\"" ^ s ^ "\"")
+      | Expression.Id (_, i) ->
+	  print_string i
+      | Expression.StaticAttr (_, a, c) ->
+	  print_string (a ^ "@" ^ (Type.as_string c))
+      | Expression.Tuple (_, a) ->
+	  print_string "(";
+	  print_expression_list a;
+	  print_string ")"
+      | Expression.ListLit (_, a) ->
+	  print_string "[";
+	  print_expression_list a ;
+	  print_string "]"
+      | Expression.SetLit (_, a) ->
+	  print_string "{";
+	  print_expression_list a;
+	  print_string "}";
+      | Expression.Unary (_, o, e) ->
+	  print_string (Expression.string_of_unaryop o) ;
+	  print_space () ;
+	  print (Expression.prec_of_unaryop o) e
+      | Expression.Binary (_, o, l, r) ->
+	  let lp = fst (Expression.prec_of_binaryop o)
+	  and rp = snd (Expression.prec_of_binaryop o)
+	  in
+      	    open_paren prec lp;
+	    print lp l ;
+	    print_space () ;
+	    print_string (Expression.string_of_binaryop o) ;
+	    print_space () ;
+	    print rp r;
+	    close_paren prec rp
+      | Expression.FuncCall (_, i, a) ->
+	  print_string (i ^ "(") ;
+	  print_expression_list a ;
+	  print_string ")"
+      | Expression.Label (_, l) ->
+	  print 121 l;
+	  print_string "?"
+      | Expression.If (_, c, t, f) ->
+	  print_string "if" ;
+	  print_space () ;
+	  print 121 c ;
+	  print_space () ;
+	  print_string "then" ;
+	  print_space () ;
+	  print 121 t ;
+	  print_space () ;
+	  print_string "else" ;
+	  print_space () ;
+	  print 121 f ;
+	  print_space () ;
+	  print_string "end";
+      | Expression.New (_, t, a) ->
+          print_string ("new " ^ (Type.as_string t) ^ "(");
+	  print_expression_list a ;
+	  print_string ")"
+      | Expression.Choose (_,v, t, e) ->
+	  print_string ("(some " ^ v ^ ": " ^ (Type.as_string t)) ;
+	  print_expression e ;
+	  print_string ")"
+      | Expression.Exists (_,v, t, e) ->
+	  print_string ("(exists " ^ v ^ ": " ^ (Type.as_string t)) ;
+	  print_expression e ;
+	  print_string ")"
+      | Expression.Forall (_,v, t, e) ->
+	  print_string ("(forall " ^ v ^ ": " ^ (Type.as_string t)) ;
+	  print_expression e ;
+	  print_string ")"
+      | Expression.Extern (_, s) ->
+          open_hbox () ;
+	  print_string "extern" ;
+	  print_space () ;
+	  print_string ("\"" ^ s ^ "\"") ;
+	  close_box ()
+      | Expression.ObjLit (_, s) ->
+	  print_string ("object " ^ s)
+      | Expression.LabelLit (_, e) ->
+	  print_string "label(" ;
+	  print_expression_list e ;
+	  print_string ")"
+      | Expression.SSAId (_, v, n) ->
+	  print_string ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
+      | Expression.Phi (_, l) ->
+	  print_string "$Phi(" ;
+	  print_expression_list l ;
+	  print_string ")";
+  in
+    print 121 exp
+and print_expression_list l =
+  separated_list print_expression print_comma l
+
+let pretty_print_expression out_channel expr =
+  let () = set_formatter_out_channel out_channel in
+    open_box 2 ;
+    print_expression expr ;
+    close_box () ;
+    print_newline ()
+
+let string_of_expression expr =
+  "to be implemented"
+
+
 let emit out_channel input =
   (** Write a pretty-printed tree to [out_channel].
       
       The result of [lower] cannot be printed to a valid creol
       program.  The pretty-printed result can, however, be used for
       debugging. *)
-  let print_comma () = print_string "," ; print_space () in
-  let print_semi () = print_string ";" ; print_space () in
   let rec print_declaration =
     function
 	Declaration.Class c when not c.Class.hidden ->
@@ -623,125 +758,6 @@ let emit out_channel input =
 	    close_box ()
     in
       print 25 statement
-  and print_expression exp =
-    let open_paren prec op_prec =
-      if prec < op_prec then begin open_box 0 ; print_string "(" end
-    and close_paren prec op_prec =
-      if prec < op_prec then begin print_string ")" ; close_box () end
-    in
-    let rec print prec =
-      function
-	  Expression.This _ ->
-	    print_string "this"
-	| Expression.QualifiedThis (_, t) ->
-	    print_string ("this as " ^ (Type.as_string t))
-	| Expression.Caller _ ->
-	    print_string "caller"
-	| Expression.Now _ ->
-	    print_string "now"
-	| Expression.Nil _ ->
-	    print_string "nil"
-	| Expression.Null _ ->
-	    print_string "null"
-	| Expression.History _ ->
-	    print_string "history"
-	| Expression.Int (_, i) ->
-            print_string (Big_int.string_of_big_int i)
-	| Expression.Float (_, f) ->
-	    print_float f
-	| Expression.Bool (_, b) ->
-	    print_string (string_of_bool b)
-	| Expression.String (_, s) ->
-	    print_string ("\"" ^ s ^ "\"")
-	| Expression.Id (_, i) ->
-	    print_string i
-	| Expression.StaticAttr (_, a, c) ->
-	    print_string (a ^ "@" ^ (Type.as_string c))
-	| Expression.Tuple (_, a) ->
-	    print_string "(";
-	    print_expression_list a;
-	    print_string ")"
-	| Expression.ListLit (_, a) ->
-	    print_string "[";
-	    print_expression_list a ;
-	    print_string "]"
-	| Expression.SetLit (_, a) ->
-	    print_string "{";
-	    print_expression_list a;
-	    print_string "}";
-	| Expression.Unary (_, o, e) ->
-	    print_string (Expression.string_of_unaryop o) ;
-	    print_space () ;
-	    print (Expression.prec_of_unaryop o) e
-	| Expression.Binary (_, o, l, r) ->
-	    let lp = fst (Expression.prec_of_binaryop o)
-	    and rp = snd (Expression.prec_of_binaryop o)
-	    in
-      	      open_paren prec lp;
-	      print lp l ;
-	      print_space () ;
-	      print_string (Expression.string_of_binaryop o) ;
-	      print_space () ;
-	      print rp r;
-	      close_paren prec rp
-	| Expression.FuncCall (_, i, a) ->
-	    print_string (i ^ "(") ;
-	    print_expression_list a ;
-	    print_string ")"
-	| Expression.Label (_, l) ->
-	    print 121 l;
-	    print_string "?"
-	| Expression.If (_, c, t, f) ->
-	    print_string "if" ;
-	    print_space () ;
-	    print 121 c ;
-	    print_space () ;
-	    print_string "then" ;
-	    print_space () ;
-	    print 121 t ;
-	    print_space () ;
-	    print_string "else" ;
-	    print_space () ;
-	    print 121 f ;
-	    print_space () ;
-	    print_string "end";
-	| Expression.New (_, t, a) ->
-            print_string ("new " ^ (Type.as_string t) ^ "(");
-	    print_expression_list a ;
-	    print_string ")"
-	| Expression.Choose (_,v, t, e) ->
-	    print_string ("(some " ^ v ^ ": " ^ (Type.as_string t)) ;
-	    print_expression e ;
-	    print_string ")"
-	| Expression.Exists (_,v, t, e) ->
-	    print_string ("(exists " ^ v ^ ": " ^ (Type.as_string t)) ;
-	    print_expression e ;
-	    print_string ")"
-	| Expression.Forall (_,v, t, e) ->
-	    print_string ("(forall " ^ v ^ ": " ^ (Type.as_string t)) ;
-	    print_expression e ;
-	    print_string ")"
-        | Expression.Extern (_, s) ->
-            open_hbox () ;
-	    print_string "extern" ;
-	    print_space () ;
-	    print_string ("\"" ^ s ^ "\"") ;
-	    close_box ()
-	| Expression.ObjLit (_, s) ->
-	    print_string ("object " ^ s)
-	| Expression.LabelLit (_, e) ->
-	    print_string "label(" ;
-	    print_expression_list e ;
-	    print_string ")"
-	| Expression.SSAId (_, v, n) ->
-	    print_string ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
-	| Expression.Phi (_, l) ->
-	    print_string "$Phi(" ;
-	    print_expression_list l ;
-	    print_string ")";
-    in
-      print 121 exp
-  and print_expression_list l = separated_list print_expression print_comma l
   and print_lhs =
       function
 	  Expression.LhsId (_, n) ->
