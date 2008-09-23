@@ -799,11 +799,13 @@ let parse name input =
 	  let () = junk_rparen input in
 	    Statement.StaticTail (Statement.make_note (), m,
 				  Type.default_sig (), lb, ub, a)
+      | Some Key ("$accept", _) ->
+	  let () = Stream.junk input in
+	  let l = parse_expression input in
+	    assert false (* Statement.Accept (Statement.make_note (), l) *)
       | Some Key ("$cont", _) ->
 	  let () = Stream.junk input in
-	  let () = junk_lparen input in
 	  let l = parse_expression input in
-	  let () = junk_rparen input in
 	    Statement.Continue (Statement.make_note (), l)
       | Some Key ("if", _) ->
 	  let () = Stream.junk input in
@@ -1152,7 +1154,10 @@ let options = [
   ("--version", Arg.Unit show_version, "  Show the version and exit")]
 
 let main () =
-  let action n = BackendCreol.emit stdout (TreeLift.pass (parse_from_file n)) in
+  let action n =
+    let tree = TreeLift.pass (parse_from_file n) in
+      BackendCreol.pretty_print_program stdout tree
+  in
     Arg.parse options action "cmcvalid [options] [files]"
 ;;
 

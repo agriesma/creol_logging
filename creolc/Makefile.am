@@ -2,7 +2,7 @@
 #
 # This file is part of creoltools
 #
-# Written and Copyright (c) 2007 by Marcel Kyas
+# Written and Copyright (c) 2007, 2008 by Marcel Kyas
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -57,7 +57,7 @@ creolc_SOURCES		= Version.ml \
 			  CheckUseDef.ml \
 			  Lexer.mli Lexer.ml \
 			  Parser.mli Parser.ml \
-			  BackendCreol.ml \
+			  BackendCreol.mli BackendCreol.ml \
 			  BackendMaude.ml \
 			  BackendXML.ml \
 			  BackendDot.ml \

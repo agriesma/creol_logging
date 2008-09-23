@@ -3,7 +3,7 @@
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2007, 2008 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -33,7 +33,9 @@ let requires _ = []
 
 let conflicts _ = ["lower"]
 
+
 let print_comma () = print_string "," ; print_space ()
+
 
 let print_semi () = print_string ";" ; print_space ()
 
@@ -159,6 +161,7 @@ let rec print_expression exp =
 and print_expression_list l =
   separated_list print_expression print_comma l
 
+
 let pretty_print_expression out_channel expr =
   let () = set_formatter_out_channel out_channel in
     open_box 2 ;
@@ -166,11 +169,319 @@ let pretty_print_expression out_channel expr =
     close_box () ;
     print_newline ()
 
-let string_of_expression expr =
-  "to be implemented"
+
+let print_lhs =
+  function
+      Expression.LhsId (_, n) ->
+	print_string n
+    | Expression.LhsAttr(_, n, c) ->
+	print_string (n ^ "@" ^ (Type.as_string c))
+    | Expression.LhsWildcard (_, None) ->
+	print_string "_"
+    | Expression.LhsWildcard (_, Some t) ->
+	print_string ("_: " ^ (Type.as_string t))
+    | Expression.LhsSSAId (_, v, n) ->
+	print_string ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
 
 
-let emit out_channel input =
+let print_lhs_list l = separated_list print_lhs print_comma l
+
+
+let rec print_statement statement =
+  (** Pretty-print statements and write the code to out. *)
+  let open_block prec op_prec =
+    if prec < op_prec then
+      begin open_box 0 ; print_string "begin" ; print_space () end
+  and close_block prec op_prec =
+    if prec < op_prec then
+      begin print_space () ; print_string "end" ; close_box () end
+  in
+  let rec print (prec : int) : Statement.t -> unit =
+    function
+	Statement.Skip _ ->
+	  open_box 0 ; print_string "skip" ; close_box ()
+      | Statement.Assert (_, e) ->
+	  open_box 0 ; print_string "assert" ; print_space () ;
+	  print_expression e ; close_box ()
+      | Statement.Prove (_, e) ->
+	  open_box 0 ; print_string "prove" ; print_space () ;
+	  print_expression e ; close_box ()
+      | Statement.Assign (_, i, e) ->
+	  open_box 0 ; print_lhs_list i;
+	  print_space () ; print_string ":=" ; print_space () ;
+	  print_expression_list e ; close_box ()
+      | Statement.Await (_, e) -> 
+	  open_box 0 ; print_string "await"; print_space () ;
+	  print_expression e ; close_box ()
+      | Statement.Posit (_, e) -> 
+	  open_box 0 ; print_string "posit"; print_space () ;
+	  print_expression e ; close_box ()
+      | Statement.Release _ ->
+	  open_box 0 ; print_string "release" ; close_box ()
+      | Statement.AsyncCall (_, l, c, m, _, a) ->
+	  open_box 0 ;
+	  (match l with
+	       None -> ()
+	     | Some l -> print_lhs l ) ;
+	  print_string "!";
+	  print_expression c ;
+	  print_string ("." ^ m ^ "(");
+	  print_expression_list a;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.Reply (_, l, o) ->
+	  open_box 0 ;
+	  print_expression l ;
+	  print_string "?(" ;
+	  print_lhs_list o ;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.Free (_, l) ->
+	  open_box 0 ;
+	  print_string "/* free(" ;
+	  print_lhs_list l ;
+	  print_string ") */" ;
+	  close_box ()
+      | Statement.Bury (_, l) ->
+	  open_box 0 ;
+	  print_string "/* bury(" ;
+	  print_lhs_list l ;
+	  print_string ") */" ;
+	  close_box ()
+      | Statement.SyncCall (_, c, m, _, a, r) ->
+	  open_box 0 ;
+	  print_expression c ;
+	  print_string ("." ^ m ^ "(") ;
+	  print_expression_list a ;
+	  print_semi () ;
+	  print_lhs_list r ;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.AwaitSyncCall (_, c, m, _, a, r) ->
+	  open_box 0 ;
+	  print_string "await" ;
+	  print_space () ;
+	  print_expression c ;
+	  print_string ("." ^ m ^ "(");
+	  print_expression_list a;
+	  print_string "; " ;
+	  print_lhs_list r;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.LocalAsyncCall (_, l, m, _, lb, ub, i) ->
+	  open_box 0 ;
+	  begin
+	    match l with
+		None -> ()
+	      | Some n -> print_lhs n 
+	  end ;
+	  print_string "!" ;
+	  print_string m ;
+	  begin
+	    match lb with
+		None -> ()
+	      | Some n -> print_string (":>" ^ n)
+	  end ;
+	  begin
+	    match ub with
+		None -> ()
+	      | Some n -> print_string ("<:" ^ n)
+	  end ;
+	  print_string "(" ;
+	  print_expression_list i ;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.LocalSyncCall (_, m, _, lb, ub, i, o) ->
+	  open_box 0 ;
+	  print_string m ;
+	  (match lb with
+	       None -> ()
+	     | Some n -> print_string (":>" ^ n));
+	  (match ub with
+	       None -> ()
+	     | Some n -> print_string ("<:" ^ n));
+	  print_string "(" ;
+	  print_expression_list i;
+	  print_semi () ;
+	  print_lhs_list o;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.AwaitLocalSyncCall (_, m, _, lb, ub, i, o) ->
+	  open_box 0 ;
+	  print_string "await" ;
+	  print_space () ;
+	  print_string m ;
+	  (match lb with
+	       None -> ()
+	     | Some n -> print_string (":>" ^ n));
+	  (match ub with
+	       None -> ()
+	     | Some n -> print_string ("<:" ^ n));
+	  print_string "(" ;
+	  print_expression_list i;
+	  print_semi () ;
+	  print_lhs_list o ;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.MultiCast (_, c, m, _, a) ->
+	  open_box 0 ;
+	  print_string "!";
+	  print_expression c ;
+	  print_string ("." ^ m ^ "(") ;
+	  print_expression_list a ;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.Discover (_, t, m, _, a) ->
+	  open_box 0 ;
+	  print_string ("!" ^ (Type.as_string t) ^ "." ^ m ^ "(") ;
+	  print_expression_list a ;
+	  print_string ")" ;
+	  close_box ()
+      | Statement.Tailcall (_, c, m, _, i) ->
+	  open_box 0 ;
+	  print_string "/* tailcall " ;
+	  print_expression c ;
+	  print_string ("." ^ m ^ "(");
+	  print_expression_list i ;
+	  print_string ") */" ;
+	  close_box ()
+      | Statement.StaticTail (_, m, _, l, u, i) ->
+	  open_box 0 ;
+	  print_string "/* static tailcall " ;
+	  print_string m ;
+	  (match l with
+	       None -> ()
+	     | Some n -> print_string (":>" ^ n));
+	  (match u with
+	       None -> ()
+	     | Some n -> print_string ("<:" ^ n));
+	  print_string "(" ;
+	  print_expression_list i;
+	  print_string ") */" ;
+	  close_box ()
+      | Statement.Return (_, o) ->
+	  open_box 0 ;
+	  print_string "/* return(" ;
+	  print_expression_list o ;
+	  print_string ") */" ;
+	  close_box ()
+      | Statement.If (_, c, t, f) ->
+	  open_box 0 ;
+	  print_string "if" ;
+	  print_space () ;
+	  begin
+	    open_box 0 ;
+	    print_expression c;
+	    close_box ()
+	  end ;
+	  print_space () ;
+	  print_string "then";
+	  print_space () ;
+	  begin
+	    open_box 2 ;
+	    print 25 t ;
+	    close_box ()
+	  end ;
+	  print_space () ;
+	  print_string "else";
+	  print_space () ;
+	  begin
+	    open_box 2 ;
+	    print 25 f ;
+	    close_box ()
+	  end ;
+          print_space () ;
+	  print_string "end" ;
+	  close_box ()
+      | Statement.While (_, c, i, b) ->
+	  (* The text generated in this branch does not parse in standard
+	     Creol.  This should not be changed.  Consult the manual for
+	     the reasons. *)
+	  print_string "while"; print_space () ;
+	  print_expression c;
+	  (match i with
+	     | Expression.Bool (_, true) -> ()
+	     | _ -> 
+		 open_box 2 ;
+		 print_string "inv" ;
+		 print_space () ;
+		 print_expression i ;
+		 close_box ()) ;
+	  print_space () ;
+	  print_string "do" ;
+	  print_space () ;
+	  open_box 2 ;
+	  print 25 b ;
+	  close_box () ;
+          print_space () ;
+	  print_string "end";
+      | Statement.DoWhile (_, c, i, b) ->
+	  (* The text generated in this branch does not parse in standard
+	     Creol.  This should not be changed.  Consult the manual for
+	     the reasons. *)
+	  print_string "do" ; print_space () ;
+	  open_box 2 ;
+	  print 25 b ;
+	  close_box () ;
+	  (match i with
+	       Expression.Bool (_, true) -> ()
+	     | _ -> 
+		 open_box 2 ;
+		 print_string "inv" ;
+		 print_space () ;
+		 print_expression i ;
+		 close_box ()) ;
+	  print_string "while" ;
+	  print_space () ;
+	  print_expression c
+      | Statement.Sequence (_, s1, s2) -> 
+	  let op_prec = 25 in
+	    open_block prec op_prec ;
+	    print op_prec s1 ;
+	    print_semi () ;
+	    print op_prec s2 ;
+	    close_block prec op_prec
+      | Statement.Merge (_, s1, s2) ->
+	  let op_prec = 29 in
+	    open_block prec op_prec ;
+	    print op_prec s1 ;
+	    print_space () ;
+	    print_string "|||" ;
+	    print_space () ;
+	    print op_prec s2 ;
+	    close_block prec op_prec
+      | Statement.Choice (_, s1, s2) -> 
+	  let op_prec = 27 in
+	    open_block prec op_prec;
+	    print op_prec s1 ;
+	    print_space () ;
+	    print_string "[]" ;
+	    print_space () ;
+	    print op_prec s2 ;
+	    close_block prec op_prec
+      | Statement.Continue (_, e) ->
+	  print_string "/* continue " ;
+	  print_expression e ;
+	  print_string "*/"
+      | Statement.Extern (_, s) ->
+	  open_hbox () ;
+	  print_string "extern" ;
+	  print_space () ;
+	  print_string ("\"" ^ s ^ "\"") ;
+	  close_box ()
+  in
+    print 25 statement
+
+
+let pretty_print_statement out_channel stmt =
+  let () = set_formatter_out_channel out_channel in
+    open_box 2 ;
+    print_statement stmt ;
+    close_box () ;
+    print_newline ()
+
+
+let pretty_print_program out_channel input =
   (** Write a pretty-printed tree to [out_channel].
       
       The result of [lower] cannot be printed to a valid creol
@@ -474,303 +785,6 @@ let emit out_channel input =
 	    print_expression e ;
 	    close_box ()
     end
-  and print_statement (statement : Statement.t) : unit =
-    (** Pretty-print statements and write the code to out. *)
-    let open_block prec op_prec =
-      if prec < op_prec then
-	begin open_box 0 ; print_string "begin" ; print_space () end
-    and close_block prec op_prec =
-      if prec < op_prec then
-	begin print_space () ; print_string "end" ; close_box () end
-    in
-    let rec print (prec : int) : Statement.t -> unit =
-      function
-	  Statement.Skip _ ->
-	    open_box 0 ; print_string "skip" ; close_box ()
-	| Statement.Assert (_, e) ->
-	    open_box 0 ; print_string "assert" ; print_space () ;
-	    print_expression e ; close_box ()
-	| Statement.Prove (_, e) ->
-	    open_box 0 ; print_string "prove" ; print_space () ;
-	    print_expression e ; close_box ()
-	| Statement.Assign (_, i, e) ->
-	    open_box 0 ; print_lhs_list i;
-	    print_space () ; print_string ":=" ; print_space () ;
-	    print_expression_list e ; close_box ()
-	| Statement.Await (_, e) -> 
-	    open_box 0 ; print_string "await"; print_space () ;
-	    print_expression e ; close_box ()
-	| Statement.Posit (_, e) -> 
-	    open_box 0 ; print_string "posit"; print_space () ;
-	    print_expression e ; close_box ()
-	| Statement.Release _ ->
-	    open_box 0 ; print_string "release" ; close_box ()
-	| Statement.AsyncCall (_, l, c, m, _, a) ->
-	    open_box 0 ;
-	    (match l with
-		None -> ()
-	      | Some l -> print_lhs l ) ;
-	    print_string "!";
-	    print_expression c ;
-	    print_string ("." ^ m ^ "(");
-	    print_expression_list a;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.Reply (_, l, o) ->
-	    open_box 0 ;
-	    print_expression l ;
-	    print_string "?(" ;
-	    print_lhs_list o ;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.Free (_, l) ->
-	    open_box 0 ;
-	    print_string "/* free(" ;
-	    print_lhs_list l ;
-	    print_string ") */" ;
-	    close_box ()
-	| Statement.Bury (_, l) ->
-	    open_box 0 ;
-	    print_string "/* bury(" ;
-	    print_lhs_list l ;
-	    print_string ") */" ;
-	    close_box ()
-	| Statement.SyncCall (_, c, m, _, a, r) ->
-	    open_box 0 ;
-	    print_expression c ;
-	    print_string ("." ^ m ^ "(") ;
-	    print_expression_list a ;
-	    print_semi () ;
-	    print_lhs_list r ;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.AwaitSyncCall (_, c, m, _, a, r) ->
-	    open_box 0 ;
-	    print_string "await" ;
-	    print_space () ;
-	    print_expression c ;
-	    print_string ("." ^ m ^ "(");
-	    print_expression_list a;
-	    print_string "; " ;
-	    print_lhs_list r;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.LocalAsyncCall (_, l, m, _, lb, ub, i) ->
-	    open_box 0 ;
-	    begin
-	      match l with
-		  None -> ()
-		| Some n -> print_lhs n 
-	    end ;
-	    print_string "!" ;
-	    print_string m ;
-	    begin
-	      match lb with
-		None -> ()
-	      | Some n -> print_string (":>" ^ n)
-	    end ;
-	    begin
-	      match ub with
-		None -> ()
-	      | Some n -> print_string ("<:" ^ n)
-	    end ;
-	    print_string "(" ;
-	    print_expression_list i ;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.LocalSyncCall (_, m, _, lb, ub, i, o) ->
-	    open_box 0 ;
-	    print_string m ;
-	    (match lb with
-		None -> ()
-	      | Some n -> print_string (":>" ^ n));
-	    (match ub with
-		None -> ()
-	      | Some n -> print_string ("<:" ^ n));
-	    print_string "(" ;
-	    print_expression_list i;
-	    print_semi () ;
-	    print_lhs_list o;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.AwaitLocalSyncCall (_, m, _, lb, ub, i, o) ->
-	    open_box 0 ;
-	    print_string "await" ;
-	    print_space () ;
-	    print_string m ;
-	    (match lb with
-		None -> ()
-	      | Some n -> print_string (":>" ^ n));
-	    (match ub with
-		None -> ()
-	      | Some n -> print_string ("<:" ^ n));
-	    print_string "(" ;
-	    print_expression_list i;
-	    print_semi () ;
-	    print_lhs_list o ;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.MultiCast (_, c, m, _, a) ->
-	    open_box 0 ;
-	    print_string "!";
-	    print_expression c ;
-	    print_string ("." ^ m ^ "(") ;
-	    print_expression_list a ;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.Discover (_, t, m, _, a) ->
-	    open_box 0 ;
-	    print_string ("!" ^ (Type.as_string t) ^ "." ^ m ^ "(") ;
-	    print_expression_list a ;
-	    print_string ")" ;
-	    close_box ()
-	| Statement.Tailcall (_, c, m, _, i) ->
-	    open_box 0 ;
-	    print_string "/* tailcall " ;
-	    print_expression c ;
-	    print_string ("." ^ m ^ "(");
-	    print_expression_list i ;
-	    print_string ") */" ;
-	    close_box ()
-	| Statement.StaticTail (_, m, _, l, u, i) ->
-	    open_box 0 ;
-	    print_string "/* static tailcall " ;
-	    print_string m ;
-	    (match l with
-		None -> ()
-	      | Some n -> print_string (":>" ^ n));
-	    (match u with
-		None -> ()
-	      | Some n -> print_string ("<:" ^ n));
-	    print_string "(" ;
-	    print_expression_list i;
-	    print_string ") */" ;
-	    close_box ()
-	| Statement.Return (_, o) ->
-	    open_box 0 ;
-	    print_string "/* return(" ;
-	    print_expression_list o ;
-	    print_string ") */" ;
-	    close_box ()
-	| Statement.If (_, c, t, f) ->
-	    open_box 0 ;
-	    print_string "if" ;
-	    print_space () ;
-	    begin
-	      open_box 0 ;
-	      print_expression c;
-	      close_box ()
-	    end ;
-	    print_space () ;
-	    print_string "then";
-	    print_space () ;
-	    begin
-	      open_box 2 ;
-	      print 25 t ;
-	      close_box ()
-	    end ;
-	    print_space () ;
-	    print_string "else";
-	    print_space () ;
-	    begin
-	      open_box 2 ;
-	      print 25 f ;
-	      close_box ()
-	    end ;
-            print_space () ;
-	    print_string "end" ;
-	    close_box ()
-	| Statement.While (_, c, i, b) ->
-	    (* The text generated in this branch does not parse in standard
-	       Creol.  This should not be changed.  Consult the manual for
-	       the reasons. *)
-	    print_string "while"; print_space () ;
-	    print_expression c;
-	    (match i with
-	      | Expression.Bool (_, true) -> ()
-	      | _ -> 
-		  open_box 2 ;
-		  print_string "inv" ;
-		  print_space () ;
-		  print_expression i ;
-		  close_box ()) ;
-	    print_space () ;
-	    print_string "do" ;
-	    print_space () ;
-	    open_box 2 ;
-	    print 25 b ;
-	    close_box () ;
-            print_space () ;
-	    print_string "end";
-	| Statement.DoWhile (_, c, i, b) ->
-	    (* The text generated in this branch does not parse in standard
-	       Creol.  This should not be changed.  Consult the manual for
-	       the reasons. *)
-	    print_string "do" ; print_space () ;
-	    open_box 2 ;
-	    print 25 b ;
-	    close_box () ;
-	    (match i with
-		Expression.Bool (_, true) -> ()
-	      | _ -> 
-		  open_box 2 ;
-		  print_string "inv" ;
-		  print_space () ;
-		  print_expression i ;
-		  close_box ()) ;
-	    print_string "while" ;
-	    print_space () ;
-	    print_expression c
-	| Statement.Sequence (_, s1, s2) -> 
-	    let op_prec = 25 in
-	      open_block prec op_prec ;
-	      print op_prec s1 ;
-	      print_semi () ;
-	      print op_prec s2 ;
-	      close_block prec op_prec
-	| Statement.Merge (_, s1, s2) ->
-	    let op_prec = 29 in
-	      open_block prec op_prec ;
-	      print op_prec s1 ;
-	      print_space () ;
-	      print_string "|||" ;
-	      print_space () ;
-	      print op_prec s2 ;
-	      close_block prec op_prec
-	| Statement.Choice (_, s1, s2) -> 
-	    let op_prec = 27 in
-	      open_block prec op_prec;
-	      print op_prec s1 ;
-	      print_space () ;
-	      print_string "[]" ;
-	      print_space () ;
-	      print op_prec s2 ;
-	      close_block prec op_prec
-	| Statement.Continue (_, e) ->
-	    print_string "/* continue " ;
-	    print_expression e ;
-	    print_string "*/"
-	| Statement.Extern (_, s) ->
-	    open_hbox () ;
-	    print_string "extern" ;
-	    print_space () ;
-	    print_string ("\"" ^ s ^ "\"") ;
-	    close_box ()
-    in
-      print 25 statement
-  and print_lhs =
-      function
-	  Expression.LhsId (_, n) ->
-	    print_string n
-	| Expression.LhsAttr(_, n, c) ->
-	    print_string (n ^ "@" ^ (Type.as_string c))
-	| Expression.LhsWildcard (_, None) ->
-	    print_string "_"
-	| Expression.LhsWildcard (_, Some t) ->
-	    print_string ("_: " ^ (Type.as_string t))
-	| Expression.LhsSSAId (_, v, n) ->
-	    print_string ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
-  and print_lhs_list l = separated_list print_lhs print_comma l
   in
     let () = set_formatter_out_channel out_channel in
       open_vbox 0 ;

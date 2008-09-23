@@ -110,7 +110,7 @@ struct
       Messages.message 1 "Emitting tree" ;
       match !target with
 	  Null -> assert false
-	| Creol -> BackendCreol.emit out tree
+	| Creol -> BackendCreol.pretty_print_program out tree
 	| Dot -> BackendDot.emit out tree
 	| Maude -> BackendMaude.emit options out tree
 	ifdef(`BACKEND_XML', `| XML -> BackendXML.emit !file tree', `')
