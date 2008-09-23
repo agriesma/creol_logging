@@ -31,7 +31,7 @@ open Method
 
 let dependencies =  "def-vars,life-vars"
 
-let log l = Messages.message (l + 1)
+let log l = Messages.message (l + 2)
 
 (* This function inserts free statements for all label variables at
    the point at which they die. *)

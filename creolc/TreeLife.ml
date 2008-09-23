@@ -47,7 +47,7 @@ open Statement
 
 
 (* Log messages for lifeness analysis *)
-let log l = Messages.message (l + 0)
+let log l = Messages.message (l + 2)
 
 (* Add a set of variables to the current result set. *)
 let add f s e = IdSet.union (f e) s
