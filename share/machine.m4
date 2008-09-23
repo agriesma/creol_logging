@@ -269,9 +269,9 @@ rl
 --- local-reply
 ---
 CSTEP(dnl
-< O : C | Att: S`,' Pr: { L | get(N ; AL) ; SL }`,' PrQ: W `,' { L' | SL1 }`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
-< O : C | Att: S`,' Pr:  { L' | SL1 ; $cont(N) }`,'
-  PrQ: W `,' { L | get(N ; AL) ; SL }`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >,
+`< O : C | Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W , { L''` | SL1 }, Dealloc: LS, Ev: MM, Lcnt: F >',
+`< O : C | Att: S, Pr:  { L''` | SL1 ; $cont N },
+  PrQ: W , { L | get(N ; AL) ; SL }, Dealloc: LS, Ev: MM, Lcnt: F >',
 L'[".label"] == N,
 `[label local-reply]')
 
@@ -279,14 +279,17 @@ L'[".label"] == N,
 --- continue
 ---
 --- Continue after executing the code of a local reply.  This is always a
---- rule.  We want it to be a rule in the interpreter.  It must be a rule
---- in the model checker, because there might be two processes in PrQ
---- which await a reply to the label.
+--- rule.  We want it to be a rule in the interpreter.
+--- 
+--- If we support shared futures, this must be a rule in the model checker,
+--- because there might be two processes in PrQ which await a reply to the
+--- label.
 rl
-  < O : C | Att: S, Pr: { L | $cont(N) }, PrQ: W , { L' | get(N ; AL) ; SL1},
+  < O : C | Att: S, Pr: { L | $cont N }, PrQ: W , { L' | get(N ; AL) ; SL1},
     Dealloc: LS, Ev: MM, Lcnt: F >
   =>
-  < O : C | Att: S, Pr: { L' | get(N ; AL) ; SL1 }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  < O : C | Att: S, Pr: { L' | get(N ; AL) ; SL1 }, PrQ: W,
+    Dealloc: LS, Ev: MM, Lcnt: F >
   [label continue] .
 
 
@@ -447,20 +450,20 @@ STEP(`< O : C | Att: S, Pr: { L | tailcall(E ; Q ; EL) ; SL }, PrQ: W,
 --- want to interleave, this can also be an equation.
 ---
 STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; "" ; "" ; EL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >' CLOCK,
-`< O : C | Att: S, Pr: { noSubst | $accept(tag(L[".label"])) }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+`< O : C | Att: S, Pr: { noSubst | $accept tag(L[".label"])  }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), C < emp >)'
   CLOCK,
 `[label local-tailcall]')
 
 STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; CC ; "" ; EL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >' CLOCK,
-`< O : C | Att: S, Pr: { noSubst | $accept(tag(L[".label"])) }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+`< O : C | Att: S, Pr: { noSubst | $accept tag(L[".label"]) }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), CC < emp >)'
   CLOCK,
 `[label static-tailcall]')
 
 *** If we receive the method body, the call is accepted and the label untagged.
 crl
-  < O : C | Att: S, Pr: { noSubst | $accept(N) }, PrQ: W , { L | SL },
+  < O : C | Att: S, Pr: { noSubst | $accept N }, PrQ: W , { L | SL },
          Dealloc: LS, Ev: MM, Lcnt: F >
   =>
   < O : C | Att: S, Pr: { insert(".label", tag(N), L) | SL }, PrQ: W,

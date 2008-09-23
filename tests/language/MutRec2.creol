@@ -32,7 +32,6 @@ class Test
 contracts Test
 begin
   op init == var a: Test; a := new Test; a.m(;)
-  op run == skip
   with Test
     op m == caller.m(;)
 end

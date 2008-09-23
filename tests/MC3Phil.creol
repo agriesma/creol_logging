@@ -48,8 +48,8 @@ begin
   op think == await ~ hungry; release; hungry := true; !think()
 
   with Phil 
-    op borrowStick == await chopstick; chopstick := false
-    op returnStick ensures ~ chopstick == chopstick := true
+    op borrowStick ensures ~ chopstick == await chopstick; chopstick := false
+    op returnStick ensures chopstick == chopstick := true
  
 end
 

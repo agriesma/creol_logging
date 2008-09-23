@@ -83,7 +83,7 @@ result (sort not calculated):
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process0"),
     "label:0" |-> label(ob("Process0"), 1), "label:1" |-> null | get(label(ob(
     "Process0"), 1) ; "neighbour") ; call("label:1" ; "neighbour" ; "send" ;
-    "i") ; free("label:1") ; return(emp) ; $cont(label(ob("Process0"), 0))},
+    "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process0"), 0)},
   PrQ: {".anon" |-> label(ob("Process0"), 0) | get(label(ob("Process0"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Dealloc: noDealloc,
@@ -98,7 +98,7 @@ result (sort not calculated):
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process1"),
     "label:0" |-> label(ob("Process1"), 1), "label:1" |-> null | get(label(ob(
     "Process1"), 1) ; "neighbour") ; call("label:1" ; "neighbour" ; "send" ;
-    "i") ; free("label:1") ; return(emp) ; $cont(label(ob("Process1"), 0))},
+    "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process1"), 0)},
   PrQ: {".anon" |-> label(ob("Process1"), 0) | get(label(ob("Process1"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Dealloc: noDealloc,
@@ -113,7 +113,7 @@ result (sort not calculated):
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process2"),
     "label:0" |-> label(ob("Process2"), 1), "label:1" |-> null | get(label(ob(
     "Process2"), 1) ; "neighbour") ; call("label:1" ; "neighbour" ; "send" ;
-    "i") ; free("label:1") ; return(emp) ; $cont(label(ob("Process2"), 0))},
+    "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process2"), 0)},
   PrQ: {".anon" |-> label(ob("Process2"), 0) | get(label(ob("Process2"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Dealloc: noDealloc,
@@ -128,7 +128,7 @@ result (sort not calculated):
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process3"),
     "label:0" |-> label(ob("Process3"), 1), "label:1" |-> null | get(label(ob(
     "Process3"), 1) ; "neighbour") ; call("label:1" ; "neighbour" ; "send" ;
-    "i") ; free("label:1") ; return(emp) ; $cont(label(ob("Process3"), 0))},
+    "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process3"), 0)},
   PrQ: {".anon" |-> label(ob("Process3"), 0) | get(label(ob("Process3"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Dealloc: noDealloc,
@@ -143,7 +143,7 @@ result (sort not calculated):
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process4"),
     "label:0" |-> label(ob("Process4"), 1), "label:1" |-> null | get(label(ob(
     "Process4"), 1) ; "neighbour") ; call("label:1" ; "neighbour" ; "send" ;
-    "i") ; free("label:1") ; return(emp) ; $cont(label(ob("Process4"), 0))},
+    "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process4"), 0)},
   PrQ: {".anon" |-> label(ob("Process4"), 0) | get(label(ob("Process4"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Dealloc: noDealloc,

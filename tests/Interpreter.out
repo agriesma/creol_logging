@@ -20,7 +20,7 @@ result Configuration:
 search in TEST-TAILCALL : init =>+ conf:Configuration 
 < ob("Tailcall0") : "Tailcall" |
   Att: A:Subst,
-  Pr: {L:Subst | $accept(tag(label(ob("Tailcall0"), 1))) ; SL:StmtList},
+  Pr: {L:Subst | $accept tag(label(ob("Tailcall0"), 1)) ; SL:StmtList},
   PrQ: W:MProc,
   Dealloc: LS:Labels,
   Ev: MM:MMsg,
@@ -58,7 +58,7 @@ N:Nat --> 2
 search in TEST-TAILCALL : init =>+ conf:Configuration 
 < ob("Tailcall0") : "Tailcall" |
   Att: A:Subst,
-  Pr: {L:Subst | $accept(tag(label(ob("Tailcall0"), 2))) ; SL:StmtList},
+  Pr: {L:Subst | $accept tag(label(ob("Tailcall0"), 2)) ; SL:StmtList},
   PrQ: W:MProc,
   Dealloc: LS:Labels,
   Ev: MM:MMsg,

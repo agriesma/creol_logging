@@ -12,8 +12,7 @@ result Configuration:
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(5),
   Pr: {".class" |-> str("Tailcall"), ".label" |-> label(ob("Tailcall0"), ob(
     "Tailcall0"), "init", emp), ".method" |-> str("init"), "caller" |-> ob(
-    "Tailcall0") | $cont(label(ob("Tailcall0"), ob("Tailcall0"), "init",
-    emp))},
+    "Tailcall0") | $cont label(ob("Tailcall0"), ob("Tailcall0"), "init", emp)},
   PrQ: {".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) | get(
     label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; call(
     ".anon" ; "this" ; "run" ; emp) ; free(".anon")},

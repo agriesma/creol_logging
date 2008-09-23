@@ -147,7 +147,7 @@ fmod CREOL-STATEMENT is
   op call(_;_;_;_) : Vid Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o)] . 
   op static(_;_;_;_;_) : Vid String String String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o b o)] . 
   op multicast(_;_;_) : Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
-  op get(_;_)  : Vid VidList -> Stmt [ctor prec 39 `format' (b d o b o b o)] .
+  op get(_;_)  : Vid VidList -> Stmt [ctor `format' (b d o b o b o)] .
   op get(_;_)  : Label VidList -> Stmt [ctor ditto] .
   op await_ : Expr -> SuspStmt [ctor `format' (b o d)] .
   op posit_ : Expr -> SuspStmt [ctor `format' (b o d)] .
@@ -158,14 +158,14 @@ fmod CREOL-STATEMENT is
   op tailcall(_;_;_) : Expr String ExprList -> Stmt [ctor `format' (c d o c o c o c o)] .
   op statictail(_;_;_;_) : String String String ExprList -> Stmt [ctor `format' (c d o c o c o c o c o)] .
 
-  op $cont(_) : Label -> Stmt [ctor `format' (r d o r o)] .
-  op $accept(_) : Label -> Stmt [ctor `format' (r d o r o)] .
+  op $cont_ : Label -> Stmt [ctor `format' (r o d)] .
+  op $accept_ : Label -> Stmt [ctor `format' (r o d)] .
 
 
   --- Assertion Failure.
   --- This ``statement'' represents an assertion failure.  It 
   --- stops evaluation of the executing object at that point.
-  op failure(_) : Expr -> [Stmt] [ctor `format' (r! d o r! o)] .
+  op failure_ : Expr -> [Stmt] [ctor `format' (r! o d)] .
 
   --- Multiple Assignment.
   --- For the model checker the following will be evaluated as an

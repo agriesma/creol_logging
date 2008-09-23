@@ -190,14 +190,14 @@ result GroundTerm: 'assert_['bool`(_`)['true.Bool]]
 reduce in CREOL-STATEMENT : downTerm(upTerm(assert bool(true)), skip) .
 result Stmt: assert bool(true)
 ==========================================
-reduce in CREOL-STATEMENT : failure(bool(true)) .
-result [Stmt]: failure(bool(true))
+reduce in CREOL-STATEMENT : failure bool(true) .
+result [Stmt]: failure bool(true)
 ==========================================
-reduce in CREOL-STATEMENT : upTerm(failure(bool(true))) .
-result GroundTerm: 'failure`(_`)['bool`(_`)['true.Bool]]
+reduce in CREOL-STATEMENT : upTerm(failure bool(true)) .
+result GroundTerm: 'failure_['bool`(_`)['true.Bool]]
 ==========================================
-reduce in CREOL-STATEMENT : downTerm(upTerm(failure(bool(true))), skip) .
-result [Stmt]: failure(bool(true))
+reduce in CREOL-STATEMENT : downTerm(upTerm(failure bool(true)), skip) .
+result [Stmt]: failure bool(true)
 ==========================================
 reduce in CREOL-STM-LIST : noStmt .
 result StmtList: noStmt
@@ -354,32 +354,32 @@ result Constant: 'noMsg.MMsg
 reduce in CREOL-CONFIGURATION : downTerm(upTerm(noMsg), noMsg) .
 result MMsg: noMsg
 ==========================================
-reduce in CREOL-LABEL-TEST : $cont(label(1)) .
-result Stmt: $cont(label(1))
+reduce in CREOL-LABEL-TEST : $cont label(1) .
+result Stmt: $cont label(1)
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm($cont(label(1))) .
-result GroundTerm: '$cont`(_`)['label['s_['0.Zero]]]
+reduce in CREOL-LABEL-TEST : upTerm($cont label(1)) .
+result GroundTerm: '$cont_['label['s_['0.Zero]]]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont(label(1))), skip) .
-result Stmt: $cont(label(1))
+reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont label(1)), skip) .
+result Stmt: $cont label(1)
 ==========================================
-reduce in CREOL-LABEL-TEST : $accept(label(1)) .
-result Stmt: $accept(label(1))
+reduce in CREOL-LABEL-TEST : $accept label(1) .
+result Stmt: $accept label(1)
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm($accept(label(1))) .
-result GroundTerm: '$accept`(_`)['label['s_['0.Zero]]]
+reduce in CREOL-LABEL-TEST : upTerm($accept label(1)) .
+result GroundTerm: '$accept_['label['s_['0.Zero]]]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm($accept(label(1))), skip) .
-result Stmt: $accept(label(1))
+reduce in CREOL-LABEL-TEST : downTerm(upTerm($accept label(1)), skip) .
+result Stmt: $accept label(1)
 ==========================================
-reduce in CREOL-LABEL-TEST : $cont(label(5)) .
-result Stmt: $cont(label(5))
+reduce in CREOL-LABEL-TEST : $cont label(5) .
+result Stmt: $cont label(5)
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm($cont(label(5))) .
-result GroundTerm: '$cont`(_`)['label['s_^5['0.Zero]]]
+reduce in CREOL-LABEL-TEST : upTerm($cont label(5)) .
+result GroundTerm: '$cont_['label['s_^5['0.Zero]]]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont(label(5))), skip) .
-result Stmt: $cont(label(5))
+reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont label(5)), skip) .
+result Stmt: $cont label(5)
 ==========================================
 reduce in CREOL-LABEL-TEST : comp(label(5), emp) .
 result Comp: comp(label(5), emp)

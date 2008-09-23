@@ -74,8 +74,8 @@ result [Configuration]:
   Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this" |-> ob("D0"), "x"
     |-> null, "y" |-> null,
   Pr: {".class" |-> str("B"), ".label" |-> label(ob("D0"), 3), ".method" |->
-    str("init"), "_" |-> null, "caller" |-> ob("D0") | failure("="("a" :: "b"))
-    ; return(emp) ; $cont(label(ob("D0"), 3))},
+    str("init"), "_" |-> null, "caller" |-> ob("D0") | failure "="("a" :: "b")
+    ; return(emp) ; $cont label(ob("D0"), 3)},
   PrQ: {".init" |-> label(ob("D0"), 3) | get(label(ob("D0"), 3) ; noVid) ;
     call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ; call(".anon"
     ; "this" ; "run" ; emp) ; free(".anon")},
