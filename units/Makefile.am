@@ -31,12 +31,9 @@ TESTPARTS	= $(srcdir)/testsuite.at
 TESTFILES	= 
 
 EXTRA_DIST	= $(srcdir)/atlocal.in \
-		  $(srcdir)/package.m4 \
+		  $(srcdir)/package.m4
 		  $(TESTPARTS) \
-		  $(TESTSUITE) \
-		  $(TESTFILES) \
-		  $(srcdir)/Signature.m4 \
-		  $(srcdir)/maude.sed
+		  $(TESTSUITE)
 
 check-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
