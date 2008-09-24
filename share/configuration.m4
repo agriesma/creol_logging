@@ -166,7 +166,7 @@ changequote dnl
 
 ifdef(`TIME',dnl
   *** Definition of a global clock in the system
-  op < _: Clock | delta: _> : Float Float -> Clock
+  op < clock : Clock | Value:_`,' Delta:_ > : Float Float -> Clock
     [ctor ``format'' (c o c c c c o c o)] .
 )dnl
 
