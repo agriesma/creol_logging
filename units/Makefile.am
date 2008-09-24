@@ -31,7 +31,7 @@ TESTPARTS	= $(srcdir)/testsuite.at
 TESTFILES	= 
 
 EXTRA_DIST	= $(srcdir)/atlocal.in \
-		  $(srcdir)/package.m4
+		  $(srcdir)/package.m4 \
 		  $(TESTPARTS) \
 		  $(TESTSUITE)
 
