@@ -19,8 +19,8 @@
 #
 
 # Subdirs
-DIST_SUBDIRS		= share info creolc tests
-SUBDIRS			= share info creolc tests
+DIST_SUBDIRS		= share info creolc units tests
+SUBDIRS			= share info creolc @WITH_OUNIT@ tests
 
 MOSTLYCLEANFILES	= *~
 DISTCLEANFILES		= 

@@ -166,6 +166,33 @@ AC_SUBST([BACKEND_XML])
 AC_SUBST([BACKEND_XML_CMO])
 AC_SUBST([BACKEND_XML_CMX])
 
+
+AC_ARG_WITH([ounit],
+    AS_HELP_STRING([--without-ounit],
+		   [use oUnit and run unit tests (default=check).]),
+[],
+[with_ounit=check])
+
+AC_MSG_CHECKING([for oUnit])
+if test "$with_ounit" = "yes" || test "$with_ounit" = "check"
+then
+    OCAML_OUNIT_VERSION=`$OCAMLFIND query -format '%v' oUnit 2>/dev/null`
+    if test "$?" = "0"
+    then
+        AC_MSG_RESULT($OCAML_OUNIT_VERSION)
+        WITH_OUNIT="units"
+    else
+        AC_MSG_RESULT([no])
+        WITH_OUNIT=""
+    fi
+else
+    AC_MSG_RESULT([disabled])
+    OCAML_UNIT_VERSION=""
+    WITH_OUNIT=""
+fi
+AC_SUBST([OCAML_OUNIT_VERSION])
+AC_SUBST([WITH_OUNIT])
+
 dnl check for ocamlweb and latex for literate programming.
 AC_CHECK_PROG([DOT], [dot], [dot], [[\${top_srcdir}/missing dot]])
 AC_CHECK_PROG([OCAMLWEB], [ocamlweb], [ocamlweb],
@@ -201,6 +228,7 @@ AC_ARG_ENABLE([profiling],
 AC_SUBST([WITH_PROFILING])
 
 AC_CONFIG_TESTDIR(tests, creolc)
+AC_CONFIG_TESTDIR(units, creolc)
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])
@@ -210,5 +238,8 @@ AC_CONFIG_FILES([Makefile
 		 share/Makefile
 		 tests/atlocal
 		 tests/Makefile
-		 tests/profiling/Makefile])
+		 tests/profiling/Makefile
+		 units/atlocal
+		 units/Makefile
+])
 AC_OUTPUT
