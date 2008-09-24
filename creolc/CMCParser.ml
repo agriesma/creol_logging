@@ -692,12 +692,12 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let c = parse_expression input in
 	    Statement.Posit (Statement.make_note (), c)
-      | Some Key ( ("assert" | "failure") , _) ->
+      | Some Key (("assert" | "failure"), _) ->
 	  (* We map the failure back to the assert statement for now. *)
 	  let () = Stream.junk input in
 	  let c = parse_expression input in
 	    Statement.Assert (Statement.make_note (), c)
-      | Some Key ("assign", _) ->
+      | Some Key (("assign" | "$assign"), _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in
 	  let lhs = parse_lhs_list input in
@@ -744,7 +744,7 @@ let parse name input =
 	  let () = junk_rparen input in
 	    Statement.LocalAsyncCall (Statement.make_note (), Some l, m,
 				      Type.default_sig (), lb, ub, a)
-      | Some Key ("multicast", _) | Some Key ("$multicast", _) ->
+      | Some Key (("multicast" | "$multicast"), _) ->
           let () = Stream.junk input in
           let () = junk_lparen input in
           let e = parse_expression input in
