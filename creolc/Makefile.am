@@ -23,7 +23,7 @@
 MOSTLYCLEANFILES	= *~ *.aux *.log *.out \
 			  *.cma *.cmxa *.cmi *.cmo *.cmx *.o
 CLEANFILES		=
-DISTCLEANFILES		= .depend Version.ml Driver.ml Passes.ml \
+DISTCLEANFILES		= .depend Version.ml Driver.ml \
 			   creolc.dvi creolc.pdf
 MAINTAINERCLEANFILES	= $(srcdir)/Lexer.ml $(srcdir)/Parser.ml \
 			  $(srcdir)/Parser.mli 
@@ -33,7 +33,7 @@ EXTRA_DIST		= $(srcdir)/Lexer.mll $(srcdir)/Parser.mly \
 
 bin_PROGRAMS		= creolc creolc.opt cmcvalid cmcvalid.opt
 
-BUILT_SOURCES		= Version.ml Driver.ml Passes.ml $(srcdir)/Lexer.ml \
+BUILT_SOURCES		= Version.ml Driver.ml $(srcdir)/Lexer.ml \
 			  $(srcdir)/Parser.ml $(srcdir)/Parser.mli
 
 creolc_SOURCES		= Version.ml \
@@ -61,7 +61,7 @@ creolc_SOURCES		= Version.ml \
 			  BackendMaude.ml \
 			  BackendXML.ml \
 			  BackendDot.ml \
-			  Passes.m4 \
+			  Passes.ml \
 			  Driver.m4
 
 creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
@@ -215,10 +215,6 @@ $(srcdir)/Parser.mli: $(srcdir)/Parser.ml
 
 Driver.ml: $(srcdir)/Driver.m4 Makefile
 	$(M4) $(BACKEND_XML) $< > $@
-
-Passes.ml: $(srcdir)/Passes.m4 Makefile
-	$(M4) $(BACKEND_XML) $< > $@
-
 
 all-local: version-tmp
 

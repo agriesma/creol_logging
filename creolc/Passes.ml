@@ -312,20 +312,13 @@ let parse_from_files: string list -> Declaration.t list =
   after which the tree is emitted.  \ocwlowerid{tree} is the abstract
   syntax tree to emit.
 *)
-let execute_dump ~filename ~pass ~tree =
+let execute_dump dump_fun filename pass tree =
   let file =
-    (if filename <> "" || filename <> "-" then filename else "creolc.out") ^
-      "." ^ pass
+    (match filename with "" | "-" -> "creolc.out" | _ -> filename) ^ "." ^ pass
   in
-  let f () =
-    let () = message 1 ("Writing dump to " ^ file) in
-    ifdef(`BACKEND_XML', `let () = BackendXML.emit file tree in')
-    let () = message 1 ("Finished writing dump to " ^ file) in
-      ()
-  in
+  let f () = dump_fun file tree in
   let ((), elapsed) = Misc.measure f in
-    time_dump := !time_dump +. elapsed ;
-    ()
+    time_dump := !time_dump +. elapsed
 
 
 (* The following function accepts an abstract syntax
@@ -334,7 +327,7 @@ let execute_dump ~filename ~pass ~tree =
    \ocwlowerid{tree} is requested after a pass, this function will do
    so.  Finally, the time spent for each pass is measured.
 *)
-let execute_passes filename tree =
+let execute_passes dump_fun filename tree =
   let rec execute tree =
     function 
 	[] -> tree
@@ -352,7 +345,7 @@ let execute_passes filename tree =
 	let (result, elapsed) = Misc.measure pass
 	in
 	  (snd p).elapsed <- (snd p).elapsed +. elapsed ;
-	  if (snd p).dump then execute_dump filename (fst p) result ;
+	  if (snd p).dump then execute_dump dump_fun filename (fst p) result ;
 	  result
       end
     else

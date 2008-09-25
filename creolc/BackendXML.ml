@@ -29,7 +29,7 @@ let requires = function _ -> []
 
 let conflicts = function _ -> []
 
-let emit ~name ~tree =
+let emit name tree =
   let writer = XmlTextWriter.to_file name 0 in
   let rec creol_declaration_to_xml =
     function
