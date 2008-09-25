@@ -1,0 +1,13 @@
+This directory contains the source code of the compiler.
+
+The general control flow is this:
+
+The module `Driver.ml' contains the main entry point of the tool, the
+function `Driver.main'.  This function parses the command line arguments,
+sets up the transformation pipeline, and starts the compilation process.
+Note that Driver.ml is a generated file.
+
+The module `Passes.ml' contains rudimentary code for a pass manager.
+This code will prepare passes and execute them.
+
+
