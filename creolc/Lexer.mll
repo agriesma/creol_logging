@@ -44,7 +44,7 @@ let reserved lexbuf =
       raise (Reserved (pos.pos_fname, pos.pos_lnum, tok))
 }
 let NEWLINE = '\n' | '\r' | ( '\r' '\n' )
-let COMMENT = '/' '/' [ ^ '\n' '\r' ]*
+let COMMENT = (('/' '/') | ('-' '-')) ([ ^ '\n' '\r' ]*)
 let FLOAT = ((['0'-'9']*'.'['0'-'9']+)|(['0'-'9']+'.'['0'-'9']*))('e' ('+'|'-')? ['0'-'9']+)?
 let CID = [ 'A'-'Z' ] [ '_' 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let ID =  [ '_' 'a'-'z' ] [ '_' '\'' 'a'-'z' 'A'-'Z' '0'-'9' ]*
@@ -138,6 +138,7 @@ rule token = parse
     | "inherits" { INHERITS }
     | "interface" { INTERFACE }
     | "inv" { INV }
+    | "is" { reserved lexbuf }
     | "new" { NEW }
     | "nil" { NIL }
     | "now" { NOW }
@@ -147,18 +148,17 @@ rule token = parse
     | "out" { OUT }
     | "posit" { POSIT }
     | "prove" { reserved lexbuf }
-    | "raise" { reserved lexbuf }
     | "release" { RELEASE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }
-    | "signal" { reserved lexbuf }
     | "some" { SOME }
     | "then" { THEN }
     | "this" { THIS }
+    | "throw" { reserved lexbuf }
+    | "throws" { reserved lexbuf }
     | "true" { BOOL(true) }
     | "try" { reserved lexbuf }
     | "var" { VAR }
-    | "volatile" { reserved lexbuf }
     | "when" { reserved lexbuf }
     | "where" { reserved lexbuf }
     | "while" { WHILE }
