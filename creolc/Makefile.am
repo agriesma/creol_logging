@@ -103,7 +103,7 @@ cmcvalid_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Driver.ml \
-			  Passes.ml \
+			  $(srcdir)/Passes.ml \
 			  Version.ml \
 			  $(srcdir)/Messages.ml \
 			  $(srcdir)/Creol.ml \
@@ -289,7 +289,7 @@ Lexer.cmo Lexer.cmx: Lexer.cmi
 #
 # Total: 0.86
 #
-sloccount: Driver.ml Passes.ml Version.ml
+sloccount: Driver.ml Version.ml
 	@if test "$(srcdir)" != "." ; then \
 	  for i in $^ ; do cp $$i $(srcdir)/$$i ; done ; \
 	fi
