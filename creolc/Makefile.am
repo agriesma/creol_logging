@@ -61,7 +61,7 @@ creolc_SOURCES		= Version.ml \
 			  BackendMaude.ml \
 			  BackendXML.ml \
 			  BackendDot.ml \
-			  Passes.ml \
+			  Passes.mli Passes.ml \
 			  Driver.m4
 
 creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
@@ -103,7 +103,7 @@ cmcvalid_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Driver.ml \
-			  $(srcdir)/Passes.ml \
+			  $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 			  Version.ml \
 			  $(srcdir)/Messages.ml \
 			  $(srcdir)/Creol.ml \

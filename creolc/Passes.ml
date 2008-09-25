@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s A simple pass manager.
+(** A simple pass manager.
 
   The pass manager maintains a list of passes and whether they are
   enabled or not.  Individual passes can be enabled and disabled from
@@ -321,12 +321,13 @@ let execute_dump dump_fun filename pass tree =
     time_dump := !time_dump +. elapsed
 
 
-(* The following function accepts an abstract syntax
-   \ocwlowerid{tree}, return by the parser, and applies each enabled
-   pass to that \ocwlowerid{tree} in order.  If dumping the
-   \ocwlowerid{tree} is requested after a pass, this function will do
-   so.  Finally, the time spent for each pass is measured.
-*)
+(** [Passes.execute_passes dump_fun filename tree] applies all enabled
+  passes to the abstract syntax tree [tree], as returned by the parser.
+  If dumping the [tree] is requested after a pass, this function will do
+  so by calling [dump_fun] and constructs a file name of the dump file
+  from the name of the pass, as specified on the command line, and
+  the parameter [filename].  Finally, the time spent for each pass is
+  measured.  *)
 let execute_passes dump_fun filename tree =
   let rec execute tree =
     function 
