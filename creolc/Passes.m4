@@ -278,18 +278,17 @@ let parse_from_channel (name: string) (channel: in_channel) =
     result
 
 
-(* Read the contents of a file and return an abstract syntax tree.
+(** Read the contents of a file and return an abstract syntax tree.
 *)
-let parse_from_file (name: string) =
-  let exists_p d = Sys.file_exists (d ^ "/" ^ name) in
+let parse_from_file name =
   let file =
-    if ((Sys.file_exists name) || (String.contains name '/')) then
+    if (Sys.file_exists name) || (String.contains name '/') then
       name
     else
       try
-        (List.find exists_p (Config.get_library_path ())) ^ "/" ^ name
+        Misc.find_file_in_path (Config.get_library_path ()) name
       with
-          Not_found -> prerr_endline ("cannot find " ^ name) ; exit 1
+          Not_found -> name
   in
     parse_from_channel file (open_in file)
 

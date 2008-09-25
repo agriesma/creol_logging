@@ -65,6 +65,12 @@ let home () =
 	end
 
 
+let find_file_in_path (path: string list) (name: string) =
+  let exists_p dir = Sys.file_exists (dir ^ "/" ^ name) in
+    (List.find exists_p path) ^ "/" ^ name
+
+
+
 (*s Fresh variable names. *)
 type freshname = FreshName of string * freshvarname
 and freshvarname = unit -> freshname
