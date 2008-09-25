@@ -104,29 +104,29 @@ cmcvalid_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= Driver.ml \
 			  Passes.ml \
-			  Messages.ml \
-			  Lexer.mll \
-			  Parser.mly \
-			  Creol.ml \
-			  Typing.ml \
-			  CheckUseDef.ml \
-			  TreeUnassert.ml \
-			  TreeLower.ml \
-			  TreeLift.ml \
-			  TreeSSA.ml \
-			  TreeFold.ml \
-			  TreeDef.ml \
-			  TreeLife.ml \
-			  TreeFree.ml \
-			  TreeBury.ml \
-			  TreeDevirt.ml \
-			  TreeTailcall.ml \
-			  BackendCreol.ml \
-			  BackendMaude.ml \
-			  BackendXML.ml \
-			  BackendDot.ml \
-			  Misc.ml \
-			  Config.ml 
+			  Version.ml \
+			  $(srcdir)/Messages.ml \
+			  $(srcdir)/Creol.ml \
+			  $(srcdir)/Typing.ml \
+			  $(srcdir)/CheckUseDef.ml \
+			  $(srcdir)/TreeUnassert.ml \
+			  $(srcdir)/TreeLower.ml \
+			  $(srcdir)/TreeLift.ml \
+			  $(srcdir)/TreeSSA.ml \
+			  $(srcdir)/TreeFold.ml \
+			  $(srcdir)/TreeDef.ml \
+			  $(srcdir)/TreeLife.ml \
+			  $(srcdir)/TreeFree.ml \
+			  $(srcdir)/TreeBury.ml \
+			  $(srcdir)/TreeDevirt.ml \
+			  $(srcdir)/TreeTailcall.ml \
+			  $(srcdir)/BackendCreol.ml \
+			  $(srcdir)/BackendCreol.mli \
+			  $(srcdir)/BackendMaude.ml \
+			  $(srcdir)/BackendXML.ml \
+			  $(srcdir)/BackendDot.ml \
+			  $(srcdir)/Misc.ml \
+			  $(srcdir)/Config.ml 
 
 OCAMLCFLAGS		+= -g
 OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 10
@@ -136,6 +136,7 @@ OCAMLFINDFLAGS		+= -package "num unix $(OCAML_LIBXML2) str"
 OCAMLC		= $(OCAMLFIND) ocamlc
 OCAMLOPT	= $(OCAMLFIND) ocamlopt
 OCAMLDEP	= $(OCAMLFIND) ocamldep -I $(srcdir)
+OCAMLDOC	= $(OCAMLFIND) ocamldoc
 
 SVNVERSION = \
 	if test -d $(top_srcdir)/.svn ; \
@@ -237,6 +238,12 @@ version-tmp:
 	    (echo "Updating Version.ml" ; cp $@ Version.ml)
 	@rm -f $@
 
+
+# Generate the api documentation.
+html-local:
+	test -d html || mkdir -p html
+	$(OCAMLDOC) $(OCAMLFINDFLAGS) -html -sort -d html $(creolc_DOCSOURCES)
+
 # Literate programming, for documenting and explaining the compiler.
 pdf-local: $(CREOLC_PDF)
 
@@ -246,7 +253,8 @@ creolc.pdf: creolc.tex code.tex
 	$(PDFLATEX) creolc
 
 code.tex: $(srcdir)/Makefile.am $(creolc_DOCSOURCES)
-	$(OCAMLWEB) --no-preamble --no-index $(creolc_DOCSOURCES) -o $@
+	$(OCAMLWEB) $(OCAMLCFLAGS) --no-preamble --no-index \
+	  $(creolc_DOCSOURCES) -o $@
 
 
 # Compute the dependencies
