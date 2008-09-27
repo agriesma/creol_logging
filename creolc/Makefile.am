@@ -24,7 +24,8 @@ MOSTLYCLEANFILES	= *~ *.aux *.log *.out \
 			  *.cma *.cmxa *.cmi *.cmo *.cmx *.o
 CLEANFILES		=
 DISTCLEANFILES		= .depend Version.ml Driver.ml \
-			   creolc.dvi creolc.pdf
+			   creolc.dvi creolc.pdf \
+			   creol.cma creol.a creol.cmxa
 MAINTAINERCLEANFILES	= $(srcdir)/Lexer.ml $(srcdir)/Parser.ml \
 			  $(srcdir)/Parser.mli 
 
@@ -74,7 +75,7 @@ creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  CheckUseDef.cmo \
 			  Lexer.cmo Parser.cmo \
-			  Passes.cmo Driver.cmo
+			  Passes.cmo
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)
 
@@ -88,7 +89,7 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  CheckUseDef.cmx \
 			  Lexer.cmx Parser.cmx \
-			  Passes.cmx Driver.cmx
+			  Passes.cmx
 
 cmcvalid_SOURCES	= Version.ml Misc.ml Creol.ml TreeLift.ml \
 			  BackendCreol.ml CMCParser.ml
@@ -154,13 +155,19 @@ SVNDATE = \
 	    echo -n "$(RELEASE_DATE)" ; \
 	fi
 
-SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
+SUFFIXES = .a .ml .mli .mll .mly .cma .cmi .cmo .cmx .cmxa
 
-creolc: $(creolc_cmo)
-	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(creolc_cmo)
+creolc: creol.cma Driver.cmo
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $^
 
-creolc.opt: $(creolc_cmx)
-	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(creolc_cmx)
+creol.cma: $(creolc_cmo)
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -a -o $@ $^
+
+creolc.opt: creol.cmxa Driver.cmx
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
+
+creol.cmxa: $(creolc_cmx)
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -a -o $@ $^
 
 cmcvalid: $(cmcvalid_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(cmcvalid_cmo)
@@ -169,7 +176,7 @@ cmcvalid.opt: $(cmcvalid_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(cmcvalid_cmx)
 
 # These generic rules compile an OCaml source file to an object file.
-.PRECIOUS: *.cmo *.cmi *.cmx
+.PRECIOUS: *.cmo *.cmi *.cmx *.cma *a. *.cmxa
 .ml.cmo:
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $< -o $@
 
