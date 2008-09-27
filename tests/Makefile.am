@@ -88,6 +88,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/MutRec.out \
 		  language/MutRec2.creol language/MutRec2.maude \
 		  language/MutRec2.out \
+		  language/ReleaseWeirdness.creol \
+		  language/ReleaseWeirdness.maude \
+		  language/ReleaseWeirdness.out \
 		  language/StackCheck.creol language/StackCheck.maude \
 		  language/StackCheck.out \
 		  language/StackGarbage.creol language/StackGarbage.maude \

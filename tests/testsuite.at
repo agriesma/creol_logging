@@ -52,6 +52,7 @@ TEST_CREOLC_PP([MultiCast], [language])
 TEST_CREOLC_PP([MutRec], [language])
 TEST_CREOLC_PP([MutRec2], [language])
 dnl TEST_CREOLC_PP([Interleave], [language])
+TEST_CREOLC_PP([ReleaseWeirdness], [language])
 TEST_CREOLC_PP([StackCheck], [language])
 TEST_CREOLC_PP([StackGarbage], [language])
 TEST_CREOLC_PP([While], [language])
@@ -83,6 +84,7 @@ TEST_CREOLC_XML([MultiCast], [language])
 TEST_CREOLC_XML([MutRec], [language])
 TEST_CREOLC_XML([MutRec2], [language])
 dnl TEST_CREOLC_XML([Interleave], [language])
+TEST_CREOLC_XML([ReleaseWeirdness], [language])
 TEST_CREOLC_XML([StackCheck], [language])
 TEST_CREOLC_XML([StackGarbage], [language])
 TEST_CREOLC_XML([While], [language])
@@ -174,6 +176,12 @@ dnl ],[dnl
 dnl red simulate('PROGRAM, upTerm(classes main("Test", emp)), 0, 1) .
 dnl ])
 dnl 
+TEST_CREOLC([ReleaseWeirdness], [language], [dnl
+red classes .
+],[dnl
+red simulate('PROGRAM, upTerm(classes main("Test", emp)), 0, 1) .
+])
+
 TEST_CREOLC([StackCheck], [language], [dnl
 red classes .
 ],[dnl
