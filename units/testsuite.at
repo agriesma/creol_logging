@@ -18,4 +18,8 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_INIT([creoltools unit tests])
-AT_TESTED([creolc])
+AT_TESTED([unittests])
+
+AT_SETUP([UnitTests])
+AT_CHECK([unittests])
+AT_CLEANUP

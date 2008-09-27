@@ -227,8 +227,8 @@ AC_ARG_ENABLE([profiling],
   [WITH_PROFILING=""])
 AC_SUBST([WITH_PROFILING])
 
+AC_CONFIG_TESTDIR(units)
 AC_CONFIG_TESTDIR(tests, creolc)
-AC_CONFIG_TESTDIR(units, creolc)
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
 AC_CONFIG_FILES([creolshell], [chmod +x creolshell])

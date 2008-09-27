@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-MOSTLYCLEANFILES	= *~
+MOSTLYCLEANFILES	= *~ *.cma *.cmxa *.cmi *.cmo *.cmx *.o
 CLEANFILES		= testsuite.log
-DISTCLEANFILES		= atconfig atlocal
+DISTCLEANFILES		= atconfig atlocal $(noinst_PROGRAMS) .depend
 MAINTAINERCLEANFILES	= Makefile.in $(srcdir)/testsuite \
 			  $(srcdir)/package.m4
 
@@ -35,11 +35,47 @@ EXTRA_DIST	= $(srcdir)/atlocal.in \
 		  $(TESTPARTS) \
 		  $(TESTSUITE)
 
+# The compilers.
+OCAMLC		= $(OCAMLFIND) ocamlc -I ../creolc
+OCAMLOPT	= $(OCAMLFIND) ocamlopt -I ../creolc
+OCAMLDEP	= $(OCAMLFIND) ocamldep -I $(srcdir)
+
+OCAMLCFLAGS	+= -g
+OCAMLOPTFLAGS	+= -w a
+OCAMLFINDFLAGS	+= -package "num unix $(OCAML_LIBXML2) str oUnit"
+
+SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
+
+noinst_PROGRAMS		= unittests unittests.opt
+
+unittests_SOURCES		= UnitTests.ml
+
+unittests_opt_SOURCES	= $(unittests_SOURCES)
+
+unittests_cmo		= UnitTests.cmo
+
+unittests_cmx		= UnitTests.cmx
+
+unittests: $(unittests_cmo)
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(creolc_cmo)
+
+unittests.opt: $(unittests_cmx)
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(creolc_cmx)
+
+# These generic rules compile an OCaml source file to an object file.
+.PRECIOUS: *.cmo *.cmi *.cmx
+.ml.cmo:
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $< -o $@
+
+.mli.cmi:
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $< -o $@ 
+
+.ml.cmx:
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -c $< -o $@
+
+# Now wrap it into autotest.  Maybe this is too much?
 check-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
-
-installcheck-local: atconfig atlocal $(TESTSUITE)
-	$(SHELL) $(TESTSUITE) AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
 
 $(TESTSUITE): $(TESTPARTS) $(srcdir)/package.m4
 	$(AUTOTEST) -I $(srcdir) $(srcdir)/testsuite.at -o $@.tmp
@@ -57,3 +93,10 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	   echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])';      \
 	   echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])';   \
 	} > $(srcdir)/package.m4
+
+# Dependencies.
+.depend: Makefile $(unittests_SOURCES)
+	$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $^ | \
+	  sed s,$(srcdir)/,,g > $@
+
+-include .depend
