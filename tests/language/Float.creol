@@ -21,7 +21,7 @@
 
 class Test
 begin
-  var v : Real := 0.5
-  var x : Real := 1.0e-2
-  var y : Real := -1.0
+  var v : Float := 0.5
+  var x : Float := 1.0e-2
+  var y : Float := -1.0
 end

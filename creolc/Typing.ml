@@ -380,7 +380,7 @@ let typecheck tree: Program.t =
       | Int (n, value) ->
 	  (Int (set_type n Type.int, value), constr, fresh_name)
       | Float (n, value) ->
-	  (Float (set_type n Type.real, value), constr, fresh_name)
+	  (Float (set_type n Type.float, value), constr, fresh_name)
       | String (n, value) ->
 	  (String (set_type n Type.string, value), constr, fresh_name)
       | Tuple (n, l) ->

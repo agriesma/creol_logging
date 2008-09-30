@@ -45,23 +45,23 @@ struct
 
   let any = Basic "Any"
 
-  let any_p t = (t = Basic "Any")
+  let any_p t = (t = any)
 
   let data = Basic "Data"
 
-  let data_p t = (t = Basic "Data")
+  let data_p t = (t = data)
 
-  let real = Basic "Real"
-
-  let real_p t = (t = real)
+  let bool = Basic "Bool"
+  
+  let bool_p t = (t = bool)
 
   let int = Basic "Int"
 
   let int_p t = (t = int)
 
-  let bool = Basic "Bool"
-  
-  let bool_p t = (t = bool)
+  let float = Basic "Float"
+
+  let float_p t = (t = float)
 
   let string = Basic "String"
 
