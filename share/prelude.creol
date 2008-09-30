@@ -31,22 +31,22 @@ fun => (a: Bool, b: Bool): Bool == extern "=>"
 fun ^ (a: Bool, b: Bool): Bool == extern "^"
 fun <=> (a: Bool, b: Bool): Bool == extern "<=>"
 
-datatype Real
+datatype Float
 
-fun - (a: Real): Real == extern "-"
-fun + (a: Real, b: Real): Real == extern "+"
-fun - (a: Real, b: Real): Real == extern "-"
-fun * (a: Real, b: Real): Real == extern "*"
-fun / (a: Real, b: Real): Real == extern "/"
-fun % (a: Real, b: Real): Real == extern "%"
-fun ** (a: Real, b: Real): Real == extern "**"
+fun - (a: Float): Float == extern "-"
+fun + (a: Float, b: Float): Float == extern "+"
+fun - (a: Float, b: Float): Float == extern "-"
+fun * (a: Float, b: Float): Float == extern "*"
+fun / (a: Float, b: Float): Float == extern "/"
+fun % (a: Float, b: Float): Float == extern "%"
+fun ** (a: Float, b: Float): Float == extern "**"
 
-fun < (a: Real, b: Real): Bool == extern "<"
-fun <= (a: Real, b: Real): Bool == extern "<="
-fun > (a: Real, b: Real): Bool == extern ">"
-fun >= (a: Real, b: Real): Bool == extern ">="
+fun < (a: Float, b: Float): Bool == extern "<"
+fun <= (a: Float, b: Float): Bool == extern "<="
+fun > (a: Float, b: Float): Bool == extern ">"
+fun >= (a: Float, b: Float): Bool == extern ">="
 
-datatype Int of Real
+datatype Int of Float
 
 fun - (a: Int): Int == extern "-"
 fun + (a: Int, b: Int): Int == extern "+"
@@ -62,7 +62,7 @@ fun < (a: Int, b: Int): Bool == extern "<"
 fun <= (a: Int, b: Int): Bool == extern "<="
 fun > (a: Int, b: Int): Bool == extern ">"
 fun >= (a: Int, b: Int): Bool == extern ">="
-fun real_of_int(a: Int) : Real == extern "real_of_int"
+fun float_of_int(a: Int) : Float == extern "float_of_int"
 
 datatype String
 
@@ -83,8 +83,8 @@ fun >= (a: String, b: String): Bool == extern ">="
 
 fun string_of_int(i: Int): String == extern "string_of_int"
 fun int_of_string(s: String): Int == extern "int_of_string"
-fun string_of_real(r: Real): String == extern "string_of_real"
-fun real_of_string(s: String): Real == extern "real_of_string"
+fun string_of_float(r: Float): String == extern "string_of_float"
+fun float_of_string(s: String): Float == extern "float_of_string"
 
 datatype List[`a]
 
@@ -156,15 +156,15 @@ fun >(a: Time, b: Time): Bool == extern ">"
 
 datatype Duration
 
-fun dur(a: Real): Duration == extern "duration"
+fun dur(a: Float): Duration == extern "duration"
 fun +(a: Time, d: Duration): Time == extern "+"
 fun -(a: Time, d: Duration): Time == extern "-"
 fun -(a: Time, b: Time): Duration == extern "-"
 fun +(a: Duration, d: Duration): Duration == extern "+"
 fun -(a: Duration, d: Duration): Duration == extern "-"
-fun *(a: Duration, s: Real): Duration == extern "*"
-fun *(a: Real, s: Duration): Duration == extern "*"
-fun /(a: Duration, s: Real): Duration == extern "/"
+fun *(a: Duration, s: Float): Duration == extern "*"
+fun *(a: Float, s: Duration): Duration == extern "*"
+fun /(a: Duration, s: Float): Duration == extern "/"
 fun <(a: Duration, b: Duration): Bool == extern "<"
 fun <=(a: Duration, b: Duration): Bool == extern "<="
 fun >=(a: Duration, b: Duration): Bool == extern ">="
