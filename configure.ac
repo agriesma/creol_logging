@@ -227,7 +227,6 @@ AC_ARG_ENABLE([profiling],
   [WITH_PROFILING=""])
 AC_SUBST([WITH_PROFILING])
 
-AC_CONFIG_TESTDIR(units)
 AC_CONFIG_TESTDIR(tests, creolc)
 
 AC_CONFIG_FILES([creolbug], [chmod +x creolbug])
@@ -239,7 +238,6 @@ AC_CONFIG_FILES([Makefile
 		 tests/atlocal
 		 tests/Makefile
 		 tests/profiling/Makefile
-		 units/atlocal
 		 units/Makefile
 ])
 AC_OUTPUT

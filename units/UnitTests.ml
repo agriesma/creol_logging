@@ -38,26 +38,23 @@ let options = [
   ("-version", Unit show_version, "  Show the version and exit");
   ("--version", Unit show_version, "  Show the version and exit")]
 
-let test_fixture = "Test" >:::
-  [
-    "test1" >:: (
-      fun _ ->
-        assert_equal () () ;
-	assert_equal 1 (1 + 0)
-    ) ;
-    "test2" >:: (
-      fun _ ->
-        assert_equal () () ;
-	assert_equal 2 (1 + 0)
-    ) ;
+(* Aggregate all tests from the different sub-modules into one place. *)
+let test_fixture =
+  "Tests" >::: [
+    CreolTests.test_fixture ;
   ]
 
 (* The main function parses the command line arguments, parses all
    input programs and executes all phases of the compilation.
 *)
 let main () =
-  parse options (fun _ -> ()) (Sys.executable_name ^ " [options]") ;
-  run_test_tt ~verbose:true test_fixture ;
-  exit 0 ;;
+  let _ = parse options (fun _ -> ()) (Sys.executable_name ^ " [options]") in
+  let res = run_test_tt test_fixture in
+  let ec =
+    let p = function RSuccess _ -> true | _ -> false in
+      if List.for_all p res then 0 else 1 
+  in
+    exit ec
+  ;;
 
 main ()

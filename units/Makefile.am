@@ -18,22 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 MOSTLYCLEANFILES	= *~ *.cma *.cmxa *.cmi *.cmo *.cmx *.o
-CLEANFILES		= testsuite.log
-DISTCLEANFILES		= atconfig atlocal $(noinst_PROGRAMS) .depend
-MAINTAINERCLEANFILES	= Makefile.in $(srcdir)/testsuite \
-			  $(srcdir)/package.m4
+CLEANFILES		= 
+DISTCLEANFILES		= $(noinst_PROGRAMS) .depend
+MAINTAINERCLEANFILES	= Makefile.in
 
-AUTOTEST	= $(AUTOM4TE) --language=autotest
-TESTSUITE	= $(srcdir)/testsuite
-
-TESTPARTS	= $(srcdir)/testsuite.at
-
-TESTFILES	= 
-
-EXTRA_DIST	= $(srcdir)/atlocal.in \
-		  $(srcdir)/package.m4 \
-		  $(TESTPARTS) \
-		  $(TESTSUITE)
+EXTRA_DIST		=
 
 # The compilers.
 OCAMLC		= $(OCAMLFIND) ocamlc -I ../creolc
@@ -48,19 +37,19 @@ SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
 
 noinst_PROGRAMS		= unittests unittests.opt
 
-unittests_SOURCES		= UnitTests.ml
+unittests_SOURCES	= CreolTests.ml UnitTests.ml
 
 unittests_opt_SOURCES	= $(unittests_SOURCES)
 
-unittests_cmo		= UnitTests.cmo
+unittests_cmo		= CreolTests.cmo UnitTests.cmo
 
-unittests_cmx		= UnitTests.cmx
+unittests_cmx		= CreolTests.cmx UnitTests.cmx
 
 unittests: $(unittests_cmo)
-	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(creolc_cmo)
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ creol.cma $(unittests_cmo)
 
 unittests.opt: $(unittests_cmx)
-	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(creolc_cmx)
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ creol.cmxa $(unittests_cmx)
 
 # These generic rules compile an OCaml source file to an object file.
 .PRECIOUS: *.cmo *.cmi *.cmx
@@ -73,26 +62,8 @@ unittests.opt: $(unittests_cmx)
 .ml.cmx:
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -c $< -o $@
 
-# Now wrap it into autotest.  Maybe this is too much?
-check-local: atconfig atlocal $(TESTSUITE)
-	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
-
-$(TESTSUITE): $(TESTPARTS) $(srcdir)/package.m4
-	$(AUTOTEST) -I $(srcdir) $(srcdir)/testsuite.at -o $@.tmp
-	mv $@.tmp $@
-
-clean-local:
-	test ! -f $(TESTSUITE) || \
-	  $(SHELL) $(TESTSUITE) --clean $(TESTSUITEFLAGS)
-
-$(srcdir)/package.m4: $(top_srcdir)/configure.ac
-	@{ echo '# Signature of the current package.';			      \
-	   echo 'm4_define([AT_PACKAGE_NAME],      [@PACKAGE_NAME@])';	      \
-	   echo 'm4_define([AT_PACKAGE_TARNAME],   [@PACKAGE_TARNAME@])';     \
-	   echo 'm4_define([AT_PACKAGE_VERSION],   [@PACKAGE_VERSION@])';     \
-	   echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])';      \
-	   echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])';   \
-	} > $(srcdir)/package.m4
+check-local: unittests
+	unittests
 
 # Dependencies.
 .depend: Makefile $(unittests_SOURCES)
