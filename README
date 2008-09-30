@@ -41,11 +41,6 @@ configure, build, and install this package.
    The file `INSTALL' contains general installation instructions.  This
 file explains the specific installation instructions.
 
-   The creoltools will by default be installed into `/usr/local', or
-the directories specified by the `--prefix' and related options.  The
-run-time support files will be installed into the directory
-`DATADIR/creoltools', where `DATADIR' defaults to `PREFIX/share'.
-
    After installing the tool, the environment variable `MAUDE_LIB'
 should be edited to include the directory `DATADIR/creoltools', e.g.,
 by adding the line `export MAUDE_LIB=$MAUDE_LIB:DATADIR/creoltools' to
@@ -53,6 +48,11 @@ your `~/.profile' file, where `DATADIR' should be replaced by the
 installation directory.  The default is `/usr/local/share'.  Please
 consult your system's manual or your system administrator for the file
 and the exact commands for this change.
+
+   The creoltools will by default be installed into `/usr/local', or
+the directories specified by the `--prefix' and related options.  The
+run-time support files will be installed into the directory
+`DATADIR/creoltools', where `DATADIR' defaults to `PREFIX/share'.
 
 Dependencies
 ============
