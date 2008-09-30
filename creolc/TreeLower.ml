@@ -19,9 +19,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s Lower a tree by expanding all abbreviations.  The result will be a
-  tree which is suitable for the back-ends and other passes of the
-  system.
+(** Lower a tree by expanding all abbreviations.  The result will be a
+    tree which is suitable for the back-ends and other passes of the
+    system.
 *)
 
 open Creol
@@ -34,24 +34,15 @@ open Statement
 let dependencies = "typecheck"
 
 
-(* A counter used to generate the next fresh label *)
-let next_fresh_label = ref 0
+(* A counter used to generate the next fresh future. *)
+let next_fresh_future = ref 0
 
 
-(* Mke a fresh label *)
-let fresh_label () =
-  let res = "label:" ^ (string_of_int !next_fresh_label) in
-  let () = incr next_fresh_label in
+(* Make a fresh future *)
+let fresh_future () =
+  let res = "label:" ^ (string_of_int !next_fresh_future) in
+  let () = incr next_fresh_future in
     res
-
-(* Create a note for an expression from the information provided by a
-   statement and type information.
-
-   Called during splitting of statements. *)
-let make_expr_note_from_stmt_note ~stmt t =
-        { Expression.file = stmt.Statement.file;
-          line = stmt.Statement.line;
-          ty = t }
 
 (* Lower a Creol program to the "Core Creol" language.
    
@@ -71,7 +62,7 @@ let make_expr_note_from_stmt_note ~stmt t =
    \end{itemize}
 *)
 let pass input =
-  let label_decl l t =
+  let future_decl l t =
     { VarDecl.name = l; var_type = t; init = None }
   in
   let rec lower_expression =
@@ -89,166 +80,166 @@ let pass input =
           Expression.If (a, lower_expression c, lower_expression t,
                          lower_expression f)
       | t -> t
-  and lower_statement label_decls =
+  and lower_statement future_decls =
     function
-	Skip _ as s -> (label_decls, s)
-      | Release _ as s -> (label_decls, s)
-      | Assert (a, e) -> (label_decls, Assert (a, lower_expression e))
-      | Prove (a, e) -> (label_decls, Prove (a, lower_expression e))
+	Skip _ as s -> (future_decls, s)
+      | Release _ as s -> (future_decls, s)
+      | Assert (a, e) -> (future_decls, Assert (a, lower_expression e))
+      | Prove (a, e) -> (future_decls, Prove (a, lower_expression e))
       | Assign (a, s, e) ->
-	  (label_decls, Assign (a, s, List.map lower_expression e))
-      | Await (a, g) -> (label_decls, Await (a, lower_expression g))
-      | Posit (a, g) -> (label_decls, Posit (a, lower_expression g))
+	  (future_decls, Assign (a, s, List.map lower_expression e))
+      | Await (a, g) -> (future_decls, Await (a, lower_expression g))
+      | Posit (a, g) -> (future_decls, Posit (a, lower_expression g))
       | AsyncCall (a, None, e, n, ((co, dom, Some rng) as s), p) ->
-	  (* If a label name is not given, we assign a new one and
+	  (* If a future name is not given, we assign a new one and
 	     free it afterwards. *)
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p
-	  and l = fresh_label ()
-	  and lt = Type.label rng in
+	  and l = fresh_future ()
+	  and lt = Type.future rng in
 	  let n' = make_expr_note_from_stmt_note a lt in
-	    ((label_decl l lt)::label_decls,
+	    ((future_decl l lt)::future_decls,
 	     AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'))
       | AsyncCall (a, None, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p
 	  in
             if not (Type.collection_p (Expression.get_type e')) then
-	      (* If a label name is not given, we create a new label name.
-                 We cannot give a correct type to the label.  If the type
+	      (* If a future name is not given, we create a new future name.
+                 We cannot give a correct type to the future.  If the type
                  checker is run after lowering, it may report errors for
                  this call.  *)
               begin
-	        let l = fresh_label () in
-	        let lt = Type.label [] in
+	        let l = fresh_future () in
+	        let lt = Type.future [] in
 	        let a' = make_expr_note_from_stmt_note a lt in
-	          ((label_decl l lt)::label_decls,
+	          ((future_decl l lt)::future_decls,
 	           AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'))
 	      end
 	    else
 	      (* The type checker inferred that the callee expression refers
 		 to a collection type.  In this case, we convert to a
 	         MultiCast statement. *)
-	      (label_decls, MultiCast (a, e', n, s, p'))
+	      (future_decls, MultiCast (a, e', n, s, p'))
       | AsyncCall (a, Some l, e, n, s, p) ->
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p in
-	    (label_decls, AsyncCall (a, Some l, e', n, s, p'))
-      | Free _ as s -> (label_decls, s)
-      | Bury _ as s -> (label_decls, s)
-      | Reply _ as s -> (label_decls, s)
+	    (future_decls, AsyncCall (a, Some l, e', n, s, p'))
+      | Free _ as s -> (future_decls, s)
+      | Bury _ as s -> (future_decls, s)
+      | Get _ as s -> (future_decls, s)
       | SyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.  *)
+	     call followed by a reply.  This generates a fresh future name.  *)
           let e' = lower_expression e
 	  and p' = List.map lower_expression p
-	  and l = fresh_label ()
-	  and lt = Type.label (List.map get_lhs_type r) in
+	  and l = fresh_future ()
+	  and lt = Type.future (List.map get_lhs_type r) in
 	  let a' = make_expr_note_from_stmt_note a lt in
-	    ((label_decl l lt)::label_decls,
+	    ((future_decl l lt)::future_decls,
 	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
-		     Reply (a, Id (a', l), r)))
+		     Get (a, Id (a', l), r)))
       | AwaitSyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.  *)
+	     call followed by a reply.  This generates a fresh future name.  *)
 	  let e' = lower_expression e
 	  and p' = List.map lower_expression p
-	  and l = fresh_label ()
-	  and lt = Type.label (List.map get_lhs_type r)
+	  and l = fresh_future ()
+	  and lt = Type.future (List.map get_lhs_type r)
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt
 	  and a'' = make_expr_note_from_stmt_note a Type.bool
 	  in
-	    ((label_decl l lt)::label_decls,
+	    ((future_decl l lt)::future_decls,
 	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
 		     Sequence(a, Await (a, Label (a'', Id (a', l))),
-			     Reply (a, Id (a', l), r))))
+			     Get (a, Id (a', l), r))))
       | LocalAsyncCall (a, None, m, ((c, dom, Some rng) as s), lb, ub, i) ->
-	  (* If a label name is not given, we assign a new one and free it
+	  (* If a future name is not given, we assign a new one and free it
 	     afterwards. *)
 	  let i' = List.map lower_expression i
-	  and l = fresh_label ()
-	  and lt = Type.label rng in
+	  and l = fresh_future ()
+	  and lt = Type.future rng in
 	  let a' = make_expr_note_from_stmt_note a lt in
-	    ((label_decl l (Type.label rng))::label_decls,
+	    ((future_decl l (Type.future rng))::future_decls,
 	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'))
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
-	  (* If a label name is not given, we create a new label name
+	  (* If a future name is not given, we create a new future name
 	     and assign the call to it.  We cannot give a correct type
-	     to the label.  If the type checker is run after lowering,
+	     to the future.  If the type checker is run after lowering,
 	     we may see a type error since there is no corresponding
 	     method declared.  *)
 	  let i' = List.map lower_expression i
-	  and l = fresh_label () in
-	  let lt = Type.label [] in
+	  and l = fresh_future () in
+	  let lt = Type.future [] in
 	  let a' = make_expr_note_from_stmt_note a lt in
-	    ((label_decl l lt)::label_decls,
+	    ((future_decl l lt)::future_decls,
 	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
 	  let i' = List.map lower_expression i in
-	    (label_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
+	    (future_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
       | LocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.  *)
+	     call followed by a reply.  This generates a fresh future name.  *)
 	  let i' = List.map lower_expression i
-	  and l = fresh_label ()
-	  and lt = Type.label (List.map get_lhs_type o)
+	  and l = fresh_future ()
+	  and lt = Type.future (List.map get_lhs_type o)
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt in
-	    ((label_decl l lt)::label_decls,
+	    ((future_decl l lt)::future_decls,
 	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i'),
-		     Reply (a, Id (a', l), o)))
+		     Get (a, Id (a', l), o)))
       | AwaitLocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
-	     call followed by a reply.  This generates a fresh label name.  *)
+	     call followed by a reply.  This generates a fresh future name.  *)
 	  let i' = List.map lower_expression i
-	  and l = fresh_label ()
-	  and lt = Type.label (List.map get_lhs_type o)
+	  and l = fresh_future ()
+	  and lt = Type.future (List.map get_lhs_type o)
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt 
 	  and a'' = make_expr_note_from_stmt_note a Type.bool in
-	    ((label_decl l lt)::label_decls,
+	    ((future_decl l lt)::future_decls,
 	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i'),
 		     Sequence (a, Await (a, Label(a'', Id (a', l))),
-			      Reply (a, Id (a', l), o))))
+			      Get (a, Id (a', l), o))))
       | MultiCast (a, t, m, s, i) ->
-	  (* If a label name is not given, we create a new label name.
-             We cannot give a correct type to the label.  If the type
+	  (* If a future name is not given, we create a new future name.
+             We cannot give a correct type to the future.  If the type
              checker is run after lowering, it may report errors for
              this call.  *)
 	  let i' = List.map lower_expression i in
-            (label_decls, MultiCast (a, t, m, s, i'))
+            (future_decls, MultiCast (a, t, m, s, i'))
       | Tailcall (a, c, m, s, i) ->
 	  let c' = lower_expression c
 	  and i' = List.map lower_expression i
 	  in
-	    (label_decls, Tailcall (a, c', m, s, i'))
+	    (future_decls, Tailcall (a, c', m, s, i'))
       | StaticTail (a, m, s, l, u, i) ->
 	  let i' = List.map lower_expression i in
-	    (label_decls, StaticTail (a, m, s, l, u, i'))
+	    (future_decls, StaticTail (a, m, s, l, u, i'))
       | If (a, c, t, f) ->
-	  let (label_decls', t') = lower_statement label_decls t in
-	  let (label_decls'', f') = lower_statement label_decls' f in
-	    (label_decls'', If(a, lower_expression c, t', f'))
+	  let (future_decls', t') = lower_statement future_decls t in
+	  let (future_decls'', f') = lower_statement future_decls' f in
+	    (future_decls'', If(a, lower_expression c, t', f'))
       | While (a, c, i, b) ->
-	  let (label_decls', b') = lower_statement label_decls b in
-	    (label_decls', While (a, lower_expression c, lower_expression i, b'))
+	  let (future_decls', b') = lower_statement future_decls b in
+	    (future_decls', While (a, lower_expression c, lower_expression i, b'))
       | DoWhile (a, c, i, b) ->
-	  lower_statement label_decls (Sequence (a, b, While (a, c, i, b)))
+	  lower_statement future_decls (Sequence (a, b, While (a, c, i, b)))
       | Sequence (a, s1, s2) ->
-	  let (label_decls', s1') = lower_statement label_decls s1 in
-	  let (label_decls'', s2') = lower_statement label_decls' s2 in
-	    (label_decls'', Sequence (a, s1', s2'))
+	  let (future_decls', s1') = lower_statement future_decls s1 in
+	  let (future_decls'', s2') = lower_statement future_decls' s2 in
+	    (future_decls'', Sequence (a, s1', s2'))
       | Merge (a, s1, s2) ->
-	  let (label_decls', s1') = lower_statement label_decls s1 in
-	  let (label_decls'', s2') = lower_statement label_decls' s2 in
-	    (label_decls'', Merge (a, s1', s2'))
+	  let (future_decls', s1') = lower_statement future_decls s1 in
+	  let (future_decls'', s2') = lower_statement future_decls' s2 in
+	    (future_decls'', Merge (a, s1', s2'))
       | Choice (a, s1, s2) ->
-	  let (label_decls', s1') = lower_statement label_decls s1 in
-	  let (label_decls'', s2') = lower_statement label_decls' s2 in
-	    (label_decls'', Choice (a, s1', s2'))
-      | Continue (a, e) -> (label_decls, Continue (a, lower_expression e))
-      | Extern _ as s -> (label_decls, s)
+	  let (future_decls', s1') = lower_statement future_decls s1 in
+	  let (future_decls'', s2') = lower_statement future_decls' s2 in
+	    (future_decls'', Choice (a, s1', s2'))
+      | Continue (a, e) -> (future_decls, Continue (a, lower_expression e))
+      | Extern _ as s -> (future_decls, s)
   and lower_method_variables note vars =
 
     (* Compute a pair of a new list of local variable declarations and
@@ -281,12 +272,12 @@ let pass input =
 		| _ -> assert false
   and lower_method m =
     (** Simplify a method definition. *)
-    let _ = next_fresh_label := 0 (* Labels must only be unique per method. *)
+    let _ = next_fresh_future := 0 (* Labels must only be unique per method. *)
     in
       match m.Method.body with
 	  None -> m
 	| Some mb  ->
-	    let (label_decls, mb') = lower_statement [] mb 
+	    let (future_decls, mb') = lower_statement [] mb 
 	    and outs =
 	      List.map
 		(fun { VarDecl.name = n } -> (Id (Expression.make_note (), n)))
@@ -296,7 +287,7 @@ let pass input =
 				 Return (Statement.note mb, outs))
 	    and (vars', init) =
 	      lower_method_variables (Statement.note mb)
-		(label_decls @ m.Method.vars)
+		(future_decls @ m.Method.vars)
 	    in
 	      { m with Method.vars = vars' ;
 		body = Some (if Statement.skip_p init then

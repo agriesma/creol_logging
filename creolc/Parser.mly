@@ -391,7 +391,7 @@ basic_statement:
     | POSIT error
 	{ signal_error $startpos "syntax error in posit condition" }
     | l = ID QUESTION LPAREN o = separated_list(COMMA, lhs) RPAREN
-	{ Reply (statement_note $startpos,
+	{ Get (statement_note $startpos,
 		 Id (expression_note $startpos, l), o) }
     | l = ioption(ID) BANG callee = expression DOT m = ID
       LPAREN i = separated_list(COMMA, expression) RPAREN

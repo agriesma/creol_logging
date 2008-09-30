@@ -57,7 +57,7 @@ let optimise_in_statement outs stmt =
 	      (List.for_all2 matches_p outs r) ->
 	  Tailcall (n, c, m, s, i)
       | Sequence (n, AsyncCall (_, Some l, c, m, s, i),
-	  Sequence (_, Reply(_, l', o), Return (_, r))) when
+	  Sequence (_, Get(_, l', o), Return (_, r))) when
 	      (equals_p l l') &&
 	      ((List.length outs) = (List.length o)) &&
 	      ((List.length outs) = (List.length r)) &&
@@ -71,7 +71,7 @@ let optimise_in_statement outs stmt =
 	      (List.for_all2 matches_p outs r) ->
 	  StaticTail (n, m, s, lb, ub, i)
       | Sequence (n, LocalAsyncCall (_, Some l, m, s, lb, ub, i),
-	  Sequence (_, Reply(_, l', o), Return (_, r))) when
+	  Sequence (_, Get(_, l', o), Return (_, r))) when
 	      (equals_p l l') &&
 	      ((List.length outs) = (List.length o)) &&
 	      ((List.length outs) = (List.length r)) &&

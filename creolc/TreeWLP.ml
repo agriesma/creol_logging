@@ -99,10 +99,10 @@ let rec wlp env pred =
 	let pred' = pred in
 	let () = logwlp n pred' in
           (pred', AsyncCall (n, Some l, c, m, s, a))
-    | Reply (n, l, p) ->
+    | Get (n, l, p) ->
 	let pred' = pred in
 	let () = logwlp n pred' in
-          (pred', Reply (n, l, p))
+          (pred', Get (n, l, p))
     | Free (n, v) ->
 	assert false
     | Bury (n, v) ->

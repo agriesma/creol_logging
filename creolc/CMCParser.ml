@@ -762,7 +762,7 @@ let parse name input =
 	  let () = junk_semicolon input in
 	  let r = parse_lhs_list input in
 	  let () = junk_rparen input in
-	    Statement.Reply (Statement.make_note (), e, r)
+	    Statement.Get (Statement.make_note (), e, r)
       | Some Key ("return", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in

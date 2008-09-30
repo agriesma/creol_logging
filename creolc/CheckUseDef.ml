@@ -64,7 +64,7 @@ let compute_in_body ~program ~cls ~meth =
     function
       | Skip _ | Release _ | Bury _ -> ()
       | Assert (n, e) | Prove (n, e) | Await (n, e) | Posit (n, e)
-      | Reply (n, e, _) | Continue (n, e) ->
+      | Get (n, e, _) | Continue (n, e) ->
 	  let undef = IdSet.diff (uses e) n.must_def in
 	    if (IdSet.is_empty undef) then
 	      ()

@@ -562,7 +562,7 @@ let typecheck tree: Program.t =
       | Label (n, (Id (_, name) | SSAId(_, name, _) as l)) ->
 	  begin
 	    try
-	      if Method.label_p env.meth name then
+	      if Method.future_p env.meth name then
 		(Label (set_type n (Type.Basic "Bool"), l), constr,
 		 fresh_name)
 	      else
@@ -788,7 +788,7 @@ let typecheck tree: Program.t =
        First we check the type of the callee and determine the interface
        of [this].  *)
 
-    let check_method_call n label callee m (asco, _, _) ins outs =
+    let check_method_call n future callee m (asco, _, _) ins outs =
       let (callee', callee_t) =
 	let c = type_check_expression env coiface [] callee in
 	  (c , Expression.get_type c)
@@ -812,9 +812,9 @@ let typecheck tree: Program.t =
 	      raise (Type_error (n.file, n.line,
 				 "Interface " ^ (Type.as_string callee_t) ^
 				   " not defined."))
-      and label' =
-	match label with
-	    None -> label
+      and future' =
+	match future with
+	    None -> future
 	  | Some l -> Some (type_check_lhs env coiface l)
       and (ins'', ins_t'') =
 	(* Observe that ins'' and ins_t may still contain parameterised types
@@ -826,11 +826,11 @@ let typecheck tree: Program.t =
       in
       let (outs', outs_t) =
 
-	(* Here we have to guess a correct output type.  If [label]
+	(* Here we have to guess a correct output type.  If [future]
 	   has been provided, then [outs_t] must be [None] and get it
-	   from the label. *)
+	   from the future. *)
 	
-	match (label', outs) with
+	match (future', outs) with
 	    (None, None) -> (None, None)
 	  | (None, Some ol) ->
 	      let o =
@@ -838,7 +838,7 @@ let typecheck tree: Program.t =
 	      in
 		(Some o, Some (List.map Expression.get_lhs_type o))
 	  | (Some l, None) ->
-	      (None, Some (Type.get_from_label (Expression.get_lhs_type l)))
+	      (None, Some (Type.get_from_future (Expression.get_lhs_type l)))
 	  | (Some _, Some _) -> assert false
       in
       let co' =
@@ -935,18 +935,18 @@ let typecheck tree: Program.t =
 	    | _ -> error_ambigous n m callee_t cands
       in
 	if (Program.contracts_p env.program env.cls co) then
-	  (label', callee', (Some co, Some ins_t', outs_t), ins', outs')
+	  (future', callee', (Some co, Some ins_t', outs_t), ins', outs')
 	else
 	  raise (Type_error (n.file, n.line,
 	  		     "Class " ^ env.cls.Class.name ^
 			       " does not contract interface " ^
 			       (Type.as_string co)))
     in
-    let check_async_method_call n label callee m sign ins =
-      let (label', callee', sign', ins', _) =
-	check_method_call n label callee m sign ins None
+    let check_async_method_call n future callee m sign ins =
+      let (future', callee', sign', ins', _) =
+	check_method_call n future callee m sign ins None
       in
-	(label', callee', sign', ins')
+	(future', callee', sign', ins')
     and check_sync_method_call n callee m sign ins outs =
       let (_, callee', sign', ins', outs') =
 	check_method_call n None callee m sign ins (Some outs)
@@ -1083,43 +1083,43 @@ let typecheck tree: Program.t =
         | Posit (n, e) ->
 	    let e' = type_check_assertion env coiface e in
 	      Posit (n, e')
-        | Reply (n, label, retvals) -> 
-	    let nlabel =
-	      type_check_expression env coiface [] label
-	    and nretvals =
+        | Get (n, future, retvals) -> 
+	    let future' =
+	      type_check_expression env coiface [] future
+	    and retvals' =
 	      List.map (type_check_lhs env coiface) retvals
 	    in
 	      if Program.subtype_p env.program
-	        (Type.Tuple (List.map get_lhs_type nretvals))
-	        (Type.Tuple (Type.get_from_label (Expression.get_type nlabel)))
+	        (Type.Tuple (List.map get_lhs_type retvals'))
+	        (Type.Tuple (Type.get_from_future (Expression.get_type future')))
 	      then
-	        Reply (n, nlabel, nretvals)
+	        Get (n, future', retvals')
 	      else
 	        raise (Type_error (n.file, n.line, "Type mismatch"))
         | Free (n, args) -> assert false
         | Bury (n, args) -> assert false
-        | AsyncCall (n, label, callee, m, sign, ins) ->
-	    let (label', callee', sign', ins') =
-	      check_async_method_call n label callee m sign ins
+        | AsyncCall (n, future, callee, m, sign, ins) ->
+	    let (future', callee', sign', ins') =
+	      check_async_method_call n future callee m sign ins
 	    in
-	      AsyncCall (n, label', callee', m, sign', ins')
+	      AsyncCall (n, future', callee', m, sign', ins')
         | LocalAsyncCall (n, None, m, _, lb, ub, args) ->
 	    let (signature, args') =
 	      check_local_async_call n m lb ub args None
 	    in
 	      LocalAsyncCall (n, None, m, signature, lb, ub, args')
-        | LocalAsyncCall (n, Some label, m, _, lb, ub, args) ->
-	    let l' = type_check_lhs env coiface label in
-	    let lt = Type.get_from_label (Expression.get_lhs_type l') in
+        | LocalAsyncCall (n, Some future, m, _, lb, ub, args) ->
+	    let l' = type_check_lhs env coiface future in
+	    let lt = Type.get_from_future (Expression.get_lhs_type l') in
 	    let (signature, args') =
 	      check_local_async_call n m lb ub args (Some lt)
 	    in
 	      LocalAsyncCall (n, Some l', m, signature, lb, ub, args')
         | MultiCast (n, callee, m, sign, ins) ->
-	    let (label', callee', sign', ins') =
+	    let (future', callee', sign', ins') =
 	      check_async_method_call n None callee m sign ins
 	    in
-	      AsyncCall (n, label', callee', m, sign', ins')
+	      AsyncCall (n, future', callee', m, sign', ins')
         | Discover (n, callee, m, sign, ins) ->
 	    assert false
         | SyncCall (n, callee, m, sign, ins, outs) ->

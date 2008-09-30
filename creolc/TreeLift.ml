@@ -71,7 +71,7 @@ let pass input =
 	  let e' = lift_expression e
 	  and p' = List.map lift_expression p in
 	     AsyncCall (a, l, e', n, s, p')
-      | (Free _ | Bury _ | Reply _) as s -> s
+      | (Free _ | Bury _ | Get _) as s -> s
       | SyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh label name.  *)

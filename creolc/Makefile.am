@@ -30,7 +30,7 @@ MAINTAINERCLEANFILES	= $(srcdir)/Lexer.ml $(srcdir)/Parser.ml \
 			  $(srcdir)/Parser.mli 
 
 EXTRA_DIST		= $(srcdir)/Lexer.mll $(srcdir)/Parser.mly \
-			  creol.sty creolc.tex
+			  $(srcdir)/intro.txt creol.sty creolc.tex
 
 bin_PROGRAMS		= creolc creolc.opt cmcvalid cmcvalid.opt
 
@@ -243,9 +243,12 @@ version-tmp:
 
 
 # Generate the api documentation.
+#$(OCAMLDOC) $(OCAMLFINDFLAGS) -sort -intro $(srcdir)/intro.txt \
+#-html -d html $(creolc_DOCSOURCES)
 html-local:
 	test -d html || mkdir -p html
-	$(OCAMLDOC) $(OCAMLFINDFLAGS) -html -sort -d html $(creolc_DOCSOURCES)
+	$(OCAMLDOC) $(OCAMLFINDFLAGS) -sort \
+	  -html -d html $(creolc_DOCSOURCES)
 
 # Literate programming, for documenting and explaining the compiler.
 pdf-local: $(CREOLC_PDF)

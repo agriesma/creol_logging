@@ -19,11 +19,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 i*)
 
-(*s Definition of the abstract syntax of Creol and a collection
+(** Definition of the abstract syntax of Creol and a collection
     of functions for its manipulation.
 *)
 
-(* Types *)
+(** Types *)
 module Type =
 struct
 
@@ -75,9 +75,9 @@ struct
 
   let history_p t = (t = history)
 
-  let label l = Application ("Label", l)
+  let future l = Application ("Label", l)
 
-  let label_p t = match t with Application("Label", _) -> true | _ -> false
+  let future_p t = match t with Application("Label", _) -> true | _ -> false
 
   let list t = Application ("List", t)
 
@@ -116,7 +116,7 @@ struct
       | [t] -> as_string t
       | t::l -> (as_string t) ^ ", " ^ (string_of_creol_type_list l)
 
-  let get_from_label =
+  let get_from_future =
     function
 	Application ("Label", args) -> args
       | _ -> assert false
@@ -241,29 +241,16 @@ struct
 end
 
 
-(* Define the abstract syntax of a name of a variable or an
-   attribute. This module defines a linear order on these names.  *)
-module Name =
-struct
-
-  type t =
-      | Id of string
-      | Attr of string * Type.t
-      | Wildcard of Type.t option
-      | SSAId of string * int
-
-  let compare x y = assert false
-
-end
-
+(** Abstract syntax of expressions. *)
 
 module Expression =
 struct
 
+  (** Annotation of the expression. *)
   type note = {
-    file: string;
-    line: int;
-    ty: Type.t
+    file: string; (** The file in which the expression occurs. *)
+    line: int;	  (** The line in the file in which it occurs. *)
+    ty: Type.t    (** The inferred type of the expression. *)
   }
 
   let make_note ?(file = "**dummy**") ?(line = 0) ?(ty = Type.data) () =
@@ -305,7 +292,7 @@ struct
       | SSAId of note * string * int
       | Phi of note * t list
       | ObjLit of note * string (* The name of an object. *)
-      | LabelLit of note * t list (* The value of the label. *)
+      | LabelLit of note * t list (* The value of the future. *)
   and lhs =
       LhsId of note * string
       | LhsAttr of note * string * Type.t
@@ -588,18 +575,18 @@ struct
       | SSAId _ -> false
       | Phi _ -> false
 
-  (* Whether an expression contains a label *)
-  let rec contains_label_p =
+  (* Whether an expression contains a future *)
+  let rec contains_future_p =
     function
 	Label _ -> true
-      | Unary (_, _, e) -> contains_label_p e
-      | Binary (_, _, e, f) -> (contains_label_p e) || (contains_label_p f)
-      | If (_, c, t, f) -> (contains_label_p c) || (contains_label_p t) ||
-	  (contains_label_p f)
+      | Unary (_, _, e) -> contains_future_p e
+      | Binary (_, _, e, f) -> (contains_future_p e) || (contains_future_p f)
+      | If (_, c, t, f) -> (contains_future_p c) || (contains_future_p t) ||
+	  (contains_future_p f)
       | FuncCall(_, _, args) ->
-	  List.fold_left (fun a b -> a || (contains_label_p b)) false args
+	  List.fold_left (fun a b -> a || (contains_future_p b)) false args
       | New (_, _, args) ->
-	  List.fold_left (fun a b -> a || (contains_label_p b)) false args
+	  List.fold_left (fun a b -> a || (contains_future_p b)) false args
       | _ -> false
 
   (* Whether an expression is a binary expression with a specific
@@ -869,26 +856,29 @@ struct
      Core Creol. *)
   let to_dnf exp = to_nnf (negate (to_cnf (to_nnf (negate exp))))
 
-  (* Check whether all occurences of labels are positive in a formula
-     f.  Assume, that a label value does not occur as the argument
+  (* Check whether all occurences of futures are positive in a formula
+     f.  Assume, that a future value does not occur as the argument
      of a function call! *)
-  let all_labels_positive_p expr =
-    let rec all_labels_positive =
-      (* Check whether all labels are positive assuming negation normal
+  let all_futures_positive_p expr =
+    let rec all_futures_positive =
+      (* Check whether all futures are positive assuming negation normal
 	 form *)
       function
 	  Unary (_, Not, Label _) -> false
 	| Binary(_, (And | Or), left, right) ->
-	    (all_labels_positive left) && (all_labels_positive right)
+	    (all_futures_positive left) && (all_futures_positive right)
 	| FuncCall(n, ("&&" | "||"), [left; right]) when Type.bool_p n.ty ->
-	    (all_labels_positive left) && (all_labels_positive right)
+	    (all_futures_positive left) && (all_futures_positive right)
 	| Binary(_, (Implies|Xor|Iff), f, g) ->
 	    assert false (* Input was assumed to be in NNF *)
         | _ -> true
     in
-      all_labels_positive (to_nnf expr)
+      all_futures_positive (to_nnf expr)
 end
 
+
+
+(** The abstract syntax of a statement. *)
 module Statement =
 struct
 
@@ -908,17 +898,18 @@ struct
       "{" ^ (work (IdSet.elements s)) ^ "}"
 
 
-  (* A definition of the note attached to a statement. *)
-
+  (** A definition of the note attached to a statement. *)
   type note = {
-    file: string;
-    line: int;
-    may_def: IdSet.t;
-    must_def: IdSet.t;
-    may_live: IdSet.t;
-    must_live: IdSet.t;
+    file: string; (** The file in which the expression occurs. *)
+    line: int;	  (** The line in the file in which it occurs. *)
+    may_def: IdSet.t;    (** The set of local variables that may be defined *)
+    must_def: IdSet.t;   (** The set of local variables that must be defined *)
+    may_live: IdSet.t;   (** The set of local variables that may live *)
+    must_live: IdSet.t;  (** The set of local variables that must live *)
   }
 
+
+  (** Make a new note for a statement. *)
   let make_note ?(file = "**dummy**") ?(line = 0) () = {
     file = file;
     line = line;
@@ -929,72 +920,88 @@ struct
   }
 
 
+  (** {3 Abstract syntax of statements}
+
+      [Skip note] represents a skip statement.
+
+      [Release note] represents an unconditional release statement.
+
+      [Await (note, cond)] represents an await statement for the
+      condition [cond].
+
+      [Assert (note, cond)] represents an assert statement for the
+      condition [cond].
+
+      [Prove (note, cond)] represents a prove statement for the
+      condition [cond].
+
+      [Posit (note, cond)] represents a posit statement for the
+      condition [cond].
+      
+      [Assign (note, lhs, rhs)] represents a multiple assignment
+      statement.  Requires that the two lists are of the same
+      length.
+
+      [Get (note, future, lhs)] represents a statement that gets the
+      result values for [future] and assigns them to [lhs].
+
+      [Free (note, lhs)] deallocates all completion messages for the
+      future variables given in [lhs].
+      
+      [Bury (note, lhs)] represents a special form of assignment,
+      setting all its arguments to null.  It does not affect
+      life ranges of its arguments and assumes that all argument
+      names are already dead at that position.
+
+      [LocalAsyncCall (note, )] The optional [lhs] expression
+      represents the value of the name of the variable in which the future
+      is stored.  The following argument is the name of the method.  Then
+      comes the [signature].  The first optional string is the name of a
+      class and denotes the {e upper} bound for searching the method body.
+      The next term represents the corresponding {e lower} bound.
+
+      The term {e upper bound} in this context means, that the
+      implementation must be defined in a subclass of the given
+      class [C], written [<:C].
+
+      The term {e lower bound} in this context means, that the
+      implementation must be defined in a superclass of the given
+      class [C], written [:>C].
+      
+  *)
+
   type t =
-      (* Abstract syntax of statements in Creol. *)
     | Skip of note
-        (** Skip statement. *)
     | Release of note
-	(** Release statement. *)
     | Await of note * Expression.t
-	(** Await statement. *)
     | Assert of note * Expression.t
-	(** Assert statement. *)
     | Prove of note * Expression.t
-	(** Proof obligation statement. *)
-    | Assign of note * Expression.lhs list * Expression.t list
-	(* A multiple assignment statement.  Requires that the two lists
-	   are of the same length. *)
     | Posit of note * Expression.t
-	(* A posit statement, which is used to define {i true} properties
-           about time in a model. *)
+    | Assign of note * Expression.lhs list * Expression.t list
+    | Get of note * Expression.t * Expression.lhs list
+    | Free of note * Expression.lhs list
+    | Bury of note * Expression.lhs list
     | AsyncCall of note * Expression.lhs option * Expression.t * string *
 	Type.signature *  Expression.t list
-    | Reply of note * Expression.t * Expression.lhs list
-    | Free of note * Expression.lhs list
-	(** Free a (list of) labels. *)
-    | Bury of note * Expression.lhs list
-	(* Bury represents a special form of assignment, setting all
-	   its arguments to null.  It does not affect life ranges
-	   of its arguments and assumes that all argument names are
-	   already dead at that position. *)
     | SyncCall of note * Expression.t * string * Type.signature *
 	Expression.t list * Expression.lhs list
     | AwaitSyncCall of note * Expression.t * string * Type.signature *
 	Expression.t list * Expression.lhs list
     | LocalAsyncCall of note * Expression.lhs option * string *
 	Type.signature * string option * string option * Expression.t list
-	(* The optional [lhs] expression represents the value of the
-	   name of the variable in which the label is stored.  The
-	   following argument is the name of the method.  Then comes the
-	   [signature].  The first optional string is the name of a class
-	   and denotes the \emph{upper} bound for searching the method
-	   body.  The next term represents the corresponding \emph{lower}
-	   bound.
-
-	   The term \emph{upper bound} in this context means, that the
-	   implementation must be defined in a subclass of the given
-	   class \texttt{C}, written \texttt{<:C}.
-
-	   The term \emph{lower bound} in this context means, that the
-	   implementation must be defined in a superclass of the given
-	   class \texttt{C}, written \texttt{:>C}. *)
     | LocalSyncCall of note * string * Type.signature * string option *
 	string option * Expression.t list * Expression.lhs list
     | AwaitLocalSyncCall of note * string * Type.signature * string option *
 	string option * Expression.t list * Expression.lhs list
     | MultiCast of note * Expression.t * string * Type.signature *
 	Expression.t list
-	(** Multi-cast statement.  The first expression represents the
-	    receivers and must have type List, Set, ... *)
     | Discover of note * Type.t * string * Type.signature * Expression.t list
     | Tailcall of note * Expression.t * string * Type.signature *
 	Expression.t list
     | StaticTail of note * string * Type.signature * string option *
 	string option * Expression.t list
     | Return of note * Expression.t list
-	(** Generated statement.  Usually, it lists the out parameters. *)
     | Continue of note * Expression.t
-	(** Run-time statement.  Holds a label from which to continue. *)
     | If of note * Expression.t * t * t
     | While of note * Expression.t * Expression.t * t
     | DoWhile of note * Expression.t * Expression.t * t
@@ -1004,29 +1011,93 @@ struct
     | Extern of note * string
 
 
-  (* Test, whether the statement is a skip statement. *)
+  (** Test, whether the statement is a skip statement. *)
   let skip_p =
     function
 	Skip _ -> true
       | _ -> false
 
 
-  (* Extract the note from a statement. *)
+  (** Whether a statement is atomic.  This means that the statement cannot
+      be lowered. *)
+  let rec atomic_p =
+    function
+      | Skip _
+      | Assert _ -> true
+      | Prove _ -> false
+      | Assign _ | Release _ | Await _ | Posit _ | Get _ | Free _
+      | Bury _ -> true
+      | AsyncCall (_, None, _, _, _, _) -> false
+      | AsyncCall _ -> true
+      | SyncCall _ | AwaitSyncCall _
+      | LocalAsyncCall (_, None, _, _, _, _, _) -> false
+      | LocalAsyncCall _ -> true
+      | LocalSyncCall _ | AwaitLocalSyncCall _ -> false
+      | MultiCast _ | Discover _ | Tailcall _ | StaticTail _ | Return _ -> true
+      | While (_, _, _, s) | DoWhile (_, _, _, s) -> atomic_p s
+      | If (_, _, s1, s2) | Sequence (_, s1, s2) | Choice (_, s1, s2) ->
+	  (atomic_p s1) && (atomic_p s2)
+      | Continue _ -> true
+      | Extern _ -> false
+      | Merge _ -> assert false
+
+
+  (** [generate_p stmt] evaluates to [true] if the statement [stmt] is
+      contains any statement that is generated by the compiler and which
+      cannot occur in source programs. *)
+  let rec generated_p =
+    function
+      | Skip _ | Assert _ | Prove _ | Assign _ | Release _ | Await _ | Posit _
+      | Get _ -> false
+      | Free _ | Bury _ -> true
+      | AsyncCall (_, None, _, _, _, _) -> false
+      | AsyncCall (_, Some l, _, _, _, _) -> false
+      | SyncCall _ | AwaitSyncCall _
+      | LocalAsyncCall (_, None, _, _, _, _, _) -> false
+      | LocalAsyncCall (_, Some l, _, _, _, _, _) -> false
+      | LocalSyncCall _ | AwaitLocalSyncCall _ | MultiCast _
+      | Discover _ -> false
+      | Tailcall _ | StaticTail _ | Return _ -> true
+      | While (_, _, _, s) | DoWhile (_, _, _, s) -> generated_p s
+      | If (_, _, s1, s2) | Sequence (_, s1, s2) | Choice (_, s1, s2) ->
+	  (generated_p s1) || (generated_p s2)
+      | Continue _ -> false
+      | Extern _ -> false
+      | Merge _ -> assert false
+
+
+  (** [runtime_p stmt] evaluates to [true] if the statement [stmt] is
+      or contains any statement that is generated by the run-time
+      system and which cannot occur in source programs and is not
+      generated by the compiler. *)
+  let rec runtime_p =
+    function
+      | Skip _ | Assert _ | Prove _ | Assign _ | Release _ | Await _ | Posit _
+      | Get _ | Free _ | Bury _ | AsyncCall _ | SyncCall _ | AwaitSyncCall _
+      | LocalAsyncCall _ | LocalSyncCall _ | AwaitLocalSyncCall _ | MultiCast _
+      | Discover _ | Tailcall _ | StaticTail _ | Return _ -> false
+      | While (_, _, _, s) | DoWhile (_, _, _, s) -> generated_p s
+      | If (_, _, s1, s2) | Sequence (_, s1, s2) | Choice (_, s1, s2) ->
+	  (generated_p s1) || (generated_p s2)
+      | Continue _ -> true
+      | Extern _ -> false
+      | Merge _ -> assert false
+
+
+  (** Extract the note from a statement. *)
   let note =
     function
-      | Skip a | Assert (a, _) | Prove (a, _) | Assign (a, _, _)
-      | Release a | Await (a, _) | Posit (a, _)
-      | AsyncCall (a, _, _, _, _, _) | Reply (a, _, _)
-      | Free (a, _) | Bury (a, _)
+      | Skip a | Assert (a, _) | Prove (a, _) | Assign (a, _, _) | Release a
+      | Await (a, _) | Posit (a, _) | Get (a, _, _) | Free (a, _)
+      | Bury (a, _)
+      | AsyncCall (a, _, _, _, _, _)
       | SyncCall (a, _, _, _, _, _)
       | AwaitSyncCall (a, _, _, _, _, _)
       | LocalAsyncCall (a, _, _, _, _, _, _)
       | LocalSyncCall (a, _, _, _, _, _, _)
       | AwaitLocalSyncCall (a, _, _, _, _, _, _)
-      | MultiCast (a, _, _, _, _)
-      | Discover (a, _, _, _, _)
-      | Tailcall (a, _, _, _, _)
-      | StaticTail (a, _, _, _, _, _)
+      | MultiCast (a, _, _, _, _) | Discover (a, _, _, _, _)
+      | Tailcall (a, _, _, _, _) | StaticTail (a, _, _, _, _, _)
       | Return (a, _)
       | If (a, _, _, _) | While (a, _, _, _) | DoWhile (a, _, _, _)
       | Sequence (a, _, _) | Merge (a, _, _) | Choice (a, _, _)
@@ -1049,7 +1120,7 @@ struct
       | Await (_, c) -> Await (n, c)
       | Posit (_, c) -> Posit (n, c)
       | AsyncCall (_, l, x, m, s, i) -> AsyncCall (n, l, x, m, s, i)
-      | Reply (_, l, vs) -> Reply (n, l, vs)
+      | Get (_, l, vs) -> Get (n, l, vs)
       | Free (_, ls) -> Free (n, ls)
       | Bury (_, vs) -> Bury (n, vs)
       | SyncCall (_, x, m, s, i, o) -> SyncCall (n, x, m, s, i, o)
@@ -1086,7 +1157,7 @@ struct
       | Await (_, _) -> "await _"
       | Posit (_, _) -> "release _"
       | AsyncCall (_, _, _, _, _, _) -> " _!_._(_)"
-      | Reply (_, _, _) -> "_?(_)"
+      | Get (_, _, _) -> "_?(_)"
       | Free (_, _) -> "free _"
       | Bury (_, _) -> "bury _"
       | SyncCall (_, _, _, _, _, _) -> "_._(_;_)"
@@ -1169,7 +1240,7 @@ struct
   let rec remove_redundant_skips =
     function
         (Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _
-        | AsyncCall _ | Reply _ | Free _ | Bury _ | SyncCall _
+        | AsyncCall _ | Get _ | Free _ | Bury _ | SyncCall _
         | AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _
         | AwaitLocalSyncCall _ | MultiCast _ | Discover _ | Tailcall _
 	| StaticTail _ | Return _ | Continue _ | Extern _) as s -> s
@@ -1198,6 +1269,15 @@ struct
 	      Expression.Null (Expression.make_note ~ty:t ()) in
 	    Assign (a, l, List.map nul l)
       | _ -> assert false
+
+
+  (** Create a note for an expression from the information provided by
+      a statement and type information. *)
+  let make_expr_note_from_stmt_note stmt t =
+    { Expression.file = stmt.file;
+      line = stmt.line;
+      ty = t }
+
 end
 
 (* The abstract syntax of Creol *)
@@ -1329,9 +1409,9 @@ module Method =
 		  Not_found -> List.find p meth.outpars
 
 
-    (* Determine whether a local variable is a label. *)
-    let label_p ~meth name =
-      Type.label_p (find_variable meth name).VarDecl.var_type
+    (* Determine whether a local variable is a future. *)
+    let future_p ~meth name =
+      Type.future_p (find_variable meth name).VarDecl.var_type
 
 
     (* Determine whether [name] is the name of an input parameter to

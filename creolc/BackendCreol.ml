@@ -229,7 +229,7 @@ let rec print_statement statement =
 	  print_expression_list a;
 	  print_string ")" ;
 	  close_box ()
-      | Statement.Reply (_, l, o) ->
+      | Statement.Get (_, l, o) ->
 	  open_box 0 ;
 	  print_expression l ;
 	  print_string "?(" ;

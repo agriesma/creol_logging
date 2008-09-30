@@ -393,7 +393,7 @@ let optimise_in_statement stmt =
       | Release n -> Release n
       | AsyncCall (n, l, c, m, s, a) ->
 	  AsyncCall (n, l, c, m, s, List.map fold_expr a)
-      | Reply (n, l, p) -> Reply (n, l, p)
+      | Get (n, l, p) -> Get (n, l, p)
       | Free (n, v) -> Free (n, v)
       | Bury (n, v) -> Bury (n, v)
       | SyncCall (n, c, m, s, i, o) ->

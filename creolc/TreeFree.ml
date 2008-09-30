@@ -49,7 +49,7 @@ let optimise_in_statement meth stmt =
     let d = (note s).must_def in
     let r =
       IdSet.filter
-	(fun v -> Method.label_p meth v)
+	(fun v -> Method.future_p meth v)
 	(IdSet.diff d l)
     in
       if IdSet.is_empty r then

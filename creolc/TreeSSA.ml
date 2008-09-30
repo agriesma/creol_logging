@@ -188,10 +188,10 @@ let into_ssa program =
 	  let a' = List.map (expression_to_ssa meth env) a in
 	  let (env', l') = lhs_to_ssa meth env l in
 	    (env', AsyncCall (n, Some l', c, m, s, a'))
-      | Reply (n, l, p) ->
+      | Get (n, l, p) ->
 	  let l' = expression_to_ssa meth env l in
 	  let (env', p') = lhs_list_to_ssa meth env p in
-	    (env', Reply (n, l', p'))
+	    (env', Get (n, l', p'))
       | Free (n, v) ->
 	  let (env', v') = lhs_list_to_ssa meth env v in
 	    (env', Free (n, v'))
@@ -403,10 +403,10 @@ let out_of_ssa tree =
 	  let na = List.map expression_of_ssa a in
 	  let nl = left_hand_side_of_ssa l in
 	    AsyncCall (n, Some nl, c, m, s, na)
-      | Reply (n, l, p) ->
+      | Get (n, l, p) ->
 	  let nl = expression_of_ssa l in
 	  let np = List.map left_hand_side_of_ssa p in
-	    Reply (n, nl, np)
+	    Get (n, nl, np)
       | Free (n, v) -> Free (n, List.map left_hand_side_of_ssa v)
       | Bury (n, v) -> Bury (n, List.map left_hand_side_of_ssa v)
       | SyncCall (n, c, m, s, ins, outs) ->

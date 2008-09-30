@@ -163,14 +163,14 @@ let compute_in_statement ~meth may must stmt =
 			    must_def = IdSet.union must g } in
 	    logio stmt must n'.must_def ;
 	    AsyncCall (n', Some l, c, m, s, a)
-      | Reply (n, l, p) ->
+      | Get (n, l, p) ->
 	  (* A reply statement leaves [l] undefined and defines [p]. *)
 	  let k = kill l
 	  and g = List.fold_left (add gen) IdSet.empty p in
 	  let n' = { n with may_def = IdSet.union (IdSet.diff may k) g;
 			    must_def = IdSet.union (IdSet.diff must k) g } in
 	    logio stmt must n'.must_def ;
-	    Reply (n', l, p)
+	    Get (n', l, p)
       | Free (n, v) ->
 	  (* A free statement will leave all members of v as
 	     undefined.  The call to the gen-function is used only for

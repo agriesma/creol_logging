@@ -38,7 +38,7 @@ let rec split_in_statement =
 	let s' = List.map2 (fun v' e' -> Assign (a, [v'], [e'])) s e in
 	  List.fold_left (fun res ass -> Sequence (a, res, ass))
 	    (List.hd s') (List.tl s')
-    | (Await _ | Posit _ | AsyncCall _ | Free _ | Bury _ | Reply _ |
+    | (Await _ | Posit _ | AsyncCall _ | Free _ | Bury _ | Get _ |
        SyncCall _ | AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ |
        AwaitLocalSyncCall _ | MultiCast _ | Discover _ | Tailcall _ |
        StaticTail _ | Return _ ) as s -> s

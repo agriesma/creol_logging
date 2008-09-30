@@ -197,7 +197,7 @@ let emit name tree =
           XmlTextWriter.end_element writer ;
 	  creol_statement_note_to_xml a  ;
           XmlTextWriter.end_element writer
-      | Statement.Reply (a, l, is) ->
+      | Statement.Get (a, l, is) ->
 	  XmlTextWriter.start_element writer "creol:reply" ;
 	  creol_expression_to_xml l ;
 	  XmlTextWriter.start_element writer "creol:results" ;

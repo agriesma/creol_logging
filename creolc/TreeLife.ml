@@ -188,14 +188,14 @@ let compute_in_body ~program ~cls ~meth =
 	  in
 	    logio stmt may n'.may_live ;
 	    AsyncCall (n', Some l, c, m, s, a)
-      | Reply (n, l, p) ->
+      | Get (n, l, p) ->
 	  let g = gen l in
 	  let k = List.fold_left (add kill) IdSet.empty p in
 	  let n' = { n with may_live = IdSet.union g (IdSet.diff may k);
 			    must_live = IdSet.union g (IdSet.diff must k) }
 	  in
 	    logio stmt may n'.may_live ;
-	    Reply (n', l, p)
+	    Get (n', l, p)
       | Free (n, v) ->
 	  (* This statement keeps its arguments life, even though the
 	     list of variables here is to be released. The call to [kill]

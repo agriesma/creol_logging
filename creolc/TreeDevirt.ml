@@ -100,8 +100,8 @@ let devirt_statement program cls meth stmt =
       | AsyncCall (n, Some l, c, m, s, i) ->
 	  AsyncCall (n, Some (devirt_lhs l), c, m, s,
 		     List.map devirt_expression i)
-      | Reply (n, l, p) ->
-	  Reply (n, devirt_expression l, List.map devirt_lhs p)
+      | Get (n, l, p) ->
+	  Get (n, devirt_expression l, List.map devirt_lhs p)
       | Free (n, v) -> Free (n, List.map devirt_lhs v)
       | Bury (n, v) -> Bury (n, List.map devirt_lhs v)
       | SyncCall (n, c, m, s, i, o) ->

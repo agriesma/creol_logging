@@ -129,13 +129,6 @@ let emit options out_channel input =
       function
         | [] -> print_string empty
         | l -> separated_list of_expression prsep l
-  and of_identifier_list =
-    (** Convert a list of identifiers into a list of Attribute identifiers. *)
-    function
-	[] -> print_string "noVid"
-      | lst ->
-          separated_list (fun i -> print_string ("\"" ^ i ^ "\"")) print_comma
-	    lst
   and of_lhs =
     function
 	Expression.LhsId (_, i) -> print_string ("\"" ^ i ^ "\"")
@@ -203,7 +196,7 @@ let emit options out_channel input =
 	    print_string (" ; \"" ^ m ^ "\" ; ") ;
 	    of_expression_list a;
 	    print_string " )"
-	| Statement.Reply (_, l, o) ->
+	| Statement.Get (_, l, o) ->
 	    print_string "get( " ;
 	    of_expression l ;
 	    print_string " ; " ;

@@ -34,7 +34,7 @@ let dependencies = ""
 let rec unprove_statement =
   function
     | (Skip _ | Release _ | Assert _ | Assign _ | Await _ | Posit _ |
-       AsyncCall _ | Free _ | Bury _ | Reply _ | SyncCall _ |
+       AsyncCall _ | Free _ | Bury _ | Get _ | SyncCall _ |
        AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _ |
        AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ | Continue _) as s -> s
     | Prove (a, _) -> Skip a 
