@@ -65,5 +65,213 @@ let test_fixture = "Creol" >:::
           assert_equal ~msg:"Constant for type `Time' wrong" Type.time (Type.Basic "Time") ;
 	  assert_bool "Any is not of type `Time'" (Type.time_p Type.time)
       ) ;
-    ]
+    ] ;
+    "Program" >::: [
+      "class_provides" >::: [
+        "simple" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c ] in
+	    let res = Program.class_provides program c in
+	      assert_equal (Program.IdSet.singleton "Any") res
+        ) ;
+        "inherits" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ;
+		      inherits = [ ("C", []) ]; contracts = []; implements = [];
+		      attributes = []; with_defs = []; hidden = false;
+		      file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Class d ] in
+	    let res = Program.class_provides program d in
+	      assert_equal (Program.IdSet.singleton "Any") res
+        ) ;
+        "implements" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = [("I", [])]; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Interface i ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "I"]
+	    in
+	    let res = Program.class_provides program c in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+        ) ;
+        "interface-inherits" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = [("J", [])]; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and j = { Interface.name = "J"; inherits = [("I", [])];
+		      with_decls = []; hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Interface i;
+			    Declaration.Interface j ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "I"; "J" ]
+	    in
+	    let res = Program.class_provides program c in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+        ) ;
+        "class-implements" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = [("I", [])]; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
+		      contracts = []; implements = [("J", [])]; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Class d;
+			    Declaration.Interface i; Declaration.Interface j ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "I"]
+	    in
+	    let res = Program.class_provides program c in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+        ) ;
+        "implements-class-inherits" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = [("I", [])]; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
+		      contracts = []; implements = [("J", [])]; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Class d;
+			    Declaration.Interface i; Declaration.Interface j ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "J"]
+	    in
+	    let res = Program.class_provides program d in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+        ) ;
+        "contracts-implements" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = [("I", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
+		      contracts = []; implements = [("J", [])]; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Class d;
+			    Declaration.Interface i; Declaration.Interface j ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "I"; "J"]
+	    in
+	    let res = Program.class_provides program d in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+        ) ;
+        "contracts" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = [("I", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
+		      contracts = [("J", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Class d;
+			    Declaration.Interface i; Declaration.Interface j ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "I"; "J"]
+	    in
+	    let res = Program.class_provides program d in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	  ) ;
+        "three-inherits" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = [("I", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
+		      contracts = [("J", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and e = { Class.name = "E"; parameters = [] ; inherits = [("D", [])];
+		      contracts = [("K", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and k = { Interface.name = "K"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Class d;
+			    Declaration.Class e ; Declaration.Interface i;
+			    Declaration.Interface j; Declaration.Interface k ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "I"; "J"; "K"]
+	    in
+	    let res = Program.class_provides program e in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	  ) ;
+        "inherit-two" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = [("I", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
+		      contracts = [("J", [])]; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and e = { Class.name = "E"; parameters = [] ;
+		      inherits = [("C", []); ("D", [])]; contracts = [("K", [])];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    and k = { Interface.name = "K"; inherits = []; with_decls = [];
+		      hidden = false; }
+	    in
+	    let program = [ Declaration.Class c ; Declaration.Class d;
+			    Declaration.Class e ; Declaration.Interface i;
+			    Declaration.Interface j; Declaration.Interface k ]
+	    and expect =
+	      List.fold_left (fun e a -> Program.IdSet.add a e)
+	        Program.IdSet.empty ["Any"; "I"; "J"; "K"]
+	    in
+	    let res = Program.class_provides program e in
+	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	  ) ;
+      ] ;
+    ] ;
   ]
