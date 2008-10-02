@@ -1485,8 +1485,9 @@ struct
 	file: string;
 	line: int }
 
-(* Get the interface type implemented by a class.  If it does not declare
-   interfaces, then the result is \texttt{Any}.  Filters out duplicates. *)
+  (** Get the interface type implemented by a class.  If it does not
+      declare interfaces, then the result is \texttt{Any}.  Filters
+      out duplicates. *)
   let get_type cls =
     let ordered =
       List.fast_sort String.compare
@@ -1787,34 +1788,47 @@ struct
       (Type.any_p iface) || (List.exists p (List.map fst cls.Class.contracts))
 
 
-  (** [types prg cls] collects the set of all interfaces implemented by
-      the class [cls] in program [prg].  These are the interfaces
-      contracted by all superclasses, the interfaces immediately
-      implemented and the interface [Any].
-      
+  (** [class_provides prg cls] collects the set of all interfaces
+      implemented by the class [cls] in program [prg].  These are the
+      interfaces contracted by all superclasses, the interfaces
+      immediately implemented and the interface [Any].
 
       The result is a set of interface names. *)
-  let types ~program ~cls =
-    let add a (e, _) = IdSet.add e a in
+  let class_provides ~program ~cls =
+    let findc n =
+      try
+	find_class program n
+      with 
+	  Not_found ->
+	    raise (Class_not_found (cls.Class.file, cls.Class.line, n))
+    and findi n =
+      try
+	find_interface program n
+      with 
+	  Not_found ->
+	    raise (Interface_not_found (cls.Class.file, cls.Class.line, n))
+    in
     let rec work_class a c =
-        (* Recursively collect all interfaces contracted by the class [c]. *)
-	let a' = List.fold_left
-                   (fun a (i, _) -> work_iface a (find_interface program i))
-                   a c.Class.contracts
-        in
-	  List.fold_left
-            (fun a (i, _) -> work_class a (find_class program i))
-            a' c.Class.inherits
+      (* Recursively collect all interfaces contracted by the class
+	 [c]. *)
+      let a' = List.fold_left
+        (fun a (n, _) -> work_iface a (findi n)) a c.Class.contracts
+      in
+	List.fold_left
+          (fun a (n, _) -> work_class a (findc n)) a' c.Class.inherits
     and work_iface a i =
-      (* Recursively collect all interfaces inherited by the interface [i]. *)
+      (* Recursively collect all interfaces inherited by the interface
+	 [i]. *)
       let a' = List.fold_left 
-                 (fun a (i, _) -> work_iface a (find_interface program i))
-	         a i.Interface.inherits
+        (fun a (n, _) -> work_iface a (findi n)) a i.Interface.inherits
       in
         IdSet.add i.Interface.name a'
     in
-    let ic = List.fold_left add IdSet.empty cls.Class.implements in
-      IdSet.add "Any" (IdSet.union ic (work_class IdSet.empty cls))
+    let ic =
+      List.fold_left (fun a (n, _) -> work_iface a (findi n))
+	IdSet.empty cls.Class.implements
+    in
+      IdSet.add "Any" (work_class ic cls)
 
 
   (** {3 Data types}
@@ -1921,32 +1935,6 @@ struct
     let c = find_class_of_attr program cls name in
       Class.find_attr_decl c name
 
-
-  (** Return a list of all interfaces which are implemented by a class.
-      These interfaces are either directly claimed to be implemented,
-      contracted by the class itself, or contracted by one of the
-      super classes. *)
-  let class_implements ~program cls =
-    let rec work result =
-      function
-	  [] -> result
-	| (n, _)::l when List.mem n result -> work result l
-	| (n, _)::l ->
-	    let i =
-	      try
-		find_interface program n
-	      with 
-		  Not_found ->
-		    raise (Interface_not_found
-			     (cls.Class.file, cls.Class.line, n))
-	    in
-	      work (n::result) (l@i.Interface.inherits)
-    in
-    let rec contracts cls =
-      let f a (n, _) = a@(contracts (find_class program n)) in
-	List.fold_left f cls.Class.contracts cls.Class.inherits
-    in
-      work [] ((contracts cls) @ cls.Class.implements)
 
   (** Compute the interface of a class, i.e., the set of all method it
       implements. We call this interface the {e full descriptor.} *)
