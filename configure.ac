@@ -22,6 +22,7 @@ RELEASE_DATE='2008-09-13'
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.m4])
+AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_SUBST([RELEASE_DATE])
 
@@ -96,6 +97,11 @@ INSTALL on obtaining and installing menhir.
 ])
 fi
 
+AC_SUBST([MENHIR_FLAGS])
+AC_SUBST([OCAMLCFLAGS])
+AC_SUBST([OCAMLOPTFLAGS])
+AC_SUBST([OCAMLFINDFLAGS])
+AC_SUBST([CREOL_VARIANTS])
 
 dnl Check for maude.
 AC_CHECK_PROGS([MAUDE], [maude.linux maude.darwin maude],
@@ -193,27 +199,14 @@ fi
 AC_SUBST([OCAML_OUNIT_VERSION])
 AC_SUBST([WITH_OUNIT])
 
-dnl check for ocamlweb and latex for literate programming.
+dnl Check for literate programming tools.
 AC_CHECK_PROG([DOT], [dot], [dot], [[\${top_srcdir}/missing dot]])
-AC_CHECK_PROG([OCAMLWEB], [ocamlweb], [ocamlweb],
-	      [[\${top_srcdir}/missing ocamlweb]])
 AC_CHECK_PROG([LATEX], [latex], [latex],
 	      [[\${top_srcdir}/missing latex]])
 AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex],
 	      [[\${top_srcdir}/missing pdflatex]])
-
-# if we have ocamlweb, build the documentation.
-if test "$OCAMLWEB" = "ocamlweb" -a "$PDFLATEX" = "pdflatex"
-then
-    CREOLC_PDF=creolc.pdf
-fi
-
-AC_SUBST([MENHIR_FLAGS])
-AC_SUBST([OCAMLCFLAGS])
-AC_SUBST([OCAMLOPTFLAGS])
-AC_SUBST([OCAMLFINDFLAGS])
-AC_SUBST([CREOL_VARIANTS])
-AC_SUBST([CREOLC_PDF])
+AC_CHECK_PROG([TEXI2DVI], [texi2dvi], [texi2dvi],
+	      [[\${top_srcdir}/missing texi2dvi]])
 
 AC_ARG_ENABLE([metatests],
   [AS_HELP_STRING([--with-metatests], [Run meta-execution tests.  Slow!])],

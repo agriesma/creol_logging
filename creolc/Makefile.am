@@ -20,17 +20,16 @@
 # 02111-1307, USA.
 
 # Subdirs
-MOSTLYCLEANFILES	= *~ *.aux *.log *.out \
+MOSTLYCLEANFILES	= *~ *.aux *.log *.out *.toc \
 			  *.cma *.cmxa *.cmi *.cmo *.cmx *.o
 CLEANFILES		=
 DISTCLEANFILES		= .depend Version.ml Driver.ml \
-			   creolc.dvi creolc.pdf \
-			   creol.cma creol.a creol.cmxa
+			   creol.cma creol.a creol.cmxa \
+			   creolcint.pdf creolcint.tex ocamldoc.sty
 MAINTAINERCLEANFILES	= $(srcdir)/Lexer.ml $(srcdir)/Parser.ml \
 			  $(srcdir)/Parser.mli 
 
-EXTRA_DIST		= $(srcdir)/Lexer.mll $(srcdir)/Parser.mly \
-			  $(srcdir)/intro.txt creol.sty creolc.tex
+EXTRA_DIST		= $(srcdir)/Lexer.mll $(srcdir)/Parser.mly
 
 bin_PROGRAMS		= creolc creolc.opt cmcvalid cmcvalid.opt
 
@@ -103,13 +102,9 @@ cmcvalid_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
 			  TreeLift.cmx BackendCreol.cmx CMCParser.cmx
 
 # This is the subset for which we want to generate documentation.
-creolc_DOCSOURCES	= Driver.ml \
-			  $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
-			  Version.ml \
-			  $(srcdir)/Messages.ml \
+creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 			  $(srcdir)/Creol.ml \
 			  $(srcdir)/Typing.ml \
-			  $(srcdir)/CheckUseDef.ml \
 			  $(srcdir)/TreeUnassert.ml \
 			  $(srcdir)/TreeLower.ml \
 			  $(srcdir)/TreeLift.ml \
@@ -121,12 +116,14 @@ creolc_DOCSOURCES	= Driver.ml \
 			  $(srcdir)/TreeBury.ml \
 			  $(srcdir)/TreeDevirt.ml \
 			  $(srcdir)/TreeTailcall.ml \
+			  $(srcdir)/CheckUseDef.ml \
 			  $(srcdir)/BackendCreol.ml \
 			  $(srcdir)/BackendCreol.mli \
 			  $(srcdir)/BackendMaude.ml \
 			  $(srcdir)/BackendXML.ml \
 			  $(srcdir)/BackendDot.ml \
 			  $(srcdir)/Misc.ml \
+			  $(srcdir)/Messages.ml \
 			  $(srcdir)/Config.ml 
 
 OCAMLCFLAGS		+= -g
@@ -245,22 +242,28 @@ version-tmp:
 # Generate the api documentation.
 #$(OCAMLDOC) $(OCAMLFINDFLAGS) -sort -intro $(srcdir)/intro.txt \
 #-html -d html $(creolc_DOCSOURCES)
-html-local:
-	test -d html || mkdir -p html
-	$(OCAMLDOC) $(OCAMLFINDFLAGS) -sort \
-	  -html -d html $(creolc_DOCSOURCES)
+html-local: html-stamp
 
-# Literate programming, for documenting and explaining the compiler.
-pdf-local: $(CREOLC_PDF)
+html-stamp: $(creolc_DOCSOURCES)
+	@rm -f html-stamp
+	@test -d html || mkdir -p html
+	$(OCAMLDOC) $(OCAMLFINDFLAGS) -html -d html $(creolc_DOCSOURCES)
+	@echo html-stamp > html-stamp
 
-creolc.pdf: creolc.tex code.tex
-	$(PDFLATEX) creolc
-	$(PDFLATEX) creolc
-	$(PDFLATEX) creolc
+pdf-local: creolcint.pdf
 
-code.tex: $(srcdir)/Makefile.am $(creolc_DOCSOURCES)
-	$(OCAMLWEB) $(OCAMLCFLAGS) --no-preamble --no-index \
-	  $(creolc_DOCSOURCES) -o $@
+creolcint.pdf: creolcint.tex
+	$(PDFLATEX) creolcint
+	$(PDFLATEX) creolcint
+	$(PDFLATEX) creolcint
+
+creolcint.tex: $(creolc_DOCSOURCES)
+	$(OCAMLDOC) $(OCAMLFINDFLAGS) -latex -o creolcint.tex \
+	  $(creolc_DOCSOURCES)
+
+distclean-local:
+	test ! -d html || rm -rf html
+	test ! -f html-stamp || rm -f html-stamp
 
 
 # Compute the dependencies
