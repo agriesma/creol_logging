@@ -272,7 +272,7 @@ let parse_from_channel (name: string) (channel: in_channel) =
   let pos = buf.Lexing.lex_curr_p in
   let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in
   let _ = message 1 ("Reading " ^ name) in
-  let do_parse () = Parser.main Lexer.token buf in
+  let do_parse () = CreolParser.main CreolLexer.token buf in
   let (result, elapsed) = Misc.measure do_parse in
     time_parse := !time_parse +. elapsed ;
     result
