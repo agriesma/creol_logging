@@ -1,4 +1,4 @@
-(*i
+(*
  * Creol.ml -- Definition and manipulation of Creol AST
  *
  * This file is part of creoltools
@@ -17,25 +17,27 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-i*)
+ *)
 
 (** Definition of the abstract syntax of Creol and a collection
-    of functions for its manipulation.
-*)
+    of functions for its manipulation. *)
 
-(** Types *)
+(** This module defines the abstract syntax of types. *)
 module Type =
 struct
 
+  (** Import the type of sets of variable names. *)
+  module Vars = Set.Make(String)
+
   type t =
-      | Internal
-      | Basic of string
-      | Variable of string
-      | Application of string * t list
-      | Tuple of t list
-      | Intersection of t list
-      | Disjunction of t list
-      | Function of t * t
+    | Internal
+    | Basic of string
+    | Variable of string
+    | Application of string * t list
+    | Tuple of t list
+    | Intersection of t list
+    | Disjunction of t list
+    | Function of t * t
 
   let name =
     function
@@ -43,78 +45,112 @@ struct
       | Application (n, _) -> n
       | _ -> assert false
 
-  let any = Basic "Any"
-
-  let any_p t = (t = any)
-
+  (** The type {i Data}. *)
   let data = Basic "Data"
 
+  (** The predicate [data_p t] is true, if the type [t] is the type {i
+      Data}. *)
   let data_p t = (t = data)
 
+  (** The type {i Any}. *)
+  let any = Basic "Any"
+
+  (** The predicate [any_p t] is true, if the type [t] is the type {i
+      Any}. *)
+  let any_p t = (t = any)
+
+  (** The type {i Bool}. *)
   let bool = Basic "Bool"
-  
+    
+  (** The predicate [bool_p t] is true, if the type [t] is the type {i
+      Bool}. *)
   let bool_p t = (t = bool)
 
+  (** The type {i Int}. *)
   let int = Basic "Int"
 
+  (** The predicate [int_p t] is true, if the type [t] is the type {i
+      Int}. *)
   let int_p t = (t = int)
 
+  (** The type {i Float}. *)
   let float = Basic "Float"
 
+  (** The predicate [float_p t] is true, if the type [t] is the type
+      {i Float}. *)
   let float_p t = (t = float)
 
+  (** The type {i String}. *)
   let string = Basic "String"
 
+  (** The predicate [string_p t] is true, if the type [t] is the type
+      {i String}. *)
   let string_p t = (t = string)
 
+  (** The type {i Time}. *)
   let time = Basic "Time"
 
+  (** The predicate [time_p t] is true, if the type [t] is the type {i
+      Time}. *)
   let time_p t = (t = time)
 
-  let history = Basic "Data"
-
-  let history_p t = (t = history)
-
+  (** The type of a {i Future} of values of type [l]. *)
   let future l = Application ("Label", l)
 
+  (** The predicate [future_p t] is true, if the type [t] is the type
+      of a {i Future}. *)
   let future_p t = match t with Application("Label", _) -> true | _ -> false
 
-  let list t = Application ("List", t)
+  (** Make a term representing a {i List} of [t]. *)
+  let list t = Application ("List", [t])
 
+  (** The predicate [list_p t] is true, if the type [t] is the type of
+      {i List\[a\]} for some type {i a}. *)
   let list_p t = match t with Application("List", _) -> true | _ -> false
 
-  let set t = Application ("Set", t)
+  (** Make a term representing a {i Set} of [t]. *)
+  let set t = Application ("Set", [t])
 
+  (** The predicate [set_p t] is true, if the type [t] is the type of
+      {i Set\[a\]} for some type {i a}. *)
   let set_p t = match t with Application("Set", _) -> true | _ -> false
 
+  (** The predicate [collection_p] holds for all types [t] that are
+      suitable as callees in multi-cast statements. *)
   let collection_p t = (list_p t) || (set_p t)
 
+  (** The type {i History}. *)
+  let history = Basic "History"
+
+  (** The predicate [history_p t] is true, if the type [t] is the type
+      {i History}. *)
+  let history_p t = (t = history)
+
+  (** The predicate [variable_p t] holds, if [t] is a type
+      variable. *)
   let variable_p =
     function
 	Variable _ -> true
       | _ -> false
 
-  (* These are the support functions for the abstract syntax tree. *)
-
-  let rec as_string =
+  (** Represent a type [t] as a string [string_of_type t]. *)
+  let rec string_of_type =
     function
 	Basic s -> s
       | Variable s -> "`" ^ s
-      | Application (s, []) ->
-	  s ^ "[ ]"
-      | Application (s, p) ->
-	  s ^ "[" ^ (string_of_creol_type_list p) ^ "]"
-      | Tuple p ->
-	  "[" ^ (string_of_creol_type_list p) ^ "]"
-      | Intersection l -> "/\\ [" ^ (string_of_creol_type_list l) ^ "]"
-      | Disjunction l -> "\\/ [" ^ (string_of_creol_type_list l) ^ "]"
-      | Function (s, t) -> "[" ^ (as_string s) ^ " -> " ^ (as_string t) ^ "]"
+      | Application (s, []) -> s ^ "[ ]"
+      | Application (s, p) -> s ^ "[" ^ (string_of_type_list p) ^ "]"
+      | Tuple p -> "[" ^ (string_of_type_list p) ^ "]"
+      | Intersection l -> "/\\ [" ^ (string_of_type_list l) ^ "]"
+      | Disjunction l -> "\\/ [" ^ (string_of_type_list l) ^ "]"
+      | Function (s, t) ->
+	  "[" ^ (string_of_type s) ^ " -> " ^ (string_of_type t) ^ "]"
       | Internal -> "/* Internal */"
-  and string_of_creol_type_list =
+  (** Represent a list of types [l] as a string [string_of_type_list l]. *)
+  and string_of_type_list =
     function
 	[] -> ""
-      | [t] -> as_string t
-      | t::l -> (as_string t) ^ ", " ^ (string_of_creol_type_list l)
+      | l -> String.concat ", " (List.map string_of_type l)
 
   let get_from_future =
     function
@@ -122,62 +158,41 @@ struct
       | _ -> assert false
 
 
-  (* Check if a variable named [v] occurs in the argument type. *)
-  let rec occurs_p v =
-    function
-	Internal -> false
-      | Basic _ -> false
-      | Variable x -> v = x
-      | Application (_, l) -> List.exists (occurs_p v) l
-      | Tuple l -> List.exists (occurs_p v) l
-      | Intersection l -> List.exists (occurs_p v) l
-      | Disjunction l -> List.exists (occurs_p v) l
-      | Function (s, t) -> (occurs_p v s) || (occurs_p v t)
-
-  (* Checks whether a type contains any (free) variables. *)
-  let rec sentence_p =
-    function
-	Basic _ -> true
-      | Variable _ -> false
-      | Application (_, p) -> List.for_all sentence_p p
-      | Tuple p -> List.for_all sentence_p p
-      | Intersection l -> List.for_all sentence_p l
-      | Disjunction l -> List.for_all sentence_p l
-      | Function (s, t) -> (sentence_p s) && (sentence_p t)
-      | Internal -> true
-
+  (** [free_variables t] is the set of all freely occurring variables in
+      [t]. *)
   let free_variables t =
-    let rec compute res =
+    let rec compute a =
       function
-	  Basic _ -> res
-	| Variable x -> if List.mem x res then res else x::res
-	| Application (_, p) -> List.fold_left (fun a -> compute a) res p
-	| Tuple p -> List.fold_left (fun a -> compute a) res p
-	| Intersection l -> List.fold_left (fun a -> compute a) res l
-	| Disjunction l -> List.fold_left (fun a -> compute a) res l
-	| Function (s, t) -> List.fold_left (fun a -> compute a) res [s; t]
-	| Internal -> res
+	  Basic _ -> a
+	| Variable v -> Vars.add v a
+	| Application (_, l) -> List.fold_left compute a l
+	| Tuple l -> List.fold_left compute a l
+	| Intersection l -> List.fold_left compute a l
+	| Disjunction l -> List.fold_left compute a l
+	| Function (s, t) -> List.fold_left compute a [s; t]
+	| Internal -> a
     in
-      compute [] t
+      compute Vars.empty t
 
-  (* Substitution module *)
+
+  (** [occurs_p v t] checks if a type variable named [v] occurs in the
+      argument type [t]. *)
+  let occurs_p v t = Vars.mem v (free_variables t)
+
+
+  (** [sentence_p t] checks whether a type contains any (free)
+      variables. *)
+  let sentence_p t = Vars.is_empty (free_variables t)
+
+  (** Module for substitution type. *)
   module Subst = Map.Make(String)
+
+  (** Type of a type substitution.  It maps names of type [string] to
+      types. *)
   type subst = t Subst.t
 
 
-  (* Substitute each occurence of a type variable called [v] by the
-     type [t] in the argument type. *)
-  let rec substitute v t =
-    function
-	Internal -> Internal
-      | Basic b -> Basic b
-      | Variable x -> if x = v then t else Variable x
-      | Application (c, l) -> Application(c, List.map (substitute v t) l)
-      | Tuple l -> Tuple (List.map (substitute v t) l)
-      | Intersection l -> Intersection (List.map (substitute v t) l)
-      | Disjunction l -> Disjunction (List.map (substitute v t) l)
-      | Function (d, r) -> Function (substitute v t d, substitute v t r)
-
+  (** Apply a substitution [s] to a type. *)
   let rec apply_substitution s =
     function
 	Internal -> Internal
@@ -200,8 +215,13 @@ struct
       | Function (d, r) ->
 	  Function (apply_substitution s d, apply_substitution s r)
 
+  (** Substitute each occurence of a type variable called [v] by the
+      type [t] in the argument type. *)
+  let substitute v t = apply_substitution (Subst.add v t Subst.empty)
+
+  (** Make a string of a subtitution *)
   let string_of_substitution subst =
-    let f k v a =  (k ^ " |-> " ^ (as_string v))::a in
+    let f k v a =  (k ^ " |-> " ^ (string_of_type v))::a in
       String.concat ", " (Subst.fold f subst [])
 
   type signature = t option * t list option * t list option
@@ -220,29 +240,28 @@ struct
       | (None, None, None) ->
 	  "[ | -> ]"
       | (Some co, None, None) ->
-	  "[ " ^ (as_string co) ^ " | unknown -> unknown ]"
+	  "[ " ^ (string_of_type co) ^ " | unknown -> unknown ]"
       | (None, Some d, None) ->
-	  "[ | " ^ (string_of_creol_type_list d) ^ " -> unknown ]"
+	  "[ | " ^ (string_of_type_list d) ^ " -> unknown ]"
       | (Some co, Some d, None) ->
-	  "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
+	  "[ " ^ (string_of_type co) ^ " | " ^ (string_of_type_list d) ^
 	    " -> unknown ]"
       | (None, None, Some r) ->
-	  "[ | unknown -> " ^ (string_of_creol_type_list r) ^ " ]"
+	  "[ | unknown -> " ^ (string_of_type_list r) ^ " ]"
       | (Some co, None, Some r) ->
-	  "[ " ^ (as_string co) ^ " | unknown -> " ^
-	    (string_of_creol_type_list r) ^ " ]"
+	  "[ " ^ (string_of_type co) ^ " | unknown -> " ^
+	    (string_of_type_list r) ^ " ]"
       | (None, Some d, Some r) ->
-	  "[ | " ^ (string_of_creol_type_list d) ^ " -> " ^
-	    (string_of_creol_type_list r) ^ " ]"
+	  "[ | " ^ (string_of_type_list d) ^ " -> " ^
+	    (string_of_type_list r) ^ " ]"
       | (Some co, Some d, Some r) ->
-	  "[ " ^ (as_string co) ^ " | " ^ (string_of_creol_type_list d) ^
-	    " -> " ^ (string_of_creol_type_list r) ^ " ]"
+	  "[ " ^ (string_of_type co) ^ " | " ^ (string_of_type_list d) ^
+	    " -> " ^ (string_of_type_list r) ^ " ]"
 
 end
 
 
 (** Abstract syntax of expressions. *)
-
 module Expression =
 struct
 
@@ -255,10 +274,6 @@ struct
 
   let make_note ?(file = "**dummy**") ?(line = 0) ?(ty = Type.data) () =
     { file = file ; line = line ; ty = ty }
-
-  let file note = note.file
-
-  let line note = note.line
 
   let set_type note t = { note with ty = t }
 
@@ -920,7 +935,7 @@ struct
   }
 
 
-  (** {3 Abstract syntax of statements}
+  (** {4 Abstract syntax of statements}
 
       [Skip note] represents a skip statement.
 
@@ -1280,26 +1295,27 @@ struct
 
 end
 
-(* The abstract syntax of Creol *)
-
+(** Abstract syntax of variable declarations. *)
 module VarDecl =
   struct
     type t =
       { name: string; var_type: Type.t; init: Expression.t option }
+
   end
 
+
+(** Abstract syntax of method declarations and definitions *)
 module Method =
   struct
 
-   (* Abstract syntax tree node of a method declaration or method definition.
+  (** Abstract syntax tree node of a method declaration or method definition.
       If [body] is [None], then the node represents a declaration.  If it
       is not [None], the node represents a method definition.
 
       The member [location] indicates the class or interface in which this
-      method declaration or definition is defined.  The fact that
+      method declaration or definition is defined.  
       [body = None] is used to distinguish class names from interface
       names.  *)
-
     type t =
       { name: string;
         coiface: Type.t;
@@ -1447,11 +1463,10 @@ module Method =
 
 
 
-(* Abstract syntax of a with clause.
+(** Abstract syntax of a with clause.
 
-   A with clause consists of a co-interface name, a list of methods
-   and a sequence of invariants. *)
-
+    A with clause consists of a co-interface name, a list of methods
+    and a sequence of invariants. *)
 module With = struct
 
   type t = {
@@ -1463,6 +1478,8 @@ module With = struct
 end
 
 
+
+(** Abstract syntax of inherits, implements, and contracts declarations *)
 module Inherits =
   struct
     type t = string * Expression.t list
@@ -1470,6 +1487,7 @@ module Inherits =
 
 
 
+(** Abstract syntax of classes. *)
 module Class =
 struct
 
@@ -1486,7 +1504,7 @@ struct
 	line: int }
 
   (** Get the interface type implemented by a class.  If it does not
-      declare interfaces, then the result is \texttt{Any}.  Filters
+      declare interfaces, then the result is [Any].  Filters
       out duplicates. *)
   let get_type cls =
     let ordered =
@@ -1519,6 +1537,7 @@ end
 
 
 
+(** Abstract syntax of interfaces *)
 module Interface =
 struct
 
@@ -1536,6 +1555,7 @@ end
 
 
 
+(** Abstract syntax of interfaces. *)
 module Exception =
 struct
   type t = { name: string; parameters: VarDecl.t list; hidden: bool }
@@ -1545,6 +1565,7 @@ end
 
 
 
+(** Abstract syntax of function definitions. *)
 module Function =
 struct
 
@@ -1575,6 +1596,8 @@ struct
 end
 
 
+
+(** Abstract syntax of data type declarations. *)
 module Datatype =
 struct
 
@@ -1588,6 +1611,7 @@ struct
 end
 
 
+(** Abstract syntax of processes. *)
 module Process =
 struct
 
@@ -1599,6 +1623,7 @@ struct
 end
 
 
+(** Abstract syntax of objects. *)
 module Object =
 struct
 
@@ -1616,7 +1641,7 @@ end
 
 
 
-
+(** Abstract syntax of Declararions. *)
 module Declaration =
 struct
 
@@ -1651,9 +1676,7 @@ struct
 end
 
 
-(** {3 Abstract syntax of whole programs}
-
-    Defines an abstract syntax of a program. *)
+(** Abstract syntax of a program. *)
 module Program =
 struct
 
@@ -1665,10 +1688,6 @@ struct
 
   (** A set of strings, used to collect all interfaces or classes. *)
   module IdSet = Set.Make(String)
-
-
-  (* Report messages from this module. *)
-  let log l = Messages.message (l + 2)
 
 
   (* Generally, if a class or an interface is not found in the
@@ -1738,9 +1757,14 @@ struct
     in search s
 
 
-  (** Find the interface definition of the interface called [name] in
-      [program]. *)
-  let find_interface ~program ~name =
+  (** {4 Interfaces}
+
+      The following functions are concerned with interfaces.  *)
+
+  (** [find_interface program name] returns the interface definition of the
+      interface called [name] in [program].  It raises [Not_found] if
+      no interface called [name] is defined in [program].  *)
+  let find_interface program name =
     let interface_with_name =
       function
 	  Declaration.Interface { Interface.name = n } -> name = n
@@ -1751,8 +1775,9 @@ struct
 	| _ -> assert false
 
 
-  (** Check, whether [iface] is an interface in [program] *)
-  let interface_p ~program ~iface =
+  (** [interface_p program iface] is true, if the type [iface] refers to
+      interface in [program] *)
+  let interface_p program iface =
     match iface with
 	Type.Internal -> true
       | Type.Basic n ->
@@ -1765,7 +1790,8 @@ struct
       | _ -> false
 
 
-  (** Return true if [s] is a subinterface of [t]. *)
+  (** [subinterface_p program s t] returns true if [s] is a subinterface of
+      [t] in [program]. *)
   let subinterface_p ~program s t =
     if t = "Any" then (* Everything is a sub-interface of [Any]. *)
       true
@@ -1784,7 +1810,7 @@ struct
 
   (** Return true if the class [cls] contracts the interface [iface]. *)
   let contracts_p program cls iface =
-    let p i = subinterface_p program i (Type.as_string iface) in
+    let p i = subinterface_p program i (Type.string_of_type iface) in
       (Type.any_p iface) || (List.exists p (List.map fst cls.Class.contracts))
 
 
@@ -1831,7 +1857,7 @@ struct
       IdSet.add "Any" (work_class ic cls)
 
 
-  (** {3 Data types}
+  (** {4 Data types}
 
       Functions relating to data types. *)
 
@@ -1858,12 +1884,12 @@ struct
       in
 	(s = t) ||
 	  (List.exists (function u -> sub_datatype_p program u t)
-	     (List.map Type.as_string s_decl.Datatype.supers))
+	     (List.map Type.string_of_type s_decl.Datatype.supers))
     with
 	Not_found -> false
 
 
-  (** {3 Types}
+  (** {4 Types}
 
       Functions for types. *)
 
@@ -2036,7 +2062,7 @@ struct
 	| hd::tl -> List.fold_left find_join hd tl
 
 
-  (** {3 Functions} *)
+  (** {4 Functions} *)
 
   (** Find the definition of a function [name] in [program] that has
       signature [sig].  The result should be unique. *)
@@ -2054,10 +2080,10 @@ struct
       with
         | Failure("tl") ->
 	    raise (Failure ("No candidate for " ^ name ^ ": " ^
-		    (Type.as_string sg)))
+		    (Type.string_of_type sg)))
 
 
-  (** {3 Methods} *)
+  (** {4 Methods} *)
 
   let find_method_in_with ~program ~name ~signature w =
     let (_, ins, outs) = signature in
@@ -2225,13 +2251,14 @@ struct
 
 
 
-  (** {3 Declarations} *)
+  (** {4 Declarations} *)
 
   (** Hide all declarations. *)
   let hide_all prg =
     List.map Declaration.hide prg
 
 
+  (** Show all objects and hide all other elements. *)
   let show_only_objects prg =
     let f = function 
       | Declaration.Object _ as d -> Declaration.show d
@@ -2240,6 +2267,8 @@ struct
       List.map f prg
 
 
+  (** Hide all objects in [prg]. Other declarations keep their
+      status. *)
   let hide_all_objects prg =
     let f = function 
       | Declaration.Object _ as d -> Declaration.hide d

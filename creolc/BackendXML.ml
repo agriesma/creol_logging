@@ -103,7 +103,7 @@ let emit name tree =
     XmlTextWriter.end_element writer
   and creol_with_to_xml w =
     XmlTextWriter.start_element writer "creol:with";
-    let co = Type.as_string w.With.co_interface in
+    let co = Type.string_of_type w.With.co_interface in
       XmlTextWriter.write_attribute writer "cointerface" co ;
       List.iter (creol_method_to_xml) w.With.methods;
       XmlTextWriter.end_element writer
@@ -641,7 +641,7 @@ let emit name tree =
 	  XmlTextWriter.end_element writer
       | Expression.New (a, c, es) ->
 	  XmlTextWriter.start_element writer "creol:new" ;
-	  XmlTextWriter.write_attribute writer "class" (Type.as_string c) ;
+	  XmlTextWriter.write_attribute writer "class" (Type.string_of_type c) ;
 	  XmlTextWriter.start_element writer "creol:arguments" ;
 	  List.iter (function e -> 
 	    XmlTextWriter.start_element writer "expression" ;

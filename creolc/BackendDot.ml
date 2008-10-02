@@ -46,7 +46,7 @@ let emit out_channel input =
       | Declaration.Datatype { Datatype.name = t } ->
   	    output_string out_channel
 	      ((d (Type.name t)) ^ "[shape=ellipse, label=\"" ^
-		 (Type.as_string t) ^ "\"];\n")
+		 (Type.string_of_type t) ^ "\"];\n")
       | Declaration.Object { Object.name = n } ->
   	    output_string out_channel
 	      (n ^ "[shape=circle label=\"" ^ n ^ "\"];\n")

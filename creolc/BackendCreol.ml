@@ -51,7 +51,7 @@ let rec print_expression exp =
 	Expression.This _ ->
 	  print_string "this"
       | Expression.QualifiedThis (_, t) ->
-	  print_string ("this as " ^ (Type.as_string t))
+	  print_string ("this as " ^ (Type.string_of_type t))
       | Expression.Caller _ ->
 	  print_string "caller"
       | Expression.Now _ ->
@@ -73,7 +73,7 @@ let rec print_expression exp =
       | Expression.Id (_, i) ->
 	  print_string i
       | Expression.StaticAttr (_, a, c) ->
-	  print_string (a ^ "@" ^ (Type.as_string c))
+	  print_string (a ^ "@" ^ (Type.string_of_type c))
       | Expression.Tuple (_, a) ->
 	  print_string "(";
 	  print_expression_list a;
@@ -123,19 +123,19 @@ let rec print_expression exp =
 	  print_space () ;
 	  print_string "end";
       | Expression.New (_, t, a) ->
-          print_string ("new " ^ (Type.as_string t) ^ "(");
+          print_string ("new " ^ (Type.string_of_type t) ^ "(");
 	  print_expression_list a ;
 	  print_string ")"
       | Expression.Choose (_,v, t, e) ->
-	  print_string ("(some " ^ v ^ ": " ^ (Type.as_string t)) ;
+	  print_string ("(some " ^ v ^ ": " ^ (Type.string_of_type t)) ;
 	  print_expression e ;
 	  print_string ")"
       | Expression.Exists (_,v, t, e) ->
-	  print_string ("(exists " ^ v ^ ": " ^ (Type.as_string t)) ;
+	  print_string ("(exists " ^ v ^ ": " ^ (Type.string_of_type t)) ;
 	  print_expression e ;
 	  print_string ")"
       | Expression.Forall (_,v, t, e) ->
-	  print_string ("(forall " ^ v ^ ": " ^ (Type.as_string t)) ;
+	  print_string ("(forall " ^ v ^ ": " ^ (Type.string_of_type t)) ;
 	  print_expression e ;
 	  print_string ")"
       | Expression.Extern (_, s) ->
@@ -175,11 +175,11 @@ let print_lhs =
       Expression.LhsId (_, n) ->
 	print_string n
     | Expression.LhsAttr(_, n, c) ->
-	print_string (n ^ "@" ^ (Type.as_string c))
+	print_string (n ^ "@" ^ (Type.string_of_type c))
     | Expression.LhsWildcard (_, None) ->
 	print_string "_"
     | Expression.LhsWildcard (_, Some t) ->
-	print_string ("_: " ^ (Type.as_string t))
+	print_string ("_: " ^ (Type.string_of_type t))
     | Expression.LhsSSAId (_, v, n) ->
 	print_string ("$" ^ v ^ "<" ^ (string_of_int n) ^ ">")
 
@@ -333,7 +333,7 @@ let rec print_statement statement =
 	  close_box ()
       | Statement.Discover (_, t, m, _, a) ->
 	  open_box 0 ;
-	  print_string ("!" ^ (Type.as_string t) ^ "." ^ m ^ "(") ;
+	  print_string ("!" ^ (Type.string_of_type t) ^ "." ^ m ^ "(") ;
 	  print_expression_list a ;
 	  print_string ")" ;
 	  close_box ()
@@ -512,7 +512,7 @@ let pretty_print_program out_channel input =
     print_string ")" ;
     print_string ":" ;
     print_space () ;
-    print_string (Type.as_string f.Function.result_type) ;
+    print_string (Type.string_of_type f.Function.result_type) ;
     print_space () ;
     print_string "==" ;
     print_space () ;
@@ -524,13 +524,13 @@ let pretty_print_program out_channel input =
     open_box 2 ;
     print_string "datatype" ;
     print_space () ;
-    print_string (Type.as_string d.Datatype.name) ;
+    print_string (Type.string_of_type d.Datatype.name) ;
     if d.Datatype.supers <> [] then
       begin
 	print_space () ;
         print_string "of" ;
 	print_space () ;
-	separated_list (function t -> print_string (Type.as_string t))
+	separated_list (function t -> print_string (Type.string_of_type t))
 	  print_comma
 	  d.Datatype.supers
       end ;
@@ -550,7 +550,7 @@ let pretty_print_program out_channel input =
     close_box ()
   and print_object obj =
     print_string ("object " ^ obj.Object.name ^ " : " ^
-		   (Type.as_string obj.Object.cls)) ;
+		   (Type.string_of_type obj.Object.cls)) ;
     open_box 2 ;
     print_string "begin" ;
     if [] <> obj.Object.attributes then
@@ -700,7 +700,7 @@ let pretty_print_program out_channel input =
 	    open_hbox () ;
 	    print_string "with" ;
 	    print_space () ; 
-	    print_string (Type.as_string t) ;
+	    print_string (Type.string_of_type t) ;
 	    close_box () ;
 	    print_space () ;
             open_hbox () ; print_break 2 0 ; close_box () ;
@@ -773,7 +773,7 @@ let pretty_print_program out_channel input =
     print_string v.VarDecl.name ;
     print_string ":" ;
     print_space () ;
-    print_string (Type.as_string v.VarDecl.var_type);
+    print_string (Type.string_of_type v.VarDecl.var_type);
     begin
       match v.VarDecl.init with
         | None -> ()

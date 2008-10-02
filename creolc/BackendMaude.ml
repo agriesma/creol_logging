@@ -402,7 +402,7 @@ let emit options out_channel input =
     open_box 2 ;
     print_string ("< ob(\"" ^ obj.Object.name ^ "\") :");
     print_space () ;
-    print_string ((Type.as_string obj.Object.cls) ^ " |") ;
+    print_string ((Type.string_of_type obj.Object.cls) ^ " |") ;
     print_space () ;
     print_string "Att: " ;
     of_substitution obj.Object.attributes ;

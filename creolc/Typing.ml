@@ -91,9 +91,9 @@ let rec string_of_constraint_set =
   function
       [] -> "none"
     | [(s, t)] ->
-        (Type.as_string s) ^ " <: " ^ (Type.as_string t)
+        (Type.string_of_type s) ^ " <: " ^ (Type.string_of_type t)
     | (s, t)::l ->
-        (Type.as_string s) ^ " <: " ^ (Type.as_string t) ^ ", " ^
+        (Type.string_of_type s) ^ " <: " ^ (Type.string_of_type t) ^ ", " ^
 	  (string_of_constraint_set l)
 
 
@@ -138,8 +138,8 @@ let unify ~program ~constraints =
       let (s, t) = List.hd c
       and d = List.tl c
       in
-	log 2 ("unify: constraint " ^ (Type.as_string s) ^ " <: " ^
-		  (Type.as_string t)) ;
+	log 2 ("unify: constraint " ^ (Type.string_of_type s) ^ " <: " ^
+		  (Type.string_of_type t)) ;
 	match (s, t) with
 	    (Type.Basic _, Type.Basic _) when Program.subtype_p program s t ->
 		do_unify d res
@@ -189,7 +189,7 @@ let unify ~program ~constraints =
 		  Program.meet program (t::(List.map snd (List.filter p d)))
 	      and d' = List.filter (fun x -> not (p x)) d
 	      in
-	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t')) ;
+	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.string_of_type t')) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -199,7 +199,7 @@ let unify ~program ~constraints =
 	      (* In this case, `x is a lower bound, i.e., `x <: t, and t
 		 contains free variables.  This constraint is trivially
 		 satisfied by t and t des not have any meets in [program].  *)
-	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t)) ;
+	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.string_of_type t)) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -216,7 +216,7 @@ let unify ~program ~constraints =
 		  Program.join program (List.map fst (List.filter p c))
 	      in
 	      let try_unify r =
-	        log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
+	        log 1 ("try_unify: " ^ (Type.string_of_type r) ^ " for `" ^ x) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -244,7 +244,7 @@ let unify ~program ~constraints =
 		 something better. *)
 
 	      let try_unify r =
-	        log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
+	        log 1 ("try_unify: " ^ (Type.string_of_type r) ^ " for `" ^ x) ;
 	        do_unify
 		  (List.map
 		      (fun (t1, t2) ->
@@ -266,8 +266,8 @@ let unify ~program ~constraints =
 	      do_unify d res
 	  | _ ->
 		log 1 ("unify: failed to unify " ^
-				    (Type.as_string s) ^ " as subtype of " ^
-				    (Type.as_string t)) ;
+				    (Type.string_of_type s) ^ " as subtype of " ^
+				    (Type.string_of_type t)) ;
 		raise (Unify_failure (s, t))
   in
     log 1 "\n=== unify ===" ;
@@ -282,14 +282,24 @@ let unify ~program ~constraints =
 let fresh_names_in_type fresh_name t =
   let fv = Type.free_variables t in
   let (fresh_name', s) =
-    List.fold_left
-      (fun (fn, s) x ->
-	 let (v, fn') = fresh_var fn in
-	   (fn', Type.Subst.add x v s))
-      (fresh_name, Type.Subst.empty)
+    Type.Vars.fold
+      (fun x (fn, s) ->
+	 let (v, fn') = fresh_var fn in (fn', Type.Subst.add x v s))
       fv
+      (fresh_name, Type.Subst.empty)
   in
     (fresh_name', Type.apply_substitution s t)
+
+
+(** Raise a type error exception for an expression note and a
+    message. *)
+let type_error note msg =
+  raise (Type_error (note.Expression.file, note.Expression.line, msg))
+
+(** Raise a type error exception, because identifier name is not
+    declared. *)
+let identifier_undeclared n name =
+  type_error n ("Identifier " ^ name ^ " not declared")
 
 
 (** Reconstruct the type of an expression.
@@ -322,9 +332,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	if Program.subtype_p env.program (Class.get_type env.cls) t then
 	  (QualifiedThis (set_type n t, t), constr, fresh_name)
 	else
-	  raise (Type_error (Expression.file n, Expression.line n,
-			     "Cannot qualify this as " ^
-			       (Type.as_string t)))
+	  type_error n ("Cannot qualify this as " ^ (Type.string_of_type t))
     | Caller n ->
 	(Caller (set_type n (Type.Basic coiface)), constr, fresh_name)
     | Null n ->
@@ -332,8 +340,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	  (Null (set_type n v), constr, fresh_name')
     | Nil n ->
 	let (v, fresh_name') = fresh_var fresh_name in
-	  (Nil (set_type n (Type.Application ("List", [v]))),
-	   constr, fresh_name')
+	  (Nil (set_type n (Type.list v)), constr, fresh_name')
     | History n ->
 	(History (set_type n Type.history), constr, fresh_name)
     | Now n ->
@@ -356,7 +363,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	let (l', constr', fresh_name') = 
 	  type_recon_expression_list env coiface constr fresh_name l in
 	let (v, fresh_name'') = fresh_var fresh_name' in
-	let ty = Type.Application ("List", [v]) in
+	let ty = Type.list v in
 	  (ListLit (set_type n ty, l'),
 	   (List.map (fun e -> (get_type e, v)) l') @ constr',
 	   fresh_name'')
@@ -364,7 +371,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	let (l', constr', fresh_name') = 
 	  type_recon_expression_list env coiface constr fresh_name l in
 	let (v, fresh_name'') = fresh_var fresh_name' in
-	let ty = Type.set [v] in
+	let ty = Type.set v in
 	  (SetLit (set_type n ty, l'),
 	   (List.map (fun e -> (get_type e, v)) l') @ constr',
 	   fresh_name'')
@@ -381,10 +388,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	      (Program.find_attr_decl env.program env.cls name).VarDecl.var_type
 	  with
 	      Not_found ->
-		raise (Type_error ((n.Expression.file),
-				   (n.Expression.line),
-				   "Identifier " ^ name ^
-				     " not declared"))
+		identifier_undeclared n name
 	in
 	  (Id (set_type n res, name), constr, fresh_name)
     | StaticAttr (n, name, ((Type.Basic c) as t)) ->
@@ -404,9 +408,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	let (fresh_name'', ty1) =
 	  match Program.find_functions env.program name with
 	      [] ->
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Unary operator " ^ name ^
-				     " not defined"))
+		type_error n ("Unary operator " ^ name ^ " not defined")
 	    | [candidate] ->
 		(* This is a small optimisation. *)
 		let r =
@@ -444,9 +446,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	let (fresh_name''', ty1) =
 	  match Program.find_functions env.program name with
 	      [] ->
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Binary operator " ^ name ^
-				     " not defined"))
+		type_error n ("Binary operator " ^ name ^ " not defined")
 	    | [candidate] ->
 		(* This is a small optimisation. *)
 		let r =
@@ -494,8 +494,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	let (fresh_name'', ty1) =
 	  match Program.find_functions env.program name with
 	      [] ->
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Function " ^ name ^ " not defined"))
+		type_error n ("Function " ^ name ^ " not defined")
 	    | [candidate] ->
 		(* This is a small optimisation. *)
 		let r =
@@ -526,16 +525,13 @@ let rec type_recon_expression env coiface constr fresh_name =
 	begin
 	  try
 	    if Method.future_p env.meth name then
-	      (Label (set_type n (Type.Basic "Bool"), l), constr,
+	      (Label (set_type n Type.bool, l), constr,
 	       fresh_name)
 	    else
-	      raise (Type_error (Expression.file n, Expression.line n,
-				 "Variable " ^ name ^
-				   " is not of type Label"))
+	      type_error n ("Variable " ^ name ^ " is not of type Label")
 	  with
 	      Not_found ->
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Label " ^ name ^ " not declared"))
+		identifier_undeclared n name
 	end
     | Label _ -> assert false
     | New (n, Type.Basic c, args) ->
@@ -547,8 +543,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	    Program.find_class env.program c
 	  with
 	      Not_found ->
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Class " ^ c ^ " not defined"))
+		type_error n ("Class " ^ c ^ " not defined")
 	in
 	let mk x y = (get_type x, y.VarDecl.var_type) in
 	let t =
@@ -556,9 +551,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	    List.map2 mk args' cls'.Class.parameters
 	  with
 	      Invalid_argument _ ->
-		raise (Type_error (Expression.file n, Expression.line n,
-				   "Arguments to new " ^ c ^
-				     " mismatch in length"))
+		type_error n ("Arguments to new " ^ c ^ " mismatch in length")
 	in
 	  (New (set_type n (Class.get_type cls'), Type.Basic c, args'),
 	   t@constr', fresh_name')
@@ -620,9 +613,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 		  (Method.find_variable env.meth name).VarDecl.var_type
 	  with
 	      Not_found ->
-		raise (Type_error ((Expression.file n),
-				   (Expression.line n),
-				   "Identifier " ^ name ^ " not declared"))
+		identifier_undeclared n name
 	in
 	  (SSAId (set_type n res, name, version), constr, fresh_name)
     | Phi (n, args) ->
@@ -654,7 +645,7 @@ let error_ambigous note name callee_t cands =
   let tmp = g (MSet.elements cands) in
     raise (Type_error (note.file, note.line,
 		       "Call to method " ^ name ^ " of " ^
-			 (Type.as_string callee_t) ^
+			 (Type.string_of_type callee_t) ^
 			 " is ambigous:\n" ^ tmp))
 
 
@@ -667,8 +658,8 @@ let error_ambigous note name callee_t cands =
     Here, we use inequalities of the form [s <= t] to represent a
     constraint in the set.  *)
 let type_check_expression env coiface constr expr =
-  let file = Expression.file (Expression.note expr)
-  and line = Expression.line (Expression.note expr)
+  let file = (Expression.note expr).Expression.file
+  and line = (Expression.note expr).Expression.line
   and (expr', constr', _) =
     type_recon_expression env coiface constr
       (Misc.fresh_name_gen "_") expr
@@ -681,8 +672,9 @@ let type_check_expression env coiface constr expr =
     with
 	Unify_failure (s, t) ->
 	  raise (Type_error (file, line, "expression has type " ^
-			       (Type.as_string s) ^ " but expected is type " ^
-			       (Type.as_string t) ^
+			       (Type.string_of_type s) ^
+			       " but expected is type " ^
+			       (Type.string_of_type t) ^
 			       "\n  Cannot satisfy constraints: " ^
 			       (string_of_constraint_set constr')))
   in
@@ -694,8 +686,8 @@ let type_check_expression_list env coiface constr =
   function
       [] -> []
     | exprs ->
-	let file = Expression.file (Expression.note (List.hd exprs))
-	and line = Expression.line (Expression.note (List.hd exprs))
+	let file = (Expression.note (List.hd exprs)).Expression.file
+	and line = (Expression.note (List.hd exprs)).Expression.line
 	and (exprs', constr', _) =
 	  type_recon_expression_list env coiface constr
 	    (Misc.fresh_name_gen "_") exprs
@@ -710,9 +702,9 @@ let type_check_expression_list env coiface constr =
 	      Unify_failure (s, t) ->
 		raise (Type_error (file, line,
 				   "expression has type " ^
-				     (Type.as_string s) ^
+				     (Type.string_of_type s) ^
 				     " but expected is type " ^
-				     (Type.as_string t) ^
+				     (Type.string_of_type t) ^
 				     "\n  Cannot satisfy constraints: " ^
 				     (string_of_constraint_set constr')))
 	in
@@ -727,9 +719,7 @@ let type_check_assertion env coiface e =
     if Type.bool_p (get_type e') then
       e'
     else
-      raise (Type_error (Expression.file (Expression.note e'),
-			 Expression.line (Expression.note e'),
-			 "Expression is not of type Bool"))
+      type_error (Expression.note e') "Expression is not of type Bool"
 
 
 let type_check_lhs env coiface =
@@ -744,9 +734,7 @@ let type_check_lhs env coiface =
 		  (Program.find_attr_decl env.program env.cls name).VarDecl.var_type
 	  with
 	      Not_found ->
-		raise (Type_error ((Expression.file n),
-				   (Expression.line n),
-				   "Identifier " ^ name ^ " not declared"))
+		identifier_undeclared n name
 	in
 	  LhsId (set_type n res, name)
     | LhsAttr (n, name, (Type.Basic c)) ->
@@ -766,9 +754,7 @@ let type_check_lhs env coiface =
 	    (Method.find_variable env.meth name).VarDecl.var_type
 	  with
 	      Not_found ->
-		raise (Type_error ((Expression.file n),
-				   (Expression.line n),
-				   "Identifier " ^ name ^ " not declared"))
+		identifier_undeclared n name
 	in
 	  LhsSSAId (set_type n res, name, version)
 
@@ -794,7 +780,8 @@ let rec type_check_statement env coiface =
 		(fun i -> Program.find_interface env.program (Type.name i)) l
 	  | Type.Internal ->
 	      []
-	  | Type.Application (("List" | "Set"), [Type.Basic n]) ->
+	  | Type.Application (_, [Type.Basic n])
+	      when Type.collection_p callee_t ->
 	      [Program.find_interface env.program n]
 	  | Type.Basic n | Type.Application (n, _)->
 	      [Program.find_interface env.program n]
@@ -803,7 +790,7 @@ let rec type_check_statement env coiface =
       with
 	  Not_found ->
 	    raise (Type_error (n.file, n.line,
-			       "Interface " ^ (Type.as_string callee_t) ^
+			       "Interface " ^ (Type.string_of_type callee_t) ^
 				 " not defined."))
     and future' =
       match future with
@@ -849,10 +836,10 @@ let rec type_check_statement env coiface =
 	    if Program.subtype_p env.program (Class.get_type env.cls) c then
 	      c
 	    else
-	      raise (Type_error (n.file, n.line, (Type.as_string c) ^
+	      raise (Type_error (n.file, n.line, (Type.string_of_type c) ^
 				   " is not implemented by class " ^
 				   env.cls.Class.name ^ " of type " ^
-				   (Type.as_string (Class.get_type env.cls))))
+				   (Type.string_of_type (Class.get_type env.cls))))
     in
     let (ins', ins_t') =
 
@@ -890,9 +877,9 @@ let rec type_check_statement env coiface =
 	with
 	    Unify_failure (s, t) ->
 	      raise (Type_error (n.file, n.line,
-				 (Type.as_string s) ^
+				 (Type.string_of_type s) ^
 				   " but expected is type " ^
-				   (Type.as_string t) ^
+				   (Type.string_of_type t) ^
 				   "\n  Cannot satisfy constraints: " ^
 				   (string_of_constraint_set
 				      [(call_type, cands_type)])))
@@ -919,7 +906,7 @@ let rec type_check_statement env coiface =
 	match MSet.cardinal cands with
 	    0 -> raise (Type_error (n.file, n.line,
 				    "Interface " ^
-				      (Type.as_string callee_t) ^
+				      (Type.string_of_type callee_t) ^
 				      " does not provide a method " ^ m ^ 
 				      " with signature " ^
 				      (Type.string_of_sig
@@ -933,7 +920,7 @@ let rec type_check_statement env coiface =
 	raise (Type_error (n.file, n.line,
 	  		   "Class " ^ env.cls.Class.name ^
 			     " does not contract interface " ^
-			     (Type.as_string co)))
+			     (Type.string_of_type co)))
   in
   let check_async_method_call n future callee m sign ins =
     let (future', callee', sign', ins', _) =
@@ -1041,9 +1028,9 @@ let rec type_check_statement env coiface =
 	    let die () =
 	      raise (Type_error (n.file, n.line,
 				 "Type mismatch in assignment: Expected " ^
-				   (Type.as_string lhs_t) ^
+				   (Type.string_of_type lhs_t) ^
 				   " but got " ^
-				   (Type.as_string rhs_t)))
+				   (Type.string_of_type rhs_t)))
 	    in
 	      if Type.sentence_p rhs_t then
 		if Program.subtype_p env.program rhs_t lhs_t then
@@ -1236,7 +1223,7 @@ let typecheck tree: Program.t =
       let f d { VarDecl.name = n; var_type = t } =
 	if not (Program.type_p program t) then
 	  raise (Type_error (cls.Class.file, cls.Class.line,
-			     "type " ^ (Type.as_string t) ^ " of " ^ d ^
+			     "type " ^ (Type.string_of_type t) ^ " of " ^ d ^
 			       " parameter " ^ n ^ " does not exist"))
       in
 	List.iter (f "input") meth.Method.inpars ;
@@ -1251,18 +1238,7 @@ let typecheck tree: Program.t =
 	None -> None
       | Some s -> Some (type_check_statement env coiface s)
     in
-      if Type.bool_p (get_type r') then
-	if Type.bool_p (get_type e') then
-	  { meth with Method.requires = r'; ensures = e'; vars = v' ;
-	      body = b' }
-	else
-	  raise (Type_error (Expression.file (Expression.note e'),
-			     Expression.line (Expression.note e'),
-			     "Post-condition is not Bool"))
-      else
-	raise (Type_error (Expression.file (Expression.note r'),
-			   Expression.line (Expression.note r'),
-			   "Pre-condition is not Bool"))
+      { meth with Method.requires = r'; ensures = e'; vars = v' ; body = b' }
   and type_check_with_def program cls w =
     let coiface =
       match w.With.co_interface with
@@ -1319,7 +1295,7 @@ let typecheck tree: Program.t =
       else
 	raise (Type_error (cls.Class.file, cls.Class.line,
 			   "type " ^
-			     (Type.as_string t) ^ " of attribute " ^ n ^
+			     (Type.string_of_type t) ^ " of attribute " ^ n ^
 			     " does not exist"))
 
     and parameter_well_typed { VarDecl.name = n; var_type = t } =
@@ -1328,7 +1304,7 @@ let typecheck tree: Program.t =
       else
 	begin
 	  Messages.error cls.Class.file cls.Class.line
-	    ("type " ^ (Type.as_string t) ^ " of class parameter " ^ n ^
+	    ("type " ^ (Type.string_of_type t) ^ " of class parameter " ^ n ^
 	       " does not exist") ;
 	  false
 	end
