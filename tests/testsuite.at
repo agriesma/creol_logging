@@ -396,9 +396,17 @@ TEST_CREOLC_TYPECHECK([New5],
 TEST_CREOLC_TYPECHECK([Cyclic],
 [*top*:0: subtype relation has a cycle: S <: U <: T <: S
 ])
-TEST_CREOLC_TYPECHECK([Implements],
-[[Implements.creol:27: C does not provide a method m[ Any |  ->  ] declared in I
+
+TEST_CREOLC_TYPECHECK([Missing],
+[[Missing.creol:27: Class Foo does not provide a method foo[ Any |  ->  ] declared in interface Foo
 ]])
+
+TEST_CREOLC_TYPECHECK([Missing2],
+[[Missing2.creol:32: Class Foo does not provide a method foo[ Any |  ->  ] declared in interface Foo
+]])
+
+TEST_CREOLC_TYPECHECK([Missing3], [])
+
 TEST_CREOLC_TYPECHECK([Ambiguous],
 [[Ambiguous.creol:34: Call to method m of I is ambigous:
     I::m[ J |  ->  ]

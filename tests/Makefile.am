@@ -106,19 +106,21 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  syntax/MissingEnd4.creol \
 		  syntax/MissingEnd5.creol \
 		  syntax/StrayChar.creol \
+		  typecheck/Ambiguous.creol typecheck/Ambiguous2.creol \
+		  typecheck/Ambiguous3.creol typecheck/Ambiguous4.creol \
+		  typecheck/Ambiguous5.creol typecheck/Ambiguous6.creol \
+		  typecheck/Ambiguous7.creol typecheck/Ambiguous8.creol \
+		  typecheck/Contracts.creol typecheck/Cyclic.creol \
+		  typecheck/ExprFailure.creol typecheck/If.creol \
+		  typecheck/Missing.creol typecheck/Missing2.creol \
+		  typecheck/Missing3.creol \
+		  typecheck/Nat.creol typecheck/Nat2.creol \
+		  typecheck/Nat3.creol typecheck/Nat4.creol \
 		  typecheck/Nil.creol typecheck/Nil2.creol \
-		  typecheck/Nil3.creol typecheck/ExprFailure.creol \
-		  typecheck/Contracts.creol typecheck/Nat.creol \
-		  typecheck/Nat2.creol typecheck/Nat3.creol \
-		  typecheck/Nat4.creol typecheck/If.creol \
+		  typecheck/Nil3.creol \
 		  typecheck/New.creol typecheck/New2.creol \
 		  typecheck/New3.creol typecheck/New4.creol \
-		  typecheck/New5.creol typecheck/Cyclic.creol \
-		  typecheck/Implements.creol typecheck/Ambiguous.creol \
-		  typecheck/Ambiguous2.creol typecheck/Ambiguous3.creol \
-		  typecheck/Ambiguous4.creol typecheck/Ambiguous5.creol \
-		  typecheck/Ambiguous6.creol typecheck/Ambiguous7.creol \
-		  typecheck/Ambiguous8.creol \
+		  typecheck/New5.creol \
 		  devirt/Devirt.creol devirt/Devirt.xml \
 		  bury/Assign.creol bury/Assign.xml \
 		  bury/If.creol bury/If.xml \
