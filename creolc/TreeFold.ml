@@ -420,6 +420,7 @@ let optimise_in_statement stmt =
       | Sequence (n, s1, s2) -> Sequence (n, work s1, work s2)
       | Merge (n, s1, s2) -> Merge (n, work s1, work s2)
       | Choice (n, s1, s2) -> Choice (n, work s1, work s2)
+      | Return (n, r) -> Return (n, List.map fold_expr r)
       | Continue (n, c) -> Continue (n, fold_expr c)
       | Extern (n, s) -> Extern (n, s)
   in

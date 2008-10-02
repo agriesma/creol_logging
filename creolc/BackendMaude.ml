@@ -115,6 +115,15 @@ let emit options out_channel input =
 	  of_expression f ;
 	  print_string " fi)"
       | Expression.Extern _ -> assert false
+      | Expression.LabelLit (_, label) ->
+          print_string "label(" ;
+	  of_expression_list label ;
+	    (* XXX: Actually broken, but we don't care *)
+	  print_string ")"
+      | Expression.ObjLit (_, name) ->
+          print_string "ob(" ;
+	  print_string name ;
+	  print_string ")"
       | Expression.SSAId (_, n, v) -> 
 	  print_string ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")") ;
       | Expression.Phi (_, i::l) ->
@@ -145,7 +154,7 @@ let emit options out_channel input =
     function
 	[] -> print_string "noVid"
       | lst -> separated_list of_lhs print_comma lst
-  and of_statement cls stmt =
+  and of_statement stmt =
     let open_paren prec op_prec =
       if prec < op_prec then begin open_box 2 ; print_string "(" end
     and close_paren prec op_prec =
@@ -283,6 +292,9 @@ let emit options out_channel input =
 	      print_space () ; print_string "[]" ; print_space () ;
 	      print op_prec r ; 
 	      close_paren prec op_prec
+        | Statement.Continue (_, label) ->
+              print_string "$cont " ;
+	      of_expression label
 	| Statement.Extern _ ->
 	    (* Should have been replaced by an assignment with
 	       a (special) function call. *)
@@ -327,7 +339,7 @@ let emit options out_channel input =
       begin
          match m.Method.body with
 	   | None -> print_string "skip"
-           | Some s -> of_statement cls s
+           | Some s -> of_statement s
       end ;
       print_space () ;
       print_string ">" ;
@@ -361,6 +373,55 @@ let emit options out_channel input =
     print_comma () ;
     print_string "Ocnt: 0 >" ;
     close_box ()
+  and of_mapping =
+    function
+      | { VarDecl.name = name; init = Some init } ->
+          print_string name ;
+          print_space () ;
+          print_string "|->" ;
+          print_space () ;
+          of_expression init ;
+      | _ -> assert false
+  and of_substitution =
+    function
+	[] -> print_string "noSubst"
+      | lst -> separated_list of_mapping print_comma lst
+  and of_process proc =
+    print_string "{ " ;
+    of_substitution proc.Process.attributes ;
+    print_space () ;
+    print_string "|" ;
+    print_space () ;
+    of_statement proc.Process.code ;
+    print_string " }"
+  and of_process_list =
+    function
+	[] -> print_string "noProc"
+      | lst -> separated_list of_process print_comma lst
+  and of_object obj =
+    open_box 2 ;
+    print_string ("< ob(\"" ^ obj.Object.name ^ "\") :");
+    print_space () ;
+    print_string ((Type.as_string obj.Object.cls) ^ " |") ;
+    print_space () ;
+    print_string "Att: " ;
+    of_substitution obj.Object.attributes ;
+    print_comma () ;
+    print_string "Pr: ";
+    of_process obj.Object.process ;
+    print_comma () ;
+    print_string "PrQ: " ;
+    of_process_list obj.Object.process_queue ;
+    print_comma () ;
+    print_string "Dealloc: " ;
+    assert false ;
+    print_comma () ;
+    print_string "Ev: " ;
+    assert false ;
+    print_comma () ;
+    print_string ("Lcnt: " ^ (string_of_int 0)) ;
+    print_string " >";
+    close_box ()
   and of_declaration =
     function
 	Declaration.Class c -> of_class c
@@ -368,10 +429,12 @@ let emit options out_channel input =
       | Declaration.Exception _
       | Declaration.Datatype _
       | Declaration.Function _ -> assert false
+      | Declaration.Object o -> of_object o
   and of_decl_list =
     let relevant_p =
       function
-	| Declaration.Class _ -> true
+	| Declaration.Class _ 
+	| Declaration.Object _ -> true
         | Declaration.Interface _
         | Declaration.Exception _
         | Declaration.Datatype _

@@ -19,42 +19,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-(*s This module implements the type checker for Creol.
+(** {2 Type checker}
 
-  Because {\Creol} features recursive types (interfaces may accept
+  This module implements the type checker for Creol.
+
+  Because Creol features recursive types (interfaces may accept
   values of themselves), sub-typing, and method overloading, the formal
   theory of these types corresponds to System
-  $F^{\omega}_{\wedge}$~\cite{compagnoni96:_inter_types_multip_inher}.
+  {% $F^{\omega}_{\wedge}$ %}.
   For this particular theory, type reconstruction is generally
-  undecidable~\citelist{\cite{pierce94:_bound_quant_undec}
-  \cite{compagnoni04:_higher_order_subty_decid}}.
+  undecidable.
 
   The central ideas of this implementation are derived from Cardelli's
-  implementation of $F_{<:}$, which he has described
-  in~\cite{cardelli93:_implem_f}.  Using this algorithm, the type
+  implementation of {% $F_{<:}$ %}, which he has described
+  in  cardelli93:_implem_f.  Using this algorithm, the type
   checker may reject some well-typed programs, because it fails to
   guess right, leading to sometimes puzzling error messages.  In
-  practice, these situations do not occur often.
-
-*)
+  practice, these situations do not occur often.  *)
 
 open Creol
 open Expression
 open Statement
 
-(* Passes which must have been executed before this pass. *)
-
+(** Passes which must have been executed before this pass. *)
 let dependencies = ""
 
-(* Report messages from this module. *)
+(** Report messages from this module. *)
 
 let log l = Messages.message (l + 2)
 
 
-(* Our type environment is just a mapping from names, represented as
-   strings, to types. We do not expect many elements in this
-   environment, so a Map should provide the cleanest solution. *)
-
+(** Our type environment is just a mapping from names, represented as
+    strings, to types. We do not expect many elements in this
+    environment, so a Map should provide the cleanest solution. *)
 module Env = Map.Make(String)
 
 type environment =
@@ -64,36 +61,31 @@ type environment =
     env: Type.t Env.t;
   }
 
-(* Method candidates are collected in a set. *)
+(** Method candidates are collected in a set. *)
 
 module MSet = Set.Make(Method)
 
 
-(* The type checker raises an [Type_error (file, line, reason)]
-   exception if it has deduced that an expression is not well-typed.
-   The first two arguments refer to the file and line in which the
-   error is occurring.  The third argument indicates the reason of the
-   type error. *)
-
+(** The type checker raises an [Type_error (file, line, reason)]
+    exception if it has deduced that an expression is not well-typed.
+    The first two arguments refer to the file and line in which the
+    error is occurring.  The third argument indicates the reason of the
+    type error. *)
 exception Type_error of string * int * string
 
 
-(* This exception is raised by the unifier.  The argument is the
-   constrained which cannot be resolved. *)
-
-
+(** This exception is raised by the unifier.  The argument is the
+    constrained which cannot be resolved. *)
 exception Unify_failure of Type.t * Type.t
 
 
-(* Generate a new fresh variable name. *)
-
+(** Generate a new fresh variable name. *)
 let fresh_var f =
   let Misc.FreshName(n, f') = f () in
     (Type.Variable n, f')
 
 
-(* Pretty-print a constraint set. *)
-
+(** Pretty-print a constraint set. *)
 let rec string_of_constraint_set =
   function
       [] -> "none"
@@ -104,12 +96,10 @@ let rec string_of_constraint_set =
 	  (string_of_constraint_set l)
 
 
-(* Determine whether a substitution is more specific than another one.
-   A substitution $s$ is more specific than a substitution $t$, if $s$
-   and $t$ have the same support (i.e., they substitute the same
-   variables), and that for each $v$ in this support, we have $s<:t$.
-*)
-
+(** Determine whether a substitution is more specific than another one.
+    A substitution $s$ is more specific than a substitution $t$, if $s$
+    and $t$ have the same support (i.e., they substitute the same
+    variables), and that for each $v$ in this support, we have $s<:t$. *)
 let subst_more_specific_p program s t =
   let keys = Type.Subst.fold (fun k _ a -> k::a) s [] in
   let p k =
@@ -118,12 +108,10 @@ let subst_more_specific_p program s t =
     List.for_all p keys
 
 
-(* Find a \emph{most specific solution} from a list of possible
-   solutions.  The solution need not be unique.  If there is more than
-   one most specific solution, an undetermined one is returned.  The
-   chosen one need not be the one that proves type correctness.
-*)
-
+(** Find a {e most specific solution} from a list of possible
+    solutions.  The solution need not be unique.  If there is more than
+    one most specific solution, an undetermined one is returned.  The
+    chosen one need not be the one that proves type correctness.  *)
 let find_most_specific program substs =
   List.fold_left
     (fun s t -> if subst_more_specific_p program s t then s else t)
@@ -131,13 +119,12 @@ let find_most_specific program substs =
     (List.tl substs)
 
 
-(* Compute the most general unifier for a constraint set [c].  The
-   result is a mapping from variable names to types.
+(** Compute the most general unifier for a constraint set [c].  The
+    result is a mapping from variable names to types.
    
-   The constraint set is usually a set of pair of types.  Such
-   a constraint states that two types are equal in the current
-   substitution. *)
-
+    The constraint set is usually a set of pair of types.  Such
+    a constraint states that two types are equal in the current
+    substitution. *)
 let unify ~program ~constraints =
   let rec do_unify c (res: Type.t Type.Subst.t): Type.t Type.Subst.t =
     if c = [] then
@@ -330,13 +317,12 @@ let typecheck tree: Program.t =
      will be updated by the binders [Forall], [Exists], and
      [Choose].  Looking up the type information of a name occurs
      in this order:
-     \begin{enumerate}
-     \item First, look in [env] to see whether the name is locally
-     bound.
-     \item Second, look in the scope of the current method.
-     \item Last, look in the scope of the current class and its
-     superclasses.
-     \end{enumerate}
+     {ol
+     {- First, look in [env] to see whether the name is locally
+     bound.}
+     {- Second, look in the scope of the current method.}
+     {- Last, look in the scope of the current class and its
+     superclasses.} }
      
      [constr] is the current constraint set.
      
@@ -603,7 +589,7 @@ let typecheck tree: Program.t =
       | Choose (n, v, t, e) ->
 	  
 	  (* The rule for typing this expression is: The type of [e]
-	     is \texttt{Bool} in an environment where [v] has type
+	     is [Bool] in an environment where [v] has type
 	     [t]. Then the result type is [t]. *)
 	  
 	  if Env.mem v env.env then
@@ -617,8 +603,8 @@ let typecheck tree: Program.t =
       | Exists (n, v, t, e) ->
 	  
 	  (* The rule for typing this expression is: The type of [e]
-	     is \texttt{Bool} in an environment where [v] has type
-	     [t]. Then the result type is \texttt{Bool}. *)
+	     is {i Bool} in an environment where [v] has type
+	     [t]. Then the result type is {i Bool}. *)
 	  
 	  if Env.mem v env.env then
 	    Messages.warn Messages.Shadow n.Expression.file n.Expression.line
@@ -844,7 +830,7 @@ let typecheck tree: Program.t =
       let co' =
 
 	(* Infer the co-interface.  This is either the type of the class
-	   or a provided co-interface using the \textbf{as} annotation. *)
+	   or a provided co-interface using the {i as} annotation. *)
 
 	match asco with
 	    None -> Class.get_type env.cls
@@ -969,7 +955,7 @@ let typecheck tree: Program.t =
       in
 
         (* FIXME: We check for an internal method only, but in the
-	   paper \emph{A Dynamic Binding Strategy ...} and the
+	   paper {e A Dynamic Binding Strategy ...} and the
 	   authorisation policy example this mechanism is used to
 	   access any method internally. *)
 

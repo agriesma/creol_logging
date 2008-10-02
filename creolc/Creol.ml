@@ -1650,40 +1650,44 @@ struct
 end
 
 
-(*s Defines an abstract syntax of a program. *)
+(** {3 Abstract syntax of whole programs}
 
+    Defines an abstract syntax of a program. *)
 module Program =
 struct
 
-  (* The type of a program.  This is currently just a list of
-     declarations. *)
+  (** The type of a program.
 
+      This is currently just a list of declarations. The actual type may
+      change in a future version. *)
   type t = Declaration.t list
+
+  (** A set of strings, used to collect all interfaces or classes. *)
+  module IdSet = Set.Make(String)
 
 
   (* Report messages from this module. *)
-
   let log l = Messages.message (l + 2)
 
 
   (* Generally, if a class or an interface is not found in the
-     program, a [Not_found] exception is raised.  But if the context
-     of the class or the interface is known, one of the two following
-     exceptions is raised. *)
+     program, a [Not_found] exception is raised.  *)
 
+  (** Raise [Class_not_found file line name] if the class [name]
+      is not found in file [file] and line [line]. *)
   exception Class_not_found of string * int * string
 
+  (** Raise [Interface_not_found file line name] if the interface [name]
+      is not found in file [file] and line [line]. *)
   exception Interface_not_found of string * int * string
 
 
-  (* Take a list [l] of declarations and make a program structure out
-     of it. *)
-
-  let make l = l
+  (** Make a [Program.t] from a list [l] of declarations. *)
+  let make : Declaration.t list -> t = function l -> l
 
 
-  (* Find a class of name [name] in [program]. This function raises
-     [Not_found] if no class has the name [name] in the program. *)
+  (** Find a class of name [name] in [program]. This function raises
+      [Not_found] if no class has the name [name] in the program. *)
   let find_class ~program ~name =
     let class_with_name =
       function
@@ -1694,18 +1698,16 @@ struct
 	  Declaration.Class cls -> cls
 	| _ -> assert false
 
-  (* Get the type of a class. *)
 
+  (** Get the type of a class. *)
   let type_of_class ~program ~name =
     Class.get_type (find_class program name)
 
 
-
-  (* Find all super-classes of a class [name] in [program].  Raises a
-     [Class_not_found] exception in the context of the class from
-     which the class is supposed to be inherited. A [Not_found]
-     exception is raised if [name] does not exist in the program. *)
-
+  (** Find all super-classes of a class [name] in [program].  Raises a
+      [Class_not_found] exception in the context of the class from
+      which the class is supposed to be inherited. A [Not_found]
+      exception is raised if [name] does not exist in the program. *)
   let superclasses ~program name =
     let rec fold cls =
       List.fold_left (fun a (n, _) -> a@(work cls n)) [] cls.Class.inherits
@@ -1723,8 +1725,7 @@ struct
       fold (find_class program name)
 
 
-  (* Return true if [s] is a subclass of [t]. *)
-
+  (** Return true if [s] is a subclass of [t]. *)
   let subclass_p ~program s t =
     let rec search s =
       (s = t) ||
@@ -1736,6 +1737,8 @@ struct
     in search s
 
 
+  (** Find the interface definition of the interface called [name] in
+      [program]. *)
   let find_interface ~program ~name =
     let interface_with_name =
       function
@@ -1747,8 +1750,7 @@ struct
 	| _ -> assert false
 
 
-  (* Check, whether [iface] is an interface in [program] *)
-
+  (** Check, whether [iface] is an interface in [program] *)
   let interface_p ~program ~iface =
     match iface with
 	Type.Internal -> true
@@ -1762,8 +1764,7 @@ struct
       | _ -> false
 
 
-  (* Return true if [s] is a subinterface of [t]. *)
-
+  (** Return true if [s] is a subinterface of [t]. *)
   let subinterface_p ~program s t =
     if t = "Any" then (* Everything is a sub-interface of [Any]. *)
       true
@@ -1780,16 +1781,47 @@ struct
 	search s
 
 
-  (* Return true if the class [cls] contracts the interface [iface]. *)
-
+  (** Return true if the class [cls] contracts the interface [iface]. *)
   let contracts_p program cls iface =
-    if iface = Type.any then
-      true
-    else
-      let p i = subinterface_p program i (Type.as_string iface) in
-        List.exists p (List.map fst cls.Class.contracts)
+    let p i = subinterface_p program i (Type.as_string iface) in
+      (Type.any_p iface) || (List.exists p (List.map fst cls.Class.contracts))
 
-	  
+
+  (** [types prg cls] collects the set of all interfaces implemented by
+      the class [cls] in program [prg].  These are the interfaces
+      contracted by all superclasses, the interfaces immediately
+      implemented and the interface [Any].
+      
+
+      The result is a set of interface names. *)
+  let types ~program ~cls =
+    let add a (e, _) = IdSet.add e a in
+    let rec work_class a c =
+        (* Recursively collect all interfaces contracted by the class [c]. *)
+	let a' = List.fold_left
+                   (fun a (i, _) -> work_iface a (find_interface program i))
+                   a c.Class.contracts
+        in
+	  List.fold_left
+            (fun a (i, _) -> work_class a (find_class program i))
+            a' c.Class.inherits
+    and work_iface a i =
+      (* Recursively collect all interfaces inherited by the interface [i]. *)
+      let a' = List.fold_left 
+                 (fun a (i, _) -> work_iface a (find_interface program i))
+	         a i.Interface.inherits
+      in
+        IdSet.add i.Interface.name a'
+    in
+    let ic = List.fold_left add IdSet.empty cls.Class.implements in
+      IdSet.add "Any" (IdSet.union ic (work_class IdSet.empty cls))
+
+
+  (** {3 Data types}
+
+      Functions relating to data types. *)
+
+  (** Find the definition of the data type called [name] in [program]. *)
   let find_datatype ~program ~name =
     let datatype_with_name =
       function
@@ -1804,8 +1836,7 @@ struct
 	| _ -> assert false
 
 
-  (* Return true if [s] is a sub-datatype of [t] *)
-
+  (** Return true if [s] is a sub-datatype of [t] *)
   let rec sub_datatype_p program s t =
     try
       let s_decl =
@@ -1818,8 +1849,11 @@ struct
 	Not_found -> false
 
 
-  (* Check, whether [ty] is a type in [program]. *)
+  (** {3 Types}
 
+      Functions for types. *)
+
+  (** Check, whether [ty] is a type in [program]. *)
   let type_p ~program ~ty =
     let p name' =
       function
@@ -1849,11 +1883,10 @@ struct
       work_p ty
 
 
-  (* Find all definitions of functions called [name] in [program],
-     whose formal parameters are compatible with [domain].  Only
-     return the most specific matches.  Returns the empty list if none
-     is found. *)
-
+  (** Find all definitions of functions called [name] in [program],
+      whose formal parameters are compatible with [domain].  Only
+      return the most specific matches.  Returns the empty list if none
+      is found. *)
   let find_functions ~program ~name =
     let p a =
       function
@@ -1863,9 +1896,9 @@ struct
       List.fold_left p [] program
 
 
-  (* Find the class declaration for an attribute. [cls] is the class
-     in which we search for the attribute. [name] is the name of the
-     attribute. *)
+  (** Find the class declaration for an attribute. [cls] is the class
+      in which we search for the attribute. [name] is the name of the
+      attribute. *)
   let find_class_of_attr ~program ~cls ~attr =
     let rec work c =
       if Class.has_attr_p c attr then
@@ -1889,11 +1922,10 @@ struct
       Class.find_attr_decl c name
 
 
-  (* Return a list of all interfaces which are implemented by a class.
-     These interfaces are either directly claimed to be implemented,
-     contracted by the class itself, or contracted by one of the
-     super classes. *)
-
+  (** Return a list of all interfaces which are implemented by a class.
+      These interfaces are either directly claimed to be implemented,
+      contracted by the class itself, or contracted by one of the
+      super classes. *)
   let class_implements ~program cls =
     let rec work result =
       function
@@ -1916,15 +1948,13 @@ struct
     in
       work [] ((contracts cls) @ cls.Class.implements)
 
-(* Compute the interface of a class, i.e., the set of all method it
-   implements. We call this interface the \emph{full descriptor.} *)
-
+  (** Compute the interface of a class, i.e., the set of all method it
+      implements. We call this interface the {e full descriptor.} *)
   let full_class_descriptor ~program ~cls =
     []
 
 
-(* Decides whether [s] is a subtype of [t] in [program]. *)
-
+  (** Decides whether [s] is a subtype of [t] in [program]. *)
   let subtype_p ~program s t =
     let rec work =
       function 
@@ -1969,18 +1999,17 @@ struct
       work (s, t)
 
 
-  (* Return the greates lower bound of all types in [lst] in
-     [program], i.e., a type $t$ with (lower-bound) $t <: s$ for all
-     $s$ in [lst] and with (maximality) $s <: t$ for all types $s$
-     with $s <: u$ for some $u$ in [lst].
+  (** Return the greates lower bound of all types in [lst] in
+      [program], i.e., a type $t$ with (lower-bound) $t <: s$ for all
+      $s$ in [lst] and with (maximality) $s <: t$ for all types $s$
+      with $s <: u$ for some $u$ in [lst].
 
-     Formally, the greatest lower bound of an empty [lst] is the top
-     type.
+      Formally, the greatest lower bound of an empty [lst] is the top
+      type.
 
-     The result may be an intersection types, which is caused by
-     classes implementing multiple interfaces.  If this function
-     returns an intersection, the solution is ambigous.  *)
-
+      The result may be an intersection types, which is caused by
+      classes implementing multiple interfaces.  If this function
+      returns an intersection, the solution is ambigous.  *)
   let meet ~program lst =
     let find_meet s t =
       if subtype_p program s t then
@@ -1995,19 +2024,18 @@ struct
 	| hd::tl -> List.fold_left find_meet hd tl
 
 
-  (* Return the least upper bound of all types in [lst] in [program],
-     i.e., a type $t$ with (upper-bound) $s <: t$ for all $s$ in
-     [lst] and with (minimality) $t <: s$ for all types $s$ with $u
-     <: s$ for some $u$ in [lst].
+  (** Return the least upper bound of all types in [lst] in [program],
+      i.e., a type $t$ with (upper-bound) $s <: t$ for all $s$ in
+      [lst] and with (minimality) $t <: s$ for all types $s$ with $u
+      <: s$ for some $u$ in [lst].
 
-     Formally, the least upper bound of an empty [lst] is the bottom
-     type.  However, bottom need not exist, and the function will
-     therefore fail.
+      Formally, the least upper bound of an empty [lst] is the bottom
+      type.  However, bottom need not exist, and the function will
+      therefore fail.
 
-     The result may be an intersection types, which is caused by
-     classes implementing multiple interfaces.  If this function
-     returns an intersection, the solution is ambigous.  *)
-
+      The result may be an intersection types, which is caused by
+      classes implementing multiple interfaces.  If this function
+      returns an intersection, the solution is ambigous.  *)
   let join ~program lst =
     let find_join s t =
       if subtype_p program s t then
@@ -2020,216 +2048,10 @@ struct
 	| hd::tl -> List.fold_left find_join hd tl
 
 
-  (* This exception is raised by the unifier.  The argument is the
-     constrained which cannot be resolved. *)
+  (** {3 Functions} *)
 
-
-  exception Unify_failure of Type.t * Type.t
-
-
-  (* Generate a new fresh variable name. *)
-
-  let fresh_var f =
-    let Misc.FreshName(n, f') = f () in
-      (Type.Variable n, f')
-
-
-  (* Pretty-print a constraint set. *)
-
-  let rec string_of_constraint_set =
-    function
-	[] -> "none"
-      | [(s, t)] ->
-          (Type.as_string s) ^ " <: " ^ (Type.as_string t)
-      | (s, t)::l ->
-          (Type.as_string s) ^ " <: " ^ (Type.as_string t) ^ ", " ^
-	    (string_of_constraint_set l)
-
-
-  (* Determine whether a substitution is more specific than another
-     one.  A substitution $s$ is more specific than a substitution $t$,
-     if $s$ and $t$ have the same support (i.e., they substitute the
-     same variables), and that for each $v$ in this support, we have
-     $s<:t$. *)
-
-  let subst_more_specific_p program s t =
-    let keys = Type.Subst.fold (fun k _ a -> k::a) s [] in
-    let p k =
-      subtype_p program (Type.Subst.find k s) (Type.Subst.find k t)
-    in
-      List.for_all p keys
-
-
-  (* Find a \emph{most specific solution} from a list of possible
-     solutions.  The solution need not be unique.  If there is more
-     than one most specific solution, an undetermined one is returned.
-     The chosen one need not be the one that proves type
-     correctness.  *)
-
-  let find_most_specific program substs =
-    List.fold_left
-      (fun s t -> if subst_more_specific_p program s t then s else t)
-      (List.hd substs)
-      (List.tl substs)
-
-
-  (* Compute the most general unifier for a constraint set [c].  The
-     result is a mapping from variable names to types.
-     
-     The constraint set is usually a set of pair of types.  Such
-     a constraint states that two types are equal in the current
-     substitution. *)
-
-  let unify ~program ~constraints =
-    let rec do_unify c (res: Type.t Type.Subst.t): Type.t Type.Subst.t =
-      if c = [] then
-	res
-      else
-	(* May be we can get better results if we can select the next constraint
-           in a smarter manner. *)
-	let (s, t) = List.hd c
-	and d = List.tl c
-	in
-	  log 2 ("unify: constraint " ^ (Type.as_string s) ^ " <: " ^
-		   (Type.as_string t)) ;
-	  match (s, t) with
-	      (Type.Basic _, Type.Basic _) when subtype_p program s t ->
-		do_unify d res
-	    | (Type.Tuple l1, Type.Tuple l2) when (List.length l1) = (List.length l2) ->
-		do_unify ((List.combine l1 l2)@d) res
-	    | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
-		do_unify ((d1, d2)::(r2, r1)::d) res
-	    | (Type.Application (s1, t1), Type.Application (s2, t2)) when s1 = s2 ->
-		do_unify ((List.combine t1 t2)@d) res
-	    | (_, Type.Disjunction l) ->
-
-		(* This case is essentially handling operator
-		   overloading, but we try to solve the general case,
-		   here, anyhow, because this is probably simpler.
-
-		   We find a solution to the constraint set if there
-		   is one solution to the problem.  We will
-		   therefore split the constraint set and try each
-		   branch of the disjunction in sequence. *)
-
-		let rec try_unify_disjunctions =
-		  function
-		      [] -> []
-		    | x::r ->
-			try
-			  (do_unify ((s, x)::d) res) ::
-			    (try_unify_disjunctions r)
-			with
-			    Unify_failure _ -> (try_unify_disjunctions r)
-		in
-		  begin
-		    match try_unify_disjunctions l with
-			[] -> raise (Unify_failure (s, t))
-		      | [r] -> r
-		      | cands ->
-			  (* The solution is ambigous, and we want to
-			     get the "best" solution. *)
-			  find_most_specific program cands
-		  end
-	    | (Type.Variable x, _) when (Type.sentence_p t) ->
-		(* In this case, `x is a lower bound, i.e., `x <: t .
-		   This constraint is trivially satisfied by t, but there may
-		   be multiple constraints on x, and we need to choose the
-		   strongest one. *)
-		let p (v, w) = (v = s) && (Type.sentence_p w) in
-		let t' =
-		  meet program (t::(List.map snd (List.filter p d)))
-		and d' = List.filter (fun x -> not (p x)) d
-		in
-	          log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t')) ;
-	          do_unify
-		    (List.map
-		       (fun (t1, t2) ->
-		          (Type.substitute x t' t1, Type.substitute x t' t2)) d')
-		    (Type.Subst.add x t' res)
-	    | (Type.Variable x, _) when not (Type.occurs_p x t) ->
-		(* In this case, `x is a lower bound, i.e., `x <: t, and t
-		   contains free variables.  This constraint is trivially
-		   satisfied by t and t des not have any meets in [program].  *)
-	        log 1 ("unify: chose " ^ x ^ " as " ^ (Type.as_string t)) ;
-	        do_unify
-		  (List.map
-		     (fun (t1, t2) ->
-		        (Type.substitute x t t1, Type.substitute x t t2)) d)
-		  (Type.Subst.add x t res)
-	    | (_, Type.Variable x) when Type.sentence_p s ->
-
-		(* In this case, `x is an upper bound, i.e., t <: `x .
-		   This constraint is trivially satisfied by t, but there may
-		   be multiple constraints on x, and we need to choose the
-		   strongest one. *)
-		let s' =
-		  let p (v, w) = (w = t) && (Type.sentence_p v) in
-		    join program (List.map fst (List.filter p c))
-		in
-		let try_unify r =
-	          log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
-	          do_unify
-		    (List.map
-		       (fun (t1, t2) ->
-		          (Type.substitute x r t1, Type.substitute x r t2)) d)
-		    (Type.Subst.add x r res)
-		in
-		  begin
-		    try
-		      try_unify s'
-		    with
-			Unify_failure _ ->
-			  (* Try some supertype of t.
-
-			     FIXME: For now we just choose Data, the top type.
-			     We might try something smarter, however. *)
-	                  log 1
-			    ("try_unify: did not work, use Data for `" ^ x) ;
-	                  try_unify Type.data
-		  end
-	    | (_, Type.Variable x) when not (Type.occurs_p x s) ->
-
-		(* If s has free variables and x does not occur in s,
-		   then we choose x to be s, and if this failes, we
-		   try Any and then Data, since we cannot guess
-		   something better. *)
-
-		let try_unify r =
-	          log 1 ("try_unify: " ^ (Type.as_string r) ^ " for `" ^ x) ;
-	          do_unify
-		    (List.map
-		       (fun (t1, t2) ->
-		          (Type.substitute x r t1, Type.substitute x r t2)) d)
-		    (Type.Subst.add x r res)
-		in
-		  begin
-		    try
-		      try
-			try_unify s
-		      with
-			  Unify_failure _ -> try_unify Type.any
-		    with
-			Unify_failure _ -> try_unify Type.data
-		  end
-	    | (_, Type.Basic "Data") ->
-		(* Every type is supposed to be a subtype of data,
-		   therefore this constraint is always true. *)
-		do_unify d res
-	    | _ ->
-		log 1 ("unify: failed to unify " ^
-			 (Type.as_string s) ^ " as subtype of " ^
-			 (Type.as_string t)) ;
-		raise (Unify_failure (s, t))
-    in
-      log 1 "\n=== unify ===" ;
-      let res = do_unify constraints (Type.Subst.empty) in
-	log 1 "=== success ===\n" ; res
-
-
-
-  (* Find the definition of a function [name] in [program] that has
-     signature [sig].  The result should be unique. *)
+  (** Find the definition of a function [name] in [program] that has
+      signature [sig].  The result should be unique. *)
   let find_function ~program ~name ~sg =
     let p f = subtype_p program sg (Function.signature f)
     and q s t =
@@ -2247,6 +2069,8 @@ struct
 		    (Type.as_string sg)))
 
 
+  (** {3 Methods} *)
+
   let find_method_in_with ~program ~name ~signature w =
     let (_, ins, outs) = signature in
     let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
@@ -2260,10 +2084,9 @@ struct
       List.filter p w.With.methods
 
 
-  (* Find all definitions of a method called [name] that matches the
-     signature [(coiface, ins, outs)] in [iface] and its
-     super-interfaces.  *)
-
+  (** Find all definitions of a method called [name] that matches the
+      signature [(coiface, ins, outs)] in [iface] and its
+      super-interfaces.  *)
   let interface_find_methods ~program ~iface ~name (coiface, ins, outs) =
     let asco = match coiface with None -> Type.any | Some c -> c in
     let rec find_methods_in_interface i =
@@ -2284,17 +2107,15 @@ struct
       find_methods_in_interface iface
 
 
-  (* Check whether the interface [iface] or one of its
-     superinterfaces provide a method matching the [signature]. *)
-
+  (** Check whether the interface [iface] or one of its
+      superinterfaces provide a method matching the [signature]. *)
   let interface_provides_p ~program ~iface ~meth signature =
     [] <> (interface_find_methods program iface meth signature)
 
 
-  (* Find all definitions of a method called [name] that matches the
-     signature [(coiface, ins, outs)] in class [cls] and its
-     super-classes.  *)
-
+  (** Find all definitions of a method called [name] that matches the
+      signature [(coiface, ins, outs)] in class [cls] and its
+      super-classes.  *)
   let class_find_methods ~program ~cls ~name (coiface, ins, outs) =
     let asco = match coiface with None -> Type.any | Some c -> c in
     let rec find_methods_in_class c =
@@ -2315,20 +2136,19 @@ struct
       find_methods_in_class cls
 
 
-  (* Check whether the class [cls] or one of its superclasses provide
-     a method called [meth] matching the [signature]. *)
-
+  (** Check whether the class [cls] or one of its superclasses provide
+      a method called [meth] matching the [signature]. *)
   let class_provides_method_p ~program ~cls meth signature =
     [] <> (class_find_methods program cls meth signature)
 
-  (* This is the type of the subtype relation. *)
+
+  (** This is the type of the subtype relation. *)
 
   module Rng = Set.Make(String)
 
   module Rel = Map.Make(String)
 
-  (* Compute the transitive closure of the subtype relation. *)
-
+  (** Compute the transitive closure of the subtype relation. *)
   let transitive_closure rel =
     let rec do_it r =
       let f s = Rng.fold (fun elt acc -> Rng.union (Rel.find elt r) acc) s s in
@@ -2340,8 +2160,7 @@ struct
     in
       do_it rel
 
-  (* Test whether the type relation is acyclic. *)
-
+  (** Test whether the type relation is acyclic. *)
   let cycle rel =
     let f key elt acc = if (Rng.mem key elt) then Rng.add key acc else acc in
       Rel.fold f rel Rng.empty
@@ -2355,8 +2174,7 @@ struct
       | s::r -> s ^ " <: " ^ (string_of_cycle r)
 
 
-  (* Find a cycle.  This is using depth first search. *)
-
+  (** Find a cycle.  This is using depth first search. *)
   let find_cycle ~program rel =
     let rec build (res: string list) (current: string) =
       let supers: string list =
@@ -2378,8 +2196,7 @@ struct
       build [] (Rng.choose (cycle rel))
 
 
-  (* Compute the subtype relation-ship of the program. *)
-
+  (** Compute the subtype relation-ship of the program. *)
   let compute_subtype_relation program =
     let f rel =
       function
@@ -2397,8 +2214,7 @@ struct
       transitive_closure (List.fold_left f Rel.empty program)
 
 
-  (* Apply a function to each method defined in the program. *)
-
+  (** Apply a function to each method defined in the program. *)
   let for_each_method program f =
     let for_class c =
       let for_with_def w =
@@ -2421,10 +2237,12 @@ struct
 
 
 
-(* Hide all declarations. *)
+  (** {3 Declarations} *)
 
+  (** Hide all declarations. *)
   let hide_all prg =
     List.map Declaration.hide prg
+
 
   let show_only_objects prg =
     let f = function 
@@ -2432,6 +2250,7 @@ struct
       | d -> Declaration.hide d
     in
       List.map f prg
+
 
   let hide_all_objects prg =
     let f = function 

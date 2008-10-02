@@ -238,7 +238,10 @@ let pass input =
 	  let (future_decls', s1') = lower_statement future_decls s1 in
 	  let (future_decls'', s2') = lower_statement future_decls' s2 in
 	    (future_decls'', Choice (a, s1', s2'))
-      | Continue (a, e) -> (future_decls, Continue (a, lower_expression e))
+      | Return (a, r) ->
+          (future_decls, Return (a, List.map lower_expression r))
+      | Continue (a, e) ->
+          (future_decls, Continue (a, lower_expression e))
       | Extern _ as s -> (future_decls, s)
   and lower_method_variables note vars =
 
