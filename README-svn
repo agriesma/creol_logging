@@ -82,3 +82,53 @@ overwritten.
 
 Additional parts of the interpreter are found in the files configuration.m4,
 machine.m4, and predicates.m4.
+
+
+* Coding style
+~~~~~~~~~~~~~~
+Study the code and try to adhere the coding style.  A line is 80 characters
+long, not longer.  Try to break around column 75.  This makes the code
+printable.  Avoid mutable members and references.
+
+
+* How to extend the compiler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you feel the need to add a function to the compiler, first check
+whether there is a function defined which provides similar functionality.
+Maybe the function can be used as is or adapted to your needs.
+
+If you do not find such a function, write down a specification for
+that function.  Put it into the source code.  Determine the most
+suitable module for your new function, and add a declaration of that
+function to that module.
+
+Define unit tests for the function and add them to
+'units/<module>Tests.ml'.  Make sure to cover as many behaviours as
+possible.
+
+Implement the function, and stay functional (there are a few places
+where the compiler uses side effects but we want to minimise these
+places).
+
+Check the code base for as many places where your function can be used.
+Maybe the function may obsolete some other function, which we can
+remove.
+
+* How to extend the interpreter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The first consideration is to think about the extension and whether it
+is really necessary.  If you can find a way to express the new
+functionality using existing statements.  If this is the case, then do
+not extend the interpreter.
+
+If you find an extension that generalises existing functionality, then
+your extension should replace the existing functionality it generalises.
+This involves the following additional steps:
+
+1. Update the backend to use your extension wherever the older, more
+   special version is used.
+
+2. Check and update all test cases.  Especially the behaviour of the
+   execution and search tests must be maintained.
+
+3. Update the documentation.
