@@ -42,7 +42,8 @@ repository.  Make sure that you have the following programs installed:
 
   6. menhir
 
-  7. ocaml-libxml2 (see <http://heim.ifi.uio.no/~kyas/creoltools>)
+  7. ocaml-libxml2 0.0h or later (see
+     <http://heim.ifi.uio.no/~kyas/creoltools>)
 
      a. gcc
 
@@ -88,7 +89,8 @@ machine.m4, and predicates.m4.
 ~~~~~~~~~~~~~~
 Study the code and try to adhere the coding style.  A line is 80 characters
 long, not longer.  Try to break around column 75.  This makes the code
-printable.  Avoid mutable members and references.
+printable.  Avoid mutable members and references.  All functions that
+return a `Boolean' value should end in _p, which means ``predicate''.
 
 
 * How to extend the compiler

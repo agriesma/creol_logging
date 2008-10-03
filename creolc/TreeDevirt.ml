@@ -126,8 +126,6 @@ let devirt_statement program cls meth stmt =
       | MultiCast (n, c, m, s, i) ->
 	  MultiCast (n, devirt_expression c, m, s,
 		     List.map devirt_expression i)
-      | Discover (n, t, m, s, i) ->
-	  Discover (n, t, m, s, List.map devirt_expression i)
       | Tailcall (n, c, m, s, i) ->
 	  Tailcall (n, devirt_expression c, m, s, List.map devirt_expression i)
       | StaticTail (n, m, s, ub, lb, i) ->

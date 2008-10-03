@@ -135,10 +135,6 @@ let rec wlp env pred =
 	let pred' = pred in
 	let () = logwlp n pred' in
           (pred', MultiCast (n, c, m, s, a))
-    | Discover (n, t, m, s, a) ->
-	let pred' = pred in
-	let () = logwlp n pred' in
-          (pred', Discover (n, t, m, s, a))
     | Tailcall (n, c, m, s, ins) ->
 	let pred' = pred in
 	let () = logwlp n pred' in

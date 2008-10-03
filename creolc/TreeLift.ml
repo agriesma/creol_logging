@@ -104,9 +104,6 @@ let pass input =
 	  and i' = List.map lift_expression i
 	  in
             MultiCast (a, c', m, s, i')
-      | Discover (a, t, m, s, i) ->
-	  let i' = List.map lift_expression i in
-            Discover (a, t, m, s, i')
       | Tailcall (a, c, m, s, i) ->
 	  let c' = lift_expression c
 	  and i' = List.map lift_expression i

@@ -422,11 +422,6 @@ basic_statement:
       s = ioption(preceded(AS, creol_type))
 	{ LocalSyncCall(statement_note $startpos, m,
 		        Type.default_sig ~coiface:s (), fst b, snd b, i, o) }
-    | BANG t = creol_type DOT m = ID
-        LPAREN i = separated_list(COMMA, expression) RPAREN
-        s = ioption(preceded(AS, creol_type))
-	{ Discover(statement_note $startpos, t, m,
-		   Type.default_sig ~coiface:s (), i) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN

@@ -228,9 +228,6 @@ let into_ssa program =
 	  and i' = List.map (expression_to_ssa meth env) i
 	  in
 	    (env, MultiCast (a, c', m, s, i'))
-      | Discover (a, t, m, s, i) ->
-	  let i' = List.map (expression_to_ssa meth env) i in
-	    (env, Discover (a, t, m, s, i'))
       | Tailcall (n, c, m, s, i) ->
 	  let c' = expression_to_ssa meth env c
 	  and i' = List.map (expression_to_ssa meth env) i
@@ -437,9 +434,6 @@ let out_of_ssa tree =
 	  and i' = List.map expression_of_ssa i
 	  in
             MultiCast (a, c', m, s, i')
-      | Discover (a, t, m, s, i) ->
-	  let i' = List.map expression_of_ssa i in
-            Discover (a, t, m, s, i')
       | Tailcall (n, c, m, s, i) ->
 	  let c' = expression_of_ssa c
 	  and i' = List.map expression_of_ssa i

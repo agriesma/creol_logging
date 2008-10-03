@@ -228,10 +228,6 @@ let compute_in_statement ~meth may must stmt =
 	  let a' = { n with may_def = may; must_def = must } in
 	    logio stmt must a'.must_def ;
 	    MultiCast (a', c, m, s, i)
-      | Discover (n, t, m, s, i) ->
-	  let a' = { n with may_def = may; must_def = must } in
-	    logio stmt must a'.must_def ;
-	    Discover (a', t, m, s, i)
       | Tailcall (n, c, m, s, i) ->
 	  let n' = { n with may_def = may; must_def = must } in
 	    logio stmt must n'.must_def ;

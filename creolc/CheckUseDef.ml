@@ -74,7 +74,6 @@ let compute_in_body ~program ~cls ~meth =
       | LocalAsyncCall (n, _, _, _, _, _, el)
       | LocalSyncCall (n, _, _, _, _, el, _)
       | AwaitLocalSyncCall (n, _, _, _, _, el, _)
-      | Discover (n, _, _, _, el)
       | StaticTail (n, _, _, _, _, el)
       | Return (n, el) ->
 	  let uses' = List.fold_left add IdSet.empty el in

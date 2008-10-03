@@ -331,12 +331,6 @@ let rec print_statement statement =
 	  print_expression_list a ;
 	  print_string ")" ;
 	  close_box ()
-      | Statement.Discover (_, t, m, _, a) ->
-	  open_box 0 ;
-	  print_string ("!" ^ (Type.string_of_type t) ^ "." ^ m ^ "(") ;
-	  print_expression_list a ;
-	  print_string ")" ;
-	  close_box ()
       | Statement.Tailcall (_, c, m, _, i) ->
 	  open_box 0 ;
 	  print_string "/* tailcall " ;

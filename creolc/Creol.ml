@@ -1010,7 +1010,6 @@ struct
 	string option * Expression.t list * Expression.lhs list
     | MultiCast of note * Expression.t * string * Type.signature *
 	Expression.t list
-    | Discover of note * Type.t * string * Type.signature * Expression.t list
     | Tailcall of note * Expression.t * string * Type.signature *
 	Expression.t list
     | StaticTail of note * string * Type.signature * string option *
@@ -1048,7 +1047,7 @@ struct
       | LocalAsyncCall (_, None, _, _, _, _, _) -> false
       | LocalAsyncCall _ -> true
       | LocalSyncCall _ | AwaitLocalSyncCall _ -> false
-      | MultiCast _ | Discover _ | Tailcall _ | StaticTail _ | Return _ -> true
+      | MultiCast _ | Tailcall _ | StaticTail _ | Return _ -> true
       | While (_, _, _, s) | DoWhile (_, _, _, s) -> atomic_p s
       | If (_, _, s1, s2) | Sequence (_, s1, s2) | Choice (_, s1, s2) ->
 	  (atomic_p s1) && (atomic_p s2)
@@ -1070,8 +1069,7 @@ struct
       | SyncCall _ | AwaitSyncCall _
       | LocalAsyncCall (_, None, _, _, _, _, _) -> false
       | LocalAsyncCall (_, Some l, _, _, _, _, _) -> false
-      | LocalSyncCall _ | AwaitLocalSyncCall _ | MultiCast _
-      | Discover _ -> false
+      | LocalSyncCall _ | AwaitLocalSyncCall _ | MultiCast _ -> false
       | Tailcall _ | StaticTail _ | Return _ -> true
       | While (_, _, _, s) | DoWhile (_, _, _, s) -> generated_p s
       | If (_, _, s1, s2) | Sequence (_, s1, s2) | Choice (_, s1, s2) ->
@@ -1090,7 +1088,7 @@ struct
       | Skip _ | Assert _ | Prove _ | Assign _ | Release _ | Await _ | Posit _
       | Get _ | Free _ | Bury _ | AsyncCall _ | SyncCall _ | AwaitSyncCall _
       | LocalAsyncCall _ | LocalSyncCall _ | AwaitLocalSyncCall _ | MultiCast _
-      | Discover _ | Tailcall _ | StaticTail _ | Return _ -> false
+      | Tailcall _ | StaticTail _ | Return _ -> false
       | While (_, _, _, s) | DoWhile (_, _, _, s) -> generated_p s
       | If (_, _, s1, s2) | Sequence (_, s1, s2) | Choice (_, s1, s2) ->
 	  (generated_p s1) || (generated_p s2)
@@ -1111,7 +1109,7 @@ struct
       | LocalAsyncCall (a, _, _, _, _, _, _)
       | LocalSyncCall (a, _, _, _, _, _, _)
       | AwaitLocalSyncCall (a, _, _, _, _, _, _)
-      | MultiCast (a, _, _, _, _) | Discover (a, _, _, _, _)
+      | MultiCast (a, _, _, _, _) 
       | Tailcall (a, _, _, _, _) | StaticTail (a, _, _, _, _, _)
       | Return (a, _)
       | If (a, _, _, _) | While (a, _, _, _) | DoWhile (a, _, _, _)
@@ -1147,7 +1145,6 @@ struct
       | AwaitLocalSyncCall (_, m, s, l, u, i, o) ->
           AwaitLocalSyncCall (n, m, s, l, u, i, o)
       | MultiCast (_, c, m, s, i) -> MultiCast (n, c, m, s, i)
-      | Discover (_, t, m, s, i) -> Discover (n, t, m, s, i)
       | Tailcall (_, c, m, s, a) -> Tailcall (n, c, m, s, a)
       | StaticTail (_, m, l, u, s, a) -> StaticTail (n, m, l, u, s, a)
       | If (_, c, s1, s2) -> If (n, c, s1, s2)
@@ -1181,7 +1178,6 @@ struct
       | LocalSyncCall (_, _, _, _, _, _, _) -> "_<:_:>_(_;_)"
       | AwaitLocalSyncCall (_, _, _, _, _, _, _) -> "await _<:_:>_(_;_)"
       | MultiCast (_, _, _, _, _) -> "!_._(_) as _ *** MultiCast"
-      | Discover (_, _, _, _, _) -> "!_._(_) as _ *** Discover"
       | Tailcall (_, _, _, _, _) -> "tailcall _._(_)"
       | StaticTail (_, _, _, _, _, _) -> "statictail _<:_:>_(_)"
       | If (_, _, _, _) -> "if _ then _ else _ end"
@@ -1257,8 +1253,8 @@ struct
         (Release _ | Assert _ | Prove _ | Assign _ | Await _ | Posit _
         | AsyncCall _ | Get _ | Free _ | Bury _ | SyncCall _
         | AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _
-        | AwaitLocalSyncCall _ | MultiCast _ | Discover _ | Tailcall _
-	| StaticTail _ | Return _ | Continue _ | Extern _) as s -> s
+        | AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ | StaticTail _
+	| Return _ | Continue _ | Extern _) as s -> s
       | Skip note -> Skip note
       | If (note, c, t, f) ->
 	  If (note, c, remove_redundant_skips t, remove_redundant_skips f)

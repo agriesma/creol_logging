@@ -1100,8 +1100,6 @@ let rec type_check_statement env coiface =
 	    check_async_method_call n None callee m sign ins
 	  in
 	    AsyncCall (n, future', callee', m, sign', ins')
-      | Discover (n, callee, m, sign, ins) ->
-	  assert false
       | SyncCall (n, callee, m, sign, ins, outs) ->
 	  let (callee', signature, ins', outs') =
 	    check_sync_method_call n callee m sign ins outs

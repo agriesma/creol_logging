@@ -267,11 +267,6 @@ let compute_in_body ~program ~cls ~meth =
 	  let n' = { n with may_live = IdSet.union g may } in
 	    logio stmt may n'.may_live ;
 	    MultiCast (n', c, m, s, a)
-      | Discover (n, t, m, s, i) ->
-	  let g = List.fold_left (add gen) IdSet.empty i in
-	  let n' = { n with may_live = IdSet.union g may } in
-	    logio stmt may n'.may_live ;
-	    Discover (n', t, m, s, i)
       | Tailcall (n, c, m, s, i) ->
 	  let g = List.fold_left (add gen) IdSet.empty (c::i) in
 	  let n' = { n with may_live = IdSet.union g may;
