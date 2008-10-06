@@ -78,7 +78,7 @@ ifdef(`EXPERIMENTAL',dnl
     subsort Process < MProc .
     op noProc : -> MProc [ctor] .
     op _`,'_ : MProc MProc -> MProc
-    [ctor assoc comm id: noProc prec 41 `format' (d r os d)] .
+        [ctor assoc comm id: noProc prec 41 ``format'' (d r os d)] .
 )
 
 endfm
