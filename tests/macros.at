@@ -121,8 +121,8 @@ AT_CLEANUP
 ])
 
 m4_define([TEST_CREOLC_PP],[dnl
-AT_CHECK([${CREOLC} -T creol -P typecheck,lower -o $1-pp1.creol ${abs_srcdir}/$2/$1.creol])
-AT_CHECK([${CREOLC} -T creol -P typecheck,lower -o $1-pp2.creol $1-pp1.creol])
+AT_CHECK([${CREOLC} -T creol -P typecheck -o $1-pp1.creol ${abs_srcdir}/$2/$1.creol])
+AT_CHECK([${CREOLC} -T creol -P typecheck -o $1-pp2.creol $1-pp1.creol])
 DIFF([$1-pp1.creol], [$1-pp2.creol])
 ])
 

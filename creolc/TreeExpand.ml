@@ -58,56 +58,56 @@ let fresh_future () =
    \item A type correct program remains type correct and the
      annotations of unchanged statements are the same after
      reconstruction.
-   \item [lower (lower tree) == lower tree]
+   \item [expand (expand tree) == expand tree]
    \end{itemize}
 *)
 let pass input =
   let future_decl l t =
     { VarDecl.name = l; var_type = t; init = None }
   in
-  let rec lower_expression =
+  let rec expand_expression =
     function
 	Unary(a, o, e) ->
 	  (* Do not copy the note, since the content should be invariant. *)
-	  FuncCall(a, string_of_unaryop o, [lower_expression e])
+	  FuncCall(a, string_of_unaryop o, [expand_expression e])
       | Binary(a, o, l, r) ->
 	  (* Do not copy the note, since the content should be invariant. *)
-	  FuncCall(a, string_of_binaryop o, [lower_expression l;
-					     lower_expression r])
-      | FuncCall(a, f, args) -> FuncCall(a, f, List.map lower_expression args)
-      | New (a, t, p) -> New (a, t, List.map lower_expression p)
+	  FuncCall(a, string_of_binaryop o, [expand_expression l;
+					     expand_expression r])
+      | FuncCall(a, f, args) -> FuncCall(a, f, List.map expand_expression args)
+      | New (a, t, p) -> New (a, t, List.map expand_expression p)
       | Expression.If (a, c, t, f) ->
-          Expression.If (a, lower_expression c, lower_expression t,
-                         lower_expression f)
+          Expression.If (a, expand_expression c, expand_expression t,
+                         expand_expression f)
       | t -> t
-  and lower_statement future_decls =
+  and expand_statement future_decls =
     function
 	Skip _ as s -> (future_decls, s)
       | Release _ as s -> (future_decls, s)
-      | Assert (a, e) -> (future_decls, Assert (a, lower_expression e))
-      | Prove (a, e) -> (future_decls, Prove (a, lower_expression e))
+      | Assert (a, e) -> (future_decls, Assert (a, expand_expression e))
+      | Prove (a, e) -> (future_decls, Prove (a, expand_expression e))
       | Assign (a, s, e) ->
-	  (future_decls, Assign (a, s, List.map lower_expression e))
-      | Await (a, g) -> (future_decls, Await (a, lower_expression g))
-      | Posit (a, g) -> (future_decls, Posit (a, lower_expression g))
+	  (future_decls, Assign (a, s, List.map expand_expression e))
+      | Await (a, g) -> (future_decls, Await (a, expand_expression g))
+      | Posit (a, g) -> (future_decls, Posit (a, expand_expression g))
       | AsyncCall (a, None, e, n, ((co, dom, Some rng) as s), p) ->
 	  (* If a future name is not given, we assign a new one and
 	     free it afterwards. *)
-	  let e' = lower_expression e
-	  and p' = List.map lower_expression p
+	  let e' = expand_expression e
+	  and p' = List.map expand_expression p
 	  and l = fresh_future ()
 	  and lt = Type.future rng in
 	  let n' = make_expr_note_from_stmt_note a lt in
 	    ((future_decl l lt)::future_decls,
 	     AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'))
       | AsyncCall (a, None, e, n, s, p) ->
-	  let e' = lower_expression e
-	  and p' = List.map lower_expression p
+	  let e' = expand_expression e
+	  and p' = List.map expand_expression p
 	  in
             if not (Type.collection_p (Expression.get_type e')) then
 	      (* If a future name is not given, we create a new future name.
                  We cannot give a correct type to the future.  If the type
-                 checker is run after lowering, it may report errors for
+                 checker is run after expanding, it may report errors for
                  this call.  *)
               begin
 	        let l = fresh_future () in
@@ -122,8 +122,8 @@ let pass input =
 	         MultiCast statement. *)
 	      (future_decls, MultiCast (a, e', n, s, p'))
       | AsyncCall (a, Some l, e, n, s, p) ->
-	  let e' = lower_expression e
-	  and p' = List.map lower_expression p in
+	  let e' = expand_expression e
+	  and p' = List.map expand_expression p in
 	    (future_decls, AsyncCall (a, Some l, e', n, s, p'))
       | Free _ as s -> (future_decls, s)
       | Bury _ as s -> (future_decls, s)
@@ -131,8 +131,8 @@ let pass input =
       | SyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-          let e' = lower_expression e
-	  and p' = List.map lower_expression p
+          let e' = expand_expression e
+	  and p' = List.map expand_expression p
 	  and l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type r) in
 	  let a' = make_expr_note_from_stmt_note a lt in
@@ -142,8 +142,8 @@ let pass input =
       | AwaitSyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-	  let e' = lower_expression e
-	  and p' = List.map lower_expression p
+	  let e' = expand_expression e
+	  and p' = List.map expand_expression p
 	  and l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type r)
 	  in
@@ -157,7 +157,7 @@ let pass input =
       | LocalAsyncCall (a, None, m, ((c, dom, Some rng) as s), lb, ub, i) ->
 	  (* If a future name is not given, we assign a new one and free it
 	     afterwards. *)
-	  let i' = List.map lower_expression i
+	  let i' = List.map expand_expression i
 	  and l = fresh_future ()
 	  and lt = Type.future rng in
 	  let a' = make_expr_note_from_stmt_note a lt in
@@ -166,22 +166,22 @@ let pass input =
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
 	  (* If a future name is not given, we create a new future name
 	     and assign the call to it.  We cannot give a correct type
-	     to the future.  If the type checker is run after lowering,
+	     to the future.  If the type checker is run after expanding,
 	     we may see a type error since there is no corresponding
 	     method declared.  *)
-	  let i' = List.map lower_expression i
+	  let i' = List.map expand_expression i
 	  and l = fresh_future () in
 	  let lt = Type.future [] in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((future_decl l lt)::future_decls,
 	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'))
       | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
-	  let i' = List.map lower_expression i in
+	  let i' = List.map expand_expression i in
 	    (future_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
       | LocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-	  let i' = List.map lower_expression i
+	  let i' = List.map expand_expression i
 	  and l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type o)
 	  in
@@ -192,7 +192,7 @@ let pass input =
       | AwaitLocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-	  let i' = List.map lower_expression i
+	  let i' = List.map expand_expression i
 	  and l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type o)
 	  in
@@ -205,45 +205,45 @@ let pass input =
       | MultiCast (a, t, m, s, i) ->
 	  (* If a future name is not given, we create a new future name.
              We cannot give a correct type to the future.  If the type
-             checker is run after lowering, it may report errors for
+             checker is run after expanding, it may report errors for
              this call.  *)
-	  let i' = List.map lower_expression i in
+	  let i' = List.map expand_expression i in
             (future_decls, MultiCast (a, t, m, s, i'))
       | Tailcall (a, c, m, s, i) ->
-	  let c' = lower_expression c
-	  and i' = List.map lower_expression i
+	  let c' = expand_expression c
+	  and i' = List.map expand_expression i
 	  in
 	    (future_decls, Tailcall (a, c', m, s, i'))
       | StaticTail (a, m, s, l, u, i) ->
-	  let i' = List.map lower_expression i in
+	  let i' = List.map expand_expression i in
 	    (future_decls, StaticTail (a, m, s, l, u, i'))
       | If (a, c, t, f) ->
-	  let (future_decls', t') = lower_statement future_decls t in
-	  let (future_decls'', f') = lower_statement future_decls' f in
-	    (future_decls'', If(a, lower_expression c, t', f'))
+	  let (future_decls', t') = expand_statement future_decls t in
+	  let (future_decls'', f') = expand_statement future_decls' f in
+	    (future_decls'', If(a, expand_expression c, t', f'))
       | While (a, c, i, b) ->
-	  let (future_decls', b') = lower_statement future_decls b in
-	    (future_decls', While (a, lower_expression c, lower_expression i, b'))
+	  let (future_decls', b') = expand_statement future_decls b in
+	    (future_decls', While (a, expand_expression c, expand_expression i, b'))
       | DoWhile (a, c, i, b) ->
-	  lower_statement future_decls (Sequence (a, b, While (a, c, i, b)))
+	  expand_statement future_decls (Sequence (a, b, While (a, c, i, b)))
       | Sequence (a, s1, s2) ->
-	  let (future_decls', s1') = lower_statement future_decls s1 in
-	  let (future_decls'', s2') = lower_statement future_decls' s2 in
+	  let (future_decls', s1') = expand_statement future_decls s1 in
+	  let (future_decls'', s2') = expand_statement future_decls' s2 in
 	    (future_decls'', Sequence (a, s1', s2'))
       | Merge (a, s1, s2) ->
-	  let (future_decls', s1') = lower_statement future_decls s1 in
-	  let (future_decls'', s2') = lower_statement future_decls' s2 in
+	  let (future_decls', s1') = expand_statement future_decls s1 in
+	  let (future_decls'', s2') = expand_statement future_decls' s2 in
 	    (future_decls'', Merge (a, s1', s2'))
       | Choice (a, s1, s2) ->
-	  let (future_decls', s1') = lower_statement future_decls s1 in
-	  let (future_decls'', s2') = lower_statement future_decls' s2 in
+	  let (future_decls', s1') = expand_statement future_decls s1 in
+	  let (future_decls'', s2') = expand_statement future_decls' s2 in
 	    (future_decls'', Choice (a, s1', s2'))
       | Return (a, r) ->
-          (future_decls, Return (a, List.map lower_expression r))
+          (future_decls, Return (a, List.map expand_expression r))
       | Continue (a, e) ->
-          (future_decls, Continue (a, lower_expression e))
+          (future_decls, Continue (a, expand_expression e))
       | Extern _ as s -> (future_decls, s)
-  and lower_method_variables note vars =
+  and expand_method_variables note vars =
 
     (* Compute a pair of a new list of local variable declarations and
        a list of assignments used for initialisation.
@@ -256,31 +256,31 @@ let pass input =
        The initialisation component of variable declarations will be
        removed. *)
 
-    let lower_method_variable =
+    let expand_method_variable =
       function 
           ({ VarDecl.name = n ; var_type = _ ; init = Some i } as v) ->
 	    ([{ v with VarDecl.init = None }],
-	    Assign(note, [LhsId(Expression.note i, n)], [lower_expression i]))
+	    Assign(note, [LhsId(Expression.note i, n)], [expand_expression i]))
         | v -> ([v], Skip note)
     in
       match vars with
 	  [] -> ([], Skip note)
-	| [v] -> (lower_method_variable v)
+	| [v] -> (expand_method_variable v)
 	| v::l ->
-	    let vl = lower_method_variable v
-	    and ll = lower_method_variables note l in
+	    let vl = expand_method_variable v
+	    and ll = expand_method_variables note l in
 	      match vl with
 		  (vll, Assign _) -> (vll@(fst ll), Sequence(note, (snd vl), (snd ll)))
 		| (vll, Skip _) -> (vll@(fst ll), (snd ll))
 		| _ -> assert false
-  and lower_method m =
+  and expand_method m =
     (** Simplify a method definition. *)
     let _ = next_fresh_future := 0 (* Labels must only be unique per method. *)
     in
       match m.Method.body with
 	  None -> m
 	| Some mb  ->
-	    let (future_decls, mb') = lower_statement [] mb 
+	    let (future_decls, mb') = expand_statement [] mb 
 	    and outs =
 	      List.map
 		(fun { VarDecl.name = n } -> (Id (Expression.make_note (), n)))
@@ -289,7 +289,7 @@ let pass input =
 	    let mb'' = Sequence (Statement.note mb, mb',
 				 Return (Statement.note mb, outs))
 	    and (vars', init) =
-	      lower_method_variables (Statement.note mb)
+	      expand_method_variables (Statement.note mb)
 		(future_decls @ m.Method.vars)
 	    in
 	      { m with Method.vars = vars' ;
@@ -298,22 +298,22 @@ let pass input =
 		  else
 		    normalize_sequences
 		      (Sequence (Statement.note mb, init, mb''))) }
-  and lower_with w =
-    { w with With.methods = List.map lower_method w.With.methods }
-  and lower_inherits =
+  and expand_with w =
+    { w with With.methods = List.map expand_method w.With.methods }
+  and expand_inherits =
     function
-	(n, e) -> (n, List.map lower_expression e)
-  and lower_inherits_list =
+	(n, e) -> (n, List.map expand_expression e)
+  and expand_inherits_list =
     function
 	[] -> []
-      | i::l -> (lower_inherits i)::(lower_inherits_list l)
+      | i::l -> (expand_inherits i)::(expand_inherits_list l)
 
-  (* Rewrite the class into a lowered form.  This entails lowering of
+  (* Rewrite the class into a expanded form.  This entails expanding of
      all sub-parts of the class, but also moving the direct initialisation
      of attributes into the init method and creating of a suitable init
      method and run method for that class. *)
 
-  and lower_class c =
+  and expand_class c =
 
     (* Make an assignment for all direct assignments of the attribute
        list.  If no assignment is needed, the function returns a skip
@@ -440,24 +440,24 @@ let pass input =
 	    invariants = [] } :: w
     in
 
-      (* To lower a class, we add an init and a run method if it is
+      (* To expand a class, we add an init and a run method if it is
 	 missing, moe all direct attribute initialisations to the init
-	 method and lower the list of inherits declarations and method
+	 method and expand the list of inherits declarations and method
 	 definitions.  Observe that the result of [add_init_and_run] is
-	 not yet lowered to normal form. *)
+	 not yet expanded to normal form. *)
 
-      { c with Class.inherits = lower_inherits_list c.Class.inherits;
+      { c with Class.inherits = expand_inherits_list c.Class.inherits;
 	attributes = a';
-	with_defs = List.map lower_with (add_init_and_run with_defs') }
-  and lower_interface i =
+	with_defs = List.map expand_with (add_init_and_run with_defs') }
+  and expand_interface i =
     i
-  and lower_declaration =
+  and expand_declaration =
     function
-	Declaration.Class c -> Declaration.Class (lower_class c)
-      | Declaration.Interface i -> Declaration.Interface (lower_interface i)
+	Declaration.Class c -> Declaration.Class (expand_class c)
+      | Declaration.Interface i -> Declaration.Interface (expand_interface i)
       | (Declaration.Exception _
       | Declaration.Datatype _
       | Declaration.Function _
       | Declaration.Object _) as d -> d
   in
-    List.map lower_declaration input
+    List.map expand_declaration input

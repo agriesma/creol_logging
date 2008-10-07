@@ -30,17 +30,15 @@
 open Creol
 open Messages
 
-(* Defines the type of a pass.  \ocwlowerid{help} represents the help
-   message for that pass.  \ocwlowerid{dependencies} is a string
-   containing a comma-separated list of passes this pass depends on.
-   \ocwlowerid{pass} is the function representing the program
-   transformation performed by the pass.  \ocwlowerid{elapsed} is the
-   time needed for executing that pass.  \ocwlowerid{enabled} is a
-   predicate stating whether the pass is enabled.  Finally,
-   \ocwlowerid{dump} is a variable which is true iff the user requested
-   an XML dump \emph{after} that pass.
-*)
-  
+(** Defines the type of a pass.  [help] represents the help
+    message for that pass.  [dependencies] is a string
+    containing a comma-separated list of passes this pass depends on.
+    [pass] is the function representing the program
+    transformation performed by the pass.  [elapsed] is the
+    time needed for executing that pass.  [enabled] is a
+    predicate stating whether the pass is enabled.  Finally,
+    [dump] is a variable which is true iff the user requested
+    an XML dump {e after} that pass.  *)
 type pass = {
   help: string;
   dependencies: string;
@@ -50,30 +48,25 @@ type pass = {
   mutable dump: bool
 }
 
-(* The variable \ocwlowerid{time\_parse} measures the time spent for
-   lexing and parsing a program.  It accumulates the time spent in the
-   front end.
-*)
+(** The variable [time_parse] measures the cumulative time spent for
+    lexing and parsing a program.  It accumulates the time spent in the
+    front end. *)
 let time_parse = ref 0.0
 
-(* The variable \ocwlowerid{time\_emit} measures the time spent for
-   emitting the result, i.e., the complete time spent in the backend.
-*)
+(** The variable [time_emit] measures the cumulative time spent for
+    emitting the result, i.e., the complete time spent in the backend. *)
 let time_emit = ref 0.0
 
-(* The variable \ocwlowerid{time\_dump} accumulates the time spend for
-   emitting state dumps to XML trees.  We think that the time spent
-   here is not very important, and we cannot reasonably speed it up.
-*)
-
+(** The variable [time_dump] accumulates the time spend for
+    emitting state dumps to XML trees.  We think that the time spent
+    here is not very important, and we cannot reasonably speed it up.  *)
 let time_dump = ref 0.0
 
 
-(* This association list maintains all passes known to the compiler.
-   The list \emph{must} be topologically sorted, i.e., if a pass
-   depends on other passes, then this pass must occur after its
-   dependent passes in the list.
-*)
+(** This association list maintains all passes known to the compiler.
+    The list {e must} be topologically sorted, i.e., if a pass
+    depends on other passes, then this pass must occur after its
+    dependent passes in the list.  *)
 let passes = [
   ( "typecheck",
     { help = "Undocumented.";
@@ -85,10 +78,10 @@ let passes = [
       dependencies = "typecheck" ;
       pass = TreeFold.optimise ;
       elapsed = 0.0; enabled = false; dump = false } );
-  ( "lower" ,
+  ( "expand" ,
     { help = "Expand statements to Core Creol" ;
       dependencies = TreeFold.dependencies;
-      pass = TreeLower.pass;
+      pass = TreeExpand.pass;
       elapsed = 0.0; enabled = true; dump = false } );
   ( "unassert",
     { help = "Remove all assertions." ;
@@ -142,7 +135,7 @@ let passes = [
       elapsed = 0.0; enabled = false; dump = false } ) ;
   ( "tailcall" ,
     { help = "Optimise tail-calls." ;
-      dependencies = "lower";
+      dependencies = "expand";
       pass = TreeTailcall.optimize ;
       elapsed = 0.0; enabled = false; dump = false } );
   ( "outof-ssa" ,
@@ -153,7 +146,7 @@ let passes = [
 ]
 
 
-(* Compute a help string from the list of passes. *)
+(** Results in a help string from the list of passes. *)
 let help () =
   let pass_help_line current ps =
     let name = fst ps
@@ -169,13 +162,12 @@ let help () =
 
 
 
-(* Enable passes.
+(** Enable passes.
 
-   Accepts a list of strings, separated by comma or whitespace, and
-   enables each pass in this list, as well as its dependencies.
+    Accepts a list of strings, separated by comma or whitespace, and
+    enables each pass in this list, as well as its dependencies.
 
-   May raise Arg.Bad if an undefined pass is provided. *)
-
+    May raise Arg.Bad if an undefined pass is provided. *)
 let rec enable arg =
   if arg <> "all" then
     List.iter enable_pass (Str.split (Str.regexp "[, \t]+") arg)
@@ -201,8 +193,7 @@ let requires passes =
 
 
 
-(* Disable a single pass. *)
-
+(** Disable a single pass. *)
 let disable_pass s =
   let slot = try
       List.assoc s passes
@@ -212,8 +203,7 @@ let disable_pass s =
     slot.enabled <- false
 
 
-(* Disable a list of passes. *)
-
+(** Disable a list of passes. *)
 let conflicts passes =
   let doit p =
     message 1 ("Disabling pass " ^ p ^ ", it conflicts with the backend") ;
@@ -222,28 +212,26 @@ let conflicts passes =
     List.iter doit passes
 
 
-(* Disable passes.
+(** Disable passes.
 
-   Accepts a list of strings, separated by comma or whitespace, and
-   enables each pass in this list, as well as its dependencies.
+    Accepts a list of strings, separated by comma or whitespace, and
+    enables each pass in this list, as well as its dependencies.
 
-   May raise Arg.Bad if an undefined pass is provided.
+    May raise Arg.Bad if an undefined pass is provided.
 
-   This function will not try to maintain dependencies, so use at your
-   own risk.
-*)
+    This function will not try to maintain dependencies, so use at your
+    own risk. *)
 let disable arg =
     List.iter disable_pass (Str.split (Str.regexp "[, \t]+") arg)
 
 
-(* Enable dumping after a pass.
+(** Enable dumping after a pass.
 
-   Accepts a list of strings, separated by comma or whitespace, and
-   enables dumping after each pass in this list.  If the string is
-   "all", then all passes are enabled.
+    Accepts a list of strings, separated by comma or whitespace, and
+    enables dumping after each pass in this list.  If the string is
+    "all", then all passes are enabled.
 
-   Raises Arg.Bad if an undefined pass is provided.
-*)
+    Raises Arg.Bad if an undefined pass is provided. *)
 let dump_after arg =
   let dump_pass s =
     let slot = try
@@ -260,13 +248,12 @@ let dump_after arg =
       List.iter (fun (_, p) -> p.dump <- true) passes
 
 
-(*s The following functions comprise the front-end of the compiler.
-  The purpose of the front-end is to perform lexical analysis and
-  parsing of the input programs.
+(** The following functions comprise the front-end of the compiler.
+    The purpose of the front-end is to perform lexical analysis and
+    parsing of the input programs.
 
-  Read the contents from a channel and return a abstract syntax tree
-  and measure the time used for it.
-*)
+    Read the contents from a channel and return a abstract syntax tree
+    and measure the time used for it.  *)
 let parse_from_channel (name: string) (channel: in_channel) =
   let buf = Lexing.from_channel channel in
   let pos = buf.Lexing.lex_curr_p in
@@ -278,8 +265,7 @@ let parse_from_channel (name: string) (channel: in_channel) =
     result
 
 
-(** Read the contents of a file and return an abstract syntax tree.
-*)
+(** Read the contents of a file and return an abstract syntax tree.  *)
 let parse_from_file name =
   let file =
     if (Sys.file_exists name) || (String.contains name '/') then
@@ -293,25 +279,23 @@ let parse_from_file name =
     parse_from_channel file (open_in file)
 
 
-(* Read the contents of a list of files and return an abstract syntax
-   tree.
-*)
+(** Read the contents of a list of files and return an abstract syntax
+    tree.  *)
 let parse_from_files: string list -> Declaration.t list =
   function files ->
     List.fold_left (fun (a: Declaration.t list) (n: string) ->
       (parse_from_file n)@a) [] files
 
 
-(*s The following functions comprise the \emph{middle end} of the
-  compiler.  The middle end will perform semantic analysis and
-  transformations on the level of the abstract syntax tree.
+(** The following functions comprise the {e middle end} of the
+    compiler.  The middle end will perform semantic analysis and
+    transformations on the level of the abstract syntax tree.
 
-  The following function is called to execute a dump to XML and to
-  accumulate the time spent for dumping.  \ocwlowerid{filename} is the
-  name of the input file.  \ocwlowerid{pass} is the name of the pass
-  after which the tree is emitted.  \ocwlowerid{tree} is the abstract
-  syntax tree to emit.
-*)
+    The following function is called to execute a dump to XML and to
+    accumulate the time spent for dumping.  [filename] is the
+    name of the input file.  [pass] is the name of the pass
+    after which the tree is emitted.  [tree] is the abstract
+    syntax tree to emit.  *)
 let execute_dump dump_fun filename pass tree =
   let file =
     (match filename with "" | "-" -> "creolc.out" | _ -> filename) ^ "." ^ pass
@@ -322,12 +306,12 @@ let execute_dump dump_fun filename pass tree =
 
 
 (** [Passes.execute_passes dump_fun filename tree] applies all enabled
-  passes to the abstract syntax tree [tree], as returned by the parser.
-  If dumping the [tree] is requested after a pass, this function will do
-  so by calling [dump_fun] and constructs a file name of the dump file
-  from the name of the pass, as specified on the command line, and
-  the parameter [filename].  Finally, the time spent for each pass is
-  measured.  *)
+    passes to the abstract syntax tree [tree], as returned by the parser.
+    If dumping the [tree] is requested after a pass, this function will do
+    so by calling [dump_fun] and constructs a file name of the dump file
+    from the name of the pass, as specified on the command line, and
+    the parameter [filename].  Finally, the time spent for each pass is
+    measured.  *)
 let execute_passes dump_fun filename tree =
   let rec execute tree =
     function 
@@ -355,10 +339,9 @@ let execute_passes dump_fun filename tree =
     execute tree passes
 
 
-(* This function writes the time measurements to standard error.  The
-   report is written to standard error, because the actual code can be
-   written to standard output, and the report is not part of this code.
-*)
+(** This function writes the time measurements to standard error.  The
+    report is written to standard error, because the actual code can be
+    written to standard output, and the report is not part of this code. *)
 let report_timings () =
   let total = ref 0.0 in
   let report p =

@@ -45,7 +45,7 @@ creolc_SOURCES		= Version.ml \
 			  Creol.ml \
 			  Typing.ml \
 			  TreeFold.ml \
-			  TreeLower.ml \
+			  TreeExpand.ml \
 			  TreeUnassert.ml \
 			  TreeUnprove.ml \
 			  TreeSplitAss.ml \
@@ -70,7 +70,7 @@ creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
 			  Creol.cmo \
 			  BackendCreol.cmo BackendMaude.cmo \
 			  BackendDot.cmo $(BACKEND_XML_CMO) \
-			  Typing.cmo TreeLower.cmo TreeFold.cmo \
+			  Typing.cmo TreeExpand.cmo TreeFold.cmo \
 			  TreeUnassert.cmo TreeUnprove.cmo TreeSSA.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
@@ -84,7 +84,7 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  Creol.cmx \
 			  BackendCreol.cmx BackendMaude.cmx \
 			  BackendDot.cmx $(BACKEND_XML_CMX) \
-			  Typing.cmx TreeLower.cmx TreeFold.cmx \
+			  Typing.cmx TreeExpand.cmx TreeFold.cmx \
 			  TreeUnassert.cmx TreeUnprove.cmx TreeSSA.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
@@ -110,7 +110,7 @@ creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 			  $(srcdir)/Creol.ml \
 			  $(srcdir)/Typing.ml \
 			  $(srcdir)/TreeUnassert.ml \
-			  $(srcdir)/TreeLower.ml \
+			  $(srcdir)/TreeExpand.ml \
 			  $(srcdir)/TreeLift.ml \
 			  $(srcdir)/TreeSSA.ml \
 			  $(srcdir)/TreeFold.ml \

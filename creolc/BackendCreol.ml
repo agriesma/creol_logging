@@ -31,7 +31,7 @@ let requires _ = []
 
 (* These passes must not be enabled for this backend. *)
 
-let conflicts _ = ["lower"]
+let conflicts _ = ["expand"]
 
 
 let print_comma () = print_string "," ; print_space ()
