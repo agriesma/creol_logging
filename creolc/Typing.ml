@@ -598,7 +598,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	let (l', constr', fresh_name') = 
 	  type_recon_expression_list env coiface constr fresh_name l in
 	let (v, fresh_name'') = fresh_var fresh_name' in
-	let ty = Type.Application ("Label", [v]) in
+	let ty = Type.future [v] in
 	  (LabelLit (set_type n ty, l'),
 	   (List.map (fun e -> (get_type e, v)) l') @ constr',
 	   fresh_name'')
@@ -818,7 +818,7 @@ let rec type_check_statement env coiface =
 	    in
 	      (Some o, Some (List.map Expression.get_lhs_type o))
 	| (Some l, None) ->
-	    (None, Some (Type.get_from_future (Expression.get_lhs_type l)))
+	    (None, Some (Type.type_of_future (Expression.get_lhs_type l)))
 	| (Some _, Some _) -> assert false
     in
     let co' =
@@ -1071,7 +1071,7 @@ let rec type_check_statement env coiface =
 	  in
 	    if Program.subtype_p env.program
 	      (Type.Tuple (List.map get_lhs_type retvals'))
-	      (Type.Tuple (Type.get_from_future (Expression.get_type future')))
+	      (Type.Tuple (Type.type_of_future (Expression.get_type future')))
 	    then
 	      Get (n, future', retvals')
 	    else
@@ -1090,7 +1090,7 @@ let rec type_check_statement env coiface =
 	    LocalAsyncCall (n, None, m, signature, lb, ub, args')
       | LocalAsyncCall (n, Some future, m, _, lb, ub, args) ->
 	  let l' = type_check_lhs env coiface future in
-	  let lt = Type.get_from_future (Expression.get_lhs_type l') in
+	  let lt = Type.type_of_future (Expression.get_lhs_type l') in
 	  let (signature, args') =
 	    check_local_async_call n m lb ub args (Some lt)
 	  in
