@@ -76,7 +76,7 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ] in
 	    let res = Program.class_provides program c in
-	      assert_equal (Program.IdSet.singleton "Any") res
+	      assert_equal (IdSet.singleton "Any") res
         ) ;
         "inherits" >:: (
 	  fun _ ->
@@ -90,7 +90,7 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d ] in
 	    let res = Program.class_provides program d in
-	      assert_equal (Program.IdSet.singleton "Any") res
+	      assert_equal (IdSet.singleton "Any") res
         ) ;
         "implements" >:: (
 	  fun _ ->
@@ -102,11 +102,11 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Interface i ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "I"]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "I"]
 	    in
 	    let res = Program.class_provides program c in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
         "interface-inherits" >:: (
 	  fun _ ->
@@ -121,11 +121,11 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c ; Declaration.Interface i;
 			    Declaration.Interface j ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "I"; "J" ]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "I"; "J" ]
 	    in
 	    let res = Program.class_provides program c in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
         "class-implements" >:: (
 	  fun _ ->
@@ -143,11 +143,11 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "I"]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "I"]
 	    in
 	    let res = Program.class_provides program c in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
         "implements-class-inherits" >:: (
 	  fun _ ->
@@ -165,11 +165,11 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "J"]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "J"]
 	    in
 	    let res = Program.class_provides program d in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
         "contracts-implements" >:: (
 	  fun _ ->
@@ -187,11 +187,11 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "I"; "J"]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "I"; "J"]
 	    in
 	    let res = Program.class_provides program d in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
         "contracts" >:: (
 	  fun _ ->
@@ -209,11 +209,11 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "I"; "J"]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "I"; "J"]
 	    in
 	    let res = Program.class_provides program d in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
 	  ) ;
         "three-inherits" >:: (
 	  fun _ ->
@@ -237,11 +237,11 @@ let test_fixture = "Creol" >:::
 			    Declaration.Class e ; Declaration.Interface i;
 			    Declaration.Interface j; Declaration.Interface k ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "I"; "J"; "K"]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "I"; "J"; "K"]
 	    in
 	    let res = Program.class_provides program e in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
 	  ) ;
         "inherit-two" >:: (
 	  fun _ ->
@@ -266,11 +266,11 @@ let test_fixture = "Creol" >:::
 			    Declaration.Class e ; Declaration.Interface i;
 			    Declaration.Interface j; Declaration.Interface k ]
 	    and expect =
-	      List.fold_left (fun e a -> Program.IdSet.add a e)
-	        Program.IdSet.empty ["Any"; "I"; "J"; "K"]
+	      List.fold_left (fun e a -> IdSet.add a e)
+	        IdSet.empty ["Any"; "I"; "J"; "K"]
 	    in
 	    let res = Program.class_provides program e in
-	      assert_bool "Sets differ" (Program.IdSet.equal expect res)
+	      assert_bool "Sets differ" (IdSet.equal expect res)
 	  ) ;
       ] ;
     ] ;
