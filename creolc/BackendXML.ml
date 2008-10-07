@@ -465,7 +465,7 @@ let emit name tree =
       XmlTextWriter.end_element writer
   and creol_statement_note_to_xml note =
     let emit_idset elt set =
-      Statement.IdSet.iter
+      IdSet.iter
         (fun s ->
 	  XmlTextWriter.start_element writer elt ;
 	  XmlTextWriter.write_attribute writer "name" s ;

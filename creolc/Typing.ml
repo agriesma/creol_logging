@@ -1330,7 +1330,7 @@ let typecheck tree: Program.t =
 		      1
 	      in
 		try
-		  Program.IdSet.fold (fun n a -> a + (count n))
+		  IdSet.fold (fun n a -> a + (count n))
                     (Program.class_provides program cls) 0
 		with
 	            Program.Interface_not_found (file, line, iface) ->

@@ -22,13 +22,47 @@
 (** Definition of the abstract syntax of Creol and a collection
     of functions for its manipulation. *)
 
-(** This module defines the abstract syntax of types. *)
+(** A set of identifiers (variable names, class names, interface names,
+    ...) *)
+module IdSet = Set.Make(String)
+
+(** A map from identifiers (variable names, class names, interface
+    names, ...).  *)
+module IdMap = Map.Make(String)
+
+(** This module defines the abstract syntax of types.
+
+    The relation between types is not inherent to the types
+    themselves, but they are defined by the program.  Therefore,
+    functions relating types are defined in the {!Creol.Program}
+    module.  *)
 module Type =
 struct
 
   (** Import the type of sets of variable names. *)
   module Vars = Set.Make(String)
 
+  (** Values of type [t] represent types of Creol programs.
+
+      [Internal] is the default type for [this].
+
+      [Basic t] represents a basic type named [t]
+
+      [Variable t] represents a type variable named [t]
+
+      [Application (s,t)] represents the instantiation of a
+      parameterised type [s] with the types [t].
+
+      [Tuple t] represents the tuple type of types [t].
+
+      [Intersection t] represents the intersection of types [t].
+      Values of this type are instances of all types of [t].  
+
+      [Disjunction t] represents the disjunction of types [t].  Values
+      of this type are instances of some type of [t].  
+
+      [Function (s,t)] represents the type of a function from values
+      of type [s] to values of type [t]. *)
   type t =
     | Internal
     | Basic of string
@@ -39,11 +73,13 @@ struct
     | Disjunction of t list
     | Function of t * t
 
-  let name =
+  (** [name t] is the name of a type, if the type has a unique
+      name. Raises [Failure "Type name"] if the type has no name. *)
+  let rec name =
     function
-        Basic n -> n
-      | Application (n, _) -> n
-      | _ -> assert false
+      | Basic n | Application (n, _) -> n
+      | Intersection [t] | Disjunction [t] -> name t
+      | _ -> raise (Failure "Type name")
 
   (** The type {i Data}. *)
   let data = Basic "Data"
@@ -152,7 +188,8 @@ struct
 	[] -> ""
       | l -> String.concat ", " (List.map string_of_type l)
 
-  let get_from_future =
+  (** Returns the type of the future. *)
+  let type_of_future =
     function
 	Application ("Label", args) -> args
       | _ -> assert false
@@ -224,17 +261,27 @@ struct
     let f k v a =  (k ^ " |-> " ^ (string_of_type v))::a in
       String.concat ", " (Subst.fold f subst [])
 
+
+  (** The type of a method signature. The type [(None,None,None)]
+      states that the signature is not known.  The type [(Some t, _,
+      _)] states that the method has co-interface t.*)
   type signature = t option * t list option * t list option
 
+  (** Make a default signature. One can supply an optional cointerface
+      [coiface]. *)
   let default_sig ?(coiface = None) (): signature =
     (coiface, None, None)
 
+  (** The cointerface of a method with this signature. *)
   let co_interface (c, _, _) = c
 
+  (** The domain type of a method with this signature. *)
   let domain (_, d, _) = d
 
+  (** The range type of a method with this signature. *)
   let range (_, _, r) = r
 
+  (** A string representation of a signature. *)
   let string_of_sig =
     function
       | (None, None, None) ->
@@ -899,8 +946,6 @@ struct
 
   open Expression
 
-  module IdSet = Set.Make(String)
-
   (*s Convert a an identifier set to a string. *)
 
   let string_of_idset s =
@@ -1497,7 +1542,8 @@ struct
 	with_defs: With.t list;
 	hidden: bool;
 	file: string;
-	line: int }
+	line: int;
+      }
 
   (** Get the interface type implemented by a class.  If it does not
       declare interfaces, then the result is [Any].  Filters
@@ -1672,39 +1718,36 @@ struct
 end
 
 
-(** Abstract syntax of a program. *)
+(** Abstract syntax of a program.
+
+    A program is is currently just a list of its declarations. This
+    actual type may change in a future version. Do not use List
+    functions directly, but use the functions defined in this module
+    only.  *)
 module Program =
 struct
 
-  (** The type of a program.
-
-      This is currently just a list of declarations. The actual type may
-      change in a future version. *)
+  (** The type of a program. *)
   type t = Declaration.t list
-
-  (** A set of strings, used to collect all interfaces or classes. *)
-  module IdSet = Set.Make(String)
-
-
-  (* Generally, if a class or an interface is not found in the
-     program, a [Not_found] exception is raised.  *)
-
-  (** Raise [Class_not_found file line name] if the class [name]
-      is not found in file [file] and line [line]. *)
-  exception Class_not_found of string * int * string
-
-  (** Raise [Interface_not_found file line name] if the interface [name]
-      is not found in file [file] and line [line]. *)
-  exception Interface_not_found of string * int * string
 
 
   (** Make a [Program.t] from a list [l] of declarations. *)
   let make : Declaration.t list -> t = function l -> l
 
 
-  (** Find a class of name [name] in [program]. This function raises
-      [Not_found] if no class has the name [name] in the program. *)
-  let find_class ~program ~name =
+  (** {4 Classes}
+
+      The following functions are concerned with class definitions.
+      The abstract syntax of classes is defined in {! Creol.Class}. *)
+
+  (** Raise [Class_not_found file line name] if the class [name] is
+      not found in file [file] and line [line]. *)
+  exception Class_not_found of string * int * string
+
+  (** [find_class program name] attempts to find a class called [name]
+      in [program].  It raise a [Not_found] exception if no class has
+      the name [name] in [program]. *)
+  let find_class program name =
     let class_with_name =
       function
 	  Declaration.Class { Class.name = n } -> n = name
@@ -1715,32 +1758,57 @@ struct
 	| _ -> assert false
 
 
-  (** Get the type of a class. *)
-  let type_of_class ~program ~name =
+  (** [type_of_class program name] returns the type of the class
+      called [name] in [program].  It raise a [Not_found] exception if
+      no class has the name [name] in [program]. *)
+  let type_of_class program name =
     Class.get_type (find_class program name)
 
 
-  (** Find all super-classes of a class [name] in [program].  Raises a
-      [Class_not_found] exception in the context of the class from
-      which the class is supposed to be inherited. A [Not_found]
-      exception is raised if [name] does not exist in the program. *)
-  let superclasses ~program name =
-    let rec fold cls =
-      List.fold_left (fun a (n, _) -> a@(work cls n)) [] cls.Class.inherits
-    and work super n =
-      let cls =
-	try
-	  find_class program n
-	with
-	    Not_found ->
-	      raise (Class_not_found (super.Class.file ,
-				      super.Class.line, n))
+  (** [superclasses program name] returns the set of all super-classes
+      of a class [name] in [program].  Raises a [Class_not_found]
+      exception in the context of the class from which the class is
+      supposed to be inherited. A [Not_found] exception is raised if a
+      class called [name] does not exist in [program]. *)
+  let superclasses program name =
+    let rec work s a (cls, _) =
+      let a' =
+	let c =
+	  try
+	    find_class program cls
+	  with
+	      Not_found ->
+		raise (Class_not_found (s.Class.file , s.Class.line, cls))
+	in
+	  List.fold_left (work c) a c.Class.inherits
       in
-	fold cls
+	IdSet.add cls a'
     in
-      fold (find_class program name)
+    let c = find_class program name in
+      List.fold_left (work c) IdSet.empty c.Class.inherits
 
 
+  (** [diamonds program name] is the set of all classes in [program]
+      that the class called [name] inherits from more than one of its
+      super-classes. It raises a [Not_found] exception if [name] (or
+      one of its direct super classes, but this is a bug) does not
+      exist in [program] and a [Class_not_found] exception if one of
+      the super-classes does not exist in [program].  *)
+  let diamonds program name =
+    let cls = find_class program name in
+    let supers =
+      List.map (fun (c, _) -> IdSet.add c (superclasses program c))
+	cls.Class.inherits
+    in
+    let work =
+      function
+	| [] -> IdSet.empty
+	| s::ls ->
+	    let s' = List.map (fun t -> IdSet.inter s t) ls in
+	      List.fold_left (fun acc elt -> IdSet.union elt acc) IdSet.empty s'
+    in
+      work supers
+      
   (** Return true if [s] is a subclass of [t]. *)
   let subclass_p ~program s t =
     let rec search s =
@@ -1756,6 +1824,11 @@ struct
   (** {4 Interfaces}
 
       The following functions are concerned with interfaces.  *)
+
+  (** Raise [Interface_not_found file line name] if the interface [name]
+      is not found in file [file] and line [line]. *)
+  exception Interface_not_found of string * int * string
+
 
   (** [find_interface program name] returns the interface definition of the
       interface called [name] in [program].  It raises [Not_found] if
@@ -2058,6 +2131,72 @@ struct
 	| hd::tl -> List.fold_left find_join hd tl
 
 
+  (** Compute the transitive closure of the subtype relation. *)
+  let transitive_closure rel =
+    let rec do_it r =
+      let f s = IdSet.fold (fun elt acc -> IdSet.union (IdMap.find elt r) acc) s s in
+      let r' = IdMap.fold (fun key elt acc -> IdMap.add key (f elt) acc) r r in
+	if IdMap.equal IdSet.equal r r' then
+	  r
+	else
+	  do_it r'
+    in
+      do_it rel
+
+  (** Test whether the type relation is acyclic. *)
+  let cycle rel =
+    let f key elt acc = if (IdSet.mem key elt) then IdSet.add key acc else acc in
+      IdMap.fold f rel IdSet.empty
+
+  let acyclic_p rel = IdSet.is_empty (cycle rel)
+
+  let rec string_of_cycle =
+    function
+	[] -> assert false
+      | [s] -> s
+      | s::r -> s ^ " <: " ^ (string_of_cycle r)
+
+
+  (** Find a cycle.  This is using depth first search. *)
+  let find_cycle ~program rel =
+    let rec build (res: string list) (current: string) =
+      let supers: string list =
+	try
+	  List.map Type.name (find_datatype program current).Datatype.supers ;
+	with
+	    Not_found ->
+	      List.map fst (find_interface program current).Interface.inherits 
+      in
+	search (current::res) supers
+    and search (res: string list) =
+      function
+	| [] -> res
+	| cand::r when not (List.mem cand res) -> 
+	    let res' = build res cand in
+	      if List.mem cand res' then res' else search res r
+	| cand::r -> cand::res
+    in
+      build [] (IdSet.choose (cycle rel))
+
+
+  (** Compute the subtype relation-ship of the program. *)
+  let compute_subtype_relation program =
+    let f rel =
+      function
+	| Declaration.Interface { Interface.name = name; inherits = supers } ->
+	    IdMap.add name
+	      (List.fold_left (fun a (n, _) -> IdSet.add n a) IdSet.empty supers)
+	      rel
+	| Declaration.Datatype { Datatype.name = name; supers = supers } ->
+	    IdMap.add (Type.name name)
+	      (List.fold_left (fun a n -> IdSet.add (Type.name n) a)
+                IdSet.empty supers)
+	      rel
+	| _ -> rel
+    in
+      transitive_closure (List.fold_left f IdMap.empty program)
+
+
   (** {4 Functions} *)
 
   (** Find the definition of a function [name] in [program] that has
@@ -2152,77 +2291,7 @@ struct
     [] <> (class_find_methods program cls meth signature)
 
 
-  (** This is the type of the subtype relation. *)
-
-  module Rng = Set.Make(String)
-
-  module Rel = Map.Make(String)
-
-  (** Compute the transitive closure of the subtype relation. *)
-  let transitive_closure rel =
-    let rec do_it r =
-      let f s = Rng.fold (fun elt acc -> Rng.union (Rel.find elt r) acc) s s in
-      let r' = Rel.fold (fun key elt acc -> Rel.add key (f elt) acc) r r in
-	if Rel.equal Rng.equal r r' then
-	  r
-	else
-	  do_it r'
-    in
-      do_it rel
-
-  (** Test whether the type relation is acyclic. *)
-  let cycle rel =
-    let f key elt acc = if (Rng.mem key elt) then Rng.add key acc else acc in
-      Rel.fold f rel Rng.empty
-
-  let acyclic_p rel = Rng.is_empty (cycle rel)
-
-  let rec string_of_cycle =
-    function
-	[] -> assert false
-      | [s] -> s
-      | s::r -> s ^ " <: " ^ (string_of_cycle r)
-
-
-  (** Find a cycle.  This is using depth first search. *)
-  let find_cycle ~program rel =
-    let rec build (res: string list) (current: string) =
-      let supers: string list =
-	try
-	  List.map Type.name (find_datatype program current).Datatype.supers ;
-	with
-	    Not_found ->
-	      List.map fst (find_interface program current).Interface.inherits 
-      in
-	search (current::res) supers
-    and search (res: string list) =
-      function
-	| [] -> res
-	| cand::r when not (List.mem cand res) -> 
-	    let res' = build res cand in
-	      if List.mem cand res' then res' else search res r
-	| cand::r -> cand::res
-    in
-      build [] (Rng.choose (cycle rel))
-
-
-  (** Compute the subtype relation-ship of the program. *)
-  let compute_subtype_relation program =
-    let f rel =
-      function
-	| Declaration.Interface { Interface.name = name; inherits = supers } ->
-	    Rel.add name
-	      (List.fold_left (fun a (n, _) -> Rng.add n a) Rng.empty supers)
-	      rel
-	| Declaration.Datatype { Datatype.name = name; supers = supers } ->
-	    Rel.add (Type.name name)
-	      (List.fold_left (fun a n -> Rng.add (Type.name n) a)
-                Rng.empty supers)
-	      rel
-	| _ -> rel
-    in
-      transitive_closure (List.fold_left f Rel.empty program)
-
+  (** {4 Iterators} *)
 
   (** Apply a function to each method defined in the program. *)
   let for_each_method program f =
