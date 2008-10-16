@@ -22,16 +22,7 @@
 
 open Creol
 
-(* The license under which this software is distributed. *)
-let license =
-  "Copyright (c) 2007, 2008 Marcel Kyas\n" ^
-  "This is free software; see the source for copying conditions.\n" ^
-  "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n" ^
-  "PARTICULAR PURPOSE.\n"
-
-
-(* This defines the stream-based token for the CMC output. *)
-
+(** This defines the stream-based token for the CMC output. *)
 exception Eof of string
 
 exception BadToken of string * int * string
@@ -1137,28 +1128,3 @@ let parse_from_channel (name: string) (channel: in_channel) =
 (* Read the contents of a file and return an abstract syntax tree.
 *)
 let parse_from_file name = parse_from_channel name (open_in name)
-
-let show_version () =
-  print_string (Version.package ^ " " ^ Version.version ^ " (" ^
-                   Version.release ^ " of " ^ Version.reldate ^ ")\n" );
-  print_string license ;
-  exit 0
-
-
-
-let options = [
-  ("-", Arg.Unit (function () -> ignore (parse_from_channel "*stdin*" stdin)),
-    "Read from standard input");
-  ("-V", Arg.Unit show_version, "  Show the version and exit");
-  ("-version", Arg.Unit show_version, "  Show the version and exit");
-  ("--version", Arg.Unit show_version, "  Show the version and exit")]
-
-let main () =
-  let action n =
-    let tree = TreeLift.pass (parse_from_file n) in
-      BackendCreol.pretty_print_program stdout tree
-  in
-    Arg.parse options action "cmcvalid [options] [files]"
-;;
-
-main ()
