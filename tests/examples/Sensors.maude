@@ -47,11 +47,10 @@ mod PROGRAM is
               call( "label:1" ; "this" ; "packAndSend" ; emp ) ;
               get( "label:1" ; noVid ) el skip fi ; return ( emp ) >,
             < "packAndSend" : Method | Param: noVid, Att: "label:0" |-> null,
-              "_" |-> null,
-              Code: call( "label:0" ; "radio" ; "write" ; "-|" ( "this" ::
-              "-|" ( now :: "buffer" ) ) ) ; get( "label:0" ; noVid ) ;
-              assign( "buffer" ; list(emp) ) ; assign( "slots" ; "size" ) ;
-              return ( emp ) >,
+              "_" |-> null, Code: call( "label:0" ; "radio" ; "write" ;
+              "-|" ( "this" :: "-|" ( now :: "buffer" ) ) ) ;
+              get( "label:0" ; noVid ) ; assign( "buffer" ; list(emp) ) ;
+              assign( "slots" ; "size" ) ; return ( emp ) >,
             < "setRate" : Method | Param: "newRate", Att: "newRate" |-> null,
               "label:0" |-> null, "_" |-> null, Code: if
               "&&" ( "<" ( "newRate" :: "rate" ) :: ">" ( now :: "+" ( "t0"
@@ -114,11 +113,10 @@ mod PROGRAM is
               call( "label:1" ; "this" ; "packAndSend" ; emp ) ;
               get( "label:1" ; noVid ) el skip fi ; return ( emp ) >,
             < "packAndSend" : Method | Param: noVid, Att: "label:0" |-> null,
-              "_" |-> null,
-              Code: call( "label:0" ; "radio" ; "write" ; "-|" ( "this" ::
-              "-|" ( now :: "buffer" ) ) ) ; get( "label:0" ; noVid ) ;
-              assign( "buffer" ; list(emp) ) ; assign( "slots" ; "size" ) ;
-              return ( emp ) >,
+              "_" |-> null, Code: call( "label:0" ; "radio" ; "write" ;
+              "-|" ( "this" :: "-|" ( now :: "buffer" ) ) ) ;
+              get( "label:0" ; noVid ) ; assign( "buffer" ; list(emp) ) ;
+              assign( "slots" ; "size" ) ; return ( emp ) >,
             < "setRate" : Method | Param: "newRate", Att: "newRate" |-> null,
               "label:0" |-> null, "_" |-> null, Code: if
               "&&" ( "<" ( "newRate" :: "rate0" ) :: ">" ( now :: "+" ( "t0"
@@ -145,11 +143,11 @@ mod PROGRAM is
             < "setRate" : Method | Param: "newRate", Att: "newRate" |-> null,
               "label:0" |-> null, "_" |-> null, Code: if
               "&&" ( "<" ( "newRate" :: "rate" ) :: ">" ( now :: "+" ( "t0"
-              :: "newRate" ) ) ) th
-              call( "label:0" ; "controller" ; "write" ; int(37) ) ;
-              get( "label:0" ; noVid ) ; assign( "t0" ; now ) el skip fi ;
-              assign( "rate" ; "newRate" ) ; posit "<" ( now :: "+" ( "t0" ::
-              "rate" ) ) ; return ( emp ) >,
+              :: "newRate" ) ) ) th call( "label:0" ; "controller" ;
+              "write" ; int(37) ) ; get( "label:0" ; noVid ) ;
+              assign( "t0" ; now ) el skip fi ; assign( "rate" ; "newRate" )
+              ; posit "<" ( now :: "+" ( "t0" :: "rate" ) ) ; return ( emp )
+              >,
             < "setResolution" : Method | Param: "data", Att: "data" |-> null,
               "_" |-> null, Code: skip ; return ( emp ) >,
             < "setEncoding" : Method | Param: "data", Att: "data" |-> null,

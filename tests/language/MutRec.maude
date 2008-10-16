@@ -9,9 +9,9 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
             < "doit" : Method | Param: "other", Att: "other" |-> null,
-              "label:0" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "other" ; "doit" ; "this" ) ;
-              get( "label:0" ; noVid ) ; return ( emp ) >,
+              "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
+              "other" ; "doit" ; "this" ) ; get( "label:0" ; noVid ) ;
+              return ( emp ) >,
       Ocnt: 0 >
     
     < "Test" : Class | Inh: noInh, Param: noVid, Att: "m1" |-> null, "m2" |->

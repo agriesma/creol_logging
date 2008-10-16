@@ -31,8 +31,8 @@ mod PROGRAM is
             < "deliverToys" : Method | Param: noVid, Att: "label:1" |-> null,
               "label:0" |-> null, "t1" |-> null, "t2" |-> null, "t3" |->
               null, "t4" |-> null, "t5" |-> null, "_" |-> null,
-              Code: assign( "ctReindeers" ; int(0) ) ;
-              call( "t1" ; "head" ( "waitReindeers" ) ; "harness" ; emp ) ;
+              Code: assign( "ctReindeers" ; int(0) ) ; call( "t1" ;
+              "head" ( "waitReindeers" ) ; "harness" ; emp ) ;
               assign( "harnessedReindeers" ; "|-" ( "harnessedReindeers" ::
               "head" ( "waitReindeers" ) ) ) ;
               assign( "waitReindeers" ; "tail" ( "waitReindeers" ) ) ;
@@ -54,13 +54,12 @@ mod PROGRAM is
               assign( "waitReindeers" ; "tail" ( "waitReindeers" ) ) ; await
               "&&" ( "&&" ( "&&" ( "&&" ( ?("t1") :: ?("t2") ) :: ?("t3") )
               :: ?("t4") ) :: ?("t5") ) ; free( "t5" ) ; free( "t4" ) ;
-              free( "t3" ) ; free( "t2" ) ; free( "t1" ) ;
-              call( "label:0" ; "head" ( "harnessedReindeers" ) ; "unharness" ; emp )
-              ; free( "label:0" ) ;
+              free( "t3" ) ; free( "t2" ) ; free( "t1" ) ; call( "label:0" ;
+              "head" ( "harnessedReindeers" ) ; "unharness" ; emp ) ;
+              free( "label:0" ) ;
               assign( "harnessedReindeers" ; "tail" ( "harnessedReindeers" ) )
-              ;
-              call( "label:1" ; "head" ( "harnessedReindeers" ) ; "unharness" ; emp )
-              ; free( "label:1" ) ;
+              ; call( "label:1" ; "head" ( "harnessedReindeers" ) ;
+              "unharness" ; emp ) ; free( "label:1" ) ;
               assign( "harnessedReindeers" ; "tail" ( "harnessedReindeers" ) )
               ; return ( emp ) >,
             < "talkToElves" : Method | Param: noVid, Att: "t1" |-> null, "t2"
@@ -69,18 +68,18 @@ mod PROGRAM is
               call( "t1" ; "head" ( "waitElves" ) ; "showIn" ; emp ) ;
               assign( "inofficeElves" ; "|-" ( "inofficeElves" ::
               "head" ( "waitElves" ) ) ) ;
-              assign( "waitElves" ; "tail" ( "waitElves" ) ) ;
-              call( "t2" ; "head" ( "waitElves" ) ; "showIn" ; emp ) ;
+              assign( "waitElves" ; "tail" ( "waitElves" ) ) ; call( "t2" ;
+              "head" ( "waitElves" ) ; "showIn" ; emp ) ;
               assign( "inofficeElves" ; "|-" ( "inofficeElves" ::
               "head" ( "waitElves" ) ) ) ;
-              assign( "waitElves" ; "tail" ( "waitElves" ) ) ;
-              call( "t3" ; "head" ( "waitElves" ) ; "showIn" ; emp ) ;
+              assign( "waitElves" ; "tail" ( "waitElves" ) ) ; call( "t3" ;
+              "head" ( "waitElves" ) ; "showIn" ; emp ) ;
               assign( "inofficeElves" ; "|-" ( "inofficeElves" ::
               "head" ( "waitElves" ) ) ) ;
               assign( "waitElves" ; "tail" ( "waitElves" ) ) ; await
               "&&" ( "&&" ( ?("t1") :: ?("t2") ) :: ?("t3") ) ; free( "t3" )
-              ; free( "t2" ) ; free( "t1" ) ;
-              call( "t1" ; "head" ( "inofficeElves" ) ; "showOut" ; emp ) ;
+              ; free( "t2" ) ; free( "t1" ) ; call( "t1" ;
+              "head" ( "inofficeElves" ) ; "showOut" ; emp ) ;
               assign( "inofficeElves" ; "tail" ( "inofficeElves" ) ) ;
               call( "t2" ; "head" ( "inofficeElves" ) ; "showOut" ; emp ) ;
               assign( "inofficeElves" ; "tail" ( "inofficeElves" ) ) ;
@@ -105,9 +104,8 @@ mod PROGRAM is
               null, Code: call( "label:0" ; "this" ; "holiday" ; emp ) ;
               free( "label:0" ) ; return ( emp ) >,
             < "holiday" : Method | Param: noVid, Att: "label:0" |-> null, "_"
-              |-> null,
-              Code: call( "label:0" ; "sc" ; "backFromHoliday" ; emp ) ;
-              free( "label:0" ) ; return ( emp ) >,
+              |-> null, Code: call( "label:0" ; "sc" ; "backFromHoliday" ;
+              emp ) ; free( "label:0" ) ; return ( emp ) >,
             < "deliverToys" : Method | Param: noVid, Att: "_" |-> null,
               Code: skip ; return ( emp ) >,
             < "harness" : Method | Param: noVid, Att: "label:0" |-> null, "_"

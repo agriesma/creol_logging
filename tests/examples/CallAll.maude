@@ -11,8 +11,8 @@ mod PROGRAM is
               return ( emp ) >,
             < "doit" : Method | Param: "l", Att: "l" |-> null, "label:0" |->
               null, "i" |-> null, "r" |-> null, "o" |-> null, "_" |-> null,
-              Code: if "/=" ( "l" :: list(emp) ) th
-              call( "r" ; "fst" ( "i" ) ; "m" ; "snd" ( "i" ) ) ;
+              Code: if "/=" ( "l" :: list(emp) ) th call( "r" ;
+              "fst" ( "i" ) ; "m" ; "snd" ( "i" ) ) ;
               call( "label:0" ; "this" ; "doit" ; "tail" ( "l" ) ) ;
               get( "label:0" ; noVid ) ; await ?("r") ; get( "r" ; "o" ) ;
               assign( "results" ; "|-" ( "results" :: list("fst" ( "i" ) ::

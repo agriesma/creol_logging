@@ -27,10 +27,10 @@ mod PROGRAM is
               null, Code: assign( "d" ; "/" ( "n" :: "p" ) ) ;
               assign( "r" ; "-" ( "n" :: "*" ( "d" :: "p" ) ) ) ; if
               "=" ( "r" :: int(0) ) th assign( "res" ; bool(false) ) el if
-              "/=" ( "next" :: null ) th
-              call( "label:0" ; "next" ; "send" ; "n" ) ;
-              get( "label:0" ; "res" ) el new( "next" ; "Sieve" ; "n" ) ;
-              assign( "res" ; bool(true) ) fi fi ; return ( "res" ) >,
+              "/=" ( "next" :: null ) th call( "label:0" ; "next" ; "send" ;
+              "n" ) ; get( "label:0" ; "res" ) el
+              new( "next" ; "Sieve" ; "n" ) ; assign( "res" ; bool(true) ) fi
+              fi ; return ( "res" ) >,
       Ocnt: 0 > .
 endm
 

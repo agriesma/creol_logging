@@ -20,10 +20,9 @@ mod PROGRAM is
               return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:1" |-> null,
               "label:0" |-> null, "w" |-> null, "_" |-> null,
-              Code: new( "w" ; "Weirdness" ; emp ) ;
-              call( "label:0" ; "w" ; "m" ; emp ) ; free( "label:0" ) ;
-              call( "label:1" ; "w" ; "n" ; emp ) ; free( "label:1" ) ;
-              return ( emp ) >,
+              Code: new( "w" ; "Weirdness" ; emp ) ; call( "label:0" ; "w" ;
+              "m" ; emp ) ; free( "label:0" ) ; call( "label:1" ; "w" ; "n" ;
+              emp ) ; free( "label:1" ) ; return ( emp ) >,
       Ocnt: 0 > .
 endm
 

@@ -5,8 +5,6 @@
  *
  * Written and Copyright (c) 2007 by Marcel Kyas
  *
- * Inspired by Nancy Lynch, "Distributed Systems"
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of the
@@ -21,20 +19,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-interface Hello
+interface Console
 begin
-  with Any op hello(out result: String)
+  with Any op print(in result: String)
 end
 
-class Hello implements Hello
+class Console implements Console
 begin
-  with Any op hello(out result: String) == result := "Hello, world"
+  var output : List[String] := nil
+  with Any op print(in result: String) == output := output |- "Hello, world"
 end
 
-class Main
+class Hello
 begin
-  var result: String
-  var hello: Hello
-  op init == hello := new Hello
-  op run == hello.hello(; result)
+  var console: Console
+  op init == console := new Console
+  op run == console.print("hello, world";)
 end

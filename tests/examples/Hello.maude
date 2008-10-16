@@ -3,23 +3,24 @@ mod PROGRAM is
   protecting CREOL-SIMULATOR .
   op classes : -> Configuration [ctor] .
   eq classes =
-    < "Hello" : Class | Inh: noInh, Param: noVid, Att: noSubst,
-      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+    < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "output" @ "Console" ) ; list(emp) ) ;
               return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "hello" : Method | Param: noVid, Att: "result" |-> null, "_"
-              |-> null, Code: assign( "result" ; str("Hello, world") ) ;
-              return ( "result" ) >,
+            < "print" : Method | Param: "result", Att: "result" |-> null, "_"
+              |-> null, Code: assign( "output" ; "|-" ( "output" ::
+              str("Hello, world") ) ) ; return ( emp ) >,
       Ocnt: 0 >
     
-    < "Main" : Class | Inh: noInh, Param: noVid, Att: "result" |-> null,
-      "hello" |-> null,
+    < "Hello" : Class | Inh: noInh, Param: noVid, Att: "console" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
-              Code: new( "hello" ; "Hello" ; emp ) ; return ( emp ) >,
+              Code: new( "console" ; "Console" ; emp ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
-              null, Code: call( "label:0" ; "hello" ; "hello" ; emp ) ;
-              get( "label:0" ; "result" ) ; return ( emp ) >,
+              null, Code: call( "label:0" ; "console" ; "print" ;
+              str("hello, world") ) ; get( "label:0" ; noVid ) ;
+              return ( emp ) >,
       Ocnt: 0 > .
 endm
 

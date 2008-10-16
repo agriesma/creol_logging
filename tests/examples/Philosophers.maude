@@ -9,9 +9,9 @@ mod PROGRAM is
       Mtds: < "init" : Method | Param: noVid, Att: "label:0" |-> null, "_"
               |-> null, Code: assign( "hist" ; str("") ) ;
               assign( "chopstick" ; bool(true) ) ;
-              assign( "hungry" ; bool(false) ) ;
-              call( "label:0" ; "butler" ; "getNeighbor" ; emp ) ;
-              get( "label:0" ; "neighbor" ) ; return ( emp ) >,
+              assign( "hungry" ; bool(false) ) ; call( "label:0" ; "butler" ;
+              "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ;
+              return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:2" |-> null,
               "label:1" |-> null, "label:0" |-> null, "_" |-> null,
               Code: call( "label:0" ; "this" ; "think" ; emp ) ;
@@ -28,11 +28,10 @@ mod PROGRAM is
               "hungry" ; call( "l" ; "neighbor" ; "borrowStick" ; emp ) ;
               await ?("l") ; free( "l" ) ; await "chopstick" ;
               assign( "hist" ; "|-" ( "hist" :: str("e") ) ) ;
-              assign( "hungry" ; bool(false) ) ;
-              call( "label:0" ; "neighbor" ; "returnStick" ; emp ) ;
-              free( "label:0" ) ; release ;
-              call( "label:1" ; "this" ; "eat" ; emp ) ; free( "label:1" ) ;
-              return ( emp ) >,
+              assign( "hungry" ; bool(false) ) ; call( "label:0" ;
+              "neighbor" ; "returnStick" ; emp ) ; free( "label:0" ) ;
+              release ; call( "label:1" ; "this" ; "eat" ; emp ) ;
+              free( "label:1" ) ; return ( emp ) >,
             < "think" : Method | Param: noVid, Att: "label:0" |-> null, "_"
               |-> null, Code: await "~" ( "hungry" ) ;
               assign( "hist" ; "|-" ( "hist" :: str("t") ) ) ; release ;

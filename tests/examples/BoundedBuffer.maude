@@ -30,9 +30,8 @@ mod PROGRAM is
               null, Code: call( "label:0" ; "this" ; "loop" ; int(0) ) ;
               free( "label:0" ) ; return ( emp ) >,
             < "loop" : Method | Param: "i", Att: "i" |-> null, "label:1" |->
-              null, "label:0" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "b" ; "append" ; "i" ) ;
-              get( "label:0" ; noVid ) ;
+              null, "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
+              "b" ; "append" ; "i" ) ; get( "label:0" ; noVid ) ;
               call( "label:1" ; "this" ; "loop" ; "+" ( "i" :: int(1) ) ) ;
               free( "label:1" ) ; return ( emp ) >,
       Ocnt: 0 >

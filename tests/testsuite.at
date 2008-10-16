@@ -255,8 +255,9 @@ red simulate('PROGRAM, upTerm(classes main("CallAll", emp)), 0, 1) .
 
 TEST_CREOLC([Hello], [examples], [dnl
 red classes .
+rew classes main("Hello", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(classes main("Hello", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Sieve], [examples], [dnl

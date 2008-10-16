@@ -12,10 +12,9 @@ mod PROGRAM is
             < "put" : Method | Param: "x", Att: "x" |-> null, "label:0" |->
               null, "_" |-> null, Code: if "=" ( "ctr" :: int(0) ) th
               assign( "cell" ; "x" ) el if "=" ( "next" :: null ) th
-              new( "next" ; "Buffer" ; emp ) el skip fi ;
-              call( "label:0" ; "next" ; "put" ; "x" ) ;
-              get( "label:0" ; noVid ) fi ; assign( "ctr" ; "+" ( "ctr" ::
-              int(1) ) ) ; return ( emp ) >,
+              new( "next" ; "Buffer" ; emp ) el skip fi ; call( "label:0" ;
+              "next" ; "put" ; "x" ) ; get( "label:0" ; noVid ) fi ;
+              assign( "ctr" ; "+" ( "ctr" :: int(1) ) ) ; return ( emp ) >,
             < "get" : Method | Param: noVid, Att: "x" |-> null, "label:0" |->
               null, "_" |-> null, Code: await ">" ( "ctr" :: int(0) ) ; if
               "/=" ( "cell" :: null ) th assign( "x" ; "cell" ) el

@@ -194,9 +194,13 @@ let emit options out_channel input =
 	| Statement.AsyncCall (_, Some l, c, m, _, a) ->
 	    print_string "call( ";
 	    of_lhs l ;
-	    print_string " ; ";
+	    print_string " ;";
+	    print_space () ;
 	    of_expression c ;
-	    print_string (" ; \"" ^ m ^ "\" ; ") ;
+	    print_string " ;";
+	    print_space () ;
+	    print_string ("\"" ^ m ^ "\" ;") ;
+	    print_space () ;
 	    of_expression_list a;
 	    print_string " )"
 	| Statement.MultiCast (_, c, m, _, a) ->
