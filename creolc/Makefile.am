@@ -21,7 +21,7 @@
 
 # Subdirs
 MOSTLYCLEANFILES	= *~ *.aux *.log *.out *.toc \
-			  *.cma *.cmxa *.cmi *.cmo *.cmx *.o
+			  *.cma *.cmxa *.cmi *.cmo *.cmx *.a *.o
 CLEANFILES		=
 DISTCLEANFILES		= .depend Version.ml Driver.ml \
 			   creol.cma creol.a creol.cmxa \
@@ -52,11 +52,13 @@ creolc_SOURCES		= Version.ml \
 			  TreeSSA.ml \
 			  TreeDef.ml \
 			  TreeLife.ml \
+			  TreeLift.ml \
 			  TreeFree.ml \
 			  TreeBury.ml \
 			  TreeDevirt.ml \
 			  TreeTailcall.ml \
 			  CheckUseDef.ml \
+			  CMCParser.ml \
 			  CreolLexer.mli CreolLexer.ml \
 			  CreolParser.mli CreolParser.ml \
 			  BackendCreol.mli BackendCreol.ml \
@@ -70,12 +72,12 @@ creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
 			  Creol.cmo \
 			  BackendCreol.cmo BackendMaude.cmo \
 			  BackendDot.cmo $(BACKEND_XML_CMO) \
-			  Typing.cmo TreeExpand.cmo TreeFold.cmo \
+			  Typing.cmo TreeExpand.cmo TreeLift.cmo TreeFold.cmo \
 			  TreeUnassert.cmo TreeUnprove.cmo TreeSSA.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  CheckUseDef.cmo \
-			  CreolLexer.cmo CreolParser.cmo \
+			  CreolLexer.cmo CreolParser.cmo CMCParser.cmo \
 			  Passes.cmo
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)
@@ -84,24 +86,21 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  Creol.cmx \
 			  BackendCreol.cmx BackendMaude.cmx \
 			  BackendDot.cmx $(BACKEND_XML_CMX) \
-			  Typing.cmx TreeExpand.cmx TreeFold.cmx \
+			  Typing.cmx TreeExpand.cmx TreeLift.cmx TreeFold.cmx \
 			  TreeUnassert.cmx TreeUnprove.cmx TreeSSA.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  CheckUseDef.cmx \
-			  CreolLexer.cmx CreolParser.cmx \
+			  CreolLexer.cmx CreolParser.cmx CMCParser.cmx \
 			  Passes.cmx
 
-cmcvalid_SOURCES	= Version.ml Misc.ml Creol.ml TreeLift.ml \
-			  BackendCreol.ml CMCParser.ml
+cmcvalid_SOURCES	= CMCValid.ml
 
-cmcvalid_cmo		= Version.cmo Misc.cmo Messages.cmo Creol.cmo \
-			  TreeLift.cmo BackendCreol.cmo CMCParser.cmo
+cmcvalid_cmo		= CMCValid.cmo
 
 cmcvalid_opt_SOURCES	= $(cmcvalid_SOURCES)
 
-cmcvalid_cmx		= Version.cmx Misc.cmx Messages.cmx Creol.cmx \
-			  TreeLift.cmx BackendCreol.cmx CMCParser.cmx
+cmcvalid_cmx		= CMCValid.cmx
 
 creoltop_SOURCES	=
 
@@ -170,11 +169,11 @@ creolc.opt: creol.cmxa Driver.cmx
 creol.cmxa: $(creolc_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -a -o $@ $^
 
-cmcvalid: $(cmcvalid_cmo)
-	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $(cmcvalid_cmo)
+cmcvalid: creol.cma $(cmcvalid_cmo)
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $^
 
-cmcvalid.opt: $(cmcvalid_cmx)
-	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $(cmcvalid_cmx)
+cmcvalid.opt: creol.cmxa $(cmcvalid_cmx)
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
 
 creoltop: creol.cma
 	$(OCAMLFIND) ocamlmktop $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ creol.cma
