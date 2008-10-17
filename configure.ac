@@ -27,8 +27,14 @@ AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.
-AC_PATH_PROG([M4], m4)
-AC_PATH_PROG([AUTOM4TE], autom4te)
+AC_CHECK_PROG([M4], [m4], [m4], [])
+if test -z "$M4"
+then
+    AC_MSG_ERROR([m4 was not found.  You have to install m4 to compile the creoltools.])
+fi
+
+AC_CHECK_PROG([AUTOM4TE], [autom4te], [autom4te],
+	      [[\${top_srcdir}/missing autom4te]])
 
 dnl Check for the tools needed to compile ocaml code.
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [])
