@@ -54,6 +54,7 @@ rule token = parse
     | COMMENT { token lexbuf }
     | "/*" { c_style_comment lexbuf }
     | NEWLINE { update_loc lexbuf; token lexbuf }
+    | "!!" { reserved lexbuf }
     | '!' { BANG }
 	(*i '"' i*)
     | '#' { HASH }
@@ -113,11 +114,10 @@ rule token = parse
     | "assert" { ASSERT }
     | "await" { AWAIT }
     | "begin" { BEGIN }
-    | "by" { reserved lexbuf }
     | "caller" { CALLER }
     | "case" { reserved lexbuf }
     | "class" { CLASS }
-    | "const" { reserved lexbuf }
+    | "constant" { reserved lexbuf }
     | "contracts" { CONTRACTS }
     | "datatype" { DATATYPE }
     | "do" { DO }
@@ -126,19 +126,25 @@ rule token = parse
     | "ensures" { ENSURES }
     | "exception" { reserved lexbuf }
     | "exists" { EXISTS }
+    | "exports" { reserved lexbuf }
     | "extern" { EXTERN }
+    | "external" { EXTERN }
     | "false" { BOOL(false) }
     | "for" { reserved lexbuf }
     | "forall" { FORALL }
+    | "from" { reserved lexbuf }
+    | "function" { FUN }
     | "fun" { FUN }
     | "history" { HISTORY }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
+    | "imports" { reserved lexbuf }
     | "in" { IN }
     | "inherits" { INHERITS }
     | "interface" { INTERFACE }
     | "inv" { INV }
     | "is" { reserved lexbuf }
+    | "method" { OP }
     | "new" { NEW }
     | "nil" { NIL }
     | "now" { NOW }
@@ -147,7 +153,9 @@ rule token = parse
     | "op" { OP }
     | "out" { OUT }
     | "posit" { POSIT }
+    | "pragma" { reserved lexbuf }
     | "prove" { reserved lexbuf }
+    | "provides" { reserved lexbuf }
     | "release" { RELEASE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }
