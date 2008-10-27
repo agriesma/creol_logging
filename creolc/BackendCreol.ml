@@ -140,7 +140,7 @@ let rec print_expression exp =
 	  print_string ")"
       | Expression.Extern (_, s) ->
           open_hbox () ;
-	  print_string "extern" ;
+	  print_string "external" ;
 	  print_space () ;
 	  print_string ("\"" ^ s ^ "\"") ;
 	  close_box ()
@@ -459,7 +459,7 @@ let rec print_statement statement =
 	  print_string "*/"
       | Statement.Extern (_, s) ->
 	  open_hbox () ;
-	  print_string "extern" ;
+	  print_string "external" ;
 	  print_space () ;
 	  print_string ("\"" ^ s ^ "\"") ;
 	  close_box ()
@@ -498,7 +498,7 @@ let pretty_print_program out_channel input =
       | _ -> ()
   and print_function f =
     open_box 2 ;
-    print_string "fun" ;
+    print_string "function" ;
     print_space () ;
     print_string f.Function.name ;
     print_string "(" ;

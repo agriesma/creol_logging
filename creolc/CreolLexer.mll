@@ -117,6 +117,7 @@ rule token = parse
     | "caller" { CALLER }
     | "case" { reserved lexbuf }
     | "class" { CLASS }
+    | "component" { reserved lexbuf }
     | "constant" { reserved lexbuf }
     | "contracts" { CONTRACTS }
     | "datatype" { DATATYPE }
@@ -127,14 +128,12 @@ rule token = parse
     | "exception" { reserved lexbuf }
     | "exists" { EXISTS }
     | "exports" { reserved lexbuf }
-    | "extern" { EXTERN }
     | "external" { EXTERN }
     | "false" { BOOL(false) }
     | "for" { reserved lexbuf }
     | "forall" { FORALL }
     | "from" { reserved lexbuf }
     | "function" { FUN }
-    | "fun" { FUN }
     | "history" { HISTORY }
     | "if" { IF }
     | "implements" { IMPLEMENTS }
@@ -149,6 +148,7 @@ rule token = parse
     | "nil" { NIL }
     | "now" { NOW }
     | "null" { NULL }
+    | "object" { reserved lexbuf }
     | "of" { OF }
     | "op" { OP }
     | "out" { OUT }
