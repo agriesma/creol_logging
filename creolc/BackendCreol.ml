@@ -543,15 +543,24 @@ let pretty_print_program out_channel input =
     end ;
     close_box ()
   and print_object obj =
+    open_vbox 0 ;
     print_string ("object " ^ obj.Object.name ^ " : " ^
 		   (Type.string_of_type obj.Object.cls)) ;
-    open_box 2 ;
+    print_space () ;
     print_string "begin" ;
+    print_space () ;
+    open_hbox () ;
+    print_space () ;
+    print_space () ;
+    close_box () ;
+    open_vbox 0 ;
     if [] <> obj.Object.attributes then
       begin
-        open_vbox 2 ;
+        open_vbox 0 ;
 	print_vardecls "var " print_space obj.Object.attributes;
-	close_box ()
+	close_box () ;
+        print_space () ;
+        print_space ()
       end ;
     begin
       match obj.Object.process with
@@ -584,6 +593,7 @@ let pretty_print_program out_channel input =
 	List.iter print_process obj.Object.process_queue ;
 	close_box ()
       end ;
+    close_box () ;
     print_space () ;
     print_string "end" ;
     close_box ()
