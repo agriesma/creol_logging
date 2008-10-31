@@ -159,6 +159,7 @@ rule token = parse
     | "release" { RELEASE }
     | "requires" { REQUIRES }
     | "skip" { SKIP }
+    | "signal" { reserved lexbuf }
     | "some" { SOME }
     | "then" { THEN }
     | "this" { THIS }
@@ -167,6 +168,7 @@ rule token = parse
     | "true" { BOOL(true) }
     | "try" { reserved lexbuf }
     | "var" { VAR }
+    | "volatile" { reserved lexbuf }
     | "when" { reserved lexbuf }
     | "where" { reserved lexbuf }
     | "while" { WHILE }
