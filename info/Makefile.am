@@ -23,6 +23,7 @@ creoltools_TEXINFOS	= introduction.texi \
 			  creoltut.texi \
 			  creolexpr.texi \
 			  creolcls.texi \
+			  creolcomm.texi \
 			  creolflow.texi \
 			  creollib.texi \
 			  creol.texi \

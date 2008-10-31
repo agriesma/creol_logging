@@ -1,0 +1,118 @@
+@node Communication
+@chapter Communication
+
+This chapter focuses on @acronym{CREOL}'s communication model.  First,
+the communication of different activities within one object, the
+intra-object communication model, is described.  Then, the communication
+between different objects is explained.
+
+
+
+@section Shared Variables
+
+All objects are active.  The reaction to each call is the creation of an
+@emph{activity,} which has its own state (as specified by the method's
+variables) and which has access to the object's state (as specified by
+the classes attributes).  The state of the object is @emph{shared} by
+all activities within one object.  The object encapsulates its state,
+such that no activity of other objects can access it.
+
+At most one activity is executing for each object.  Once the activity is
+started, it will continue executing without being interrupted or
+preempted.  During that time, no other activity can read the state nor
+can it write to the state.  In other words:  each activity has exclusive
+access to the object's state.  No locks or mutexes are needed to guard
+the access to the object's variables.
+
+An activity releases its exclusive access right, if it terminates or if
+it yields control to another activity by using an @code{await} statement
+or a @code{release} statement.
+
+The @code{await} statement uses a condition @var{c}, which states under
+which circumstances the activity is allowed to resume.  The activity
+yields control to other activities, if @var{c} evaluates to
+@code{false}.  It continues execution if @var{c} evaluates to
+@code{true}.  This means that the control remains with the activity, if
+@var{c} holds at the time the @code{await} statement is executed for the
+first time.  As a consequence, the statement @code{await true} is
+semantically equivalent to @code{skip}.
+
+The @code{release} statement yields control unconditionally.  The
+executing activity will be suspended and any other process may execute,
+including the executing activity itself.
+
+Await synchronisation is a very powerful and abstract coordination
+mechanism.  We can use the await statement to implement traditional
+binary semaphores.
+
+@example
+class Semaphore
+begin
+  var s: Bool := true
+  op p == await s; s := false
+  op v == assert ~s; s := true
+end
+@end example
+
+We will explain below, that instances of this class are not suitable to
+use as binary semaphores.  If different activities of one object are to
+be coordinated, then an attribute that serves as the semaphore can be
+declared and the await statement and the assignments can be used to
+implement the semaphore.
+
+
+
+@section Method Invocation
+
+We have explained how activities within one object communicate.  Objects
+do not share state, because they cannot access attributes of other
+objects.  Instead, they can exchange data by passing messages, or to be
+more precise: by invoking methods.
+
+When an object invokes a method, it generates a message and sends it to
+the called object.  At the same time, the object keeps a @emph{handle},
+a so called future variable, that allows it to get the reply to that
+call later.
+
+@acronym{CREOL} makes very weak guarantees on message transport.  The
+properties of message transport are listed below:@footnote{Later
+versions of @acronym{CREOL} may provide means to refine the properties
+of communication links between objects.}
+
+@itemize
+@item
+Message transport may take time.  When one object receives a message
+from another object it cannot derive any information on the state of the
+other object with the exception that the message has been sent.
+
+@item
+Message transport may be unordered.  When an object sends messages to
+another object in one order the messages may arrive in any other
+order.
+
+@item
+Message transport may be lossy.  No guarantee is made that every message
+sent will eventually arrive.
+@end itemize
+
+The simulator that is described in @ref{CREOL Machine Code} does not
+lose messages and all sent messages will eventually arrive.
+
+
+@subsection Fault Tolerance
+
+@acronym{CREOL} does not provide any means for specifying fault
+tolerance, mostly because the current execution engine lacks means to
+speak about time and the language does not yet have an exception
+mechanism that indicates faults.  It is not possible to implement
+mechanisms that make the system resilant towards faults yet.
+
+Later versions of the modelling language are expected to have mechanisms
+for time and exceptions, which allow to model mechanisms for fault
+tolerance.
+
+
+@c Local Variables: 
+@c mode: texinfo
+@c TeX-master: "creoltools"
+@c End: 

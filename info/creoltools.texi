@@ -61,6 +61,7 @@ Documentation License.''
 * CREOL Tutorial::        An introduction to the @acronym{CREOL} language.
 * Types and Expressions::
 * Classes and Interfaces::
+* Communication::         Communication within and between objects.
 * Control Flow::
 * CREOL Language::        A description of the @acronym{CREOL} language.
 * CREOL Prelude::         The standard library for @acronym{CREOL}.
@@ -87,6 +88,7 @@ Documentation License.''
 @include creoltut.texi
 @include creolexpr.texi
 @include creolcls.texi
+@include creolcomm.texi
 @include creolflow.texi
 @include creol.texi
 @include creollib.texi
@@ -169,3 +171,8 @@ e}
 @c Version 0.0c (r494) was released on May 7, 2007.
 @c Version 0.0b (r365) was released on March 16, 2007.
 @c Version 0.0a (r275) was released on March 5, 2007.
+
+@c Local Variables: 
+@c mode: texinfo
+@c TeX-master: t
+@c End: 
