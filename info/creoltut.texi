@@ -1,8 +1,10 @@
 @node CREOL Tutorial
 @chapter A Tutorial Introduction to @acronym{CREOL}
 
-This chapter is intended to be an introduction into the concepts of
-the @acronym{CREOL} language by giving examples.
+We begin with a tutorial introduction to @acronym{CREOL}.  We introduce
+the main features of the language.  We do not explain all concepts in
+detail in this chapter, but subsequent chapters of the book provide an
+in-depth explanation of all language features.
 
 @menu
 * First CREOL Program::         A first @acronym{CREOL} program.
@@ -15,11 +17,203 @@ the @acronym{CREOL} language by giving examples.
 @node First CREOL Program
 @section A First @acronym{CREOL} Program
 
-Usually, the first program presented in tutorials on programming
-languages is a program that outputs ``hello, world''.  @acronym{CREOL} does not
-have a notion of output or console, because it is a language for
-describing @emph{distributed systems} using object-oriented
-techniques.
+The traditional first program is one that outputs ``hello, world'' to
+the console.  @acronym{CREOL} is a modelling language and does not have
+``a console''.  It actually may have one, many, or no console, depending
+on the whim of the designer.
+
+We still want to show a simple ``hello, world'' example.  We do so with
+two objects.  One object will send a ``hello, world'' message and the
+other object will receive it.
+
+@example
+interface Console
+begin
+  with Any op print(in result: String)
+end
+
+class Console implements Console
+begin
+  var output : List[String] := nil
+  with Any op print(in result: String) == output := output |- "Hello, world"
+end
+
+class Hello
+begin
+  var console: Console
+  op init == console := new Console
+  op run == console.print("hello, world";)
+end
+@end example
+
+As in other object-oriented programming languages, @emph{classes} are
+the main structuring mechanism that collects attribute declarations and
+method definitions, i.e., the code for methods.
+
+Objects are instances of one class.  Unlike in most other
+object-oriented languages, classes are not @emph{types}.  Each object is
+typed by one or more @emph{Interfaces}.  In this example, we have
+defined one interface @code{Console}, which declares a method
+@code{print}.  Each class implicitly implements the @code{Any}
+interface.  This interface does not declare any methods.  The clause
+@code{with Any} controls what kind of instances are permitted to use a
+method.  Here, any instance is allowed to call the @code{print} method.
+
+Interfaces define types and must be implemented by classes.  The class
+@code{Console} in this example implements the @code{Console} interface
+by providing a @code{print} method.  The effect of calling this method
+is to append the argument string to a list of strings called
+@code{output}.  This list represents the content of a screen or the
+teletype terminal modelled by instances of this interfaces.
+
+The class @code{Hello} describes the behaviour of an object that just
+wants to print ``hello, world''.  In the method @code{init}, which is
+@emph{internal} to the @code{Hello} class, the object is initialised.
+Here, it just creates a console.
+
+The method @code{run} describes the activity of the object.  After the
+object has been initialised, it continues to execute the behaviour
+specified in the method @code{run}. In our example, the method
+@code{print} of the object @code{console} is called.
+
+
+In order to execute this program, it has first be compiled to a version
+suitable for execution.  One possibility is to compile the program into
+a @emph{Maude format}.  The current interpreter for Creol is implemented
+in the rewriting engine Maude, and the current compiler targets the
+input format of that interpreter.  This can be achieved by storing the
+example program into a file @file{Hello.creol} and then executing the
+command @command{creolc -o Hello.maude Hello.creol} on the command line.
+This example may be executed in Maude, as shown in the following
+session:
+
+@example
+$ maude Hello.maude 
+		     \||||||||||||||||||/
+		   --- Welcome to Maude ---
+		     /||||||||||||||||||\
+	    Maude 2.3 built: Sep  9 2008 15:03:37
+	    Copyright 1997-2007 SRI International
+		   Fri Oct 10 15:47:49 2008
+Maude> rew classes main("Hello", emp) .
+rewrite in PROGRAM : classes main("Hello", emp) .
+rewrites: 266 in 2ms cpu (1ms real) (133000 rewrites/second)
+result Configuration: 
+< "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null,
+   Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code:
+     assign("output" @@ "Console" ; list(emp)) ; return(emp) >,
+  < "print" : Method | Param:
+    "result", Att: "_" |-> null, "result" |-> null, Code: assign("output" ;
+    "|-"("output" :: str("Hello, world"))) ; return(emp) >,
+  < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+    return(emp) >,
+  Ocnt: 1 >
+ 
+< "Hello" : Class | Inh: noInh, Param: noVid, Att: "console" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("console" ;
+    "Console" ; emp) ; return(emp) >, < "run" : Method | Param: noVid,
+    Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ;
+    "console" ; "print" ; str("hello, world")) ; get("label:0" ; noVid) ;
+   return(emp) >,
+  Ocnt: 1 >
+ 
+< ob("Console0") : "Console" |
+  Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console0"),
+  Pr: idle,
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 2 >
+ 
+< ob("Hello0") : "Hello" |
+  Att: "console" |-> ob("Console0"), "this" |-> ob("Hello0"),
+  Pr: idle,
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 3 >
+ 
+< ob("main") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Dealloc: noDealloc,
+  Ev: noMsg,
+  Lcnt: 0 >
+
+Maude> 
+@end example
+
+The command @command{rew classes main("Hello", emp) .} instructs the
+Maude interpreter to rewrite the program text @code{classes} and a first
+object @code{main("Hello", emp)}, which is an instance of class
+@code{"Hello"} and which is created without class parameters.  Maude
+responds with the a term repeating the input program and a collection of
+queues and objects.  We observe that all activities have terminated and
+that the object @code{ob("Console0")} has stored the string
+@code{"Hello, world"} in its attribute @code{"output"}.
+
+We also provide a program that converts the result term of a Maude
+process into a more readable format.  @code{cmcvalid Hello.out}, where
+@code{Hello.out} contains the result term (starting at @code{< "Console"
+: Class} and ending at the last @code{Lcnt: 0 >}) gives the following
+representation of the result:
+
+@example
+class Console
+begin
+  var output: Data
+  with Any
+    op init == var _: Data := null; output@@Console := []; /* return() */
+    op print(in result: Data) == var _: Data := null;
+                                   var result: Data := null;
+                                   output := output |- "Hello, world";
+                                   /* return() */
+    op run == var _: Data := null; skip; /* return() */
+end
+
+class Hello
+begin
+  var console: Data
+  with Any
+    op init == var _: Data := null; console := new Console(); /* return() */
+    op run == var _: Data := null; var label:0: Data := null;
+                label:0!console.print("hello, world"); label:0?();
+                /* return() */
+end
+
+object Console0 : Console
+begin
+  var output: Data := ["Hello, world"]
+  var this: Data := object Console0
+  
+  No active process.
+end
+
+object Hello0 : Hello
+begin
+  var console: Data := object Console0
+  var this: Data := object Hello0
+  
+  No active process.
+end
+
+object main : 
+begin
+  No active process.
+end
+@end example
+
+Remark that this output is not actually valid @acronym{CREOL}, because
+it reveals information that is not present in the original program, like
+the variable @code{label:0} in method @code{run} of class @code{Hello},
+and it also omits all type information; all variables are declared to
+have type @code{Data}.  Finally, it shows the @emph{objects} which are
+only present at run-time, and the current state of the objects.
+
+
+@section Concurrency
 
 A distributed system collects many computing resources into one
 system to solve common tasks.  This is often done to increase the
@@ -51,14 +245,7 @@ most one activity is active in an object.  Different activities are
 coordinated cooperatively:  An activity has to explicitly yield to
 other activities.
 
-@acronym{CREOL} does not provide any output functions.  We still want to show a
-simple ``hello, world'' example.  We do so with two objects.  One
-object will send a ``hello, world'' message and the other object will
-receive it.  As in other object-oriented programming languages,
-classes are a structuring mechanism that collects attribute
-declarations and the code for methods.  Objects are instances of one
-class, but classes can inherit code from other classes
-(@pxref{Inheritance}).
+@acronym{CREOL} does not provide any output functions.  
 
 In contrast to other object-oriented programming languages, where
 classes are also types of objects, objects in @acronym{CREOL} are
@@ -84,140 +271,6 @@ instance of @code{Main} will create an instance of @code{Hello} during
 initialisation in the @code{init} method and will as its only activity
 call the method @code{hello} of that instance and store the result
 value in the attribute @code{result}.
-
-@example
-interface Hello
-begin
-  with Any op hello(out result: String)
-end
-
-class Hello implements Hello
-begin
-  with Any op hello(out result: String) == result := "Hello, world"
-end
-
-class Main
-begin
-  var result: String
-  var hello: Hello
-  op init == hello := new Hello
-  op run == hello.hello(; result)
-end
-@end example
-
-In order to execute this program, it has first be compiled to a
-version suitable for execution.  One possibility would be to compile
-the program into the @emph{Maude format}, which is currently the main
-execution and analysis environment for @acronym{CREOL}.  This can be
-achieved by storing the example program into a file @file{Hello.creol}
-and then executing the command @command{creolc -o Hello.maude
-Hello.creol}.  If everything works as expected, executing this command
-will not produce any output onto the screen.@footnote{The Creol
-compiler @command{creolc} only prints a message if it identifies a
-problem.  This makes it easier to integrate the compiler into other
-tool chains that use Unix pipes (@pxref{Invoking creolc}).}  The
-invocation of @command{creolc -o Hello.maude Hello.creol} results in
-the Maude model of the following example:
-
-@example
-load creol-interpreter
-mod PROGRAM is
-protecting CREOL-SIMULATOR .
-op classes : -> Configuration [ctor] .
-eq classes =
-< "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
-    return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
-    return ( emp ) > *
-  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code:
-    "result" ::= str("Hello, world") ; return ( "result" ) >, Ocnt: 0 >
-
-< "Main" : Cl | Inh: noInh, Par: noVid, Att: "result" |-> null ,
-  "hello" |-> null, Mtds: 
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hello" ::=
-    new "Hello" ( emp ) ; return ( emp ) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
-    "label:0" ! "hello" . "hello" ( emp ) ; ( "label:0" ? ( "result" ) ) ;
-    return ( emp ) >, Ocnt: 0 > .
-endm
-@end example
-
-As one can see, the differences from the source program to the
-representation in Maude is not too significant.  Most notably,
-information on how instances of a class are to be constructed,
-replacement of statements by counterparts on the lower level, and
-adding auxiliary statements to mark the end of a method are
-introduced. This example may be executed in Maude, as shown in the
-following session:
-
-@example
-$ maude Hello.maude
-                     \||||||||||||||||||/
-                   --- Welcome to Maude ---
-                     /||||||||||||||||||\
-            Maude 2.3 built: Feb 14 2007 17:43:55
-            Copyright 1997-2007 SRI International
-                   Wed Feb 13 12:28:13 2008
-Maude> rew classes main("Main", emp) .
-rewrite in PROGRAM : classes
-main("Main", emp) .
-rewrites: 259 in 2ms cpu (2ms real) (129500 rewrites/second)
-result Configuration: 
-< "Hello" : Cl | Inh: noInh, Par: noVid, Att: noSubst, Mtds:
-  < "hello" : Mtdname | Param: noVid, Latt: "result" |-> null, Code:
-    "result" ::= str("Hello, world") ; return("result") > *
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
-    return(emp) >
-    *
-  < "run" : Mtdname | Param: noVid, Latt: noSubst, Code: skip ;
-    return(emp) >,
-  Ocnt: 1 >
-
-< "Main" : Cl | Inh: noInh, Par: noVid, Att: "hello" |-> null, "result" |->
-    null, Mtds:
-  < "init" : Mtdname | Param: noVid, Latt: noSubst, Code: "hello" ::= new
-    "Hello"(emp) ; return(emp) > *
-  < "run" : Mtdname | Param: noVid, Latt: "label:0" |-> null, Code:
-    "label:0" !  "hello" . "hello"(emp) ; "label:0" ?("result") ;
-    return(emp) >,
-  Ocnt: 1 >
-
-< ob("Hello0") : "Hello" |
-  Att: "this" |-> ob("Hello0"),
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 2 >
-
-< ob("Main0") : "Main" |
-  Att: "hello" |-> ob("Hello0"), "result" |-> str("Hello, world"), "this"
-  |-> ob("Main0"),
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 3 >
-
-< ob("main") : "" |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 0 >
-Maude> 
-@end example
-
-The command @command{rew classes main("Main", emp) .} instructs the Maude
-interpreter to rewrite the program text @code{classes} and a first object
-@code{main("Main", emp)}, which is an instance of class @code{"Main"}
-and which is created without class parameters.  Maude responds with
-the a term repeating the input program and a collection of queues and
-objects.  We observe that all activities have terminated and that the
-object @code{ob("Main0")} has stored the string @code{"Hello, world"}
-in its attribute @code{"result"}.
 
 
 
