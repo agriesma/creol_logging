@@ -95,7 +95,7 @@ datatype-decl ::=
     @code{datatype} type [ @code{of} @{ type @code{,} @} ]
 
 function-def ::=
-    @code{fun} id-or-op @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expr | @code{extern} string )
+    @code{function} id-or-op @code{(} @{ var-decl-no-init @code{,} @} @code{)} @code{:} type @code{==} ( expr | @code{external} string )
 
 var-decl-no-init ::=
     @{ id @code{,} @} @code{:} type
@@ -114,7 +114,7 @@ with-def ::=
     @code{with} cid @{ op-def @} @{ invariant @}
 
 op-def ::=
-    op-decl @code{==} @{ @code{var} var-decl @code{;} @} ( statement | @code{extern} string )
+    op-decl @code{==} @{ @code{var} var-decl @code{;} @} ( statement | @code{external} string )
 
 statement ::=
     choice-statement [ @code{|||} statement ]
