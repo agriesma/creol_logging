@@ -39,6 +39,7 @@ and ].  Repetitions are enclosed in braces @{ and @}.  A separator
 
 @node Comments
 @section Comments
+@cindex Comments
 
 @acronym{CREOL} supports too kinds of comments, both have been inspired by C++
 and Java.
@@ -70,6 +71,7 @@ section.  The equality symbol
 
 
 @subsection Literals
+@cindex Literals
 
 The Boolean literals of @acronym{CREOL} are @code{true} and @code{false}.
 
@@ -93,6 +95,7 @@ keyword @code{caller}.
 
 
 @subsection Variables
+@cindex Variable
 
 Variables are lower-case character-sequences, matching the regular
 expression @code{[a-z][a-zA-Z0-9]}.  Variables are typed (see below).
@@ -118,6 +121,7 @@ searched form left to right starting at @code{C}, @pxref{Inherits}.
 
 @subsection Static Attribute Access Expressions
 @anchor{Static Attribute Access}
+@cindex Static Attribute Access
 
 If a variable @emph{hides} an attribute, or attributes of the same
 name are defined in different classes, the attribute can be accessed
@@ -127,7 +131,9 @@ to an attribute named @var{v} defined in class @var{C} or inherited by
 of a class of which the current class is @emph{not} a subclass.
 
 
-@subsection Integers and Reals
+@subsection Integers and Floats
+@cindex Integer Literal
+@cindex Float Literal
 
 Integer literals are written as strings of digits.  Integer literals
 are represented as arbitrary precision numbers in the compiler.  This
@@ -136,8 +142,8 @@ literals.  There may be limitations imposed by the back-ends, if
 down-stream applications and target platforms impose range
 limitations.  Consult the back-end documentation for details.
 
-Real literals are written in the usual format, e.g., @code{0.5} or
-@code{1e-2} are all valid real literals.  Real literals are
+Float literals are written in the usual format, e.g., @code{0.5} or
+@code{1e-2} are all valid real literals.  Float literals are
 represented as fractions with arbitrary precision in the compiler.
 This means that there is no piratical limitation on the size of real
 literals.  There may be limitations imposed by the back-ends, if
@@ -147,6 +153,7 @@ details.
 
 
 @subsection Strings
+@cindex String Literal
 
 A string literal is written by quoting its contents in @code{"}, e.g.,
 @code{"Hello, world"} is a string literal.  The internal @code{String}
@@ -157,6 +164,7 @@ be character literals.
 
 
 @subsection Tuples
+@cindex Tuple Expression
 
 The operations on tuples are
 
@@ -165,6 +173,7 @@ The operations on tuples are
 
 @subsection List
 @anchor{List Syntax}
+@cindex List Constructor
 
 The literal @code{nil} represents the empty list.  Non-empty list
 literals are written by enclosing a comma-separated list of
@@ -174,6 +183,7 @@ order.
 
 
 @subsection Sets
+@cindex Set Constructor
 
 @code{@{@}} represents the empty set.  Generally, sets can be
 constructed by enumerating the elements: @code{@{ @{ @var{expression}
@@ -185,6 +195,8 @@ represents set aggregation.
 
 
 @subsection Object Expressions and Literals
+@cindex Object Literal
+@cindex Object Expression
 
 Object expressions and literals are expressions whose value is a
 reference to an object.  The only literal is @code{null}, representing
@@ -204,6 +216,7 @@ statically, type conformance is tested during run time.
 
 
 @subsection Function Application
+@cindex Function Application
 
 Generally, applying a function is written as
 @code{@var{f}(@var{e},@var{d},...,@var{c})}, where @var{f} is the name
@@ -357,6 +370,7 @@ In this section we describe the statements of @acronym{CREOL} programs.
 
 
 @subsection Assignments
+@cindex Assignment
 
 A single assignment may be written as @code{@var{x} := @var{e}}, where
 @var{x} is the name of an attribute or a local variable and @var{e}
@@ -370,6 +384,7 @@ length.
 
 
 @subsection Object Creation
+@cindex Object Creation
 
 The creation of an object is written as @code{@var{v}:= new
 @var{C}(@var{e},...)}.  @var{v} is the variable which will hold the
@@ -378,7 +393,9 @@ new object.  @var{e}, @dots{} are the arguments to the constructor.
 Note that @var{C} has to implement an interface which is a subtype of
 the interface type of @var{v}.
 
+
 @subsection Synchronous Method Calls
+@cindex Synchronous Method Call
 
 A @emph{local} synchronous method call is written as
 @code{@var{m}[:>@var{C}][<:@var{D}](@var{ins};@var{outs})}, where
@@ -414,6 +431,7 @@ type of @code{this} is coerced.
 
 
 @subsection Asynchronous Method Calls
+@cindex Asynchronous Method Call
 
 A @emph{asynchronous} method call is written as
 @code{@var{l}!@var{e}.@var{m}(@var{ins})}, where @var{l} is the name
@@ -445,8 +463,30 @@ type of the @emph{callee} @code{x} is coerced, whereas in the former
 case, the type of @code{this} is coerced.
 
 
+@subsection Multi-Cast Statement
+@cindex Multi-Cast Statement
+
+An asynchronous method call of the form @code{!x.m(e)}, i.e., one which
+does not specify a label variable, can work as a @emph{multi-cast
+statement} if the type of @code{x} is a @emph{collection type}.  The
+currently valid collection types are @code{List[`a]} and
+@code{Set[`a]}.  A mutli-cast will emit an asynchronous call to each
+member of the collection in an atomic transaction.
+
+Note that the fragment
+@example
+while not empty(c) do
+  d, c := head(c), tail(c) ;
+  !d.m(e)
+end
+@end example
+will also call the method @code{m} for each member of @var{c}, but other
+activities may be interleaved between each call.
+
+
 @subsection Release Statement
 @anchor{Release Statement}
+@cindex Release Statement
 
 The @code{release} statement represents an unconditional processor
 release point.  The currently active process will be suspended, and
@@ -456,6 +496,7 @@ process after executing a release statement.
 
 @subsection Await Statement
 @anchor{Await Statement}
+@cindex Await Statement
 
 The @code{await @var{c}} statement is a conditional processor release
 point.  If the condition @var{c} holds when executing the statement,
@@ -468,6 +509,8 @@ of a merge statement (@pxref{Merge Statement}).
 
 
 @subsection Blocks
+@cindex Blocks
+@cindex Block of Statement
 
 Groups of statements are formed using braces, i.e., any statement or
 compound statement inside braces @code{begin ... end} form a basic
@@ -475,11 +518,16 @@ statement.
 
 
 @subsection Conditional Statement
+@cindex Conditional Statement
+@cindex If Statement
 
 The usual @code{if ... then ... else ... end} statement.
 
 
 @subsection Loop Statements
+@cindex Loop Statement
+@cindex While Loop
+@cindex Do Loop
 
 THE INFORMATION IN THIS SECTION IS SUBJECT TO CHANGE.
 
@@ -506,6 +554,7 @@ cause other undesired behaviours.
 
 
 @subsection Sequential Composition
+@cindex Sequential Composition
 
 Statements can be composed sequentially using the @code{;} operator.
 
@@ -545,6 +594,7 @@ partial order reduction.}.
 
 
 @subsection Non-deterministic Choice
+@cindex Non-deterministic Choice
 
 The statement @code{S1 [] S2} chooses either @code{S1} or @code{S2}
 for execution.
@@ -792,16 +842,22 @@ Currently, data type are all abstract.
 @node Function Definitions
 @section Function Definitions
 
-Functions may be defined using the syntax @code{fun @var{f} (@{
+Functions may be defined using the syntax @code{function @var{f} (@{
 @var{x}: @var{T} , @}): @var{S} == @var{body}}.  The function has name
 @var{f} and has the formal parameters @var{@{ x: T} , @var{@}} and
 returns a value of type @var{S}.
 
-The body @var{body} is either an @code{extern} declaration, stating
-that the semantics of the function is provided by Maude, or an
-expression.
+The body @var{body} is either an @code{external} declaration,
+stating that the semantics of the function is provided by Maude,
+or an expression.
 
-Currently, only @code{extern} declarations are supported by the
+If a function is declared as @code{function f(x: T) == external "foo"},
+the compiler emits a term that represents a call to a function @code{foo}
+in Maude, whenever it translates a function called @code{f}.  It is
+assumed that the run-time system provides code for this function.
+For details, see @ref{User Defined Data Types}.
+
+Currently, only @code{external} declarations are supported by the
 compiler.  No code will be emitted for functions.
 
 
