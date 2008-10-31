@@ -3,3 +3,103 @@
 @cindex Control Flow
 @cindex Concurrency Model
 
+@section Conditions
+
+@section Loops
+
+
+@section Exceptions
+@cindex Exceptions
+
+The current version of @acronym{CREOL} does not provide any exception
+mechanism.  The language reserves keywords for an exception mechanism
+(@pxref{Keywords}) and we expect to provide it in a future version.
+
+
+@section Scheduling
+@cindex Scheduling
+
+The statements @code{await} and @code{release} allow an activity to pass
+control to other activities (if these are present).  Part of the
+execution of an object is its @emph{scheduler.}  The scheduler checks
+for messages sent to the object, creates new activites if messages
+demand this, and selects a new activity if the object is idle.
+
+An object may be either @emph{idle} or @emph{executing.}  An executing
+object is executing an activity.  It becomes idle when the activity is
+terminating, or when the activities yield control using an @code{await}
+or @code{release} statement.
+
+When the object is idle, it will select one activity from all activities
+which are @emph{ready} for execution.  All newly created activities and
+almost all activities that were released because of a @code{release}
+statement are ready.
+
+Activities that were suspended because of an @code{await} statement are
+ready whenever the await evaluates to @code{true}.
+
+
+
+@subsection Release Points
+@cindex Release Point
+
+A @emph{release point} is a location in which an activity yields control
+to another activity.  Such locations are the end of a method body, and
+the statements @code{await} and @code{release}.
+
+An @code{await @var{v}} statement releases control only, if the
+condition @var{c} evaluates to @code{false}.  Otherwise, the activity
+keeps executing and the statement behaves like @code{skip}.
+
+
+
+@subsection Multiple Release Points
+
+@acronym{CREOL} does not make any guarantee that each @code{await} and
+@code{release} statement will be executed or how often it may be
+executed.  An implementation of Creol is free to optmise some
+suspensions away, or it may execute await statents multiple times,
+provided that each execution except the last one cause suspension of the
+process.
+
+@example
+interface Weirdness
+begin
+  with Any
+    op m
+    op n
+end
+
+class Weirdness
+implements Weirdness
+begin
+  var c: Bool := false
+  with Any
+    op m == release; await c
+    op n == c := true
+end
+
+class Test
+begin
+  op run == var w: Weirdness; w := new Weirdness; !w.m(); !w.n()
+end
+@end example
+
+The intention of the method @code{m} is to release once, test whether
+the variable @var{c} is @code{true} and suspend if not yet.
+
+An implementation is required to release the activity at least once,
+when the activity is executing and the condition demands it.  But if a
+activity is suspended, the scheduler need not select the activity just
+to suspend it.  It can wait until the next condition becomes true.
+
+None the less, the example above presents a useful pattern: if you want
+to await a condition and want to release unconditionally, you can
+preceed the @code{await} statement with a @code{release} statement.
+
+
+
+@c Local Variables: 
+@c mode: texinfo
+@c TeX-master: "creoltools"
+@c End: 
