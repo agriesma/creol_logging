@@ -14,7 +14,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: ocaml >= 3.09
 BuildRequires: ocaml-findlib-devel
-BuildRequires: ocaml-libxml2-devel
+BuildRequires: ocaml-libxml2-devel >= 0.0h
 # For formatting the documentation
 BuildRequires: /usr/bin/texi2pdf
 # For running the test suite.
