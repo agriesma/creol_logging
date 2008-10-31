@@ -14,6 +14,7 @@ that matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
 
 
 @section Reserved Keywords
+@anchor{Keywords}
 
 The following are reserved as keywords and cannot be used for
 variable or method names in programs.
@@ -22,18 +23,20 @@ variable or method names in programs.
 @example
 as          assert      await       begin       caller      class
 contracts   datatype    do          else        end         ensures
-exists      extern      false       forall      fun         history
+exists      external    false       forall      function    history
 if          implements  in          inherits    interface   inv
-new         nil         now         null        of          op
-out         posit       prove       release     requires    skip
-some        then        this        true        var         while
-with
+method      new         nil         now         null        of
+op          out         posit       prove       release     requires
+skip        some        then        this        true        var
+while       with
 @end example
 
 Currently reserved, but unused keywords are
 @example
-by          case        const       exception   for         raise
-signal      try         volatile    when        where
+case        component   constant    exception   exports     for
+from        imports     is          object      pragma      provides
+signal      throw	throws      try         volatile    when
+where
 @end example
 
 The following symbols are used as operator symbols.  They are listed
