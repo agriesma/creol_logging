@@ -182,6 +182,14 @@ and enable_pass s =
   in
     slot.enabled <- true ; enable slot.dependencies
 
+
+(** Enable passes.
+
+    Accepts a list of strings, and enables each pass in this list, as
+    well as its dependencies.  Each string in the list must be the
+    name of a pass.
+
+    May raise Arg.Bad if an undefined pass is provided. *)
 let requires passes =
   let doit p =
     message 1 ("Enabling pass " ^ p ^ ", it is required by the backend") ;
