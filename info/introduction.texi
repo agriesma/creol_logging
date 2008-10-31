@@ -1,9 +1,6 @@
 @node Introduction
 @chapter Introduction
 
-@acronym{CREOL}: An exciting mix of the best ingredients from many cultures!
-
-
 @acronym{CREOL}: A formal framework for reflective component modelling
 
 The goal of @acronym{CREOL} is to develop a formal framework and tool
@@ -14,20 +11,24 @@ correctness of the overall system.
 @menu
 * Overview::            What is @acronym{CREOL} about?
 * Features of CREOL::   Features of @acronym{CREOL}.
+* Comparing CREOL::	Comparing @acronym{CREOL} to other languages.
 @end menu
 
 
 @node Overview
 @section Overview
 
-Open distributed systems consist of geographically spread system
-components subject to run-time modifications. These systems are
-becoming increasingly important in modern society, for instance for
-safety-critical infrastructure. A major challenge for safety-critical
-open distributed systems is to ensure the reliability and correctness
-of the overall system when components are dynamically modified, so
-that development, maintenance, and upgrade of system components happen
-in a controlled manner.
+@acronym{CREOL} is a formal framework for object-oriented modelling
+of open distributed systems.
+
+Open distributed systems consist of geographically dispersed system
+components.
+@c These systems are becoming increasingly important in modern society,
+@c for instance for safety-critical infrastructure. A major challenge
+@c for safety-critical open distributed systems is to ensure the
+@c reliability and correctness of the overall system when components
+@c are dynamically modified, so that development, maintenance, and
+@c upgrade of system components happen in a controlled manner.
 
 The @acronym{CREOL} language contains programming constructs and
 reasoning control in the context of open distributed systems, and in
@@ -42,31 +43,34 @@ the project is to develop a formal framework and tool for reasoning
 about dynamic and reflective modifications in open distributed
 systems, ensuring reliability and correctness of the overall system.
 
-These issues will be investigated in the context of @acronym{CREOL}, an
-experimental high-level object-oriented language for distributed
-objects. The name is an acronym for Concurrent Reflective
-Object-oriented Language. The language is based on concurrent objects
-communicating by means of asynchronous method calls, and is formally
-defined with an operational semantics expressed in rewriting
-logic.
+@c These issues will be investigated in the context of @acronym{CREOL}, an
+@c experimental high-level object-oriented language for distributed
+@c objects. The name is an acronym for Concurrent Reflective
+@c Object-oriented Language. The language is based on concurrent objects
+@c communicating by means of asynchronous method calls, and is formally
+@c defined with an operational semantics expressed in rewriting
+@c logic.
 
-Specifications in rewriting logic are executable in the rewriting
-logic tool Maude. A prototype Maude interpreter for the communication
-basis of the @acronym{CREOL} language has been developed and extended with a
-pseudo-deterministic rewrite strategy in order to better simulate the
-non-determinism of a distributed environment.
+@c Specifications in rewriting logic are executable in the rewriting
+@c logic tool Maude. A prototype Maude interpreter for the communication
+@c basis of the @acronym{CREOL} language has been developed and extended with a
+@c pseudo-deterministic rewrite strategy in order to better simulate the
+@c non-determinism of a distributed environment.
 
 
 @node Features of CREOL
 @section Features of @acronym{CREOL}
 
-@acronym{CREOL} is a @emph{strongly typed} language, in the sense that function
-and method calls which disregard data types are rejected.
 
-@acronym{CREOL} is a @emph{statically typed} language.  The compiler tries to
-infer, whether a function call or a method call is safe in the sense
-that it will succeed.  Programs in which a call cannot succeed because
-of the type of an operation or a method are rejected.
+@subsection Type safety
+
+@acronym{CREOL} is a @emph{strongly typed} language, in the sense that
+function and method calls which disregard data types are rejected.
+
+@acronym{CREOL} is a @emph{statically typed} language.  The compiler
+tries to infer, whether a function call or a method call is safe in the
+sense that it will succeed.  Programs in which a call cannot succeed
+because of the type of an operation or a method are rejected.
 
 Message dispatch in @acronym{CREOL} is based not only on the type of the
 receiver of the message, but also on the arguments (multiple
@@ -74,6 +78,92 @@ dispatch), especially the type of the caller (which is constrained by
 the @emph{co-interface} and available in any method body under the
 name @code{caller}.
 
+
+@subsection Behavioural interfaces
+
+@acronym{CREOL} supports @emph{rich} interfaces which are not limited
+to the signature of methods and classes.  Interfaces can contain
+@emph{contracts} in terms of pre- and postconditions.  Beyond
+contracts users can define @emph{protocols} for interfaces, which
+describe the interactions between objects and formalise the use
+of an object.  Tests may be derived from these behavioural
+specifications.
+
+
+@subsection Reflection mechanisms
+
 The @code{caller} mechanism is similar to @code{context} in Smalltalk-80,
 but it does not, e.g., provide information on the call-chain.
 
+
+@subsection Communication model
+
+@acronym{CREOL} provides safe means for inter-object and intra-object
+communication and coordingation.
+
+Intra-object communication is by shared variables, which are the
+object's attributes.  Safe access to these variables is ensured by
+an cooperative coordination model.  Any object executes at most one
+activity which has exclusive access to the object's state.  Statements
+allow the object to yield control to other activities in the object
+and to specify conditions, in which it is safe to continue.
+
+All inter-object communication is @emph{asynchronous}.  An object
+dispatches a message to its receiver and continues to execute.
+Results to these @emph{asynchronous method calls} are managed
+by @emph{future variables}.  A future variable serves as a handle
+for a reply while it has not yet arrived, and holds the reply
+if it has arrived.  Future variables can be polled for the
+availability of the result, and the value can be read from the
+variable, blocking execution until the variable has arrived.
+
+The lack of a rendez-vouz mechanism faithfully reflects that
+objects are geographically dispersed.  Communication takes time,
+may be lossy and subject to reordering.
+
+
+@subsection Reasoning support
+
+@acronym{CREOL} appears like a programming language.  Its highly
+non-deterministic nature makes it ideal for modelling, because it
+allows to postpone design decisions.  Additionally, @acronym{CREOL}
+abstracts from implementation details and has formal semantics:
+
+@itemize
+@item A formal operational semantics in rewriting logic.
+
+@item A predicate transformer semantics.
+@end itemize
+
+Reasoning support is provided by the tools described in this manual.
+Rich @acronym{CREOL} models can be validated with a variety of tools,
+giving high confidence in the models correctness.
+
+
+@node Comparing CREOL
+@section Comparing CREOL to other languages
+
+The closest relative to @acronym{CREOL} is @acronym{Erlang}.
+
+@table @strong
+@item Declarative syntax.
+@acronym{CREOL}'s expression language is @emph{declarative}.  All
+expressions do not have side effects.  Only statements have a side
+effects.  The strict separation of a functional expression language
+and a imperative language of statements makes reasoning about
+programs simpler.
+
+@item Concurrent.
+@acronym{CREOL} is a concurrent language, like @acronym{Erlang}.
+The unit of concurrent execution is the @emph{activity}, which is
+either self-initiated or the reaction to an @emph{asynchronous}
+call.  Activities are light-weight, i.e., they require little
+memory and creating and deleting activities and message passing
+require little computational effort.
+
+@item Distribution.
+@acronym{CREOL} activities share the memory of the object they
+belong to.  But activities are scheduled cooperatively.  Activities
+are never preempted.  Each object can be executed on a single CPU and
+many objects can be distributed to many nodes without effort.
+@end table
