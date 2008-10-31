@@ -8,7 +8,7 @@ classes defined for all @acronym{CREOL} programs.
 @menu
 * Data Type Data::               Universal super type.
 * Data Type Bool::               Truth values.
-* Data Type Real::               Real-valued numbers.
+* Data Type Float::               Float-valued numbers.
 * Data Type Int::                Integer numbers.
 * Data Type String::             Strings of characters.
 * Data Type List::               Lists of elements.
@@ -97,67 +97,67 @@ b}.
 
 
 
-@node Data Type Real
-@section Data Type Real
-@tindex Real
+@node Data Type Float
+@section Data Type Float
+@tindex Float
 
-The type @code{Real} is supposed to include all values from the real
+The type @code{Float} is supposed to include all values from the real
 number field.
 
 @table @code
-@item fun - (a: Real): Real
+@item fun - (a: Float): Float
 @findex -
 The unary operator @code{-} represents negation of a real.
 
-@item fun + (a: Real, b: Real): Real
+@item fun + (a: Float, b: Float): Float
 @findex +
 The binary operator @code{+} represents addition of two reals.
 
-@item fun - (a: Real, b: Real): Real
+@item fun - (a: Float, b: Float): Float
 @findex -
 The binary operator @code{-} represents subtraction of two reals.
 
-@item fun * (a: Real, b: Real): Real
+@item fun * (a: Float, b: Float): Float
 @findex *
 The binary operator @code{*} represents multiplication of two reals.
 
-@item fun / (a: Real, b: Real): Real
+@item fun / (a: Float, b: Float): Float
 @findex /
 The binary operator @code{/} represents division of two
 reals.
 
-@c @item fun div(a: Real, b: Real): Real
+@c @item fun div(a: Float, b: Float): Float
 @c @findex div
 @c The binary function @code{div} represents Eucledian division of two
 @c reals.
 @c 
-@item fun % (a: Real, b: Real): Real
+@item fun % (a: Float, b: Float): Float
 @findex %
 The binary operator @code{%} represents Euclidean remainder of two
 reals.
 
-@item fun ** (a: Real, b: Real): Real
+@item fun ** (a: Float, b: Float): Float
 @findex **
 The binary operator @code{**} represents exponentiation of two reals.
 
-@item fun < (a: Real, b: Real): Bool
+@item fun < (a: Float, b: Float): Bool
 @findex <
 The binary relation @code{<} represents ``less than''.
 
-@item fun <= (a: Real, b: Real): Bool
+@item fun <= (a: Float, b: Float): Bool
 @findex <=
 The binary relation @code{<=} represents ``less than or equal''.
 
-@item fun > (a: Real, b: Real): Bool
+@item fun > (a: Float, b: Float): Bool
 @findex >
 The binary relation @code{>} represents ``greater than''.
 
-@item fun >= (a: Real, b: Real): Bool
+@item fun >= (a: Float, b: Float): Bool
 @findex >=
 The binary relation @code{>=} represents ``less than or equal''.
 @end table
 
-The compiler encodes literals of type @code{Real} as fractions with
+The compiler encodes literals of type @code{Float} as fractions with
 arbitrary precision.
 
 
@@ -167,7 +167,7 @@ arbitrary precision.
 @tindex Int
 
 The data type @code{Int} includes all integer numbers.  It is a subtype
-of @code{Real}.
+of @code{Float}.
 
 @table @code
 @item fun - (a: Int): Int
@@ -190,7 +190,7 @@ The binary operator @code{*} represents multiplication of two integers.
 @findex /
 The binary operator @code{/} represents Euclidean division of two
 integers.  In order to have standard division, at least one of the
-arguments should be coerced to @code{Real} using @code{real_of_int}.
+arguments should be coerced to @code{Float} using @code{real_of_int}.
 
 @item fun % (a: Int, b: Int): Int
 @findex %
@@ -218,7 +218,7 @@ The binary relation @code{>} represents ``greater than''.
 @findex >=
 The binary relation @code{>=} represents ``less than or equal''.
 
-@item fun real_of_int(a: Int): Real
+@item fun real_of_int(a: Int): Float
 @findex real_of_int
 The function @code{real_of_int} converts an integer value into a real
 value such that both represent the same number.
@@ -325,11 +325,11 @@ Convert a string to an integer number.  If @code{s} does not represent
 an integer literal, the behaviour is undefined.  Integer literals must,
 for now, be recognizable to the @emph{Maude} parser.
 
-@item fun string_of_real(r: Real): String
+@item fun string_of_real(r: Float): String
 @findex string_of_real
 Convert a floating point number @code{r} to a string.
 
-@item fun real_of_string(s: String): Real
+@item fun real_of_string(s: String): Float
 @findex real_of_string
 Convert a string to a floating point number.  If @code{s} does not
 represent a floating point literal, the behaviour is undefined.
@@ -637,9 +637,9 @@ events happened.  The type @code{Duration} refers to the difference
 between to instances of time.  A @code{Duration} is not ``negative''.
 
 @table @code
-@item fun dur(a: Real): Duration
+@item fun dur(a: Float): Duration
 @findex dur
-The function @code{dur} constructs a new duration from a @code{Real}
+The function @code{dur} constructs a new duration from a @code{Float}
 value.  The unit of duration is left unspecified.
 
 @item fun +(a: Time, d: Duration): Time
@@ -670,16 +670,16 @@ The operator @code{-(a: Duration, d: Duration): Duration} is the
 difference between two durations.  The result is undefined if @code{d
 > a}.
 
-@item fun *(a: Duration, s: Real): Duration
-@item fun *(a: Real, s: Duration): Duration
+@item fun *(a: Duration, s: Float): Duration
+@item fun *(a: Float, s: Duration): Duration
 @findex *
-The operators @code{*(a: Duration, s: Real): Duration} and @code{*(a:
-Real, s: Duration): Duration} represent @emph{scalar} multiplication
+The operators @code{*(a: Duration, s: Float): Duration} and @code{*(a:
+Float, s: Duration): Duration} represent @emph{scalar} multiplication
 of durations.
 
-@item fun /(a: Duration, s: Real): Duration
+@item fun /(a: Duration, s: Float): Duration
 @findex /
-The operator @code{/(a: Duration, s: Real): Duration} is scalar
+The operator @code{/(a: Duration, s: Float): Duration} is scalar
 division.  It is a shorthand for @code{a * (1.0 / s)}.
 
 @item fun <(a: Duration, b: Duration): Bool
