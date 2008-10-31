@@ -213,11 +213,11 @@ their semantics.
 @subsubsection Float
 
 The floating point data type is defined in the module
-@code{CREOL-DATA-FLOAT}.  Real values are constructed with
+@code{CREOL-DATA-FLOAT}.  Float values are constructed with
 @example
   op float(_) : Float -> Data [ctor] .
 @end example
-See @ref{Data Type Real} for an explanation of the defined functions
+See @ref{Data Type Float} for an explanation of the defined functions
 and their semantics.
 
 
