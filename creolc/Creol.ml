@@ -1735,6 +1735,19 @@ struct
   let make : Declaration.t list -> t = function l -> l
 
 
+  (** Compute the transitive closure of a relation. *)
+  let transitive_closure rel =
+    let rec do_it r =
+      let f s = IdSet.fold (fun elt acc -> IdSet.union (IdMap.find elt r) acc) s s in
+      let r' = IdMap.fold (fun key elt acc -> IdMap.add key (f elt) acc) r r in
+	if IdMap.equal IdSet.equal r r' then
+	  r
+	else
+	  do_it r'
+    in
+      do_it rel
+
+
   (** {4 Classes}
 
       The following functions are concerned with class definitions.
@@ -1763,6 +1776,19 @@ struct
       no class has the name [name] in [program]. *)
   let type_of_class program name =
     Class.get_type (find_class program name)
+
+
+  (** Compute the class hierarchy of a program. *)
+  let class_hierarchy program =
+    let f rel =
+      function
+	| Declaration.Class { Class.name = name; inherits = inh } ->
+	    IdMap.add name
+	      (List.fold_left (fun a (n, _) -> IdSet.add n a) IdSet.empty inh)
+		 rel
+	| _ -> rel
+    in
+      List.fold_left f IdMap.empty program
 
 
   (** [superclasses program name] returns the set of all super-classes
@@ -2131,30 +2157,19 @@ struct
 	| hd::tl -> List.fold_left find_join hd tl
 
 
-  (** Compute the transitive closure of the subtype relation. *)
-  let transitive_closure rel =
-    let rec do_it r =
-      let f s = IdSet.fold (fun elt acc -> IdSet.union (IdMap.find elt r) acc) s s in
-      let r' = IdMap.fold (fun key elt acc -> IdMap.add key (f elt) acc) r r in
-	if IdMap.equal IdSet.equal r r' then
-	  r
-	else
-	  do_it r'
-    in
-      do_it rel
 
-  (** Test whether the type relation is acyclic. *)
+  (** Return a string representation of a cycle. *)
+  let string_of_cycle c = String.concat " <: " c
+
+
+
   let cycle rel =
-    let f key elt acc = if (IdSet.mem key elt) then IdSet.add key acc else acc in
+    let f k e a = if IdSet.mem k e then IdSet.add k a else a in
       IdMap.fold f rel IdSet.empty
 
-  let acyclic_p rel = IdSet.is_empty (cycle rel)
 
-  let rec string_of_cycle =
-    function
-	[] -> assert false
-      | [s] -> s
-      | s::r -> s ^ " <: " ^ (string_of_cycle r)
+  (** Test whether the type relation is acyclic. *)
+  let acyclic_p rel = IdSet.is_empty (cycle rel)
 
 
   (** Find a cycle.  This is using depth first search. *)
