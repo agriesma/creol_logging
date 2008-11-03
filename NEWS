@@ -1,3 +1,23 @@
+creoltools 0.0l (2008-11-03): alpha release.
+
+This version requires ocaml-libxml2 0.0h or later.  It will not compile
+with any older version.
+
+In the language:
+* The type Real has been renamed to Float.
+* The keyword fun has been renamed to function.
+* The keyword extern has been renamed to external.
+
+In the compiler:
+* An error in type checking attribute initialisation has been corrected.
+* Implementation of floating point numbers has been corrected.
+* A couple of other errors have been corrected.
+
+Other:
+* The documentation has been updated.
+* Unit tests were introduced to increas code quality.
+
+
 creoltools 0.0k (2008-09-13): alpha release.
 
 In the language:
