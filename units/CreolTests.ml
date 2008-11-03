@@ -22,6 +22,9 @@
 open OUnit
 open Creol
 
+let set_of_list lst =
+  List.fold_left (fun e a -> IdSet.add a e) IdSet.empty lst
+
 let test_fixture = "Creol" >:::
   [
     "Type" >::: [
@@ -67,6 +70,155 @@ let test_fixture = "Creol" >:::
       ) ;
     ] ;
     "Program" >::: [
+      "diamonds" >::: [
+        "simple" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c ] in
+	    let res = Program.diamonds program c.Class.name in
+	      assert_equal IdSet.empty res
+        ) ;
+        "single-inherits" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ;
+		      inherits = [("C", [])]; contracts = []; implements = [];
+		      attributes = []; with_defs = []; hidden = false;
+		      file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c; Declaration.Class d ] in
+	    let res = Program.diamonds program d.Class.name in
+	      assert_equal IdSet.empty res
+        ) ;
+        "double-inherits" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ;
+		      inherits = [("C", []); ("C", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c; Declaration.Class d ] in
+	    let res = Program.diamonds program d.Class.name in
+	      assert_equal (IdSet.singleton "C") res
+        ) ;
+        "inherits-two" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and e = { Class.name = "E"; parameters = [] ;
+		      inherits = [("C", []); ("D", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c; Declaration.Class d;
+			    Declaration.Class e ] in
+	    let res = Program.diamonds program e.Class.name in
+	      assert_equal IdSet.empty res
+	) ;
+        "inherits-tree" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and e = { Class.name = "E"; parameters = [] ;
+		      inherits = [("C", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    and f = { Class.name = "F"; parameters = [] ;
+		      inherits = [("D", []); ("E", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c; Declaration.Class d;
+			    Declaration.Class e; Declaration.Class f ] in
+	    let res = Program.diamonds program f.Class.name in
+	      assert_equal IdSet.empty res
+	) ;
+        "inherits-diamond" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ;
+		      inherits = [("C", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    and e = { Class.name = "E"; parameters = [] ;
+		      inherits = [("C", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    and f = { Class.name = "F"; parameters = [] ;
+		      inherits = [("D", []); ("E", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c; Declaration.Class d;
+			    Declaration.Class e; Declaration.Class f ] in
+	    let res = Program.diamonds program f.Class.name in
+	      assert_equal (IdSet.singleton "C") res
+	) ;
+        "inherits-late-diamond" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and e = { Class.name = "E"; parameters = [] ;
+		      inherits = [("C", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    and f = { Class.name = "F"; parameters = [] ;
+		      inherits = [("C", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    and g = { Class.name = "G"; parameters = [] ;
+		      inherits = [("D", []); ("E", []); ("F", [])];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c; Declaration.Class d;
+			    Declaration.Class e; Declaration.Class f ] in
+	    let res = Program.diamonds program f.Class.name in
+	      (* assert_equal (IdSet.singleton "C") res *)
+	      ()
+	) ;
+        "inherits-dumb-diamond" >:: (
+	  fun _ ->
+	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
+		      contracts = []; implements = []; attributes = [];
+		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    and d = { Class.name = "D"; parameters = [] ;
+		      inherits = [("C", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    and e = { Class.name = "E"; parameters = [] ;
+		      inherits = [("C", []); ("D", [])]; contracts = [];
+		      implements = []; attributes = []; with_defs = [];
+		      hidden = false; file = ""; line = 0; }
+	    in
+	    let program = [ Declaration.Class c; Declaration.Class d;
+			    Declaration.Class e] in
+	    let res = Program.diamonds program e.Class.name in
+	      assert_equal (IdSet.singleton "C") res
+	) ;
+      ] ;
       "class_provides" >::: [
         "simple" >:: (
 	  fun _ ->
@@ -101,10 +253,7 @@ let test_fixture = "Creol" >:::
 		      hidden = false; }
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Interface i ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "I"]
-	    in
+	    and expect = set_of_list ["Any"; "I"] in
 	    let res = Program.class_provides program c in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
@@ -120,10 +269,7 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Interface i;
 			    Declaration.Interface j ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "I"; "J" ]
-	    in
+	    and expect = set_of_list ["Any"; "I"; "J" ] in
 	    let res = Program.class_provides program c in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
@@ -142,10 +288,7 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "I"]
-	    in
+	    and expect = set_of_list ["Any"; "I"] in
 	    let res = Program.class_provides program c in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
@@ -164,10 +307,7 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "J"]
-	    in
+	    and expect = set_of_list ["Any"; "J"] in
 	    let res = Program.class_provides program d in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
@@ -186,10 +326,7 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "I"; "J"]
-	    in
+	    and expect = set_of_list ["Any"; "I"; "J"] in
 	    let res = Program.class_provides program d in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
         ) ;
@@ -208,10 +345,7 @@ let test_fixture = "Creol" >:::
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "I"; "J"]
-	    in
+	    and expect = set_of_list ["Any"; "I"; "J"] in
 	    let res = Program.class_provides program d in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
 	  ) ;
@@ -236,10 +370,7 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Class e ; Declaration.Interface i;
 			    Declaration.Interface j; Declaration.Interface k ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "I"; "J"; "K"]
-	    in
+	    and expect = set_of_list ["Any"; "I"; "J"; "K"] in
 	    let res = Program.class_provides program e in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
 	  ) ;
@@ -265,10 +396,7 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Class e ; Declaration.Interface i;
 			    Declaration.Interface j; Declaration.Interface k ]
-	    and expect =
-	      List.fold_left (fun e a -> IdSet.add a e)
-	        IdSet.empty ["Any"; "I"; "J"; "K"]
-	    in
+	    and expect = set_of_list ["Any"; "I"; "J"; "K"] in
 	    let res = Program.class_provides program e in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
 	  ) ;

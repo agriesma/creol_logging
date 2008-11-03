@@ -48,8 +48,12 @@ unittests_cmx		= CreolTests.cmx UnitTests.cmx
 unittests: $(unittests_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ creol.cma $(unittests_cmo)
 
+$(unittests_cmo): ../creolc/creol.cma
+
 unittests.opt: $(unittests_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ creol.cmxa $(unittests_cmx)
+
+$(unittests_cmx): ../creolc/creol.cmxa
 
 # These generic rules compile an OCaml source file to an object file.
 .PRECIOUS: *.cmo *.cmi *.cmx
