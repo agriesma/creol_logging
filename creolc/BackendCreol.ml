@@ -483,17 +483,17 @@ let pretty_print_program out_channel input =
       debugging. *)
   let rec print_declaration =
     function
-	Declaration.Class c when not c.Class.hidden ->
+	Declaration.Class c when not (Class.hidden_p c) ->
 	  print_class c ; print_space () ; print_space ()
-      | Declaration.Interface i when not i.Interface.hidden ->
+      | Declaration.Interface i when not (Interface.hidden_p i) ->
 	  print_iface i ; print_space () ; print_space ()
       | Declaration.Object o when not o.Object.hidden ->
 	  print_object o ; print_space () ; print_space ()
-      | Declaration.Exception e when not e.Exception.hidden ->
+      | Declaration.Exception e when not (Exception.hidden_p e) ->
 	  print_exception e ; print_space () ; print_space ()
-      | Declaration.Datatype d when not d.Datatype.hidden ->
+      | Declaration.Datatype d when not (Datatype.hidden_p d) ->
           print_datatype d ; print_space () ; print_space ()
-      | Declaration.Function f when not f.Function.hidden ->
+      | Declaration.Function f when not (Function.hidden_p f) ->
 	  print_function f ; print_space () ; print_space ()
       | _ -> ()
   and print_function f =
@@ -669,6 +669,13 @@ let pretty_print_program out_channel input =
 	separated_list print_inherits print_comma c.Class.inherits ;
 	close_box () 
       end ;
+    if [] <> c.Class.pragmas then
+      begin
+	open_box 2 ;
+	print_space () ;
+	separated_list print_pragma print_space c.Class.pragmas ;
+	close_box () 
+      end ;
     print_space () ;
     print_string "begin" ;
     print_space () ;
@@ -789,6 +796,14 @@ let pretty_print_program out_channel input =
 	    print_expression e ;
 	    close_box ()
     end
+  and print_pragma { Pragma.name = n; values = v } =
+    print_string n ;
+    if List.length v > 0 then
+      begin
+	print_string "(";
+	print_expression_list v;
+	print_string ")"
+      end
   in
     let () = set_formatter_out_channel out_channel in
       open_vbox 0 ;

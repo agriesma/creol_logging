@@ -114,6 +114,7 @@ rule token = parse
     | "assert" { ASSERT }
     | "await" { AWAIT }
     | "begin" { BEGIN }
+    | "by" { reserved lexbuf }
     | "caller" { CALLER }
     | "case" { reserved lexbuf }
     | "class" { CLASS }
@@ -143,6 +144,7 @@ rule token = parse
     | "interface" { INTERFACE }
     | "inv" { INV }
     | "is" { reserved lexbuf }
+    | "measure" { reserved lexbuf }
     | "method" { OP }
     | "new" { NEW }
     | "nil" { NIL }
@@ -153,7 +155,7 @@ rule token = parse
     | "op" { OP }
     | "out" { OUT }
     | "posit" { POSIT }
-    | "pragma" { reserved lexbuf }
+    | "pragma" { PRAGMA }
     | "prove" { reserved lexbuf }
     | "provides" { reserved lexbuf }
     | "release" { RELEASE }

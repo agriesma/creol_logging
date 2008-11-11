@@ -344,7 +344,7 @@ let parse name input =
 		  with_defs = [{ With.co_interface = Type.any;
 				 methods = m;
 				 invariants = []}] ;
-		  hidden = false ;
+		  pragmas = [];
 		  file = "";
 		  line = 0 }
       | "~Method" ->

@@ -25,6 +25,15 @@ open Creol
 let set_of_list lst =
   List.fold_left (fun e a -> IdSet.add a e) IdSet.empty lst
 
+let make_class name ?(contracts=[]) ?(implements=[]) inherits =
+  { Class.name = name; parameters = [] ; inherits = inherits;
+    contracts = contracts; implements = implements; attributes = [];
+    with_defs = []; pragmas = []; file = ""; line = 0 }
+
+let make_iface name inherits =
+  { Interface.name = name; inherits = inherits; with_decls = [];
+    pragmas = [] }
+
 let test_fixture = "Creol" >:::
   [
     "Type" >::: [
@@ -73,9 +82,7 @@ let test_fixture = "Creol" >:::
       "diamonds" >::: [
         "simple" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
 	    in
 	    let program = [ Declaration.Class c ] in
 	    let res = Program.diamonds program c.Class.name in
@@ -83,13 +90,8 @@ let test_fixture = "Creol" >:::
         ) ;
         "single-inherits" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ;
-		      inherits = [("C", [])]; contracts = []; implements = [];
-		      attributes = []; with_defs = []; hidden = false;
-		      file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" [("C", [])]
 	    in
 	    let program = [ Declaration.Class c; Declaration.Class d ] in
 	    let res = Program.diamonds program d.Class.name in
@@ -97,13 +99,8 @@ let test_fixture = "Creol" >:::
         ) ;
         "double-inherits" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ;
-		      inherits = [("C", []); ("C", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" [("C", []); ("C", [])]
 	    in
 	    let program = [ Declaration.Class c; Declaration.Class d ] in
 	    let res = Program.diamonds program d.Class.name in
@@ -111,16 +108,9 @@ let test_fixture = "Creol" >:::
         ) ;
         "inherits-two" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and e = { Class.name = "E"; parameters = [] ;
-		      inherits = [("C", []); ("D", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" []
+	    and e = make_class "E" [("C", []); ("D", [])]
 	    in
 	    let program = [ Declaration.Class c; Declaration.Class d;
 			    Declaration.Class e ] in
@@ -129,20 +119,10 @@ let test_fixture = "Creol" >:::
 	) ;
         "inherits-tree" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and e = { Class.name = "E"; parameters = [] ;
-		      inherits = [("C", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
-	    and f = { Class.name = "F"; parameters = [] ;
-		      inherits = [("D", []); ("E", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" []
+	    and e = make_class "E" [("C", [])]
+	    and f = make_class "F" [("D", []); ("E", [])]
 	    in
 	    let program = [ Declaration.Class c; Declaration.Class d;
 			    Declaration.Class e; Declaration.Class f ] in
@@ -151,21 +131,10 @@ let test_fixture = "Creol" >:::
 	) ;
         "inherits-diamond" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ;
-		      inherits = [("C", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
-	    and e = { Class.name = "E"; parameters = [] ;
-		      inherits = [("C", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
-	    and f = { Class.name = "F"; parameters = [] ;
-		      inherits = [("D", []); ("E", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" [("C", [])]
+	    and e = make_class "E" [("C", [])]
+	    and f = make_class "F" [("D", []); ("E", [])]
 	    in
 	    let program = [ Declaration.Class c; Declaration.Class d;
 			    Declaration.Class e; Declaration.Class f ] in
@@ -174,44 +143,23 @@ let test_fixture = "Creol" >:::
 	) ;
         "inherits-late-diamond" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and e = { Class.name = "E"; parameters = [] ;
-		      inherits = [("C", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
-	    and f = { Class.name = "F"; parameters = [] ;
-		      inherits = [("C", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
-	    and g = { Class.name = "G"; parameters = [] ;
-		      inherits = [("D", []); ("E", []); ("F", [])];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" []
+	    and e = make_class "E" [("C", [])]
+	    and f = make_class "F" [("C", [])]
+	    and g = make_class "G" [("D", []); ("E", []); ("F", [])]
 	    in
 	    let program = [ Declaration.Class c; Declaration.Class d;
-			    Declaration.Class e; Declaration.Class f ] in
+			    Declaration.Class e; Declaration.Class f;
+			    Declaration.Class g ] in
 	    let res = Program.diamonds program f.Class.name in
-	      (* assert_equal (IdSet.singleton "C") res *)
-	      ()
+	      assert_equal (IdSet.singleton "C") res
 	) ;
         "inherits-dumb-diamond" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ;
-		      inherits = [("C", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
-	    and e = { Class.name = "E"; parameters = [] ;
-		      inherits = [("C", []); ("D", [])]; contracts = [];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" [("C", [])]
+	    and e = make_class "E" [("C", []); ("D", [])]
 	    in
 	    let program = [ Declaration.Class c; Declaration.Class d;
 			    Declaration.Class e] in
@@ -222,9 +170,7 @@ let test_fixture = "Creol" >:::
       "class_provides" >::: [
         "simple" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
+	    let c = make_class "C" []
 	    in
 	    let program = [ Declaration.Class c ] in
 	    let res = Program.class_provides program c in
@@ -232,13 +178,8 @@ let test_fixture = "Creol" >:::
         ) ;
         "inherits" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ;
-		      inherits = [ ("C", []) ]; contracts = []; implements = [];
-		      attributes = []; with_defs = []; hidden = false;
-		      file = ""; line = 0; }
+	    let c = make_class "C" []
+	    and d = make_class "D" [("C", [])]
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d ] in
 	    let res = Program.class_provides program d in
@@ -246,11 +187,8 @@ let test_fixture = "Creol" >:::
         ) ;
         "implements" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = [("I", [])]; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
+	    let c = make_class "C" ~implements:[("I", [])] []
+	    and i = make_iface "I" []
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Interface i ]
 	    and expect = set_of_list ["Any"; "I"] in
@@ -259,13 +197,9 @@ let test_fixture = "Creol" >:::
         ) ;
         "interface-inherits" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = [("J", [])]; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and j = { Interface.name = "J"; inherits = [("I", [])];
-		      with_decls = []; hidden = false; }
+	    let c = make_class "C" ~implements:[("J", [])] []
+	    and i = make_iface "I" []
+	    and j = make_iface "J"  [("I", [])]
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Interface i;
 			    Declaration.Interface j ]
@@ -275,16 +209,10 @@ let test_fixture = "Creol" >:::
         ) ;
         "class-implements" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = [("I", [])]; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
-		      contracts = []; implements = [("J", [])]; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
-		      hidden = false; }
+	    let c = make_class "C" ~implements:[("I", [])] []
+	    and d = make_class "D" ~implements:[("J", [])] [("C", [])]
+	    and i = make_iface "I" []
+	    and j = make_iface "J" []
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
@@ -294,16 +222,10 @@ let test_fixture = "Creol" >:::
         ) ;
         "implements-class-inherits" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = []; implements = [("I", [])]; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
-		      contracts = []; implements = [("J", [])]; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
-		      hidden = false; }
+	    let c = make_class "C" [] ~implements:[("I", [])]
+	    and d = make_class "D" [("C", [])] ~implements:[("J", [])]
+	    and i = make_iface "I" []
+	    and j = make_iface "J" []
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
@@ -313,16 +235,10 @@ let test_fixture = "Creol" >:::
         ) ;
         "contracts-implements" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = [("I", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
-		      contracts = []; implements = [("J", [])]; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
-		      hidden = false; }
+	    let c = make_class "C" [] ~contracts:[("I", [])]
+	    and d = make_class "D" [("C", [])] ~implements:[("J", [])]
+	    and i = make_iface "I" []
+	    and j = make_iface "J" []
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
@@ -332,16 +248,10 @@ let test_fixture = "Creol" >:::
         ) ;
         "contracts" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = [("I", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
-		      contracts = [("J", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
-		      hidden = false; }
+	    let c = make_class "C" [] ~contracts:[("I", [])]
+	    and d = make_class "D" [("C", [])] ~contracts:[("J", [])]
+	    and i = make_iface "I" []
+	    and j = make_iface "J" []
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Interface i; Declaration.Interface j ]
@@ -351,21 +261,12 @@ let test_fixture = "Creol" >:::
 	  ) ;
         "three-inherits" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = [("I", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [("C", [])];
-		      contracts = [("J", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and e = { Class.name = "E"; parameters = [] ; inherits = [("D", [])];
-		      contracts = [("K", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and k = { Interface.name = "K"; inherits = []; with_decls = [];
-		      hidden = false; }
+	    let c = make_class "C" [] ~contracts:[("I", [])]
+	    and d = make_class "D" [("C", [])] ~contracts:[("J", [])]
+	    and e = make_class "E" [("D", [])] ~contracts:[("K", [])]
+	    and i = make_iface "I" []
+	    and j = make_iface "J" []
+	    and k = make_iface "K" []
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Class e ; Declaration.Interface i;
@@ -376,22 +277,12 @@ let test_fixture = "Creol" >:::
 	  ) ;
         "inherit-two" >:: (
 	  fun _ ->
-	    let c = { Class.name = "C"; parameters = [] ; inherits = [];
-		      contracts = [("I", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and d = { Class.name = "D"; parameters = [] ; inherits = [];
-		      contracts = [("J", [])]; implements = []; attributes = [];
-		      with_defs = []; hidden = false; file = ""; line = 0; }
-	    and e = { Class.name = "E"; parameters = [] ;
-		      inherits = [("C", []); ("D", [])]; contracts = [("K", [])];
-		      implements = []; attributes = []; with_defs = [];
-		      hidden = false; file = ""; line = 0; }
-	    and i = { Interface.name = "I"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and j = { Interface.name = "J"; inherits = []; with_decls = [];
-		      hidden = false; }
-	    and k = { Interface.name = "K"; inherits = []; with_decls = [];
-		      hidden = false; }
+	    let c = make_class "C" [] ~contracts:[("I", [])]
+	    and d = make_class "D" [] ~contracts:[("J", [])]
+	    and e = make_class "E" [("C", []); ("D", [])] ~contracts:[("K", [])]
+	    and i = make_iface "I" []
+	    and j = make_iface "J" []
+	    and k = make_iface "K" []
 	    in
 	    let program = [ Declaration.Class c ; Declaration.Class d;
 			    Declaration.Class e ; Declaration.Interface i;

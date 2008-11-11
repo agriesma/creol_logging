@@ -33,15 +33,15 @@ let emit name tree =
   let writer = XmlTextWriter.to_file name 0 in
   let rec creol_declaration_to_xml =
     function
-	Declaration.Class c when not c.Class.hidden ->
+	Declaration.Class c when not (Class.hidden_p c) ->
 	  creol_class_to_xml c
-      | Declaration.Interface i when not i.Interface.hidden ->
+      | Declaration.Interface i when not (Interface.hidden_p i) ->
 	  creol_interface_to_xml i
-      | Declaration.Datatype d when not d.Datatype.hidden ->
+      | Declaration.Datatype d when not (Datatype.hidden_p d) ->
 	  creol_datatype_to_xml d
-      | Declaration.Exception e when not e.Exception.hidden ->
+      | Declaration.Exception e when not (Exception.hidden_p e) ->
 	  creol_exception_to_xml e
-      | Declaration.Function f when not f.Function.hidden ->
+      | Declaration.Function f when not (Function.hidden_p f) ->
 	  creol_function_to_xml f
       | _ -> ()
   and creol_exception_to_xml e =

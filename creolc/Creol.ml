@@ -19,16 +19,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
+
 (** Definition of the abstract syntax of Creol and a collection
     of functions for its manipulation. *)
+
 
 (** A set of identifiers (variable names, class names, interface names,
     ...) *)
 module IdSet = Set.Make(String)
 
+
 (** A map from identifiers (variable names, class names, interface
     names, ...).  *)
 module IdMap = Map.Make(String)
+
 
 (** This module defines the abstract syntax of types.
 
@@ -1336,12 +1340,33 @@ struct
 
 end
 
+(** Pragmatic instructions to the compiler.  This module maintains the
+    abstract syntax of such a pragmatic instruction and defines their
+    types. *)
+module Pragma =
+struct
+  type t = { name: string; values: Expression.t list }
+
+  let pragma_hidden_p { name = n } = n = "Hidden"
+
+  (** Whether the class is hidden. *)
+  let hidden_p pragmas = List.exists pragma_hidden_p pragmas
+
+  let hide pragmas =
+    if not (hidden_p pragmas) then
+      { name = "Hidden"; values = [] }::pragmas
+    else
+      pragmas
+
+  let show pragmas = List.filter (fun p -> not (pragma_hidden_p p)) pragmas
+end
+
+
 (** Abstract syntax of variable declarations. *)
 module VarDecl =
   struct
     type t =
       { name: string; var_type: Type.t; init: Expression.t option }
-
   end
 
 
@@ -1540,10 +1565,20 @@ struct
 	implements: Inherits.t list;
 	attributes: VarDecl.t list;
 	with_defs: With.t list;
-	hidden: bool;
+	pragmas: Pragma.t list;
 	file: string;
 	line: int;
       }
+
+  (** Whether the class is hidden. *)
+  let hidden_p c = Pragma.hidden_p c.pragmas
+
+  (** Hide a class. *)
+  let hide c = { c with pragmas = Pragma.hide c.pragmas }
+
+  (** Show a class. *)
+  let show c = { c with pragmas = Pragma.show c.pragmas }
+
 
   (** Get the interface type implemented by a class.  If it does not
       declare interfaces, then the result is [Any].  Filters
@@ -1587,7 +1622,16 @@ struct
       { name: string;
 	inherits: Inherits.t list;
 	with_decls: With.t list;
-	hidden: bool }
+        pragmas: Pragma.t list }
+
+  (** Whether the interface is hidden. *)
+  let hidden_p i = Pragma.hidden_p i.pragmas
+
+  (** Hide a interface. *)
+  let hide i = { i with pragmas = Pragma.hide i.pragmas }
+
+  (** Show a interface. *)
+  let show i = { i with pragmas = Pragma.show i.pragmas }
 
   let compare { name = m } { name = n } = String.compare m n
 
@@ -1600,7 +1644,16 @@ end
 (** Abstract syntax of interfaces. *)
 module Exception =
 struct
-  type t = { name: string; parameters: VarDecl.t list; hidden: bool }
+  type t = { name: string; parameters: VarDecl.t list; pragmas: Pragma.t list }
+
+  (** Whether the exception is hidden. *)
+  let hidden_p e = Pragma.hidden_p e.pragmas
+
+  (** Hide a exception. *)
+  let hide e = { e with pragmas = Pragma.hide e.pragmas }
+
+  (** Show a exception. *)
+  let show e = { e with pragmas = Pragma.show e.pragmas }
 end
 
 
@@ -1616,8 +1669,7 @@ struct
     parameters: VarDecl.t list;
     result_type: Type.t;
     body: Expression.t;
-    hidden: bool
-  }
+    pragmas: Pragma.t list }
 
   let domain_type f =
     Type.Tuple (List.map (fun v -> v.VarDecl.var_type) f.parameters)
@@ -1626,6 +1678,15 @@ struct
 
   let signature f = Type.Function(domain_type f, range_type f)
 
+
+  (** Whether the function is hidden. *)
+  let hidden_p f = Pragma.hidden_p f.pragmas
+
+  (** Hide a function. *)
+  let hide f = { f with pragmas = Pragma.hide f.pragmas }
+
+  (** Show a function. *)
+  let show f = { f with pragmas = Pragma.show f.pragmas }
 
   (* If a function has an external definition, then this function
      returns its value.  Otherwise, raise [Not_found]. *)
@@ -1646,9 +1707,18 @@ struct
   type t = {
     name: Type.t;
     supers: Type.t list;
-    hidden: bool
+    pragmas: Pragma.t list;
       (* Hide from output.  Set for datatypes defined in the prelude. *)
   }
+
+  (** Whether the class is hidden. *)
+  let hidden_p c = Pragma.hidden_p c.pragmas
+
+  (** Hide a class. *)
+  let hide c = { c with pragmas = Pragma.hide c.pragmas }
+
+  (** Show a class. *)
+  let show c = { c with pragmas = Pragma.show c.pragmas }
 
 end
 
@@ -1698,21 +1768,21 @@ struct
 
   let hide =
     function
-	Class c -> Class { c with Class.hidden = true }
-      | Interface i -> Interface { i with Interface.hidden = true }
-      | Datatype d -> Datatype { d with Datatype.hidden = true }
-      | Exception e -> Exception { e with Exception.hidden = true }
-      | Function f -> Function { f with Function.hidden = true }
+	Class c -> Class (Class.hide c)
+      | Interface i -> Interface (Interface.hide i)
+      | Datatype d -> Datatype (Datatype.hide d)
+      | Exception e -> Exception (Exception.hide e)
+      | Function f -> Function (Function.hide f)
       | Object o -> Object { o with Object.hidden = true }
 
 
   let show =
     function
-	Class c -> Class { c with Class.hidden = false }
-      | Interface i -> Interface { i with Interface.hidden = false }
-      | Datatype d -> Datatype { d with Datatype.hidden = false }
-      | Exception e -> Exception { e with Exception.hidden = false }
-      | Function f -> Function { f with Function.hidden = false }
+	Class c -> Class (Class.show c)
+      | Interface i -> Interface (Interface.show i)
+      | Datatype d -> Datatype (Datatype.show d)
+      | Exception e -> Exception (Exception.show e)
+      | Function f -> Function (Function.show f)
       | Object o -> Object { o with Object.hidden = false }
 
 end

@@ -86,6 +86,7 @@ let statement_note pos =
 %token EOF
 
 (* Keywords *)
+%token PRAGMA
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END
 %token INTERFACE DATATYPE
 %token WHILE VAR WITH OP IN OUT FUN EXTERN
@@ -144,27 +145,25 @@ declaration:
     | error { signal_error $startpos "syntax error" }
 
 classdecl:
-      CLASS n = CID p = loption(class_params) s = list(super_decl)
-	BEGIN a = list(terminated(attribute, ioption(SEMI)))
-        aw = loption(anon_with_def) m = list(with_def) END
+      CLASS n = CID p = plist(vardecl_no_init) s = list(super_decl)
+        pr = list(pragma)
+	BEGIN
+        a = list(terminated(attribute, ioption(SEMI)))
+        aw = loption(anon_with_def) m = list(with_def)
+        END
       { { Class.name = n; parameters = p; inherits = inherits s;
 	  contracts = contracts s; implements = implements s;
 	  attributes = List.flatten a;
           with_defs = upd_method_locs n (aw @ m);
-	  hidden = false;
+	  pragmas = pr;
 	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }
     | CLASS CID error
 	{ signal_error $startpos "syntax error in class declaration" }
-    | CLASS CID loption(class_params) list(super_decl) BEGIN error
+    | CLASS CID plist(vardecl_no_init) list(super_decl)
+        list(pragma) BEGIN error
 	{ signal_error $startpos "syntax error in class body definition" }
-
-class_params:
-      LPAREN l= separated_nonempty_list(COMMA, vardecl_no_init) RPAREN
-        { l }
-    | LPAREN error
-	{ signal_error $startpos "syntax error in class/interface parameter list" }
 
 super_decl:
       d = implements_decl { d }
@@ -190,9 +189,7 @@ inherits_decl:
 	{ signal_error $startpos "syntax error in inherits list" }
 
 inherits:
-    i = CID e = loption(delimited(LPAREN,
-				 separated_nonempty_list(COMMA, expression),
-				 RPAREN))
+    i = CID e = plist(expression)
         { (i, e) }
 
 attribute:
@@ -207,7 +204,7 @@ vardecl:
     | v = vardecl_no_init ASSIGN i = expression_or_new
 	{ { v with VarDecl.init = Some i } }
 
-%inline vardecl_no_init:
+vardecl_no_init:
       i = ID COLON t = creol_type
         { { VarDecl.name = i; VarDecl.var_type = t; VarDecl.init = None } }
     | ID error
@@ -219,6 +216,7 @@ method_decl:
       OP i = ID p = parameters_opt
       r = ioption(preceded(REQUIRES, expression))
       e = ioption(preceded(ENSURES, expression))
+      pr = list(pragma)
         { let r' = match r with
 	    | None -> Expression.Bool (Expression.make_note (), true)
 	    | Some x -> x
@@ -256,7 +254,8 @@ with_def:
 	invariants = i } }
 
 method_def:
-      d = method_decl EQEQ a = list(terminated(attribute, SEMI)) s = statement
+      d = method_decl EQEQ
+        a = list(terminated(attribute, SEMI)) s = statement
         { { d with Method.vars = List.flatten a; body = Some s} }
   |   d = method_decl EQEQ EXTERN s = STRING
         { { d with body = Some (Extern (statement_note $startpos, s)) } }
@@ -266,11 +265,11 @@ method_def:
 (* Interface Declaration *)
 
 interfacedecl:
-      INTERFACE n = CID loption(class_params)
-      i = list(inherits_decl) BEGIN ioption(preceded(INV, expression))
-      w = list(with_decl) END
+      INTERFACE n = CID plist(vardecl_no_init) i = list(inherits_decl)
+        pr = list(pragma)
+        BEGIN ioption(preceded(INV, expression)) w = list(with_decl) END
         { { Interface.name = n; inherits = inherits i;
-	    with_decls = upd_method_locs n w; hidden = false } }
+	    with_decls = upd_method_locs n w; pragmas = pr } }
     | INTERFACE error
 	{ signal_error $startpos "syntax error in interface declaration" }
     | INTERFACE CID error
@@ -290,34 +289,28 @@ with_decl:
 (* Data type declaration *)
 
 datatypedecl:
-    DATATYPE t = creol_type
+    DATATYPE t = creol_type pr = list(pragma)
       s = loption(preceded(OF, separated_list(COMMA, creol_type)))
-    { { Datatype.name = t; supers = s; hidden = false } }
+    { { Datatype.name = t; supers = s; pragmas = pr } }
 
 functiondecl:
-    FUN n = id_or_op
-    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init),
-			 RPAREN)) COLON t = creol_type EQEQ e = expression
+    FUN n = id_or_op p = plist(vardecl_no_init) COLON t = creol_type
+    pr = list(pragma) EQEQ e = expression
     { { Function.name = n; parameters = p; result_type = t; body = e;
-	hidden = false } }
-  | FUN n = id_or_op
-    p = loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init),
-			 RPAREN)) COLON t = creol_type
-    EQEQ EXTERN s = STRING
+        pragmas = pr } }
+  | FUN n = id_or_op p = plist(vardecl_no_init) COLON t = creol_type
+    pr = list(pragma) EQEQ EXTERN s = STRING
     { { Function.name = n; parameters = p; result_type = t;
 	body = Expression.Extern (expression_note $startpos, s);
-	hidden = false } }
+        pragmas = pr } }
   | FUN error
     { signal_error $startpos "syntax error in function declaration" }
   | FUN id_or_op error
     { signal_error $startpos "syntax error in function declaration" }
-  | FUN id_or_op
-    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-    COLON error
+  | FUN id_or_op plist(vardecl_no_init) COLON error
     { signal_error $startpos "syntax error in function declaration" }
-  | FUN id_or_op
-    loption(delimited(LPAREN, separated_list(COMMA, vardecl_no_init), RPAREN))
-    COLON creol_type EQEQ error
+  | FUN id_or_op plist(vardecl_no_init) COLON creol_type pr = list(pragma)
+    EQEQ error
     { signal_error $startpos "syntax error in function declaration" }
 
 id_or_op:
@@ -495,8 +488,7 @@ lhs:
 expression_or_new:
       e = expression
 	{ e }
-    | NEW t = creol_type
-      a = loption(delimited(LPAREN, separated_list(COMMA, expression), RPAREN))
+    | NEW t = creol_type a = plist(expression)
 	{ New (expression_note $startpos, t, a) }
     | NEW error
 	{ signal_error $startpos "syntax error in new statement" }
@@ -606,5 +598,16 @@ creol_type:
 
 invariant:
     INV e = expression { e }
+
+
+(* Pragmatic information *)
+pragma:
+    PRAGMA n = CID v = plist(expression) ioption(SEMI)
+	{ { Pragma.name = n; values = v } }
+
+plist(X):
+    l = loption(delimited(LPAREN, separated_list(COMMA, X), RPAREN))
+        { l }   
+
 %%
 (* The trailer is currently empty *)
