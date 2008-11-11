@@ -182,6 +182,7 @@ function results(e: Event): List[Data] == external ""
 function time(e: Event): Time == external ""
 
 interface Any
+pragma Hidden
 begin
 inv true
 end
