@@ -50,4 +50,7 @@ red in CREOL-DATA-LIST : "|-" (list(int(1) :: int(2)) :: "head" (list(int(1) :: 
 red in CREOL-DATA-LIST : "#" (list(emp)) .
 red in CREOL-DATA-LIST : "#" (list(int(1) :: int(2))) .
 
+red in CREOL-DATA-MAP : "in" (int(0) :: map(empty)) .
+red in CREOL-DATA-MAP : "insert" (map(empty) :: int(0) :: int(0)) .
+
 quit

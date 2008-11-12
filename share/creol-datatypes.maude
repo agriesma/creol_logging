@@ -573,7 +573,7 @@ fmod CREOL-DATA-MAP is
       if D == D'' then D' else "get" (map(DM) :: D'') fi .
 
     eq "insert" (map(DM) :: D :: D') =
-      if "in" (map(DM) :: D) asBool
+      if "in" (D :: map(DM)) asBool
 	then "insert" ("remove" (map(DM) :: D) :: D :: D')
 	else map(DM, D |=> D')
 	fi .
