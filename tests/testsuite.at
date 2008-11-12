@@ -48,6 +48,7 @@ TEST_CREOLC_PP([Float], [language])
 TEST_CREOLC_PP([Pair], [language])
 TEST_CREOLC_PP([Inheritance], [language])
 TEST_CREOLC_PP([Diamond], [language])
+TEST_CREOLC_PP([Map], [language])
 TEST_CREOLC_PP([MultiCast], [language])
 TEST_CREOLC_PP([MutRec], [language])
 TEST_CREOLC_PP([MutRec2], [language])
@@ -80,6 +81,7 @@ TEST_CREOLC_XML([Float], [language])
 TEST_CREOLC_XML([Pair], [language])
 TEST_CREOLC_XML([Inheritance], [language])
 TEST_CREOLC_XML([Diamond], [language])
+TEST_CREOLC_XML([Map], [language])
 TEST_CREOLC_XML([MultiCast], [language])
 TEST_CREOLC_XML([MutRec], [language])
 TEST_CREOLC_XML([MutRec2], [language])
@@ -130,6 +132,13 @@ red classes .
 rew classes main("Test", emp) .
 ],[dnl
 red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
+], [no])
+
+TEST_CREOLC([Map], [language], [dnl
+red classes .
+rew classes main("Map", emp) .
+],[dnl
+red simulate('PROGRAM, upTerm(classes main("Map", emp)), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Inheritance], [language], [dnl

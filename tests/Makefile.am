@@ -82,6 +82,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/Diamond.out \
 		  language/Deadlock.creol language/Deadlock.maude \
 		  language/Deadlock.out \
+		  language/Map.creol language/Map.maude language/Map.out \
 		  language/MultiCast.creol language/MultiCast.maude \
 		  language/MultiCast.out \
 		  language/MutRec.creol language/MutRec.maude \

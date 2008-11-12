@@ -563,7 +563,7 @@ fmod CREOL-DATA-MAP is
     --- We have to carefully evaluate whether this makes things better or
     --- worse.
 
-    eq "empty" (null) = map(empty) .
+    eq "empty" (emp) = map(empty) .
 
     eq "isempty" (map(DM)) =
       if DM == empty then bool(true) else bool(false) fi .
