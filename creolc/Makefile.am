@@ -22,7 +22,7 @@
 # Subdirs
 MOSTLYCLEANFILES	= *~ *.aux *.log *.out *.toc \
 			  *.cma *.cmxa *.cmi *.cmo *.cmx *.a *.o
-CLEANFILES		=
+CLEANFILES		= creolc.prof
 DISTCLEANFILES		= .depend Version.ml Driver.ml \
 			   creol.cma creol.a creol.cmxa \
 			   creolcint.pdf creolcint.tex ocamldoc.sty
@@ -135,6 +135,7 @@ OCAMLFINDFLAGS		+= -package "num unix $(OCAML_LIBXML2) str"
 
 # The compilers.
 OCAMLC		= $(OCAMLFIND) ocamlc
+OCAMLCP		= $(OCAMLFIND) ocamlcp
 OCAMLOPT	= $(OCAMLFIND) ocamlopt
 OCAMLDEP	= $(OCAMLFIND) ocamldep -I $(srcdir)
 OCAMLDOC	= $(OCAMLFIND) ocamldoc
@@ -165,6 +166,12 @@ creol.cma: $(creolc_cmo)
 
 creolc.opt: creol.cmxa Driver.cmx
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
+
+creolc.prof: Driver.ml $(creolc_SOURCES)
+	make mostlyclean
+	make OCAMLC="$(OCAMLCP)" creolc
+	mv creolc creolc.prof
+	make mostlyclean
 
 creol.cmxa: $(creolc_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -a -o $@ $^
