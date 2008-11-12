@@ -19,8 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-datatype T of U
+datatype T from U
 
-datatype S of T
+datatype S from T
 
-datatype U of S
+datatype U from S

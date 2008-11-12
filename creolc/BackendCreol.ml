@@ -522,7 +522,7 @@ let pretty_print_program out_channel input =
     if d.Datatype.supers <> [] then
       begin
 	print_space () ;
-        print_string "of" ;
+        print_string "from" ;
 	print_space () ;
 	separated_list (function t -> print_string (Type.string_of_type t))
 	  print_comma

@@ -46,7 +46,7 @@ function <= (a: Float, b: Float): Bool == external "<="
 function > (a: Float, b: Float): Bool == external ">"
 function >= (a: Float, b: Float): Bool == external ">="
 
-datatype Int of Float
+datatype Int from Float
 
 function - (a: Int): Int == external "-"
 function + (a: Int, b: Int): Int == external "+"

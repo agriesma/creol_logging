@@ -133,7 +133,7 @@ rule token = parse
     | "false" { BOOL(false) }
     | "for" { reserved lexbuf }
     | "forall" { FORALL }
-    | "from" { reserved lexbuf }
+    | "from" { FROM }
     | "function" { FUN }
     | "history" { HISTORY }
     | "if" { IF }
@@ -151,7 +151,7 @@ rule token = parse
     | "now" { NOW }
     | "null" { NULL }
     | "object" { reserved lexbuf }
-    | "of" { OF }
+    | "of" { reserved lexbuf }
     | "op" { OP }
     | "out" { OUT }
     | "posit" { POSIT }
