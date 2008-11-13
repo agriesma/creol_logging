@@ -262,12 +262,27 @@ let compute_in_statement ~meth may must stmt =
 	    logio stmt must n'.must_def ;
 	    DoWhile (n', c, i, b')
       | Sequence (n, s1, s2) ->
+	  let omay = (note s1).may_def
+          and omust = (note s1).must_def in
 	  let s1' = work may must s1 in
-	  let s2' = work (note s1').may_def (note s1').must_def s2 in
-	  let n' = { n with may_def = (note s2').may_def;
-			    must_def = (note s2').must_def } in
-	    logio stmt must n'.must_def ;
-	    Sequence (n', s1', s2')
+	  let may' = (note s1').may_def
+          and must' = (note s1').must_def in
+	  if not ((IdSet.equal omay may') && (IdSet.equal omust must')) then
+	    (* The may and must set changed, and therefore, the
+	       information in [s2] needs updating.  Recurse into [s2]
+	       to update the chain. *)
+            begin
+	      let s2' = work may' must' s2 in
+	      let n' = { n with may_def = (note s2').may_def;
+			        must_def = (note s2').must_def } in
+	        logio stmt must n'.must_def ;
+	        Sequence (n', s1', s2')
+            end
+	  else
+	    (* The may and must set did not change, and therefore, the
+	       information in [s2] is up to date.  We can stop working
+	       through the chain. *)
+	    Sequence(n, s1, s2)
       | Merge _ -> assert false
       | Choice (n, s1, s2) -> 
 	  let s1' = work may must s1
