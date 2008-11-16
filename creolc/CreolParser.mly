@@ -413,9 +413,8 @@ basic_statement:
     | m = ID b = bounds
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
-      s = ioption(preceded(AS, creol_type))
 	{ LocalSyncCall(statement_note $startpos, m,
-		        Type.default_sig ~coiface:s (), fst b, snd b, i, o) }
+		        Type.default_sig (), fst b, snd b, i, o) }
     | AWAIT c = expression DOT; m = ID;
 	LPAREN i = separated_list(COMMA, expression) SEMI
 	       o = separated_list(COMMA, lhs) RPAREN
