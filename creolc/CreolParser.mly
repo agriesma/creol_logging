@@ -443,9 +443,13 @@ basic_statement:
 	    | None ->
 		While (statement_note $startpos, c,
 		       Bool (expression_note $startpos, true), s) }
-    | WHILE expression ioption(preceded(INV, expression)) ioption(measure)
+    | WHILE expression INV expression MEASURE expression BY id_or_op
 	DO error
-        { signal_error $startpos($1) "syntax error in while statement" }
+        { signal_error $startpos($10) "syntax error in while statement" }
+    | WHILE expression INV expression DO error
+        { signal_error $startpos($6) "syntax error in while statement" }
+    | WHILE expression DO error
+        { signal_error $startpos($4) "syntax error in while statement" }
     | WHILE error
         { signal_error $startpos($2) "syntax error in while condition" }
     | DO s = statement inv = ioption(preceded(INV, expression))
@@ -457,9 +461,12 @@ basic_statement:
 			 Bool(expression_note $startpos, true), s) }
     | DO error
         { signal_error $startpos($2) "syntax error in while statement" }
-    | DO statement ioption(preceded(INV, expression)) ioption(measure)
-	WHILE error
-        { signal_error $startpos($1) "syntax error in while condition" }
+    | DO statement INV expression MEASURE expression BY id_or_op WHILE error
+        { signal_error $startpos($10) "syntax error in while condition" }
+    | DO statement INV expression WHILE error
+        { signal_error $startpos($6) "syntax error in while condition" }
+    | DO statement WHILE error
+        { signal_error $startpos($4) "syntax error in while condition" }
     | ASSERT a = expression
 	{ Assert (statement_note $startpos, a) }
     | ASSERT error
@@ -479,7 +486,15 @@ basic_statement:
     | SUBTYPE ub = CID SUPERTYPE lb = CID    { (Some lb, Some ub) }
 
 %inline measure:
-      MEASURE expression BY id_or_op  { () }
+      MEASURE expression BY id_or_op
+	{ () }
+(*
+    | MEASURE expression BY error 
+        { signal_error $startpos($4) "syntax error in order" }
+    | MEASURE expression error 
+        { signal_error $startpos($3) "keyword \"by\" expected" }
+    | MEASURE error 
+        { signal_error $startpos($2) "syntax error in measure" } *)
 
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:
