@@ -531,7 +531,7 @@ expression:
 	{ ListLit (expression_note $startpos, l) }
     | LBRACE e = separated_list(COMMA, expression) RBRACE
 	{ SetLit (expression_note $startpos, e) }
-    | LBRACE ID COLON creol_type BAR expression RBRACE
+    | LBRACE ID COLON expression BAR expression RBRACE
 	{ Null (expression_note $startpos) }
     | l = expression o = binop r = expression
         { Binary(expression_note $startpos, o, l, r) }
@@ -590,10 +590,10 @@ creol_type:
 	{ Type.Basic t }
     | t = CID LBRACK p = separated_list(COMMA, creol_type) RBRACK
 	{ Type.Application (t, p) }
-    | BACKTICK v = ID
-	{ Type.Variable v }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Tuple d }
+    | BACKTICK v = ID
+	{ Type.Variable v }
 
 (* Invariants *)
 
