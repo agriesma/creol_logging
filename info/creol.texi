@@ -75,10 +75,10 @@ section.  The equality symbol
 
 The Boolean literals of @acronym{CREOL} are @code{true} and @code{false}.
 
-The integer literals match the regular expression @code{[0-9]+}.
+The integer literals match the regular expression @code{(0..9)@{(0..9)@}}.
 
 Floating-point literals match the regular expression
-@code{(0|([1-9][0-9]+)).[0-9]*([eE]-?[1-9][0-9]+)?}.
+@code{(0|((1..9)@{(0..9)@})).@{(0..9)@}[(e|E)[-](1..9)@{(0..9)@}]}.
 
 A string literal is a sequence of characters enclosed in quotes:
 @code{"}.  The usual escape sequences using backslash, e.g.,
@@ -98,7 +98,8 @@ keyword @code{caller}.
 @cindex Variable
 
 Variables are lower-case character-sequences, matching the regular
-expression @code{[a-z][a-zA-Z0-9]}.  Variables are typed (see below).
+expression @code{(a..z)@{(_|'|a..z|A..Z|0..9)@}}.  Variables are
+typed (see below).
 
 In @acronym{CREOL}, the location of a variable name @var{v} is
 determined as follows:
@@ -168,7 +169,8 @@ be character literals.
 
 The operations on tuples are
 
-@code{( @var{expression} , )} for tuple construction.
+@code{( [ @var{expression} @{ , @var{expression} @} ] )} for tuple
+construction.
 
 
 @subsection List

@@ -1,16 +1,19 @@
 @node Grammar
 @appendix @acronym{CREOL} Grammar
 
-For reference, we summarise the grammar of @acronym{CREOL}.  The grammar of
-@acronym{CREOL} is LR(1) and is used by the compiler.  @code{@{...@}} means a
-list of symbols, where the optional decorator at the end indicates the
-separator.  An optional symbol is enclosed in square brackets like
-this: @code{[ ... ]}.  Terminal symbols are printed like this:
-@strong{terminal}.  Finally, the symbol @var{id}, denoting method
-names, functions, and variables, refers to an identifier, which is any
-string that matches the regular expression @code{[_a-z][_'0-9A-Za-z]*},
-and @var{cid}, denoting class and type names, refers to any string
-that matches the regular expression @code{[A-Z][_0-9A-Za-z]*}.
+For reference, we summarise the grammar of @acronym{CREOL}.  The grammar
+of @acronym{CREOL} is LR(1) and is used by the compiler.  @code{@{...@}}
+means a possiblu empty list of symbols, where the optional decorator at
+the end indicates the separator.  An optional symbol is enclosed in
+square brackets like this: @code{[ ... ]}.  Terminal symbols are printed
+like this: @strong{terminal}.  Finally, the symbol @var{id}, denoting
+method names, functions, and variables, refers to an identifier, which
+is any string that matches the regular expression
+@code{(_|a..z)@{(_|'|0..9|A..Z|a..z)@}}, and @var{cid}, denoting class
+and type names, refers to any string that matches the regular expression
+@code{(A..Z)@{(_|0..9|A..Z|a..z)@}*}.  In both expressions, the syntax
+@code{@var{x}..@var{y}} represents all letters between @var{x} and
+@var{y}.
 
 
 @section Reserved Keywords
@@ -79,40 +82,36 @@ main ::=
 declaration ::= class-decl | interface-decl | datatype-decl | function-def
 
 class-decl ::=
-    @strong{class} cid
-    [ @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)}]@c
-    @{ (@strong{contracts} | @strong{implements} | @strong{inherits} )@c
-    @{ cid plist @strong{,} @} @}
-    @{ pragma @} @strong{begin} @{ @strong{var} var-decl [ @strong{;} ] @}@c
-    [ anon-with-def ] @{ with-def @}@c
-    @strong{end}
+    @strong{class} cid [ @strong{(}  var-decl-no-init @{ @strong{,} var-decl-no-init  @} @strong{)}]
+    @{ (@strong{contracts} | @strong{implements} | @strong{inherits} ) cid plist @{ @strong{,} cid plist  @} @} @{ pragma @}
+     @strong{begin} @{ @strong{var} var-decl [ @strong{;} ] @} [ anon-with-def ] @{ with-def @} @strong{end}
 
 interface-decl ::=
-    @strong{interface} id [ @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)}]@c
-    @{ @strong{inherits} @{ id @strong{,} @} @} @{ pragma @}
-    @strong{begin} @{ invariant @} @{ @strong{with} cid @{ op-decl @} @{ invariant @} @} @strong{end}
+    @strong{interface} cid [ @strong{(} var-decl-no-init @{ @strong{,} var-decl-no-init  @} @strong{)} ] @{ @strong{inherits} cid plist @{ @strong{,} cid plist  @} @}
+    @{ pragma @} @strong{begin} @{ invariant @} @{ @strong{with} cid @{ op-decl @} @{ invariant @} @} @strong{end}
 
 datatype-decl ::=
-    @strong{datatype} type [ @strong{from} @{ type @strong{,} @} ] @{ pragma @}
+    @strong{datatype} cid [ @strong{[} @strong{`} id @{ @strong{,} @strong{`} id @strong{]} ] [ @strong{from} type @{ @strong{,} type  @} ] @{ pragma @}
 
 function-def ::=
-    @strong{function} id-or-op @strong{(} @{ var-decl-no-init @strong{,} @} @strong{)} @strong{:} type @{ pragma @} @strong{==} ( expr | @strong{external} string )
+    @strong{function} id-or-op @strong{(} [ var-decl-no-init @{ @strong{,} var-decl-no-init @} ] @strong{)} @strong{:} type @{ pragma @} @strong{==}
+    ( expr | @strong{external} string )
 
 var-decl-no-init ::=
-    @{ id @strong{,} @} @strong{:} type
+    id @{ @strong{,} id  @} @strong{:} type
 
 var-decl ::=
-    var-decl-no-init @strong{:=} @{ expr-or-new @strong{,} @}
+    var-decl-no-init @strong{:=} expr-or-new @{ @strong{,} expr-or-new @}
 
 op-decl ::=
-    @strong{op} id @strong{(} [ [ @strong{in} ] @{ var-decl-no-init @strong{,} @} ] [ [ @strong{;} ] @strong{out} @{ var-decl-no-init @strong{,} @} ] @strong{)}
-    [@strong{requires} expr] [@strong{ensures} expr] @{ pragma @}
+    @strong{op} id [ @strong{(} [ [ @strong{in} ] var-decl-no-init @{ @strong{,} var-decl-no-init @} ] [ [ @strong{;} ]
+                   @strong{out} var-decl-no-init @{ @strong{,} var-decl-no-init @} ] @strong{)} ] [ @strong{requires} expr ] [ @strong{ensures} expr ] @{ pragma @}
 
 anon-with-def ::=
     @{ op-def @} @{ invariant @}
 
 with-def ::=
-    @strong{with} cid @{ op-def @} @{ invariant @}
+    @strong{with} type @{ op-def @} @{ invariant @}
 
 op-def ::=
     op-decl @strong{==} @{ @strong{var} var-decl @strong{;} @} ( statement | @strong{external} string )
@@ -128,19 +127,19 @@ seq-statement ::=
 
 basic-statement ::=
     @strong{skip}
-  | @{ lhs @strong{,} @} @strong{:=} @{ expr-or-new @strong{,} @}
+  | lhs @{ @strong{,} lhs @} @strong{:=} expr-or-new @{ @strong{,} expr-or-new @}
   | @strong{release}
   | @strong{await} expr
   | @strong{posit} expr
-  | id @strong{?} @strong{(}  @{ lhs @strong{,} @} @strong{)}
+  | id @strong{?} @strong{(} [ lhs @{ @strong{,} lhs @} ] @strong{)}
   | [ id ] @strong{!} expr @strong{.} id @strong{(} @{ expr @strong{,} @} @strong{)} [ @strong{as} type ]
   | [ id ] @strong{!} id bounds @strong{(} @{ expr @strong{,} @} @strong{)}
-  | [ @strong{await} ] expr @strong{.} id @strong{(} @{ expr @strong{,} @} @strong{;} @{ lhs @strong{,} @} @strong{)} [ @strong{as} type ]
-  | [ @strong{await} ] id bounds @strong{(} @{ expr @strong{,} @} @strong{;} @{ lhs @strong{,} @} @strong{)}
+  | [ @strong{await} ] expr @strong{.} id @strong{(} [ expr @{ @strong{,} expr @} ] @strong{;} [ lhs @{ @strong{,} lhs @} ] @strong{)} [ @strong{as} type ]
+  | [ @strong{await} ] id bounds @strong{(} [ expr @{ @strong{,} expr @} ] @strong{;} [ lhs @{ @strong{,} lhs @} ] @strong{)}
   | @strong{begin} statement @strong{end}
-  | @strong{if} expr @strong{then} statement [@strong{else} statement] @strong{end}
-  | @strong{while} expr [ @strong{inv} expr ] @strong{do} statement @strong{end}
-  | @strong{do} statement [ @strong{inv} expr ] @strong{while} expr
+  | @strong{if} expr @strong{then} statement [ @strong{else} statement ] @strong{end}
+  | @strong{while} expr [ @strong{inv} expr ] [ @strong{measure} expr @strong{by} id-or-op ] @strong{do} statement @strong{end}
+  | @strong{do} statement [ @strong{inv} expr ] [ @strong{measure} expr @strong{by} id-or-op ] @strong{while} expr
   | @strong{assert} expr
   | @strong{prove} expr
 
@@ -159,13 +158,22 @@ expr ::=
     @strong{true} | @strong{false} | integer | float | string @c
   | @strong{this} | @strong{caller} | @strong{nil} | @strong{null} @c
   | id [ (@strong{?} | @strong{@@} type) ]
-  | @strong{(} @{ expr @strong{,} @} @strong{)}
-  | @strong{[} @{ expr @strong{,} @} @strong{]}
-  | @strong{@{} @{ expr @strong{,} @} @strong{@}}
-  | @strong{@{} id @strong{:} type @strong{|} expr @strong{@}}
-  | unaryop expr | expr binop expr | id @strong{(} @{ expr @strong{,} @} @strong{)}
+  | @strong{(} [ expr @{ @strong{,} expr @} ] @strong{)}
+  | @strong{[} [ @{ expr @strong{,} expr @} ] @strong{]}
+  | @strong{@{} [ expr @{ @strong{,} expr @} ] @strong{@}}
+  | @strong{@{} id @strong{:} expr @strong{|} expr @strong{@}}
+  | unaryop expr | expr binop expr | id @strong{(} [ expr @{ @strong{,} expr @} ] @strong{)}
   | @strong{if} expr @strong{then} expr @strong{else} expr @strong{end}
   | @strong{(} (@strong{forall} | @strong{exists} | @strong{some}) var-decl-no-init @strong{:} expr @strong{)}
+
+integer ::=
+  (0..9)@{(0..9)@}
+
+float ::=
+    (0|((1..9)@{(0..9)@})).@{(0..9)@}[(e|E)[@strong{-}](1..9)@{(0..9)@}]
+
+string ::=
+    @strong{"} @{ ^(@strong{"}|newline)|@strong{\n}|@strong{\r}|@dots{}|@strong{\"} @} @strong{"}
 
 unaryop ::=
     @strong{~} | @strong{-} | @strong{#}
@@ -181,11 +189,11 @@ id-or-op ::=
     unaryop | binaryop | id
 
 plist ::=
-    [ @strong{(} @{ expr @strong{,} @strong{)} ]
+    [ @strong{(} expr @{ @strong{,} expr @} @strong{)} ]
 
 type ::=
-    cid [ @strong{[} @{ type , @} @strong{]} ]
-  | @strong{[} @{ type , @} @strong{]}
+    cid [ @strong{[} [ type @{ @strong{,} type @} ] @strong{]} ]
+  | @strong{[} type @{ @strong{,} type @} @strong{]}
   | @strong{`} id
 
 pragma ::=
