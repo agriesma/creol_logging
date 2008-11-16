@@ -218,7 +218,7 @@ let rec print_statement statement =
 	  print_expression e ; close_box ()
       | Statement.Release _ ->
 	  open_box 0 ; print_string "release" ; close_box ()
-      | Statement.AsyncCall (_, l, c, m, _, a) ->
+      | Statement.AsyncCall (_, l, c, m, (s,_,_), a) ->
 	  open_box 0 ;
 	  (match l with
 	       None -> ()
@@ -228,6 +228,15 @@ let rec print_statement statement =
 	  print_string ("." ^ m ^ "(");
 	  print_expression_list a;
 	  print_string ")" ;
+	  print_space () ;
+          begin
+	    match s with
+	        None -> ()
+	      | Some t ->
+	          print_string "as";
+	          print_space () ;
+	          print_string (Type.string_of_type t)
+	  end ;
 	  close_box ()
       | Statement.Get (_, l, o) ->
 	  open_box 0 ;
@@ -248,7 +257,7 @@ let rec print_statement statement =
 	  print_lhs_list l ;
 	  print_string ") */" ;
 	  close_box ()
-      | Statement.SyncCall (_, c, m, _, a, r) ->
+      | Statement.SyncCall (_, c, m, (s, _, _), a, r) ->
 	  open_box 0 ;
 	  print_expression c ;
 	  print_string ("." ^ m ^ "(") ;
@@ -256,8 +265,16 @@ let rec print_statement statement =
 	  print_semi () ;
 	  print_lhs_list r ;
 	  print_string ")" ;
+          begin
+	    match s with
+	        None -> ()
+	      | Some t ->
+	          print_string "as";
+	          print_space () ;
+	          print_string (Type.string_of_type t)
+	  end ;
 	  close_box ()
-      | Statement.AwaitSyncCall (_, c, m, _, a, r) ->
+      | Statement.AwaitSyncCall (_, c, m, (s, _, _), a, r) ->
 	  open_box 0 ;
 	  print_string "await" ;
 	  print_space () ;
@@ -267,6 +284,14 @@ let rec print_statement statement =
 	  print_string "; " ;
 	  print_lhs_list r;
 	  print_string ")" ;
+          begin
+	    match s with
+	        None -> ()
+	      | Some t ->
+	          print_string "as";
+	          print_space () ;
+	          print_string (Type.string_of_type t)
+	  end ;
 	  close_box ()
       | Statement.LocalAsyncCall (_, l, m, _, lb, ub, i) ->
 	  open_box 0 ;
