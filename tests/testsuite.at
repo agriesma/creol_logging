@@ -65,6 +65,7 @@ TEST_CREOLC_PP([AsyncSieve], [examples])
 TEST_CREOLC_PP([BoundedBuffer], [examples])
 TEST_CREOLC_PP([CallAll], [examples])
 TEST_CREOLC_PP([Hello], [examples])
+TEST_CREOLC_PP([HollywoodBuffer], [examples])
 TEST_CREOLC_PP([Sieve], [examples])
 TEST_CREOLC_PP([Fibonacci], [examples])
 TEST_CREOLC_PP([PeerToPeer], [examples])
@@ -98,6 +99,7 @@ TEST_CREOLC_XML([AsyncSieve], [examples])
 TEST_CREOLC_XML([BoundedBuffer], [examples])
 TEST_CREOLC_XML([CallAll], [examples])
 TEST_CREOLC_XML([Hello], [examples])
+TEST_CREOLC_XML([HollywoodBuffer], [examples])
 TEST_CREOLC_XML([Sieve], [examples])
 TEST_CREOLC_XML([Fibonacci], [examples])
 TEST_CREOLC_XML([PeerToPeer], [examples])
@@ -291,6 +293,12 @@ TEST_CREOLC([BoundedBuffer], [examples], [dnl
 red classes .
 ],[dnl
 red simulate('PROGRAM, upTerm(classes main("Starter", emp)), 0, 1) .
+])
+
+TEST_CREOLC([HollywoodBuffer], [examples], [dnl
+red classes .
+],[dnl
+red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Fibonacci], [examples], [dnl

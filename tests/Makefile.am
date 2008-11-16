@@ -56,6 +56,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Fibonacci.out \
 		  examples/Hello.creol examples/Hello.maude \
 		  examples/Hello.out \
+		  examples/HollywoodBuffer.creol \
+		  examples/HollywoodBuffer.maude \
+		  examples/HollywoodBuffer.out \
 		  examples/PeerToPeer.creol examples/PeerToPeer.maude \
 		  examples/PeerToPeer.out \
 		  examples/PetersonLeader.creol \

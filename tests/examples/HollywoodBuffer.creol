@@ -1,0 +1,60 @@
+/*
+ * HollywoodBuffer.creol -- Buffer with inversion of control.
+ *
+ * This file is part of creoltools
+ *
+ * Written and Copyright (c) 2008 Marcel Kyas
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+interface Producer begin with Buffer op produce (out x: Int) end
+
+interface Consumer begin with Buffer op consume (in x: Int) end
+
+interface Buffer
+begin
+  with Producer op put (in x: Int)
+  with Consumer op take (out x: Int)
+end
+
+class Producer(buf: Buffer) contracts Producer
+begin
+  var i: Int := 1;
+  op run == buf.put(i;); i := i + 1; !run()
+  with Buffer op produce (out x: Int) == x := i; i := i + 1
+end
+
+class Consumer(buf: Buffer) contracts Consumer
+begin
+  var sum: Int := 0;
+
+  op run == var j: Int; buf.take(; j); sum := sum + j; !run()
+  with Buffer op consume(in x: Int) == sum := sum + x
+end
+
+class Buffer implements Buffer
+begin
+  var value: Int
+  var full: Bool
+  op init == full := false
+  with Any op put(in x: Int) == await ~full; value, full := x, true
+  with Any op take(out x: Int) == await full; x, full := value, false
+end
+
+class Main
+begin
+  op run == var buf: Buffer; var prod: Any; var cons: Any;
+    buf := new Buffer; prod := new Producer(buf); cons := new Consumer(buf)
+end
