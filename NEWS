@@ -7,9 +7,13 @@ In the language:
 * Subtypes are defined using the syntax "datatype S from T" instead of
   "datatype S of T".
 * Support for pragmatic advice has been added.  The syntax is
-  pragma "type-name" [({expr,})]
+  pragma "type-name" [ ( [ expr {, expr} ] ) ]
 * Parenthesis for empty expression lists are optional in most places:
   "new C" and "new C ()" are accepted as equivalent.
+* Loops can be annotated with a measure and order, i.e.,
+  while i <= n measure -i by < do S end 
+  states that termination of the loop can be proved by using (N,<)
+  as the well-founded set and using -i as ranking function.
 
 In the compiler:
 * Correct a performance bug in the functions that inserts free statements

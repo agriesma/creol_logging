@@ -89,8 +89,8 @@ let statement_note pos =
 %token PRAGMA
 %token CLASS CONTRACTS INHERITS IMPLEMENTS BEGIN END
 %token INTERFACE DATATYPE
-%token WHILE VAR WITH OP IN OUT FUN EXTERN
-%token REQUIRES ENSURES INV  SOME FORALL EXISTS HISTORY
+%token WHILE VAR WITH OP IN OUT FUNCTION EXTERN
+%token REQUIRES ENSURES INV MEASURE BY SOME FORALL EXISTS HISTORY
 %token IF THEN ELSE SKIP RELEASE AWAIT POSIT NEW THIS NOW CALLER
 %token AS DO FROM ASSERT PROVE
 
@@ -295,22 +295,22 @@ datatypedecl:
     { { Datatype.name = t; supers = s; pragmas = pr } }
 
 functiondecl:
-    FUN n = id_or_op p = plist(vardecl_no_init) COLON t = creol_type
+    FUNCTION n = id_or_op p = plist(vardecl_no_init) COLON t = creol_type
     pr = list(pragma) EQEQ e = expression
     { { Function.name = n; parameters = p; result_type = t; body = e;
         pragmas = pr } }
-  | FUN n = id_or_op p = plist(vardecl_no_init) COLON t = creol_type
+  | FUNCTION n = id_or_op p = plist(vardecl_no_init) COLON t = creol_type
     pr = list(pragma) EQEQ EXTERN s = STRING
     { { Function.name = n; parameters = p; result_type = t;
 	body = Expression.Extern (expression_note $startpos, s);
         pragmas = pr } }
-  | FUN error
+  | FUNCTION error
     { signal_error $startpos "syntax error in function declaration" }
-  | FUN id_or_op error
+  | FUNCTION id_or_op error
     { signal_error $startpos "syntax error in function declaration" }
-  | FUN id_or_op plist(vardecl_no_init) COLON error
+  | FUNCTION id_or_op plist(vardecl_no_init) COLON error
     { signal_error $startpos "syntax error in function declaration" }
-  | FUN id_or_op plist(vardecl_no_init) COLON creol_type list(pragma)
+  | FUNCTION id_or_op plist(vardecl_no_init) COLON creol_type list(pragma)
     EQEQ error
     { signal_error $startpos "syntax error in function declaration" }
 
@@ -436,28 +436,30 @@ basic_statement:
         { If((statement_note $startpos), e, t, Skip (statement_note $startpos)) }
     | IF expression THEN error
         { signal_error $startpos($4) "syntax error in if statement" }
-    | WHILE c = expression inv = ioption(preceded(INV, expression)) DO
-	s = statement END
+    | WHILE c = expression inv = ioption(preceded(INV, expression))
+	ioption(measure) DO s = statement END
 	{ match inv with
 	      Some i -> While (statement_note $startpos, c, i, s)
 	    | None ->
 		While (statement_note $startpos, c,
 		       Bool (expression_note $startpos, true), s) }
-    | WHILE expression INV expression DO error
-        { signal_error $startpos($6) "syntax error in while statement" }
-    | WHILE expression DO error
-        { signal_error $startpos($4) "syntax error in while statement" }
-    | WHILE expression INV error
-        { signal_error $startpos($4) "syntax error in invariant" }
+    | WHILE expression ioption(preceded(INV, expression)) ioption(measure)
+	DO error
+        { signal_error $startpos($1) "syntax error in while statement" }
     | WHILE error
         { signal_error $startpos($2) "syntax error in while condition" }
     | DO s = statement inv = ioption(preceded(INV, expression))
-      WHILE c = expression
+      ioption(measure) WHILE c = expression
 	{ match inv with
 	      Some i -> DoWhile (statement_note $startpos, c, i, s)
 	    | None ->
 		DoWhile (statement_note $startpos, c,
 			 Bool(expression_note $startpos, true), s) }
+    | DO error
+        { signal_error $startpos($2) "syntax error in while statement" }
+    | DO statement ioption(preceded(INV, expression)) ioption(measure)
+	WHILE error
+        { signal_error $startpos($1) "syntax error in while condition" }
     | ASSERT a = expression
 	{ Assert (statement_note $startpos, a) }
     | ASSERT error
@@ -475,6 +477,9 @@ basic_statement:
     | SUBTYPE ub = CID                       { (None, Some ub) }
     | SUPERTYPE lb = CID SUBTYPE ub = CID    { (Some lb, Some ub) }
     | SUBTYPE ub = CID SUPERTYPE lb = CID    { (Some lb, Some ub) }
+
+%inline measure:
+      MEASURE expression BY id_or_op  { () }
 
 (* These expressions may occur on the left hand side of an assignment. *)
 lhs:

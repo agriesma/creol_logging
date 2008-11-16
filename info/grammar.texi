@@ -24,22 +24,22 @@ variable or method names in programs.
 
 @c 45678901 34567890123 56789012345 78901234567 90123456789 12345678901
 @example
-as          assert      await       begin       caller      class
-contracts   datatype    do          else        end         ensures
-exists      external    false       forall      function    history
-if          implements  in          inherits    interface   inv
-method      new         nil         now         null        of
-op          out         posit       prove       release     requires
-skip        some        then        this        true        var
-while       with
+as          assert      await       begin       by          caller
+class       contracts   datatype    do          else        end
+ensures     exists      external    false       forall      function
+history     if          implements  in          inherits    interface
+inv         measure     method      new         nil         now
+null        of          op          out         posit       pragma
+prove       release     requires    skip        some        then
+this        true        var         while       with
 @end example
 
 Currently reserved, but unused keywords are
 @example
 by          case        component   constant    exception   exports
-for         from        imports     is          measure     object
-pragma      provides    signal      throw       throws      try
-volatile    when        where
+for         from        imports     is          object      provides
+signal      throw       throws      try         volatile    when
+where
 @end example
 
 The following symbols are used as operator symbols.  They are listed
@@ -104,8 +104,9 @@ var-decl ::=
     var-decl-no-init @strong{:=} expr-or-new @{ @strong{,} expr-or-new @}
 
 op-decl ::=
-    @strong{op} id [ @strong{(} [ [ @strong{in} ] var-decl-no-init @{ @strong{,} var-decl-no-init @} ] [ [ @strong{;} ]
-                   @strong{out} var-decl-no-init @{ @strong{,} var-decl-no-init @} ] @strong{)} ] [ @strong{requires} expr ] [ @strong{ensures} expr ] @{ pragma @}
+    ( @strong{method} | @strong{op} ) id
+    [ @strong{(} [ [ @strong{in} ] var-decl-no-init @{ @strong{,} var-decl-no-init @} ] [ [ @strong{;} ] @strong{out} var-decl-no-init @{ @strong{,} var-decl-no-init @} ] @strong{)} ]
+    [ @strong{requires} expr ] [ @strong{ensures} expr ] @{ pragma @}
 
 anon-with-def ::=
     @{ op-def @} @{ invariant @}
