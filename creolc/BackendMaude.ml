@@ -244,6 +244,8 @@ let emit options out_channel input =
 	      (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; \"\" ; ");
 	    of_expression_list i;
 	    print_string " )"
+	| Statement.LocalAsyncCall (_, Some _, _, _, _, _, _) ->
+	    assert false
 	| Statement.Tailcall (_, c, m, _, i) ->
 	    print_string "tailcall (" ;
 	    of_expression c ;
@@ -255,6 +257,8 @@ let emit options out_channel input =
 		( "statictail (\"" ^ m ^ "\" ; \"\" ; \"\" ; ");
 	    of_expression_list i;
 	    print_string " )"
+	| Statement.StaticTail (_, m, _, _, _, i) ->
+	    assert false
 	| Statement.Return (_, el) ->
 	  print_string "return ( " ;
 	  of_expression_list el ;

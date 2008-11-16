@@ -1,2 +1,5 @@
 * Check uses before definition is seriously broken.  Correcting this may
   call for a different algorithm or a proper CFG representation.
+* Implementation for merge is broken and currently disabled.  Some
+  analysis go into P-SPACE with Merge, since we deal with shared variable
+  concurrency in this case.

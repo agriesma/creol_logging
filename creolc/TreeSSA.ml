@@ -278,6 +278,7 @@ let into_ssa program =
 	  let ass = compute_phi n env el er in
 	  let (env', phi) = statement_to_ssa meth er ass in
 	    (env', Sequence(n, Choice (n, l', r'), phi))
+      | Merge _ -> assert false
       | Extern (n, s) -> (env, Extern (n, s))
   in
   let method_to_ssa meth =
@@ -464,6 +465,7 @@ let out_of_ssa tree =
 	  let nl = statement_of_ssa l
           and nr = statement_of_ssa r in
 	    Choice (n, nl, nr)
+      | Merge _ -> assert false
       | Extern (n, s) -> Extern (n, s)
   in
   let method_of_ssa m =
