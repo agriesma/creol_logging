@@ -1,4 +1,2 @@
-* Currently, we drop the AS TYPE annotations.  Maybe we should always emit
-  them to Creol?
 * Check uses before definition is seriously broken.  Correcting this may
   call for a different algorithm or a proper CFG representation.
