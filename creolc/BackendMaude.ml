@@ -308,9 +308,9 @@ let emit options out_channel input =
 	       a (special) function call. *)
 	    assert false
     in print 25 stmt
-  and of_inherits (i, l) =
-	print_string ("\"" ^ i ^ "\" < ");
-	of_expression_list l;
+  and of_inherits  inh =
+	print_string ("\"" ^ inh.Inherits.name ^ "\" < ");
+	of_expression_list inh.Inherits.arguments ;
 	print_string " >"
   and of_inherits_list =
     function

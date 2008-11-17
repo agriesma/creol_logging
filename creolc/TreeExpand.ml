@@ -300,9 +300,9 @@ let pass input =
 		      (Sequence (Statement.note mb, init, mb''))) }
   and expand_with w =
     { w with With.methods = List.map expand_method w.With.methods }
-  and expand_inherits =
-    function
-	(n, e) -> (n, List.map expand_expression e)
+  and expand_inherits inh =
+	{ inh with Inherits.arguments =
+		     List.map expand_expression inh.Inherits.arguments } 
   and expand_inherits_list =
     function
 	[] -> []

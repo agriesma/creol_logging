@@ -107,10 +107,10 @@ let emit name tree =
       XmlTextWriter.write_attribute writer "cointerface" co ;
       List.iter (creol_method_to_xml) w.With.methods;
       XmlTextWriter.end_element writer
-  and creol_inherits_to_xml (i, l) =
+  and creol_inherits_to_xml inh =
     XmlTextWriter.start_element writer "creol:inherits";
-    XmlTextWriter.write_attribute writer "name" i;
-    List.iter (creol_argument_to_xml) l;
+    XmlTextWriter.write_attribute writer "name" inh.Inherits.name ;
+    List.iter (creol_argument_to_xml) inh.Inherits.arguments ;
     XmlTextWriter.end_element writer
   and creol_contracts_to_xml i =
     ()

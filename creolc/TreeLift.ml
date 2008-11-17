@@ -159,9 +159,9 @@ let pass input =
 	      body = Some (lift_statement mb) }
   and lift_with w =
     { w with With.methods = List.map lift_method w.With.methods }
-  and lift_inherits =
-    function
-	(n, e) -> (n, List.map lift_expression e)
+  and lift_inherits inh =
+	{ inh with Inherits.arguments =
+		     List.map lift_expression inh.Inherits.arguments }
   and lift_inherits_list =
     function
 	[] -> []

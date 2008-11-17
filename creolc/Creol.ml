@@ -1547,9 +1547,16 @@ end
 
 (** Abstract syntax of inherits, implements, and contracts declarations *)
 module Inherits =
-  struct
-    type t = string * Expression.t list
-  end
+struct
+  type t = {
+    name: string;
+    arguments: Expression.t list;
+  }
+
+  let name { name = n } = n
+
+  let arguments { arguments = a } = a
+end
 
 
 
@@ -1586,7 +1593,7 @@ struct
   let get_type cls =
     let ordered =
       List.fast_sort String.compare
-	(List.fold_left (fun a (t, _) -> if  List.mem t a then a else t::a)
+	(List.fold_left (fun a { Inherits.name = t } -> if  List.mem t a then a else t::a)
 	   [] (cls.implements @ cls.contracts))
     in
       match ordered  with
@@ -1854,7 +1861,7 @@ struct
       function
 	| Declaration.Class { Class.name = name; inherits = inh } ->
 	    IdMap.add name
-	      (List.fold_left (fun a (n, _) -> IdSet.add n a) IdSet.empty inh)
+	      (List.fold_left (fun a { Inherits.name = n } -> IdSet.add n a) IdSet.empty inh)
 		 rel
 	| _ -> rel
     in
@@ -1867,7 +1874,7 @@ struct
       supposed to be inherited. A [Not_found] exception is raised if a
       class called [name] does not exist in [program]. *)
   let superclasses program name =
-    let rec work s a (cls, _) =
+    let rec work s a { Inherits.name = cls } =
       let a' =
 	let c =
 	  try
@@ -1893,7 +1900,7 @@ struct
   let diamonds program name =
     let cls = find_class program name in
     let supers =
-      List.map (fun (c, _) -> IdSet.add c (superclasses program c))
+      List.map (fun { Inherits.name = c } -> IdSet.add c (superclasses program c))
 	cls.Class.inherits
     in
     let work =
@@ -1911,7 +1918,7 @@ struct
       (s = t) ||
 	try
 	  let s' = find_class program s in
-	    (List.exists (fun u -> search u) (List.map fst s'.Class.inherits))
+	    (List.exists (fun u -> search u) (List.map Inherits.name s'.Class.inherits))
 	with
 	    Not_found -> false
     in search s
@@ -1966,7 +1973,7 @@ struct
 	  try
 	    let s' = find_interface program s in
 	      (List.exists (fun u -> search u)
-		 (List.map fst s'.Interface.inherits))
+		 (List.map Inherits.name s'.Interface.inherits))
 	  with
 	      Not_found -> false
       in
@@ -1976,7 +1983,7 @@ struct
   (** Return true if the class [cls] contracts the interface [iface]. *)
   let contracts_p program cls iface =
     let p i = subinterface_p program i (Type.string_of_type iface) in
-      (Type.any_p iface) || (List.exists p (List.map fst cls.Class.contracts))
+      (Type.any_p iface) || (List.exists p (List.map Inherits.name cls.Class.contracts))
 
 
   (** [class_provides prg cls] collects the set of all interfaces
@@ -2003,20 +2010,20 @@ struct
       (* Recursively collect all interfaces contracted by the class
 	 [c]. *)
       let a' = List.fold_left
-        (fun a (n, _) -> work_iface a (findi n)) a c.Class.contracts
+        (fun a { Inherits.name = n } -> work_iface a (findi n)) a c.Class.contracts
       in
 	List.fold_left
-          (fun a (n, _) -> work_class a (findc n)) a' c.Class.inherits
+          (fun a { Inherits.name = n } -> work_class a (findc n)) a' c.Class.inherits
     and work_iface a i =
       (* Recursively collect all interfaces inherited by the interface
 	 [i]. *)
       let a' = List.fold_left 
-        (fun a (n, _) -> work_iface a (findi n)) a i.Interface.inherits
+        (fun a { Inherits.name = n } -> work_iface a (findi n)) a i.Interface.inherits
       in
         IdSet.add i.Interface.name a'
     in
     let ic =
-      List.fold_left (fun a (n, _) -> work_iface a (findi n))
+      List.fold_left (fun a { Inherits.name = n } -> work_iface a (findi n))
 	IdSet.empty cls.Class.implements
     in
       IdSet.add "Any" (work_class ic cls)
@@ -2114,7 +2121,7 @@ struct
       function
 	  [] -> None
 	| i::r ->
-	    match work (find_class program (fst i)) with
+	    match work (find_class program (Inherits.name i)) with
 		None -> search r
 	      | cls' -> cls'
     in
@@ -2250,7 +2257,7 @@ struct
 	  List.map Type.name (find_datatype program current).Datatype.supers ;
 	with
 	    Not_found ->
-	      List.map fst (find_interface program current).Interface.inherits 
+	      List.map Inherits.name (find_interface program current).Interface.inherits 
       in
 	search (current::res) supers
     and search (res: string list) =
@@ -2270,7 +2277,7 @@ struct
       function
 	| Declaration.Interface { Interface.name = name; inherits = supers } ->
 	    IdMap.add name
-	      (List.fold_left (fun a (n, _) -> IdSet.add n a) IdSet.empty supers)
+	      (List.fold_left (fun a i -> IdSet.add (Inherits.name i) a) IdSet.empty supers)
 	      rel
 	| Declaration.Datatype { Datatype.name = name; supers = supers } ->
 	    IdMap.add (Type.name name)
@@ -2331,7 +2338,7 @@ struct
 	  (fun a w ->
 	     (find_method_in_with program name (coiface, ins, outs) w)@a)
 	  [] withs
-      and supers = List.map fst i.Interface.inherits
+      and supers = List.map Inherits.name i.Interface.inherits
       in
 	List.fold_left
           (fun r i ->
@@ -2360,7 +2367,7 @@ struct
 	  (fun a w ->
 	     (find_method_in_with program name (coiface, ins, outs) w)@a)
 	  [] withs
-      and supers = List.map fst c.Class.inherits
+      and supers = List.map Inherits.name c.Class.inherits
       in
 	List.fold_left
           (fun r i ->

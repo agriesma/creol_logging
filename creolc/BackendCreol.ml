@@ -720,12 +720,12 @@ let pretty_print_program out_channel input =
     print_space () ;
     print_string "end" ;
     close_box ()
-  and print_inherits (inh, args) =
-    print_string inh ;
-    if args <> [] then
+  and print_inherits inh =
+    print_string inh.Inherits.name ;
+    if inh.Inherits.arguments <> [] then
       begin
 	print_string "(";
-	separated_list print_expression print_comma args ;
+	separated_list print_expression print_comma inh.Inherits.arguments ;
 	print_string ")"
       end
   and print_with w =

@@ -189,8 +189,8 @@ inherits_decl:
 	{ signal_error $startpos "syntax error in inherits list" }
 
 inherits:
-    i = CID e = plist(expression)
-        { (i, e) }
+    n = CID a = plist(expression)
+        { { Inherits.name = n; arguments = a } }
 
 attribute:
       VAR l = separated_nonempty_list(COMMA, vardecl)

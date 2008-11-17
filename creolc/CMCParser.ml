@@ -556,11 +556,11 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t, "<<string>>"))
       | None -> raise (Eof "")
   and parse_inherit input =
-    let c = parse_string input in
+    let n = parse_string input in
     let () = junk_left_bracket input in
     let a = parse_expression_list input in
     let () = junk_right_bracket input in
-      (c, a)
+      { Inherits.name = n; arguments = a }
   and parse_process_queue input =
     match Stream.peek input with
       | Some LBrace _ ->

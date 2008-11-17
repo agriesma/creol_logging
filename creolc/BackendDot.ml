@@ -54,11 +54,11 @@ let emit out_channel input =
   and emit_inherits =
     function
         Declaration.Class { Class.name = n; inherits = l } ->
-	  List.iter (fun t -> edge (c n) (c (fst t)) "solid") l
+	  List.iter (fun t -> edge (c n) (c (Inherits.name t)) "solid") l
       | Declaration.Interface { Interface.name = n; inherits = [] } ->
 	  edge (i n) "I_Any" "solid"
       | Declaration.Interface { Interface.name = n; inherits = l } ->
-	  List.iter (fun t -> edge (i n) (i (fst t)) "solid") l
+	  List.iter (fun t -> edge (i n) (i (Inherits.name t)) "solid") l
       | Declaration.Datatype { Datatype.name = n; supers = [] } ->
 	  edge (d (Type.name n)) "D_Data" "solid"
       | Declaration.Datatype { Datatype.name = n; supers = l } ->
@@ -68,14 +68,14 @@ let emit out_channel input =
   and emit_implements =
     function
         Declaration.Class { Class.name = n; implements = l } ->
-	  List.iter (fun t -> edge (c n) (i (fst t)) "dashed") l
+	  List.iter (fun t -> edge (c n) (i (Inherits.name t)) "dashed") l
       | _ -> ()
   and emit_contracts =
     function
         Declaration.Class { Class.name = n; contracts = [] } ->
 	  edge (c n) "I_Any" "bold"
       | Declaration.Class { Class.name = n; contracts = l } ->
-	  List.iter (fun t -> edge (c n) (i (fst t)) "bold") l
+	  List.iter (fun t -> edge (c n) (i (Inherits.name t)) "bold") l
       | _ -> ()
   and emit_links =
     function
