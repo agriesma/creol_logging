@@ -21,6 +21,11 @@ In the compiler:
 * An error has been corrected in the parser, which accepted "as type"
   for some local calls.
 
+In the interpreter:
+* One error in constructing the map data type has been corrected.
+* One error in inserting new bindings into the map has been corrected.
+* The mapentry type has been redefined for easier postprocessing.
+
 Other:
 * Errors in the grammar have been corrected and the grammar is now
   described in a less ambiguous manner.

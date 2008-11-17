@@ -70,5 +70,5 @@ reduce in CREOL-DATA-MAP : "in"(int(0) :: map(empty)) .
 result Data: bool(false)
 ==========================================
 reduce in CREOL-DATA-MAP : "insert"(map(empty) :: int(0) :: int(0)) .
-result Data: map(int(0) |=> int(0))
+result Data: map(mapentry(int(0), int(0)))
 Bye.
