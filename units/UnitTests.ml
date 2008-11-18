@@ -29,11 +29,14 @@ let show_version () =
   print_string (Version.package ^ " " ^ Version.version ^ " (unittests)");
   exit 0
 
+let verbose = ref false
+
 (* A list of all command line options accepted by this program. This
    list is used by ocamls functions for parsing arguments given to the
    command line.
 *)
 let options = [
+  ("-v", Set verbose, "  Run tests verbosely");
   ("-V", Unit show_version, "  Show the version and exit");
   ("-version", Unit show_version, "  Show the version and exit");
   ("--version", Unit show_version, "  Show the version and exit")]
@@ -49,7 +52,7 @@ let test_fixture =
 *)
 let main () =
   let _ = parse options (fun _ -> ()) (Sys.executable_name ^ " [options]") in
-  let res = run_test_tt test_fixture in
+  let res = run_test_tt ~verbose:!verbose test_fixture in
   let ec =
     let p = function RSuccess _ -> true | _ -> false in
       if List.for_all p res then 0 else 1 

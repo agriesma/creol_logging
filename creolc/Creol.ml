@@ -1898,19 +1898,20 @@ struct
       exist in [program] and a [Class_not_found] exception if one of
       the super-classes does not exist in [program].  *)
   let diamonds program name =
-    let cls = find_class program name in
     let supers =
-      List.map (fun { Inherits.name = c } -> IdSet.add c (superclasses program c))
-	cls.Class.inherits
+      (* A list of sets of classes inherited by each direct super class of
+         [name]. *)
+      let f { Inherits.name = c } = IdSet.add c (superclasses program c) in
+        List.map f (find_class program name).Class.inherits
     in
-    let work =
-      function
-	| [] -> IdSet.empty
-	| s::ls ->
-	    let s' = List.map (fun t -> IdSet.inter s t) ls in
-	      List.fold_left (fun acc elt -> IdSet.union elt acc) IdSet.empty s'
+    let common this =
+      let others =
+        let f a e = if e == this then a else IdSet.union a e in
+          List.fold_left f IdSet.empty supers
+      in
+        IdSet.inter this others
     in
-      work supers
+      List.fold_left (fun a e -> IdSet.union (common e) a) IdSet.empty supers
       
   (** Return true if [s] is a subclass of [t]. *)
   let subclass_p ~program s t =

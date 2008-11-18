@@ -157,7 +157,7 @@ let test_fixture = "Creol" >:::
 	    let program = [ Declaration.Class c; Declaration.Class d;
 			    Declaration.Class e; Declaration.Class f;
 			    Declaration.Class g ] in
-	    let res = Program.diamonds program f.Class.name in
+	    let res = Program.diamonds program g.Class.name in
 	      assert_equal (IdSet.singleton "C") res
 	) ;
         "inherits-dumb-diamond" >:: (
