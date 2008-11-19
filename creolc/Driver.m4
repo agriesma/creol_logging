@@ -221,11 +221,9 @@ let main () =
       | _ -> 
 	  Passes.parse_from_files !inputs
   in
-  let prelude =
-    List.map Declaration.hide (Passes.parse_from_file "prelude.creol")
-  in
+  let prelude = Program.hide_all (Passes.parse_from_file "prelude.creol") in
     Target.setup () ;
-    Target.output (Passes.execute_passes ifdef(`BACKEND_XML', BackendXML.emit, (fun _ _ -> ())) !Target.file (prelude@tree)) ;
+    Target.output (Passes.execute_passes ifdef(`BACKEND_XML', BackendXML.emit, (fun _ _ -> ())) !Target.file (Program.concat [ prelude; tree ])) ;
     if !times then Passes.report_timings () ;
     exit 0 ;;
 

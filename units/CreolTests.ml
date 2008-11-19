@@ -89,7 +89,7 @@ let test_fixture = "Creol" >:::
 	  fun _ ->
 	    let c = make_class "C" []
 	    in
-	    let program = [ Declaration.Class c ] in
+	    let program = Program.make [ Declaration.Class c ] in
 	    let res = Program.diamonds program c.Class.name in
 	      assert_equal IdSet.empty res
         ) ;
@@ -98,7 +98,8 @@ let test_fixture = "Creol" >:::
 	    let c = make_class "C" []
 	    and d = make_class "D" [("C", [])]
 	    in
-	    let program = [ Declaration.Class c; Declaration.Class d ] in
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d ] in
 	    let res = Program.diamonds program d.Class.name in
 	      assert_equal IdSet.empty res
         ) ;
@@ -107,7 +108,8 @@ let test_fixture = "Creol" >:::
 	    let c = make_class "C" []
 	    and d = make_class "D" [("C", []); ("C", [])]
 	    in
-	    let program = [ Declaration.Class c; Declaration.Class d ] in
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d ] in
 	    let res = Program.diamonds program d.Class.name in
 	      assert_equal (IdSet.singleton "C") res
         ) ;
@@ -117,7 +119,8 @@ let test_fixture = "Creol" >:::
 	    and d = make_class "D" []
 	    and e = make_class "E" [("C", []); ("D", [])]
 	    in
-	    let program = [ Declaration.Class c; Declaration.Class d;
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
 			    Declaration.Class e ] in
 	    let res = Program.diamonds program e.Class.name in
 	      assert_equal IdSet.empty res
@@ -129,8 +132,10 @@ let test_fixture = "Creol" >:::
 	    and e = make_class "E" [("C", [])]
 	    and f = make_class "F" [("D", []); ("E", [])]
 	    in
-	    let program = [ Declaration.Class c; Declaration.Class d;
-			    Declaration.Class e; Declaration.Class f ] in
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Class e;
+					 Declaration.Class f ] in
 	    let res = Program.diamonds program f.Class.name in
 	      assert_equal IdSet.empty res
 	) ;
@@ -141,8 +146,10 @@ let test_fixture = "Creol" >:::
 	    and e = make_class "E" [("C", [])]
 	    and f = make_class "F" [("D", []); ("E", [])]
 	    in
-	    let program = [ Declaration.Class c; Declaration.Class d;
-			    Declaration.Class e; Declaration.Class f ] in
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Class e;
+					 Declaration.Class f ] in
 	    let res = Program.diamonds program f.Class.name in
 	      assert_equal (IdSet.singleton "C") res
 	) ;
@@ -154,9 +161,11 @@ let test_fixture = "Creol" >:::
 	    and f = make_class "F" [("C", [])]
 	    and g = make_class "G" [("D", []); ("E", []); ("F", [])]
 	    in
-	    let program = [ Declaration.Class c; Declaration.Class d;
-			    Declaration.Class e; Declaration.Class f;
-			    Declaration.Class g ] in
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Class e;
+					 Declaration.Class f;
+					 Declaration.Class g ] in
 	    let res = Program.diamonds program g.Class.name in
 	      assert_equal (IdSet.singleton "C") res
 	) ;
@@ -166,8 +175,9 @@ let test_fixture = "Creol" >:::
 	    and d = make_class "D" [("C", [])]
 	    and e = make_class "E" [("C", []); ("D", [])]
 	    in
-	    let program = [ Declaration.Class c; Declaration.Class d;
-			    Declaration.Class e] in
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Class e] in
 	    let res = Program.diamonds program e.Class.name in
 	      assert_equal (IdSet.singleton "C") res
 	) ;
@@ -177,7 +187,7 @@ let test_fixture = "Creol" >:::
 	  fun _ ->
 	    let c = make_class "C" []
 	    in
-	    let program = [ Declaration.Class c ] in
+	    let program = Program.make [ Declaration.Class c ] in
 	    let res = Program.class_provides program c in
 	      assert_equal (IdSet.singleton "Any") res
         ) ;
@@ -186,7 +196,8 @@ let test_fixture = "Creol" >:::
 	    let c = make_class "C" []
 	    and d = make_class "D" [("C", [])]
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Class d ] in
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d ] in
 	    let res = Program.class_provides program d in
 	      assert_equal (IdSet.singleton "Any") res
         ) ;
@@ -195,7 +206,8 @@ let test_fixture = "Creol" >:::
 	    let c = make_class "C" ~implements:[("I", [])] []
 	    and i = make_iface "I" []
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Interface i ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Interface i ]
 	    and expect = set_of_list ["Any"; "I"] in
 	    let res = Program.class_provides program c in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
@@ -206,8 +218,9 @@ let test_fixture = "Creol" >:::
 	    and i = make_iface "I" []
 	    and j = make_iface "J"  [("I", [])]
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Interface i;
-			    Declaration.Interface j ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Interface i;
+					 Declaration.Interface j ]
 	    and expect = set_of_list ["Any"; "I"; "J" ] in
 	    let res = Program.class_provides program c in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
@@ -219,8 +232,10 @@ let test_fixture = "Creol" >:::
 	    and i = make_iface "I" []
 	    and j = make_iface "J" []
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Class d;
-			    Declaration.Interface i; Declaration.Interface j ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Interface i;
+					 Declaration.Interface j ]
 	    and expect = set_of_list ["Any"; "I"] in
 	    let res = Program.class_provides program c in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
@@ -232,8 +247,10 @@ let test_fixture = "Creol" >:::
 	    and i = make_iface "I" []
 	    and j = make_iface "J" []
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Class d;
-			    Declaration.Interface i; Declaration.Interface j ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Interface i;
+					 Declaration.Interface j ]
 	    and expect = set_of_list ["Any"; "J"] in
 	    let res = Program.class_provides program d in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
@@ -245,8 +262,10 @@ let test_fixture = "Creol" >:::
 	    and i = make_iface "I" []
 	    and j = make_iface "J" []
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Class d;
-			    Declaration.Interface i; Declaration.Interface j ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Interface i;
+					 Declaration.Interface j ]
 	    and expect = set_of_list ["Any"; "I"; "J"] in
 	    let res = Program.class_provides program d in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
@@ -258,8 +277,10 @@ let test_fixture = "Creol" >:::
 	    and i = make_iface "I" []
 	    and j = make_iface "J" []
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Class d;
-			    Declaration.Interface i; Declaration.Interface j ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Interface i;
+					 Declaration.Interface j ]
 	    and expect = set_of_list ["Any"; "I"; "J"] in
 	    let res = Program.class_provides program d in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
@@ -273,9 +294,12 @@ let test_fixture = "Creol" >:::
 	    and j = make_iface "J" []
 	    and k = make_iface "K" []
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Class d;
-			    Declaration.Class e ; Declaration.Interface i;
-			    Declaration.Interface j; Declaration.Interface k ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Class e;
+					 Declaration.Interface i;
+					 Declaration.Interface j;
+					 Declaration.Interface k ]
 	    and expect = set_of_list ["Any"; "I"; "J"; "K"] in
 	    let res = Program.class_provides program e in
 	      assert_bool "Sets differ" (IdSet.equal expect res)
@@ -289,9 +313,12 @@ let test_fixture = "Creol" >:::
 	    and j = make_iface "J" []
 	    and k = make_iface "K" []
 	    in
-	    let program = [ Declaration.Class c ; Declaration.Class d;
-			    Declaration.Class e ; Declaration.Interface i;
-			    Declaration.Interface j; Declaration.Interface k ]
+	    let program = Program.make [ Declaration.Class c;
+					 Declaration.Class d;
+					 Declaration.Class e;
+					 Declaration.Interface i;
+					 Declaration.Interface j;
+					 Declaration.Interface k ]
 	    and expect = set_of_list ["Any"; "I"; "J"; "K"] in
 	    let res = Program.class_provides program e in
 	      assert_bool "Sets differ" (IdSet.equal expect res)

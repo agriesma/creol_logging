@@ -1122,7 +1122,7 @@ let parse name input =
   and measure the time used for it.
 *)
 let parse_from_channel (name: string) (channel: in_channel) =
-  parse name (token (Stream.of_channel channel))
+  Program.make (parse name (token (Stream.of_channel channel)))
 
 
 (* Read the contents of a file and return an abstract syntax tree.

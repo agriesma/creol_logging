@@ -319,7 +319,7 @@ let into_ssa program =
 	| Declaration.Function _
 	| Declaration.Object _) as d -> d
   in
-    List.map declaration_to_ssa program
+    Program.map program declaration_to_ssa
 
 let out_of_ssa tree =
   (** Convert a Creol tree from static single assignment form to its
@@ -493,4 +493,4 @@ let out_of_ssa tree =
 	| Declaration.Function _
 	| Declaration.Object _) as d -> d
   in
-    List.map declaration_of_ssa tree
+    Program.map tree declaration_of_ssa

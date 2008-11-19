@@ -764,7 +764,7 @@ let emit name tree =
     XmlTextWriter.start_element writer "creol:creol";
     XmlTextWriter.write_attribute writer "xmlns:creol" "http://www.creol.org/";
     XmlTextWriter.write_attribute writer "version" "0.0";
-    List.iter (creol_declaration_to_xml) tree;
+    Program.iter tree (creol_declaration_to_xml);
     XmlTextWriter.end_element writer;
     XmlTextWriter.end_document writer;
     XmlTextWriter.flush writer

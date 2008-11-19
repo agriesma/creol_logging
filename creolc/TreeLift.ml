@@ -250,4 +250,4 @@ let pass input =
       | Declaration.Datatype _
       | Declaration.Function _) as d -> d
   in
-    List.map lift_declaration input
+    Program.map input lift_declaration

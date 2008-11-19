@@ -102,9 +102,9 @@ let emit out_channel input =
       | _ -> ()
   in
   output_string out_channel "digraph G {\n" ;
-  List.iter emit_node input ;
-  List.iter emit_inherits input ;
-  List.iter emit_implements input ;
-  List.iter emit_contracts input ;
-  List.iter emit_links input ;
+  Program.iter input emit_node ;
+  Program.iter input emit_inherits ;
+  Program.iter input emit_implements ;
+  Program.iter input emit_contracts ;
+  Program.iter input emit_links ;
   output_string out_channel "}\n"

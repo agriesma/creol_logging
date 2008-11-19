@@ -1805,11 +1805,15 @@ module Program =
 struct
 
   (** The type of a program. *)
-  type t = Declaration.t list
+  type t = { decls: Declaration.t list }
 
 
   (** Make a [Program.t] from a list [l] of declarations. *)
-  let make : Declaration.t list -> t = function l -> l
+  let make decls = { decls = decls }
+
+  (** Concatenate programs. *)
+  let concat programs =
+    { decls = List.concat (List.map (fun p -> p.decls) programs) }
 
 
   (** Compute the transitive closure of a relation. *)
@@ -1843,7 +1847,7 @@ struct
 	  Declaration.Class { Class.name = n } -> n = name
 	| _ -> false
     in
-      match List.find class_with_name program with
+      match List.find class_with_name program.decls with
 	  Declaration.Class cls -> cls
 	| _ -> assert false
 
@@ -1865,7 +1869,7 @@ struct
 		 rel
 	| _ -> rel
     in
-      List.fold_left f IdMap.empty program
+      List.fold_left f IdMap.empty program.decls
 
 
   (** [superclasses program name] returns the set of all super-classes
@@ -1912,9 +1916,10 @@ struct
         IdSet.inter this others
     in
       List.fold_left (fun a e -> IdSet.union (common e) a) IdSet.empty supers
-      
+
+
   (** Return true if [s] is a subclass of [t]. *)
-  let subclass_p ~program s t =
+  let subclass_p program s t =
     let rec search s =
       (s = t) ||
 	try
@@ -1943,7 +1948,7 @@ struct
 	  Declaration.Interface { Interface.name = n } -> name = n
 	| _ -> false
     in
-      match List.find interface_with_name program with
+      match List.find interface_with_name program.decls with
 	  Declaration.Interface i -> i
 	| _ -> assert false
 
@@ -1959,13 +1964,13 @@ struct
 		Declaration.Interface { Interface.name = n' } -> n = n'
 	      | _ -> false
 	  in
-	    List.exists p program
+	    List.exists p program.decls
       | _ -> false
 
 
   (** [subinterface_p program s t] returns true if [s] is a subinterface of
       [t] in [program]. *)
-  let subinterface_p ~program s t =
+  let subinterface_p program s t =
     if t = "Any" then (* Everything is a sub-interface of [Any]. *)
       true
     else
@@ -2044,7 +2049,7 @@ struct
 	    when n = name -> true
 	| _ -> false
     in
-      match List.find datatype_with_name program with
+      match List.find datatype_with_name program.decls with
 	  Declaration.Datatype d -> d
 	| _ -> assert false
 
@@ -2079,11 +2084,11 @@ struct
 	| Type.Internal ->
 	    true
 	| Type.Basic n ->
-	    List.exists (p n) program
+	    List.exists (p n) program.decls
 	| Type.Variable _ ->
 	    true
 	| Type.Application (n, a) ->
-	    (List.exists (p n) program) && (List.for_all work_p a)
+	    (List.exists (p n) program.decls) && (List.for_all work_p a)
 	| Type.Tuple l ->
 	    List.for_all work_p l
 	| Type.Intersection l ->
@@ -2100,13 +2105,13 @@ struct
       whose formal parameters are compatible with [domain].  Only
       return the most specific matches.  Returns the empty list if none
       is found. *)
-  let find_functions ~program ~name =
+  let find_functions program name =
     let p a =
       function
 	  Declaration.Function f when f.Function.name  = name -> f::a
 	| _ -> a
     in
-      List.fold_left p [] program
+      List.fold_left p [] program.decls
 
 
   (** Find the class declaration for an attribute. [cls] is the class
@@ -2137,12 +2142,11 @@ struct
 
   (** Compute the interface of a class, i.e., the set of all method it
       implements. We call this interface the {e full descriptor.} *)
-  let full_class_descriptor ~program ~cls =
-    []
+  let full_class_descriptor ~program ~cls = assert false
 
 
   (** Decides whether [s] is a subtype of [t] in [program]. *)
-  let subtype_p ~program s t =
+  let subtype_p program s t =
     let rec work =
       function 
 	| (_, _) when s = t -> true
@@ -2287,7 +2291,7 @@ struct
 	      rel
 	| _ -> rel
     in
-      transitive_closure (List.fold_left f IdMap.empty program)
+      transitive_closure (List.fold_left f IdMap.empty program.decls)
 
 
   (** {4 Functions} *)
@@ -2386,6 +2390,10 @@ struct
 
   (** {4 Iterators} *)
 
+  let iter program f = List.iter f program.decls
+
+  let map program f = { decls = List.map f program.decls }
+
   (** Apply a function to each method defined in the program. *)
   let for_each_method program f =
     let for_class c =
@@ -2405,15 +2413,14 @@ struct
 	| Declaration.Function _ -> d
 	| Declaration.Object _ -> d
     in
-      List.map for_decl program
-
+      { decls = List.map for_decl program.decls }
 
 
   (** {4 Declarations} *)
 
   (** Hide all declarations. *)
-  let hide_all prg =
-    List.map Declaration.hide prg
+  let hide_all program =
+    map program Declaration.hide
 
 
   (** Show all objects and hide all other elements. *)
@@ -2422,7 +2429,7 @@ struct
       | Declaration.Object _ as d -> Declaration.show d
       | d -> Declaration.hide d
     in
-      List.map f prg
+      map prg f
 
 
   (** Hide all objects in [prg]. Other declarations keep their
@@ -2432,6 +2439,6 @@ struct
       | Declaration.Object _ as d -> Declaration.hide d
       | d -> d
     in
-      List.map f prg
+      map prg f
 
 end

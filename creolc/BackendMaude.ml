@@ -449,12 +449,12 @@ let emit options out_channel input =
         | Declaration.Function _ -> false
     in
     function
-	[] -> print_string "none\n"
-      | lst ->
+	{ Program.decls = [] } -> print_string "none\n"
+      | { Program.decls = decls } ->
 	  separated_list
 	    of_declaration
 	    (fun () -> print_space () ; print_space ())
-	    (List.filter relevant_p lst)
+	    (List.filter relevant_p decls)
   in
     (** Convert an abstract syntax tree l of a creol program to a
 	representation for the Maude CMC and write the result to the

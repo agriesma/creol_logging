@@ -160,4 +160,4 @@ let devirt_method program cls meth =
    through the declarations in the tree. [analyse] is the main
    function to call from outside. *)
 
-let transform program = Program.for_each_method program devirt_method 
+let transform program = Program.for_each_method program devirt_method

@@ -460,4 +460,4 @@ let pass input =
       | Declaration.Function _
       | Declaration.Object _) as d -> d
   in
-    List.map expand_declaration input
+    Program.map input expand_declaration

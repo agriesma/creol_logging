@@ -267,7 +267,7 @@ let parse_from_channel (name: string) (channel: in_channel) =
   let pos = buf.Lexing.lex_curr_p in
   let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in
   let _ = message 1 ("Reading " ^ name) in
-  let do_parse () = CreolParser.main CreolLexer.token buf in
+  let do_parse () = Program.make (CreolParser.main CreolLexer.token buf) in
   let (result, elapsed) = Misc.measure do_parse in
     time_parse := !time_parse +. elapsed ;
     result
@@ -289,10 +289,8 @@ let parse_from_file name =
 
 (** Read the contents of a list of files and return an abstract syntax
     tree.  *)
-let parse_from_files: string list -> Declaration.t list =
-  function files ->
-    List.fold_left (fun (a: Declaration.t list) (n: string) ->
-      (parse_from_file n)@a) [] files
+let parse_from_files files =
+  Program.concat (List.map parse_from_file files)
 
 
 (** The following functions comprise the {e middle end} of the

@@ -832,6 +832,6 @@ let pretty_print_program out_channel input =
   in
     let () = set_formatter_out_channel out_channel in
       open_vbox 0 ;
-      separated_list print_declaration (fun () -> ()) input ;
+      separated_list print_declaration (fun () -> ()) input.Program.decls ;
       close_box () ;
       print_newline ()

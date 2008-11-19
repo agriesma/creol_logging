@@ -1217,6 +1217,8 @@ let typecheck tree: Program.t =
   and type_check_variables env coiface meth =
     List.rev (type_check_inits env coiface [] meth.Method.vars)
   and type_check_method program cls coiface meth =
+    let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
+    let env' = { env with meth = { meth with Method.vars = [] } }  in
     let () =
       let f d { VarDecl.name = n; var_type = t } =
 	if not (Program.type_p program t) then
@@ -1227,8 +1229,6 @@ let typecheck tree: Program.t =
 	List.iter (f "input") meth.Method.inpars ;
 	List.iter (f "output") meth.Method.outpars
     in
-    let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
-    let env' = { env with meth = { meth with Method.vars = [] } }  in
     let r' = type_check_assertion env' coiface meth.Method.requires
     and e' = type_check_assertion env' coiface meth.Method.ensures
     and v' = type_check_variables env' coiface meth
@@ -1375,7 +1375,7 @@ let typecheck tree: Program.t =
     if type_relation_well_formed_p tree then
       begin
 	try
-	  List.map (type_check_declaration tree) tree
+	  Program.map tree (type_check_declaration tree)
 	with
 	    Type_error (file, line, msg) ->
 	      Messages.error file line msg ;
