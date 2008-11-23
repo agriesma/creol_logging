@@ -3,7 +3,7 @@
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007
+ * Copyright (c) 2007, 2008 by Marcel Kyas <kyas@ifi.uio.no>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -1359,8 +1359,7 @@ let typecheck tree: Program.t =
       | Declaration.Interface i ->
 	  Declaration.Interface (type_check_interface program i)
       | _ as d -> d
-  in
-  let type_relation_well_formed_p tree =
+  and type_relation_well_formed_p tree =
     let rel = Program.compute_subtype_relation tree in
       if Program.acyclic_p rel then
 	true
@@ -1371,8 +1370,21 @@ let typecheck tree: Program.t =
 					(Program.string_of_cycle cycle)) ;
 	    false
 	end
+  and class_hierarchy_well_formed_p tree =
+    let rel = Program.class_hierarchy tree in
+      if Program.acyclic_p rel then
+	true
+      else
+	begin
+	  let cycle = Program.find_cycle tree rel in
+	    Messages.error "*top*" 0 ("class hierarchy has a cycle: " ^
+					(Program.string_of_cycle cycle)) ;
+	    false
+	end
   in
-    if type_relation_well_formed_p tree then
+    if (type_relation_well_formed_p tree) &&
+      (class_hierarchy_well_formed_p tree)
+    then
       begin
 	try
 	  Program.map tree (type_check_declaration tree)

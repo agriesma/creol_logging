@@ -130,7 +130,7 @@ creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 			  $(srcdir)/Config.ml 
 
 OCAMLCFLAGS		+= -g
-OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 10
+OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 20
 OCAMLFINDFLAGS		+= -package "num unix $(OCAML_LIBXML2) str"
 
 # The compilers.
