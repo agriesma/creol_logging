@@ -54,7 +54,7 @@ make install
 
 # If we succeeded in building native versions, we only package this version,
 # otherwise we distribute the byte code version.
-for i in creolc ; do
+for i in cmcvalid creolc ; do
     if [ -x $RPM_BUILD_ROOT%{_bindir}/$i.opt ] ; then
         mv $RPM_BUILD_ROOT%{_bindir}/$i.opt $RPM_BUILD_ROOT%{_bindir}/$i
 	strip $RPM_BUILD_ROOT%{_bindir}/$i
@@ -88,6 +88,7 @@ fi
 %files
 %defattr(-,root,root)
 %doc AUTHORS COPYING NEWS README README-alpha info/creoltools.pdf
+%{_bindir}/cmcvalid
 %{_bindir}/creolc
 %{_bindir}/creolbug
 %{_bindir}/creolshell
