@@ -849,18 +849,6 @@ let parse name input =
 	| _ -> do_parse input
   and parse_expression input =
     match Stream.peek input with
-      | Some Key ("list", line) ->
-	  let () = Stream.junk input in
-	  let () = junk_lparen input in
-	  let l = parse_expression_list input in
-	  let () = junk_rparen input in
-	    Expression.ListLit (Expression.make_note (), l)
-      | Some Key ("now", _) ->
-	  let () = Stream.junk input in
-	    Expression.Now (Expression.make_note ())
-      | Some Key ("null", _) ->
-	  let () = Stream.junk input in
-	    Expression.Null (Expression.make_note ())
       | Some Key ("bool", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in
@@ -877,6 +865,12 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let () = junk_rparen input in
 	    r
+      | Some Key ("list", line) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let l = parse_expression_list input in
+	  let () = junk_rparen input in
+	    Expression.ListLit (Expression.make_note (), l)
       | Some Key ("int", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in
@@ -892,12 +886,30 @@ let parse name input =
 	  let i' = Expression.Int (Expression.make_note (), i) in
 	  let () = junk_rparen input in
 	    Expression.LabelLit (Expression.make_note (), [o; i'])
+      | Some Key ("map", _) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let b = parse_bindings input in
+	  let () = junk_rparen input in
+	    Expression.MapLit (Expression.make_note (), b)
+      | Some Key ("now", _) ->
+	  let () = Stream.junk input in
+	    Expression.Now (Expression.make_note ())
+      | Some Key ("null", _) ->
+	  let () = Stream.junk input in
+	    Expression.Null (Expression.make_note ())
       | Some Key ("ob", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in
 	  let r = parse_string input in
 	  let () = junk_rparen input in
 	    Expression.ObjLit (Expression.make_note (), r)
+      | Some Key ("set", line) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let l = parse_elements input in
+	  let () = junk_rparen input in
+	    Expression.SetLit (Expression.make_note (), l)
       | Some Key ("str", _) ->
 	  let () = Stream.junk input in
 	  let () = junk_lparen input in
@@ -943,6 +955,33 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t,
 			   "expression"))
       | None -> raise (Eof "")
+  and parse_bindings input =
+    match Stream.peek input with
+      | Some Key ("empty", _) ->
+          let () = Stream.junk input in
+	    []
+      | Some Key ("mapentry", _) ->
+	  let () = Stream.junk input in
+	  let () = junk_lparen input in
+	  let d = parse_expression input in
+	  let () = junk_comma input in
+	  let r = parse_expression input in
+	  let () = junk_rparen input in
+	    match Stream.peek input with
+	      | Some Comma _ ->
+		  (d, r)::(parse_bindings input)
+	      | _ -> [(d, r)]
+  and parse_elements input =
+    match Stream.peek input with
+      | Some Key ("emptyset", _) ->
+          let () = Stream.junk input in
+	    []
+      | _ ->
+	  let e = parse_expression input in
+	    match Stream.peek input with
+	      | Some Colon _ ->
+		  e::(parse_elements input)
+	      | _ -> [e]
   and parse_lhs_list input =
     match Stream.peek input with
       | Some Key ("noVid", _) ->

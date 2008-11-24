@@ -85,7 +85,7 @@ let emit options out_channel input =
 	  print_string "list(" ; of_expression_list l ; print_string ")"
       | Expression.SetLit (_, l) ->
 	  print_string "set(" ;
-	  of_expression_list ~empty:"emptyset" ~separator:"," l ;
+	  of_expression_list ~empty:"emptyset" ~separator:":" l ;
 	  print_string ")" ;
       | Expression.MapLit (_, l) ->
 	  print_string "map(" ;
