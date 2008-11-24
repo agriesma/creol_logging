@@ -50,7 +50,7 @@ class Semaphore
 begin
   var s: Bool := true
   op p == await s; s := false
-  op v == assert ~s; s := true
+  op v requires ~s == s := true
 end
 @end example
 

@@ -185,7 +185,8 @@ order.
 
 
 @subsection Sets
-@cindex Set Constructor
+@cindex Set
+@cindex Set constructor
 
 @code{@{@}} represents the empty set.  Generally, sets can be
 constructed by enumerating the elements: @code{@{ @{ @var{expression}
@@ -194,6 +195,28 @@ constructed by enumerating the elements: @code{@{ @{ @var{expression}
 An expression of the form
 @code{@{ @var{id} : @var{expression} | @var{expression} @}}
 represents set aggregation.
+
+
+@subsection Maps
+@cindex Map
+@cindex Map constructor
+
+@code{@{||@}} represents the empty @emph{map}.  Maps can be
+constructed by enumerating their @emph{bindings}.  Bindings are of the
+form @code{@var{e} |-> @var{f}}, where @code{e} and @code{f} are
+expressions.
+
+A map expression is @emph{well-formed,} when all expressions of the left
+hand side of @code{|->} are unique.
+
+@code{@{| "A" |-> 1, "B" |-> 2 |@}} is a well-formed map, but
+@code{@{| "A" |-> 1, "A" |-> 2 |@}} is not.  Note that
+@code{@{| "A" |-> 1, "A" |-> 1 |@}} is a @emph{well-formed} map,
+because the value of @code{"A"} is uniquely determined.  It represents
+the map @code{@{| "A" |-> 1 |@}}.
+
+The standard library provides functions for inspecting, constructing,
+and deconstructing maps (@pxref{Data Type Map}).
 
 
 @subsection Object Expressions and Literals

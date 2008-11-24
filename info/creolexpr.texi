@@ -4,3 +4,32 @@
 @cindex Expressions
 
 
+@section Types
+@cindex Type
+
+
+
+@section Expressions
+@cindex Expression
+
+
+
+@subsection Constant Expression
+@cindex Constant Expression
+@cindex Expression, Constant
+@cindex Constant
+
+
+@section Compile-time Constants
+@cindex Compile-Time Constant
+@cindex Constant, Compile-Time
+@cindex Constant
+
+This documents uses the term @emph{compile-time constant} in some contexts.
+A compile-time constant is a constant whose value is determined at compile
+time.  While the values of class parameters are constant, their value is
+determined at run-time, when the object is initialised.  Thus, a class
+parameter cannot be used as a compile-time constant.
+Examples of compile-time constants are all integer and string literals, but
+also @code{1+5} and @code{a = a}, because the value is independent of the
+run-time states.

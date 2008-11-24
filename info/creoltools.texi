@@ -65,6 +65,7 @@ Documentation License.''
 * Control Flow::
 * CREOL Language::        A description of the @acronym{CREOL} language.
 * CREOL Prelude::         The standard library for @acronym{CREOL}.
+* Pragmatic Advice::      Pragmatic Advice a.k.a. @code{pragma}.
 * Real-time CREOL::       Using @acronym{CREOL} for Timed Models.
 * CREOL Machine Code::    @acronym{CREOL} Machine Code.
 * Model-checking CREOL::  Using Maude to Model-Check @acronym{CREOL} programs.
@@ -91,6 +92,7 @@ Documentation License.''
 @include creolcomm.texi
 @include creolflow.texi
 @include creol.texi
+@include pragma.texi
 @include creollib.texi
 @include creolrt.texi
 @include cmc.texi
@@ -160,6 +162,7 @@ e}
 @c with each release.  This will set version and date in @file{version.texi}
 @c to its correct values.
 @c
+@c Version 0.0m (r20XX) was released on November 24, 2008.
 @c Version 0.0l (r2003) was released on November 03, 2008.
 @c Version 0.0k (r1695) was released on September 13, 2008.
 @c Version 0.0j (r1447) was released on June 9, 2008.

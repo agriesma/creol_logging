@@ -27,6 +27,7 @@ creoltools_TEXINFOS	= introduction.texi \
 			  creolflow.texi \
 			  creollib.texi \
 			  creol.texi \
+			  pragma.texi \
 			  creolmc.texi \
 			  creolrt.texi \
 			  cmc.texi \

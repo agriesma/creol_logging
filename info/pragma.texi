@@ -1,0 +1,33 @@
+@node Pragmatic Advice
+@chapter Pragmatic Advice
+@cindex Pragma
+@cindex Pargmatic Advice
+
+@acronym{Creol} supports @emph{pragmas} to annotate Models with pragmatic
+information.  Pragmatic information does not influence the formal meaning
+of a @acronym{Creol} model, but it may be used by tools for analysing or
+interpreting the model.
+
+The tools described in this module accept the following advices:
+
+@table @code
+@item Hidden
+This advice can be applied to any declaration.  A declaration with this
+advice will be considered for type checking, but the definition will
+be ignored by the back-ends.  No code will be emitted for @code{Hidden}
+declarations.
+
+@item Invocations(n)
+This advice applies to methods. When @code{n} is a compile time constant
+of type @code{Nat}, it instructs the compiler to expect at most @code{n}
+concurrent processes of the method.
+
+@item Well_Ordered(f)
+This advice applies to data types. The symbol @code{f} is a name for
+a binary predicate, which is supposed to be transistive and anti-symmetric
+and has one minimal element.  A type with this annotation allows its use
+in annotations @code{measure e by f} when @code{e} is an expression of
+the well-ordered data types.  Note that types may have more than one
+well-ordering.
+@end table
+

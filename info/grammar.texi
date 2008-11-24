@@ -163,6 +163,7 @@ expr ::=
   | @strong{[} [ @{ expr @strong{,} expr @} ] @strong{]}
   | @strong{@{} [ expr @{ @strong{,} expr @} ] @strong{@}}
   | @strong{@{} id @strong{:} expr @strong{|} expr @strong{@}}
+  | @strong{@{|} [ binding @{ @strong{,} binding @} ] @strong{|@}}
   | unaryop expr | expr binop expr | id @strong{(} [ expr @{ @strong{,} expr @} ] @strong{)}
   | @strong{if} expr @strong{then} expr @strong{else} expr @strong{end}
   | @strong{(} (@strong{forall} | @strong{exists} | @strong{some}) var-decl-no-init @strong{:} expr @strong{)}
@@ -185,6 +186,9 @@ binop ::=
   | @strong{=} | @strong{/=} | @strong{<} | @strong{>} | @strong{<=} | @strong{>=}
   | @strong{+} | @strong{-} | @strong{*} | @strong{**} | @strong{/} | @strong{%} @c
   | @strong{-|} | @strong{|-|} | @strong{|-} | @strong{\} | @strong{in}
+
+binding ::=
+    expr @strong{|->} expr
 
 id-or-op ::=
     unaryop | binaryop | id

@@ -12,7 +12,7 @@
 @cindex Exceptions
 
 The current version of @acronym{CREOL} does not provide any exception
-mechanism.  The language reserves keywords for an exception mechanism
+mechanism yet.  The language reserves keywords for an exception mechanism
 (@pxref{Keywords}) and we expect to provide it in a future version.
 
 
