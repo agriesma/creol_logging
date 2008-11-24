@@ -1,4 +1,4 @@
-creoltools 0.0l (2008-11-XX): alpha release.
+creoltools 0.0m (2008-11-24): alpha release.
 
 This version is mainly a bug fix release.  It includes some new language
 features.
@@ -7,7 +7,7 @@ In the language:
 * Subtypes are defined using the syntax "datatype S from T" instead of
   "datatype S of T".
 * Support for pragmatic advice has been added.  The syntax is
-  pragma "type-name" [ ( [ expr {, expr} ] ) ]
+  pragma type-name [ ( [ expr {, expr} ] ) ]
 * Parenthesis for empty expression lists are optional in most places:
   "new C" and "new C ()" are accepted as equivalent.
 * Loops can be annotated with a measure and order, i.e.,
@@ -29,6 +29,7 @@ In the interpreter:
 Other:
 * Errors in the grammar have been corrected and the grammar is now
   described in a less ambiguous manner.
+* The processor for maude output has been extended.
 
 
 creoltools 0.0l (2008-11-03): alpha release.

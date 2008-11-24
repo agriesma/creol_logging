@@ -162,7 +162,7 @@ e}
 @c with each release.  This will set version and date in @file{version.texi}
 @c to its correct values.
 @c
-@c Version 0.0m (r20XX) was released on November 24, 2008.
+@c Version 0.0m (r2092) was released on November 24, 2008.
 @c Version 0.0l (r2003) was released on November 03, 2008.
 @c Version 0.0k (r1695) was released on September 13, 2008.
 @c Version 0.0j (r1447) was released on June 9, 2008.
