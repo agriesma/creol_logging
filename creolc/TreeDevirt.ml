@@ -47,6 +47,9 @@ let devirt_statement program cls meth stmt =
       | Tuple (n, l) -> Tuple (n, List.map devirt_expression l)
       | ListLit (n, l) -> ListLit (n, List.map devirt_expression l)
       | SetLit (n, l) -> SetLit (n, List.map devirt_expression l)
+      | MapLit (n, l) ->
+	  let f (d, r) = (devirt_expression d, devirt_expression r) in
+	    MapLit (n, List.map f l)
       | Unary (n, o, e) -> Unary (n, o, devirt_expression e)
       | Binary (n, o, l, r) ->
 	  Binary (n, o, devirt_expression l, devirt_expression r)

@@ -102,12 +102,15 @@ rule token = parse
     | '_' { UNDERSCORE }
     | '`' { BACKTICK }
 	(*i Lower case letters i*)
+    | "{|" { LMAP }
     | '{' { LBRACE }
     | "|||" { MERGE }
     | "|-|" { CONCAT }
+    | "|->" { MAPSTO }
     | "|-" { APPEND }
     | "||" { BARBAR }
-    | "|" { BAR }
+    | "|}" { RMAP }
+    | '|' { BAR }
     | '}' { RBRACE }
     | '~' { TILDE }
     | "as" { AS }

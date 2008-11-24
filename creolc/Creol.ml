@@ -345,6 +345,7 @@ struct
       | Tuple of note * t list
       | ListLit of note * t list
       | SetLit of note * t list
+      | MapLit of note * (t * t) list
       | Unary of note * unaryop * t
       | Binary of note * binaryop * t * t
       | FuncCall of note * string * t list
@@ -529,6 +530,7 @@ struct
       | Tuple (a, _)
       | ListLit (a, _)
       | SetLit (a, _)
+      | MapLit (a, _)
       | Unary (a, _, _)
       | Binary (a, _, _, _)
       | If (a, _, _, _)
@@ -564,6 +566,7 @@ struct
       | Tuple (_, l) -> Tuple (note, l)
       | ListLit (_, l) -> ListLit (note, l)
       | SetLit (_, l) -> SetLit (note, l)
+      | MapLit (_, l) -> MapLit (note, l)
       | Unary (_, o, a) -> Unary (note, o, a)
       | Binary (_, o, l, r) -> Binary (note, o, l, r)
       | If (_, c, t, f) -> If (note, c, t, f)
@@ -626,6 +629,9 @@ struct
       | Tuple (_, l) -> List.for_all constant_p l
       | ListLit (_, l) -> List.for_all constant_p l
       | SetLit (_, l) -> List.for_all constant_p l
+      | MapLit (_, l) ->
+          let (dl, rl) = List.split l in
+            (List.for_all constant_p dl) && (List.for_all constant_p rl)
       | Unary (_, _, a) -> constant_p a
       | Binary (_, _, l, r) -> (constant_p l) && (constant_p r)
       | If (_, c, t, f) -> (constant_p c) && (constant_p t) && (constant_p f)
@@ -700,6 +706,11 @@ struct
 	| SetLit (n, l) ->
 	    SetLit (subst_in_note n,
 		    List.map (substitute_types_in_expression subst) l)
+	| MapLit (n, l) ->
+	    MapLit (subst_in_note n,
+		    List.map (fun (d, r) ->
+				(substitute_types_in_expression subst d,
+				 substitute_types_in_expression subst r)) l)
 	| Id (n, name) ->
 	    Id (subst_in_note n, name)
 	| StaticAttr (n, name, t) ->
@@ -770,6 +781,9 @@ struct
 	  ListLit (n, List.map (substitute subst) l)
       | SetLit (n, l) ->
 	  SetLit (n, List.map (substitute subst) l)
+      | MapLit (n, l) ->
+          let f (d, r) = (substitute subst d, substitute subst r) in
+	    MapLit (n, List.map f l)
       | Unary (n, o, a) ->
 	  Unary (n, o, substitute subst a)
       | Binary (n, o, l, r) ->

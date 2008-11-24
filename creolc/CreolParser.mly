@@ -96,13 +96,13 @@ let statement_note pos =
 
 (* Symbols *)
 %token EQEQ COMMA SEMI COLON BACKTICK ASSIGN
-%token LBRACK RBRACK LPAREN RPAREN LBRACE RBRACE
+%token LBRACK RBRACK LPAREN RPAREN LBRACE RBRACE LMAP RMAP
 %token HASH QUESTION BANG DOT AT
 %token SUBTYPE SUPERTYPE
 %token BOX MERGE PLUS MINUS TIMESTIMES TIMES PERCENT DIV
 %token PREPEND CONCAT APPEND
 %token EQ NE LT LE GT GE
-%token TILDE AMPAMP BAR BARBAR HAT WEDGE VEE DLRARROW DARROW
+%token TILDE AMPAMP BAR BARBAR HAT WEDGE VEE DLRARROW DARROW MAPSTO
 %token BACKSLASH UNDERSCORE
 %token <string> CID ID STRING
 %token <bool> BOOL
@@ -112,6 +112,7 @@ let statement_note pos =
 
 (* %left COMMA *)
 (* %left BAR *)
+(* %nonassoc MAPSTO *)
 %left IN
 %left DLRARROW
 %left DARROW
@@ -552,6 +553,8 @@ expression:
 	{ SetLit (expression_note $startpos, e) }
     | LBRACE ID COLON expression BAR expression RBRACE
 	{ Null (expression_note $startpos) }
+    | LMAP l = separated_list(COMMA, binding) RMAP
+	{ MapLit (expression_note $startpos, l) }
     | l = expression o = binop r = expression
         { Binary(expression_note $startpos, o, l, r) }
     | TILDE e = expression
@@ -601,6 +604,10 @@ expression:
 
 %inline function_name:
       f = ID { f }
+
+%inline binding:
+      d = expression MAPSTO r = expression { (d, r) }
+
 
 (* Types *)
 

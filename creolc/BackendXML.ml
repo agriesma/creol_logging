@@ -591,6 +591,19 @@ let emit name tree =
             XmlTextWriter.end_element writer ) l ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
+      | Expression.MapLit(a, l) ->
+	  XmlTextWriter.start_element writer "creol:map-literal" ; 
+	  List.iter (function (d, r) ->
+	    XmlTextWriter.start_element writer "creol:binding" ;
+	    XmlTextWriter.start_element writer "creol:from" ;
+	    creol_expression_to_xml d ;
+            XmlTextWriter.end_element writer ;
+	    XmlTextWriter.start_element writer "creol:to" ;
+	    creol_expression_to_xml r ;
+            XmlTextWriter.end_element writer ;
+            XmlTextWriter.end_element writer ) l ;
+	  creol_expression_note_to_xml a ;
+          XmlTextWriter.end_element writer
       | Expression.Id (a, v) -> 
 	  XmlTextWriter.start_element writer "creol:identifier" ; 
 	  XmlTextWriter.write_attribute writer "name" v ;

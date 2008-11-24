@@ -75,6 +75,8 @@ let optimise_in_statement stmt =
     | Tuple (n, l) -> Tuple (n, List.map fold_expr l)
     | ListLit (n, l) -> ListLit (n, List.map fold_expr l)
     | SetLit (n, l) -> SetLit (n, List.map fold_expr l)
+    | MapLit (n, l) ->
+	MapLit (n, List.map (fun (d, r) -> (fold_expr d, fold_expr r)) l)
     | Unary (n, o, e) ->
         let e' = fold_expr e in
           begin

@@ -85,7 +85,11 @@ let emit options out_channel input =
 	  print_string "list(" ; of_expression_list l ; print_string ")"
       | Expression.SetLit (_, l) ->
 	  print_string "set(" ;
-	  of_expression_list ~empty:"emptyset" ~separator:":" l ;
+	  of_expression_list ~empty:"emptyset" ~separator:"," l ;
+	  print_string ")" ;
+      | Expression.MapLit (_, l) ->
+	  print_string "map(" ;
+	  of_bindings l ;
 	  print_string ")" ;
       | Expression.FuncCall(_, f, a) as e ->
 	  let rt = Expression.get_type e
@@ -138,6 +142,23 @@ let emit options out_channel input =
       function
         | [] -> print_string empty
         | l -> separated_list of_expression prsep l
+  and of_bindings ?(separator = ",") =
+    let prsep () = print_space () ; print_string separator ; print_space () in
+    let of_binding (d, r) =
+      open_box 2 ;
+      print_string "mapentry(" ;
+      of_expression d;
+      print_space () ;
+      print_string ",";
+      print_space () ;
+      of_expression r ;
+      print_string ")" ;
+      close_box ()
+    in
+      (** Compile a list of expressions into the Creol Maude Machine. *)
+      function
+        | [] -> print_string "empty"
+        | l -> separated_list of_binding prsep l
   and of_lhs =
     function
 	Expression.LhsId (_, i) -> print_string ("\"" ^ i ^ "\"")

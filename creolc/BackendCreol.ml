@@ -86,6 +86,10 @@ let rec print_expression exp =
 	  print_string "{";
 	  print_expression_list a;
 	  print_string "}";
+      | Expression.MapLit (_, a) ->
+	  print_string "{|";
+	  print_binding_list a;
+	  print_string "|}";
       | Expression.Unary (_, o, e) ->
 	  print_string (Expression.string_of_unaryop o) ;
 	  print_space () ;
@@ -160,6 +164,16 @@ let rec print_expression exp =
     print 121 exp
 and print_expression_list l =
   separated_list print_expression print_comma l
+and print_binding_list l =
+  separated_list print_binding print_comma l
+and print_binding (d, r) =
+  open_box 2 ;
+  print_expression d ;
+  print_space () ;
+  print_string "|->" ;
+  print_space () ;
+  print_expression r ;
+  close_box ()
 
 
 let pretty_print_expression out_channel expr =

@@ -80,6 +80,9 @@ let into_ssa program =
       | Tuple (a, l) -> Tuple (a, List.map (expression_to_ssa meth env) l)
       | ListLit (a, l) -> ListLit (a, List.map (expression_to_ssa meth env) l)
       | SetLit (a, l) -> SetLit (a, List.map (expression_to_ssa meth env) l)
+      | MapLit (a, l) ->
+	  let f (d, r) = (expression_to_ssa meth env d, expression_to_ssa meth env r) in
+	    MapLit (a, List.map f l)
       | Unary (a, o, e) -> Unary (a, o, expression_to_ssa meth env e)
       | Binary (a, o, l, r) ->
 	  Binary (a, o, expression_to_ssa meth env l, expression_to_ssa meth env r)
@@ -334,6 +337,9 @@ let out_of_ssa tree =
       | Tuple (a, l) -> Tuple (a, List.map expression_of_ssa l)
       | ListLit (a, l) -> ListLit (a, List.map expression_of_ssa l)
       | SetLit (a, l) -> SetLit (a, List.map expression_of_ssa l)
+      | MapLit (a, l) ->
+          let f (d, r) = (expression_of_ssa d, expression_of_ssa r) in
+	    MapLit (a, List.map f l)
       | Unary (a, o, e) -> Unary (a, o, expression_of_ssa e)
       | Binary (a, o, l, r) ->
 	  Binary (a, o, expression_of_ssa l, expression_of_ssa r)

@@ -87,6 +87,11 @@ let compute_in_statement ~meth may must stmt =
 	  List.fold_left (add kill) IdSet.empty l
       | SetLit (_, l) ->
 	  List.fold_left (add kill) IdSet.empty l
+      | MapLit (_, l) ->
+	  let (dl, rl) = List.split l 
+	  and s = List.fold_left (add kill) IdSet.empty
+	  in
+	    IdSet.union (s dl) (s rl)
       | Unary (_, _, e) ->
 	  kill e
       | Binary (_, _, l, r) ->

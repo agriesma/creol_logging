@@ -88,6 +88,10 @@ let compute_in_body ~program ~cls ~meth =
 	  List.fold_left (add gen) IdSet.empty l
       | SetLit (_, l) ->
 	  List.fold_left (add gen) IdSet.empty l
+      | MapLit (_, l) ->
+	  let s = List.fold_left (add gen) IdSet.empty 
+	  and (dl, rl) = List.split l in
+	    IdSet.union (s dl) (s rl)
       | Unary (_, _, e) ->
 	  gen e
       | Binary (_, _, l, r) ->
