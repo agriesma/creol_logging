@@ -1360,23 +1360,23 @@ let typecheck tree: Program.t =
 	  Declaration.Interface (type_check_interface program i)
       | _ as d -> d
   and type_relation_well_formed_p tree =
-    let rel = Program.compute_subtype_relation tree in
-      if Program.acyclic_p rel then
+    let rel = Program.subtype_relation tree in
+      if Program.acyclic_p (Program.transitive_closure rel) then
 	true
       else
 	begin
-	  let cycle = Program.find_cycle tree rel in
+	  let cycle = Program.find_cycle rel in
 	    Messages.error "*top*" 0 ("subtype relation has a cycle: " ^
 					(Program.string_of_cycle cycle)) ;
 	    false
 	end
   and class_hierarchy_well_formed_p tree =
     let rel = Program.class_hierarchy tree in
-      if Program.acyclic_p rel then
+      if Program.acyclic_p (Program.transitive_closure rel) then
 	true
       else
 	begin
-	  let cycle = Program.find_cycle tree rel in
+	  let cycle = Program.find_cycle rel in
 	    Messages.error "*top*" 0 ("class hierarchy has a cycle: " ^
 					(Program.string_of_cycle cycle)) ;
 	    false

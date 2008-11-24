@@ -399,20 +399,30 @@ TEST_CREOLC_TYPECHECK([Contracts],
 [Contracts.creol:37: Class Bar does not contract interface Bar
 ])
 TEST_CREOLC_TYPECHECK([If], [], [])
+
 TEST_CREOLC_TYPECHECK([New], [], [])
+
 TEST_CREOLC_TYPECHECK([New2], [], [])
+
 TEST_CREOLC_TYPECHECK([New3],
 [New3.creol:26: Arguments to new C mismatch in length
 ])
+
 TEST_CREOLC_TYPECHECK([New4],
 [New4.creol:26: Class E not defined
 ])
+
 TEST_CREOLC_TYPECHECK([New5],
 [[New5.creol:26: expression has type Bool but expected is type Int
   Cannot satisfy constraints: Bool <: Int
 ]])
+
 TEST_CREOLC_TYPECHECK([Cyclic],
 [*top*:0: subtype relation has a cycle: S <: U <: T <: S
+])
+
+TEST_CREOLC_TYPECHECK([CyclicClass],
+[*top*:0: class hierarchy has a cycle: A <: B <: C <: A
 ])
 
 TEST_CREOLC_TYPECHECK([Missing],

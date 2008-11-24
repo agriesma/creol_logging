@@ -324,5 +324,33 @@ let test_fixture = "Creol" >:::
 	      assert_bool "Sets differ" (IdSet.equal expect res)
 	  ) ;
       ] ;
+      "cycles" >::: [
+        "classes" >:: (
+	  fun _ -> 
+	    let a = make_class "A" [("C", [])]
+	    and b = make_class "B" [("A", [])]
+	    and c = make_class "C" [("B", [])] in
+	    let tree = Program.make [ Declaration.Class a;
+				      Declaration.Class b;
+				      Declaration.Class c ] in
+	    let rel = Program.transitive_closure (Program.class_hierarchy tree)
+	    in
+	    let res = Program.acyclic_p rel in
+	      assert_bool "No cycle." (not res)
+        );
+        "interfaces" >:: (
+	  fun _ -> 
+	    let a = make_iface "A" [("C", [])]
+	    and b = make_iface "B" [("A", [])]
+	    and c = make_iface "C" [("B", [])] in
+	    let tree = Program.make [ Declaration.Interface a;
+				      Declaration.Interface b;
+				      Declaration.Interface c ] in
+	    let rel = Program.transitive_closure (Program.subtype_relation tree)
+	    in
+	    let res = Program.acyclic_p rel in
+	      assert_bool "No cycle." (not res)
+        );
+      ] ;
     ] ;
   ]

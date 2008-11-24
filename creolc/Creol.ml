@@ -2255,29 +2255,32 @@ struct
 
 
   (** Find a cycle.  This is using depth first search. *)
-  let find_cycle ~program rel =
+  let find_cycle rel =
     let rec build (res: string list) (current: string) =
-      let supers: string list =
-	try
-	  List.map Type.name (find_datatype program current).Datatype.supers ;
-	with
-	    Not_found ->
-	      List.map Inherits.name (find_interface program current).Interface.inherits 
-      in
-	search (current::res) supers
-    and search (res: string list) =
-      function
-	| [] -> res
-	| cand::r when not (List.mem cand res) -> 
-	    let res' = build res cand in
-	      if List.mem cand res' then res' else search res r
-	| cand::r -> cand::res
+	search (current::res) (IdMap.find current rel)
+    and search (res: string list) supers =
+      if IdSet.is_empty supers then
+	res
+      else
+	begin
+	  let cand: string = IdSet.choose supers in
+	    if List.mem cand res then
+	      cand::res
+	    else
+	      begin
+	        let res' = build res cand in
+	          if List.mem cand res' then
+		    res'
+		  else
+		    search res (IdSet.remove cand supers)
+	      end
+	end
     in
-      build [] (IdSet.choose (cycle rel))
+      build [] (IdSet.choose (cycle (transitive_closure rel)))
 
 
   (** Compute the subtype relation-ship of the program. *)
-  let compute_subtype_relation program =
+  let subtype_relation program =
     let f rel =
       function
 	| Declaration.Interface { Interface.name = name; inherits = supers } ->
@@ -2291,7 +2294,7 @@ struct
 	      rel
 	| _ -> rel
     in
-      transitive_closure (List.fold_left f IdMap.empty program.decls)
+      List.fold_left f IdMap.empty program.decls
 
 
   (** {4 Functions} *)
