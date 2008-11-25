@@ -139,25 +139,32 @@ struct
 
   (** The predicate [future_p t] is true, if the type [t] is the type
       of a {i Future}. *)
-  let future_p t = match t with Application("Label", _) -> true | _ -> false
+  let future_p t = match t with Application("Label", [_]) -> true | _ -> false
 
   (** Make a term representing a {i List} of [t]. *)
   let list t = Application ("List", [t])
 
   (** The predicate [list_p t] is true, if the type [t] is the type of
       {i List\[a\]} for some type {i a}. *)
-  let list_p t = match t with Application("List", _) -> true | _ -> false
+  let list_p t = match t with Application("List", [_]) -> true | _ -> false
 
   (** Make a term representing a {i Set} of [t]. *)
   let set t = Application ("Set", [t])
 
   (** The predicate [set_p t] is true, if the type [t] is the type of
       {i Set\[a\]} for some type {i a}. *)
-  let set_p t = match t with Application("Set", _) -> true | _ -> false
+  let set_p t = match t with Application("Set", [_]) -> true | _ -> false
 
   (** The predicate [collection_p] holds for all types [t] that are
       suitable as callees in multi-cast statements. *)
   let collection_p t = (list_p t) || (set_p t)
+
+  (** Make a term representing a {i Set} of [t]. *)
+  let map s t = Application ("Map", [s; t])
+
+  (** The predicate [set_p t] is true, if the type [t] is the type of
+      {i Set\[a\]} for some type {i a}. *)
+  let map_p t = match t with Application("Map", [_; _]) -> true | _ -> false
 
   (** The type {i History}. *)
   let history = Basic "History"
