@@ -967,10 +967,16 @@ let parse name input =
 	  let () = junk_comma input in
 	  let r = parse_expression input in
 	  let () = junk_rparen input in
-	    match Stream.peek input with
-	      | Some Comma _ ->
-		  (d, r)::(parse_bindings input)
-	      | _ -> [(d, r)]
+	    begin
+	      match Stream.peek input with
+	        | Some Comma _ ->
+		    (d, r)::(parse_bindings input)
+	        | _ -> [(d, r)]
+	    end
+      | Some t ->
+	  raise (BadToken (error_tokens input, get_token_line t,
+			   "map"))
+      | None -> raise (Eof "")
   and parse_elements input =
     match Stream.peek input with
       | Some Key ("emptyset", _) ->
