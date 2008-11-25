@@ -104,9 +104,9 @@ let rec string_of_constraint_set =
     and $t$ have the same support (i.e., they substitute the same
     variables), and that for each $v$ in this support, we have $s<:t$. *)
 let subst_more_specific_p program s t =
-  let keys = Type.Subst.fold (fun k _ a -> k::a) s [] in
+  let keys = IdMap.fold (fun k _ a -> k::a) s [] in
   let p k =
-    Program.subtype_p program (Type.Subst.find k s) (Type.Subst.find k t)
+    Program.subtype_p program (IdMap.find k s) (IdMap.find k t)
   in
     List.for_all p keys
 
@@ -129,7 +129,7 @@ let find_most_specific program substs =
     a constraint states that two types are equal in the current
     substitution. *)
 let unify ~program ~constraints =
-  let rec do_unify c (res: Type.t Type.Subst.t): Type.t Type.Subst.t =
+  let rec do_unify c (res: Type.t IdMap.t): Type.t IdMap.t =
     if c = [] then
       res
     else
@@ -194,7 +194,7 @@ let unify ~program ~constraints =
 		  (List.map
 		      (fun (t1, t2) ->
 		        (Type.substitute x t' t1, Type.substitute x t' t2)) d')
-		  (Type.Subst.add x t' res)
+		  (IdMap.add x t' res)
 	  | (Type.Variable x, _) when not (Type.occurs_p x t) ->
 	      (* In this case, `x is a lower bound, i.e., `x <: t, and t
 		 contains free variables.  This constraint is trivially
@@ -204,7 +204,7 @@ let unify ~program ~constraints =
 		  (List.map
 		      (fun (t1, t2) ->
 		        (Type.substitute x t t1, Type.substitute x t t2)) d)
-		  (Type.Subst.add x t res)
+		  (IdMap.add x t res)
 	  | (_, Type.Variable x) when Type.sentence_p s ->
 
 	      (* In this case, `x is an upper bound, i.e., t <: `x .
@@ -221,7 +221,7 @@ let unify ~program ~constraints =
 		  (List.map
 		      (fun (t1, t2) ->
 		        (Type.substitute x r t1, Type.substitute x r t2)) d)
-		  (Type.Subst.add x r res)
+		  (IdMap.add x r res)
 	      in
 		begin
 		  try
@@ -249,7 +249,7 @@ let unify ~program ~constraints =
 		  (List.map
 		      (fun (t1, t2) ->
 		        (Type.substitute x r t1, Type.substitute x r t2)) d)
-		  (Type.Subst.add x r res)
+		  (IdMap.add x r res)
 	      in
 		begin
 		  try
@@ -270,9 +270,11 @@ let unify ~program ~constraints =
 				    (Type.string_of_type t)) ;
 		raise (Unify_failure (s, t))
   in
-    log 1 "\n=== unify ===" ;
-    let res = do_unify constraints (Type.Subst.empty) in
-      log 1 "=== success ===\n" ; res
+    let () = log 1 "\n=== unify ===" in
+    let () = log 2 (string_of_constraint_set constraints) in
+    let res = do_unify constraints (IdMap.empty) in
+    let () = log 1 "=== success ===\n" in
+      res
 
 
 (** {3 Type reconstruction} *)
@@ -284,9 +286,9 @@ let fresh_names_in_type fresh_name t =
   let (fresh_name', s) =
     Type.Vars.fold
       (fun x (fn, s) ->
-	 let (v, fn') = fresh_var fn in (fn', Type.Subst.add x v s))
+	 let (v, fn') = fresh_var fn in (fn', IdMap.add x v s))
       fv
-      (fresh_name, Type.Subst.empty)
+      (fresh_name, IdMap.empty)
   in
     (fresh_name', Type.apply_substitution s t)
 
@@ -676,9 +678,8 @@ let type_check_expression env coiface constr expr =
   in
   let subst =
     try
-      Messages.message 2
-	("Unify expression in " ^ file ^ ":" ^ (string_of_int line)) ;
-      unify env.program constr'
+      let () = log 1 ("Unify expression in " ^ file ^ ":" ^ (string_of_int line)) in
+        unify env.program constr'
     with
 	Unify_failure (s, t) ->
 	  raise (Type_error (file, line, "expression has type " ^
@@ -688,8 +689,10 @@ let type_check_expression env coiface constr expr =
 			       "\n  Cannot satisfy constraints: " ^
 			       (string_of_constraint_set constr')))
   in
-    Messages.message 2 (Type.string_of_substitution subst) ;
-    substitute_types_in_expression subst expr'
+    let () = log 1 ("Substitution: " ^ (Type.string_of_substitution subst)) in
+    let res = substitute_types_in_expression subst expr' in
+    let () = log 1 ("Result: " ^ (Type.string_of_type (Expression.get_type res))) in
+      res
 
 
 let type_check_expression_list env coiface constr =
@@ -718,8 +721,10 @@ let type_check_expression_list env coiface constr =
 				     "\n  Cannot satisfy constraints: " ^
 				     (string_of_constraint_set constr')))
 	in
-          Messages.message 2 (Type.string_of_substitution subst) ;
-	  List.map (substitute_types_in_expression subst) exprs'
+          let () = log 1 ("Substitution: " ^ (Type.string_of_substitution subst)) in
+          let res = List.map (substitute_types_in_expression subst) exprs' in
+          let () = List.iter (fun e -> log 1 ("Result: " ^ (Type.string_of_type (Expression.get_type e)))) res in
+            res
 
 
 let type_check_assertion env coiface e =
@@ -1022,10 +1027,8 @@ let rec type_check_statement env coiface =
 	  let e' = type_check_assertion env coiface e in
 	    Prove (n, e')
       | Assign (n, lhs, rhs) ->
-	  let lhs' =
-	    List.map (type_check_lhs env coiface) lhs
-	  and rhs' =
-	    type_check_expression_list env coiface [] rhs
+	  let lhs' = List.map (type_check_lhs env coiface) lhs
+	  and rhs' = type_check_expression_list env coiface [] rhs
 	  in
 	  let check_assignment_pair lhs rhs =
 	    (* It has to be checked whether for each assignment part
@@ -1035,27 +1038,20 @@ let rec type_check_statement env coiface =
 	       type must not contain any free variables. *)
 	    let lhs_t = Expression.get_lhs_type lhs
 	    and rhs_t = Expression.get_type rhs in
-	    let die () =
-	      raise (Type_error (n.file, n.line,
-				 "Type mismatch in assignment: Expected " ^
-				   (Type.string_of_type lhs_t) ^
-				   " but got " ^
-				   (Type.string_of_type rhs_t)))
-	    in
-	      if Type.sentence_p rhs_t then
-		if Program.subtype_p env.program rhs_t lhs_t then
-		  rhs
-		else
-		  die ()
-	      else
-		let s =
-		  try
-		    unify env.program [(rhs_t, lhs_t)]
-		  with
-		      Unify_failure _ -> die ()
+	    let s =
+	      try
+		unify env.program [(rhs_t, lhs_t)]
+	      with
+		  Unify_failure _ ->
+	            raise (Type_error (n.file, n.line,
+			"Type mismatch in assignment: Expected " ^
+			(Type.string_of_type lhs_t) ^
+			" but got " ^
+			(Type.string_of_type rhs_t)))
+
 		in
-                  Messages.message 2 (Type.string_of_substitution s) ;
-		  substitute_types_in_expression s rhs
+                  let () = log 1 (Type.string_of_substitution s) in
+		    substitute_types_in_expression s rhs
 	  in
 	  let rhs'' =
 	    try

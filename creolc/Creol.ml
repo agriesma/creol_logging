@@ -232,12 +232,9 @@ struct
       variables. *)
   let sentence_p t = Vars.is_empty (free_variables t)
 
-  (** Module for substitution type. *)
-  module Subst = Map.Make(String)
-
   (** Type of a type substitution.  It maps names of type [string] to
       types. *)
-  type subst = t Subst.t
+  type subst = t IdMap.t
 
 
   (** Apply a substitution [s] to a type. *)
@@ -248,7 +245,7 @@ struct
       | Variable x ->
 	  begin
 	    try
-	      Subst.find x s 
+	      IdMap.find x s 
 	    with
 	      | Not_found -> Variable x
 	  end
@@ -265,12 +262,18 @@ struct
 
   (** Substitute each occurence of a type variable called [v] by the
       type [t] in the argument type. *)
-  let substitute v t = apply_substitution (Subst.add v t Subst.empty)
+  let substitute v t = apply_substitution (IdMap.add v t IdMap.empty)
+
+  (** Normalise a substitution.  If the right hand side of the substitution
+      contains a term that has a binding in that substitution, we substitute
+      it. *)
+  let normalise s =
+    s
 
   (** Make a string of a subtitution *)
   let string_of_substitution subst =
     let f k v a =  (k ^ " |-> " ^ (string_of_type v))::a in
-      String.concat ", " (Subst.fold f subst [])
+      String.concat ", " (IdMap.fold f subst [])
 
 
   (** The type of a method signature. The type [(None,None,None)]
@@ -767,9 +770,6 @@ struct
 	    Phi (subst_in_note n,
 		 List.map (substitute_types_in_expression subst) args)
 
-  (* Similar to the type substitution we also define a term substitution. *)
-  module Subst = Map.Make(String)
-
   let rec substitute subst =
     function
       | (This _ | QualifiedThis _ | Caller _ | Now _ | Null _ | Nil _
@@ -777,7 +777,7 @@ struct
       | Id (n, v) as e ->
 	  begin
 	    try
-	      set_note n (Subst.find v subst)
+	      set_note n (IdMap.find v subst)
             with
 	      | Not_found -> e
           end
