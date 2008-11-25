@@ -139,7 +139,7 @@ struct
 
   (** The predicate [future_p t] is true, if the type [t] is the type
       of a {i Future}. *)
-  let future_p t = match t with Application("Label", [_]) -> true | _ -> false
+  let future_p t = match t with Application("Label", _) -> true | _ -> false
 
   (** Make a term representing a {i List} of [t]. *)
   let list t = Application ("List", [t])
