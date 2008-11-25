@@ -365,16 +365,26 @@ let rec type_recon_expression env coiface constr fresh_name =
 	let (v, fresh_name'') = fresh_var fresh_name' in
 	let ty = Type.list v in
 	  (ListLit (set_type n ty, l'),
-	   (List.map (fun e -> (get_type e, v)) l') @ constr',
-	   fresh_name'')
+	   (List.map (fun e -> (get_type e, v)) l') @ constr', fresh_name'')
     | SetLit (n, l) ->
 	let (l', constr', fresh_name') = 
 	  type_recon_expression_list env coiface constr fresh_name l in
 	let (v, fresh_name'') = fresh_var fresh_name' in
 	let ty = Type.set v in
 	  (SetLit (set_type n ty, l'),
-	   (List.map (fun e -> (get_type e, v)) l') @ constr',
-	   fresh_name'')
+	   (List.map (fun e -> (get_type e, v)) l') @ constr', fresh_name'')
+    | MapLit (n, l) ->
+	let (d, r) = List.split l in
+	let (d', constr', fresh_name') = 
+	  type_recon_expression_list env coiface constr fresh_name d in
+	let (r', constr'', fresh_name'') =
+	  type_recon_expression_list env coiface constr' fresh_name' r in
+	let (dt, fresh_name''') = fresh_var fresh_name'' in
+	let (rt, fresh_name'''') = fresh_var fresh_name''' in
+	let ty = Type.map dt rt 
+	and map t = List.map (fun e -> (get_type e, t)) in
+	  (MapLit (set_type n ty, List.combine d' r'),
+	   List.flatten [map dt d'; map rt r'; constr''], fresh_name'''')
     | Id (n, name) ->
 	let res =
 	  try
