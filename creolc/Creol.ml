@@ -267,8 +267,10 @@ struct
   (** Normalise a substitution.  If the right hand side of the substitution
       contains a term that has a binding in that substitution, we substitute
       it. *)
-  let normalise s =
-    s
+  let normalise subst =
+    let norm _ t = apply_substitution subst t
+    in
+      IdMap.mapi norm subst
 
   (** Make a string of a subtitution *)
   let string_of_substitution subst =

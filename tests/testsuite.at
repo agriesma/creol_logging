@@ -391,6 +391,33 @@ TEST_CREOLC_TYPECHECK([Nil2], [], [])
 
 TEST_CREOLC_TYPECHECK([Nil3], [], [])
 
+TEST_CREOLC_TYPECHECK([Set], [], [])
+
+TEST_CREOLC_TYPECHECK([Set2], [], [])
+TEST_CREOLC_TYPECHECK([Set3], [], [])
+TEST_CREOLC_TYPECHECK([Set4], [], [])
+TEST_CREOLC_TYPECHECK([Set5],
+[[Set5.creol:26: Type mismatch in assignment: Expected Set[Int] but got Set[Bool]
+]], [])
+
+TEST_CREOLC_TYPECHECK([Set6],
+[[Set6.creol:26: Type mismatch in assignment: Expected Set[Set[Int]] but got Set[Set[String]]
+]], [])
+
+TEST_CREOLC_TYPECHECK([Set7],
+[[Set7.creol:26: Type mismatch in assignment: Expected Set[Int] but got Set[Data]
+]], [])
+
+TEST_CREOLC_TYPECHECK([Map], [], [])
+
+TEST_CREOLC_TYPECHECK([Map2], [], [])
+
+TEST_CREOLC_TYPECHECK([Map3],
+[[Map3.creol:26: Type mismatch in assignment: Expected Map[Data, Int] but got Map[String, String]
+]], [])
+
+TEST_CREOLC_TYPECHECK([Map4], [], [])
+
 TEST_CREOLC_TYPECHECK([ExprFailure],
 [[ExprFailure.creol:24: expression has type [[String, Int] -> `_0] but expected is type \/ [[[Float, Float] -> Float], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]
   Cannot satisfy constraints: [[String, Int] -> `_0] <: \/ [[[Float, Float] -> Float], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]

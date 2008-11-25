@@ -272,7 +272,7 @@ let unify ~program ~constraints =
   in
     let () = log 1 "\n=== unify ===" in
     let () = log 2 (string_of_constraint_set constraints) in
-    let res = do_unify constraints (IdMap.empty) in
+    let res = Type.normalise (do_unify constraints (IdMap.empty)) in
     let () = log 1 "=== success ===\n" in
       res
 

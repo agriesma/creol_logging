@@ -123,6 +123,12 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  typecheck/Nat3.creol typecheck/Nat4.creol \
 		  typecheck/Nil.creol typecheck/Nil2.creol \
 		  typecheck/Nil3.creol \
+		  typecheck/Set.creol typecheck/Set2.creol \
+		  typecheck/Set3.creol typecheck/Set4.creol \
+		  typecheck/Set5.creol typecheck/Set6.creol \
+		  typecheck/Set7.creol \
+		  typecheck/Map.creol typecheck/Map2.creol \
+		  typecheck/Map3.creol typecheck/Map4.creol \
 		  typecheck/New.creol typecheck/New2.creol \
 		  typecheck/New3.creol typecheck/New4.creol \
 		  typecheck/New5.creol \
