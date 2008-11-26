@@ -272,9 +272,10 @@ let unify ~program ~constraints =
   in
     let () = log 1 "\n=== unify ===" in
     let () = log 2 (string_of_constraint_set constraints) in
-    let res = Type.normalise (do_unify constraints (IdMap.empty)) in
+    let res = (do_unify constraints (IdMap.empty)) in
     let () = log 1 "=== success ===\n" in
-      res
+    let () = log 1 ("Substitution: " ^ (Type.string_of_substitution res)) in
+      Type.normalise res
 
 
 (** {3 Type reconstruction} *)
@@ -689,7 +690,6 @@ let type_check_expression env coiface constr expr =
 			       "\n  Cannot satisfy constraints: " ^
 			       (string_of_constraint_set constr')))
   in
-    let () = log 1 ("Substitution: " ^ (Type.string_of_substitution subst)) in
     let res = substitute_types_in_expression subst expr' in
     let () = log 1 ("Result: " ^ (Type.string_of_type (Expression.get_type res))) in
       res
@@ -721,7 +721,6 @@ let type_check_expression_list env coiface constr =
 				     "\n  Cannot satisfy constraints: " ^
 				     (string_of_constraint_set constr')))
 	in
-          let () = log 1 ("Substitution: " ^ (Type.string_of_substitution subst)) in
           let res = List.map (substitute_types_in_expression subst) exprs' in
           let () = List.iter (fun e -> log 1 ("Result: " ^ (Type.string_of_type (Expression.get_type e)))) res in
             res

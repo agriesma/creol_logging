@@ -82,6 +82,59 @@ let test_fixture = "Creol" >:::
           assert_equal ~msg:"Constant for type `Time' wrong" Type.time (Type.Basic "Time") ;
 	  assert_bool "Any is not of type `Time'" (Type.time_p Type.time)
       ) ;
+      "normalise" >::: [
+        "empty" >:: (
+	  fun _ ->
+	    let s = IdMap.empty in
+	    let res = Type.normalise s in
+	      assert_bool "Map not empty." (IdMap.is_empty res)
+	) ;
+        "none" >:: (
+	  fun _ ->
+	    let s = IdMap.add "b" Type.string (IdMap.add "a" Type.int IdMap.empty) in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:"Maps differ." s res
+	) ;
+        "vars" >:: (
+	  fun _ ->
+	    let s = IdMap.add "a" (Type.Variable "b") IdMap.empty in
+	    let exp = IdMap.add "a" (Type.Variable "b") IdMap.empty in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
+	) ;
+        "simple" >:: (
+	  fun _ ->
+	    let s = IdMap.add "b" Type.int (IdMap.add "a" (Type.Variable "b") IdMap.empty) in
+	    let exp = IdMap.add "b" Type.int (IdMap.add "a" Type.int IdMap.empty) in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
+	) ;
+        "deep" >:: (
+	  fun _ ->
+	    let s = IdMap.add "c" Type.int
+                      (IdMap.add "b" (Type.Variable "c") 
+                        (IdMap.add "a" (Type.Variable "b") IdMap.empty)) in
+	    let exp = IdMap.add "c" Type.int
+                      (IdMap.add "b" Type.int 
+                        (IdMap.add "a" Type.int IdMap.empty)) in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
+	) ;
+        "cycle" >:: (
+	  fun _ ->
+	    let s = IdMap.add "b" (Type.Variable "a") (IdMap.add "a" (Type.Variable "b") IdMap.empty) in
+	    let exp = IdMap.add "b" (Type.Variable "b") (IdMap.add "a" (Type.Variable "a") IdMap.empty) in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
+	) ;
+        "deep-cycle" >:: (
+	  fun _ ->
+	    let s = IdMap.add "c" (Type.Variable "a") (IdMap.add "b" (Type.Variable "c") (IdMap.add "a" (Type.Variable "b") IdMap.empty)) in
+	    let exp = IdMap.add "c" (Type.Variable "c") (IdMap.add "b" (Type.Variable "b") (IdMap.add "a" (Type.Variable "a") IdMap.empty)) in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
+	) ;
+      ] ;
     ] ;
     "Program" >::: [
       "diamonds" >::: [

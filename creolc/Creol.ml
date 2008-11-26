@@ -260,17 +260,34 @@ struct
       | Function (d, r) ->
 	  Function (apply_substitution s d, apply_substitution s r)
 
+
   (** Substitute each occurence of a type variable called [v] by the
       type [t] in the argument type. *)
   let substitute v t = apply_substitution (IdMap.add v t IdMap.empty)
 
-  (** Normalise a substitution.  If the right hand side of the substitution
-      contains a term that has a binding in that substitution, we substitute
-      it. *)
+
+  (** Normalise a substitution.
+
+      A type substitution is said to be in normal form, if
+      - The right hand side contains the variable on the left hand
+        side, i.e., substituting it would allow substitution of t.
+      - The term on the right hand side remains invariant under further
+        applications of the substitution.
+
+      The function below tries to compute the normal form of a
+      substitution. *)
   let normalise subst =
-    let norm _ t = apply_substitution subst t
+    let rec norm k t =
+      if occurs_p k t then
+	t
+      else
+        begin
+	  let t' = apply_substitution subst t in
+	    if t <> t' then norm k t' else t
+        end
     in
       IdMap.mapi norm subst
+
 
   (** Make a string of a subtitution *)
   let string_of_substitution subst =
