@@ -62,12 +62,12 @@ attribute ::=
   | @code{Dealloc:} labels
   | @code{Ev:} messages
   | @code{Inh:} inherits-list
-  | @code{Lcnt:} nat
+  | @code{Lcnt:} integer
   | @code{Mtds:} methods
   | @code{Param:} vid-list
   | @code{Pr:} process
   | @code{PrQ:} processes
-  | @code{Ocnt:} nat
+  | @code{Ocnt:} integer
   | unspec-attr-name unspec-attr-value
 @end format
 
@@ -133,6 +133,9 @@ expression ::=
 
 @subsection Literals
 
+Literals represent the values used by the interpreter during run-time.
+They may be used as constant expressions in statements, but also as
+part of object states.
 
 @format
 literal ::=
@@ -151,5 +154,5 @@ expr-list ::= @code{emp} | expr [ @code{::} expr-list ]
 
 expr-set ::= @code{emptyset} | expr [ @code{:} expr-set ]
 
-expr-map ::= @code{empty} | expr @code{|=>} expr [ @code{,} expr-map ]
+expr-map ::= @code{empty} | @code{mapentry(} expr @code{,} expr @code{)} [ @code{,} expr-map ]
 @end format
