@@ -21,7 +21,7 @@ dnl
 m4_include(macros.at)
 
 AT_INIT([creolc])
-AT_TESTED([creolc creolc.opt])
+AT_TESTED([creolc])
 
 AT_SETUP([Datatypes])
 TEST_MAUDE([Datatypes], ${abs_srcdir}/Datatypes.maude, [.])
