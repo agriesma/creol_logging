@@ -10,7 +10,8 @@ mod PROGRAM is
               new( "next" ; "Sieve" ; int(2) ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "r" |->
               null, "l" |-> null, "_" |-> null, Code: call( "l" ; "next" ;
-              "send" ; "n" :: "n" ) ; assign( "n" ; "+" ( "n" :: int(1) ) ) ;
+              "send" ; "n" :: "-" ( "n" :: int(3) ) ) ;
+              assign( "n" ; "+" ( "n" :: int(1) ) ) ;
               call( "label:0" ; "this" ; "run" ; emp ) ; free( "label:0" ) ;
               await ?("l") ; get( "l" ; "r" ) ; return ( emp ) >,
       Ocnt: 0 >
