@@ -1,0 +1,56 @@
+load creol-interpreter .
+mod PROGRAM is
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Producer" : Class | Inh: noInh, Param: "buf", Att: "buf" |-> null, "i"
+      |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "i" @ "Producer" ) ; int(1) ) ; return ( emp )
+              >,
+            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
+              "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
+              "buf" ; "put" ; "i" ) ; get( "label:0" ; noVid ) ;
+              assign( "i" ; "+" ( "i" :: int(1) ) ) ;
+              call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" ) ;
+              return ( emp ) >,
+      Ocnt: 0 >
+    
+    < "Consumer" : Class | Inh: noInh, Param: "buf", Att: "buf" |-> null,
+      "sum" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "sum" @ "Consumer" ) ; int(0) ) ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
+              "label:0" |-> null, "j" |-> null, "_" |-> null,
+              Code: call( "label:0" ; "buf" ; "get" ; emp ) ;
+              get( "label:0" ; "j" ) ; assign( "sum" ; "+" ( "sum" :: "j" ) )
+              ; call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" )
+              ; return ( emp ) >,
+      Ocnt: 0 >
+    
+    < "Buffer" : Class | Inh: noInh, Param: noVid, Att: "value" |-> null,
+      "full" |-> null,
+      Mtds: < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( "full" ; bool(false) ) ; return ( emp ) >,
+            < "put" : Method | Param: "x", Att: "x" |-> null, "_" |-> null,
+              Code: await "~" ( "full" ) ; assign( "value", "full" ; "x" ::
+              bool(true) ) ; return ( emp ) >,
+            < "get" : Method | Param: noVid, Att: "x" |-> null, "_" |-> null,
+              Code: await "full" ; assign( "x", "full" ; "value" ::
+              bool(false) ) ; return ( "x" ) >,
+      Ocnt: 0 >
+    
+    < "Main" : Class | Inh: noInh, Param: noVid, Att: noSubst,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "buf" |-> null, "prod" |->
+              null, "cons" |-> null, "_" |-> null,
+              Code: new( "buf" ; "Buffer" ; emp ) ;
+              new( "prod" ; "Producer" ; "buf" ) ;
+              new( "cons" ; "Consumer" ; "buf" ) ; return ( emp ) >,
+      Ocnt: 0 > .
+endm
+

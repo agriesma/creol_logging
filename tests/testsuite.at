@@ -63,6 +63,7 @@ TEST_CREOLC_PP([PetersonLeader], [examples])
 TEST_CREOLC_PP([AsyncSieveBuggy], [examples])
 TEST_CREOLC_PP([AsyncSieve], [examples])
 TEST_CREOLC_PP([BoundedBuffer], [examples])
+TEST_CREOLC_PP([Buffer], [examples])
 TEST_CREOLC_PP([CallAll], [examples])
 TEST_CREOLC_PP([Hello], [examples])
 TEST_CREOLC_PP([HollywoodBuffer], [examples])
@@ -97,6 +98,7 @@ TEST_CREOLC_XML([PetersonLeader], [examples])
 TEST_CREOLC_XML([AsyncSieveBuggy], [examples])
 TEST_CREOLC_XML([AsyncSieve], [examples])
 TEST_CREOLC_XML([BoundedBuffer], [examples])
+TEST_CREOLC_XML([Buffer], [examples])
 TEST_CREOLC_XML([CallAll], [examples])
 TEST_CREOLC_XML([Hello], [examples])
 TEST_CREOLC_XML([HollywoodBuffer], [examples])
@@ -284,6 +286,12 @@ red simulate('PROGRAM, upTerm(classes main("Butler", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([SingleCellBuffer], [examples], [dnl
+red classes .
+],[dnl
+red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
+])
+
+TEST_CREOLC([Buffer], [examples], [dnl
 red classes .
 ],[dnl
 red simulate('PROGRAM, upTerm(classes main("Main", emp)), 0, 1) .
