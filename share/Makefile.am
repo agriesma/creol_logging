@@ -27,7 +27,8 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README macros.m4 interpreter.m4 predicates.m4 \
 			  configuration.m4 configuration2.m4 machine.m4 \
-			  subst.m4 subst-2-2.m4 statements.m4 evaluation.m4
+			  logging.m4 subst.m4 subst-2-2.m4 statements.m4 \
+			  evaluation.m4
 dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-loopmode.maude \
@@ -57,7 +58,7 @@ creol-interpreter.maude: ${srcdir}/evaluation.m4
 creol-interpreter.maude: ${srcdir}/configuration.m4
 creol-interpreter.maude: ${srcdir}/configuration2.m4
 creol-logginginterpreter.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
-creol-logginginterpreter.maude: ${srcdir}/subst.m4
+creol-logginginterpreter.maude: ${srcdir}/subst.m4 ${srcdir}/logging.m4
 creol-logginginterpreter.maude: ${srcdir}/statements.m4
 creol-logginginterpreter.maude: ${srcdir}/evaluation.m4
 creol-logginginterpreter.maude: ${srcdir}/configuration.m4
