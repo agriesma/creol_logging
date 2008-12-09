@@ -1792,6 +1792,8 @@ struct
     attributes: VarDecl.t list;
     process: Process.t;
     process_queue: Process.t list;
+    dead_calls: Expression.t list;
+    messages: string list;
     hidden: bool;
   }
 

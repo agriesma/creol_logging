@@ -63,6 +63,12 @@ let emit options out_channel input =
 	Type.Basic n -> print_string n
       | Type.Application (n, _) -> print_string n
       | _ -> assert false
+  and of_message_list ?(empty = "emp") ?(separator = "::") =
+    let prsep () = print_space () ; print_string separator ; print_space () in
+      (** Compile a list of expressions into the Creol Maude Machine. *)
+      function
+        | [] -> print_string empty
+        | l -> separated_list print_string prsep l
   and of_expression =
     function
       | Expression.This _ -> print_string "\"this\""
@@ -443,10 +449,10 @@ let emit options out_channel input =
     of_process_list obj.Object.process_queue ;
     print_comma () ;
     print_string "Dealloc: " ;
-    assert false ;
+    of_expression_list obj.Object.dead_calls ;
     print_comma () ;
     print_string "Ev: " ;
-    assert false ;
+    of_message_list obj.Object.messages ;
     print_comma () ;
     print_string ("Lcnt: " ^ (string_of_int 0)) ;
     print_string " >";
