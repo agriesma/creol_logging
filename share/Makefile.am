@@ -20,6 +20,7 @@
 MOSTLYCLEANFILES	= *~
 CLEANFILES		= 
 DISTCLEANFILES		= creol-interpreter.maude \
+			  creol-logginginterpreter.maude \
 			  creol-modelchecker.maude \
 			  creol-realtime.maude
 MAINTAINERCLEANFILES	= Makefile.in
@@ -33,11 +34,15 @@ dist_pkgdata_DATA	= creol.xsd \
 			  creol-metaexec.maude \
 			  prelude.creol
 pkgdata_DATA		= creol-interpreter.maude \
+			  creol-logginginterpreter.maude \
 			  creol-modelchecker.maude \
 			  creol-realtime.maude
 
 creol-interpreter.maude: $(srcdir)/interpreter.m4
 	$(M4) -I$(srcdir) $(CREOL_VARIANT) $< > $@
+
+creol-logginginterpreter.maude: $(srcdir)/interpreter.m4
+	$(M4) -I$(srcdir) -DLOGGING $(CREOL_VARIANT) $< > $@
 
 creol-modelchecker.maude: $(srcdir)/interpreter.m4
 	$(M4) -I$(srcdir) -DMODELCHECK $(CREOL_VARIANT) $< > $@
@@ -51,6 +56,12 @@ creol-interpreter.maude: ${srcdir}/statements.m4
 creol-interpreter.maude: ${srcdir}/evaluation.m4
 creol-interpreter.maude: ${srcdir}/configuration.m4
 creol-interpreter.maude: ${srcdir}/configuration2.m4
+creol-logginginterpreter.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
+creol-logginginterpreter.maude: ${srcdir}/subst.m4
+creol-logginginterpreter.maude: ${srcdir}/statements.m4
+creol-logginginterpreter.maude: ${srcdir}/evaluation.m4
+creol-logginginterpreter.maude: ${srcdir}/configuration.m4
+creol-logginginterpreter.maude: ${srcdir}/configuration2.m4
 creol-modelchecker.maude: ${srcdir}/macros.m4  ${srcdir}/machine.m4
 creol-modelchecker.maude: ${srcdir}/subst.m4
 creol-modelchecker.maude: ${srcdir}/statements.m4

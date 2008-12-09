@@ -59,7 +59,11 @@ fmod CREOL-STATEMENT is
 
   op $cont_ : Label -> Stmt [ctor `format' (r o d)] .
   op $accept_ : Label -> Stmt [ctor `format' (r o d)] .
-
+ifdef(`LOGGING',dnl
+  op $bawait_ : Expr -> SuspStmt [ctor `format' (b o d)] .
+  op $marker_ : String -> Stmt [ctor] .
+  op $rmarker(_, _) : String String -> Stmt [ctor] .
+)dnl
 
   --- Assertion Failure.
   --- This ``statement'' represents an assertion failure.  It 
@@ -93,7 +97,14 @@ fmod CREOL-STM-LIST is
                           sort NeList{Stmt} to NeStmtList,
 			  op nil : -> List{Stmt} to noStmt,
 			  op __ : List{Stmt} List{Stmt} -> List{Stmt} to _;_ [`format' (d r o d)]) .
-
+ifdef(`LOGGING',dnl
+*** Variable mapping that allows symbolic values
+  extending MAP{Vid`,' Expr} * (sort Map{Vid`,'Expr} to TSubst`,'
+                              sort Entry{Vid`,'Expr} to TBinding`,'
+                              op empty : -> Map{Vid`,'Expr} to TnoSubst`,'
+                              op _ |-> _  : Vid Expr -> Map{Vid`,'Expr} to _ |> _  `,'
+                              op undefined : -> [Expr] to undeftrans ) .
+)
   op if_th_el_fi : Expr StmtList StmtList -> Stmt [ctor `format' (b o b o b o b o)] . 
   op while_do_od : Expr StmtList -> Stmt [ctor `format' (b o b o b o)] .
   op _[]_  : StmtList StmtList -> SuspStmt [ctor comm assoc prec 45 `format' (d b d o d)] .

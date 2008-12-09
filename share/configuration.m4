@@ -182,12 +182,32 @@ ifdef(`MODELCHECK',dnl
 )dnl
 
 
+ifdef(`LOGGING',dnl
+    sort evalState .
+    vars trans inits : TSubst .
+
+    op { _ | _ | _ }    : StmtList TSubst TSubst -> evalState [ctor] .
+    op _[stmts] : evalState -> StmtList .
+    op _[trans] : evalState -> TSubst .
+    op _[init] : evalState -> TSubst .
+    eq { SL | trans | inits }[stmts] = SL .
+    eq { SL | trans | inits }[trans] = trans .
+    eq { SL | trans | inits }[init] = inits .
+
+--- Log object`,' Cnt is the index of the snapshot
+    op <log From: _ To: _ Type: _ Data: _ Att: _ Label: _ > : Nat Nat String evalState Subst Label -> Configuration [format (ng! o d d d d b! onssss d d d d r! d no) ] .
+    op <choice Number: _ Type: _ Expression: _ > : Nat String Expr -> Configuration [format (ng! o b! o b! o o o no) ] .
+,)dnl
 
     --- System initialisation
     op main : String DataList -> Configuration .
     eq main(C,DL) =
       < ob("main") : "" | Att: noSubst, 
         Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
-        Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
+        Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 >dnl
+ifdef(`LOGGING',`
+'      < ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Dealloc: noDealloc`,' Ev: noMsg`,' Lcnt: 0 > 
+      <log From: 0 To: 0 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > .
+,` .')dnl
 
 endm
