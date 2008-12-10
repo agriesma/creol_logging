@@ -41,12 +41,18 @@ mod `CREOL-EVAL' is
     vars ST ST' : Stmt . 
     vars SL SL1 SL2 : StmtList .
     var CN : Configuration .
+    var CL : Class .
+    var OB : Object .
+    var MS : Msg .
 
     --- Check if a message is in the queue.
     op inqueue  : Label Configuration -> Bool .
     eq inqueue(L, none) = false .
+    eq inqueue(L, CL CN) = inqueue(L, CN) .
+    eq inqueue(L, OB CN) = inqueue(L, CN) .
     eq inqueue(L, comp(L', DL) CN) =
         if L == L' then true else inqueue(L, CN) fi .
+    eq inqueue(L, MS CN) = inqueue(L, CN) [owise] .
 
 dnl
 dnl Macros for dealing with enabledness and readyness in the timed and

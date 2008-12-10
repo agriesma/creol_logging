@@ -148,7 +148,7 @@ crl
   { < O : C | Att: S, Pr: { L | (SL1 [] SL2); SL }, PrQ: W, Lcnt: F > CN CLOCK }
   =>
   { < O : C | Att: S, Pr: { L | SL1 ; SL }, PrQ: W, Lcnt: F > CN CLOCK }
-  if READY(SL1, (S :: L), allMessages(CN), T)
+  if READY(SL1, (S :: L), CN, T)
   [label choice] .
 
 
@@ -163,7 +163,7 @@ ifdef(`WITH_MERGE',
       =>
       { < O : C | Att: S, Pr: { L | (SL1 MERGER SL2); SL }, PrQ: W, 
                 Lcnt: F > CN CLOCK }
-      if READY(SL1,(S :: L), allMessages(CN), T)
+      if READY(SL1,(S :: L), CN, T)
       [label merge] .
 
     --- merger
@@ -172,7 +172,7 @@ ifdef(`WITH_MERGE',
       { < O : C | Att: S,  Pr:  { L | ((ST ; SL1) MERGER SL2); SL }, PrQ: W,
                 Lcnt: F > CN CLOCK }
       =
-      { if ENABLED(ST, (S :: L), allMessages(CN), T) then
+      { if ENABLED(ST, (S :: L), CN, T) then
         < O : C | Att: S, Pr: { L | ((ST ; (SL1 MERGER SL2)); SL) }, PrQ: W,
           Lcnt: F >
       else
@@ -198,7 +198,7 @@ STEP(dnl
 CSTEP(dnl
 `{ < O : C | Att: S, Pr: { L | SST ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `{ < O : C | Att: S, Pr: idle, PrQ: W , { L | SST ; SL}, Lcnt: F > CN CLOCK }',
-not ENABLED(SST, (S :: L), allMessages(CN), T),
+not ENABLED(SST, (S :: L), CN, T),
 `[label suspend]')
 
 
@@ -207,7 +207,7 @@ not ENABLED(SST, (S :: L), allMessages(CN), T),
 CSTEP(dnl
 `{ < O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `{ < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
-`EVALGUARD(E, (S :: L), allMessages(CN), T) asBool'
+`EVALGUARD(E, (S :: L), CN, T) asBool'
 `[label await]')
 
 --- Optimize label access in await statements.
@@ -226,7 +226,7 @@ crl
   { < O : C | Att: S, Pr: idle, PrQ: W , { L | SL }, Lcnt: F > CN CLOCK }
   =>
   { < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }
-  if READY(SL, (S :: L), allMessages(CN), T)
+  if READY(SL, (S :: L), CN, T)
   [label PrQ-ready] .
 
 
@@ -511,7 +511,7 @@ eq
 ---
 STEP(dnl
 `{ < O : C | Att: S, Pr: { L | assert(E) ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
-`{ if EVALGUARD(E, (S :: L), allMessages(CN), T) asBool then
+`{ if EVALGUARD(E, (S :: L), CN, T) asBool then
     < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >
   else
     < O : C | Att: S, Pr: { L | failure(E) ; SL }, PrQ: W, Lcnt: F >
@@ -528,7 +528,7 @@ ifdef(`TIME',dnl
 `CSTEP(
 `{ < O : C | Att: S, Pr: { L | posit E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `{ < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
-EVALGUARD(E, (S :: L), allMessages(CN), T) asBool,
+EVALGUARD(E, (S :: L), CN, T) asBool,
 `[label posit]')',
 `STEP(
 `< O : C | Att: S, Pr: { L | posit E ; SL }, PrQ: W, Lcnt: F >',

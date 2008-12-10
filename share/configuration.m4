@@ -179,22 +179,13 @@ ifdef(`MODELCHECK',dnl
   op {_} : Configuration -> State [ctor] .
 
 
-    var MG : Msg .
-    var CL : Class .
-    var OB : Object .
-    var CN : Configuration .
+  var CN : Configuration .
 
-    --- System initialisation
-    op main : Configuration String DataList -> State .
-    eq main(CN, C, DL) =
-      { CN < ob("main") : "" | Att: noSubst, 
-             Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
-             Lcnt: 0 > } .
-
-    op allMessages : Configuration -> Configuration .
-    eq allMessages(none) = none .
-    eq allMessages(MG CN) = MG allMessages(CN) .
-    eq allMessages(CL CN) = allMessages(CN) .
-    eq allMessages(OB CN) = allMessages(CN) .
+  --- System initialisation
+  op main : Configuration String DataList -> State .
+  eq main(CN, C, DL) =
+    { CN < ob("main") : "" | Att: noSubst, 
+           Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
+           Lcnt: 0 > } .
 
 endm
