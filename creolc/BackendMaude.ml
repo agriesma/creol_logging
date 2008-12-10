@@ -31,8 +31,6 @@ type target = Interpreter | Modelchecker | Realtime
 
 type options = {
   mutable target: target;
-  mutable red_init: bool;
-  mutable main: string option;
 }
 
 let requires =
@@ -448,9 +446,6 @@ let emit options out_channel input =
     print_string "PrQ: " ;
     of_process_list obj.Object.process_queue ;
     print_comma () ;
-    print_string "Ev: " ;
-    of_message_list obj.Object.messages ;
-    print_comma () ;
     print_string ("Lcnt: " ^ (string_of_int 0)) ;
     print_string " >";
     close_box ()
@@ -529,12 +524,6 @@ let emit options out_channel input =
 	  close_box () ;
 	  print_space () ;
 	  print_string "endm"
-        end ;
-      if options.red_init then
-        begin
-	  print_space () ;
-          print_string "red classes ." ;
-	  print_space ()
         end ;
       close_box () ;
       print_newline ()

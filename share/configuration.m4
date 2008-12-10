@@ -34,16 +34,7 @@ changequote dnl
     subsort Oid < Data .
     subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
 
-    sorts Body Invoc Comp .
-    subsorts Invoc Comp < Body .
-
     op ob(_) : String -> Oid [ctor `format' (d d ! o d)] .
-
-    sort MMsg .
-    subsort Body < MMsg .
-
-    op noMsg : -> MMsg [ctor] .
-    op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
 
     vars C M M' : String .
     vars O O' : Oid .
@@ -56,7 +47,6 @@ changequote dnl
     var SL : StmtList .
     var EL : ExprList .
     var DL : DataList .
-    var MM : MMsg .
     var N : Label .
     var F : Nat .
 
@@ -64,17 +54,27 @@ changequote dnl
     op newId : String Nat -> Oid .
     eq newId(C, F)  = ob(C + string(F,10)) .
 
-    --- INVOCATION and REPLY
-    op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
-    op comp(_,_) : Label DataList -> Comp [ctor `format' (b d o b so b o)] .  
+    --- Invocation message.
+    ---
+    --- invoc(S,R,N,M,DL)
+    --- S: The sender.
+    --- R: The receiver.
+    --- N: The label.
+    --- M: The called method.
+    --- DL: The actual arguments.
+    op invoc(_,_,_,_,_) : Oid Oid Label String DataList -> Msg
+      [ctor `format' (b d o  b so  b so  b so  b so b on)] .
 
-    --- Messages.  Messages have at least a receiver.
-
-    --- Invocation and completion message.
-    op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
+    --- Completion message.
+    ---
+    --- comp(N,DL)
+    --- N: The label
+    --- DL: The result values.
+    op comp(_,_) : Label DataList -> Msg
+      [ctor `format' (b d o  b so  b on)] .
 
     --- Instruct the runtime system to drop the message.
-    op discard(_) : Label -> Msg [ctor `format' (! d d d on)].
+    op discard(_) : Label -> Msg [ctor `format' (b d o b on)].
 
     --- Error and warning messages are intended to stop the machine.
     --- For now, nothing is emitting these.
@@ -109,9 +109,9 @@ changequote dnl
     op Class : -> Cid [ctor `format' (c o)] .
 
     op noObj : -> Object [ctor] .
-    op <_:_ | Att:_, Pr:_, PrQ:_, Ev:_, Lcnt:_> : 
-       Oid String Subst Process MProc MMsg Nat -> Object 
-         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o  r ni o--  r on)] .
+    op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
+       Oid String Subst Process MProc Nat -> Object 
+         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o--  r on)] .
 
 
     --- Define Classes.
@@ -148,9 +148,9 @@ changequote dnl
 
     eq
       boundMtd(O, P')
-      < O : C | Att: S, Pr: P, PrQ: W, Ev: MM, Lcnt: F >
+      < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
       =
-      < O : C | Att: S, Pr: P, PrQ: (W , P'), Ev: MM, Lcnt: F > .
+      < O : C | Att: S, Pr: P, PrQ: (W , P'), Lcnt: F > .
 
 
     --- Define a configuration
@@ -170,18 +170,31 @@ ifdef(`MODELCHECK',dnl
   including SATISFACTION .
   including MODEL-CHECKER .
 
-  op {_} : Configuration -> State [ctor] .
 ,dnl
   *** We should not provide sort State`,' since this is used in LOOP-MODE.
+  *** For now`,' we do.
+  sort State .
 )dnl
 
+  op {_} : Configuration -> State [ctor] .
 
+
+    var MG : Msg .
+    var CL : Class .
+    var OB : Object .
+    var CN : Configuration .
 
     --- System initialisation
-    op main : String DataList -> Configuration .
-    eq main(C,DL) =
-      < ob("main") : "" | Att: noSubst, 
-        Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
-        Ev: noMsg, Lcnt: 0 > .
+    op main : Configuration String DataList -> State .
+    eq main(CN, C, DL) =
+      { CN < ob("main") : "" | Att: noSubst, 
+             Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
+             Lcnt: 0 > } .
+
+    op allMessages : Configuration -> Configuration .
+    eq allMessages(none) = none .
+    eq allMessages(MG CN) = MG allMessages(CN) .
+    eq allMessages(CL CN) = allMessages(CN) .
+    eq allMessages(OB CN) = allMessages(CN) .
 
 endm

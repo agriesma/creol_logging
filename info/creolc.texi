@@ -268,19 +268,6 @@ Consult the installation instructions for details.
 
 @end table
 
-If the target is either @option{maude} or @option{maudemc}, the
-following options are respected:
-@table @option
-@item -red-init
-If this option is given, the line @code{red init .} is appended to the
-output file, causing Maude to reduce the initial configuration after
-loading the output.
-
-@item -main @var{NAME}
-Appends @code{main(@var{NAME}, emp)} to the initial configuration,
-causing the creation of an instance of @var{NAME} while reducing the
-initial configuration.
-@end table
 
 
 @node Environment Variables

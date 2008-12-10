@@ -371,7 +371,6 @@ let parse name input =
 		  attributes = (List.map vardecl_of_binding a);
 		  process = p;
 		  process_queue = q;
-	          messages = [] ;
 		  hidden = false }
   in
   let rec parse_configuration input =
@@ -384,10 +383,10 @@ let parse name input =
 	      | _ -> assert false
 	  in
 	    res::(parse_configuration input)
-      | Some t ->
-	  let tl = error_tokens input in
-	    raise (BadToken (tl, get_token_line t, "configuration"))
-      | None ->
+      | Some Key (_, _) ->
+	  let res = parse_expression input in
+	    parse_configuration input
+      | _ ->
 	  []
   and parse_object_term_list input =
     match Stream.peek input with
@@ -1144,16 +1143,30 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t, ">"))
       | None ->
 	  raise (Eof "")
+  and junk_left_brace input =
+    match Stream.peek input with
+      | Some LBrace _ ->
+	  Stream.junk input
+      | Some t ->
+	  raise (BadToken (error_tokens input, get_token_line t, "{"))
+      | None ->
+	  raise (Eof "")
   and junk_right_brace input =
     match Stream.peek input with
       | Some RBrace _ ->
 	  Stream.junk input
       | Some t ->
-	  raise (BadToken (error_tokens input, get_token_line t, ">"))
+	  raise (BadToken (error_tokens input, get_token_line t, "}"))
       | None ->
 	  raise (Eof "")
   in
-    parse_configuration input
+    match Stream.peek input with
+      | Some LBrace _ ->
+          let () = junk_left_brace input in
+          let c = parse_configuration input in
+          let () = junk_right_brace input in
+            c
+      | _ -> parse_configuration input
 
 
 

@@ -32,6 +32,15 @@ A message term can be identified by the pattern
 
 Any other term has the format @code{...(...)}.
 
+@format
+state ::=
+    @code{@{} configuration @code{@}}
+
+configuration ::=
+    none
+  | (message-term | object-term) @{ message-term | object-term @}
+@end format
+
 
 @section Object Terms
 

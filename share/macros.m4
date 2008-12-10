@@ -57,10 +57,10 @@ ifdef(`MODELCHECK',dnl
 dnl
 dnl These macros are used to evaluate non-guard expressions.
 dnl
-define(`EVAL',     `EVALGUARD($1, $2, noMsg, $3)')dnl
-define(`EVALLIST', `EVALGUARDLIST($1, $2, noMsg, $3)')dnl
-define(`EVALSET',  `EVALGUARDSET($1, $2, noMsg, $3)')dnl
-define(`EVALMAP',  `EVALGUARDMAP($1, $2, noMsg, $3)')dnl
+define(`EVAL',     `EVALGUARD($1, $2, none, $3)')dnl
+define(`EVALLIST', `EVALGUARDLIST($1, $2, none, $3)')dnl
+define(`EVALSET',  `EVALGUARDSET($1, $2, none, $3)')dnl
+define(`EVALMAP',  `EVALGUARDMAP($1, $2, none, $3)')dnl
 dnl
 dnl These macros are used to evaluate guard expressions.
 dnl $1 is the expression,

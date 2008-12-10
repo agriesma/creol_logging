@@ -8,26 +8,24 @@ result Class:
   Ocnt: 0 >
 
 ==========================================
-rewrite in PROGRAM : classes main("Map", emp) .
-result Configuration: 
-< "Map" : Class | Inh: noInh, Param: noVid, Att: "sem" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: assign("sem" ;
-    map(empty)) ; return(emp) >,
-  Ocnt: 1 >
- 
+rewrite in PROGRAM : main(classes, "Map", emp) .
+result State: {
 < ob("Map0") : "Map" |
   Att: "sem" |-> map(empty), "this" |-> ob("Map0"),
   Pr: idle,
   PrQ: noProc,
-  Ev: noMsg,
   Lcnt: 2 >
  
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Ev: noMsg,
   Lcnt: 0 >
-
+ 
+< "Map" : Class | Inh: noInh, Param: noVid, Att: "sem" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: assign("sem" ;
+    map(empty)) ; return(emp) >,
+  Ocnt: 1 >
+}
 Bye.

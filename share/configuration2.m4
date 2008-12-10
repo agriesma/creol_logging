@@ -61,13 +61,6 @@ changequote dnl
     --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
     op warning(_) : String -> [Msg] [ctor `format' (nnr! r! r! or onn)] .
 
-    sort MMsg .
-    subsort Body < MMsg .
-
-    op noMsg : -> MMsg [ctor] .
-    op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
-
-
     --- Define class declarations as an object.
     ---
     op Class : -> Cid [ctor `format' (c o)] .
@@ -87,7 +80,6 @@ changequote dnl
 
     op Pr:_ : Process -> Attribute [ctor] .
     op PrQ:_ : MProc -> Attribute [ctor] .
-    op Ev:_ : MMsg -> Attribute [ctor] .
     op Lcnt:_ : Nat -> Attribute [ctor] .
 
 ifdef(`TIME',dnl
@@ -117,7 +109,6 @@ ifdef(`MODELCHECK',dnl
     op main : String DataList -> Configuration .
     eq main(C,DL) =
       < ob("main") : "" | Att: noSubst, 
-        Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
-        Ev: noMsg, Lcnt: 0 > .
+        Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc, Lcnt: 0 > .
 
 endm
