@@ -68,13 +68,6 @@ changequote dnl
     op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
 
 
-    --- Terms of sort Labels are multi-sets of Labels.
-    sort Labels .
-    subsort Label < Labels .
-
-    op noDealloc : -> Labels [ctor] .
-    op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
-
     --- Define class declarations as an object.
     ---
     op Class : -> Cid [ctor `format' (c o)] .
@@ -94,7 +87,6 @@ changequote dnl
 
     op Pr:_ : Process -> Attribute [ctor] .
     op PrQ:_ : MProc -> Attribute [ctor] .
-    op Dealloc:_ : Labels -> Attribute [ctor] .
     op Ev:_ : MMsg -> Attribute [ctor] .
     op Lcnt:_ : Nat -> Attribute [ctor] .
 
@@ -126,6 +118,6 @@ ifdef(`MODELCHECK',dnl
     eq main(C,DL) =
       < ob("main") : "" | Att: noSubst, 
         Pr: ("var" |-> null, ("var" ::= new C(DL))), PrQ: noProc,
-        Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
+        Ev: noMsg, Lcnt: 0 > .
 
 endm

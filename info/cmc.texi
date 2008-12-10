@@ -1002,7 +1002,7 @@ search [1,100] in PROGRAM : main("Deadlock", emp) classes =>+
   < O:Oid : C:String | Att: A:Subst ,
                        Pr: @{ L:Subst | get(Lab:Label ; V:VidList ) ; SL:StmtList @},
                        PrQ: @{ ".label" |-> Lab:Label, L':Subst | SL':StmtList @}, W:MProc,
-                       Dealloc: LL:Labels , Ev: M:MMsg , Lcnt: F:Nat >
+                       Ev: M:MMsg , Lcnt: F:Nat >
   conf:Configuration .
 @end example
 

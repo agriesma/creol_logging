@@ -134,6 +134,15 @@ let test_fixture = "Creol" >:::
 	    let res = Type.normalise s in
 	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
 	) ;
+        "complex-cycle" >:: (
+	  fun _ ->
+	    let s = IdMap.add "a" (Type.Application ("List", [Type.Variable "b"]))
+                      (IdMap.add "b" (Type.Application ("List", [Type.Variable "b"])) IdMap.empty) in
+	    let exp = IdMap.add "a" (Type.Application ("List", [Type.Variable "b"]))
+                      (IdMap.add "b" (Type.Application ("List", [Type.Variable "b"])) IdMap.empty) in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
+	) ;
       ] ;
     ] ;
     "Program" >::: [

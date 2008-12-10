@@ -38,7 +38,6 @@ result Configuration:
   Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console0"),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -46,7 +45,6 @@ result Configuration:
   Att: "console" |-> ob("Console0"), "this" |-> ob("Hello0"),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 3 >
  
@@ -54,7 +52,6 @@ result Configuration:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

@@ -32,7 +32,6 @@ result Configuration:
   Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 3 >
  
@@ -40,7 +39,6 @@ result Configuration:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

@@ -76,7 +76,7 @@ GRAMMAR_TEST(CONFIGURATION, {| noInh |}, noInh)
 GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > |}, noInh)
 GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > , "B" < "x" > |}, noInh)
 
-GRAMMAR_TEST(CONFIGURATION, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
+GRAMMAR_TEST(CONFIGURATION, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Ev: noMsg, Lcnt: 0 > |}, noObj)
 
 GRAMMAR_TEST(CONFIGURATION, noMsg, noMsg)
 

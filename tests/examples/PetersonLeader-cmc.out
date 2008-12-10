@@ -1,6 +1,7 @@
 ==========================================
 frewrite in PROGRAM : classes main("Main", emp) .
-result (sort not calculated): 
+result (sort not calculated): discard(label(ob("Main0"), 1))
+ 
 < "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
   < "getNeighbour" : Method | Param: noVid, Att: "_" |-> null, "n" |-> null,
@@ -71,8 +72,7 @@ result (sort not calculated):
     :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th assign("n" ;
     "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el skip fi fi fi fi
     fi ; return("n")},
-  Dealloc: noDealloc,
-  Ev: noMsg,
+  Ev: comp(label(ob("Main0"), 1), emp),
   Lcnt: 2 >
  
 < ob("Process0") : "Process" |
@@ -86,7 +86,6 @@ result (sort not calculated):
     "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process0"), 0)},
   PrQ: {".anon" |-> label(ob("Process0"), 0) | get(label(ob("Process0"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -101,7 +100,6 @@ result (sort not calculated):
     "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process1"), 0)},
   PrQ: {".anon" |-> label(ob("Process1"), 0) | get(label(ob("Process1"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -116,7 +114,6 @@ result (sort not calculated):
     "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process2"), 0)},
   PrQ: {".anon" |-> label(ob("Process2"), 0) | get(label(ob("Process2"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -131,7 +128,6 @@ result (sort not calculated):
     "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process3"), 0)},
   PrQ: {".anon" |-> label(ob("Process3"), 0) | get(label(ob("Process3"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -146,7 +142,6 @@ result (sort not calculated):
     "i") ; free("label:1") ; return(emp) ; $cont label(ob("Process4"), 0)},
   PrQ: {".anon" |-> label(ob("Process4"), 0) | get(label(ob("Process4"), 0) ;
     noVid) ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -154,7 +149,6 @@ result (sort not calculated):
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

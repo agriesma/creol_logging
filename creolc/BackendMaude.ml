@@ -448,9 +448,6 @@ let emit options out_channel input =
     print_string "PrQ: " ;
     of_process_list obj.Object.process_queue ;
     print_comma () ;
-    print_string "Dealloc: " ;
-    of_expression_list obj.Object.dead_calls ;
-    print_comma () ;
     print_string "Ev: " ;
     of_message_list obj.Object.messages ;
     print_comma () ;

@@ -25,7 +25,6 @@ result Configuration:
     "y" |-> float(-1.0),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -33,7 +32,6 @@ result Configuration:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

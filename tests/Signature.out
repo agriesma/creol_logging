@@ -299,7 +299,6 @@ reduce in CREOL-CONFIGURATION :
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
  .
@@ -308,7 +307,6 @@ result Object:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 
@@ -318,20 +316,18 @@ reduce in CREOL-CONFIGURATION : upTerm(
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 ) .
-result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>[
-    'ob`(_`)['"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
-    'noProc.MProc,'noDealloc.Labels,'noMsg.MMsg,'0.Zero]
+result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Ev:_`,Lcnt:_>['ob`(_`)[
+    '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
+    'noProc.MProc,'noMsg.MMsg,'0.Zero]
 ==========================================
 reduce in CREOL-CONFIGURATION : downTerm(upTerm(
 < ob("object1") : "Class" |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 ), noObj) .
@@ -340,7 +336,6 @@ result Object:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

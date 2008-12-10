@@ -79,7 +79,6 @@ result [Configuration]:
   PrQ: {".init" |-> label(ob("D0"), 3) | get(label(ob("D0"), 3) ; noVid) ;
     call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ; call(".anon"
     ; "this" ; "run" ; emp) ; free(".anon")},
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 4 >
  
@@ -87,7 +86,6 @@ result [Configuration]:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

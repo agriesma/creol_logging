@@ -57,7 +57,6 @@ result Configuration:
     "Process2"), "this" |-> ob("Init0"),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 2 >
  
@@ -66,7 +65,6 @@ result Configuration:
     "this" |-> ob("Process0"), "u" |-> int(1),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 6 >
  
@@ -75,7 +73,6 @@ result Configuration:
     "this" |-> ob("Process1"), "u" |-> int(2),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 5 >
  
@@ -84,7 +81,6 @@ result Configuration:
     "this" |-> ob("Process2"), "u" |-> int(3),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 4 >
  
@@ -92,7 +88,6 @@ result Configuration:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
   Ev: noMsg,
   Lcnt: 0 >
 

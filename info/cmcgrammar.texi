@@ -59,7 +59,6 @@ that always ends with a colon (:).
 @format
 attribute ::=
     @code{Att:} substitution
-  | @code{Dealloc:} labels
   | @code{Ev:} messages
   | @code{Inh:} inherits-list
   | @code{Lcnt:} integer

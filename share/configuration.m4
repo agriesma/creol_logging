@@ -45,14 +45,6 @@ changequote dnl
     op noMsg : -> MMsg [ctor] .
     op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
 
-    --- Terms of sort Labels are multi-sets of Labels.
-    sort Labels .
-    subsort Label < Labels .
-
-    op noDealloc : -> Labels [ctor] .
-    op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
-
-
     vars C M M' : String .
     vars O O' : Oid .
     var S : Subst .
@@ -64,7 +56,6 @@ changequote dnl
     var SL : StmtList .
     var EL : ExprList .
     var DL : DataList .
-    var LS : Labels .
     var MM : MMsg .
     var N : Label .
     var F : Nat .
@@ -81,6 +72,9 @@ changequote dnl
 
     --- Invocation and completion message.
     op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
+
+    --- Instruct the runtime system to drop the message.
+    op discard(_) : Label -> Msg [ctor `format' (! d d d on)].
 
     --- Error and warning messages are intended to stop the machine.
     --- For now, nothing is emitting these.
@@ -115,9 +109,9 @@ changequote dnl
     op Class : -> Cid [ctor `format' (c o)] .
 
     op noObj : -> Object [ctor] .
-    op <_:_ | Att:_, Pr:_, PrQ:_, Dealloc:_, Ev:_, Lcnt:_> : 
-       Oid String Subst Process MProc Labels MMsg Nat -> Object 
-         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o  r ni o  r ni o--  r on)] .
+    op <_:_ | Att:_, Pr:_, PrQ:_, Ev:_, Lcnt:_> : 
+       Oid String Subst Process MProc MMsg Nat -> Object 
+         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o  r ni o--  r on)] .
 
 
     --- Define Classes.
@@ -154,9 +148,9 @@ changequote dnl
 
     eq
       boundMtd(O, P')
-      < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+      < O : C | Att: S, Pr: P, PrQ: W, Ev: MM, Lcnt: F >
       =
-      < O : C | Att: S, Pr: P, PrQ: (W , P'), Dealloc: LS, Ev: MM, Lcnt: F > .
+      < O : C | Att: S, Pr: P, PrQ: (W , P'), Ev: MM, Lcnt: F > .
 
 
     --- Define a configuration
@@ -188,6 +182,6 @@ ifdef(`MODELCHECK',dnl
     eq main(C,DL) =
       < ob("main") : "" | Att: noSubst, 
         Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
-        Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > .
+        Ev: noMsg, Lcnt: 0 > .
 
 endm

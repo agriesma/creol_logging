@@ -371,6 +371,7 @@ let parse name input =
 		  attributes = (List.map vardecl_of_binding a);
 		  process = p;
 		  process_queue = q;
+	          messages = [] ;
 		  hidden = false }
   in
   let rec parse_configuration input =
@@ -834,19 +835,6 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t,
 			   "method_name"))
       | None -> raise (Eof "")
-  and parse_expression_list input =
-    let rec do_parse input =
-      let e = parse_expression input in
-	match Stream.peek input with
-	  | Some DColon _ ->
-	      Stream.junk input ;
-	      let l = parse_expression_list input in
-		e::l
-	  | _ -> [e]
-    in
-      match Stream.peek input with
-	| Some Key ("emp", _) -> Stream.junk input; []
-	| _ -> do_parse input
   and parse_expression input =
     match Stream.peek input with
       | Some Key ("bool", _) ->
@@ -955,6 +943,19 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t,
 			   "expression"))
       | None -> raise (Eof "")
+  and parse_expression_list input =
+    let rec do_parse input =
+      let e = parse_expression input in
+	match Stream.peek input with
+	  | Some DColon _ ->
+	      Stream.junk input ;
+	      let l = do_parse input in
+		e::l
+	  | _ -> [e]
+    in
+      match Stream.peek input with
+	| Some Key ("emp", _) -> let () = Stream.junk input in []
+	| _ -> do_parse input
   and parse_bindings input =
     match Stream.peek input with
       | Some Key ("empty", _) ->
