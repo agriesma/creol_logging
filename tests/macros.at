@@ -29,6 +29,28 @@ AT_CHECK([$MAUDE -no-banner -no-advise -batch $2 | /bin/sed -f ${abs_srcdir}/mau
 DIFF([${abs_srcdir}/$3/$1.out], [$1.out])
 ])
 
+dnl Test the logging interpreter
+m4_define([TEST_LOGGING], [dnl
+AT_CHECK([${CREOLC} -T maude -W all ${abs_srcdir}/simulation/$1.creol -o $1.maude])
+AT_CHECK([sed -i 's/creol-interpreter/creol-logginginterpreter/g' $1.maude])
+DIFF([${abs_srcdir}/simulation/$1.maude], [$1.maude])
+
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load $1 .
+$2
+quit .
+])
+TEST_MAUDE([$1], test.maude, simulation)
+
+
+])
+
 
 dnl Test our tool chain.  Requires maude,
 dnl

@@ -35,6 +35,11 @@ AT_SETUP([Interpreter])
 TEST_MAUDE([Interpreter], ${abs_srcdir}/Interpreter.maude, [.])
 AT_CLEANUP
 
+AT_SETUP([Logging])
+TEST_LOGGING([Hello], [rew [[100]] classes main("Hello", emp) . 
+])
+AT_CLEANUP
+
 AT_SETUP([MetaExec])
 TEST_MAUDE([MetaExec], ${abs_srcdir}/MetaExec.maude, [.])
 AT_CLEANUP
