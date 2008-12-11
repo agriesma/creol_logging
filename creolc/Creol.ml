@@ -3,7 +3,7 @@
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2007, 2008 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -237,18 +237,19 @@ struct
   type subst = t IdMap.t
 
 
+  let find_in_subst v subst =
+    try
+      IdMap.find v subst
+    with
+      | Not_found -> Variable v
+
+
   (** Apply a substitution [s] to a type. *)
   let rec apply_substitution s =
     function
 	Internal -> Internal
       | Basic b -> Basic b
-      | Variable x ->
-	  begin
-	    try
-	      IdMap.find x s 
-	    with
-	      | Not_found -> Variable x
-	  end
+      | Variable x -> find_in_subst x s
       | Application (c, l) ->
 	  Application(c, List.map (apply_substitution s) l)
       | Tuple l ->
@@ -277,14 +278,18 @@ struct
       The function below tries to compute the normal form of a
       substitution. *)
   let normalise subst =
+    (* Try to normalise the binding for [k]. *)
     let rec norm k t =
-      if occurs_p k t then
-	t
-      else
-        begin
-	  let t' = apply_substitution subst t in
-	    if t <> t' then norm k t' else t
-        end
+      let fv = free_variables t in
+      let p v = occurs_p v (find_in_subst v subst)
+      in
+        if (occurs_p k t) || (IdSet.exists p fv) then
+	  t
+        else
+          begin
+	    let t' = apply_substitution subst t in
+	      if t <> t' then norm k t' else t
+          end
     in
       IdMap.mapi norm subst
 
