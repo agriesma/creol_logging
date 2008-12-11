@@ -117,6 +117,7 @@ eq replace ( "=" (E3 :: E4) , V1, E2 )  = "="( replace(E3, V1, E2) :: replace (E
 eq replace ( "/=" (E3 :: E4) , V1, E2 ) = "/="( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
 
 
+---eq replace( C @ CC, V1, E2) = replace ( C, V1, E2 ) .
 ceq replace ( V1, V1, E2 ) = E2 if not ``substr(V1, sd(length(V1),5), 5)'' == "_init" .
 ceq replace ( V1, V1, E2 ) = V1 if  ``substr(V1, sd(length(V1),5), 5)'' == "_init" .
 ---ceq replace ( V2, V1, E2 ) = V2 if not V1 == V2 .
@@ -132,7 +133,7 @@ eq replaceall(E1, TnoSubst) = E1 .
 --- generate a helper map to rename the variables
  op genRenameHelper : Subst String TSubst -> TSubst .
  eq genRenameHelper (noSubst, Q, TS1) = TS1 .
- eq genRenameHelper ((  C |-> E1 , S ), Q, TS1) = genRenameHelper( S, Q, insert(C, (Q + C), TS1) ) .
+ eq genRenameHelper ((  V1 |-> E1 , S ), Q, TS1) = genRenameHelper( S, Q, insert(V1, (Q + V1), TS1) ) .
 
 ----------------------------------------------------------------------
 --- rename variables in a list
@@ -142,14 +143,15 @@ eq replaceall(E1, TnoSubst) = E1 .
 --- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
  op renameLHS : Subst String TSubst -> TSubst .
  eq renameLHS( noSubst, Q, TS1 ) = TS1 .
- eq renameLHS( (  C |-> E1 , S ), Q, ( TS1, C |> E2) ) = renameLHS( S, Q, insert(  ( Q + C  ) , E2, TS1 ) ) .
- eq renameLHS( (  C |-> E1 , S ), Q,  TS1 ) = renameLHS(S, Q, TS1)  [owise] .
+--- eq renameLHS( (  C @ CC |-> E1 , S), Q, TS1 ) = renameLHS( S, Q, insert(Q + C, E2, TS1 ) ) .
+ eq renameLHS( (  V1 |-> E1 , S ), Q, ( TS1, V1 |> E2) ) = renameLHS( S, Q, insert(  ( Q + V1  ) , E2, TS1 ) ) .
+ eq renameLHS( (  V1 |-> E1 , S ), Q,  TS1 ) = renameLHS(S, Q, TS1)  [owise] .
 
 --- renameRHS(TS1, TS2) = rename variables in the RHS of TS2 by
 --- the replacemap in TS1.
 --- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
  op renameRHS : TSubst TSubst -> TSubst .
- eq renameRHS( TS1,  ( C |> E1, TS2) ) = insert( C, replaceall(E1, TS1), renameRHS(TS1, TS2) ) .
+ eq renameRHS( TS1,  ( A |> E1, TS2) ) = insert( A, replaceall(E1, TS1), renameRHS(TS1, TS2) ) .
  eq renameRHS( TS1, TnoSubst) = TnoSubst .
 
 --- rename the variables in transitions
@@ -162,7 +164,7 @@ eq replaceall(E1, TnoSubst) = E1 .
  eq renTrans(S, L, TS1) = renTrans1(S, getThis(S)  + ".", renTrans1(L, getLabel((L,S)) + ".", TS1) ) .
 
 ----------------------------------------------------------------------
---- rename the variables in a statement
+--- rename the variables in a statement (TODO check: only for pretty print?)
 ----------------------------------------------------------------------
  op renStmt1 : Subst String Stmt -> Stmt .
  eq renStmt1(S, Q, assign(AL ; EL ) ) 
@@ -208,12 +210,13 @@ eq size(TS1) = sizeR (TS1, 0) .
 
 op sizeR : TSubst Nat -> Nat .
 eq sizeR(TnoSubst, F ) = F .
-eq sizeR((TS1, C |> E2), F) = sizeR(TS1, F + 1) .
+eq sizeR((TS1, V1 |> E2), F) = sizeR(TS1, F + 1) .
  
 op genTrans : Stmt -> TSubst .
 eq genTrans( transstmt ) = genTransR ( transstmt , TnoSubst ) .
 
 op genTransR : Stmt TSubst -> TSubst .
+eq genTransR(assign( ((C @ CC), AL ) ; EL ) , trans ) = genTransR(assign ( (C, AL ) ; EL ), trans ) . --- get rid of the @
 eq genTransR(assign( (V1, AL) ; emp ) , trans ) 
    = V1 |> list(emp) . ---weird special case when an empty list is assigned
 eq genTransR(assign( (V1, AL) ; (E1 :: EL) ) , trans ) 
