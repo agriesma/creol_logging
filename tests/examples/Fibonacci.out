@@ -6,7 +6,7 @@ result Configuration:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("f" ;
     "Fibonacci" ; "n") ; return(emp) >, < "run" : Method | Param: noVid, Att:
     "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "f" ; "fibonacci"
-    ; "n") ; get("label:0" ; "res") ; return(emp) >,
+    ; "n") ; get("label:0" ; "res") ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
  
 < "Fibonacci" : Class | Inh: noInh, Param: "n", Att: "n" |-> null, Mtds:
@@ -14,14 +14,14 @@ result Configuration:
     "f" |-> null, "n" |-> null, "s" |-> null, "t" |-> null, Code: if "="("n" ::
     int(0)) th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ;
     int(1)) el call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ;
-    "this" ; "fib" ; "-"("n" :: int(2))) ; get("s" ; "a") ; get("t" ; "b") ;
-    assign("f" ; "+"("a" :: "b")) fi fi ; return("f") >, < "fibonacci" : Method
-    | Param: "n", Att: "_" |-> null, "f" |-> null, "n" |-> null, "t" |-> null,
-    Code: call("t" ; "this" ; "fib" ; "n") ; get("t" ; "f") ; return("f") >, <
-    "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "res" |-> null, "t"
-    |-> null, Code: call("t" ; "this" ; "fib" ; "n") ; await ?("t") ; get("t" ;
-    "res") ; return(emp) >,
+    "this" ; "fib" ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t"
+    ; "b") ; free("t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f") >, <
+    "fibonacci" : Method | Param: "n", Att: "_" |-> null, "f" |-> null, "n" |->
+    null, "t" |-> null, Code: call("t" ; "this" ; "fib" ; "n") ; get("t" ; "f")
+    ; free("t") ; return("f") >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: skip ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, "res" |-> null, "t" |-> null, Code: call("t" ; "this" ; "fib" ;
+    "n") ; await ?("t") ; get("t" ; "res") ; free("t") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

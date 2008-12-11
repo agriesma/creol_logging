@@ -9,12 +9,13 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "r" |->
               null, "_" |-> null,
               Code: call( "label:0" ; "this" ; "m" ; emp ) ;
-              get( "label:0" ; "r" ) ; return ( emp ) >,
+              get( "label:0" ; "r" ) ; free( "label:0" ) ; return ( emp ) >,
             < "m" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
               null, "_" |-> null,
               Code: (call( "label:0" ; "this" ; "m" ; emp ) ;
-                      get( "label:0" ; "r" ) ; assign( "r" ; "+" ( "r" ::
-                      int(1) ) ) [] assign( "r" ; int(1) ))
+                      get( "label:0" ; "r" ) ; free( "label:0" ) ;
+                      assign( "r" ; "+" ( "r" :: int(1) ) ) []
+                      assign( "r" ; int(1) ))
               ; return ( "r" ) >,
       Ocnt: 0 > .
 endm

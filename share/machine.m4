@@ -250,6 +250,7 @@ rl
   comp(N, DL)
   =>
   < O : C |  Att: S, Pr: { L | assign(AL ; DL) ; SL }, PrQ: W, Lcnt: F >
+  comp(N, DL)
   [label receive-comp] .
 
 
@@ -469,7 +470,7 @@ STEP(dnl
   findAttr(newId(CC`,' G)`,' I`,' S'`,' 
     $assign(AL ; EVALLIST(EL, compose(S`,'  L), T))`,'
     { noSubst | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
-    call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK,dnl
+    free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK,dnl
 `[label new-object]')
 
 
@@ -496,7 +497,8 @@ eq
   =
   findAttr(O, (I' , I), compose(S', S),
            SL ; assign(AL ; EL), 
-           { L' | static(".init" ; "init" ; C ; "" ; emp) ; get(".init" ; noVid) ; SL1 })
+           { L' | static(".init" ; "init" ; C ; "" ; emp) ;
+                  get(".init" ; noVid) ; free(".init") ; SL1 })
   < C : Class | Inh: I, Param: AL, Att: S', Mtds: MS, Ocnt: G > .
 
 eq

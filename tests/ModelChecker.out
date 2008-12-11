@@ -8,8 +8,8 @@ result State: {comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp)
     "Tailcall0"), "init", emp), ".method" |-> str("init"), "caller" |-> ob(
     "Tailcall0") | $cont label(ob("Tailcall0"), ob("Tailcall0"), "init", emp)},
   PrQ: {".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) | get(
-    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; call(
-    ".anon" ; "this" ; "run" ; emp) ; free(".anon")},
+    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; free(
+    ".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 0 >
  
 < ob("main") : "" |
@@ -32,8 +32,8 @@ result State: {comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp)
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(5),
   Pr: {".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) | get(
-    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; call(
-    ".anon" ; "this" ; "run" ; emp) ; free(".anon")},
+    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; free(
+    ".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   PrQ: noProc,
   Lcnt: 0 >
  

@@ -6,12 +6,13 @@ result Class:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign(("depth" @
     "Test"), ("max" @ "Test") ; int(0) :: int(3)) ; return(emp) >, < "run" :
     Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code: call(
-    "label:0" ; "this" ; "test" ; emp) ; get("label:0" ; noVid) ; return(emp)
-    >, < "test" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "temp" |-> null, Code: assign("depth" ; "+"("depth" :: int(1))) ; assign(
-    "temp" ; "depth") ; if "<="("depth" :: "max") th call("label:0" ; "this" ;
-    "test" ; emp) ; get("label:0" ; noVid) el skip fi ; await "="("depth" ::
-    "temp") ; assign("depth" ; "-"("depth" :: int(1))) ; return(emp) >,
+    "label:0" ; "this" ; "test" ; emp) ; get("label:0" ; noVid) ; free(
+    "label:0") ; return(emp) >, < "test" : Method | Param: noVid, Att: "_" |->
+    null, "label:0" |-> null, "temp" |-> null, Code: assign("depth" ; "+"(
+    "depth" :: int(1))) ; assign("temp" ; "depth") ; if "<="("depth" :: "max")
+    th call("label:0" ; "this" ; "test" ; emp) ; get("label:0" ; noVid) ; free(
+    "label:0") el skip fi ; await "="("depth" :: "temp") ; assign("depth" ;
+    "-"("depth" :: int(1))) ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

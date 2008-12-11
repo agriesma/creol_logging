@@ -10,9 +10,9 @@ result Class:
     "label:0") ; return(emp) >, < "timeout" : Method | Param: "n", Att: "_" |->
     null, "l" |-> null, "n" |-> null, "result" |-> null, "timeout" |-> null,
     Code: assign("timeout" ; "+"("clock" :: int(10))) ; call("l" ; "other" ;
-    "m" ; emp) ; (await "&&"(?("l") :: "<="("clock" :: "timeout")) ; get("l" ;
-    noVid) ; assign("result" ; bool(true))[]await ">"("clock" :: "timeout") ;
-    free("l") ; assign("result" ; bool(false))) ; return("result") >,
+    "m" ; emp) ; (await ">"("clock" :: "timeout") ; free("l") ; assign("result"
+    ; bool(false))[]await "&&"(?("l") :: "<="("clock" :: "timeout")) ; get("l"
+    ; noVid) ; free("l") ; assign("result" ; bool(true))) ; return("result") >,
   Ocnt: 0 >
 
 Bye.

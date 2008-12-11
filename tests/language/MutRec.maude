@@ -11,7 +11,7 @@ mod PROGRAM is
             < "doit" : Method | Param: "other", Att: "other" |-> null,
               "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
               "other" ; "doit" ; "this" ) ; get( "label:0" ; noVid ) ;
-              return ( emp ) >,
+              free( "label:0" ) ; return ( emp ) >,
       Ocnt: 0 >
     
     < "Test" : Class | Inh: noInh, Param: noVid, Att: "m1" |-> null, "m2" |->

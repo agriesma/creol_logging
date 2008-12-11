@@ -13,7 +13,8 @@ result Configuration:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("console" ;
     "Console" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
     |-> null, "label:0" |-> null, Code: call("label:0" ; "console" ; "print" ;
-    str("hello, world")) ; get("label:0" ; noVid) ; return(emp) >,
+    str("hello, world")) ; get("label:0" ; noVid) ; free("label:0") ; return(
+    emp) >,
   Ocnt: 0 >
 
 ==========================================
@@ -49,7 +50,8 @@ result State: {
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("console" ;
     "Console" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
     |-> null, "label:0" |-> null, Code: call("label:0" ; "console" ; "print" ;
-    str("hello, world")) ; get("label:0" ; noVid) ; return(emp) >,
+    str("hello, world")) ; get("label:0" ; noVid) ; free("label:0") ; return(
+    emp) >,
   Ocnt: 1 >
 }
 Bye.

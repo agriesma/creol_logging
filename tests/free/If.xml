@@ -151,6 +151,7 @@
           </creol:identifier>
           <creol:results/>
           <creol:statement-note file="If.creol" line="29">
+           <creol:maybe-def-var name="l"/>
            <creol:maybe-def-var name="x"/>
            <creol:mustbe-def-var name="x"/>
            <creol:maybe-life-var name="l"/>

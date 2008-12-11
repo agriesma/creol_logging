@@ -114,31 +114,54 @@
          </creol:statement-note>
         </creol:await>
         <creol:sequence>
-         <creol:reply>
-          <creol:identifier name="l">
-           <creol:expression-note file="AsyncAwaitRepl.creol" line="35">
-            <creol:inferred-type>
-             <creol:typeapplication name="Label"/>
-            </creol:inferred-type>
-           </creol:expression-note>
-          </creol:identifier>
-          <creol:results/>
+         <creol:sequence>
+          <creol:reply>
+           <creol:identifier name="l">
+            <creol:expression-note file="AsyncAwaitRepl.creol" line="35">
+             <creol:inferred-type>
+              <creol:typeapplication name="Label"/>
+             </creol:inferred-type>
+            </creol:expression-note>
+           </creol:identifier>
+           <creol:results/>
+           <creol:statement-note file="AsyncAwaitRepl.creol" line="35">
+            <creol:maybe-def-var name="i"/>
+            <creol:maybe-def-var name="l"/>
+            <creol:mustbe-def-var name="i"/>
+            <creol:mustbe-def-var name="l"/>
+            <creol:maybe-life-var name="l"/>
+            <creol:mustbe-life-var name="l"/>
+           </creol:statement-note>
+          </creol:reply>
+          <creol:free>
+           <creol:identifier name="l"/>
+           <creol:statement-note file="AsyncAwaitRepl.creol" line="35">
+            <creol:maybe-def-var name="i"/>
+            <creol:maybe-def-var name="l"/>
+            <creol:mustbe-def-var name="i"/>
+            <creol:maybe-life-var name="l"/>
+            <creol:mustbe-life-var name="l"/>
+           </creol:statement-note>
+          </creol:free>
           <creol:statement-note file="AsyncAwaitRepl.creol" line="35">
            <creol:maybe-def-var name="i"/>
+           <creol:maybe-def-var name="l"/>
            <creol:mustbe-def-var name="i"/>
            <creol:maybe-life-var name="l"/>
            <creol:mustbe-life-var name="l"/>
           </creol:statement-note>
-         </creol:reply>
+         </creol:sequence>
          <creol:return>
           <creol:arguments/>
           <creol:statement-note file="AsyncAwaitRepl.creol" line="32">
            <creol:maybe-def-var name="i"/>
+           <creol:maybe-def-var name="l"/>
            <creol:mustbe-def-var name="i"/>
           </creol:statement-note>
          </creol:return>
          <creol:statement-note file="AsyncAwaitRepl.creol" line="34">
           <creol:maybe-def-var name="i"/>
+          <creol:maybe-def-var name="l"/>
           <creol:mustbe-def-var name="i"/>
           <creol:maybe-life-var name="l"/>
           <creol:mustbe-life-var name="l"/>
@@ -146,6 +169,7 @@
         </creol:sequence>
         <creol:statement-note file="AsyncAwaitRepl.creol" line="33">
          <creol:maybe-def-var name="i"/>
+         <creol:maybe-def-var name="l"/>
          <creol:mustbe-def-var name="i"/>
          <creol:maybe-life-var name="l"/>
          <creol:mustbe-life-var name="l"/>
@@ -153,6 +177,7 @@
        </creol:sequence>
        <creol:statement-note file="AsyncAwaitRepl.creol" line="32">
         <creol:maybe-def-var name="i"/>
+        <creol:maybe-def-var name="l"/>
         <creol:mustbe-def-var name="i"/>
         <creol:maybe-life-var name="i"/>
         <creol:mustbe-life-var name="i"/>
@@ -160,6 +185,7 @@
       </creol:sequence>
       <creol:statement-note file="AsyncAwaitRepl.creol" line="32">
        <creol:maybe-def-var name="i"/>
+       <creol:maybe-def-var name="l"/>
        <creol:mustbe-def-var name="i"/>
       </creol:statement-note>
      </creol:sequence>

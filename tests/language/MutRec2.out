@@ -4,10 +4,11 @@ result Class:
 < "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, "a" |-> null, "label:0"
     |-> null, Code: new("a" ; "Test" ; emp) ; call("label:0" ; "a" ; "m" ; emp)
-    ; get("label:0" ; noVid) ; return(emp) >, < "m" : Method | Param: noVid,
-    Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "caller" ;
-    "m" ; emp) ; get("label:0" ; noVid) ; return(emp) >, < "run" : Method |
-    Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
+    ; get("label:0" ; noVid) ; free("label:0") ; return(emp) >, < "m" : Method
+    | Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code: call("label:0"
+    ; "caller" ; "m" ; emp) ; get("label:0" ; noVid) ; free("label:0") ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code:
+    skip ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

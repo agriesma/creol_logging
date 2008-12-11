@@ -17,9 +17,9 @@ mod PROGRAM is
               Code: assign( "timeout" ; "+" ( "clock" :: int(10) ) ) ;
               call( "l" ; "other" ; "m" ; emp ) ;
               (await "&&" ( ?("l") :: "<=" ( "clock" :: "timeout" ) ) ;
-                get( "l" ; noVid ) ; assign( "result" ; bool(true) ) [] await
-                ">" ( "clock" :: "timeout" ) ; free( "l" ) ;
-                assign( "result" ; bool(false) ))
+                get( "l" ; noVid ) ; free( "l" ) ;
+                assign( "result" ; bool(true) ) [] await ">" ( "clock" ::
+                "timeout" ) ; free( "l" ) ; assign( "result" ; bool(false) ))
               ; return ( "result" ) >,
       Ocnt: 0 > .
 endm

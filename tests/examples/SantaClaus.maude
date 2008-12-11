@@ -21,11 +21,11 @@ mod PROGRAM is
               "label:1" |-> null, "label:0" |-> null, "_" |-> null,
               Code: (await "=" ( "ctReindeers" :: int(5) ) ;
                       call( "label:0" ; "this" ; "deliverToys" ; emp ) ;
-                      get( "label:0" ; noVid ) [] await "&&" ( "<=" ( int(3)
-                      :: "ctElves" ) :: "~" ( "=" ( "ctReindeers" ::
-                      int(9) ) ) ) ;
+                      get( "label:0" ; noVid ) ; free( "label:0" ) [] await
+                      "&&" ( "<=" ( int(3) :: "ctElves" ) ::
+                      "~" ( "=" ( "ctReindeers" :: int(9) ) ) ) ;
                       call( "label:1" ; "this" ; "talkToElves" ; emp ) ;
-                      get( "label:1" ; noVid ))
+                      get( "label:1" ; noVid ) ; free( "label:1" ))
               ; call( "label:2" ; "this" ; "loop" ; emp ) ; free( "label:2" )
               ; return ( emp ) >,
             < "deliverToys" : Method | Param: noVid, Att: "label:1" |-> null,
@@ -144,7 +144,7 @@ mod PROGRAM is
               return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
               null, Code: static( "label:0" ; "run" ; "Elf" ; "" ; emp ) ;
-              get( "label:0" ; noVid ) ; return ( emp ) >,
+              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
             < "work" : Method | Param: noVid, Att: "label:0" |-> null, "_"
               |-> null, Code: call( "label:0" ; "sc" ; "haveProblem" ; emp )
               ; free( "label:0" ) ; return ( emp ) >,

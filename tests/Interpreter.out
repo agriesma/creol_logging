@@ -18,7 +18,7 @@ search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
   Lcnt: N:Nat >
 } .
 
-Solution 1 (state 22)
+Solution 1 (state 24)
 conf:Configuration --> discard(label(ob("Tailcall0"), 1))
  
 < ob("main") : "" |

@@ -20,7 +20,7 @@ mod PROGRAM is
             < "n" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
               null, "_" |-> null,
               Code: call( "label:0" ; "this" ; "m" ; emp ) ;
-              get( "label:0" ; "r" ) ; return ( "r" ) >,
+              get( "label:0" ; "r" ) ; free( "label:0" ) ; return ( "r" ) >,
       Ocnt: 0 >
     
     < "C" : Class | Inh: "A" < "c" >, Param: "c", Att: "c" |-> null,
@@ -31,7 +31,7 @@ mod PROGRAM is
             < "o" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
               null, "_" |-> null,
               Code: call( "label:0" ; "this" ; "m" ; emp ) ;
-              get( "label:0" ; "r" ) ; return ( "r" ) >,
+              get( "label:0" ; "r" ) ; free( "label:0" ) ; return ( "r" ) >,
       Ocnt: 0 >
     
     < "D" : Class | Inh: "B" < int(1) >, "C" < int(2) >, Param: noVid,
@@ -41,9 +41,10 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "label:1" |-> null,
               "label:0" |-> null, "_" |-> null,
               Code: call( "label:0" ; "this" ; "n" ; emp ) ;
-              get( "label:0" ; "x" ) ; call( "label:1" ; "this" ; "o" ; emp )
-              ; get( "label:1" ; "y" ) ; assert "&&" ( "=" ( "x" :: int(1) )
-              :: "=" ( "y" :: int(2) ) ) ; return ( emp ) >,
+              get( "label:0" ; "x" ) ; free( "label:0" ) ;
+              call( "label:1" ; "this" ; "o" ; emp ) ; get( "label:1" ; "y" )
+              ; free( "label:1" ) ; assert "&&" ( "=" ( "x" :: int(1) ) ::
+              "=" ( "y" :: int(2) ) ) ; return ( emp ) >,
       Ocnt: 0 > .
 endm
 
