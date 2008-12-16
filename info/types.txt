@@ -1,0 +1,4 @@
+
+  This should become a figure of the type hierarchy.  It has not been
+  produced yet.
+

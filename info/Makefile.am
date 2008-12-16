@@ -45,13 +45,21 @@ creoltools_TEXINFOS	= introduction.texi \
 
 BUILT_SOURCES		= $(srcdir)/sorts.eps \
 			  $(srcdir)/sorts.pdf \
-			  $(srcdir)/sorts.png
+			  $(srcdir)/sorts.png \
+			  $(srcdir)/types.eps \
+			  $(srcdir)/types.pdf \
+			  $(srcdir)/types.png
 
 EXTRA_DIST		= $(srcdir)/sorts.dot \
 			  $(srcdir)/sorts.txt \
 			  $(srcdir)/sorts.eps \
 			  $(srcdir)/sorts.pdf \
-			  $(srcdir)/sorts.png
+			  $(srcdir)/sorts.png \
+			  $(srcdir)/types.dot \
+			  $(srcdir)/types.txt \
+			  $(srcdir)/types.eps \
+			  $(srcdir)/types.pdf \
+			  $(srcdir)/types.png
 
 MOSTLYCLEANFILES	= *~ *.cps
 CLEANFILES		=
