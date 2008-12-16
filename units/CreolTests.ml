@@ -32,7 +32,8 @@ let make_class name ?(contracts=[]) ?(implements=[]) inherits =
     inherits = List.map conv_inh inherits;
     contracts = List.map conv_inh contracts;
     implements = List.map conv_inh implements;
-    attributes = []; with_defs = []; pragmas = []; file = ""; line = 0 }
+    attributes = []; invariants = []; with_defs = []; pragmas = [];
+    file = ""; line = 0 }
 
 let make_iface name inherits =
   { Interface.name = name;

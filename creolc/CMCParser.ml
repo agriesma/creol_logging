@@ -341,6 +341,7 @@ let parse name input =
 		  contracts = [] ;
 		  implements = [] ;
 		  attributes = (List.map vardecl_of_binding a);
+		  invariants = [] ;
 		  with_defs = [{ With.co_interface = Type.any;
 				 methods = m;
 				 invariants = []}] ;

@@ -94,8 +94,8 @@ let emit name tree =
     XmlTextWriter.start_element writer "creol:attributes";
     List.iter (creol_vardecl_to_xml) c.Class.attributes;
     XmlTextWriter.end_element writer;
-    List.iter (creol_with_to_xml)
-      c.Class.with_defs;
+    creol_invs_to_xml c.Class.invariants;
+    List.iter (creol_with_to_xml) c.Class.with_defs;
     XmlTextWriter.end_element writer
   and creol_interface_to_xml i =
     XmlTextWriter.start_element writer "creol:interface";
@@ -106,6 +106,7 @@ let emit name tree =
     let co = Type.string_of_type w.With.co_interface in
       XmlTextWriter.write_attribute writer "cointerface" co ;
       List.iter (creol_method_to_xml) w.With.methods;
+      creol_invs_to_xml w.With.invariants;
       XmlTextWriter.end_element writer
   and creol_inherits_to_xml inh =
     XmlTextWriter.start_element writer "creol:inherits";
@@ -389,9 +390,7 @@ let emit name tree =
 	  XmlTextWriter.start_element writer "creol:condition" ;
 	  creol_expression_to_xml c ;
           XmlTextWriter.end_element writer ;
-	  XmlTextWriter.start_element writer "creol:invariant" ;
-	  creol_expression_to_xml i ;
-	  XmlTextWriter.end_element writer ;
+          creol_inv_to_xml i ;
 	  XmlTextWriter.start_element writer "creol:do" ;
 	  creol_statement_to_xml d ;
           XmlTextWriter.end_element writer ;
@@ -405,9 +404,7 @@ let emit name tree =
 	  XmlTextWriter.start_element writer "creol:condition" ;
 	  creol_expression_to_xml c ;
           XmlTextWriter.end_element writer ;
-	  XmlTextWriter.start_element writer "creol:invariant" ;
-	  creol_expression_to_xml i ;
-	  XmlTextWriter.end_element writer ;
+          creol_inv_to_xml i ;
 	  creol_statement_note_to_xml a ;
           XmlTextWriter.end_element writer
       | Statement.Sequence (a, s1, s2) ->
@@ -493,6 +490,14 @@ let emit name tree =
   and creol_argument_to_xml e =
     XmlTextWriter.start_element writer "creol:argument" ; 
     creol_expression_to_xml e;
+    XmlTextWriter.end_element writer
+  and creol_invs_to_xml invs =
+    XmlTextWriter.start_element writer "creol:invariants";
+    List.iter creol_inv_to_xml invs;
+    XmlTextWriter.end_element writer;
+  and creol_inv_to_xml inv =
+    XmlTextWriter.start_element writer "creol:invariant" ;
+    creol_expression_to_xml inv ;
     XmlTextWriter.end_element writer
   and creol_lhs_to_xml =
     function

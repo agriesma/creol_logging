@@ -10,6 +10,7 @@
     <creol:type name="Int"/>
    </creol:vardecl>
   </creol:attributes>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="run" location="A">
     <creol:inputs/>
@@ -59,6 +60,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
  <creol:class name="B">
@@ -69,6 +71,7 @@
   <creol:contracts/>
   <creol:implements/>
   <creol:attributes/>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="init" location="B">
     <creol:inputs/>
@@ -139,6 +142,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
 </creol:creol>

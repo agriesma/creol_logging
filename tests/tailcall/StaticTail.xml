@@ -6,6 +6,7 @@
   <creol:contracts/>
   <creol:implements/>
   <creol:attributes/>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="init" location="C">
     <creol:inputs/>
@@ -63,6 +64,7 @@
      </creol:statictail>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
 </creol:creol>

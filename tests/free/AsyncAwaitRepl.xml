@@ -7,6 +7,7 @@
   <creol:contracts/>
   <creol:implements/>
   <creol:attributes/>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="init" location="C">
     <creol:inputs/>
@@ -191,6 +192,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
   <creol:with cointerface="I">
    <creol:method name="m" location="C">
@@ -210,6 +212,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
 </creol:creol>

@@ -6,6 +6,7 @@
   <creol:contracts/>
   <creol:implements/>
   <creol:attributes/>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="init" location="C">
     <creol:inputs/>
@@ -41,6 +42,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
   <creol:with cointerface="Any">
    <creol:method name="abs" location="C">
@@ -176,6 +178,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
 </creol:creol>

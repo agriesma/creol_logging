@@ -498,25 +498,18 @@ struct
   (* Precedence of binary operators. *)
   let prec_of_binaryop =
     function
-	Plus -> (33, 33)
-      | Minus -> (33, 33)
-      | Times -> (31, 31)
-      | Div -> (31, 31)
-      | Modulo -> (31, 31)
       | Power -> (29, 29)
-      | Eq -> (51, 51)
-      | Ne -> (51, 51)
-      | Le | Lt | Ge | Gt -> (37, 37)
-      | In -> (53, 53)
-      | And | Wedge -> (55, 55)
-      | Or | Vee -> (59, 59)
-      | Xor -> (57, 57)
-      | Implies -> (61, 61)
-      | Iff -> (61, 61)
-      | Prepend -> (33, 33)
-      | Append -> (33, 33)
-      | Concat -> (33, 33)
+      | Times | Div | Modulo -> (31, 31)
+      | Plus | Minus -> (33, 33)
       | Project -> (35, 35)
+      | Le | Lt | Ge | Gt -> (37, 37)
+      | In -> (41, 41)
+      | Append | Concat | Prepend -> (45, 45)
+      | Eq | Ne -> (51, 51)
+      | And | Wedge -> (55, 55)
+      | Xor -> (57, 57)
+      | Or | Vee -> (59, 59)
+      | Implies | Iff -> (61, 61)
 
   (* Get the textual representation of a unary operator *)
   let string_of_unaryop =
@@ -1616,6 +1609,7 @@ struct
 	contracts: Inherits.t list;
 	implements: Inherits.t list;
 	attributes: VarDecl.t list;
+	invariants: Expression.t list;
 	with_defs: With.t list;
 	pragmas: Pragma.t list;
 	file: string;
