@@ -306,7 +306,7 @@ rl
   < O : C |  Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W, Dealloc: LS,
              Ev: (MM  + comp(N, DL)), Lcnt: F > 
   =>
-  < O : C |  Att: S, Pr: { L | assign(AL ; DL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+  < O : C |  Att: S, Pr: { L | RMARKER("receive return from " + toString(N), toString(N) )assign(AL ; DL) ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
   [label receive-comp] .
 
 

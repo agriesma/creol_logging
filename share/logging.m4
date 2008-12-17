@@ -50,6 +50,13 @@ eq getParamsR( TS1 , F , EL ) = getParamsR( ( delete(string(F, 10) , TS1) ) , (F
 op getParams : TSubst -> ExprList .
 eq getParams( TS1 ) = getParamsR( TS1, 0, emp ) .
 
+--- insertPassing: insert params to pass to called methods or new
+--- instances.  if the list of params is empty`,' the call is ignored
+op insertPassing : Vid ExprList TSubst -> TSubst .
+eq insertPassing( V1 , emp , TS1 ) = TS1 .
+eq insertPassing( V1 , EL , TS1 ) = insert(V1, list(EL), TS1) .
+
+
 --- insertValues (TS1, TS2):  for each RHS in TS2`,' replace the variables by the expressions defined in TS1
 --- EXAMPLE: rew insertValues(  ("y" |> "z" ) , ("x" |> "+" ("y" :: int(1) ) )) .
 ---          rew insertValues(  ("y" |> "z", "f" |> int(1) ) , ("x" |> "+" ("y" :: "f" ) )) .
@@ -198,6 +205,13 @@ eq renExpr(S, L, E)
                genRenameHelper(S, getThis( (L,S)) + ".", TnoSubst) ) .
 
 
+---------------------
+--- test only
+---------------------
+
+op rmhead : ExprList -> ExprList .
+eq rmhead(E :: EL) = EL .
+
 ----------------------------------------------------------------------
 --- generate the Transition Relation of an assign statement
 ----------------------------------------------------------------------
@@ -268,39 +282,75 @@ crl
 ----------------------------------------------------------------------
 --- combine the logobjects
 ----------------------------------------------------------------------
-ceq
+
+
+
+--- an empty marker is simply removed - ther is no according assign
+eq
   <log From: 0 To: G  Type: "lastrun" Data: { CSL |   ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "$marker"  Data: {  SL | TnoSubst |  inits } Att:  S Label: C >
-  <log From: F To: F1 Type: "passing" Data: { SL1 | TnoSubst |    TS2 } Att: S' Label: CC >
   =
-  <log From: 0 To: G1  Type: "lastrun" Data: {  CSL | ctrans | cinits } Att: CS Label: CLabel > 
-  if (inits["dest"] == TS2["dest"]) and F < G
-  [label combinemarker] .
+  <log From: 0 To: G1  Type: "lastrun" Data: {  CSL | ctrans | cinits } Att: CS Label: CLabel > .
 
-ceq 
+--- marker that is followed by an assign.  the label is still taken
+--- from the inits map of marker`,' should be changed to the
+--- Label-field.
+eq 
   <log From: 0  To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G  To: G1 Type: "$marker"  Data: {  SL |  trans |  inits } Att:  S Label: C >
-  <log From: F  To: F1 Type: "passing" Data: { SL1 |    TS1 |    TS2 } Att: L' Label: CC >
   <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; EL) |    TS3 |    TS4 } Att: S' Label: C >
   =
   <log From: 0 To: ( G + 1 )  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
-  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; getParams(TS1) ) | genTrans(assign(AL ; getParams(TS1) )) | inits } Att: S' Label: C > 
-  if inits["dest"] == TS2["dest"] and (F < G) .
+  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; cinits[inits["dest"]] ) | genTrans(assign(AL ; cinits[inits["dest"]] )) | inits } Att: S' Label: C > .
 
-ceq 
+--- marker that is not followed by a related assign - increase the
+--- marker id until the correct assign is found
+
+eq 
   <log From: 0  To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G  To: G1 Type: "$marker"  Data: {  SL |  trans |  inits } Att:  S Label: C >
-  <log From: F  To: F1 Type: "passing" Data: { SL1 |    TS1 |    TS2 } Att: L' Label: CC >
   <log From: G2 To: G3 Type: "assign" Data: { SL2 |    TS3 |    TS4 } Att: S' Label: C >
   =
   <log From: 0  To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G  To: (G1 + 1) Type: "$marker"  Data: {  SL |  trans |  inits } Att:  S Label: C >
-  <log From: F  To: F1 Type: "passing" Data: { SL1 |    TS1 |    TS2 } Att: L' Label: CC >
   <log From: G2 To: G3 Type: "assign" Data: { SL2 |    TS3 |    TS4 } Att: S' Label: C >
-  if inits["dest"] == TS2["dest"] 
   [owise] . 
 
+---- old ones
 
+--- ceq
+---  <log From: 0 To: G  Type: "lastrun" Data: { CSL |   ctrans | cinits } Att: CS Label: CLabel > 
+---  <log From: G To: G1 Type: "$marker"  Data: {  SL | TnoSubst |  inits } Att:  S Label: C >
+---  <log From: F To: F1 Type: "passing" Data: { SL1 | TnoSubst |    TS2 } Att: S' Label: CC >
+---  =
+---  <log From: 0 To: G1  Type: "lastrun" Data: {  CSL | ctrans | cinits } Att: CS Label: CLabel > 
+---  if (inits["dest"] == TS2["dest"]) and F < G
+---  [label combinemarker] .
+---
+---ceq 
+---  <log From: 0  To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
+---  <log From: G  To: G1 Type: "$marker"  Data: {  SL |  trans |  inits } Att:  S Label: C >
+---  <log From: F  To: F1 Type: "passing" Data: { SL1 |    TS1 |    TS2 } Att: L' Label: CC >
+---  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; EL) |    TS3 |    TS4 } Att: S' Label: C >
+---  =
+---  <log From: 0 To: ( G + 1 )  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
+---  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; getParams(TS1) ) | genTrans(assign(AL ; getParams(TS1) )) | inits } Att: S' Label: C > 
+---  if inits["dest"] == TS2["dest"] and (F < G) .
+---
+---ceq 
+---  <log From: 0  To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
+---  <log From: G  To: G1 Type: "$marker"  Data: {  SL |  trans |  inits } Att:  S Label: C >
+---  <log From: F  To: F1 Type: "passing" Data: { SL1 |    TS1 |    TS2 } Att: L' Label: CC >
+---  <log From: G2 To: G3 Type: "assign" Data: { SL2 |    TS3 |    TS4 } Att: S' Label: C >
+---  =
+---  <log From: 0  To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
+---  <log From: G  To: (G1 + 1) Type: "$marker"  Data: {  SL |  trans |  inits } Att:  S Label: C >
+---  <log From: F  To: F1 Type: "passing" Data: { SL1 |    TS1 |    TS2 } Att: L' Label: CC >
+---  <log From: G2 To: G3 Type: "assign" Data: { SL2 |    TS3 |    TS4 } Att: S' Label: C >
+---  if inits["dest"] == TS2["dest"] 
+---  [owise] . 
+---
+--- end old ones
 
 rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
@@ -337,22 +387,24 @@ rl
   <log From: G To: G1 Type: "ifthenelse"    Data: {  SL |  trans |  "eq" |> bool(true) } Att:  S Label: C >
   => none .
 
---- replace the call by an adjusted passing opject and skip it by lastrun
+
+--- replace the call by an adjusted passing object and skip it by lastrun
 rl 
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "call"    Data: {  SL |  trans |  inits } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "passing" Data: { skip | insertValues(ctrans, trans) |  inits } Att: S Label: C > 
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | ctrans | cinits } Att: CS Label: CLabel > 
+---  <log From: G To: G1 Type: "passing" Data: { skip | insertValues(ctrans, trans) |  inits } Att: S Label: C > 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | ctrans | insertPassing(inits["dest"], getParams(trans), cinits ) } Att: CS Label: CLabel > 
   [label callpassing] .
+
 
 --- replace a create by an adjusted passing opject and skip it by lastrun
 rl
  <log From: 0 To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
  <log From: G To: G1 Type: "create"  Data: {  SL |  trans |  inits } Att:  S Label: C >
  =>
- <log From: G To: G1 Type: "passing" Data: { skip | insertValues(ctrans, trans) |  inits } Att: S Label: C > 
- <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL ; SL | ctrans | cinits } Att: CS Label: CLabel > 
+--- <log From: G To: G1 Type: "passing" Data: { skip | insertValues(ctrans, trans) |  inits } Att: S Label: C > 
+ <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL ; SL | ctrans | insertPassing(inits["dest"], getParams(trans), cinits ) } Att: CS Label: CLabel > 
  [label createpassing] .
 
 --- replace a return by an adjusted passing opject and skip it by lastrun
@@ -360,8 +412,8 @@ rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "return"  Data: {  SL |  trans |  inits } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "passing" Data: { skip | insertValues(ctrans, trans) |  inits } Att: S Label: C > 
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL ; SL | ctrans | cinits } Att: CS Label: CLabel > 
+---  <log From: G To: G1 Type: "passing" Data: { skip | insertValues(ctrans, trans) |  inits } Att: S Label: C > 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL ; SL | ctrans | insertPassing(inits["dest"], getParams(trans), cinits ) } Att: CS Label: CLabel > 
   [label returnpassing] .
 
 --- combine assign

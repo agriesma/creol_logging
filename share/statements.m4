@@ -102,7 +102,7 @@ ifdef(`LOGGING',dnl
   extending MAP{Vid`,' Expr} * (sort Map{Vid`,'Expr} to TSubst`,'
                               sort Entry{Vid`,'Expr} to TBinding`,'
                               op empty : -> Map{Vid`,'Expr} to TnoSubst`,'
-                              op _ |-> _  : Vid Expr -> Map{Vid`,'Expr} to _ |> _  `,'
+                              op _ |-> _  : Vid Expr -> Map{Vid`,'Expr} to _ |> _ [format (nsso r! o o)] `,'
                               op undefined : -> [Expr] to undeftrans ) .
 )
   op if_th_el_fi : Expr StmtList StmtList -> Stmt [ctor `format' (b o b o b o b o)] . 
