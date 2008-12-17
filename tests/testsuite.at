@@ -38,6 +38,8 @@ AT_CLEANUP
 AT_SETUP([Logging])
 TEST_LOGGING([Hello], [rew [[100]] classes main("Hello", emp) . 
 ])
+TEST_LOGGING([program], [rew [[3000]] classes main("Main", int(1) :: int(0) ) .
+])
 AT_CLEANUP
 
 AT_SETUP([MetaExec])

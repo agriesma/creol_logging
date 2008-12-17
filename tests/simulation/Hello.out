@@ -16,7 +16,7 @@ result [Configuration]:
     str("hello, world")) ; get("label:0" ; noVid) ; return(emp) >,
   Ocnt: 1 >
  
-<log From: 0 To: 19 Type: "lastrun"
+<log From: 0 To: 22 Type: "lastrun"
     Data: {skip ; new("var" ; "Hello" ; emp) ; assign("nolabel.var" ; ob(
     "Hello0")) ; call(".anon" ; "this" ; "init" ; emp) ; new("console" ;
     "Console" ; emp) ; assign("Hello0.console" ; ob("Console0")) ; call(".anon"
@@ -25,50 +25,12 @@ result [Configuration]:
     emp) ; call(".anon" ; "this" ; "run" ; emp) ; call("label:0" ; "console" ;
     "print" ; str("hello, world")) ; assign("Hello0-2.result" ; str(
     "hello, world")) ; assign("Console0.output" ; "|-"("Console0.output" ::
-    str("Hello, world"))) ; return(emp) ; return(emp) | "Console0.output" |>
-    list(str("Hello, world")), "Hello0-2.result" |> str("hello, world"),
-    "Hello0.console" |> ob("Console0"), "nolabel.var" |> ob("Hello0") |
-    TnoSubst} Att: noSubst Label: "lastrun" >
- 
-<log From: 3 To: 4 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "Hello0-0"} Att: noSubst Label: "Hello0"
-    >
- 
-<log From: 7 To: 8 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "Console0-0"} Att: noSubst Label:
-    "Console0" >
- 
-<log From: 8 To: 9 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "returnHello0-0"} Att: noSubst Label:
-    "Hello0-0" >
- 
-<log From: 10 To: 11 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "returnConsole0-0"} Att: noSubst Label:
-    "Console0-0" >
- 
-<log From: 11 To: 12 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "Console0-1"} Att: noSubst Label:
-    "Console0" >
- 
-<log From: 12 To: 13 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "returnConsole0-1"} Att: noSubst Label:
-    "Console0-1" >
- 
-<log From: 13 To: 14 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "Hello0-1"} Att: noSubst Label: "Hello0"
-    >
- 
-<log From: 14 To: 15 Type: "passing"
-    Data: {skip | "0" |> str("hello, world") | "dest" |> "Hello0-2"} Att:
-    noSubst Label: "Hello0-1" >
- 
-<log From: 17 To: 18 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "returnHello0-2"} Att: noSubst Label:
-    "Hello0-2" >
- 
-<log From: 18 To: 19 Type: "passing"
-    Data: {skip | TnoSubst | "dest" |> "returnHello0-1"} Att: noSubst Label:
-    "Hello0-1" >
+    str("Hello, world"))) ; return(emp) ; return(emp) | 
+  "Console0.output" |> list(str("Hello, world")), 
+  "Hello0-2.result" |> str("hello, world"), 
+  "Hello0.console" |> ob("Console0"), 
+  "nolabel.var" |> ob("Hello0") | 
+  "Hello0-2" |> list(str("hello, world"))} Att: noSubst Label: "lastrun" >
  
 < ob("Console0") : "Console" |
   Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console0"),
@@ -92,7 +54,7 @@ result [Configuration]:
   PrQ: noProc,
   Dealloc: noDealloc,
   Ev: noMsg,
-  Lcnt: 19 >
+  Lcnt: 22 >
  
 < ob("main") : "" |
   Att: noSubst,
