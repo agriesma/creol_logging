@@ -6,6 +6,7 @@
   <creol:contracts/>
   <creol:implements/>
   <creol:attributes/>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="init" location="C">
     <creol:inputs/>
@@ -151,6 +152,7 @@
           </creol:identifier>
           <creol:results/>
           <creol:statement-note file="If.creol" line="29">
+           <creol:maybe-def-var name="l"/>
            <creol:maybe-def-var name="x"/>
            <creol:mustbe-def-var name="x"/>
            <creol:maybe-life-var name="l"/>
@@ -204,6 +206,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
 </creol:creol>

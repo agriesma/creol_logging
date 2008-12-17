@@ -32,7 +32,8 @@ let make_class name ?(contracts=[]) ?(implements=[]) inherits =
     inherits = List.map conv_inh inherits;
     contracts = List.map conv_inh contracts;
     implements = List.map conv_inh implements;
-    attributes = []; with_defs = []; pragmas = []; file = ""; line = 0 }
+    attributes = []; invariants = []; with_defs = []; pragmas = [];
+    file = ""; line = 0 }
 
 let make_iface name inherits =
   { Interface.name = name;
@@ -131,6 +132,15 @@ let test_fixture = "Creol" >:::
 	  fun _ ->
 	    let s = IdMap.add "c" (Type.Variable "a") (IdMap.add "b" (Type.Variable "c") (IdMap.add "a" (Type.Variable "b") IdMap.empty)) in
 	    let exp = IdMap.add "c" (Type.Variable "c") (IdMap.add "b" (Type.Variable "b") (IdMap.add "a" (Type.Variable "a") IdMap.empty)) in
+	    let res = Type.normalise s in
+	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
+	) ;
+        "complex-cycle" >:: (
+	  fun _ ->
+	    let s = IdMap.add "a" (Type.Application ("List", [Type.Variable "b"]))
+                      (IdMap.add "b" (Type.Application ("List", [Type.Variable "b"])) IdMap.empty) in
+	    let exp = IdMap.add "a" (Type.Application ("List", [Type.Variable "b"]))
+                      (IdMap.add "b" (Type.Application ("List", [Type.Variable "b"])) IdMap.empty) in
 	    let res = Type.normalise s in
 	      assert_equal ~msg:("Maps differ: " ^ (Type.string_of_substitution res)) exp res
 	) ;

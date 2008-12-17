@@ -341,6 +341,7 @@ let parse name input =
 		  contracts = [] ;
 		  implements = [] ;
 		  attributes = (List.map vardecl_of_binding a);
+		  invariants = [] ;
 		  with_defs = [{ With.co_interface = Type.any;
 				 methods = m;
 				 invariants = []}] ;
@@ -383,10 +384,10 @@ let parse name input =
 	      | _ -> assert false
 	  in
 	    res::(parse_configuration input)
-      | Some t ->
-	  let tl = error_tokens input in
-	    raise (BadToken (tl, get_token_line t, "configuration"))
-      | None ->
+      | Some Key (_, _) ->
+	  let res = parse_expression input in
+	    parse_configuration input
+      | _ ->
 	  []
   and parse_object_term_list input =
     match Stream.peek input with
@@ -834,19 +835,6 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t,
 			   "method_name"))
       | None -> raise (Eof "")
-  and parse_expression_list input =
-    let rec do_parse input =
-      let e = parse_expression input in
-	match Stream.peek input with
-	  | Some DColon _ ->
-	      Stream.junk input ;
-	      let l = parse_expression_list input in
-		e::l
-	  | _ -> [e]
-    in
-      match Stream.peek input with
-	| Some Key ("emp", _) -> Stream.junk input; []
-	| _ -> do_parse input
   and parse_expression input =
     match Stream.peek input with
       | Some Key ("bool", _) ->
@@ -955,6 +943,19 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t,
 			   "expression"))
       | None -> raise (Eof "")
+  and parse_expression_list input =
+    let rec do_parse input =
+      let e = parse_expression input in
+	match Stream.peek input with
+	  | Some DColon _ ->
+	      Stream.junk input ;
+	      let l = do_parse input in
+		e::l
+	  | _ -> [e]
+    in
+      match Stream.peek input with
+	| Some Key ("emp", _) -> let () = Stream.junk input in []
+	| _ -> do_parse input
   and parse_bindings input =
     match Stream.peek input with
       | Some Key ("empty", _) ->
@@ -1143,16 +1144,30 @@ let parse name input =
 	  raise (BadToken (error_tokens input, get_token_line t, ">"))
       | None ->
 	  raise (Eof "")
+  and junk_left_brace input =
+    match Stream.peek input with
+      | Some LBrace _ ->
+	  Stream.junk input
+      | Some t ->
+	  raise (BadToken (error_tokens input, get_token_line t, "{"))
+      | None ->
+	  raise (Eof "")
   and junk_right_brace input =
     match Stream.peek input with
       | Some RBrace _ ->
 	  Stream.junk input
       | Some t ->
-	  raise (BadToken (error_tokens input, get_token_line t, ">"))
+	  raise (BadToken (error_tokens input, get_token_line t, "}"))
       | None ->
 	  raise (Eof "")
   in
-    parse_configuration input
+    match Stream.peek input with
+      | Some LBrace _ ->
+          let () = junk_left_brace input in
+          let c = parse_configuration input in
+          let () = junk_right_brace input in
+            c
+      | _ -> parse_configuration input
 
 
 

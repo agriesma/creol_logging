@@ -6,6 +6,7 @@
   <creol:contracts/>
   <creol:implements/>
   <creol:attributes/>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="init" location="C">
     <creol:inputs/>
@@ -119,23 +120,45 @@
            <creol:mustbe-life-var name="x"/>
           </creol:statement-note>
          </creol:await>
-         <creol:reply>
-          <creol:identifier name="l">
-           <creol:expression-note file="Choice.creol" line="27">
-            <creol:inferred-type>
-             <creol:typeapplication name="Label"/>
-            </creol:inferred-type>
-           </creol:expression-note>
-          </creol:identifier>
-          <creol:results/>
+         <creol:sequence>
+          <creol:reply>
+           <creol:identifier name="l">
+            <creol:expression-note file="Choice.creol" line="27">
+             <creol:inferred-type>
+              <creol:typeapplication name="Label"/>
+             </creol:inferred-type>
+            </creol:expression-note>
+           </creol:identifier>
+           <creol:results/>
+           <creol:statement-note file="Choice.creol" line="27">
+            <creol:maybe-def-var name="l"/>
+            <creol:maybe-def-var name="x"/>
+            <creol:mustbe-def-var name="l"/>
+            <creol:mustbe-def-var name="x"/>
+            <creol:maybe-life-var name="l"/>
+            <creol:mustbe-life-var name="l"/>
+           </creol:statement-note>
+          </creol:reply>
+          <creol:free>
+           <creol:identifier name="l"/>
+           <creol:statement-note file="Choice.creol" line="27">
+            <creol:maybe-def-var name="l"/>
+            <creol:maybe-def-var name="x"/>
+            <creol:mustbe-def-var name="x"/>
+            <creol:maybe-life-var name="l"/>
+            <creol:mustbe-life-var name="l"/>
+           </creol:statement-note>
+          </creol:free>
           <creol:statement-note file="Choice.creol" line="27">
+           <creol:maybe-def-var name="l"/>
            <creol:maybe-def-var name="x"/>
            <creol:mustbe-def-var name="x"/>
            <creol:maybe-life-var name="l"/>
            <creol:mustbe-life-var name="l"/>
           </creol:statement-note>
-         </creol:reply>
+         </creol:sequence>
          <creol:statement-note file="Choice.creol" line="27">
+          <creol:maybe-def-var name="l"/>
           <creol:maybe-def-var name="x"/>
           <creol:mustbe-def-var name="x"/>
           <creol:maybe-life-var name="l"/>
@@ -201,6 +224,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
  <creol:class name="D">
@@ -209,6 +233,7 @@
   <creol:contracts/>
   <creol:implements/>
   <creol:attributes/>
+  <creol:invariants/>
   <creol:with cointerface="/* Internal */">
    <creol:method name="init" location="D">
     <creol:inputs/>
@@ -332,7 +357,9 @@
           </creol:identifier>
           <creol:results/>
           <creol:statement-note file="Choice.creol" line="38">
+           <creol:maybe-def-var name="l"/>
            <creol:maybe-def-var name="x"/>
+           <creol:mustbe-def-var name="l"/>
            <creol:mustbe-def-var name="x"/>
            <creol:maybe-life-var name="l"/>
            <creol:maybe-life-var name="x"/>
@@ -340,7 +367,9 @@
           </creol:statement-note>
          </creol:reply>
          <creol:statement-note file="Choice.creol" line="38">
+          <creol:maybe-def-var name="l"/>
           <creol:maybe-def-var name="x"/>
+          <creol:mustbe-def-var name="l"/>
           <creol:mustbe-def-var name="x"/>
           <creol:maybe-life-var name="l"/>
           <creol:maybe-life-var name="x"/>
@@ -361,6 +390,7 @@
         <creol:statement-note file="Choice.creol" line="38">
          <creol:maybe-def-var name="l"/>
          <creol:maybe-def-var name="x"/>
+         <creol:mustbe-def-var name="l"/>
          <creol:mustbe-def-var name="x"/>
          <creol:maybe-life-var name="l"/>
          <creol:maybe-life-var name="x"/>
@@ -400,6 +430,7 @@
            <creol:statement-note file="Choice.creol" line="43">
             <creol:maybe-def-var name="l"/>
             <creol:maybe-def-var name="x"/>
+            <creol:mustbe-def-var name="l"/>
             <creol:mustbe-def-var name="x"/>
             <creol:maybe-life-var name="l"/>
             <creol:maybe-life-var name="x"/>
@@ -407,23 +438,45 @@
             <creol:mustbe-life-var name="x"/>
            </creol:statement-note>
           </creol:await>
-          <creol:reply>
-           <creol:identifier name="l">
-            <creol:expression-note file="Choice.creol" line="43">
-             <creol:inferred-type>
-              <creol:typeapplication name="Label"/>
-             </creol:inferred-type>
-            </creol:expression-note>
-           </creol:identifier>
-           <creol:results/>
+          <creol:sequence>
+           <creol:reply>
+            <creol:identifier name="l">
+             <creol:expression-note file="Choice.creol" line="43">
+              <creol:inferred-type>
+               <creol:typeapplication name="Label"/>
+              </creol:inferred-type>
+             </creol:expression-note>
+            </creol:identifier>
+            <creol:results/>
+            <creol:statement-note file="Choice.creol" line="43">
+             <creol:maybe-def-var name="l"/>
+             <creol:maybe-def-var name="x"/>
+             <creol:mustbe-def-var name="l"/>
+             <creol:mustbe-def-var name="x"/>
+             <creol:maybe-life-var name="l"/>
+             <creol:mustbe-life-var name="l"/>
+            </creol:statement-note>
+           </creol:reply>
+           <creol:free>
+            <creol:identifier name="l"/>
+            <creol:statement-note file="Choice.creol" line="43">
+             <creol:maybe-def-var name="l"/>
+             <creol:maybe-def-var name="x"/>
+             <creol:mustbe-def-var name="x"/>
+             <creol:maybe-life-var name="l"/>
+             <creol:mustbe-life-var name="l"/>
+            </creol:statement-note>
+           </creol:free>
            <creol:statement-note file="Choice.creol" line="43">
+            <creol:maybe-def-var name="l"/>
             <creol:maybe-def-var name="x"/>
             <creol:mustbe-def-var name="x"/>
             <creol:maybe-life-var name="l"/>
             <creol:mustbe-life-var name="l"/>
            </creol:statement-note>
-          </creol:reply>
+          </creol:sequence>
           <creol:statement-note file="Choice.creol" line="43">
+           <creol:maybe-def-var name="l"/>
            <creol:maybe-def-var name="x"/>
            <creol:mustbe-def-var name="x"/>
            <creol:maybe-life-var name="l"/>
@@ -432,13 +485,29 @@
            <creol:mustbe-life-var name="x"/>
           </creol:statement-note>
          </creol:sequence>
-         <creol:skip>
+         <creol:sequence>
+          <creol:skip>
+           <creol:statement-note file="Choice.creol" line="45">
+            <creol:maybe-def-var name="l"/>
+            <creol:maybe-def-var name="x"/>
+            <creol:mustbe-def-var name="l"/>
+            <creol:mustbe-def-var name="x"/>
+           </creol:statement-note>
+          </creol:skip>
+          <creol:free>
+           <creol:identifier name="l"/>
+           <creol:statement-note file="Choice.creol" line="45">
+            <creol:maybe-def-var name="l"/>
+            <creol:maybe-def-var name="x"/>
+            <creol:mustbe-def-var name="x"/>
+           </creol:statement-note>
+          </creol:free>
           <creol:statement-note file="Choice.creol" line="45">
            <creol:maybe-def-var name="l"/>
            <creol:maybe-def-var name="x"/>
            <creol:mustbe-def-var name="x"/>
           </creol:statement-note>
-         </creol:skip>
+         </creol:sequence>
          <creol:statement-note file="Choice.creol" line="43">
           <creol:maybe-def-var name="l"/>
           <creol:maybe-def-var name="x"/>
@@ -481,6 +550,7 @@
      </creol:sequence>
     </creol:body>
    </creol:method>
+   <creol:invariants/>
   </creol:with>
  </creol:class>
 </creol:creol>

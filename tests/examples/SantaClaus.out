@@ -31,9 +31,9 @@ result Configuration:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
     Code: static("label:0" ; "run" ; "Elf" ; "" ; emp) ; get("label:0" ; noVid)
-    ; return(emp) >, < "work" : Method | Param: noVid, Att: "_" |-> null,
-    "label:0" |-> null, Code: call("label:0" ; "sc" ; "haveProblem" ; emp) ;
-    free("label:0") ; return(emp) >,
+    ; free("label:0") ; return(emp) >, < "work" : Method | Param: noVid, Att:
+    "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
+    "haveProblem" ; emp) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
  
 < "Reindeer" : Class | Inh: noInh, Param: "sc", Att: "sc" |-> null, Mtds:
@@ -90,29 +90,29 @@ result Configuration:
     list(emp)) ; return(emp) >, < "loop" : Method | Param: noVid, Att: "_" |->
     null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, Code: (
     await "&&"("<="(int(3) :: "ctElves") :: "~"("="("ctReindeers" :: int(9))))
-    ; call("label:1" ; "this" ; "talkToElves" ; emp) ; get("label:1" ; noVid)[
-    ]await "="("ctReindeers" :: int(5)) ; call("label:0" ; "this" ;
-    "deliverToys" ; emp) ; get("label:0" ; noVid)) ; call("label:2" ; "this" ;
-    "loop" ; emp) ; free("label:2") ; return(emp) >, < "run" : Method | Param:
-    noVid, Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "this"
-    ; "loop" ; emp) ; free("label:0") ; return(emp) >, < "talkToElves" : Method
-    | Param: noVid, Att: "_" |-> null, "t1" |-> null, "t2" |-> null, "t3" |->
-    null, Code: assign("ctElves" ; "-"("ctElves" :: int(3))) ; call("t1" ;
-    "head"("waitElves") ; "showIn" ; emp) ; assign("inofficeElves" ; "|-"(
-    "inofficeElves" :: "head"("waitElves"))) ; assign("waitElves" ; "tail"(
-    "waitElves")) ; call("t2" ; "head"("waitElves") ; "showIn" ; emp) ; assign(
-    "inofficeElves" ; "|-"("inofficeElves" :: "head"("waitElves"))) ; assign(
-    "waitElves" ; "tail"("waitElves")) ; call("t3" ; "head"("waitElves") ;
-    "showIn" ; emp) ; assign("inofficeElves" ; "|-"("inofficeElves" :: "head"(
-    "waitElves"))) ; assign("waitElves" ; "tail"("waitElves")) ; await "&&"(
-    "&&"(?("t1") :: ?("t2")) :: ?("t3")) ; free("t3") ; free("t2") ; free("t1")
-    ; call("t1" ; "head"("inofficeElves") ; "showOut" ; emp) ; assign(
-    "inofficeElves" ; "tail"("inofficeElves")) ; call("t2" ; "head"(
+    ; call("label:1" ; "this" ; "talkToElves" ; emp) ; get("label:1" ; noVid) ;
+    free("label:1")[]await "="("ctReindeers" :: int(5)) ; call("label:0" ;
+    "this" ; "deliverToys" ; emp) ; get("label:0" ; noVid) ; free("label:0")) ;
+    call("label:2" ; "this" ; "loop" ; emp) ; free("label:2") ; return(emp) >,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    Code: call("label:0" ; "this" ; "loop" ; emp) ; free("label:0") ; return(
+    emp) >, < "talkToElves" : Method | Param: noVid, Att: "_" |-> null, "t1"
+    |-> null, "t2" |-> null, "t3" |-> null, Code: assign("ctElves" ; "-"(
+    "ctElves" :: int(3))) ; call("t1" ; "head"("waitElves") ; "showIn" ; emp) ;
+    assign("inofficeElves" ; "|-"("inofficeElves" :: "head"("waitElves"))) ;
+    assign("waitElves" ; "tail"("waitElves")) ; call("t2" ; "head"("waitElves")
+    ; "showIn" ; emp) ; assign("inofficeElves" ; "|-"("inofficeElves" ::
+    "head"("waitElves"))) ; assign("waitElves" ; "tail"("waitElves")) ; call(
+    "t3" ; "head"("waitElves") ; "showIn" ; emp) ; assign("inofficeElves" ;
+    "|-"("inofficeElves" :: "head"("waitElves"))) ; assign("waitElves" ;
+    "tail"("waitElves")) ; await "&&"("&&"(?("t1") :: ?("t2")) :: ?("t3")) ;
+    free("t3") ; free("t2") ; free("t1") ; call("t1" ; "head"("inofficeElves")
+    ; "showOut" ; emp) ; assign("inofficeElves" ; "tail"("inofficeElves")) ;
+    call("t2" ; "head"("inofficeElves") ; "showOut" ; emp) ; assign(
+    "inofficeElves" ; "tail"("inofficeElves")) ; call("t3" ; "head"(
     "inofficeElves") ; "showOut" ; emp) ; assign("inofficeElves" ; "tail"(
-    "inofficeElves")) ; call("t3" ; "head"("inofficeElves") ; "showOut" ; emp)
-    ; assign("inofficeElves" ; "tail"("inofficeElves")) ; await "&&"("&&"(?(
-    "t1") :: ?("t2")) :: ?("t3")) ; free("t3") ; free("t2") ; free("t1") ;
-    return(emp) >,
+    "inofficeElves")) ; await "&&"("&&"(?("t1") :: ?("t2")) :: ?("t3")) ; free(
+    "t3") ; free("t2") ; free("t1") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

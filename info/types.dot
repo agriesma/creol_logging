@@ -1,0 +1,18 @@
+digraph Types {
+  size="5,8"
+  Data -> Any ;
+  Data -> Bool ;
+  Data -> Float -> Int ;
+  Data -> String ;
+  Data -> List ;
+  Data -> Map ;
+  Data -> Set ;
+  Data -> Tuple ;
+  Data -> Duration ;
+  Data -> Time ;
+  Data -> Event ;
+  List [label="List[`a]"] ;
+  Map [label="Map[`a,`b]"] ;
+  Set [label="Set[`a]"] ;
+  Tuple [label="[`a,`b,...,`z]"] ;
+}

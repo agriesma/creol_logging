@@ -141,8 +141,6 @@ let unify ~program ~constraints =
 	log 2 ("unify: constraint " ^ (Type.string_of_type s) ^ " <: " ^
 		  (Type.string_of_type t)) ;
 	match (s, t) with
-	    (Type.Basic _, Type.Basic _) when Program.subtype_p program s t ->
-		do_unify d res
 	  | (Type.Tuple l1, Type.Tuple l2) when (List.length l1) = (List.length l2) ->
 		do_unify ((List.combine l1 l2)@d) res
 	  | (Type.Function (d1, r1), Type.Function (d2, r2)) ->
@@ -260,15 +258,16 @@ let unify ~program ~constraints =
 		  with
 		      Unify_failure _ -> try_unify Type.data
 		end
-	  | (_, Type.Basic "Data") ->
-	      (* Every type is supposed to be a subtype of data,
-		 therefore this constraint is always true. *)
-	      do_unify d res
 	  | _ ->
-		log 1 ("unify: failed to unify " ^
-				    (Type.string_of_type s) ^ " as subtype of " ^
-				    (Type.string_of_type t)) ;
-		raise (Unify_failure (s, t))
+		if Program.subtype_p program s t then
+		  do_unify d res
+		else
+		  let () = log 1 ("unify: failed to unify " ^
+				    (Type.string_of_type s) ^
+				    " as subtype of " ^
+				    (Type.string_of_type t))
+                  in
+		    raise (Unify_failure (s, t))
   in
     let () = log 1 "\n=== unify ===" in
     let () = log 2 (string_of_constraint_set constraints) in

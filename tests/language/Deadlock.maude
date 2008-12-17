@@ -8,7 +8,7 @@ mod PROGRAM is
               return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "l" |-> null, "_" |-> null,
               Code: call( "l" ; "this" ; "n" ; emp ) ; release ; skip ;
-              get( "l" ; noVid ) ; return ( emp ) >,
+              get( "l" ; noVid ) ; free( "l" ) ; return ( emp ) >,
             < "n" : Method | Param: noVid, Att: "_" |-> null, Code: release ;
               return ( emp ) >,
       Ocnt: 0 > .

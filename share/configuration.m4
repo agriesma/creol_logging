@@ -34,24 +34,7 @@ changequote dnl
     subsort Oid < Data .
     subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
 
-    sorts Body Invoc Comp .
-    subsorts Invoc Comp < Body .
-
     op ob(_) : String -> Oid [ctor `format' (d d ! o d)] .
-
-    sort MMsg .
-    subsort Body < MMsg .
-
-    op noMsg : -> MMsg [ctor] .
-    op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: noMsg] . 
-
-    --- Terms of sort Labels are multi-sets of Labels.
-    sort Labels .
-    subsort Label < Labels .
-
-    op noDealloc : -> Labels [ctor] .
-    op _^_ : Labels Labels -> Labels [ctor comm assoc id: noDealloc] .
-
 
     vars C M M' : String .
     vars O O' : Oid .
@@ -64,8 +47,6 @@ changequote dnl
     var SL : StmtList .
     var EL : ExprList .
     var DL : DataList .
-    var LS : Labels .
-    var MM : MMsg .
     var N : Label .
     var F : Nat .
 
@@ -73,14 +54,27 @@ changequote dnl
     op newId : String Nat -> Oid .
     eq newId(C, F)  = ob(C + string(F,10)) .
 
-    --- INVOCATION and REPLY
-    op invoc : Oid Label String DataList -> Invoc [ctor `format'(b o)] .  
-    op comp(_,_) : Label DataList -> Comp [ctor `format' (b d o b so b o)] .  
+    --- Invocation message.
+    ---
+    --- invoc(S,R,N,M,DL)
+    --- S: The sender.
+    --- R: The receiver.
+    --- N: The label.
+    --- M: The called method.
+    --- DL: The actual arguments.
+    op invoc(_,_,_,_,_) : Oid Oid Label String DataList -> Msg
+      [ctor `format' (b d o  b so  b so  b so  b so b on)] .
 
-    --- Messages.  Messages have at least a receiver.
+    --- Completion message.
+    ---
+    --- comp(N,DL)
+    --- N: The label
+    --- DL: The result values.
+    op comp(_,_) : Label DataList -> Msg
+      [ctor `format' (b d o  b so  b on)] .
 
-    --- Invocation and completion message.
-    op _from_to_ : Body Oid Oid -> Msg [ctor `format' (o ! o ! o on)] .
+    --- Instruct the runtime system to drop the message.
+    op discard(_) : Label -> Msg [ctor `format' (b d o b on)].
 
     --- Error and warning messages are intended to stop the machine.
     --- For now, nothing is emitting these.
@@ -115,9 +109,9 @@ changequote dnl
     op Class : -> Cid [ctor `format' (c o)] .
 
     op noObj : -> Object [ctor] .
-    op <_:_ | Att:_, Pr:_, PrQ:_, Dealloc:_, Ev:_, Lcnt:_> : 
-       Oid String Subst Process MProc Labels MMsg Nat -> Object 
-         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o  r ni o  r ni o--  r on)] .
+    op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
+       Oid String Subst Process MProc Nat -> Object 
+         [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o--  r on)] .
 
 
     --- Define Classes.
@@ -154,9 +148,9 @@ changequote dnl
 
     eq
       boundMtd(O, P')
-      < O : C | Att: S, Pr: P, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >
+      < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
       =
-      < O : C | Att: S, Pr: P, PrQ: (W , P'), Dealloc: LS, Ev: MM, Lcnt: F > .
+      < O : C | Att: S, Pr: P, PrQ: (W , P'), Lcnt: F > .
 
 
     --- Define a configuration
@@ -176,11 +170,13 @@ ifdef(`MODELCHECK',dnl
   including SATISFACTION .
   including MODEL-CHECKER .
 
-  op {_} : Configuration -> State [ctor] .
 ,dnl
   *** We should not provide sort State`,' since this is used in LOOP-MODE.
+  *** For now`,' we do.
+  sort State .
 )dnl
 
+  op {_} : Configuration -> State [ctor] .
 
 ifdef(`LOGGING',dnl
     sort evalState .
@@ -198,13 +194,14 @@ ifdef(`LOGGING',dnl
     op <log From: _ To: _ Type: _ Data: _ Att: _ Label: _ > : Nat Nat String evalState Subst Label -> Configuration [format (ng! o d d d d b! onssss d d d d r! d no) ] .
     op <choice Number: _ Type: _ Expression: _ > : Nat String Expr -> Configuration [format (ng! o b! o b! o o o no) ] .
 ,)dnl
+  var CN : Configuration .
 
-    --- System initialisation
-    op main : String DataList -> Configuration .
-    eq main(C,DL) =
-      < ob("main") : "" | Att: noSubst, 
-        Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
-        Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 >dnl
+  --- System initialisation
+  op main : Configuration String DataList -> State .
+  eq main(CN, C, DL) =
+    { CN < ob("main") : "" | Att: noSubst, 
+           Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
+           Lcnt: 0 > }dnl
 ifdef(`LOGGING',`
 '      < ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Dealloc: noDealloc`,' Ev: noMsg`,' Lcnt: 0 > 
       <log From: 0 To: 0 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > .

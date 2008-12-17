@@ -1,48 +1,38 @@
 ==========================================
-reduce in TEST-TAILCALL : init .
-result Configuration: 
+reduce in TEST-TAILCALL : classes .
+result Class: 
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
     assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
     return(emp) fi >,
   Ocnt: 0 >
- 
-< ob("main") : "" |
-  Att: noSubst,
-  Pr: {"var" |-> null | new("var" ; "Tailcall" ; int(5))},
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 0 >
 
 ==========================================
-search in TEST-TAILCALL : init =>+ conf:Configuration 
+search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
+    conf:Configuration 
 < ob("Tailcall0") : "Tailcall" |
   Att: A:Subst,
   Pr: {L:Subst | $accept tag(label(ob("Tailcall0"), 1)) ; SL:StmtList},
   PrQ: W:MProc,
-  Dealloc: LS:Labels,
-  Ev: MM:MMsg,
   Lcnt: N:Nat >
- .
+} .
 
-Solution 1 (state 22)
-conf:Configuration --> 
+Solution 1 (state 24)
+conf:Configuration --> discard(label(ob("Tailcall0"), 1))
+ 
+< ob("main") : "" |
+  Att: noSubst,
+  Pr: {"var" |-> null | assign("var" ; ob("Tailcall0"))},
+  PrQ: noProc,
+  Lcnt: 0 >
+ 
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
     assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
     return(emp) fi >,
   Ocnt: 1 >
- 
-< ob("main") : "" |
-  Att: noSubst,
-  Pr: {"var" |-> null | assign("var" ; ob("Tailcall0"))},
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 0 >
 
 A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
 L:Subst --> noSubst
@@ -51,45 +41,38 @@ W:MProc --> {".class" |-> str("Tailcall"), ".label" |-> tag(label(ob(
     "Tailcall0"), 1)), ".method" |-> str("run"), "caller" |-> ob("Tailcall0") |
     if "<"(int(0) :: "x") th assign("x" ; "-"("x" :: int(1))) ; statictail(
     "run" ; "" ; "" ; emp) el return(emp) fi}
-LS:Labels --> label(ob("Tailcall0"), 1)
-MM:MMsg --> noMsg
 N:Nat --> 2
 ==========================================
-search in TEST-TAILCALL : init =>+ conf:Configuration 
+search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
+    conf:Configuration 
 < ob("Tailcall0") : "Tailcall" |
   Att: A:Subst,
   Pr: {L:Subst | $accept tag(label(ob("Tailcall0"), 2)) ; SL:StmtList},
   PrQ: W:MProc,
-  Dealloc: LS:Labels,
-  Ev: MM:MMsg,
   Lcnt: N:Nat >
- .
+} .
 
 No solution.
 ==========================================
-rewrite in TEST-TAILCALL : init .
-result Configuration: 
-< "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
-    : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
-    return(emp) fi >,
-  Ocnt: 1 >
- 
+rewrite in TEST-TAILCALL : main(classes, "Tailcall", int(5)) .
+result State: {
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(0),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 2 >
  
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
-
+ 
+< "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
+    : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    return(emp) fi >,
+  Ocnt: 1 >
+}
 Bye.

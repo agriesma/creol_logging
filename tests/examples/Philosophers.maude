@@ -11,7 +11,7 @@ mod PROGRAM is
               assign( "chopstick" ; bool(true) ) ;
               assign( "hungry" ; bool(false) ) ; call( "label:0" ; "butler" ;
               "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ;
-              return ( emp ) >,
+              free( "label:0" ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:2" |-> null,
               "label:1" |-> null, "label:0" |-> null, "_" |-> null,
               Code: call( "label:0" ; "this" ; "think" ; emp ) ;

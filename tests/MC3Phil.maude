@@ -9,7 +9,7 @@ mod PROGRAM is
               |-> null, Code: assign( "chopstick" ; bool(true) ) ;
               assign( "hungry" ; bool(false) ) ; call( "label:0" ; "butler" ;
               "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ;
-              return ( emp ) >,
+              free( "label:0" ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:1" |-> null,
               "label:0" |-> null, "_" |-> null,
               Code: call( "label:0" ; "this" ; "think" ; emp ) ;
@@ -19,11 +19,11 @@ mod PROGRAM is
               "label:1" |-> null, "label:0" |-> null, "_" |-> null,
               Code: await "hungry" ; call( "label:0" ; "neighbor" ;
               "borrowStick" ; emp ) ; await ?("label:0") ;
-              get( "label:0" ; noVid ) ; await "chopstick" ;
-              assign( "hungry" ; bool(false) ) ; call( "label:1" ;
-              "neighbor" ; "returnStick" ; emp ) ; free( "label:1" ) ;
-              call( "label:2" ; "this" ; "eat" ; emp ) ; free( "label:2" ) ;
-              return ( emp ) >,
+              get( "label:0" ; noVid ) ; free( "label:0" ) ; await
+              "chopstick" ; assign( "hungry" ; bool(false) ) ;
+              call( "label:1" ; "neighbor" ; "returnStick" ; emp ) ;
+              free( "label:1" ) ; call( "label:2" ; "this" ; "eat" ; emp ) ;
+              free( "label:2" ) ; return ( emp ) >,
             < "think" : Method | Param: noVid, Att: "label:0" |-> null, "_"
               |-> null, Code: await "~" ( "hungry" ) ; release ;
               assign( "hungry" ; bool(true) ) ;

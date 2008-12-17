@@ -20,6 +20,10 @@ classes defined for all @acronym{CREOL} programs.
 * Interface Any::                The super type of all references.
 @end menu
 
+The subtype relation is displayed in the figure below.
+
+@image{types,5in,,Figure of subtype relation}
+
 
 @node Data Type Data
 @section Data Type Data

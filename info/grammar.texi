@@ -49,9 +49,9 @@ than ones on the lines above.
 @example
 ,                               @r{left}
 |                               @r{left}
-in                              @r{left}
+|->				@r{non-associative}
 <=>                             @r{left}
-=>                              @r{left}
+=>                              @r{right}
 ^                               @r{left}
 || \/                           @r{left}
 && /\                           @r{left}
@@ -59,9 +59,9 @@ in                              @r{left}
 = /=                            @r{non-associative}
 <= < > >=                       @r{non-associative}
 \                               @r{left}
-|-|                             @r{left}
+|- |-|                          @r{left}
 -|                              @r{right}
-|-                              @r{left}
+in                              @r{non-associative}
 + -                             @r{left}
 * / %                           @r{left}
 **                              @r{left}

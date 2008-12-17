@@ -9,8 +9,8 @@ mod PROGRAM is
               "label:0" |-> null, "_" |-> null,
               Code: assign( "status" ; int(0) ) ; call( "label:0" ; "i" ;
               "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ;
-              call( "label:1" ; "neighbor" ; "receive" ; "u" ) ;
-              free( "label:1" ) ; return ( emp ) >,
+              free( "label:0" ) ; call( "label:1" ; "neighbor" ; "receive" ;
+              "u" ) ; free( "label:1" ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
             < "receive" : Method | Param: "v", Att: "v" |-> null, "label:0"

@@ -113,7 +113,6 @@ let statement_note pos =
 (* %left COMMA *)
 (* %left BAR *)
 (* %nonassoc MAPSTO *)
-%left IN
 %left DLRARROW
 %left DARROW
 %left HAT
@@ -123,9 +122,9 @@ let statement_note pos =
 %nonassoc EQ NE
 %nonassoc LE LT GT GE
 %left BACKSLASH
-%left CONCAT
-%right PREPEND
-%left  APPEND
+%left CONCAT APPEND
+%right PREPEND 
+%nonassoc IN
 %left PLUS MINUS
 %left TIMES DIV PERCENT
 %left TIMESTIMES
@@ -149,13 +148,13 @@ classdecl:
       CLASS n = CID p = plist(vardecl_no_init) s = list(super_decl)
         pr = list(pragma)
 	BEGIN
-        a = list(terminated(attribute, ioption(SEMI)))
-        aw = loption(anon_with_def) m = list(with_def)
+        a = list(terminated(attribute, ioption(SEMI))) i = list(invariant)
+        aw = loption(anon_with_def) w = list(with_def)
         END
       { { Class.name = n; parameters = p; inherits = inherits s;
 	  contracts = contracts s; implements = implements s;
-	  attributes = List.flatten a;
-          with_defs = upd_method_locs n (aw @ m);
+	  attributes = List.flatten a; invariants = i;
+          with_defs = upd_method_locs n (aw @ w);
 	  pragmas = pr;
 	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
@@ -624,7 +623,11 @@ creol_type:
 (* Invariants *)
 
 invariant:
-    INV e = expression { e }
+      INV e = expression
+	{ e }
+    | INV error
+	{ signal_error $startpos "syntax error in invariant" }
+	
 
 
 (* Pragmatic information *)

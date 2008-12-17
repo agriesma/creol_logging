@@ -1,12 +1,6 @@
 ==========================================
-reduce in TEST-TAILCALL : init .
-result Configuration: 
-< "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
-    : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
-    return(emp) fi >,
-  Ocnt: 1 >
+reduce in TEST-TAILCALL : main(classes, "Tailcall", int(5)) .
+result State: {comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp)
  
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(5),
@@ -14,72 +8,68 @@ result Configuration:
     "Tailcall0"), "init", emp), ".method" |-> str("init"), "caller" |-> ob(
     "Tailcall0") | $cont label(ob("Tailcall0"), ob("Tailcall0"), "init", emp)},
   PrQ: {".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) | get(
-    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; call(
-    ".anon" ; "this" ; "run" ; emp) ; free(".anon")},
-  Dealloc: noDealloc,
-  Ev: comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp),
+    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; free(
+    ".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 0 >
  
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
-
-==========================================
-rewrite [1] in TEST-TAILCALL : init .
-result Configuration: 
+ 
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
     assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
     return(emp) fi >,
   Ocnt: 1 >
+}
+==========================================
+rewrite [1] in TEST-TAILCALL : main(classes, "Tailcall", int(5)) .
+result State: {comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp)
  
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(5),
   Pr: {".anon" |-> label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) | get(
-    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; call(
-    ".anon" ; "this" ; "run" ; emp) ; free(".anon")},
+    label(ob("Tailcall0"), ob("Tailcall0"), "init", emp) ; noVid) ; free(
+    ".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: comp(label(ob("Tailcall0"), ob("Tailcall0"), "init", emp), emp),
   Lcnt: 0 >
  
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
-
-==========================================
-rewrite in TEST-TAILCALL : init .
-result Configuration: 
+ 
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
     assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
     return(emp) fi >,
   Ocnt: 1 >
- 
+}
+==========================================
+rewrite in TEST-TAILCALL : main(classes, "Tailcall", int(5)) .
+result State: {
 < ob("Tailcall0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall0"), "x" |-> int(0),
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
  
 < ob("main") : "" |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
-
+ 
+< "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
+    : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    return(emp) fi >,
+  Ocnt: 1 >
+}
 Bye.

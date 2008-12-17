@@ -31,8 +31,6 @@ mod CREOL-PREDICATES is
   var C : String .
   var O : Oid .
   vars S S' L L' : Subst .
-  var LS : Labels .
-  var MM : MMsg .
   var P : Process .
   var Q : MProc .
   vars N N' : Nat .
@@ -41,6 +39,6 @@ mod CREOL-PREDICATES is
   eq { c < C : Class | Inh: I:InhList`,' Param: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= objcnt(C`,' N') = N == N' .
   eq { c < C : Class | Inh: I:InhList`,' Param: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= maxobjcnt(C`,' N') = N <= N' .
   eq { c < C : Class | Inh: I:InhList`,' Param: AL:VidList`,' Att: S`,' Mtds: M:MMtd`,' Ocnt: N > } |= minobjcnt(C`,' N') = N >= N' .
-  eq { c < O : C | Att: S`,' Pr: P`,' PrQ: Q`,' Dealloc: LS`,' Ev: MM`,' Lcnt: N > } |= hasvalue(O`,' A`,' D) = D == S[A] .
+  eq { c < O : C | Att: S`,' Pr: P`,' PrQ: Q`,' Lcnt: N > } |= hasvalue(O`,' A`,' D) = D == S[A] .
 
 endm

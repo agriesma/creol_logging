@@ -6,7 +6,7 @@ result Class:
     >, < "n" : Method | Param: noVid, Att: "_" |-> null, Code: release ;
     return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, "l" |->
     null, Code: call("l" ; "this" ; "n" ; emp) ; release ; skip ; get("l" ;
-    noVid) ; return(emp) >,
+    noVid) ; free("l") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

@@ -13,9 +13,9 @@ mod PROGRAM is
               Code: assign( ( "mode" @ "Process" ), ( "status" @ "Process" ),
               ( "uid1" @ "Process" ) ; bool(true) :: int(0) :: "i" ) ;
               call( "label:0" ; "main" ; "getNeighbour" ; emp ) ;
-              get( "label:0" ; "neighbour" ) ; call( "label:1" ;
-              "neighbour" ; "send" ; "i" ) ; free( "label:1" ) ;
-              return ( emp ) >,
+              get( "label:0" ; "neighbour" ) ; free( "label:0" ) ;
+              call( "label:1" ; "neighbour" ; "send" ; "i" ) ;
+              free( "label:1" ) ; return ( emp ) >,
             < "send" : Method | Param: "u", Att: "u" |-> null, "label:2" |->
               null, "label:1" |-> null, "label:0" |-> null, "_" |-> null,
               Code: if "mode" th if "=" ( "uid2" :: null ) th if "=" ( "u" ::

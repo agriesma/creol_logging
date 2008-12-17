@@ -299,8 +299,6 @@ reduce in CREOL-CONFIGURATION :
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
  .
 result Object: 
@@ -308,8 +306,6 @@ result Object:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
 
 ==========================================
@@ -318,21 +314,17 @@ reduce in CREOL-CONFIGURATION : upTerm(
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
 ) .
-result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Dealloc:_`,Ev:_`,Lcnt:_>[
-    'ob`(_`)['"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
-    'noProc.MProc,'noDealloc.Labels,'noMsg.MMsg,'0.Zero]
+result GroundTerm: '<_:_|`Att:_`,Pr:_`,PrQ:_`,Lcnt:_>['ob`(_`)[
+    '"object1".String],'"Class".String,'noSubst.Subst,'idle.Process,
+    'noProc.MProc,'0.Zero]
 ==========================================
 reduce in CREOL-CONFIGURATION : downTerm(upTerm(
 < ob("object1") : "Class" |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
 ), noObj) .
 result Object: 
@@ -340,19 +332,18 @@ result Object:
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
   Lcnt: 0 >
 
 ==========================================
-reduce in CREOL-CONFIGURATION : noMsg .
-result MMsg: noMsg
+reduce in CREOL-CONFIGURATION : (none).Configuration .
+result Configuration: (none).Configuration
 ==========================================
-reduce in CREOL-CONFIGURATION : upTerm(noMsg) .
-result Constant: 'noMsg.MMsg
+reduce in CREOL-CONFIGURATION : upTerm((none).Configuration) .
+result Constant: 'none.Configuration
 ==========================================
-reduce in CREOL-CONFIGURATION : downTerm(upTerm(noMsg), noMsg) .
-result MMsg: noMsg
+reduce in CREOL-CONFIGURATION : downTerm(upTerm((none).Configuration), (
+    none).Configuration) .
+result Configuration: (none).Configuration
 ==========================================
 reduce in CREOL-LABEL-TEST : $cont label(1) .
 result Stmt: $cont label(1)
@@ -381,32 +372,44 @@ result GroundTerm: '$cont_['label['s_^5['0.Zero]]]
 reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont label(5)), skip) .
 result Stmt: $cont label(5)
 ==========================================
-reduce in CREOL-LABEL-TEST : comp(label(5), emp) .
-result Comp: comp(label(5), emp)
+reduce in CREOL-LABEL-TEST : comp(label(5), emp)
+ .
+result Msg: comp(label(5), emp)
+
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm(comp(label(5), emp)) .
+reduce in CREOL-LABEL-TEST : upTerm(comp(label(5), emp)
+) .
 result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5), emp)), 
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5), emp)
+), 
 
 warning("")
 
 ) .
-result Comp: comp(label(5), emp)
+result Msg: comp(label(5), emp)
+
 ==========================================
-reduce in CREOL-LABEL-TEST : invoc(ob("object1"), label(5), "method1", emp) .
-result Invoc: invoc(ob("object1"), label(5), "method1", emp)
+reduce in CREOL-LABEL-TEST : invoc(ob("object1"), ob("object2"), label(5),
+    "method1", emp)
+ .
+result Msg: invoc(ob("object1"), ob("object2"), label(5), "method1", emp)
+
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm(invoc(ob("object1"), label(5), "method1",
-    emp)) .
-result GroundTerm: 'invoc['ob`(_`)['"object1".String],'label['s_^5['0.Zero]],
-    '"method1".String,'emp.DataList]
+reduce in CREOL-LABEL-TEST : upTerm(invoc(ob("object1"), ob("object2"), label(
+    5), "method1", emp)
+) .
+result GroundTerm: 'invoc`(_`,_`,_`,_`,_`)['ob`(_`)['"object1".String],
+    'ob`(_`)['"object2".String],'label['s_^5['0.Zero]],'"method1".String,
+    'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob("object1"), label(5),
-    "method1", emp)), 
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(invoc(ob("object1"), ob(
+    "object2"), label(5), "method1", emp)
+), 
 
 warning("")
 
 ) .
-result Invoc: invoc(ob("object1"), label(5), "method1", emp)
+result Msg: invoc(ob("object1"), ob("object2"), label(5), "method1", emp)
+
 Bye.

@@ -10,14 +10,14 @@ mod PROGRAM is
               :: int(3) ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
               null, Code: call( "label:0" ; "this" ; "test" ; emp ) ;
-              get( "label:0" ; noVid ) ; return ( emp ) >,
+              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
             < "test" : Method | Param: noVid, Att: "label:0" |-> null, "temp"
               |-> null, "_" |-> null, Code: assign( "depth" ; "+" ( "depth"
               :: int(1) ) ) ; assign( "temp" ; "depth" ) ; if "<=" ( "depth"
               :: "max" ) th call( "label:0" ; "this" ; "test" ; emp ) ;
-              get( "label:0" ; noVid ) el skip fi ; await "=" ( "depth" ::
-              "temp" ) ; assign( "depth" ; "-" ( "depth" :: int(1) ) ) ;
-              return ( emp ) >,
+              get( "label:0" ; noVid ) ; free( "label:0" ) el skip fi ; await
+              "=" ( "depth" :: "temp" ) ; assign( "depth" ; "-" ( "depth" ::
+              int(1) ) ) ; return ( emp ) >,
       Ocnt: 0 > .
 endm
 

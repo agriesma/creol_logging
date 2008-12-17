@@ -1,34 +1,22 @@
 digraph Sorts {
   size="5,8"
   Expr -> Data -> Oid ;
-  Expr -> Appl ;
-  Appl -> Data [style=dotted] ; /* for pre-regularity */
-  Expr -> Aid -> String ;
+  Expr -> Vid -> String ;
   Data -> Label ;
   ExprList -> NeExprList -> Expr ;
   DataList -> NeDataList -> Data ;
   ExprList -> DataList ;
   NeExprList -> NeDataList ;
-  AidList -> NeAidList -> Aid ;
-  Data -> Pair ;
+  VidList -> NeVidList -> Vid ;
   Subst ;
-  PureGuard -> Return ;
-  PureGuard -> Expr ;
-  Guard -> PureGuard ;
-  Guard -> Wait ;
-  Guard -> NoGuard ;
   Mid -> String ;
   Cid -> String ;
-  StmList -> NeStmList -> Stm ;
+  StmtList -> NeStmtList -> Stmt -> SuspStmt ;
   MProc -> NeMProc -> Process ;
   InhList -> Inh ;
   MMtd -> Mtd ;
-  Object ;
-  Labels -> Label ;
-  Body -> MMsg ;
   Configuration -> Object ;
   Configuration -> Msg ;
-  Configuration -> Queue ;
   Configuration -> Class ;
   State -> Configuration ;
 }

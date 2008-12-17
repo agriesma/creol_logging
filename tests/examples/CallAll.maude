@@ -14,14 +14,15 @@ mod PROGRAM is
               Code: if "/=" ( "l" :: list(emp) ) th call( "r" ;
               "fst" ( "i" ) ; "m" ; "snd" ( "i" ) ) ;
               call( "label:0" ; "this" ; "doit" ; "tail" ( "l" ) ) ;
-              get( "label:0" ; noVid ) ; await ?("r") ; get( "r" ; "o" ) ;
+              get( "label:0" ; noVid ) ; free( "label:0" ) ; await ?("r") ;
+              get( "r" ; "o" ) ; free( "r" ) ;
               assign( "results" ; "|-" ( "results" :: list("fst" ( "i" ) ::
               "o") ) ) el skip fi ; return ( emp ) >,
             < "call_all" : Method | Param: noVid, Att: "label:0" |-> null,
               "_" |-> null, Code: assign( "results" ; list(emp) ) ;
               call( "label:0" ; "this" ; "doit" ; "list" ) ;
-              get( "label:0" ; noVid ) ; await "=" ( "#" ( "results" ) ::
-              "#" ( "list" ) ) ; return ( emp ) >,
+              get( "label:0" ; noVid ) ; free( "label:0" ) ; await
+              "=" ( "#" ( "results" ) :: "#" ( "list" ) ) ; return ( emp ) >,
       Ocnt: 0 > .
 endm
 

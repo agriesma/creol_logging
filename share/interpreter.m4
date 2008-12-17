@@ -69,7 +69,7 @@ fmod CREOL-PROCESS-POOL is
 
 ifdef(`EXPERIMENTAL',dnl
     protecting MULTISET{Process} * (sort MSet{Process} to MProc,
-                                    sort NeMSet{Process} to NeMSet,
+                                    sort NeMSet{Process} to NeMProc,
                                     op empty : -> MSet{Process} to noProc) .
 ,
     protecting CREOL-PROCESS .

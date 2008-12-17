@@ -20,7 +20,7 @@
 MOSTLYCLEANFILES	= *~ *.cma *.cmxa *.cmi *.cmo *.cmx *.o
 CLEANFILES		= 
 DISTCLEANFILES		= $(noinst_PROGRAMS) .depend
-MAINTAINERCLEANFILES	= Makefile.in
+MAINTAINERCLEANFILES	= ${srcdir}/Makefile.in
 
 EXTRA_DIST		=
 

@@ -725,6 +725,10 @@ let pretty_print_program out_channel input =
 	print_vardecls "var " print_space c.Class.attributes ;
 	print_space ()
       end;
+    if [] <> c.Class.invariants then
+      begin
+	separated_list print_inv print_space c.Class.invariants ;
+      end;
     if [] <> c.Class.with_defs then
       begin
 	separated_list print_with print_space c.Class.with_defs ;
@@ -760,7 +764,7 @@ let pretty_print_program out_channel input =
     separated_list print_inv print_space w.With.invariants ;
     close_box ()
   and print_inv e =
-    open_box 0 ; print_string "inv " ; print_expression e ; close_box ()
+    open_box 2 ; print_string "inv " ; print_expression e ; close_box ()
   and print_method m =
     open_box 2 ;
     begin

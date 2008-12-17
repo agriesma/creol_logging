@@ -14,8 +14,20 @@ result Configuration:
   Ocnt: 0 >
 
 ==========================================
-rewrite in PROGRAM : classes main("B", int(1)) .
-result Configuration: 
+rewrite in PROGRAM : main(classes, "B", int(1)) .
+result State: {
+< ob("B0") : "B" |
+  Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 3 >
+ 
+< ob("main") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 0 >
+ 
 < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(
@@ -27,21 +39,5 @@ result Configuration:
     "b") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
     Code: skip ; return(emp) >,
   Ocnt: 1 >
- 
-< ob("B0") : "B" |
-  Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 3 >
- 
-< ob("main") : "" |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 0 >
-
+}
 Bye.

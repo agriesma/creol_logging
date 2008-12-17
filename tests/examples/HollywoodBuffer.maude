@@ -11,7 +11,7 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "label:1" |-> null,
               "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
               "buf" ; "put" ; "i" ) ; get( "label:0" ; noVid ) ;
-              assign( "i" ; "+" ( "i" :: int(1) ) ) ;
+              free( "label:0" ) ; assign( "i" ; "+" ( "i" :: int(1) ) ) ;
               call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" ) ;
               return ( emp ) >,
             < "produce" : Method | Param: noVid, Att: "x" |-> null, "_" |->
@@ -27,9 +27,10 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "label:1" |-> null,
               "label:0" |-> null, "j" |-> null, "_" |-> null,
               Code: call( "label:0" ; "buf" ; "take" ; emp ) ;
-              get( "label:0" ; "j" ) ; assign( "sum" ; "+" ( "sum" :: "j" ) )
-              ; call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" )
-              ; return ( emp ) >,
+              get( "label:0" ; "j" ) ; free( "label:0" ) ;
+              assign( "sum" ; "+" ( "sum" :: "j" ) ) ;
+              call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" ) ;
+              return ( emp ) >,
             < "consume" : Method | Param: "x", Att: "x" |-> null, "_" |->
               null, Code: assign( "sum" ; "+" ( "sum" :: "x" ) ) ;
               return ( emp ) >,

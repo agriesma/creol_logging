@@ -44,9 +44,7 @@ struct
 
   let target = ref Maude
 
-  let options = { BackendMaude.target = BackendMaude.Interpreter;
-		  red_init = false;
-		  main = None }
+  let options = { BackendMaude.target = BackendMaude.Interpreter; }
 
   let setup () =
     match !target with
@@ -191,12 +189,6 @@ let options = [
   ("-T",
   Arg.String Target.set,
   "[name]   Provides the target of the translation:" ^ (Target.help ()));
-  ("-main",
-  Arg.String (function s -> Target.options.BackendMaude.main <- Some s),
-  "  Declare a main class (must not have class parameters)");
-  ("-red-init",
-  Arg.Unit (function () -> Target.options.BackendMaude.red_init <- true),
-  "  Generate an output that will reduce init as first step");
   ("-show-config",
    Arg.Set show_config_flag,
    "  Show the configuration.");

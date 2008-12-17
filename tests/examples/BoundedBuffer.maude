@@ -32,6 +32,7 @@ mod PROGRAM is
             < "loop" : Method | Param: "i", Att: "i" |-> null, "label:1" |->
               null, "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
               "b" ; "append" ; "i" ) ; get( "label:0" ; noVid ) ;
+              free( "label:0" ) ;
               call( "label:1" ; "this" ; "loop" ; "+" ( "i" :: int(1) ) ) ;
               free( "label:1" ) ; return ( emp ) >,
       Ocnt: 0 >
@@ -42,7 +43,7 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "label:1" |-> null,
               "label:0" |-> null, "y" |-> null, "_" |-> null,
               Code: call( "label:0" ; "b" ; "remove" ; emp ) ;
-              get( "label:0" ; "y" ) ;
+              get( "label:0" ; "y" ) ; free( "label:0" ) ;
               call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" ) ;
               return ( emp ) >,
       Ocnt: 0 >

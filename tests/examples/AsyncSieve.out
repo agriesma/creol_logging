@@ -8,8 +8,8 @@ result Configuration:
     "run" : Method | Param: noVid, Att: "_" |-> null, "l" |-> null, "label:0"
     |-> null, "r" |-> null, Code: call("l" ; "next" ; "send" ; "n" :: "-"("n"
     :: int(3))) ; assign("n" ; "+"("n" :: int(1))) ; call("label:0" ; "this" ;
-    "run" ; emp) ; free("label:0") ; await ?("l") ; get("l" ; "r") ; return(
-    emp) >,
+    "run" ; emp) ; free("label:0") ; await ?("l") ; get("l" ; "r") ; free("l")
+    ; return(emp) >,
   Ocnt: 0 >
  
 < "Sieve" : Class | Inh: noInh, Param: "p", Att: "ins" |-> null, "next" |->
@@ -22,8 +22,8 @@ result Configuration:
     assign("ins" ; "+"("ins" :: int(1))) ; if "="("%"("n" :: "p") :: int(0)) th
     assign("res" ; bool(false)) el if "/="("next" :: null) th call("l" ; "next"
     ; "send" ; "n" :: "outs") ; assign("outs" ; "+"("outs" :: int(1))) ; await
-    ?("l") ; get("l" ; "res") el new("next" ; "Sieve" ; "n") ; assign("res" ;
-    bool(true)) fi fi ; return("res") >,
+    ?("l") ; get("l" ; "res") ; free("l") el new("next" ; "Sieve" ; "n") ;
+    assign("res" ; bool(true)) fi fi ; return("res") >,
   Ocnt: 0 >
 
 Bye.

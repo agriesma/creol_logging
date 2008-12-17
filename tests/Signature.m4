@@ -76,9 +76,9 @@ GRAMMAR_TEST(CONFIGURATION, {| noInh |}, noInh)
 GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > |}, noInh)
 GRAMMAR_TEST(CONFIGURATION, {| "A" < emp > , "B" < "x" > |}, noInh)
 
-GRAMMAR_TEST(CONFIGURATION, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Dealloc: noDealloc, Ev: noMsg, Lcnt: 0 > |}, noObj)
+GRAMMAR_TEST(CONFIGURATION, {| < ob("object1") : "Class" | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 0 > |}, noObj)
 
-GRAMMAR_TEST(CONFIGURATION, noMsg, noMsg)
+GRAMMAR_TEST(CONFIGURATION, (none).Configuration, (none).Configuration)
 
 mod CREOL-LABEL-TEST is
   extending CREOL-CONFIGURATION .
@@ -89,6 +89,6 @@ GRAMMAR_TEST(LABEL-TEST, $cont(label(1)), skip)
 GRAMMAR_TEST(LABEL-TEST, $accept(label(1)), skip)
 GRAMMAR_TEST(LABEL-TEST, $cont (label(5)), skip)
 GRAMMAR_TEST(LABEL-TEST, {| comp(label(5), emp) |}, warning(""))
-GRAMMAR_TEST(LABEL-TEST, {| invoc(ob("object1"), label(5), "method1", emp) |}, warning(""))
+GRAMMAR_TEST(LABEL-TEST, {| invoc(ob("object1"), ob("object2"), label(5), "method1", emp) |}, warning(""))
 
 quit
