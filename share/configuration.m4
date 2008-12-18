@@ -191,8 +191,8 @@ ifdef(`LOGGING',dnl
     eq { SL | trans | inits }[init] = inits .
 
 --- Log object`,' Cnt is the index of the snapshot
-    op <log From: _ To: _ Type: _ Data: _ Att: _ Label: _ > : Nat Nat String evalState Subst Label -> Configuration [format (ng! o d d d d b! onssss d d d d r! d no) ] .
-    op <choice Number: _ Type: _ Expression: _ > : Nat String Expr -> Configuration [format (ng! o b! o b! o o o no) ] .
+    op <log From: _ To: _ Type: _ Data: _ Att: _ Label: _ > : Nat Nat String evalState Subst String -> Object [format (ng! o d d d d b! onssss d d d d r! d no) ] .
+    op <choice Number: _ Type: _ Expression: _ > : Nat String Expr -> Object [format (ng! o b! o b! o o o no) ] .
 ,)dnl
   var CN : Configuration .
 
@@ -203,7 +203,7 @@ ifdef(`LOGGING',dnl
            Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
            Lcnt: 0 > ifdef(`LOGGING',`
 '      < ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 0 > 
-      <log From: 1 To: 1 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > 
+      <log From: 0 To: 0 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > 
 )} . dnl
 
 dnl

@@ -1,0 +1,1065 @@
+==========================================
+rewrite [3000] in PROGRAM : main(classes, "Main", int(1) :: int(0)) .
+result State: {discard(label(ob("Monk0"), 1))
+ 
+<choice Number: 155 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 161 Type: "await" Expression: bool(true) >
+ 
+<choice Number: 176 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 189 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 197 Type: "ifthenelse" Expression: "/="(
+    "ShepherdTask0-3.caller" :: null) >
+ 
+<choice Number: 240 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 268 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 296 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 324 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 352 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 380 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 408 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 436 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+<choice Number: 464 Type: "ifthenelse" Expression: "~"("/="(
+    "ShepherdTask0-1.caller" :: null)) >
+ 
+< ob("Abbey0") : "Abbey" |
+  Att: "busyCounter" |-> ob("Counter1"), "maxNofThreads" |-> int(0), "size" |->
+    int(1), "taskCounter" |-> ob("Counter0"), "taskQueue" |-> ob("TaskQueue0"),
+    "this" |-> ob("Abbey0"), "threadCounter" |-> ob("Counter1"), "threads" |->
+    list(ob("Monk0")),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 16 >
+ 
+< ob("Counter0") : "Counter" |
+  Att: "observer" |-> null, "observertoken" |-> str(""), "this" |-> ob(
+    "Counter0"), "value" |-> int(10),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 14 >
+ 
+< ob("Counter0") : "Counter" |
+  Att: "observer" |-> ob("ShepherdTask0"), "observertoken" |-> str("tasks"),
+    "this" |-> ob("Counter0"), "value" |-> int(0),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("Counter1") : "Counter" |
+  Att: "observer" |-> ob("ShepherdTask0"), "observertoken" |-> str(
+    "busythreads"), "this" |-> ob("Counter1"), "value" |-> int(2),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 5 >
+ 
+< ob("Counter1") : "Counter" |
+  Att: "observer" |-> ob("ShepherdTask0"), "observertoken" |-> str("threads"),
+    "this" |-> ob("Counter1"), "value" |-> int(0),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask0") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(0), "this" |-> ob(
+    "CounterTask0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask0") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(1), "this" |-> ob(
+    "CounterTask0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask1") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(2), "this" |-> ob(
+    "CounterTask1"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask1") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(3), "this" |-> ob(
+    "CounterTask1"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask2") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(4), "this" |-> ob(
+    "CounterTask2"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask2") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(5), "this" |-> ob(
+    "CounterTask2"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask3") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(6), "this" |-> ob(
+    "CounterTask3"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask3") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(7), "this" |-> ob(
+    "CounterTask3"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask4") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(8), "this" |-> ob(
+    "CounterTask4"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("CounterTask4") : "CounterTask" |
+  Att: "myCounter" |-> ob("Counter0"), "taskId" |-> int(9), "this" |-> ob(
+    "CounterTask4"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("Main0") : "Main" |
+  Att: "executionCounter" |-> ob("Counter0"), "maxthreads_init" |-> int(0),
+    "nthreads_init" |-> int(1), "this" |-> ob("Main0"), "threadpool" |-> ob(
+    "Abbey0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 12 >
+ 
+< ob("Monk0") : "Monk" |
+  Att: "busyCounter" |-> ob("Counter1"), "index" |-> null, "kill" |-> bool(
+    false), "queue" |-> ob("TaskQueue0"), "task" |-> ob("ShepherdTask0"),
+    "taskHistory" |-> list(int(1)), "taskId" |-> int(1), "this" |-> ob(
+    "Monk0"), "threadCounter" |-> ob("Counter1"),
+  Pr: {".class" |-> str("Monk"), ".label" |-> label(ob("Monk0"), 1), ".method"
+    |-> str("run"), "_" |-> null, "caller" |-> ob("Monk0"), "label:0" |-> null,
+    "label:1" |-> null, "label:2" |-> null, "label:3" |-> label(ob("Monk0"),
+    5), "label:4" |-> null, "label:5" |-> null, "label:6" |-> null | get(label(
+    ob("Monk0"), 5) ; "kill") ; free("label:3") ; call("label:4" ;
+    "busyCounter" ; "dec" ; emp) ; get("label:4" ; noVid) ; free("label:4") ;
+    if "kill" th call("label:5" ; "threadCounter" ; "dec" ; emp) ; get(
+    "label:5" ; noVid) ; free("label:5") el release ; call("label:6" ; "this" ;
+    "run" ; emp) ; get("label:6" ; noVid) ; free("label:6") fi ; return(emp)},
+  PrQ: noProc,
+  Lcnt: 6 >
+ 
+< ob("ShepherdTask0") : "ShepherdTask" |
+  Att: "busyCounter" |-> ob("Counter1"), "busythreads" |-> int(2), "maxthreads"
+    |-> int(1), "mrate" |-> int(5), "taskCounter" |-> ob("Counter0"), "taskId"
+    |-> int(1), "taskQueue" |-> ob("TaskQueue0"), "tasks" |-> null, "this" |->
+    ob("ShepherdTask0"), "threadCounter" |-> ob("Counter1"), "threadpool" |->
+    ob("Abbey0"), "threads" |-> int(1),
+  Pr: {".class" |-> str("ShepherdTask"), ".label" |-> label(ob(
+    "ShepherdTask0"), 7), ".method" |-> str("createThreads"), "_" |-> null,
+    "amountToCreate" |-> null, "caller" |-> ob("ShepherdTask0"), "idlethreads"
+    |-> int(-1), "l" |-> null, "label:0" |-> null, "task" |-> null | await
+    "&&"("<"("threads" :: "maxthreads") :: "<"("-"("idlethreads" :: "tasks") ::
+    "/"("threads" :: "mrate"))) ; assign("amountToCreate" ; "+"("-"("tasks" ::
+    "idlethreads") :: "/"("threads" :: "mrate"))) ; if ">"("amountToCreate" ::
+    "-"("maxthreads" :: "threads")) th assign("amountToCreate" ; "-"(
+    "maxthreads" :: "threads")) el skip fi ; if ">"("amountToCreate" :: int(0))
+    th call("l" ; "threadpool" ; "createThreads" ; "amountToCreate") ; await ?(
+    "l") ; free("l") el skip fi ; call("label:0" ; "this" ; "createThreads" ;
+    emp) ; get("label:0" ; noVid) ; free("label:0") ; return(emp)},
+  PrQ: {".class" |-> str("ShepherdTask"), ".label" |-> label(ob("Monk0"), 5),
+    ".method" |-> str("execute"), "_" |-> null, "caller" |-> ob("Monk0"),
+    "kill" |-> null, "l1" |-> label(ob("ShepherdTask0"), 7), "l2" |-> label(ob(
+    "ShepherdTask0"), 8) | await "&&"(?("l1") :: ?("l2")) ; free("l2") ; free(
+    "l1") ; assign("kill" ; bool(true)) ; return("kill")}, {".class" |-> str(
+    "ShepherdTask"), ".label" |-> label(ob("ShepherdTask0"), 8), ".method" |->
+    str("killThreads"), "_" |-> null, "caller" |-> ob("ShepherdTask0"),
+    "idlethreads" |-> int(-1), "label:0" |-> null, "label:1" |-> null, "task"
+    |-> null | await ">"("idlethreads" :: "/"("threads" :: int(2))) ; new(
+    "task" ; "PoisonTask" ; int(0)) ; call("label:0" ; "taskQueue" ;
+    "enqueueTask" ; "task") ; get("label:0" ; noVid) ; free("label:0") ; call(
+    "label:1" ; "this" ; "killThreads" ; emp) ; get("label:1" ; noVid) ; free(
+    "label:1") ; return(emp)},
+  Lcnt: 9 >
+ 
+< ob("TaskQueue0") : "TaskQueue" |
+  Att: "taskCounter" |-> ob("Counter0"), "tasks" |-> list(ob("CounterTask0") ::
+    ob("CounterTask0") :: ob("CounterTask1") :: ob("CounterTask1") :: ob(
+    "CounterTask2") :: ob("CounterTask2") :: ob("CounterTask3") :: ob(
+    "CounterTask3") :: ob("CounterTask4") :: ob("CounterTask4")), "this" |->
+    ob("TaskQueue0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 14 >
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 480 >
+ 
+< ob("main") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 0 >
+ 
+< "Abbey" : Class | Inh: noInh, Param: "size", "maxNofThreads", Att:
+    "busyCounter" |-> null, "maxNofThreads" |-> null, "size" |-> null,
+    "taskCounter" |-> null, "taskQueue" |-> null, "threadCounter" |-> null,
+    "threads" |-> null, Mtds:
+  < "createThreads" : Method | Param: "amount", Att: "_" |-> null, "amount" |->
+    null, "i" |-> null, "label:0" |-> null, "thread" |-> null, Code: assign("i"
+    ; int(0)) ; while "<"("i" :: "amount") do new("thread" ; "Monk" ;
+    "taskQueue" :: "busyCounter" :: "threadCounter") ; assign("threads" ; "|-"(
+    "threads" :: "thread")) ; call("label:0" ; "threadCounter" ; "inc" ; emp) ;
+    get("label:0" ; noVid) ; free("label:0") ; assign("i" ; "+"("i" :: int(1)))
+    od ; return(emp) >, < "dispatchTask" : Method | Param: "task", Att: "_" |->
+    null, "label:0" |-> null, "task" |-> null, Code: call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; get("label:0" ; noVid) ; free(
+    "label:0") ; return(emp) >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, "label:0" |-> null, "label:1" |-> null, "mrate" |-> null, "shepherd"
+    |-> null, Code: new("taskCounter" ; "Counter" ; emp) ; new("threadCounter"
+    ; "Counter" ; emp) ; new("busyCounter" ; "Counter" ; emp) ; new("taskQueue"
+    ; "TaskQueue" ; "taskCounter") ; assign("threads" ; list(emp)) ; assign(
+    "mrate" ; int(5)) ; new("shepherd" ; "ShepherdTask" ; int(1) ::
+    "taskCounter" :: "threadCounter" :: "busyCounter" :: "maxNofThreads" ::
+    "mrate" :: "taskQueue" :: "this") ; call("label:0" ; "this" ;
+    "createThreads" ; "size") ; get("label:0" ; noVid) ; free("label:0") ;
+    call("label:1" ; "this" ; "dispatchTask" ; "shepherd") ; get("label:1" ;
+    noVid) ; free("label:1") ; return(emp) >, < "run" : Method | Param: noVid,
+    Att: "_" |-> null, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+ 
+< "Abbey" : Class | Inh: noInh, Param: "size", "maxNofThreads", Att:
+    "busyCounter" |-> null, "maxNofThreads" |-> null, "size" |-> null,
+    "taskCounter" |-> null, "taskQueue" |-> null, "threadCounter" |-> null,
+    "threads" |-> null, Mtds:
+  < "createThreads" : Method | Param: "amount", Att: "_" |-> null, "amount" |->
+    null, "i" |-> null, "label:0" |-> null, "thread" |-> null, Code: assign("i"
+    ; int(0)) ; while "<"("i" :: "amount") do new("thread" ; "Monk" ;
+    "taskQueue" :: "busyCounter" :: "threadCounter") ; assign("threads" ; "|-"(
+    "threads" :: "thread")) ; call("label:0" ; "threadCounter" ; "inc" ; emp) ;
+    get("label:0" ; noVid) ; free("label:0") ; assign("i" ; "+"("i" :: int(1)))
+    od ; return(emp) >, < "dispatchTask" : Method | Param: "task", Att: "_" |->
+    null, "label:0" |-> null, "task" |-> null, Code: call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; get("label:0" ; noVid) ; free(
+    "label:0") ; return(emp) >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, "label:0" |-> null, "label:1" |-> null, "mrate" |-> null, "shepherd"
+    |-> null, Code: new("taskCounter" ; "Counter" ; emp) ; new("threadCounter"
+    ; "Counter" ; emp) ; new("busyCounter" ; "Counter" ; emp) ; new("taskQueue"
+    ; "TaskQueue" ; "taskCounter") ; assign("threads" ; list(emp)) ; assign(
+    "mrate" ; int(5)) ; new("shepherd" ; "ShepherdTask" ; int(1) ::
+    "taskCounter" :: "threadCounter" :: "busyCounter" :: "maxNofThreads" ::
+    "mrate" :: "taskQueue" :: "this") ; call("label:0" ; "this" ;
+    "createThreads" ; "size") ; get("label:0" ; noVid) ; free("label:0") ;
+    call("label:1" ; "this" ; "dispatchTask" ; "shepherd") ; get("label:1" ;
+    noVid) ; free("label:1") ; return(emp) >, < "run" : Method | Param: noVid,
+    Att: "_" |-> null, Code: skip ; return(emp) >,
+  Ocnt: 1 >
+ 
+< "Counter" : Class | Inh: noInh, Param: noVid, Att: "observer" |-> null,
+    "observertoken" |-> null, "value" |-> null, Mtds:
+  < "dec" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code:
+    assign("value" ; "-"("value" :: int(1))) ; call("label:0" ; "this" ;
+    "informObserver" ; emp) ; get("label:0" ; noVid) ; free("label:0") ;
+    return(emp) >, < "inc" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, Code: assign("value" ; "+"("value" :: int(1))) ; call(
+    "label:0" ; "this" ; "informObserver" ; emp) ; get("label:0" ; noVid) ;
+    free("label:0") ; return(emp) >, < "informObserver" : Method | Param:
+    noVid, Att: "_" |-> null, "l" |-> null, "label:0" |-> null, Code: if "/="(
+    "observer" :: null) th call("label:0" ; "observer" ; "newCounterValue" ;
+    "observertoken" :: "value") ; get("label:0" ; noVid) ; free("label:0") el
+    skip fi ; return(emp) >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: assign("value" ; int(0)) ; assign("observer" ; null) ; assign(
+    "observertoken" ; str("")) ; return(emp) >, < "registerObserver" : Method |
+    Param: "token", Att: "_" |-> null, "token" |-> null, Code: assign(
+    "observer" ; "caller") ; assign("observertoken" ; "token") ; return(emp) >,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(
+    emp) >, < "value" : Method | Param: noVid, Att: "_" |-> null, "val" |->
+    null, Code: assign("val" ; "value") ; return("val") >,
+  Ocnt: 2 >
+ 
+< "Counter" : Class | Inh: noInh, Param: noVid, Att: "observer" |-> null,
+    "observertoken" |-> null, "value" |-> null, Mtds:
+  < "dec" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code:
+    assign("value" ; "-"("value" :: int(1))) ; call("label:0" ; "this" ;
+    "informObserver" ; emp) ; get("label:0" ; noVid) ; free("label:0") ;
+    return(emp) >, < "inc" : Method | Param: noVid, Att: "_" |-> null,
+    "label:0" |-> null, Code: assign("value" ; "+"("value" :: int(1))) ; call(
+    "label:0" ; "this" ; "informObserver" ; emp) ; get("label:0" ; noVid) ;
+    free("label:0") ; return(emp) >, < "informObserver" : Method | Param:
+    noVid, Att: "_" |-> null, "l" |-> null, "label:0" |-> null, Code: if "/="(
+    "observer" :: null) th call("label:0" ; "observer" ; "newCounterValue" ;
+    "observertoken" :: "value") ; get("label:0" ; noVid) ; free("label:0") el
+    skip fi ; return(emp) >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: assign("value" ; int(0)) ; assign("observer" ; null) ; assign(
+    "observertoken" ; str("")) ; return(emp) >, < "registerObserver" : Method |
+    Param: "token", Att: "_" |-> null, "token" |-> null, Code: assign(
+    "observer" ; "caller") ; assign("observertoken" ; "token") ; return(emp) >,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(
+    emp) >, < "value" : Method | Param: noVid, Att: "_" |-> null, "val" |->
+    null, Code: assign("val" ; "value") ; return("val") >,
+  Ocnt: 2 >
+ 
+< "CounterTask" : Class | Inh: noInh, Param: "taskId", "myCounter", Att:
+    "myCounter" |-> null, "taskId" |-> null, Mtds:
+  < "execute" : Method | Param: noVid, Att: "_" |-> null, "kill" |-> null,
+    "label:0" |-> null, Code: call("label:0" ; "myCounter" ; "inc" ; emp) ;
+    get("label:0" ; noVid) ; free("label:0") ; assign("kill" ; bool(false)) ;
+    return("kill") >, < "getId" : Method | Param: noVid, Att: "_" |-> null,
+    "id" |-> null, Code: assign("id" ; "taskId") ; return("id") >, < "init" :
+    Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, <
+    "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >,
+  Ocnt: 5 >
+ 
+< "CounterTask" : Class | Inh: noInh, Param: "taskId", "myCounter", Att:
+    "myCounter" |-> null, "taskId" |-> null, Mtds:
+  < "execute" : Method | Param: noVid, Att: "_" |-> null, "kill" |-> null,
+    "label:0" |-> null, Code: call("label:0" ; "myCounter" ; "inc" ; emp) ;
+    get("label:0" ; noVid) ; free("label:0") ; assign("kill" ; bool(false)) ;
+    return("kill") >, < "getId" : Method | Param: noVid, Att: "_" |-> null,
+    "id" |-> null, Code: assign("id" ; "taskId") ; return("id") >, < "init" :
+    Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, <
+    "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >,
+  Ocnt: 5 >
+ 
+< "Main" : Class | Inh: noInh, Param: "nthreads_init", "maxthreads_init", Att:
+    "executionCounter" |-> null, "maxthreads_init" |-> null, "nthreads_init"
+    |-> null, "threadpool" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("threadpool" ;
+    "Abbey" ; "nthreads_init" :: "maxthreads_init") ; new("executionCounter" ;
+    "Counter" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, "i" |-> null, "label:0" |-> null, "task" |-> null, Code: assign(
+    "i" ; int(0)) ; while "<"("i" :: int(10)) do new("task" ; "CounterTask" ;
+    "i" :: "executionCounter") ; call("label:0" ; "threadpool" ; "dispatchTask"
+    ; "task") ; get("label:0" ; noVid) ; free("label:0") ; assign("i" ; "+"("i"
+    :: int(1))) od ; return(emp) >,
+  Ocnt: 0 >
+ 
+< "Main" : Class | Inh: noInh, Param: "nthreads_init", "maxthreads_init", Att:
+    "executionCounter" |-> null, "maxthreads_init" |-> null, "nthreads_init"
+    |-> null, "threadpool" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("threadpool" ;
+    "Abbey" ; "nthreads_init" :: "maxthreads_init") ; new("executionCounter" ;
+    "Counter" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, "i" |-> null, "label:0" |-> null, "task" |-> null, Code: assign(
+    "i" ; int(0)) ; while "<"("i" :: int(10)) do new("task" ; "CounterTask" ;
+    "i" :: "executionCounter") ; call("label:0" ; "threadpool" ; "dispatchTask"
+    ; "task") ; get("label:0" ; noVid) ; free("label:0") ; assign("i" ; "+"("i"
+    :: int(1))) od ; return(emp) >,
+  Ocnt: 1 >
+ 
+< "Monk" : Class | Inh: noInh, Param: "queue", "busyCounter", "threadCounter",
+    Att: "busyCounter" |-> null, "index" |-> null, "kill" |-> null, "queue" |->
+    null, "task" |-> null, "taskHistory" |-> null, "taskId" |-> null,
+    "threadCounter" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign(
+    "taskHistory" ; list(emp)) ; assign("kill" ; bool(false)) ; return(emp) >,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    "label:1" |-> null, "label:2" |-> null, "label:3" |-> null, "label:4" |->
+    null, "label:5" |-> null, "label:6" |-> null, Code: call("label:0" ;
+    "queue" ; "dequeueTask" ; emp) ; get("label:0" ; "task") ; free("label:0")
+    ; call("label:1" ; "busyCounter" ; "inc" ; emp) ; get("label:1" ; noVid) ;
+    free("label:1") ; call("label:2" ; "task" ; "getId" ; emp) ; get("label:2"
+    ; "taskId") ; free("label:2") ; assign("taskHistory" ; "|-"("taskHistory"
+    :: "taskId")) ; call("label:3" ; "task" ; "execute" ; emp) ; get("label:3"
+    ; "kill") ; free("label:3") ; call("label:4" ; "busyCounter" ; "dec" ; emp)
+    ; get("label:4" ; noVid) ; free("label:4") ; if "kill" th call("label:5" ;
+    "threadCounter" ; "dec" ; emp) ; get("label:5" ; noVid) ; free("label:5")
+    el release ; call("label:6" ; "this" ; "run" ; emp) ; get("label:6" ;
+    noVid) ; free("label:6") fi ; return(emp) >,
+  Ocnt: 0 >
+ 
+< "Monk" : Class | Inh: noInh, Param: "queue", "busyCounter", "threadCounter",
+    Att: "busyCounter" |-> null, "index" |-> null, "kill" |-> null, "queue" |->
+    null, "task" |-> null, "taskHistory" |-> null, "taskId" |-> null,
+    "threadCounter" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign(
+    "taskHistory" ; list(emp)) ; assign("kill" ; bool(false)) ; return(emp) >,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
+    "label:1" |-> null, "label:2" |-> null, "label:3" |-> null, "label:4" |->
+    null, "label:5" |-> null, "label:6" |-> null, Code: call("label:0" ;
+    "queue" ; "dequeueTask" ; emp) ; get("label:0" ; "task") ; free("label:0")
+    ; call("label:1" ; "busyCounter" ; "inc" ; emp) ; get("label:1" ; noVid) ;
+    free("label:1") ; call("label:2" ; "task" ; "getId" ; emp) ; get("label:2"
+    ; "taskId") ; free("label:2") ; assign("taskHistory" ; "|-"("taskHistory"
+    :: "taskId")) ; call("label:3" ; "task" ; "execute" ; emp) ; get("label:3"
+    ; "kill") ; free("label:3") ; call("label:4" ; "busyCounter" ; "dec" ; emp)
+    ; get("label:4" ; noVid) ; free("label:4") ; if "kill" th call("label:5" ;
+    "threadCounter" ; "dec" ; emp) ; get("label:5" ; noVid) ; free("label:5")
+    el release ; call("label:6" ; "this" ; "run" ; emp) ; get("label:6" ;
+    noVid) ; free("label:6") fi ; return(emp) >,
+  Ocnt: 1 >
+ 
+< "PoisonTask" : Class | Inh: noInh, Param: "taskId", Att: "taskId" |-> null,
+    Mtds:
+  < "execute" : Method | Param: noVid, Att: "_" |-> null, "kill" |-> null,
+    Code: assign("kill" ; bool(true)) ; return("kill") >, < "getId" : Method |
+    Param: noVid, Att: "_" |-> null, "id" |-> null, Code: assign("id" ;
+    "taskId") ; return("id") >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: skip ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+ 
+< "PoisonTask" : Class | Inh: noInh, Param: "taskId", Att: "taskId" |-> null,
+    Mtds:
+  < "execute" : Method | Param: noVid, Att: "_" |-> null, "kill" |-> null,
+    Code: assign("kill" ; bool(true)) ; return("kill") >, < "getId" : Method |
+    Param: noVid, Att: "_" |-> null, "id" |-> null, Code: assign("id" ;
+    "taskId") ; return("id") >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: skip ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+ 
+< "ShepherdTask" : Class | Inh: noInh, Param: "taskId", "taskCounter",
+    "threadCounter", "busyCounter", "maxthreads", "mrate", "taskQueue",
+    "threadpool", Att: "busyCounter" |-> null, "busythreads" |-> null,
+    "maxthreads" |-> null, "mrate" |-> null, "taskCounter" |-> null, "taskId"
+    |-> null, "taskQueue" |-> null, "tasks" |-> null, "threadCounter" |-> null,
+    "threadpool" |-> null, "threads" |-> null, Mtds:
+  < "createThreads" : Method | Param: noVid, Att: "_" |-> null,
+    "amountToCreate" |-> null, "idlethreads" |-> null, "l" |-> null, "label:0"
+    |-> null, "task" |-> null, Code: assign("idlethreads" ; "-"("threads" ::
+    "busythreads")) ; await "&&"("<"("threads" :: "maxthreads") :: "<"("-"(
+    "idlethreads" :: "tasks") :: "/"("threads" :: "mrate"))) ; assign(
+    "amountToCreate" ; "+"("-"("tasks" :: "idlethreads") :: "/"("threads" ::
+    "mrate"))) ; if ">"("amountToCreate" :: "-"("maxthreads" :: "threads")) th
+    assign("amountToCreate" ; "-"("maxthreads" :: "threads")) el skip fi ; if
+    ">"("amountToCreate" :: int(0)) th call("l" ; "threadpool" ;
+    "createThreads" ; "amountToCreate") ; await ?("l") ; free("l") el skip fi ;
+    call("label:0" ; "this" ; "createThreads" ; emp) ; get("label:0" ; noVid) ;
+    free("label:0") ; return(emp) >, < "execute" : Method | Param: noVid, Att:
+    "_" |-> null, "kill" |-> null, "l1" |-> null, "l2" |-> null, Code: call(
+    "l1" ; "this" ; "createThreads" ; emp) ; call("l2" ; "this" ; "killThreads"
+    ; emp) ; await "&&"(?("l1") :: ?("l2")) ; free("l2") ; free("l1") ; assign(
+    "kill" ; bool(true)) ; return("kill") >, < "getId" : Method | Param: noVid,
+    Att: "_" |-> null, "id" |-> null, Code: assign("id" ; "taskId") ; return(
+    "id") >, < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |->
+    null, "label:1" |-> null, "label:2" |-> null, "label:3" |-> null, "label:4"
+    |-> null, Code: assign("maxthreads" ; "+"("maxthreads" :: int(1))) ; call(
+    "label:0" ; "taskCounter" ; "registerObserver" ; str("tasks")) ; get(
+    "label:0" ; noVid) ; free("label:0") ; call("label:1" ; "threadCounter" ;
+    "registerObserver" ; str("threads")) ; get("label:1" ; noVid) ; free(
+    "label:1") ; call("label:2" ; "busyCounter" ; "registerObserver" ; str(
+    "busythreads")) ; get("label:2" ; noVid) ; free("label:2") ; call("label:3"
+    ; "threadCounter" ; "value" ; emp) ; get("label:3" ; "threads") ; free(
+    "label:3") ; call("label:4" ; "busyCounter" ; "value" ; emp) ; get(
+    "label:4" ; "busythreads") ; free("label:4") ; return(emp) >, <
+    "killThreads" : Method | Param: noVid, Att: "_" |-> null, "idlethreads" |->
+    null, "label:0" |-> null, "label:1" |-> null, "task" |-> null, Code:
+    assign("idlethreads" ; "-"("threads" :: "busythreads")) ; await ">"(
+    "idlethreads" :: "/"("threads" :: int(2))) ; new("task" ; "PoisonTask" ;
+    int(0)) ; call("label:0" ; "taskQueue" ; "enqueueTask" ; "task") ; get(
+    "label:0" ; noVid) ; free("label:0") ; call("label:1" ; "this" ;
+    "killThreads" ; emp) ; get("label:1" ; noVid) ; free("label:1") ; return(
+    emp) >, < "newCounterValue" : Method | Param: "token", "val", Att: "_" |->
+    null, "token" |-> null, "val" |-> null, Code: if "="("token" :: str(
+    "tasks")) th assign("tasks" ; "val") el skip fi ; if "="("token" :: str(
+    "threads")) th assign("threads" ; "val") el skip fi ; if "="("token" ::
+    str("busythreads")) th assign("busythreads" ; "val") el skip fi ; return(
+    emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+    return(emp) >,
+  Ocnt: 0 >
+ 
+< "ShepherdTask" : Class | Inh: noInh, Param: "taskId", "taskCounter",
+    "threadCounter", "busyCounter", "maxthreads", "mrate", "taskQueue",
+    "threadpool", Att: "busyCounter" |-> null, "busythreads" |-> null,
+    "maxthreads" |-> null, "mrate" |-> null, "taskCounter" |-> null, "taskId"
+    |-> null, "taskQueue" |-> null, "tasks" |-> null, "threadCounter" |-> null,
+    "threadpool" |-> null, "threads" |-> null, Mtds:
+  < "createThreads" : Method | Param: noVid, Att: "_" |-> null,
+    "amountToCreate" |-> null, "idlethreads" |-> null, "l" |-> null, "label:0"
+    |-> null, "task" |-> null, Code: assign("idlethreads" ; "-"("threads" ::
+    "busythreads")) ; await "&&"("<"("threads" :: "maxthreads") :: "<"("-"(
+    "idlethreads" :: "tasks") :: "/"("threads" :: "mrate"))) ; assign(
+    "amountToCreate" ; "+"("-"("tasks" :: "idlethreads") :: "/"("threads" ::
+    "mrate"))) ; if ">"("amountToCreate" :: "-"("maxthreads" :: "threads")) th
+    assign("amountToCreate" ; "-"("maxthreads" :: "threads")) el skip fi ; if
+    ">"("amountToCreate" :: int(0)) th call("l" ; "threadpool" ;
+    "createThreads" ; "amountToCreate") ; await ?("l") ; free("l") el skip fi ;
+    call("label:0" ; "this" ; "createThreads" ; emp) ; get("label:0" ; noVid) ;
+    free("label:0") ; return(emp) >, < "execute" : Method | Param: noVid, Att:
+    "_" |-> null, "kill" |-> null, "l1" |-> null, "l2" |-> null, Code: call(
+    "l1" ; "this" ; "createThreads" ; emp) ; call("l2" ; "this" ; "killThreads"
+    ; emp) ; await "&&"(?("l1") :: ?("l2")) ; free("l2") ; free("l1") ; assign(
+    "kill" ; bool(true)) ; return("kill") >, < "getId" : Method | Param: noVid,
+    Att: "_" |-> null, "id" |-> null, Code: assign("id" ; "taskId") ; return(
+    "id") >, < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |->
+    null, "label:1" |-> null, "label:2" |-> null, "label:3" |-> null, "label:4"
+    |-> null, Code: assign("maxthreads" ; "+"("maxthreads" :: int(1))) ; call(
+    "label:0" ; "taskCounter" ; "registerObserver" ; str("tasks")) ; get(
+    "label:0" ; noVid) ; free("label:0") ; call("label:1" ; "threadCounter" ;
+    "registerObserver" ; str("threads")) ; get("label:1" ; noVid) ; free(
+    "label:1") ; call("label:2" ; "busyCounter" ; "registerObserver" ; str(
+    "busythreads")) ; get("label:2" ; noVid) ; free("label:2") ; call("label:3"
+    ; "threadCounter" ; "value" ; emp) ; get("label:3" ; "threads") ; free(
+    "label:3") ; call("label:4" ; "busyCounter" ; "value" ; emp) ; get(
+    "label:4" ; "busythreads") ; free("label:4") ; return(emp) >, <
+    "killThreads" : Method | Param: noVid, Att: "_" |-> null, "idlethreads" |->
+    null, "label:0" |-> null, "label:1" |-> null, "task" |-> null, Code:
+    assign("idlethreads" ; "-"("threads" :: "busythreads")) ; await ">"(
+    "idlethreads" :: "/"("threads" :: int(2))) ; new("task" ; "PoisonTask" ;
+    int(0)) ; call("label:0" ; "taskQueue" ; "enqueueTask" ; "task") ; get(
+    "label:0" ; noVid) ; free("label:0") ; call("label:1" ; "this" ;
+    "killThreads" ; emp) ; get("label:1" ; noVid) ; free("label:1") ; return(
+    emp) >, < "newCounterValue" : Method | Param: "token", "val", Att: "_" |->
+    null, "token" |-> null, "val" |-> null, Code: if "="("token" :: str(
+    "tasks")) th assign("tasks" ; "val") el skip fi ; if "="("token" :: str(
+    "threads")) th assign("threads" ; "val") el skip fi ; if "="("token" ::
+    str("busythreads")) th assign("busythreads" ; "val") el skip fi ; return(
+    emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+    return(emp) >,
+  Ocnt: 1 >
+ 
+< "TaskQueue" : Class | Inh: noInh, Param: "taskCounter", Att: "taskCounter"
+    |-> null, "tasks" |-> null, Mtds:
+  < "dequeueTask" : Method | Param: noVid, Att: "_" |-> null, "label:0" |->
+    null, "task" |-> null, Code: await ">"("#"("tasks") :: int(0)) ; assign(
+    "task" ; "head"("tasks")) ; assign("tasks" ; "tail"("tasks")) ; call(
+    "label:0" ; "taskCounter" ; "dec" ; emp) ; get("label:0" ; noVid) ; free(
+    "label:0") ; return("task") >, < "enqueueTask" : Method | Param: "task",
+    Att: "_" |-> null, "label:0" |-> null, "task" |-> null, Code: assign(
+    "tasks" ; "|-"("tasks" :: "task")) ; call("label:0" ; "taskCounter" ; "inc"
+    ; emp) ; get("label:0" ; noVid) ; free("label:0") ; return(emp) >, < "init"
+    : Method | Param: noVid, Att: "_" |-> null, Code: assign("tasks" ; list(
+    emp)) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
+    Code: skip ; return(emp) >,
+  Ocnt: 0 >
+ 
+< "TaskQueue" : Class | Inh: noInh, Param: "taskCounter", Att: "taskCounter"
+    |-> null, "tasks" |-> null, Mtds:
+  < "dequeueTask" : Method | Param: noVid, Att: "_" |-> null, "label:0" |->
+    null, "task" |-> null, Code: await ">"("#"("tasks") :: int(0)) ; assign(
+    "task" ; "head"("tasks")) ; assign("tasks" ; "tail"("tasks")) ; call(
+    "label:0" ; "taskCounter" ; "dec" ; emp) ; get("label:0" ; noVid) ; free(
+    "label:0") ; return("task") >, < "enqueueTask" : Method | Param: "task",
+    Att: "_" |-> null, "label:0" |-> null, "task" |-> null, Code: assign(
+    "tasks" ; "|-"("tasks" :: "task")) ; call("label:0" ; "taskCounter" ; "inc"
+    ; emp) ; get("label:0" ; noVid) ; free("label:0") ; return(emp) >, < "init"
+    : Method | Param: noVid, Att: "_" |-> null, Code: assign("tasks" ; list(
+    emp)) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
+    Code: skip ; return(emp) >,
+  Ocnt: 1 >
+ 
+<log From: 0 To: 480 Type: "lastrun"
+    Data: {skip ; new("var" ; "Main" ; int(1) :: int(0)) ; assign(
+    "nthreads_init", "maxthreads_init" ; int(1) :: int(0)) ; call(".anon" ;
+    "this" ; "init" ; emp) ; assign("nolabel.var" ; ob("Main0")) ; new(
+    "threadpool" ; "Abbey" ; "nthreads_init" :: "maxthreads_init") ; assign(
+    "Abbey0.size", "Abbey0.maxNofThreads" ; int(1) :: int(0)) ; call(".anon" ;
+    "this" ; "init" ; emp) ; assign("Main0.threadpool" ; ob("Abbey0")) ; new(
+    "executionCounter" ; "Counter" ; emp) ; assign("Main0.executionCounter" ;
+    ob("Counter0")) ; call(".anon" ; "this" ; "init" ; emp) ; return(emp) ;
+    new("taskCounter" ; "Counter" ; emp) ; assign("Abbey0.taskCounter" ; ob(
+    "Counter0")) ; call(".anon" ; "this" ; "init" ; emp) ; new("threadCounter"
+    ; "Counter" ; emp) ; assign("Abbey0.threadCounter" ; ob("Counter1")) ;
+    call(".anon" ; "this" ; "init" ; emp) ; new("busyCounter" ; "Counter" ;
+    emp) ; assign("Abbey0.busyCounter" ; ob("Counter1")) ; call(".anon" ;
+    "this" ; "init" ; emp) ; new("taskQueue" ; "TaskQueue" ; "taskCounter") ;
+    assign("Abbey0.taskQueue" ; ob("TaskQueue0")) ; assign("Abbey0.threads" ;
+    list(emp)) ; assign("Abbey0-0.mrate" ; int(5)) ; new("shepherd" ;
+    "ShepherdTask" ; int(1) :: "taskCounter" :: "threadCounter" ::
+    "busyCounter" :: "maxNofThreads" :: "mrate" :: "taskQueue" :: "this") ;
+    assign("Abbey0-0.shepherd" ; ob("ShepherdTask0")) ; call("label:0" ; "this"
+    ; "createThreads" ; "size") ; assign("ShepherdTask0.taskId",
+    "ShepherdTask0.taskCounter", "ShepherdTask0.threadCounter",
+    "ShepherdTask0.busyCounter", "ShepherdTask0.maxthreads",
+    "ShepherdTask0.mrate", "ShepherdTask0.taskQueue",
+    "ShepherdTask0.threadpool" ; int(1) :: ob("Counter0") :: ob("Counter1") ::
+    ob("Counter1") :: int(0) :: int(5) :: ob("TaskQueue0") :: ob("Abbey0")) ;
+    call(".anon" ; "this" ; "init" ; emp) ; assign("TaskQueue0.taskCounter" ;
+    ob("Counter0")) ; call(".anon" ; "this" ; "init" ; emp) ; assign(
+    "Abbey0-1.amount" ; int(1)) ; assign("Abbey0-1.i" ; int(0)) ; if "<"("i" ::
+    "amount") th skip el skip fi ; new("thread" ; "Monk" ; "taskQueue" ::
+    "busyCounter" :: "threadCounter") ; assign("Abbey0-1.thread" ; ob("Monk0"))
+    ; assign("Abbey0.threads" ; "|-"("Abbey0.threads" :: "Abbey0-1.thread")) ;
+    call("label:0" ; "threadCounter" ; "inc" ; emp) ; assign("Monk0.queue",
+    "Monk0.busyCounter", "Monk0.threadCounter" ; ob("TaskQueue0") :: ob(
+    "Counter1") :: ob("Counter1")) ; call(".anon" ; "this" ; "init" ; emp) ;
+    assign("Counter0.value" ; int(0)) ; assign("Counter0.observer" ; null) ;
+    assign("Counter0.observertoken" ; str("")) ; return(emp) ; call(".anon" ;
+    "this" ; "run" ; emp) ; assign("Counter0.value" ; int(0)) ; assign(
+    "Counter0.observer" ; null) ; assign("Counter0.observertoken" ; str("")) ;
+    return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; return(emp) ; return(
+    emp) ; assign("Counter1.value" ; int(0)) ; assign("Counter1.observer" ;
+    null) ; assign("Counter1.observertoken" ; str("")) ; return(emp) ; call(
+    ".anon" ; "this" ; "run" ; emp) ; assign("Counter1.value" ; int(0)) ;
+    assign("Counter1.observer" ; null) ; assign("Counter1.observertoken" ; str(
+    "")) ; return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; return(emp) ;
+    return(emp) ; assign("Counter1.value" ; "+"("Counter1.value" :: int(1))) ;
+    call("label:0" ; "this" ; "informObserver" ; emp) ; if "/="("observer" ::
+    null) th skip el skip fi ; return(emp) ; return(emp) ; assign("Abbey0-1.i"
+    ; "+"("Abbey0-1.i" :: int(1))) ; if "<"("i" :: "amount") th skip el skip fi
+    ; return(emp) ; call("label:1" ; "this" ; "dispatchTask" ; "shepherd") ;
+    assign("Abbey0-3.task" ; ob("ShepherdTask0")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; call(".anon" ; "this" ; "run" ;
+    emp) ; assign("Main0-1.i" ; int(0)) ; if "<"("i" :: int(10)) th skip el
+    skip fi ; new("task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask0.taskId", "CounterTask0.myCounter" ; int(0) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask0")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; return(emp) ;
+    assign("Monk0.taskHistory" ; list(emp)) ; assign("Monk0.kill" ; bool(
+    false)) ; return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; call(
+    "label:0" ; "queue" ; "dequeueTask" ; emp) ; assign(
+    "ShepherdTask0.maxthreads" ; "+"("ShepherdTask0.maxthreads" :: int(1))) ;
+    call("label:0" ; "taskCounter" ; "registerObserver" ; str("tasks")) ;
+    assign("ShepherdTask0-1.token" ; str("tasks")) ; assign("Counter0.observer"
+    ; "ShepherdTask0-1.caller") ; assign("Counter0.observertoken" ;
+    "ShepherdTask0-1.token") ; return(emp) ; call("label:1" ; "threadCounter" ;
+    "registerObserver" ; str("threads")) ; assign("ShepherdTask0-2.token" ;
+    str("threads")) ; assign("Counter1.observer" ; "ShepherdTask0-2.caller") ;
+    assign("Counter1.observertoken" ; "ShepherdTask0-2.token") ; return(emp) ;
+    call("label:2" ; "busyCounter" ; "registerObserver" ; str("busythreads")) ;
+    assign("ShepherdTask0-3.token" ; str("busythreads")) ; assign(
+    "Counter1.observer" ; "ShepherdTask0-3.caller") ; assign(
+    "Counter1.observertoken" ; "ShepherdTask0-3.token") ; return(emp) ; call(
+    "label:3" ; "threadCounter" ; "value" ; emp) ; assign("ShepherdTask0-4.val"
+    ; "Counter1.value") ; return("val") ; assign("ShepherdTask0.threads" ; int(
+    1)) ; call("label:4" ; "busyCounter" ; "value" ; emp) ; assign(
+    "ShepherdTask0-5.val" ; "Counter1.value") ; return("val") ; assign(
+    "ShepherdTask0.busythreads" ; int(1)) ; return(emp) ; call(".anon" ; "this"
+    ; "run" ; emp) ; return(emp) ; assign("TaskQueue0.tasks" ; list(emp)) ;
+    return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; return(emp) ; assign(
+    "Abbey0-4.task" ; ob("ShepherdTask0")) ; assign("TaskQueue0.tasks" ; "|-"(
+    "TaskQueue0.tasks" :: "Abbey0-4.task")) ; call("label:0" ; "taskCounter" ;
+    "inc" ; emp) ; assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ;
+    call("label:0" ; "this" ; "informObserver" ; emp) ; if "/="("observer" ::
+    null) th skip el skip fi ; return(emp) ; return(emp) ; return(emp) ; await
+    ">"("#"("tasks") :: int(0)) ; assign("Monk0-2.task" ; "head"(
+    "TaskQueue0.tasks")) ; assign("TaskQueue0.tasks" ; "tail"(
+    "TaskQueue0.tasks")) ; call("label:0" ; "taskCounter" ; "dec" ; emp) ;
+    assign("Counter0.value" ; "-"("Counter0.value" :: int(1))) ; call("label:0"
+    ; "this" ; "informObserver" ; emp) ; return(emp) ; return(emp) ; call(
+    ".anon" ; "this" ; "run" ; emp) ; return(emp) ; assign("Main0-2.task" ; ob(
+    "CounterTask0")) ; call("label:0" ; "taskQueue" ; "enqueueTask" ; "task") ;
+    if "/="("observer" :: null) th skip el skip fi ; return(emp) ; return(emp)
+    ; return("task") ; assign("Abbey0-6.task" ; ob("CounterTask0")) ; assign(
+    "Monk0.task" ; ob("ShepherdTask0")) ; assign("TaskQueue0.tasks" ; "|-"(
+    "TaskQueue0.tasks" :: "Abbey0-6.task")) ; call("label:0" ; "taskCounter" ;
+    "inc" ; emp) ; assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ;
+    call("label:0" ; "this" ; "informObserver" ; emp) ; if "/="("observer" ::
+    null) th skip el skip fi ; return(emp) ; return(emp) ; call("label:1" ;
+    "busyCounter" ; "inc" ; emp) ; assign("Counter1.value" ; "+"(
+    "Counter1.value" :: int(1))) ; call("label:0" ; "this" ; "informObserver" ;
+    emp) ; if "/="("observer" :: null) th skip el skip fi ; call("label:0" ;
+    "observer" ; "newCounterValue" ; "observertoken" :: "value") ; assign(
+    "Counter1-4.token", "Counter1-4.val" ; str("busythreads") :: int(2)) ; if
+    "="("token" :: str("tasks")) th skip el skip fi ; if "="("token" :: str(
+    "threads")) th skip el skip fi ; if "="("token" :: str("busythreads")) th
+    skip el skip fi ; assign("ShepherdTask0.busythreads" ; "Counter1-4.val") ;
+    return(emp) ; return(emp) ; return(emp) ; call("label:2" ; "task" ; "getId"
+    ; emp) ; assign("Monk0-4.id" ; "ShepherdTask0.taskId") ; return("id") ;
+    assign("Monk0.taskId" ; int(1)) ; assign("Monk0.taskHistory" ; "|-"(
+    "Monk0.taskHistory" :: "Monk0.taskId")) ; call("label:3" ; "task" ;
+    "execute" ; emp) ; call("l1" ; "this" ; "createThreads" ; emp) ; call("l2"
+    ; "this" ; "killThreads" ; emp) ; assign("ShepherdTask0-8.idlethreads" ;
+    "-"("ShepherdTask0.threads" :: "ShepherdTask0.busythreads")) ; assign(
+    "ShepherdTask0-7.idlethreads" ; "-"("ShepherdTask0.threads" ::
+    "ShepherdTask0.busythreads")) ; return(emp) ; return(emp) ; assign(
+    "Main0-1.i" ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip
+    el skip fi ; new("task" ; "CounterTask" ; "i" :: "executionCounter") ;
+    assign("CounterTask0.taskId", "CounterTask0.myCounter" ; int(1) :: ob(
+    "Counter0")) ; call(".anon" ; "this" ; "init" ; emp) ; assign(
+    "Main0-1.task" ; ob("CounterTask0")) ; call("label:0" ; "threadpool" ;
+    "dispatchTask" ; "task") ; assign("Main0-3.task" ; ob("CounterTask0")) ;
+    call("label:0" ; "taskQueue" ; "enqueueTask" ; "task") ; assign(
+    "Abbey0-7.task" ; ob("CounterTask0")) ; assign("TaskQueue0.tasks" ; "|-"(
+    "TaskQueue0.tasks" :: "Abbey0-7.task")) ; call("label:0" ; "taskCounter" ;
+    "inc" ; emp) ; assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ;
+    call("label:0" ; "this" ; "informObserver" ; emp) ; if "/="("observer" ::
+    null) th skip el skip fi ; return(emp) ; return(emp) ; return(emp) ; call(
+    ".anon" ; "this" ; "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ;
+    assign("Main0-1.i" ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10))
+    th skip el skip fi ; new("task" ; "CounterTask" ; "i" ::
+    "executionCounter") ; assign("CounterTask1.taskId",
+    "CounterTask1.myCounter" ; int(2) :: ob("Counter0")) ; call(".anon" ;
+    "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob("CounterTask1")) ;
+    call("label:0" ; "threadpool" ; "dispatchTask" ; "task") ; assign(
+    "Main0-4.task" ; ob("CounterTask1")) ; call("label:0" ; "taskQueue" ;
+    "enqueueTask" ; "task") ; assign("Abbey0-8.task" ; ob("CounterTask1")) ;
+    assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" :: "Abbey0-8.task")) ;
+    call("label:0" ; "taskCounter" ; "inc" ; emp) ; assign("Counter0.value" ;
+    "+"("Counter0.value" :: int(1))) ; call("label:0" ; "this" ;
+    "informObserver" ; emp) ; if "/="("observer" :: null) th skip el skip fi ;
+    return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ; "run" ;
+    emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i" ; "+"(
+    "Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ; new(
+    "task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask1.taskId", "CounterTask1.myCounter" ; int(3) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask1")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; assign("Main0-5.task" ; ob("CounterTask1")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; assign("Abbey0-9.task" ; ob(
+    "CounterTask1")) ; assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" ::
+    "Abbey0-9.task")) ; call("label:0" ; "taskCounter" ; "inc" ; emp) ; assign(
+    "Counter0.value" ; "+"("Counter0.value" :: int(1))) ; call("label:0" ;
+    "this" ; "informObserver" ; emp) ; if "/="("observer" :: null) th skip el
+    skip fi ; return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i"
+    ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ;
+    new("task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask2.taskId", "CounterTask2.myCounter" ; int(4) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask2")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; assign("Main0-6.task" ; ob("CounterTask2")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; assign("Abbey0-10.task" ; ob(
+    "CounterTask2")) ; assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" ::
+    "Abbey0-10.task")) ; call("label:0" ; "taskCounter" ; "inc" ; emp) ;
+    assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ; call("label:0"
+    ; "this" ; "informObserver" ; emp) ; if "/="("observer" :: null) th skip el
+    skip fi ; return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i"
+    ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ;
+    new("task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask2.taskId", "CounterTask2.myCounter" ; int(5) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask2")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; assign("Main0-7.task" ; ob("CounterTask2")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; assign("Abbey0-11.task" ; ob(
+    "CounterTask2")) ; assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" ::
+    "Abbey0-11.task")) ; call("label:0" ; "taskCounter" ; "inc" ; emp) ;
+    assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ; call("label:0"
+    ; "this" ; "informObserver" ; emp) ; if "/="("observer" :: null) th skip el
+    skip fi ; return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i"
+    ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ;
+    new("task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask3.taskId", "CounterTask3.myCounter" ; int(6) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask3")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; assign("Main0-8.task" ; ob("CounterTask3")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; assign("Abbey0-12.task" ; ob(
+    "CounterTask3")) ; assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" ::
+    "Abbey0-12.task")) ; call("label:0" ; "taskCounter" ; "inc" ; emp) ;
+    assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ; call("label:0"
+    ; "this" ; "informObserver" ; emp) ; if "/="("observer" :: null) th skip el
+    skip fi ; return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i"
+    ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ;
+    new("task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask3.taskId", "CounterTask3.myCounter" ; int(7) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask3")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; assign("Main0-9.task" ; ob("CounterTask3")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; assign("Abbey0-13.task" ; ob(
+    "CounterTask3")) ; assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" ::
+    "Abbey0-13.task")) ; call("label:0" ; "taskCounter" ; "inc" ; emp) ;
+    assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ; call("label:0"
+    ; "this" ; "informObserver" ; emp) ; if "/="("observer" :: null) th skip el
+    skip fi ; return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i"
+    ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ;
+    new("task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask4.taskId", "CounterTask4.myCounter" ; int(8) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask4")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; assign("Main0-10.task" ; ob("CounterTask4")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; assign("Abbey0-14.task" ; ob(
+    "CounterTask4")) ; assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" ::
+    "Abbey0-14.task")) ; call("label:0" ; "taskCounter" ; "inc" ; emp) ;
+    assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ; call("label:0"
+    ; "this" ; "informObserver" ; emp) ; if "/="("observer" :: null) th skip el
+    skip fi ; return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i"
+    ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ;
+    new("task" ; "CounterTask" ; "i" :: "executionCounter") ; assign(
+    "CounterTask4.taskId", "CounterTask4.myCounter" ; int(9) :: ob("Counter0"))
+    ; call(".anon" ; "this" ; "init" ; emp) ; assign("Main0-1.task" ; ob(
+    "CounterTask4")) ; call("label:0" ; "threadpool" ; "dispatchTask" ; "task")
+    ; assign("Main0-11.task" ; ob("CounterTask4")) ; call("label:0" ;
+    "taskQueue" ; "enqueueTask" ; "task") ; assign("Abbey0-15.task" ; ob(
+    "CounterTask4")) ; assign("TaskQueue0.tasks" ; "|-"("TaskQueue0.tasks" ::
+    "Abbey0-15.task")) ; call("label:0" ; "taskCounter" ; "inc" ; emp) ;
+    assign("Counter0.value" ; "+"("Counter0.value" :: int(1))) ; call("label:0"
+    ; "this" ; "informObserver" ; emp) ; if "/="("observer" :: null) th skip el
+    skip fi ; return(emp) ; return(emp) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; return(emp) ; return(emp) ; return(emp) ; assign("Main0-1.i"
+    ; "+"("Main0-1.i" :: int(1))) ; if "<"("i" :: int(10)) th skip el skip fi ;
+    return(emp) | 
+  "Abbey0-0.mrate" |> int(5), 
+  "Abbey0-0.shepherd" |> ob("ShepherdTask0"), 
+  "Abbey0-1.amount" |> int(1), 
+  "Abbey0-1.i" |> int(1), 
+  "Abbey0-1.thread" |> ob("Monk0"), 
+  "Abbey0-10.task" |> ob("CounterTask2"), 
+  "Abbey0-11.task" |> ob("CounterTask2"), 
+  "Abbey0-12.task" |> ob("CounterTask3"), 
+  "Abbey0-13.task" |> ob("CounterTask3"), 
+  "Abbey0-14.task" |> ob("CounterTask4"), 
+  "Abbey0-15.task" |> ob("CounterTask4"), 
+  "Abbey0-3.task" |> ob("ShepherdTask0"), 
+  "Abbey0-4.task" |> ob("ShepherdTask0"), 
+  "Abbey0-6.task" |> ob("CounterTask0"), 
+  "Abbey0-7.task" |> ob("CounterTask0"), 
+  "Abbey0-8.task" |> ob("CounterTask1"), 
+  "Abbey0-9.task" |> ob("CounterTask1"), 
+  "Abbey0.busyCounter" |> ob("Counter1"), 
+  "Abbey0.maxNofThreads" |> int(0), 
+  "Abbey0.size" |> int(1), 
+  "Abbey0.taskCounter" |> ob("Counter0"), 
+  "Abbey0.taskQueue" |> ob("TaskQueue0"), 
+  "Abbey0.threadCounter" |> ob("Counter1"), 
+  "Abbey0.threads" |> list(ob("Monk0")), 
+  "Counter0.observer" |> "ShepherdTask0-1.caller", 
+  "Counter0.observertoken" |> str("tasks"), 
+  "Counter0.value" |> int(10), 
+  "Counter1-4.token" |> str("busythreads"), 
+  "Counter1-4.val" |> int(2), 
+  "Counter1.observer" |> "ShepherdTask0-3.caller", 
+  "Counter1.observertoken" |> str("busythreads"), 
+  "Counter1.value" |> int(2), 
+  "CounterTask0.myCounter" |> ob("Counter0"), 
+  "CounterTask0.taskId" |> int(1), 
+  "CounterTask1.myCounter" |> ob("Counter0"), 
+  "CounterTask1.taskId" |> int(3), 
+  "CounterTask2.myCounter" |> ob("Counter0"), 
+  "CounterTask2.taskId" |> int(5), 
+  "CounterTask3.myCounter" |> ob("Counter0"), 
+  "CounterTask3.taskId" |> int(7), 
+  "CounterTask4.myCounter" |> ob("Counter0"), 
+  "CounterTask4.taskId" |> int(9), 
+  "Main0-1.i" |> int(10), 
+  "Main0-1.task" |> ob("CounterTask4"), 
+  "Main0-10.task" |> ob("CounterTask4"), 
+  "Main0-11.task" |> ob("CounterTask4"), 
+  "Main0-2.task" |> ob("CounterTask0"), 
+  "Main0-3.task" |> ob("CounterTask0"), 
+  "Main0-4.task" |> ob("CounterTask1"), 
+  "Main0-5.task" |> ob("CounterTask1"), 
+  "Main0-6.task" |> ob("CounterTask2"), 
+  "Main0-7.task" |> ob("CounterTask2"), 
+  "Main0-8.task" |> ob("CounterTask3"), 
+  "Main0-9.task" |> ob("CounterTask3"), 
+  "Main0.executionCounter" |> ob("Counter0"), 
+  "Main0.maxthreads_init" |> int(0), 
+  "Main0.nthreads_init" |> int(1), 
+  "Main0.threadpool" |> ob("Abbey0"), 
+  "Monk0-2.task" |> ob("ShepherdTask0"), 
+  "Monk0-4.id" |> int(1), 
+  "Monk0.busyCounter" |> ob("Counter1"), 
+  "Monk0.kill" |> bool(false), 
+  "Monk0.queue" |> ob("TaskQueue0"), 
+  "Monk0.task" |> ob("ShepherdTask0"), 
+  "Monk0.taskHistory" |> list(int(1)), 
+  "Monk0.taskId" |> int(1), 
+  "Monk0.threadCounter" |> ob("Counter1"), 
+  "ShepherdTask0-1.token" |> str("tasks"), 
+  "ShepherdTask0-2.token" |> str("threads"), 
+  "ShepherdTask0-3.token" |> str("busythreads"), 
+  "ShepherdTask0-4.val" |> int(1), 
+  "ShepherdTask0-5.val" |> int(1), 
+  "ShepherdTask0-7.idlethreads" |> int(-1), 
+  "ShepherdTask0-8.idlethreads" |> int(-1), 
+  "ShepherdTask0.busyCounter" |> ob("Counter1"), 
+  "ShepherdTask0.busythreads" |> int(2), 
+  "ShepherdTask0.maxthreads" |> int(1), 
+  "ShepherdTask0.mrate" |> int(5), 
+  "ShepherdTask0.taskCounter" |> ob("Counter0"), 
+  "ShepherdTask0.taskId" |> int(1), 
+  "ShepherdTask0.taskQueue" |> ob("TaskQueue0"), 
+  "ShepherdTask0.threadCounter" |> ob("Counter1"), 
+  "ShepherdTask0.threadpool" |> ob("Abbey0"), 
+  "ShepherdTask0.threads" |> int(1), 
+  "TaskQueue0.taskCounter" |> ob("Counter0"), 
+  "TaskQueue0.tasks" |> list(ob("CounterTask0") :: ob("CounterTask0") :: ob(
+    "CounterTask1") :: ob("CounterTask1") :: ob("CounterTask2") :: ob(
+    "CounterTask2") :: ob("CounterTask3") :: ob("CounterTask3") :: ob(
+    "CounterTask4") :: ob("CounterTask4")), 
+  "nolabel.var" |> ob("Main0") | 
+  "Abbey0" |> list("nthreads_init" :: "maxthreads_init"), 
+  "Abbey0-1" |> list("Abbey0.size"), 
+  "Abbey0-10" |> list("Main0-6.task"), 
+  "Abbey0-11" |> list("Main0-7.task"), 
+  "Abbey0-12" |> list("Main0-8.task"), 
+  "Abbey0-13" |> list("Main0-9.task"), 
+  "Abbey0-14" |> list("Main0-10.task"), 
+  "Abbey0-15" |> list("Main0-11.task"), 
+  "Abbey0-3" |> list("Abbey0-0.shepherd"), 
+  "Abbey0-4" |> list("Abbey0-3.task"), 
+  "Abbey0-6" |> list("Main0-2.task"), 
+  "Abbey0-7" |> list("Main0-3.task"), 
+  "Abbey0-8" |> list("Main0-4.task"), 
+  "Abbey0-9" |> list("Main0-5.task"), 
+  "Counter1-4" |> list("Counter1.observertoken" :: "Counter1.value"), 
+  "CounterTask0" |> list("Main0-1.i" :: "Main0.executionCounter"), 
+  "CounterTask1" |> list("Main0-1.i" :: "Main0.executionCounter"), 
+  "CounterTask2" |> list("Main0-1.i" :: "Main0.executionCounter"), 
+  "CounterTask3" |> list("Main0-1.i" :: "Main0.executionCounter"), 
+  "CounterTask4" |> list("Main0-1.i" :: "Main0.executionCounter"), 
+  "Main0" |> list(int(1) :: int(0)), 
+  "Main0-10" |> list("Main0-1.task"), 
+  "Main0-11" |> list("Main0-1.task"), 
+  "Main0-2" |> list("Main0-1.task"), 
+  "Main0-3" |> list("Main0-1.task"), 
+  "Main0-4" |> list("Main0-1.task"), 
+  "Main0-5" |> list("Main0-1.task"), 
+  "Main0-6" |> list("Main0-1.task"), 
+  "Main0-7" |> list("Main0-1.task"), 
+  "Main0-8" |> list("Main0-1.task"), 
+  "Main0-9" |> list("Main0-1.task"), 
+  "Monk0" |> list("Abbey0.taskQueue" :: "Abbey0.busyCounter" ::
+    "Abbey0.threadCounter"), 
+  "ShepherdTask0" |> list(int(1) :: "Abbey0.taskCounter" ::
+    "Abbey0.threadCounter" :: "Abbey0.busyCounter" :: "Abbey0.maxNofThreads" ::
+    "Abbey0-0.mrate" :: "Abbey0.taskQueue" :: "Abbey0.this"), 
+  "ShepherdTask0-1" |> list(str("tasks")), 
+  "ShepherdTask0-2" |> list(str("threads")), 
+  "ShepherdTask0-3" |> list(str("busythreads")), 
+  "TaskQueue0" |> list("Abbey0.taskCounter"), 
+  "returnMonk0-2" |> list("Monk0-2.task"), 
+  "returnMonk0-4" |> list("Monk0-4.id"), 
+  "returnShepherdTask0-4" |> list("ShepherdTask0-4.val"), 
+  "returnShepherdTask0-5" |> list("ShepherdTask0-5.val")} Att: noSubst Label:
+    "lastrun" >
+ 
+<log From: 155 To: 156 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-2" >
+ 
+<log From: 161 To: 162 Type: "await"
+    Data: {await ">"("#"("tasks") :: int(0)) | 
+  "Abbey0-0.mrate" |> int(5), 
+  "Abbey0-0.shepherd" |> ob("ShepherdTask0"), 
+  "Abbey0-1.amount" |> int(1), 
+  "Abbey0-1.i" |> int(1), 
+  "Abbey0-1.thread" |> ob("Monk0"), 
+  "Abbey0-3.task" |> ob("ShepherdTask0"), 
+  "Abbey0-4.task" |> ob("ShepherdTask0"), 
+  "Abbey0.busyCounter" |> ob("Counter1"), 
+  "Abbey0.maxNofThreads" |> int(0), 
+  "Abbey0.size" |> int(1), 
+  "Abbey0.taskCounter" |> ob("Counter0"), 
+  "Abbey0.taskQueue" |> ob("TaskQueue0"), 
+  "Abbey0.threadCounter" |> ob("Counter1"), 
+  "Abbey0.threads" |> list(ob("Monk0")), 
+  "Counter0.observer" |> "ShepherdTask0-1.caller", 
+  "Counter0.observertoken" |> str("tasks"), 
+  "Counter0.value" |> int(1), 
+  "Counter1.observer" |> "ShepherdTask0-3.caller", 
+  "Counter1.observertoken" |> str("busythreads"), 
+  "Counter1.value" |> int(1), 
+  "CounterTask0.myCounter" |> ob("Counter0"), 
+  "CounterTask0.taskId" |> int(0), 
+  "Main0-1.i" |> int(0), 
+  "Main0-1.task" |> ob("CounterTask0"), 
+  "Main0.executionCounter" |> ob("Counter0"), 
+  "Main0.maxthreads_init" |> int(0), 
+  "Main0.nthreads_init" |> int(1), 
+  "Main0.threadpool" |> ob("Abbey0"), 
+  "Monk0.busyCounter" |> ob("Counter1"), 
+  "Monk0.kill" |> bool(false), 
+  "Monk0.queue" |> ob("TaskQueue0"), 
+  "Monk0.taskHistory" |> list(emp), 
+  "Monk0.threadCounter" |> ob("Counter1"), 
+  "ShepherdTask0-1.token" |> str("tasks"), 
+  "ShepherdTask0-2.token" |> str("threads"), 
+  "ShepherdTask0-3.token" |> str("busythreads"), 
+  "ShepherdTask0-4.val" |> int(1), 
+  "ShepherdTask0-5.val" |> int(1), 
+  "ShepherdTask0.busyCounter" |> ob("Counter1"), 
+  "ShepherdTask0.busythreads" |> int(1), 
+  "ShepherdTask0.maxthreads" |> int(1), 
+  "ShepherdTask0.mrate" |> int(5), 
+  "ShepherdTask0.taskCounter" |> ob("Counter0"), 
+  "ShepherdTask0.taskId" |> int(1), 
+  "ShepherdTask0.taskQueue" |> ob("TaskQueue0"), 
+  "ShepherdTask0.threadCounter" |> ob("Counter1"), 
+  "ShepherdTask0.threadpool" |> ob("Abbey0"), 
+  "ShepherdTask0.threads" |> int(1), 
+  "TaskQueue0.taskCounter" |> ob("Counter0"), 
+  "TaskQueue0.tasks" |> list(ob("ShepherdTask0")), 
+  "nolabel.var" |> ob("Main0") | 
+  "eq" |> bool(true)} Att: noSubst Label: "Monk0-2" >
+ 
+<log From: 176 To: 177 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-3" >
+ 
+<log From: 189 To: 190 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-4" >
+ 
+<log From: 197 To: 198 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "/="("ShepherdTask0-3.caller" :: null)} Att: noSubst Label:
+    "Counter1-3" >
+ 
+<log From: 240 To: 241 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-5" >
+ 
+<log From: 268 To: 269 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-6" >
+ 
+<log From: 296 To: 297 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-7" >
+ 
+<log From: 324 To: 325 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-8" >
+ 
+<log From: 352 To: 353 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-9" >
+ 
+<log From: 380 To: 381 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-10" >
+ 
+<log From: 408 To: 409 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-11" >
+ 
+<log From: 436 To: 437 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-12" >
+ 
+<log From: 464 To: 465 Type: "ifthenelse"
+    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    "Counter0-13" >
+}
+Bye.

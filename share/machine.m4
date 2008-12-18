@@ -227,21 +227,21 @@ not ENABLED(SST, (S :: L), CN, T),
 ifdef(`LOGGING',dnl
 --- record an await whose condition is not fulfilled
 crl 
-  PRELOG`'dnl
-  `< O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN '
+  { PRELOG`'dnl
+  `< O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN ' }
   =>
-  POSTLOG(`await E', `"blocked await"', TnoSubst, `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > '
+  { POSTLOG(`await E', `"blocked await"', TnoSubst, `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
+  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > ' }
 ---  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'
   if `not EVALGUARD(E, (S :: L), CN, T) asBool'
   `[label blockedawait]' .
 
 crl 
-  PRELOG`'dnl
-  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > CN '
+  { PRELOG`'dnl
+  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > CN ' }
   =>
-  POSTLOG(`await E', `"await"', TnoSubst, `"eq" |> renExpr(S, L, (E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'
+ {  POSTLOG(`await E', `"await"', TnoSubst, `"eq" |> renExpr(S, L, (E) )' )`'dnl
+  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'}
   if `EVALGUARD(E, (S :: L), CN, T) asBool'
   `[label notawait]' .
 

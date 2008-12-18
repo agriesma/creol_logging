@@ -1,6 +1,30 @@
 ==========================================
-rewrite [100] in PROGRAM : classes main("Hello", emp) .
-result [Configuration]: 
+rewrite [100] in PROGRAM : main(classes, "Hello", emp) .
+result State: {
+< ob("Console0") : "Console" |
+  Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("Hello0") : "Hello" |
+  Att: "console" |-> ob("Console0"), "this" |-> ob("Hello0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 3 >
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 22 >
+ 
+< ob("main") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 0 >
+ 
 < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("output" @
     "Console" ; list(emp)) ; return(emp) >, < "print" : Method | Param:
@@ -13,7 +37,8 @@ result [Configuration]:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("console" ;
     "Console" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
     |-> null, "label:0" |-> null, Code: call("label:0" ; "console" ; "print" ;
-    str("hello, world")) ; get("label:0" ; noVid) ; return(emp) >,
+    str("hello, world")) ; get("label:0" ; noVid) ; free("label:0") ; return(
+    emp) >,
   Ocnt: 1 >
  
 <log From: 0 To: 22 Type: "lastrun"
@@ -31,37 +56,5 @@ result [Configuration]:
   "Hello0.console" |> ob("Console0"), 
   "nolabel.var" |> ob("Hello0") | 
   "Hello0-2" |> list(str("hello, world"))} Att: noSubst Label: "lastrun" >
- 
-< ob("Console0") : "Console" |
-  Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console0"),
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 2 >
- 
-< ob("Hello0") : "Hello" |
-  Att: "console" |-> ob("Console0"), "this" |-> ob("Hello0"),
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 3 >
- 
-< ob("log") : "" |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 22 >
- 
-< ob("main") : "" |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Dealloc: noDealloc,
-  Ev: noMsg,
-  Lcnt: 0 >
-
+}
 Bye.

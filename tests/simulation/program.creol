@@ -1,0 +1,617 @@
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// Simple counter interface
+// Can e.g. also be used to create a race-condition-sensitive counter
+
+interface Counter
+begin
+  // increment
+  with Any op inc
+  // decrement
+  with Any op dec
+  // query value
+  with Any op value(out val: Int)
+  // register observer
+  with CounterObserver op registerObserver(in token: String)
+end
+
+interface CounterObserver
+begin
+  with Counter op newCounterValue(in token: String, val: Int)
+end
+
+// Standard counter implementation
+
+class Counter contracts Counter
+begin
+  var value: Int
+  var observer: CounterObserver
+  var observertoken: String
+	
+  op init ==
+    value := 0;
+    observer := null;
+    observertoken := ""
+
+  op informObserver ==
+    var l: Label[ ];
+    if (observer /= null) then
+      observer.newCounterValue(observertoken, value;)
+    end
+
+
+  with Any op inc ==
+    value := value + 1;
+    informObserver(;)
+	
+  with Any op dec ==
+    value := value - 1;
+    informObserver(;)
+	
+  with Any op value(out val: Int) ==
+    val := value
+
+  with CounterObserver op registerObserver(in token: String) ==
+    observer := caller;
+    observertoken := token
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// standard interface that each thread pool has to implement
+
+interface ThreadPool
+begin
+  with Any op dispatchTask(in task: Task)
+  with Any op createThreads(in amount: Int)
+end
+
+class Abbey(size: Int, maxNofThreads: Int) contracts ThreadPool
+begin
+  var taskCounter: Counter;
+  var threadCounter: Counter;
+  var busyCounter: Counter;
+  var taskQueue: TaskQueue;
+  var threads: List[Thread]
+	
+  op init ==
+    var shepherd: Task;
+    var mrate: Int;
+    taskCounter := new Counter;
+    threadCounter := new Counter;
+    busyCounter := new Counter;
+    taskQueue := new TaskQueue(taskCounter);
+    threads := nil;
+    mrate := 5;
+    shepherd := new ShepherdTask(1, taskCounter, threadCounter, busyCounter,
+      maxNofThreads, mrate, taskQueue, this);
+    this.createThreads(size;);
+    this.dispatchTask(shepherd;)
+
+		
+  with Any op dispatchTask(in task: Task) ==
+    taskQueue.enqueueTask(task;)
+
+  with Any op createThreads(amount: Int) ==
+    var i: Int;
+    var thread: Thread;
+    i := 0;
+    while (i < amount) do
+      thread := new Monk(taskQueue, busyCounter, threadCounter); 
+      threads := threads |- thread;
+      threadCounter.inc(;);
+      i := i + 1
+    end
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// standard interface for Task, explains why we want to have Thread interface
+
+interface Task
+begin
+  with Thread op getId(out taskId: Int) // get the (unique?) Id of the task
+  with Thread op execute(out kill: Bool) // execute the task
+end
+
+// Specific task implementations
+
+// CounterTask is a simple task for testing purposes
+// The task can be configured with an external counter object
+// Execution of the task results in an increment of the counter
+// N.B. I tried to use inheritance from class Task
+// but it seems to be impossible to override init and run
+
+class CounterTask(taskId: Int, myCounter: Counter) implements Task
+begin
+  with Thread op getId(out id: Int) ==
+    id := taskId
+
+  with Thread op execute(out kill: Bool) ==
+    myCounter.inc(;);
+    kill := false
+end
+
+class PoisonTask(taskId: Int) implements Task
+begin
+  with Thread op getId(out id: Int) ==
+    id := taskId
+		
+  with Thread op execute(out kill: Bool) ==
+    kill := true
+end
+
+class ShepherdTask(taskId: Int, taskCounter: Counter, threadCounter: Counter,
+  busyCounter: Counter, maxthreads: Int, mrate: Int, taskQueue: TaskQueue,
+  threadpool: ThreadPool)
+contracts Task, CounterObserver
+begin
+  var tasks: Int
+  var threads: Int
+  var busythreads: Int
+
+  op init ==
+    maxthreads := maxthreads + 1;
+    taskCounter.registerObserver("tasks";);
+    threadCounter.registerObserver("threads";);
+    busyCounter.registerObserver("busythreads";);
+    threadCounter.value(;threads);
+    busyCounter.value(;busythreads)
+
+  op createThreads ==
+    var l: Label[ ];
+    var task: Task;
+    var amountToCreate: Int;
+    var idlethreads: Int := threads - busythreads;
+    await ((threads < maxthreads)
+      && ((idlethreads - tasks) < (threads / mrate)));
+    amountToCreate := tasks - idlethreads + (threads / mrate);
+    if (amountToCreate > (maxthreads - threads)) then
+      amountToCreate := maxthreads - threads
+    end;
+    if (amountToCreate > 0) then
+      l!threadpool.createThreads(amountToCreate);
+      await l?
+    end;
+    createThreads(;)
+
+  op killThreads ==
+    var task: Task;
+    var idlethreads: Int := threads - busythreads;
+    await (idlethreads > (threads / 2));
+    task := new PoisonTask(0);
+    taskQueue.enqueueTask(task;);
+    killThreads(;)
+
+  with Thread op getId(out id: Int) ==
+    id := taskId
+
+  with Thread op execute(out kill: Bool) ==
+    var l1: Label[ ];
+    var l2: Label[ ];
+    l1!createThreads();
+    l2!killThreads();
+    await l1? && l2?;
+    kill := true
+
+  with Counter op newCounterValue(in token: String, val: Int) ==
+    if (token = "tasks") then
+      tasks := val
+    end;
+    if (token = "threads") then
+      threads := val
+    end;
+    if (token = "busythreads") then
+      busythreads := val
+    end
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// The Task "database"
+
+interface TaskQueue
+begin
+  with Any op enqueueTask(in task: Task)
+  with Thread op dequeueTask(out task: Task)
+end
+
+class TaskQueue(taskCounter: Counter) implements TaskQueue
+begin
+  var tasks: List[Task]
+
+  op init == 
+    tasks := nil
+
+  with Any op enqueueTask(in task: Task) ==
+    tasks := tasks |- task;
+    taskCounter.inc(;)
+				
+  with Thread op dequeueTask(out task: Task) ==
+    await #(tasks) > 0;
+    task := head(tasks);
+    tasks := tail(tasks);
+    taskCounter.dec(;)
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// simple tester program for Threadpool
+
+// This command gets a count of 10 in the counter object referenced
+// from the object "Main0"
+// rew [2500] classes main("Main", int(2) :: int(4)) .
+
+// This command gets a count of 0 in the counter object referenced
+// from the object "Main0"
+// rew [2500] classes main("Main", int(0) :: int(4)) .
+
+// All parameters / variables with suffix `_init' are considered by
+// the tool.
+class Main(nthreads_init: Int, maxthreads_init: Int)
+begin
+  var threadpool: ThreadPool
+  var executionCounter: Counter
+
+  op init ==
+    // Initialize the threadpool with initial amount of threads as specified
+    // by `nthreads_init' parameter
+    threadpool := new Abbey(nthreads_init, maxthreads_init);
+    // and a Counter for the amount of task executions
+    executionCounter := new Counter
+		
+  op run ==
+    var task: Task;
+    var i: Int;
+    i := 0;
+    while (i < 10) do
+      task := new CounterTask(i, executionCounter);
+      threadpool.dispatchTask(task;);
+      i := i + 1
+    end
+    // After running, executionCounter should be 10
+end
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// standard interface for Thread, primarily used as restrictive co-interface
+
+interface Thread
+begin
+end
+
+class Monk(queue: TaskQueue, busyCounter: Counter, threadCounter: Counter)
+contracts Thread
+begin	
+  var index: Int
+  var task: Task
+  var taskId: Int
+  var taskHistory: List[Int]
+  var kill: Bool
+
+  op init ==
+    taskHistory := nil;
+    kill := false
+
+  op run ==
+    queue.dequeueTask(;task);
+    busyCounter.inc(;);
+    task.getId(;taskId);
+    taskHistory := taskHistory |- taskId;
+    task.execute(;kill);
+    busyCounter.dec(;);
+    if (kill) then
+      threadCounter.dec(;)
+    else
+      release;
+      run(;)
+    end
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// Simple counter interface
+// Can e.g. also be used to create a race-condition-sensitive counter
+
+interface Counter
+begin
+  // increment
+  with Any op inc
+  // decrement
+  with Any op dec
+  // query value
+  with Any op value(out val: Int)
+  // register observer
+  with CounterObserver op registerObserver(in token: String)
+end
+
+interface CounterObserver
+begin
+  with Counter op newCounterValue(in token: String, val: Int)
+end
+
+// Standard counter implementation
+
+class Counter contracts Counter
+begin
+  var value: Int
+  var observer: CounterObserver
+  var observertoken: String
+	
+  op init ==
+    value := 0;
+    observer := null;
+    observertoken := ""
+
+  op informObserver ==
+    var l: Label[ ];
+    if (observer /= null) then
+      observer.newCounterValue(observertoken, value;)
+    end
+
+
+  with Any op inc ==
+    value := value + 1;
+    informObserver(;)
+	
+  with Any op dec ==
+    value := value - 1;
+    informObserver(;)
+	
+  with Any op value(out val: Int) ==
+    val := value
+
+  with CounterObserver op registerObserver(in token: String) ==
+    observer := caller;
+    observertoken := token
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// standard interface that each thread pool has to implement
+
+interface ThreadPool
+begin
+  with Any op dispatchTask(in task: Task)
+  with Any op createThreads(in amount: Int)
+end
+
+class Abbey(size: Int, maxNofThreads: Int) contracts ThreadPool
+begin
+  var taskCounter: Counter;
+  var threadCounter: Counter;
+  var busyCounter: Counter;
+  var taskQueue: TaskQueue;
+  var threads: List[Thread]
+	
+  op init ==
+    var shepherd: Task;
+    var mrate: Int;
+    taskCounter := new Counter;
+    threadCounter := new Counter;
+    busyCounter := new Counter;
+    taskQueue := new TaskQueue(taskCounter);
+    threads := nil;
+    mrate := 5;
+    shepherd := new ShepherdTask(1, taskCounter, threadCounter, busyCounter,  maxNofThreads, mrate, taskQueue, this);
+    this.createThreads(size;);
+    this.dispatchTask(shepherd;)
+
+		
+  with Any op dispatchTask(in task: Task) ==
+    taskQueue.enqueueTask(task;)
+
+  with Any op createThreads(amount: Int) ==
+    var i: Int;
+    var thread: Thread;
+    i := 0;
+    while (i < amount) do
+      thread := new Monk(taskQueue, busyCounter, threadCounter); 
+      threads := threads |- thread;
+      threadCounter.inc(;);
+      i := i + 1
+    end
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// standard interface for Task, explains why we want to have Thread interface
+
+interface Task
+begin
+  with Thread op getId(out taskId: Int) // get the (unique?) Id of the task
+  with Thread op execute(out kill: Bool) // execute the task
+end
+
+// Specific task implementations
+
+// CounterTask is a simple task for testing purposes
+// The task can be configured with an external counter object
+// Execution of the task results in an increment of the counter
+// N.B. I tried to use inheritance from class Task
+// but it seems to be impossible to override init and run
+
+class CounterTask(taskId: Int, myCounter: Counter) implements Task
+begin
+  with Thread op getId(out id: Int) ==
+    id := taskId
+
+  with Thread op execute(out kill: Bool) ==
+    myCounter.inc(;);
+    kill := false
+end
+
+class PoisonTask(taskId: Int) implements Task
+begin
+  with Thread op getId(out id: Int) ==
+    id := taskId
+		
+  with Thread op execute(out kill: Bool) ==
+    kill := true
+end
+
+class ShepherdTask(taskId: Int, taskCounter: Counter, threadCounter: Counter,
+  busyCounter: Counter, maxthreads: Int, mrate: Int, taskQueue: TaskQueue,
+  threadpool: ThreadPool)
+contracts Task, CounterObserver
+begin
+  var tasks: Int
+  var threads: Int
+  var busythreads: Int
+
+  op init ==
+    maxthreads := maxthreads + 1;
+    taskCounter.registerObserver("tasks";);
+    threadCounter.registerObserver("threads";);
+    busyCounter.registerObserver("busythreads";);
+    threadCounter.value(;threads);
+    busyCounter.value(;busythreads)
+
+  op createThreads ==
+    var l: Label[ ];
+    var task: Task;
+    var amountToCreate: Int;
+    var idlethreads: Int := threads - busythreads;
+    await ((threads < maxthreads)
+      && ((idlethreads - tasks) < (threads / mrate)));
+    amountToCreate := tasks - idlethreads + (threads / mrate);
+    if (amountToCreate > (maxthreads - threads)) then
+      amountToCreate := maxthreads - threads
+    end;
+    if (amountToCreate > 0) then
+      l!threadpool.createThreads(amountToCreate);
+      await l?
+    end;
+    createThreads(;)
+
+  op killThreads ==
+    var task: Task;
+    var idlethreads: Int := threads - busythreads;
+    await (idlethreads > (threads / 2));
+    task := new PoisonTask(0);
+    taskQueue.enqueueTask(task;);
+    killThreads(;)
+
+  with Thread op getId(out id: Int) ==
+    id := taskId
+
+  with Thread op execute(out kill: Bool) ==
+    var l1: Label[ ];
+    var l2: Label[ ];
+    l1!createThreads();
+    l2!killThreads();
+    await l1? && l2?;
+    kill := true
+
+  with Counter op newCounterValue(in token: String, val: Int) ==
+    if (token = "tasks") then
+      tasks := val
+    end;
+    if (token = "threads") then
+      threads := val
+    end;
+    if (token = "busythreads") then
+      busythreads := val
+    end
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// The Task "database"
+
+interface TaskQueue
+begin
+  with Any op enqueueTask(in task: Task)
+  with Thread op dequeueTask(out task: Task)
+end
+
+class TaskQueue(taskCounter: Counter) implements TaskQueue
+begin
+  var tasks: List[Task]
+
+  op init == 
+    tasks := nil
+
+  with Any op enqueueTask(in task: Task) ==
+    tasks := tasks |- task;
+    taskCounter.inc(;)
+				
+  with Thread op dequeueTask(out task: Task) ==
+    await #(tasks) > 0;
+    task := head(tasks);
+    tasks := tail(tasks);
+    taskCounter.dec(;)
+end
+
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// simple tester program for Threadpool
+
+// This command gets a count of 10 in the counter object referenced
+// from the object "Main0"
+// rew [2500] classes main("Main", int(2) :: int(4)) .
+
+// This command gets a count of 0 in the counter object referenced
+// from the object "Main0"
+// rew [2500] classes main("Main", int(0) :: int(4)) .
+
+// All parameters / variables with suffix `_init' are considered by
+// the tool.
+class Main(nthreads_init: Int, maxthreads_init: Int)
+begin
+  var threadpool: ThreadPool
+  var executionCounter: Counter
+
+  op init ==
+    // Initialize the threadpool with initial amount of threads as specified
+    // by `nthreads_init' parameter
+    threadpool := new Abbey(nthreads_init, maxthreads_init);
+    // and a Counter for the amount of task executions
+    executionCounter := new Counter
+		
+  op run ==
+    var task: Task;
+    var i: Int;
+    i := 0;
+    while (i < 10) do
+      task := new CounterTask(i, executionCounter);
+      threadpool.dispatchTask(task;);
+      i := i + 1
+    end
+    // After running, executionCounter should be 10
+end
+// -*- mode: creol; maude-file: "program.maude" -*-
+
+// standard interface for Thread, primarily used as restrictive co-interface
+
+interface Thread
+begin
+end
+
+class Monk(queue: TaskQueue, busyCounter: Counter, threadCounter: Counter)
+contracts Thread
+begin	
+  var index: Int
+  var task: Task
+  var taskId: Int
+  var taskHistory: List[Int]
+  var kill: Bool
+
+  op init ==
+    taskHistory := nil;
+    kill := false
+
+  op run ==
+    queue.dequeueTask(;task);
+    busyCounter.inc(;);
+    task.getId(;taskId);
+    taskHistory := taskHistory |- taskId;
+    task.execute(;kill);
+    busyCounter.dec(;);
+    if (kill) then
+      threadCounter.dec(;)
+    else
+      release;
+      run(;)
+    end
+end
+
