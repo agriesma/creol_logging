@@ -201,10 +201,11 @@ ifdef(`LOGGING',dnl
   eq main(CN, C, DL) =
     { CN < ob("main") : "" | Att: noSubst, 
            Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
-           Lcnt: 0 > }dnl
-ifdef(`LOGGING',`
-'      < ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Dealloc: noDealloc`,' Ev: noMsg`,' Lcnt: 0 > 
-      <log From: 0 To: 0 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > .
-,` .')dnl
+           Lcnt: 0 > ifdef(`LOGGING',`
+'      < ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 0 > 
+      <log From: 1 To: 1 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > 
+)} . dnl
+
+dnl
 
 endm

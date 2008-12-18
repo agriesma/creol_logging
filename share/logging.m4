@@ -253,29 +253,29 @@ eq genTransR(noStmt , trans ) = trans .
 --- returnmarker`,' handeled like normal marker`,' but label is different
 rl
    PRELOG`'dnl
-   < O : C | Att: S`,' Pr: { L | $rmarker(CC, CLabel) ; SL }`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >
+   < O : C | Att: S`,' Pr: { L | $rmarker(CC, CLabel) ; SL }`,' PrQ: W`,' Lcnt: F >
    =>
    POSTLOG(` $marker(CC) ', `"$marker"', `TnoSubst', "dest" |> "return" + CLabel )dnl
-   < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F > 
+   < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Lcnt: F > 
    [label returnmarker] .
 
 --- normal marker for calls
 crl
    PRELOG`'dnl
-   < O : C | Att: S`,' Pr: { L | $marker(CC) ; SL }`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >
+   < O : C | Att: S`,' Pr: { L | $marker(CC) ; SL }`,' PrQ: W`,' Lcnt: F >
    =>
    POSTLOG(` $marker("call " + CC) ', `"$marker"', `TnoSubst', ( "dest" |> getLabel((L,S)) ) )dnl
-   < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F > 
+   < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Lcnt: F > 
    if $hasMapping(L`,' ".label")
    [label marker] .
 
 --- marker for calls from the initialing code that is introduced by the interpreter
 crl
    PRELOG`'dnl
-   < O : C | Att: S`,' Pr: { L | $marker(CC) ; SL }`,' PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F >
+   < O : C | Att: S`,' Pr: { L | $marker(CC) ; SL }`,' PrQ: W`,' Lcnt: F >
    =>
    POSTLOG(` $marker("internal " + CC) ', `"$marker"', `toTrans(L)', ( "dest" |> getThis(S) ) )dnl
-   < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Dealloc: LS`,' Ev: MM`,' Lcnt: F > 
+   < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Lcnt: F > 
    if $hasMapping(S`,' "this") and not $hasMapping(L`,' ".label")
    [label interpretermarker] .
 

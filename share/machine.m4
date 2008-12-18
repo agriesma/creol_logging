@@ -56,8 +56,8 @@ ifdef(`TIME',
 dnl
 
 ifdef(`LOGGING', dnl
-`define(`PRELOG', `< ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Dealloc: noDealloc`,' Ev: noMsg`,' Lcnt: logcnt >
-  ')define(`POSTLOG', `< ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Dealloc: noDealloc`,' Ev: noMsg`,' Lcnt: logcnt + 1 >
+`define(`PRELOG', `< ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: logcnt >
+  ')define(`POSTLOG', `< ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: logcnt + 1 >
   <log From: logcnt To: ( logcnt + 1 ) Type: $2 Data: { $1 | $3 | $4 }  Att: noSubst  Label: getLabel((L,S)) > 
   ')
 define(`MARKER', `$marker( $1 ) ; ')
@@ -132,6 +132,7 @@ STEP(dnl
 --- if_then_else
 ---
 STEP(dnl
+PRELOG`'dnl
 < O : C | Att: S`,' Pr: { L | if E th SL1 el SL2 fi ; SL }`,' PrQ: W`,' Lcnt: F >
   CLOCK,
 if EVAL(E, (S :: L), T) asBool then
@@ -227,29 +228,28 @@ ifdef(`LOGGING',dnl
 --- record an await whose condition is not fulfilled
 crl 
   PRELOG`'dnl
-  `< O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > '
+  `< O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN '
   =>
   POSTLOG(`await E', `"blocked await"', TnoSubst, `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > '
----  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >'
-  if `not EVALGUARD(E, (S :: L), MM, T) asBool'
+  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > '
+---  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'
+  if `not EVALGUARD(E, (S :: L), CN, T) asBool'
   `[label blockedawait]' .
 
 crl 
   PRELOG`'dnl
-  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F > '
+  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > CN '
   =>
   POSTLOG(`await E', `"await"', TnoSubst, `"eq" |> renExpr(S, L, (E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Dealloc: LS, Ev: MM, Lcnt: F >'
-  if `EVALGUARD(E, (S :: L), MM, T) asBool'
+  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'
+  if `EVALGUARD(E, (S :: L), CN, T) asBool'
   `[label notawait]' .
 
 )dnl
 CSTEP(dnl
-PRELOG`'dnl
-`{ < O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
-POSTLOG(`await E', `"await"', TnoSubst, `"eq" |> renExpr(S, L, E)' )`'dnl
-`{ < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
+`{ PRELOG < O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
+`{ POSTLOG(`await E', `"await"', TnoSubst, `"eq" |> renExpr(S, L, E)' )`'dnl
+< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `EVALGUARD(E, (S :: L), CN, T) asBool'
 `[label await]')
 

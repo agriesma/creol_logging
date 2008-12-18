@@ -20,7 +20,7 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
               null, Code: call( "label:0" ; "console" ; "print" ;
               str("hello, world") ) ; get( "label:0" ; noVid ) ;
-              return ( emp ) >,
+              free( "label:0" ) ; return ( emp ) >,
       Ocnt: 0 > .
 endm
 
