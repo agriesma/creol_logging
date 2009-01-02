@@ -75,7 +75,7 @@ The creoltools should compile with versions 3.09.3, 3.10.0, 3.10.1, and
 some of the dependencies.
 
    The compiler can be configured to generate XML documents.  In order
-to use this feature, you need to have ocaml-libxml2 version 0.0h or
+to use this feature, you need to have ocaml-libxml2 version 0.0j or
 later installed on your system.  The ocaml-libxml2 library is available
 from `http://heim.ifi.uio.no/~kyas/creoltools'.
 
