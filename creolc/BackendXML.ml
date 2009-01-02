@@ -620,27 +620,6 @@ let emit name tree =
 	  creol_type_to_xml c ;
 	  creol_expression_note_to_xml a ;
           XmlTextWriter.end_element writer
-      | Expression.Unary (a, o, f) -> 
-	  XmlTextWriter.start_element writer "creol:unary" ; 
-	  XmlTextWriter.write_attribute writer "operator" 
-	    (Expression.string_of_unaryop o) ;
-	  XmlTextWriter.start_element writer "creol:argument" ;
-	  creol_expression_to_xml f ;
-          XmlTextWriter.end_element writer ;
-	  creol_expression_note_to_xml a ;
-          XmlTextWriter.end_element writer
-      | Expression.Binary (a, o, f, s) -> 
-	  XmlTextWriter.start_element writer "creol:binary" ; 
-	  XmlTextWriter.write_attribute writer "operator"
-	    (Expression.string_of_binaryop o);
-	  XmlTextWriter.start_element writer "creol:first" ;
-	  creol_expression_to_xml f ;
-          XmlTextWriter.end_element writer ;
-	  XmlTextWriter.start_element writer "creol:second" ;
-	  creol_expression_to_xml s ;
-          XmlTextWriter.end_element writer ;
-	  creol_expression_note_to_xml a ;
-          XmlTextWriter.end_element writer
       | Expression.FuncCall (a, f, es) -> 
 	  XmlTextWriter.start_element writer "creol:funccall" ; 
 	  XmlTextWriter.write_attribute writer "name" f ;

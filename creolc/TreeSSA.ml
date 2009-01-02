@@ -83,9 +83,6 @@ let into_ssa program =
       | MapLit (a, l) ->
 	  let f (d, r) = (expression_to_ssa meth env d, expression_to_ssa meth env r) in
 	    MapLit (a, List.map f l)
-      | Unary (a, o, e) -> Unary (a, o, expression_to_ssa meth env e)
-      | Binary (a, o, l, r) ->
-	  Binary (a, o, expression_to_ssa meth env l, expression_to_ssa meth env r)
       | Expression.If (a, c, t, f) -> 
 	  Expression.If (a, expression_to_ssa meth env c, expression_to_ssa meth env t,
 			expression_to_ssa meth env f)
@@ -340,9 +337,6 @@ let out_of_ssa tree =
       | MapLit (a, l) ->
           let f (d, r) = (expression_of_ssa d, expression_of_ssa r) in
 	    MapLit (a, List.map f l)
-      | Unary (a, o, e) -> Unary (a, o, expression_of_ssa e)
-      | Binary (a, o, l, r) ->
-	  Binary (a, o, expression_of_ssa l, expression_of_ssa r)
       | Expression.If (a, c, t, f) -> 
 	  Expression.If (a, expression_of_ssa c, expression_of_ssa t,
 			expression_of_ssa f)

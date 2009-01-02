@@ -105,12 +105,6 @@ let emit options out_channel input =
 	    print_string ("\"" ^ fd ^ "\" ( " );
 	    of_expression_list a;
 	    print_string " )"
-      | Expression.Unary (n, o, e) ->
-	  of_expression
-	    (Expression.FuncCall(n, Expression.string_of_unaryop o, [e]))
-      | Expression.Binary (n, o, l, r) ->
-	  of_expression
-	    (Expression.FuncCall(n, Expression.string_of_binaryop o, [l; r]))
       | Expression.Label(_, l) ->
 	  print_string "?(" ; of_expression l ; print_string ")"
       | Expression.New (_, c, a) -> assert false

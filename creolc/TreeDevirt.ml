@@ -50,9 +50,6 @@ let devirt_statement program cls meth stmt =
       | MapLit (n, l) ->
 	  let f (d, r) = (devirt_expression d, devirt_expression r) in
 	    MapLit (n, List.map f l)
-      | Unary (n, o, e) -> Unary (n, o, devirt_expression e)
-      | Binary (n, o, l, r) ->
-	  Binary (n, o, devirt_expression l, devirt_expression r)
       | Expression.If (n, c, t, f) ->
 	  Expression.If (n, devirt_expression c, devirt_expression t,
 			 devirt_expression f)

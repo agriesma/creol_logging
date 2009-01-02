@@ -65,165 +65,113 @@ let pass input =
   let future_decl l t =
     { VarDecl.name = l; var_type = t; init = None }
   in
-  let rec expand_expression =
+  let rec expand_statement future_decls =
     function
-	Unary(a, o, e) ->
-	  (* Do not copy the note, since the content should be invariant. *)
-	  FuncCall(a, string_of_unaryop o, [expand_expression e])
-      | Binary(a, o, l, r) ->
-	  (* Do not copy the note, since the content should be invariant. *)
-	  FuncCall(a, string_of_binaryop o, [expand_expression l;
-					     expand_expression r])
-      | FuncCall(a, f, args) -> FuncCall(a, f, List.map expand_expression args)
-      | New (a, t, p) -> New (a, t, List.map expand_expression p)
-      | Expression.If (a, c, t, f) ->
-          Expression.If (a, expand_expression c, expand_expression t,
-                         expand_expression f)
-      | t -> t
-  and expand_statement future_decls =
-    function
-	Skip _ as s -> (future_decls, s)
-      | Release _ as s -> (future_decls, s)
-      | Assert (a, e) -> (future_decls, Assert (a, expand_expression e))
-      | Prove (a, e) -> (future_decls, Prove (a, expand_expression e))
-      | Assign (a, s, e) ->
-	  (future_decls, Assign (a, s, List.map expand_expression e))
-      | Await (a, g) -> (future_decls, Await (a, expand_expression g))
-      | Posit (a, g) -> (future_decls, Posit (a, expand_expression g))
+      | Skip _ | Release _ | Assert _ | Prove _ | Assign _ | Await _
+      | Posit _  as s ->
+          (future_decls, s)
       | AsyncCall (a, None, e, n, ((co, dom, Some rng) as s), p) ->
 	  (* If a future name is not given, we assign a new one and
 	     free it afterwards. *)
-	  let e' = expand_expression e
-	  and p' = List.map expand_expression p
-	  and l = fresh_future ()
+	  let l = fresh_future ()
 	  and lt = Type.future rng in
 	  let n' = make_expr_note_from_stmt_note a lt in
 	    ((future_decl l lt)::future_decls,
-	     AsyncCall (a, Some (LhsId (n', l)), e', n, s, p'))
+	     AsyncCall (a, Some (LhsId (n', l)), e, n, s, p))
       | AsyncCall (a, None, e, n, s, p) ->
-	  let e' = expand_expression e
-	  and p' = List.map expand_expression p
-	  in
-            if not (Type.collection_p (Expression.get_type e')) then
-	      (* If a future name is not given, we create a new future name.
-                 We cannot give a correct type to the future.  If the type
-                 checker is run after expanding, it may report errors for
-                 this call.  *)
-              begin
-	        let l = fresh_future () in
-	        let lt = Type.future [] in
-	        let a' = make_expr_note_from_stmt_note a lt in
-	          ((future_decl l lt)::future_decls,
-	           AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'))
-	      end
-	    else
-	      (* The type checker inferred that the callee expression refers
-		 to a collection type.  In this case, we convert to a
-	         MultiCast statement. *)
-	      (future_decls, MultiCast (a, e', n, s, p'))
-      | AsyncCall (a, Some l, e, n, s, p) ->
-	  let e' = expand_expression e
-	  and p' = List.map expand_expression p in
-	    (future_decls, AsyncCall (a, Some l, e', n, s, p'))
-      | Free _ as s -> (future_decls, s)
-      | Bury _ as s -> (future_decls, s)
-      | Get _ as s -> (future_decls, s)
+          if not (Type.collection_p (Expression.get_type e)) then
+	    (* If a future name is not given, we create a new future name.
+               We cannot give a correct type to the future.  If the type
+               checker is run after expanding, it may report errors for
+               this call.  *)
+            begin
+	      let l = fresh_future () in
+	      let lt = Type.future [] in
+	      let a' = make_expr_note_from_stmt_note a lt in
+	        ((future_decl l lt)::future_decls,
+	         AsyncCall (a, Some (LhsId (a', l)), e, n, s, p))
+	    end
+	  else
+	    (* The type checker inferred that the callee expression refers
+	       to a collection type.  In this case, we convert to a
+	       MultiCast statement. *)
+	    (future_decls, MultiCast (a, e, n, s, p))
+      | AsyncCall _ | Free _ | Bury _ | Get _ as s ->
+          (future_decls, s)
       | SyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-          let e' = expand_expression e
-	  and p' = List.map expand_expression p
-	  and l = fresh_future ()
+	  let l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type r) in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((future_decl l lt)::future_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
+	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e, n, s, p),
 		     Get (a, Id (a', l), r)))
       | AwaitSyncCall (a, e, n, s, p, r) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-	  let e' = expand_expression e
-	  and p' = List.map expand_expression p
-	  and l = fresh_future ()
+	  let l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type r)
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt
 	  and a'' = make_expr_note_from_stmt_note a Type.bool
 	  in
 	    ((future_decl l lt)::future_decls,
-	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e', n, s, p'),
+	    Sequence (a, AsyncCall (a, Some (LhsId (a', l)), e, n, s, p),
 		     Sequence(a, Await (a, Label (a'', Id (a', l))),
 			     Get (a, Id (a', l), r))))
       | LocalAsyncCall (a, None, m, ((c, dom, Some rng) as s), lb, ub, i) ->
 	  (* If a future name is not given, we assign a new one and free it
 	     afterwards. *)
-	  let i' = List.map expand_expression i
-	  and l = fresh_future ()
+	  let l = fresh_future ()
 	  and lt = Type.future rng in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((future_decl l (Type.future rng))::future_decls,
-	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'))
+	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i))
       | LocalAsyncCall (a, None, m, s, lb, ub, i) ->
 	  (* If a future name is not given, we create a new future name
 	     and assign the call to it.  We cannot give a correct type
 	     to the future.  If the type checker is run after expanding,
 	     we may see a type error since there is no corresponding
 	     method declared.  *)
-	  let i' = List.map expand_expression i
-	  and l = fresh_future () in
+	  let l = fresh_future () in
 	  let lt = Type.future [] in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((future_decl l lt)::future_decls,
-	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i'))
-      | LocalAsyncCall (a, Some l, m, s, lb, ub, i) ->
-	  let i' = List.map expand_expression i in
-	    (future_decls, LocalAsyncCall (a, Some l, m, s, lb, ub, i'))
+	     LocalAsyncCall(a, Some (LhsId (a', l)), m, s, lb, ub, i))
+      | LocalAsyncCall _ as s ->
+	    (future_decls, s)
       | LocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-	  let i' = List.map expand_expression i
-	  and l = fresh_future ()
+	  let l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type o)
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt in
 	    ((future_decl l lt)::future_decls,
-	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i'),
+	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i),
 		     Get (a, Id (a', l), o)))
       | AwaitLocalSyncCall (a, m, s, lb, ub, i, o) ->
 	  (* Replace the synchronous call by the sequence of an asynchronous
 	     call followed by a reply.  This generates a fresh future name.  *)
-	  let i' = List.map expand_expression i
-	  and l = fresh_future ()
+	  let l = fresh_future ()
 	  and lt = Type.future (List.map get_lhs_type o)
 	  in
 	  let a' = make_expr_note_from_stmt_note a lt 
 	  and a'' = make_expr_note_from_stmt_note a Type.bool in
 	    ((future_decl l lt)::future_decls,
-	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i'),
+	    Sequence (a, LocalAsyncCall (a, Some (LhsId (a', l)), m, s, lb, ub, i),
 		     Sequence (a, Await (a, Label(a'', Id (a', l))),
 			      Get (a, Id (a', l), o))))
-      | MultiCast (a, t, m, s, i) ->
-	  (* If a future name is not given, we create a new future name.
-             We cannot give a correct type to the future.  If the type
-             checker is run after expanding, it may report errors for
-             this call.  *)
-	  let i' = List.map expand_expression i in
-            (future_decls, MultiCast (a, t, m, s, i'))
-      | Tailcall (a, c, m, s, i) ->
-	  let c' = expand_expression c
-	  and i' = List.map expand_expression i
-	  in
-	    (future_decls, Tailcall (a, c', m, s, i'))
-      | StaticTail (a, m, s, l, u, i) ->
-	  let i' = List.map expand_expression i in
-	    (future_decls, StaticTail (a, m, s, l, u, i'))
+      | MultiCast _ | Tailcall _ | StaticTail _ as s ->
+            (future_decls, s)
       | If (a, c, t, f) ->
 	  let (future_decls', t') = expand_statement future_decls t in
 	  let (future_decls'', f') = expand_statement future_decls' f in
-	    (future_decls'', If(a, expand_expression c, t', f'))
+	    (future_decls'', If(a, c, t', f'))
       | While (a, c, i, b) ->
 	  let (future_decls', b') = expand_statement future_decls b in
-	    (future_decls', While (a, expand_expression c, expand_expression i, b'))
+	    (future_decls', While (a, c, i, b'))
       | DoWhile (a, c, i, b) ->
 	  expand_statement future_decls (Sequence (a, b, While (a, c, i, b)))
       | Sequence (a, s1, s2) ->
@@ -238,11 +186,8 @@ let pass input =
 	  let (future_decls', s1') = expand_statement future_decls s1 in
 	  let (future_decls'', s2') = expand_statement future_decls' s2 in
 	    (future_decls'', Choice (a, s1', s2'))
-      | Return (a, r) ->
-          (future_decls, Return (a, List.map expand_expression r))
-      | Continue (a, e) ->
-          (future_decls, Continue (a, expand_expression e))
-      | Extern _ as s -> (future_decls, s)
+      | Return _ | Continue _ | Extern _ as s ->
+          (future_decls, s)
   and expand_method_variables note vars =
 
     (* Compute a pair of a new list of local variable declarations and
@@ -260,7 +205,7 @@ let pass input =
       function 
           ({ VarDecl.name = n ; var_type = _ ; init = Some i } as v) ->
 	    ([{ v with VarDecl.init = None }],
-	    Assign(note, [LhsId(Expression.note i, n)], [expand_expression i]))
+	    Assign(note, [LhsId(Expression.note i, n)], [i]))
         | v -> ([v], Skip note)
     in
       match vars with
@@ -300,13 +245,6 @@ let pass input =
 		      (Sequence (Statement.note mb, init, mb''))) }
   and expand_with w =
     { w with With.methods = List.map expand_method w.With.methods }
-  and expand_inherits inh =
-	{ inh with Inherits.arguments =
-		     List.map expand_expression inh.Inherits.arguments } 
-  and expand_inherits_list =
-    function
-	[] -> []
-      | i::l -> (expand_inherits i)::(expand_inherits_list l)
 
   (* Rewrite the class into a expanded form.  This entails expanding of
      all sub-parts of the class, but also moving the direct initialisation
@@ -446,8 +384,7 @@ let pass input =
 	 definitions.  Observe that the result of [add_init_and_run] is
 	 not yet expanded to normal form. *)
 
-      { c with Class.inherits = expand_inherits_list c.Class.inherits;
-	attributes = a';
+      { c with Class.attributes = a';
 	with_defs = List.map expand_with (add_init_and_run with_defs') }
   and expand_interface i =
     i
