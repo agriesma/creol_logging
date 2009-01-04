@@ -41,19 +41,7 @@ include(statements.m4)
 
 include(process.m4)
 
-*** An inherits declaration
-***
-fmod CREOL-INHERIT is
-  protecting CREOL-DATATYPES .
-  sort Inh .
-
-  op  _<_> : String  ExprList -> Inh [ctor prec 15] .
-
-endfm
-
-view Inh from TRIV to CREOL-INHERIT is
-  sort Elt to Inh .
-endv
+include(inherits.m4)
 
 fmod CREOL-METHOD is
   protecting CREOL-STM-LIST .

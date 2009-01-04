@@ -26,7 +26,8 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README macros.m4 interpreter.m4 predicates.m4 \
 			  configuration.m4 configuration2.m4 machine.m4 \
-			  subst.m4 statements.m4 process.m4 evaluation.m4
+			  subst.m4 statements.m4 process.m4 inherits.m4 \
+			  evaluation.m4
 dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-loopmode.maude \
@@ -48,6 +49,7 @@ creol-realtime.maude: ${srcdir}/interpreter.m4
 creol-interpreter.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
 creol-interpreter.maude: ${srcdir}/subst.m4
 creol-interpreter.maude: ${srcdir}/process.m4
+creol-interpreter.maude: ${srcdir}/inherits.m4
 creol-interpreter.maude: ${srcdir}/statements.m4
 creol-interpreter.maude: ${srcdir}/evaluation.m4
 creol-interpreter.maude: ${srcdir}/configuration.m4
@@ -55,6 +57,7 @@ creol-interpreter.maude: ${srcdir}/configuration2.m4
 creol-modelchecker.maude: ${srcdir}/macros.m4  ${srcdir}/machine.m4
 creol-modelchecker.maude: ${srcdir}/subst.m4
 creol-modelchecker.maude: ${srcdir}/process.m4
+creol-modelchecker.maude: ${srcdir}/inherits.m4
 creol-modelchecker.maude: ${srcdir}/statements.m4
 creol-modelchecker.maude: ${srcdir}/evaluation.m4
 creol-modelchecker.maude: ${srcdir}/configuration.m4
@@ -62,6 +65,7 @@ creol-modelchecker.maude: ${srcdir}/predicates.m4
 creol-realtime.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
 creol-realtime.maude: ${srcdir}/subst.m4
 creol-realtime.maude: ${srcdir}/process.m4
+creol-realtime.maude: ${srcdir}/inherits.m4
 creol-realtime.maude: ${srcdir}/statements.m4
 creol-realtime.maude: ${srcdir}/evaluation.m4
 creol-realtime.maude: ${srcdir}/configuration.m4
