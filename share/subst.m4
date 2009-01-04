@@ -1,11 +1,10 @@
 dnl
-dnl subst-2-2.m4 -- The specification of the machine.
+dnl subst.m4 -- Expand MAP with a lazy compose operator.
 dnl
 dnl Copyright (c) 2007, 2008
 dnl
-dnl The purpose of this file is to create the files `interpreter.maude'
-dnl and `modelchecker.maude'.  These files have to be processed with
-dnl m4, with either one of `CREOL' or `MODELCHECK' defined.
+dnl The purpose of this file is to create the files `creol-interpreter.maude'
+dnl and `creol-modelchecker.maude'.
 dnl
 dnl See the lines below for its license
 dnl
@@ -14,8 +13,8 @@ dnl
 fmod CREOL-SUBST is
     protecting CREOL-DATATYPES .
     extending MAP{Vid, Data} * (sort Map{Vid,Data} to Subst,
-                                  sort Entry{Vid,Data} to Binding,
-                                  op empty : -> Map{Vid,Data} to noSubst) .
+                                sort Entry{Vid,Data} to Binding,
+                                op empty : -> Map{Vid,Data} to noSubst) .
 
     vars A A' : Vid .
     vars D D' : Data .

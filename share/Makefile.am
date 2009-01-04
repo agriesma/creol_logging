@@ -26,7 +26,7 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 EXTRA_DIST		= README macros.m4 interpreter.m4 predicates.m4 \
 			  configuration.m4 configuration2.m4 machine.m4 \
-			  subst.m4 subst-2-2.m4 statements.m4 evaluation.m4
+			  subst.m4 statements.m4 evaluation.m4
 dist_pkgdata_DATA	= creol.xsd \
 			  creol-datatypes.maude \
 			  creol-loopmode.maude \
