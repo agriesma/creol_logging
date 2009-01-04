@@ -43,21 +43,7 @@ include(process.m4)
 
 include(inherits.m4)
 
-fmod CREOL-METHOD is
-  protecting CREOL-STM-LIST .
-  sort Method .
-
-  op <_: Method | Param:_, Att:_, Code:_> : 
-    String VidList Subst StmtList -> Method [ctor
-      `format' (c ! oc o d sc o d sc o d sc o c o)] .
-
-endfm
-
-view Method from TRIV to CREOL-METHOD is
-  sort Elt to Method .
-endv
-
-
+include(methods.m4)
 
 include(`configuration.m4')
 
