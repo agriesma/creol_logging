@@ -138,8 +138,9 @@ let unify ~program ~constraints =
       let (s, t) = List.hd c
       and d = List.tl c
       in
-	log 2 ("unify: constraint " ^ (Type.string_of_type s) ^ " <: " ^
-		  (Type.string_of_type t)) ;
+      let () = log 2 ("unify: constraint " ^ (Type.string_of_type s) ^ " <: " ^
+			(Type.string_of_type t))
+      in
 	match (s, t) with
 	  | (Type.Tuple l1, Type.Tuple l2) when (List.length l1) = (List.length l2) ->
 		do_unify ((List.combine l1 l2)@d) res
@@ -318,10 +319,11 @@ let identifier_undeclared n name =
     
     [fresh_name] is a monad used for generating new names.
     
-    The result of this function is to update the input expression
-    with new type variable names and to compute a new constraint
-    set.  The constraint set will be used to compute
-    instantiations for the type variables in [unify].
+    The result of this function is the updated input expression with
+    new type variable names and a constraint set which needs to be
+    satisfiable for the expression to be well-typed.  The constraint
+    set will be used to compute instantiations for the type variables
+    in [unify].
     
     Return the expression with updated type annotations (in Pierce,
     this would be the type), the function generating a new fresh
@@ -1290,7 +1292,8 @@ let typecheck tree: Program.t =
       | Declaration.Interface i ->
 	  Declaration.Interface (type_check_interface program i)
       | _ as d -> d
-  and type_relation_well_formed_p tree =
+  in
+  let type_relation_well_formed_p tree =
     let rel = Program.subtype_relation tree in
       if Program.acyclic_p (Program.transitive_closure rel) then
 	true
