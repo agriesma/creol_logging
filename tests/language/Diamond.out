@@ -49,7 +49,7 @@ result [State]: {
     ".anon")},
   Lcnt: 4 >
  
-< ob("main") : "" |
+< ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,

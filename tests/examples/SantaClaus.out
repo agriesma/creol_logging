@@ -30,9 +30,9 @@ result Configuration:
     |-> null, "sc" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    Code: static("label:0" ; "run" ; "Elf" ; "" ; emp) ; get("label:0" ; noVid)
-    ; free("label:0") ; return(emp) >, < "work" : Method | Param: noVid, Att:
-    "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
+    Code: static("label:0" ; "run" ; "Elf" ; None ; emp) ; get("label:0" ;
+    noVid) ; free("label:0") ; return(emp) >, < "work" : Method | Param: noVid,
+    Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
     "haveProblem" ; emp) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
  

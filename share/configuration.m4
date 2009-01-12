@@ -18,6 +18,8 @@ mod CREOL-CONFIGURATION is
 
     protecting CREOL-DATA-LABEL .
     protecting CREOL-PROCESS-POOL .
+    protecting CREOL-CID .
+    protecting CREOL-OID .
 changequote(`[[[[', `]]]]')dnl
     protecting LIST{Inh} * (sort List{Inh} to InhList,
 			    sort NeList{Inh} to NeInhList,
@@ -30,13 +32,11 @@ changequote dnl
     --- Define object identifiers.
     protecting CONVERSION .
 
-    sorts Oid Cid Msg Class ifdef(`TIME', `Clock ')Object Configuration .
-    subsort Oid < Data .
+    sorts Msg Class ifdef(`TIME', `Clock ')Object Configuration .
     subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
 
-    op ob(_) : String -> Oid [ctor `format' (d d ! o d)] .
-
-    vars C M M' : String .
+    vars B M M' : String .
+    var C : Cid .
     vars O O' : Oid .
     var S : Subst .
     vars I I' : InhList .
@@ -49,10 +49,16 @@ changequote dnl
     var DL : DataList .
     var N : Label .
     var F : Nat .
-
-    --- Create a new fresh name for an object.
-    op newId : String Nat -> Oid .
-    eq newId(C, F)  = ob(C + string(F,10)) .
+ifdef(`WITH_UPDATE',
+`    vars T T1 V : Nat .
+    var B1 : String .
+    var CL : Class .
+    var OB : Object .
+    var MSG : Msg .
+ifdef(`TIME',
+`    var CLOCK : Clock .
+')dnl
+')dnl
 
     --- Invocation message.
     ---
@@ -91,35 +97,37 @@ changequote dnl
     --- N   represents the label used to return the value computed by the
     ---     method.
     --- DL  represents the list of actual arguments.
-    op get : String String MMtd Oid Label DataList -> Process .
+    op get : String Cid MMtd Oid Label DataList -> Process .
 
-    eq get(M, C, (MS, < M : Method | Param: AL, Att: S, Code: SL >), O, N, DL) =
-        { "caller" |-> O, ".class" |-> str(C), ".label" |-> N,
-          ".method" |-> str(M), S | assign(AL ; DL) ; SL } .
+    eq get(M, CLASS(B, F), (MS, < M : Method | Param: AL, Att: S, Code: SL >), O, N, DL) =
+        { "caller" |-> O, ".class" |-> str(B), ifdef(`WITH_UPDATE', `".stage" |-> int(F), ')
+          ".label" |-> N, ".method" |-> str(M), S | assign(AL ; DL) ; SL } .
     eq get(M, C, MS, O, N, DL) = notFound [owise] .
 
 
     --- Terms of sort Object represent objects (and classes) in the
     --- run-time configuration.
     ---
-    --- Terms of sort Cid represent class names.
-    subsort String < Cid .
-
-    --- This term is the class name of "class objects."
-    op Class : -> Cid [ctor `format' (c o)] .
 
     op noObj : -> Object [ctor] .
     op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
-       Oid String Subst Process MProc Nat -> Object 
+       Oid Cid Subst Process MProc Nat -> Object 
          [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o--  r on)] .
 
 
+ifdef(`WITH_UPDATE',
+  `define(`VERSION', `Version: $1, ')',
+  `define(`VERSION', `')')dnl
     --- Define Classes.
     --- Class declaration.
     ---
-    op <_: Class | Inh:_, Param:_, Att:_, Mtds:_, Ocnt:_> : 
-      String InhList VidList Subst MMtd Nat -> Class 
-       [ctor `format' (ng ! og o d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .
+ifdef(`WITH_UPDATE',
+`    op <_: Class | Version:_, Inh:_, Param:_, Att:_, Mtds:_, Ocnt:_> : 
+      Cid Nat InhList VidList Subst MMtd Nat -> Class 
+       [ctor `format' (ng ! og o d  sg o d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .',
+`    op <_: Class | Inh:_, Param:_, Att:_, Mtds:_, Ocnt:_> : 
+      Cid InhList VidList Subst MMtd Nat -> Class 
+       [ctor `format' (ng ! og o d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .')
 
 
     --- Method binding messages.
@@ -137,20 +145,21 @@ changequote dnl
     ---
     eq
       bindMtd(O, O', N, M, DL, (C < EL > , I'))
-      < C : Class | Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F >
+      < C : Class | VERSION(V)Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F >
       =
       if get(M, C, MS, O', N, DL) == notFound then
         bindMtd(O, O', N, M, DL, (I , I'))
       else
         boundMtd(O, get(M, C, MS, O', N, DL))
       fi
-      < C : Class | Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F > .
+      < C : Class | VERSION(V)Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F > .
 
     eq
       boundMtd(O, P')
       < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
       =
       < O : C | Att: S, Pr: P, PrQ: (W , P'), Lcnt: F > .
+
 
 
     --- Define a configuration
@@ -162,6 +171,54 @@ ifdef(`TIME',dnl
   *** Definition of a global clock in the system
   op < clock : Clock | Value:_`,' Delta:_ > : Float Float -> Clock
     [ctor ``format'' (c o c c c c o c o)] .
+)dnl
+
+ifdef(`WITH_UPDATE',
+`    sorts ClassDep ClassDeps ObjectDep ObjectDeps .
+
+    subsorts ClassDep < ClassDeps .
+    op none : -> ClassDeps [ctor] .
+    op _,_ : ClassDeps ClassDeps -> ClassDeps [ctor assoc comm id: none] .
+    op c(_,_) : String Nat -> ClassDep .
+
+    subsorts ObjectDep < ObjectDeps .
+    op none : -> ObjectDeps [ctor] .
+    op _,_ : ObjectDeps ObjectDeps -> ObjectDeps [ctor assoc comm id: none] .
+    op o(_,_) : Oid Nat -> ObjectDep .
+    
+    --- Add a new class into the system.
+    op add(_,_) : Class ClassDeps -> Msg 
+      [ctor format (b d o  b so  b on)] .
+
+    --- Extend an existing class.
+    op extend(_,_,_,_,_,_) : String InhList Subst MMtd StmtList ClassDeps -> Msg
+      [ctor format (b d o  b so  b so  b so  b so  b so  b on)] .
+
+    --- Simplify a class.
+    op remove(_,_,_,_,_,_) : String InhList Subst MMtd ClassDeps ObjectDeps
+      -> Msg [ctor format (b d o  b so  b so  b so  b so  b so  b on)] .
+
+    --- Transfer updates class state to object state.
+    op transfer(_,_,_,_) : Oid Subst InhList StmtList
+      -> Msg [ctor format (b d o  b so  b so  b so  b on)] .
+
+    op allinstances : String Nat Configuration -> ObjectDeps .
+    eq allinstances(B, T, CL CN) = allinstances(B, T, CN) .
+    eq allinstances(B, T, MSG CN) = allinstances(B, T, CN) .
+ifdef(`WITH_TIME', `    eq allinstances(B, T, CLOCK CN) = allinstances(B, T, CN) .
+')dnl
+    eq allinstances(B, T, < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F > CN) =
+        if B == B1 then
+            allinstances(B, T, CN), o(O, T)
+        else
+            allinstances(B, T, CN)
+        fi .
+    eq allinstances(B, T, none) = none .
+
+    op update : Nat Nat MMtd -> StmtList .
+    ceq update(T, T1, MS) = noStmt if T >= T1 .
+    eq update(T, T1, (< ".update" : Method | Param: noVid, Att: ".version" |-> int(T), Code: SL >, MS)) =
+          SL ; update(s T, T1, MS) [owise] .'
 )dnl
 
   *** Useful for real-time maude and some other tricks.
@@ -183,9 +240,9 @@ ifdef(`MODELCHECK',dnl
 
   --- System initialisation
   op main : Configuration String DataList -> State .
-  eq main(CN, C, DL) =
-    { CN < ob("main") : "" | Att: noSubst, 
-           Pr: { "var" |-> null | new("var" ; C ; DL) }, PrQ: noProc,
+  eq main(CN, B, DL) =
+    { CN < ob("main") : Start | Att: noSubst, 
+           Pr: { "var" |-> null | new("var" ; CLASS(B, 0) ; DL) }, PrQ: noProc,
            Lcnt: 0 > } .
 
 endm

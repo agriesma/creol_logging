@@ -1053,9 +1053,9 @@ let parse name input =
       | None ->
 	  raise (Eof "")
   and parse_bound input =
-    match parse_string input with
-      | "" -> None
-      | s -> Some s
+    match Stream.peek input with
+      | Some Key("None", _) -> let () = Stream.junk input in None
+      | Some Str _ -> let s = parse_string input in Some s
   and parse_string input =
     match Stream.peek input with
       | Some Str (s, _) ->

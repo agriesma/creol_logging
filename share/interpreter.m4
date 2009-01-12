@@ -37,6 +37,10 @@ load creol-datatypes .
 
 include(subst.m4)
 
+include(class-id.m4)
+
+include(object-id.m4)
+
 include(statements.m4)
 
 include(process.m4)

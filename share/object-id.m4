@@ -1,5 +1,5 @@
 dnl
-dnl inherits.m4 -- Declare what to inherit.
+dnl class-id.m4 -- The sort of a class identifier.
 dnl
 dnl Copyright (c) 2007, 2008
 dnl
@@ -16,18 +16,32 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
-*** An inherits declaration
+*** The sort of an object identifier.
 ***
-fmod CREOL-INHERIT is
-  protecting CREOL-DATATYPES .
-  protecting CREOL-CID .
-  sort Inh .
+fmod CREOL-OID is
+    protecting NAT .
+    protecting STRING .
+    protecting CONVERSION .
+    extending CREOL-DATA-SIG .
+ifdef(`WITH_MAUDE_CONFIG',
+`    extending CONFIGURATION .',
+`    sort Oid .')
 
-  op  _<_> : Cid ExprList -> Inh [ctor prec 15] .
+    subsort Oid < Data .
+
+    --- Constructor of object names
+    op ob(_) : String -> Oid [ctor `format' (d d ! o d)] .
+
+    var B : String .
+    var F : Nat .
+
+    --- Create a new fresh name for an object
+    op newId : String Nat -> Oid .
+    eq newId(B, F)  = ob(B + string(F,10)) .
 
 endfm
 
-view Inh from TRIV to CREOL-INHERIT is
-  sort Elt to Inh .
+view Oid from TRIV to CREOL-OID is
+  sort Elt to Oid .
 endv
 

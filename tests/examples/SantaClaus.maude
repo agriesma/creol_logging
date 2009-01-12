@@ -143,7 +143,7 @@ mod PROGRAM is
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
-              null, Code: static( "label:0" ; "run" ; "Elf" ; "" ; emp ) ;
+              null, Code: static( "label:0" ; "run" ; "Elf" ; None ; emp ) ;
               get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
             < "work" : Method | Param: noVid, Att: "label:0" |-> null, "_"
               |-> null, Code: call( "label:0" ; "sc" ; "haveProblem" ; emp )

@@ -32,6 +32,7 @@ fmod CREOL-STATEMENT is
   protecting CREOL-DATA-VIDLIST .
   protecting CREOL-EXPRESSION .
   protecting CREOL-SUBST .
+  protecting CREOL-CID .
 
   *** SuspStmt is a statement which can be suspended.  It includes
   *** await, [] and ||| (the later two defined in CREOL-STM-LIST.
@@ -45,9 +46,9 @@ fmod CREOL-STATEMENT is
   op posit_ : Expr -> SuspStmt [ctor `format' (b o d)] .
   op assert_ : Expr -> Stmt [ctor `format' (b o d)] .
   op assign(_;_) : VidList ExprList -> Stmt [ctor `format' (b d o b o b o)] .
-  op new(_;_;_) : Vid String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
+  op new(_;_;_) : Vid Cid ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
   op call(_;_;_;_) : Vid Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o)] . 
-  op static(_;_;_;_;_) : Vid String String String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o b o)] . 
+  op static(_;_;_;_;_) : Vid String Cid Cid ExprList -> Stmt [ctor `format' (b d o b o b o b o b o b o)] . 
   op multicast(_;_;_) : Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
   op get(_;_)  : Vid VidList -> Stmt [ctor `format' (b d o b o b o)] .
   op get(_;_)  : Label VidList -> Stmt [ctor ditto] .
@@ -55,7 +56,7 @@ fmod CREOL-STATEMENT is
   op return(_) : ExprList -> Stmt [ctor `format' (c d o c o)] .
   op free(_) : Vid -> Stmt [ctor `format' (c d o c o)] .
   op tailcall(_;_;_) : Expr String ExprList -> Stmt [ctor `format' (c d o c o c o c o)] .
-  op statictail(_;_;_;_) : String String String ExprList -> Stmt [ctor `format' (c d o c o c o c o c o)] .
+  op statictail(_;_;_;_) : String Cid Cid ExprList -> Stmt [ctor `format' (c d o c o c o c o c o)] .
 
   op $cont_ : Label -> Stmt [ctor `format' (r o d)] .
   op $accept_ : Label -> Stmt [ctor `format' (r o d)] .

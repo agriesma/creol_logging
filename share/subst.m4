@@ -35,9 +35,19 @@ fmod CREOL-SUBST is
     op _::_ : Subst Subst -> Subst .
     eq (S1 :: S2)[A] = if $hasMapping(S2, A) then S2[A] else S1[A] fi .
 
-    *** Composition operater for substitutions
+    --- Composition operater for substitutions
+    ---
+    --- Insert all bindings of S2 into S1, overriding the binding
+    --- in S1.
     op compose : Subst Subst -> Subst .
     eq compose(S1, noSubst) = S1 .
     eq compose(noSubst, S2) = S2 .
     eq compose(S1, (S2, (A |-> D))) = compose(insert(A, D, S1), S2) .
+
+    --- Remove all bindings of S2 from S1.
+    op remove : Subst Subst -> Subst .
+    eq remove(S1, noSubst) = S1 .
+    eq remove(noSubst, S2) = S2 .
+    eq remove((S1, (A |-> D)), (S2, (A |-> D'))) = remove(S1, S2) .
+    eq remove(S1, (S2, (A |-> D'))) = remove(S1, S2) [owise] .
 endfm

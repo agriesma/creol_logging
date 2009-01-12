@@ -116,7 +116,7 @@ result (sort not calculated): {discard(label(ob("Main0"), 1))
     ".anon")},
   Lcnt: 2 >
  
-< ob("main") : "" |
+< ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
