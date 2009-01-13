@@ -23,7 +23,7 @@
 MOSTLYCLEANFILES	= *~ *.aux *.log *.out *.toc \
 			  *.cma *.cmxa *.cmi *.cmo *.cmx *.a *.o
 CLEANFILES		= creolc.prof
-DISTCLEANFILES		= .depend Version.ml Driver.ml \
+DISTCLEANFILES		= .depend Version.ml \
 			   creol.cma creol.a creol.cmxa \
 			   creolcint.pdf creolcint.tex ocamldoc.sty
 MAINTAINERCLEANFILES	= $(srcdir)/CreolCreolLexer.ml $(srcdir)/CreolCreolParser.ml \
@@ -35,7 +35,7 @@ bin_PROGRAMS		= creolc creolc.opt cmcvalid cmcvalid.opt
 
 noinst_PROGRAMS		= creoltop
 
-BUILT_SOURCES		= Version.ml Driver.ml $(srcdir)/CreolLexer.ml \
+BUILT_SOURCES		= Version.ml $(srcdir)/CreolLexer.ml \
 			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli
 
 creolc_SOURCES		= Version.ml \
@@ -65,12 +65,12 @@ creolc_SOURCES		= Version.ml \
 			  BackendXML.ml \
 			  BackendDot.ml \
 			  Passes.mli Passes.ml \
-			  Driver.m4
+			  Driver.ml
 
 creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
 			  Creol.cmo \
 			  BackendCreol.cmo BackendMaude.cmo \
-			  BackendDot.cmo $(BACKEND_XML_CMO) \
+			  BackendDot.cmo BackendXML.cmo \
 			  Typing.cmo TreeExpand.cmo TreeFold.cmo \
 			  TreeUnassert.cmo TreeUnprove.cmo TreeSSA.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
@@ -84,7 +84,7 @@ creolc_opt_SOURCES	= $(creolc_SOURCES)
 creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  Creol.cmx \
 			  BackendCreol.cmx BackendMaude.cmx \
-			  BackendDot.cmx $(BACKEND_XML_CMX) \
+			  BackendDot.cmx BackendXML.cmx \
 			  Typing.cmx TreeExpand.cmx TreeFold.cmx \
 			  TreeUnassert.cmx TreeUnprove.cmx TreeSSA.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
@@ -129,7 +129,7 @@ creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 
 OCAMLCFLAGS		+= -g
 OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 20
-OCAMLFINDFLAGS		+= -package "num unix $(OCAML_LIBXML2) str"
+OCAMLFINDFLAGS		+= -package "num unix libxml2 str"
 
 # The compilers.
 OCAMLC		= $(OCAMLFIND) ocamlc
@@ -165,7 +165,7 @@ creol.cma: $(creolc_cmo)
 creolc.opt: creol.cmxa Driver.cmx
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
 
-creolc.prof: Driver.ml $(creolc_SOURCES)
+creolc.prof: $(creolc_SOURCES)
 	make mostlyclean
 	make OCAMLC="$(OCAMLCP)" creolc
 	mv creolc creolc.prof
@@ -228,11 +228,7 @@ $(srcdir)/CreolParser.mli: $(srcdir)/CreolParser.ml
 	    $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/CreolParser.ml ; \
 	fi
 
-Driver.ml: $(srcdir)/Driver.m4 Makefile
-	$(M4) $(BACKEND_XML) $< > $@
-
 all-local: version-tmp
-
 
 Version.ml: version-tmp
 
@@ -313,7 +309,7 @@ CreolLexer.cmo CreolLexer.cmx: CreolLexer.cmi
 #
 # Total: 0.86
 #
-sloccount: Driver.ml Version.ml
+sloccount: Version.ml
 	@if test "$(srcdir)" != "." ; then \
 	  for i in $^ ; do cp $$i $(srcdir)/$$i ; done ; \
 	fi

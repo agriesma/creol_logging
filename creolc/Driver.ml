@@ -1,4 +1,4 @@
-(*i
+(*
  * Driver.ml -- The main routine.
  *
  * This file is part of creoltools
@@ -17,9 +17,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-i*)
+ *)
 
-(*s This module contains the main entry point to the compiler.  Here,
+(** This module contains the main entry point to the compiler.  Here,
   the command line arguments are parsed.  Then it starts the different
   phases of compilation.
 *)
@@ -40,7 +40,7 @@ let times = ref false
 
 module Target =
 struct
-  type t = Null | Creol | Dot | Maude ifdef(`BACKEND_XML', `| XML')
+  type t = Null | Creol | Dot | Maude | XML
 
   let target = ref Maude
 
@@ -58,9 +58,9 @@ struct
       | Maude ->
 	  Passes.conflicts (BackendMaude.conflicts options) ;
 	  Passes.requires (BackendMaude.requires options)
-      ifdef(`BACKEND_XML', `| XML ->
+      | XML ->
 	  Passes.conflicts (BackendXML.conflicts ()) ;
-	  Passes.requires (BackendXML.requires ())')
+	  Passes.requires (BackendXML.requires ())
 
   let targets =
     [ ("none", (fun () -> target := Null), "Do not generate any results.");
@@ -81,7 +81,7 @@ struct
 	options.BackendMaude.target <- BackendMaude.Realtime ;
 	target := Maude),
       "Generate a Maude file optimized for real-time simulation");
-      ifdef(`BACKEND_XML', ("xml", (fun () -> target := XML), "Generate an XML document")) ]
+      ("xml", (fun () -> target := XML), "Generate an XML document") ]
 
   let set s =
     let (_, f, _) =
@@ -111,7 +111,7 @@ struct
 	| Creol -> BackendCreol.pretty_print_program out tree
 	| Dot -> BackendDot.emit out tree
 	| Maude -> BackendMaude.emit options out tree
-	ifdef(`BACKEND_XML', `| XML -> BackendXML.emit !file tree', `')
+	| XML -> BackendXML.emit !file tree
     in
       if !target <> Null then
 	match !file with
@@ -180,9 +180,9 @@ let options = [
   ("-P",
   Arg.String Passes.disable,
   "  Disable the pass [name].  [name]s are the same as for `-p'");
-  ifdef(`BACKEND_XML', `("-d",
+  ("-d",
   Arg.String Passes.dump_after,
-  "  Dump tree after [name] to out.[name].  [name]s are identical to ``-p''");')
+  "  Dump tree after [name] to out.[name].  [name]s are identical to ``-p''");
   ("-times",
   Arg.Set times,
   "  Print timing information");
@@ -215,7 +215,7 @@ let main () =
   in
   let prelude = Program.hide_all (Passes.parse_from_file "prelude.creol") in
     Target.setup () ;
-    Target.output (Passes.execute_passes ifdef(`BACKEND_XML', BackendXML.emit, (fun _ _ -> ())) !Target.file (Program.concat [ prelude; tree ])) ;
+    Target.output (Passes.execute_passes BackendXML.emit) !Target.file (Program.concat [ prelude; tree ]) ;
     if !times then Passes.report_timings () ;
     exit 0 ;;
 
