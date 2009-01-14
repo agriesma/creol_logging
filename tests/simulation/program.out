@@ -224,7 +224,7 @@ result State: {discard(label(ob("Monk0"), 1))
   PrQ: noProc,
   Lcnt: 480 >
  
-< ob("main") : "" |
+< ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
