@@ -555,13 +555,13 @@ expression:
     | LMAP l = separated_list(COMMA, binding) RMAP
 	{ MapLit (expression_note $startpos, l) }
     | l = expression o = binop r = expression
-        { Binary(expression_note $startpos, o, l, r) }
+        { FuncCall (expression_note $startpos, o, [l; r]) }
     | TILDE e = expression
-        { Unary(expression_note $startpos, Not, e) }
+        { FuncCall (expression_note $startpos, "~", [e]) }
     | MINUS e = expression %prec UMINUS
-	{ Unary(expression_note $startpos, UMinus, e) }
+	{ FuncCall (expression_note $startpos, "-", [e]) }
     | HASH e = expression
-	{ Unary(expression_note $startpos, Length, e) }
+	{ FuncCall (expression_note $startpos, "#", [e]) }
     | f = function_name LPAREN l = separated_list(COMMA, expression) RPAREN
 	{ FuncCall(expression_note $startpos, f, l) }
     | IF c = expression THEN t = expression ELSE f = expression END
@@ -576,30 +576,30 @@ expression:
 	{ Exists (expression_note $startpos, v.VarDecl.name, v.VarDecl.var_type, e) }
 
 %inline binop:
-      AMPAMP { And }
-    | WEDGE { Wedge }
-    | BARBAR { Or }
-    | VEE { Vee }
-    | HAT { Xor }
-    | DLRARROW { Iff }
-    | DARROW { Implies }
-    | EQ { Eq }
-    | NE { Ne }
-    | LE { Le }
-    | GE { Ge }
-    | LT { Lt }
-    | GT { Gt }
-    | PLUS { Plus }
-    | MINUS { Minus }
-    | TIMES { Times }
-    | TIMESTIMES { Power }
-    | DIV { Div }
-    | PERCENT { Modulo }
-    | PREPEND { Prepend }
-    | CONCAT { Concat }
-    | APPEND { Append }
-    | BACKSLASH { Project }
-    | IN { In }
+      AMPAMP { "&&" }
+    | WEDGE { "/\\" }
+    | BARBAR { "||" }
+    | VEE { "\\/" }
+    | HAT { "^" }
+    | DLRARROW { "<=>" }
+    | DARROW { "=>" }
+    | EQ { "=" }
+    | NE { "/=" }
+    | LE { "<=" }
+    | GE { ">=" }
+    | LT { "<" }
+    | GT { ">" }
+    | PLUS { "+" }
+    | MINUS { "-" }
+    | TIMES { "*" }
+    | TIMESTIMES { "**" }
+    | DIV { "/" }
+    | PERCENT { "%" }
+    | PREPEND { "-|" }
+    | CONCAT { "|-|" }
+    | APPEND { "|-" }
+    | BACKSLASH { "\\" }
+    | IN { "in" }
 
 %inline function_name:
       f = ID { f }

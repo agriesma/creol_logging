@@ -47,7 +47,7 @@ let options = [
 
 let main () =
   let action n =
-    let tree = TreeLift.pass (parse_from_file n) in
+    let tree = parse_from_file n in
       BackendCreol.pretty_print_program stdout tree
   in
     Arg.parse options action "cmcvalid [options] [files]"

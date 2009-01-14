@@ -19,7 +19,7 @@ result State: {
   PrQ: noProc,
   Lcnt: 2 >
  
-< ob("main") : "" |
+< ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,

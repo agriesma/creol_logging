@@ -41,11 +41,9 @@ let compute_in_body ~program ~cls ~meth =
       | FuncCall (_, _, el) | New (_, _, el) | LabelLit (_, el)
       | Phi (_, el) ->
 	  List.fold_left add IdSet.empty el
-      | Unary (_, _, e) | Expression.Label (_, e)
+      | Expression.Label (_, e)
       | Choose (_, _, _, e) | Exists (_, _, _, e) | Forall (_, _, _, e) ->
 	  uses e
-      | Binary (_, _, l, r) ->
-	  IdSet.union (uses l) (uses r)
       | Expression.If (_, c, t, f) ->
 	  List.fold_left add IdSet.empty [c; t; f]
       | ObjLit _ | Expression.Extern _ ->

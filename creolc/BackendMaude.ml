@@ -20,14 +20,16 @@
  *)
 
 
-(*s
+(** {2 Maude Backend}
 
-*)
+    This backend emits maude terms for the different versions of the
+    Maude interpreter. *)
+
 open Misc
 open Creol
 open Format
 
-type target = Interpreter | Modelchecker | Realtime
+type target = Interpreter | Modelchecker | Realtime | Updates
 
 type options = {
   mutable target: target;
@@ -41,6 +43,8 @@ let requires =
 	[ "expand"; "free" ; "bury"; "tailcall"]
     | { target = Realtime } ->
 	[ "expand"; "free" ]
+    | { target = Updates } ->
+	[ "expand"; "free" ]
 
 let conflicts =
   function
@@ -50,11 +54,20 @@ let conflicts =
 	[]
     | { target = Realtime } ->
 	[]
+    | { target = Realtime } ->
+	[]
 
-(* Write a Creol program as a maude term. If the program is parsable
-   but not semantically correct, this function will only produce
-   garbage. *)
-let emit options out_channel input =
+let interpreter =
+  function
+    | Interpreter -> "creol-interpreter"
+    | Modelchecker -> "creol-modelchecker"
+    | Realtime -> "creol-realtime"
+    | Updates -> "creol-updates"
+
+(** Write a Creol program as a maude term. If the program is parsable
+    but not semantically correct, this function will only produce
+    garbage. *)
+let emit subtarget out_channel input =
   let print_comma () = print_string "," ; print_space () in
   let rec of_type =
     function
@@ -105,12 +118,6 @@ let emit options out_channel input =
 	    print_string ("\"" ^ fd ^ "\" ( " );
 	    of_expression_list a;
 	    print_string " )"
-      | Expression.Unary (n, o, e) ->
-	  of_expression
-	    (Expression.FuncCall(n, Expression.string_of_unaryop o, [e]))
-      | Expression.Binary (n, o, l, r) ->
-	  of_expression
-	    (Expression.FuncCall(n, Expression.string_of_binaryop o, [l; r]))
       | Expression.Label(_, l) ->
 	  print_string "?(" ; of_expression l ; print_string ")"
       | Expression.New (_, c, a) -> assert false
@@ -266,7 +273,7 @@ let emit options out_channel input =
 	    print_string "static( " ;
 	    of_lhs l ;
 	    print_string
-	      (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; \"\" ; ");
+	      (" ; \"" ^ m ^ "\" ; \"" ^ lb ^ "\" ; None ; ");
 	    of_expression_list i;
 	    print_string " )"
 	| Statement.LocalAsyncCall (_, Some _, _, _, _, _, _) ->
@@ -279,7 +286,7 @@ let emit options out_channel input =
 	    print_string " )"
 	| Statement.StaticTail (_, m, _, None, None, i) ->
 	    print_string
-		( "statictail (\"" ^ m ^ "\" ; \"\" ; \"\" ; ");
+		( "statictail (\"" ^ m ^ "\" ; None ; None ; ");
 	    of_expression_list i;
 	    print_string " )"
 	| Statement.StaticTail (_, m, _, _, _, i) ->
@@ -390,7 +397,18 @@ let emit options out_channel input =
       of_method_list cls methods
   and of_class c =
     open_box 2 ;
-    print_string ("< \"" ^ c.Class.name ^ "\" : Class |") ;
+    print_string "< " ;
+    begin
+      match subtarget.target with
+	| Updates -> print_string ("class(\"" ^ c.Class.name ^ "\", 0)")
+	| _ -> print_string ("\"" ^ c.Class.name ^ "\"")
+    end ;
+    print_string " : Class |" ;
+    begin
+      match subtarget.target with
+	| Updates -> print_space (); print_string ("Version: 0,")
+	| _ -> ()
+    end ;
     print_space () ;
     print_string "Inh: " ;
     of_inherits_list c.Class.inherits;
@@ -480,11 +498,7 @@ let emit options out_channel input =
 	output channel out. *)
     let () = set_formatter_out_channel out_channel in
       open_vbox 0 ;
-      print_string
-        (match options.target with
-            Interpreter -> "load creol-interpreter ." 
-	  | Modelchecker -> "load creol-modelchecker ."
-	  | Realtime -> "load creol-realtime .") ;
+      print_string ("load " ^ (interpreter subtarget.target) ^ " .") ;
       print_space () ;
       print_string "mod PROGRAM is" ;
       print_space () ;
@@ -509,7 +523,7 @@ let emit options out_channel input =
       print_space () ;
       print_string "endm" ;
       print_space () ;
-      if options.target = Modelchecker then
+      if subtarget.target = Modelchecker then
         begin
 	  print_space () ;
 	  print_string "mod PROGRAM-CHECKER is" ;

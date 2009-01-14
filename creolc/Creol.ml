@@ -380,8 +380,6 @@ struct
       | ListLit of note * t list
       | SetLit of note * t list
       | MapLit of note * (t * t) list
-      | Unary of note * unaryop * t
-      | Binary of note * binaryop * t * t
       | FuncCall of note * string * t list
       | If of note * t * t * t
       | Label of note * t
@@ -399,92 +397,6 @@ struct
       | LhsAttr of note * string * Type.t
       | LhsWildcard of note * Type.t option
       | LhsSSAId of note * string * int
-  and unaryop =
-      Not
-      | UMinus
-      | Length
-  and binaryop =
-      Plus
-      | Minus
-      | Times
-      | Div
-      | Modulo
-      | Power
-      | Eq
-      | Ne
-      | Le
-      | Lt
-      | Ge
-      | Gt
-      | And
-      | Wedge
-      | Or
-      | Vee
-      | Xor
-      | Implies
-      | Iff
-      | Prepend
-      | Append
-      | Concat
-      | Project
-      | In
-
-  (* Get the textual representation of a binary operator. *)
-  let string_of_binaryop =
-    function
-      | Plus -> "+"
-      | Minus -> "-"
-      | Times -> "*"
-      | Div -> "/"
-      | Modulo -> "%"
-      | Power -> "**"
-      | Eq -> "="
-      | Ne -> "/="
-      | Le -> "<="
-      | Lt -> "<"
-      | Ge -> ">="
-      | Gt -> ">"
-      | And -> "&&"
-      | Wedge -> "/\\"
-      | Or -> "||"
-      | Vee -> "\\/"
-      | Xor -> "^"
-      | Implies -> "=>"
-      | Iff -> "<=>"
-      | Prepend -> "-|"
-      | Append -> "|-"
-      | Concat -> "|-|"
-      | Project -> "\\"
-      | In -> "in"
-
-  (* Get the textual representation of a binary operator. *)
-  let binaryop_of_string =
-    function
-      | "+" -> Plus
-      | "-" -> Minus
-      | "*" -> Times
-      | "/" -> Div
-      | "%" -> Modulo
-      | "**" -> Power
-      | "=" -> Eq
-      | "/=" -> Ne
-      | "<=" -> Le
-      | "<" -> Lt
-      | ">=" -> Ge
-      | ">" -> Gt
-      | "&&" -> And
-      | "/\\" -> Wedge
-      | "||" -> Or
-      | "\\/" -> Vee
-      | "^" -> Xor
-      | "=>" -> Implies
-      | "<=>" -> Iff
-      | "-|" -> Prepend
-      | "|-" -> Append
-      | "|-|" ->  Concat
-      | "\\" -> Project
-      | "in" -> In
-      | _ -> raise Not_found
 
   let binaryop_p =
     function
@@ -498,45 +410,33 @@ struct
   (* Precedence of binary operators. *)
   let prec_of_binaryop =
     function
-      | Power -> (29, 29)
-      | Times | Div | Modulo -> (31, 31)
-      | Plus | Minus -> (33, 33)
-      | Project -> (35, 35)
-      | Le | Lt | Ge | Gt -> (37, 37)
-      | In -> (41, 41)
-      | Append | Concat | Prepend -> (45, 45)
-      | Eq | Ne -> (51, 51)
-      | And | Wedge -> (55, 55)
-      | Xor -> (57, 57)
-      | Or | Vee -> (59, 59)
-      | Implies | Iff -> (61, 61)
-
-  (* Get the textual representation of a unary operator *)
-  let string_of_unaryop =
-    function
-	Not -> "~"
-      | UMinus -> "-"
-      | Length -> "#"
+      | "**" -> (29, 29)
+      | "*" | "/" | "%" -> (31, 31)
+      | "+" | "-" -> (33, 33)
+      | "\\" -> (35, 35)
+      | "<=" | "<" | ">" | ">=" -> (37, 37)
+      | "in" -> (41, 41)
+      | "|-" | "|-|" | "-|" -> (45, 45)
+      | "=" | "/=" -> (51, 51)
+      | "&&" | "/\\" -> (55, 55)
+      | "^" -> (57, 57)
+      | "||" | "\\/" -> (59, 59)
+      | "=>" | "<=>" -> (61, 61)
+      | o -> assert (not (binaryop_p o)) ; assert false
 
   let unaryop_p =
     function
       | "~" | "-" | "#" -> true
       | _ -> false
 
-  let unaryop_of_string =
-    function
-      | "~" -> Not
-      | "-" -> UMinus
-      | "#" -> Length
-      | _ -> raise Not_found
-
   (* Return the precedence of a unary operator.  Only needed for
      pretty printing. *)
   let prec_of_unaryop =
     function
-	Not -> 53
-      | UMinus -> 15
-      | Length -> 15
+	"~" -> 53
+      | "-" -> 15
+      | "#" -> 15
+      | _ -> assert false
 
   (* Extract the annotation of an expression *)
   let note =
@@ -558,8 +458,6 @@ struct
       | ListLit (a, _)
       | SetLit (a, _)
       | MapLit (a, _)
-      | Unary (a, _, _)
-      | Binary (a, _, _, _)
       | If (a, _, _, _)
       | FuncCall (a, _, _)
       | Label (a, _)
@@ -594,8 +492,6 @@ struct
       | ListLit (_, l) -> ListLit (note, l)
       | SetLit (_, l) -> SetLit (note, l)
       | MapLit (_, l) -> MapLit (note, l)
-      | Unary (_, o, a) -> Unary (note, o, a)
-      | Binary (_, o, l, r) -> Binary (note, o, l, r)
       | If (_, c, t, f) -> If (note, c, t, f)
       | FuncCall (_, f, a) -> FuncCall (note, f, a)
       | Label (_, l) -> Label (note, l)
@@ -659,8 +555,6 @@ struct
       | MapLit (_, l) ->
           let (dl, rl) = List.split l in
             (List.for_all constant_p dl) && (List.for_all constant_p rl)
-      | Unary (_, _, a) -> constant_p a
-      | Binary (_, _, l, r) -> (constant_p l) && (constant_p r)
       | If (_, c, t, f) -> (constant_p c) && (constant_p t) && (constant_p f)
       | FuncCall (_, _, a) -> List.for_all constant_p a
       | Label _ -> false
@@ -678,8 +572,6 @@ struct
   let rec contains_future_p =
     function
 	Label _ -> true
-      | Unary (_, _, e) -> contains_future_p e
-      | Binary (_, _, e, f) -> (contains_future_p e) || (contains_future_p f)
       | If (_, c, t, f) -> (contains_future_p c) || (contains_future_p t) ||
 	  (contains_future_p f)
       | FuncCall(_, _, args) ->
@@ -688,12 +580,6 @@ struct
 	  List.fold_left (fun a b -> a || (contains_future_p b)) false args
       | _ -> false
 
-  (* Whether an expression is a binary expression with a specific
-     operator *)
-  let binary_op_p op =
-    function
-	Binary(_, o, _, _) when o = op -> true
-      | _ -> false
 
   (* Apply a type substitution to an expression. *)
 
@@ -742,13 +628,6 @@ struct
 	    Id (subst_in_note n, name)
 	| StaticAttr (n, name, t) ->
 	    StaticAttr (subst_in_note n, name, t)
-	| Unary (n, op, arg) ->
-	    Unary (subst_in_note n, op,
-		   substitute_types_in_expression subst arg)
-	| Binary (n, op, arg1, arg2) ->
-	    Binary (subst_in_note n, op,
-		    substitute_types_in_expression subst arg1,
-		    substitute_types_in_expression subst arg2)
 	| FuncCall (n, name, args) ->
 	    FuncCall (subst_in_note n, name,
 		      List.map (substitute_types_in_expression subst) args)
@@ -808,10 +687,6 @@ struct
       | MapLit (n, l) ->
           let f (d, r) = (substitute subst d, substitute subst r) in
 	    MapLit (n, List.map f l)
-      | Unary (n, o, a) ->
-	  Unary (n, o, substitute subst a)
-      | Binary (n, o, l, r) ->
-	  Binary (n, o, substitute subst l, substitute subst r)
       | If (n, c, t, f) ->
 	  If (n, substitute subst c, substitute subst t, substitute subst f)
       | FuncCall (n, f, a) ->
@@ -836,108 +711,75 @@ struct
 	  assert false
 
 
-
-  (* Determines, whether a term is a boolean atom.
-
-     An atom is either an atomic proposition or the negation of an
-     atom.  Strictly speaking, only a and ~a are atoms, and not
-     ~~a or ~~~a, but we need not make this distinction. *)
-  let rec atom_p =
+  (** Negate a boolean expression. *)
+  let rec negate_expression =
     function
-	Unary(_, Not, e) -> atom_p e
-      | Binary(_, (And|Or|Implies|Xor|Iff), _, _) -> false
-      | _ -> true
-
-  (* Determines, whether a term is already in DNF *)
-  let rec dnf_p =
-    function
-	Unary(_, Not, e) -> not (dnf_p e)
-      | Binary(_, Or, e, f) -> 
-	  (dnf_p e) && (dnf_p f)
-      | Binary(_, (And|Implies|Xor|Iff), e, f) ->
-	  if not (dnf_p e) || not (dnf_p f) then false
-	  else not (binary_op_p Or e) && not (binary_op_p Or f)
-      | _ -> true
-
-  (* Negate a boolean formula. *)
-  let rec negate =
-    function
-	Bool(b, v) -> Bool(b, not v)
-      | Unary (b, Not, e) -> e
-      | Binary(b, Eq, l, r) -> Binary(b, Ne, l, r)
-      | Binary(b, Ne, l, r) -> Binary(b, Eq, l, r)
-      | Binary (b, And, e, f) -> Binary (b, Or, negate e, negate f)
-      | Binary (b, Or, e, f) -> Binary (b, And, negate e, negate f)
-      | Binary (b, Implies, e, f) -> Binary (b, And, e, negate f)
-      | Binary (b, Xor, e, f) -> Binary (b, Iff, e, f)
-      | Binary (b, Iff, e, f) -> Binary (b, Xor, e, f)
-      | e -> Unary (note e, Not, e)
-
-
-
-  (* Rewrite a boolean expression to negation normal form (NNF).
-
-     A formula is called in negation normal form, if and only if
-     all negation operators are applied to atoms, and the only
-     occuring binary connectives are [&&] and [||].  *)
-  let rec to_nnf =
-    function
-	Unary (b, Not, e) -> negate (to_nnf e)
-      | Binary (b, And, e, f) -> Binary (b, And, to_nnf e, to_nnf f)
-      | Binary (b, Or, e, f) -> Binary (b, Or, to_nnf e, to_nnf f)
-      | Binary (b, Implies, e, f) ->
-	  Binary (b, Or, negate (to_nnf e), to_nnf f)
-      | Binary (b, Xor, e, f) ->
-	  let ae = to_nnf e and af = to_nnf f in
-	    Binary (b, Or, Binary (b, And, ae, negate af),
-                   Binary (b, And, negate ae, af))
-      | Binary (b, Iff, e, f) ->
-	  let ae = to_nnf e and af = to_nnf f in
-	    Binary (b, Or, Binary (b, And, ae, af),
-                   Binary (b, And, negate ae, negate af))
+      | Bool (n, b) -> Bool(n, not b)
+      | FuncCall (n, "~", [e]) when Type.bool_p n.ty -> e
+      | FuncCall (n, "||", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "&&", [negate_expression e; negate_expression f])
+      | FuncCall (n, "&&", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "||", [negate_expression e; negate_expression f])
+      | FuncCall (n, "=>", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "&&", [e; negate_expression f])
+      | FuncCall (n, "<=>", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "^", [e; f])
+      | FuncCall (n, "^", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "<=>", [e; f])
+      | FuncCall (n, "=", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "/=", [e; f])
+      | FuncCall (n, "/=", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "=", [e; f])
+      | FuncCall (n, "<", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "<=", [f; e])
+      | FuncCall (n, "<=", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "<", [f; e])
+      | FuncCall (n, ">=", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "<", [e; f])
+      | FuncCall (n, ">", [e; f]) when Type.bool_p n.ty ->
+          FuncCall (n, "<=", [e; f])
       | e -> e
 
-  (* Convert a boolean expression into {i conjunctive normal form}.
 
-     The resulting formula may be exponentially longer.
+  (** Rewrite a boolean expression to negation normal form (NNF).
 
-     Assumes, that the expression is well-typed, that all operators
-     have their standard meaning, and that the expression is {i
-     not} lowered to Core Creol. *)
+      A formula is called in negation normal form, if and only if
+      all negation operators are applied to atoms, and the only
+      occuring binary connectives are [&&] and [||].  *)
+  let rec nnf_of_expression =
+    function
+      | FuncCall (b, "~", [e]) when Type.bool_p b.ty ->
+          nnf_of_expression (negate_expression e)
+      | FuncCall (b, ("&&" | "||" as o), [e; f]) when Type.bool_p b.ty ->
+	  FuncCall (b, o, [nnf_of_expression e; nnf_of_expression e])
+      | FuncCall (b, "=>", [e; f]) when Type.bool_p b.ty ->
+	  nnf_of_expression (FuncCall (b, "||", [FuncCall (b, "~", [e]); f]))
+      | FuncCall (b, "<=>", [e; f]) when Type.bool_p b.ty ->
+	  let e' = FuncCall (b, "=>", [e; f])
+	  and f' = FuncCall (b, "=>", [f; e]) in
+	    nnf_of_expression (FuncCall (b, "&&", [e'; f']))
+      | FuncCall (b, "^", [e; f]) when Type.bool_p b.ty ->
+	  nnf_of_expression (FuncCall (b, "~", [FuncCall (b, "<=>", [e; f])]))
+      | e -> e
+
+
+  (** Convert a boolean expression into {i conjunctive normal form}.
+
+      The resulting formula may be exponentially longer.
+
+      Assumes, that the expression is well-typed, that all operators
+      have their standard meaning. *)
   let to_cnf f =
     let rec to_cnf_from_nnf =
       function
-	  Binary (b, And, f, g) ->
-	    Binary (b, And, to_cnf_from_nnf f, to_cnf_from_nnf g)
 	| FuncCall (b, "&&", [f; g]) when Type.bool_p b.ty ->
 	    FuncCall (b, "&&", [to_cnf_from_nnf f; to_cnf_from_nnf g])
-	| Binary(b, Or, f, g) ->
-	    (* Push or inside of and using distributive laws *)
-	    let rec to_cnf_or left right =
-	      match (left, right) with
-		  (Binary(lb, And, lf, lg), _) ->
-		    Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
-		| (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
-		    FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
-		| (_, Binary(rb, And, rf, rg)) ->
-		    Binary (b, And, to_cnf_or left rf, to_cnf_or left rg)
-		| (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
-		    FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
-		| _ ->
-		    (* neither subformula contains and *)
-		    Binary(b, Or, to_cnf_from_nnf f, to_cnf_from_nnf g)
-	    in
-	      to_cnf_or f g
 	| FuncCall (b, "||", [f; g]) ->
 	    (* Push or inside of and using distributive laws *)
 	    let rec to_cnf_or left right =
 	      match (left, right) with
-		  (Binary(lb, And, lf, lg), _) ->
-		    Binary(b, And, to_cnf_or lf right, to_cnf_or lg right)
 		| (FuncCall (lb, "&&", [lf; lg]), _) when Type.bool_p b.ty ->
 		    FuncCall (b, "&&", [to_cnf_or lf right; to_cnf_or lg right])
-		| (_, Binary(rb, And, rf, rg)) ->
-		    Binary(b, And, to_cnf_or left rf, to_cnf_or left rg)
 		| (_, FuncCall (rb, "&&", [rf; rg])) when Type.bool_p b.ty ->
 		    FuncCall (b, "&&", [to_cnf_or left rf; to_cnf_or left rg])
 		| _ ->
@@ -945,20 +787,20 @@ struct
 		    FuncCall (b, "||", [to_cnf_from_nnf f; to_cnf_from_nnf g])
 	    in
 	      to_cnf_or f g
-	| Binary (_, (Implies|Xor|Iff), _, _) ->
-	    assert false (* Input was assumed to be in NNF *)
 	| FuncCall (_, ("=>" | "^" | "<=>"), [_; _]) ->
 	    assert false (* Input was assumed to be in NNF *)
 	| e -> e
     in
-      to_cnf_from_nnf (to_nnf f)
+      to_cnf_from_nnf (nnf_of_expression f)
 
   (* Convert a boolean expression into {i disjunctive normal form}.
 
      Assumes, that the expression is well-typed, that all operators have
      their standard meaning, and that the expression is not lowered to
      Core Creol. *)
-  let to_dnf exp = to_nnf (negate (to_cnf (to_nnf (negate exp))))
+  let to_dnf exp =
+    let cnf = to_cnf (nnf_of_expression (negate_expression exp)) in
+      nnf_of_expression (negate_expression cnf)
 
   (* Check whether all occurences of futures are positive in a formula
      f.  Assume, that a future value does not occur as the argument
@@ -968,16 +810,11 @@ struct
       (* Check whether all futures are positive assuming negation normal
 	 form *)
       function
-	  Unary (_, Not, Label _) -> false
-	| Binary(_, (And | Or), left, right) ->
-	    (all_futures_positive left) && (all_futures_positive right)
 	| FuncCall(n, ("&&" | "||"), [left; right]) when Type.bool_p n.ty ->
 	    (all_futures_positive left) && (all_futures_positive right)
-	| Binary(_, (Implies|Xor|Iff), f, g) ->
-	    assert false (* Input was assumed to be in NNF *)
         | _ -> true
     in
-      all_futures_positive (to_nnf expr)
+      all_futures_positive (nnf_of_expression expr)
 end
 
 

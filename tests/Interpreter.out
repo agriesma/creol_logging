@@ -4,7 +4,7 @@ result Class:
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; None ; None ; emp) el
     return(emp) fi >,
   Ocnt: 0 >
 
@@ -21,7 +21,7 @@ search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
 Solution 1 (state 24)
 conf:Configuration --> discard(label(ob("Tailcall0"), 1))
  
-< ob("main") : "" |
+< ob("main") : Start |
   Att: noSubst,
   Pr: {"var" |-> null | assign("var" ; ob("Tailcall0"))},
   PrQ: noProc,
@@ -30,7 +30,7 @@ conf:Configuration --> discard(label(ob("Tailcall0"), 1))
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; None ; None ; emp) el
     return(emp) fi >,
   Ocnt: 1 >
 
@@ -40,7 +40,7 @@ SL:StmtList --> noStmt
 W:MProc --> {".class" |-> str("Tailcall"), ".label" |-> tag(label(ob(
     "Tailcall0"), 1)), ".method" |-> str("run"), "caller" |-> ob("Tailcall0") |
     if "<"(int(0) :: "x") th assign("x" ; "-"("x" :: int(1))) ; statictail(
-    "run" ; "" ; "" ; emp) el return(emp) fi}
+    "run" ; None ; None ; emp) el return(emp) fi}
 N:Nat --> 2
 ==========================================
 search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
@@ -62,7 +62,7 @@ result State: {
   PrQ: noProc,
   Lcnt: 2 >
  
-< ob("main") : "" |
+< ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
@@ -71,7 +71,7 @@ result State: {
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
-    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; "" ; "" ; emp) el
+    assign("x" ; "-"("x" :: int(1))) ; statictail("run" ; None ; None ; emp) el
     return(emp) fi >,
   Ocnt: 1 >
 }

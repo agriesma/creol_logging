@@ -90,18 +90,16 @@ let rec print_expression exp =
 	  print_string "{|";
 	  print_binding_list a;
 	  print_string "|}";
-      | Expression.Unary (_, o, e) ->
-	  print_string (Expression.string_of_unaryop o) ;
+      | Expression.FuncCall (_, o, [e]) when Expression.unaryop_p o ->
+	  print_string o ;
 	  print_space () ;
 	  print (Expression.prec_of_unaryop o) e
-      | Expression.Binary (_, o, l, r) ->
-	  let lp = fst (Expression.prec_of_binaryop o)
-	  and rp = snd (Expression.prec_of_binaryop o)
-	  in
+      | Expression.FuncCall (_, o, [l; r]) when Expression.binaryop_p o ->
+	  let (lp, rp) = Expression.prec_of_binaryop o in
       	    open_paren prec lp;
 	    print lp l ;
 	    print_space () ;
-	    print_string (Expression.string_of_binaryop o) ;
+	    print_string o ;
 	    print_space () ;
 	    print rp r;
 	    close_paren prec rp

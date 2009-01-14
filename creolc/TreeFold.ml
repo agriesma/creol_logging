@@ -77,45 +77,47 @@ let optimise_in_statement stmt =
     | SetLit (n, l) -> SetLit (n, List.map fold_expr l)
     | MapLit (n, l) ->
 	MapLit (n, List.map (fun (d, r) -> (fold_expr d, fold_expr r)) l)
-    | Unary (n, o, e) ->
+    | FuncCall (n, o, [e]) ->
         let e' = fold_expr e in
           begin
             match o with
-              | Not ->
-                  begin match e' with
-                    | Bool(_, true) -> Bool(n, false)
-                    | Bool(_, false) -> Bool(n, true)
-                    | Unary (n', Not, e'') -> Expression.set_note n e''
-                    | _ -> Unary (n, o, e')
+              | "~" ->
+                  begin
+		    match e' with
+                      | Bool(_, true) -> Bool(n, false)
+                      | Bool(_, false) -> Bool(n, true)
+                      | FuncCall (n', "~", [e'']) -> Expression.set_note n e''
+                      | _ -> FuncCall (n, o, [e'])
                   end
-              | UMinus ->
+              | "-" ->
                   begin
                     match e' with
                       | Int (_, v) when is_zero v -> Int (n, v)
                       | Float (_, v) when zero_float_p v -> Float (n, v)
-                      | Unary (n'', UMinus, e'') -> Expression.set_note n e''
-                      | _ -> Unary (n, o, e')
+                      | FuncCall (n'', "-", [e'']) -> Expression.set_note n e''
+                      | _ -> FuncCall (n, o, [e'])
                   end
-              | Length ->
+              | "#" ->
                   begin
                     match e' with
                       | Nil _ -> Int (n, Big_int.zero_big_int)
                       | ListLit (_, l) ->
                           Int (n, Big_int.big_int_of_int (List.length l))
                       | SetLit (_, []) -> Int (n, Big_int.zero_big_int)
-                      | _ -> Unary (n, o, e')
+                      | _ -> FuncCall (n, o, [e'])
                   end
+	      | _ -> FuncCall (n, o, [e'])
           end
-    | Binary (n, o, l, r) ->
+    | FuncCall (n, o, [l; r]) ->
 	let l' = fold_expr l
 	and r' = fold_expr r
 	in
 	  begin
 	    match o with
-		Plus ->
+		"+" ->
 		  begin
 		    match (l', r') with
-		      | (Int (_, lv), _) when  is_zero lv -> r'
+		      | (Int (_, lv), _) when is_zero lv -> r'
                       | (_, Int (_, rv)) when is_zero rv -> l'
 		      | (Int (_, lv), Int (_, rv)) ->
                           Int (n, Big_int.add_big_int lv rv)
@@ -123,9 +125,9 @@ let optimise_in_statement stmt =
                       | (_, Float (_, rv)) when zero_float_p rv -> l'
 		      | (Float (_, lv), Float (_, rv)) ->
                           Float (n, lv +. rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Minus ->
+	      | "-" ->
 		  begin
 		    match (l', r') with
 		      | (Int (_, lv), _) when  is_zero lv -> r'
@@ -136,9 +138,9 @@ let optimise_in_statement stmt =
                       | (_, Float (_, rv)) when zero_float_p rv -> l'
 		      | (Float (_, lv), Float (_, rv)) ->
                           Float (n, lv -. rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Times  ->
+	      | "*" ->
 		  begin
 		    match (l', r') with
 		      | (Int (_, lv), _) when is_one lv -> r'
@@ -153,9 +155,9 @@ let optimise_in_statement stmt =
                       | (_, Float (_, rv)) when zero_float_p rv -> r'
 		      | (Float (_, lv), Float (_, rv)) ->
 			  Float (n, lv *. rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Div ->
+	      | "/" ->
 		  begin
 		    match (l', r') with
                       | (_, Int (_, rv)) when is_one rv -> l'
@@ -170,9 +172,9 @@ let optimise_in_statement stmt =
 			  assert false; (* Report division by zero? *)
 		      |	(Float (_, lv), Float (_, rv)) ->
                           Float (n, lv /. rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Modulo  ->
+	      | "%" ->
 		  begin
 		    match (l', r') with
                       | (_, Int (_, rv)) when is_one rv -> l'
@@ -187,9 +189,9 @@ let optimise_in_statement stmt =
 			  assert false; (* Report division by zero? *)
 		      | (Float (_, lv), Float (_, rv)) ->
                           Float (n, mod_float lv rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Power ->
+	      | "**" ->
 		  begin
 		    match (l', r') with
                       | (Int (_, lv), _) when is_one lv -> l'
@@ -206,19 +208,19 @@ let optimise_in_statement stmt =
 			  Float (n, 1.0)
 		      | (Float (_, lv), Float (_, rv)) ->
                           Float (n, lv ** rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Eq ->
+	      | "="  ->
 		  if l' = r' then
 		    Bool (n, true)
 		  else
-		    Binary (n, o, l', r')
-	      | Ne ->
+		    FuncCall (n, o, [l'; r'])
+	      | "/="  ->
 		  if l' = r' then
 		    Bool (n, false)
 		  else
-		    Binary (n, o, l', r')
-	      | Le ->
+		    FuncCall (n, o, [l'; r'])
+	      | "<=" ->
 		  begin
 		    match (l', r') with
 		      | (Int (_, lv), Int (_, rv)) ->
@@ -229,9 +231,9 @@ let optimise_in_statement stmt =
 			  Bool (n, lv <= (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
 			  Bool (n, lv <= rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Lt ->
+	      | "<" ->
 		  begin
 		    match (l', r') with
 		      | (Int (_, lv), Int (_, rv)) ->
@@ -242,9 +244,9 @@ let optimise_in_statement stmt =
 			  Bool (n, lv < (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
 			  Bool (n, lv < rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Ge ->
+	      | ">=" ->
 		  begin
 		    match (l', r') with
 		      | (Int (_, lv), Int (_, rv)) ->
@@ -255,9 +257,9 @@ let optimise_in_statement stmt =
 			  Bool (n, lv >= (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
 			  Bool (n, lv >= rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Gt ->
+	      | ">" ->
 		  begin
 		    match (l', r') with
 		      | (Int (_, lv), Int (_, rv)) ->
@@ -268,84 +270,87 @@ let optimise_in_statement stmt =
 			  Bool (n, lv > (Big_int.float_of_big_int rv))
 		      | (Float (_, lv), Float (_, rv)) ->
 			  Bool (n, lv > rv)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | And  ->
+	      | "&&"  ->
 		  begin
 		    match (l', r') with
 		      | (Bool (_, false), _) -> Bool (n, false)
 		      | (_, Bool (_, false)) -> Bool (n, false)
 		      | (Bool(_, true), Bool (_, true)) -> Bool (n, true)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Wedge ->
+	      | "/\\" ->
 		  begin
 		    match (l', r') with
 		      | (Bool (_, false), _) -> Bool (n, false)
 		      | (_, Bool (_, false)) -> Bool (n, false)
 		      | (Bool(_, true), Bool (_, true)) -> Bool (n, true)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Or ->
+	      | "||" ->
 		  begin
 		    match (l', r') with
 		      | (Bool (_, true), _) -> Bool (n, true)
 		      | (_, Bool (_, true)) -> Bool (n, true)
 		      | (Bool(_, false), Bool (_, false)) -> Bool (n, false)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Vee ->
+	      | "\\/" ->
 		  begin
 		    match (l', r') with
 		      | (Bool (_, true), _) -> Bool (n, true)
 		      | (_, Bool (_, true)) -> Bool (n, true)
 		      | (Bool(_, false), Bool (_, false)) -> Bool (n, false)
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Xor ->
+	      | "^" ->
 		  if l' = r' then
 		    Bool (n, false)
 		  else
-		    Binary (n, o, l', r')
-	      | Implies ->
+		    FuncCall (n, o, [l'; r'])
+	      | "=>" ->
 		  begin
 		    match (l', r') with
 		      | (Bool (_, false), _) -> Bool (n, true)
-		      | (_, Bool (_, false)) -> fold_expr (Unary (n, Not, l'))
+		      | (_, Bool (_, false)) ->
+			  fold_expr (FuncCall (n, "~", [l']))
 		      | (Bool (_, true), _) -> Expression.set_note n r'
 		      | (_, Bool (_, true)) -> Expression.set_note n l'
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Iff ->
+	      | "<=>" ->
 		  if l' = r' then
 		    Bool (n, true)
 		  else
-		    Binary (n, o, l', r')
-	      | Prepend ->
+		    FuncCall (n, o, [l'; r'])
+	      | "-|" ->
 		  begin
 		    match (l', r') with
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Append ->
+	      | "|-" ->
 		  begin
 		    match (l', r') with
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Concat ->
+	      | "|-|" ->
 		  begin
 		    match (l', r') with
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | Project ->
+	      | "\\" ->
 		  begin
 		    match (l', r') with
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
-	      | In ->
+	      | "in" ->
 		  begin
 		    match (l', r') with
-		      | _ -> Binary (n, o, l', r')
+		      | _ -> FuncCall (n, o, [l'; r'])
 		  end
+	      | _ ->
+	          FuncCall(n, o, [l'; r'])
 	  end
     | FuncCall (n, f, a) -> FuncCall(n, f, List.map fold_expr a)
     | Expression.If (n, c, t, f) ->

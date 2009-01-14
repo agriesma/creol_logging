@@ -92,10 +92,6 @@ let compute_in_statement ~meth may must stmt =
 	  and s = List.fold_left (add kill) IdSet.empty
 	  in
 	    IdSet.union (s dl) (s rl)
-      | Unary (_, _, e) ->
-	  kill e
-      | Binary (_, _, l, r) ->
-	  IdSet.union (kill l) (kill r)
       | Expression.If (_, c, t, f) ->
 	  List.fold_left (add kill) IdSet.empty [c; t; f]
       | FuncCall (_, _, l) ->

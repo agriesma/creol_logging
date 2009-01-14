@@ -107,13 +107,13 @@ basic-stmt ::=
   | @code{assign (} vid-list @code{;} expr-list @code{)}
   | @code{new (} vid @code{;} cid @code{;} expr-list @code{)}
   | @code{call (} vid @code{;} expr @code{;} string @code{;} expr-list @code{)}
-  | @code{static (} vid @code{;} string @code{;} string @code{;} string @code{;} expr-list @code{)}
+  | @code{static (} vid @code{;} string @code{;} (string | @code{None}) @code{;} (string | @code{None}) @code{;} expr-list @code{)}
   | @code{multicast (} expr @code{;} string @code{;} expr-list @code{)}
   | @code{get (} expr @code{;} vid-list @code{)}
   | @code{return (} expr-list @code{)}
   | @code{free (} vid-list @code{)}
   | @code{tailcall (} expr @code{;} string @code{;} expr-list @code{)}
-  | @code{statictail (} string @code{;} string @code{;} string @code{;} expr-list @code{)}
+  | @code{statictail (} string @code{;} (string | @code{None}) @code{;} (string | @code{None}) @code{;} expr-list @code{)}
   | @code{if} expression @code{th} merge-stmt @code{el} merge-stmt @code{fi}
   | @code{while} expression @code{do} merge-stmt @code{od}
   | run-time-stmt

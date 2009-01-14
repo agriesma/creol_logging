@@ -24,27 +24,38 @@ mod CREOL-SIMULATOR is
 
   protecting `CREOL-EVAL' .
 
-  vars F G : Nat .                     --- Counters for generating fresh names.
-  vars O O' : Oid .                    --- Object identifiers
-  vars C CC : String .                 --- Class names
-  vars Q Q' : String .                 --- Generic names (attribute and method)
-  vars A A' : Vid .                    --- Generic attribute names
+  vars F G : Nat .                     --- Counters for generating fresh names
+  vars O O1 : Oid .                    --- Object identifiers
+  vars C CC : Cid .                    --- Class names
+  var Q : String .                     --- Generic names (attribute and method)
+  var A : Vid .                        --- Generic attribute names
   var AL : VidList .                   --- List of LHS
   var N : Label .                      --- Call label
   var D : Data .                       --- Value
   vars DL DL2 : DataList .             --- List of values
-  vars DS : DataSet .		       --- Set of data items.
+  vars DS : DataSet .		       --- Set of data items
   var E : Expr .                       --- Expression
   var EL : ExprList .                  --- List of Expressions
   var ST : Stmt .                      --- Statement
   var SST : SuspStmt .                 --- Suspendable statement
-  vars S S' L L' : Subst .             --- Object and process states.
+  vars S S1 L L1 : Subst .             --- Object and process states
   vars SL SL1 SL2 : StmtList .         --- List of statements
-  vars P P' : Process .
+  var P : Process .
   var W : MProc .
-  vars I I' : InhList .
+  vars I I1 : InhList .
   var MS : MMtd .
   var CN : Configuration .
+ifdef(`WITH_UPDATE',
+`  var V V1 T T1 T2 : Nat .                --- Class and object versions
+  var G1 : Nat .
+  var B B1 : String .                  --- Class name
+  var CL : Class .                     --- A class
+  var I2 : InhList .
+  var AL1 : VidList .
+  var MS1 : MMtd .                     --- Methods to add to a class
+  var CD : ClassDeps .
+  var OD : ObjectDeps .',
+`  var B : Cid .')
 
 dnl Define the clock and the variables needed to address clocks.
 dnl
@@ -70,7 +81,7 @@ include(`logging.m4'),dnl
 
 ifdef(`MODELCHECK',dnl
   op label : Oid Oid String DataList -> Label [ctor ``format'' (! o)] .
-  eq caller(label(O, O', Q, DL)) = O . 
+  eq caller(label(O, O1, Q, DL)) = O . 
 ,dnl
  op label : Oid Nat -> Label [ctor ``format'' (o o)] .
  eq caller(label(O, F)) = O .
@@ -92,7 +103,7 @@ POSTLOG(` renStmt(S, L, assign(AL ; EL)) ', `"assign"', ` renTrans(S, L, genTran
 `[label assignment]')
 
 eq
-  < O : C | Att: S, Pr: { L | $assign((Q @ CC), AL ; D :: DL) ; SL },
+  < O : C | Att: S, Pr: { L | $assign((Q @ B), AL ; D :: DL) ; SL },
     PrQ: W, Lcnt: F >
   =
     < O : C | Att: insert(Q, D, S), Pr: { L | $assign(AL ; DL) ; SL },
@@ -300,10 +311,10 @@ rl
 --- local-reply
 ---
 CSTEP(dnl
-`< O : C | Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W , { L''` | SL1 }, Lcnt: F >',
-`< O : C | Att: S, Pr:  { L''` | SL1 ; $cont N },
+`< O : C | Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W , { L1 | SL1 }, Lcnt: F >',
+`< O : C | Att: S, Pr:  { L1 | SL1 ; $cont N },
   PrQ: W , { L | get(N ; AL) ; SL }, Lcnt: F >',
-L'[".label"] == N,
+`L1[".label"] == N',
 `[label local-reply]')
 
 
@@ -316,10 +327,10 @@ L'[".label"] == N,
 --- because there might be two processes in PrQ which await a reply to the
 --- label.
 rl
-  < O : C | Att: S, Pr: { L | $cont N }, PrQ: W , { L' | get(N ; AL) ; SL1},
+  < O : C | Att: S, Pr: { L | $cont N }, PrQ: W , { L1 | get(N ; AL) ; SL1},
     Lcnt: F >
   =>
-  < O : C | Att: S, Pr: { L' | get(N ; AL) ; SL1 }, PrQ: W,
+  < O : C | Att: S, Pr: { L1 | get(N ; AL) ; SL1 }, PrQ: W,
     Lcnt: F >
   [label continue] .
 
@@ -328,16 +339,16 @@ rl
 ---
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; "" ; EL ); SL }, PrQ: W, Lcnt: F >
+  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; None ; EL ); SL }, PrQ: W, Lcnt: F >
   CLOCK
   =
   < O : C | Att: S, Pr: { insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L) | SL }, PrQ: W, Lcnt: F >
   bindMtd(O`,' O`,' label(O, O, Q, EVALLIST(EL, (S :: L), T))`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
 ,
 `rl
-  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; "" ; EL ); SL }, PrQ: W, Lcnt: F > CLOCK
+  < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; None ; EL ); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  < O : C | Att: S, Pr: { insert (A, label(O, F), L) | SL }, PrQ: W, Lcnt: (F + 1) >
+  < O : C | Att: S, Pr: { insert (A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) >
   bindMtd(O`,' O`,' label(O, F)`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
 )dnl
   [label local-async-static-call] .
@@ -357,7 +368,7 @@ ifdef(`MODELCHECK',
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
   POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , renTrans(S, L, genTrans(call(A ; E ; Q ; EL))), ("dest" |> toString(label(O, F)) ) )dnl
-  < O : C | Att: S, Pr: { insert(A, label(O, F), L) | SL }, PrQ: W, Lcnt: (F + 1) > CLOCK
+  < O : C | Att: S, Pr: { insert(A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
   invoc(O, EVAL(E, (S :: L), T), label(O, F), Q , EVALLIST(EL, (S :: L), T)) '
 )dnl
   [label remote-async-call] .
@@ -378,19 +389,19 @@ eq
 
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: { L | $multicast(list('O'` :: DL) ; Q ; DL2) ; SL },
+  < O : C | Att: S, Pr: { L | $multicast(list('O1` :: DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
-  invoc(O, 'O'`, label(O, 'O'`, Q, DL2), Q, DL2)',
+  invoc(O, 'O1`, label(O, 'O1`, Q, DL2), Q, DL2)',
 `eq
-  < O : C | Att: S, Pr: { L | $multicast(list('O'` :: DL) ; Q ; DL2) ; SL },
+  < O : C | Att: S, Pr: { L | $multicast(list('O1` :: DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
-            PrQ: W, Lcnt: (F + 1) >
-  invoc(O, O''`, label(O, F), Q , DL2)')
+            PrQ: W, Lcnt: (s F) >
+  invoc(O, O1'`, label(O, F), Q , DL2)')
   [label multicast-emit-list] .
 
 eq 
@@ -402,19 +413,19 @@ eq
 
 ifdef(`MODELCHECK',
 `eq
-  < O : C | Att: S, Pr: { L | $multicast(set('O'` : DS) ; Q ; DL2) ; SL },
+  < O : C | Att: S, Pr: { L | $multicast(set('O1` : DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
-  invoc(O, 'O'`, label(O, 'O'`, Q, DL2), Q, DL2)',
+  invoc(O, 'O1`, label(O, 'O1`, Q, DL2), Q, DL2)',
 `eq
-  < O : C | Att: S, Pr: { L | $multicast(set('O'` : DS) ; Q ; DL2) ; SL },
+  < O : C | Att: S, Pr: { L | $multicast(set('O1` : DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
-            PrQ: W, Lcnt: (F + 1) >
-  invoc(O,' O'`, label(O, F), Q , DL2)')
+            PrQ: W, Lcnt: (s F) >
+  invoc(O,' O1`, label(O, F), Q , DL2)')
   [label multicast-emit-set] .
 
 --- return
@@ -433,10 +444,10 @@ POSTLOG(`return(EL)', `"return"', renTrans(S, L, genTrans(return(EL) ) ), ` "des
 ---
 eq
   < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
-  invoc(O', O, N, Q, DL)
+  invoc(O1, O, N, Q, DL)
   =
   < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
-  bindMtd(O, O', N, Q, DL, C < emp >)
+  bindMtd(O, O1, N, Q, DL, C < emp >)
   [label transport-imsg] .
 
 --- free
@@ -452,8 +463,7 @@ STEP(< O : C | Att: S`,' Pr: { L | free(A) ; SL }`,' PrQ: W`,' Lcnt: F >,
 
 --- deallocate
 ---
-eq
-  comp(N, DL) discard(N) = none [label deallocate] .
+eq comp(N, DL) discard(N) = none [label deallocate] .
 
 
 --- TAIL CALLS
@@ -473,16 +483,15 @@ STEP(`< O : C | Att: S, Pr: { L | tailcall(E ; Q ; EL) ; SL }, PrQ: W,
 --- Fake the caller and the label and tag the label.  Since we do not
 --- want to interleave, this can also be an equation.
 ---
-STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; "" ; "" ; EL) ; SL }, PrQ: W, Lcnt: F >' CLOCK,
+STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; None ; None ; EL) ; SL }, PrQ: W, Lcnt: F >' CLOCK,
 `< O : C | Att: S, Pr: { noSubst | $accept tag(L[".label"])  }, PrQ: W, Lcnt: F >
   bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), C < emp >)'
   CLOCK,
 `[label local-tailcall]')
 
-STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; CC ; "" ; EL) ; SL }, PrQ: W, Lcnt: F >' CLOCK,
+STEP(`< O : C | Att: S, Pr: { L | statictail(Q ; CC ; None ; EL) ; SL }, PrQ: W, Lcnt: F >' CLOCK,
 `< O : C | Att: S, Pr: { noSubst | $accept tag(L[".label"]) }, PrQ: W, Lcnt: F >
-  bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), CC < emp >)'
-  CLOCK,
+  bindMtd(O, O, tag(L[".label"]), Q, EVALLIST(EL, (S :: L), T), CC < emp >)' CLOCK,
 `[label static-tailcall]')
 
 *** If we receive the method body, the call is accepted and the label untagged.
@@ -514,18 +523,18 @@ ifdef(`LOGGING',dnl
 ,)dnl
 STEP(dnl
 PRELOG`'dnl
-< O : C | Att: S`,'Pr: { L | new (A ; CC ; EL); SL }`,' PrQ: W`,' Lcnt: F > 
-  < CC : Class | Inh: I `,' Param: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: G >
-  CLOCK`'dnl
+`< O : C | Att: S, Pr: { L | new(A ; CLASS(B, T) ; EL); SL }, PrQ: W, Lcnt: F >
+  < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
+  CLOCK'dnl
 ,dnl
-POSTLOG(`new (A ; CC ; EL)', `"create"', renTrans(S, L, genTrans(new(A ; CC ; EL ) ) ), `"dest" |> CC + string(G, 10) ' )dnl
-< O : C | Att: S`,' Pr: { L | assign(A ; newId(CC`,' G)); SL }`,' PrQ: W`,' Lcnt: F >
-  < CC : Class | Inh: I `,' Param: AL`,' Att: S' `,' Mtds: MS `,' Ocnt: (G + 1) >
-  < newId(CC`,'G) : CC | Att: S`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 0 >
-  findAttr(newId(CC`,' G)`,' I`,' S'`,' 
-    MARKER("createmarker " + CC + string(G, 10))ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S`,'  L), T))`,'
+POSTLOG(`new (A ; B ; EL)', `"create"', renTrans(S, L, genTrans(new(A ; B ; EL ) ) ), `"dest" |> B + string(G, 10) ' )dnl
+`< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: F >
+  <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
+  < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
+  findAttr(newId(B`,' G), I, S1, 
+    MARKER("createmarker " + B + string(G, 10))ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S,  L), T)),
     { noSubst | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
-    free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK,dnl
+    free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK',dnl
 `[label new-object]')
 
 
@@ -547,20 +556,20 @@ eq findAttr(O, noInh, S, SL, P) = foundAttr(O, S, SL, P) .
 --- consistent state.
 ---
 eq
-  findAttr(O,(C < EL > , I'), S, SL, { L' | SL1 }) 
-  < C : Class | Inh: I, Param: AL, Att: S', Mtds: MS, Ocnt: G >
+  findAttr(O,(C < EL > , I1), S, SL, { L1 | SL1 }) 
+  < C : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: G >
   =
-  findAttr(O, (I' , I), compose(S', S),
+  findAttr(O, (I1 , I), compose(S1, S),
            SL ; assign(AL ; EL), 
-           { L' | static(".init" ; "init" ; C ; "" ; emp) ;
+           { L1 | static(".init" ; "init" ; C ; None ; emp) ;
                   get(".init" ; noVid) ; free(".init") ; SL1 })
-  < C : Class | Inh: I, Param: AL, Att: S', Mtds: MS, Ocnt: G > .
+  < C : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: G > .
 
 eq
-  foundAttr(O, S', SL, { L' | SL1 })
+  foundAttr(O, S1, SL, { L1 | SL1 })
   < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: F >
   =
-  < O : C | Att: ("this" |-> O, S'), Pr: { L' | SL ; SL1 }, PrQ: W, Lcnt: F > .
+  < O : C | Att: ("this" |-> O, S1), Pr: { L1 | SL ; SL1 }, PrQ: W, Lcnt: F > .
 
 
 
@@ -576,7 +585,115 @@ STEP(dnl
 `[label assert]')
 
 
+ifdef(`WITH_UPDATE',dnl
+--- The following rules implement the operational semantics of class
+--- updates.
+---
+STEP(`add(CL, none)', `CL', `[label add-class]')
 
+--- Extend a class. B is the name of the class we wany to upgrade.
+--- A method .update is added that updates an object of class B#T to
+--- an object of class B#(s T)
+---
+STEP(dnl
+``extend(B, I1, S1, MS1, SL, none)
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
+``< class(B, s T) : Class | Version: (s V), Inh: (I, I1), Param: AL, Att: (compose(S, S1)),
+                          Mtds: MS, MS1,
+                          < ".update" : Method | Param: noVid,
+                                                 Att: ".version" |-> int(T),
+                                                 Code: SL >,
+                            Ocnt: G >'',
+`[label extend-class]')
+
+--- When all the update constraints are resolved`,' we are allowed to
+--- simplify class CC.
+STEP(dnl
+``remove(B, I, S, MS, none, none)
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S1, Mtds: MS1, Ocnt: G >'',
+``< class(B, s T) : Class | Version: (s V), Inh: I, Param: AL, Att: remove(S1, S), Mtds: (MS1 \ MS), Ocnt: G >'',
+`[label simplify-class]')
+
+--- Resolve dependencies
+CSTEP(dnl
+``add(CL, (c(B, V1), CD))
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
+``add(CL, CD)
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
+`V >= V1',
+`[label depend-add]')
+
+CSTEP(dnl
+``extend(B, I1, S1, MS1, SL, (c(B1, V1), CD))
+    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
+``extend(B, I1, S1, MS1, SL, CD)
+    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
+`V >= V1',
+`[label depend-extend]')
+
+CSTEP(dnl
+``{ remove(B, I, S, MS, (c(B1, V1), CD), OD)
+    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
+    CN }'',
+``{ remove(B, I, S, MS, CD, (OD, allinstances(B1, T, CN)))
+    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
+    CN }'',
+`V >= V1',
+`[label depend-remove]')
+
+--- Resolve dependencies on the object level. This is only relevant for
+--- simplification.
+CSTEP(dnl
+``remove(B, I, S, MS, CD, (o(O, T), OD))
+    < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
+``remove(B, I, S, MS, CD, OD)
+    < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
+`T1 >= T',
+`[label depend-object1]')
+
+--- Update a sub class.
+CSTEP(dnl
+``< class(B, T) : Class | Version: V, Inh: (I, class(B1, T1) < EL >, I1),
+                          Param: AL, Att: S, Mtds: MS, Ocnt: G >
+    < class(B1, T2) : Class | Version: V1, Inh: I2,
+                              Param: AL1, Att: S1, Mtds: MS1, Ocnt: G1 >'',
+``< class(B, s T) : Class | Version: V, Inh: (I, class(B, T2) < EL >, I1),
+                            Param: AL, Att: S, Mtds: MS, Ocnt: G >
+    < class(B1, T2) : Class | Version: V1, Inh: I2,
+                              Param: AL1, Att: S1, Mtds: MS1, Ocnt: G1 >'',
+``T1 < T2'',
+``[label update-sub]'')
+
+--- Update the object state after a class update.
+---
+--- First step: emit the transfer message to update the object state.
+---
+CSTEP(``< O : class(B, T) | Att: S, Pr: idle, PrQ: W, Lcnt: F >
+   < class(B, T1) : Class | Version: V, Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >'',
+``< O : class(B, T1) | Att: noSubst, Pr: idle, PrQ: W, Lcnt: F >
+    < class(B, T1) : Class | Version: V, Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
+    transfer(O, S, class(B, T1) < emp >, update(T, T1, MS))'',
+``T1 > T'',
+``[label update-object]'')
+
+--- Second step: collect all the upgrades from classes. Do not care for
+--- the class version`,' because all classes cannot change while the object
+--- update rule triggers.
+---
+``eq transfer(O, S, (class(B, T) < EL >, I), SL)
+   < class(B, T1) : Class | Version: V, Inh: I1, Param: AL, Att: S1, Mtds: MS, Ocnt: G >
+  =
+  transfer(O, compose(S1, S), (I, I1), SL)
+   < class(B, T1) : Class | Version: V, Inh: I1, Param: AL, Att: S1, Mtds: MS, Ocnt: G > .''
+  
+--- Third step: once the transfer is complete`,' update the object's state.
+``eq < O : class(B, T1) | Att: noSubst, Pr: idle, PrQ: W, Lcnt: F >
+    transfer(O, S, noInh, SL)
+  =
+  < O : class(B, T1) | Att: S, Pr: { noSubst | SL }, PrQ: W, Lcnt: F > .''
+
+
+)dnl
 --- REAL-TIME CREOL
 ---
 --- posit

@@ -92,10 +92,6 @@ let compute_in_body ~program ~cls ~meth =
 	  let s = List.fold_left (add gen) IdSet.empty 
 	  and (dl, rl) = List.split l in
 	    IdSet.union (s dl) (s rl)
-      | Unary (_, _, e) ->
-	  gen e
-      | Binary (_, _, l, r) ->
-	  IdSet.union (gen l) (gen r)
       | Expression.If (_, c, t, f) ->
 	  List.fold_left (add gen) IdSet.empty [c; t; f]
       | FuncCall (_, _, l) ->

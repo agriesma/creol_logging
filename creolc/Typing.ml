@@ -138,8 +138,9 @@ let unify ~program ~constraints =
       let (s, t) = List.hd c
       and d = List.tl c
       in
-	log 2 ("unify: constraint " ^ (Type.string_of_type s) ^ " <: " ^
-		  (Type.string_of_type t)) ;
+      let () = log 2 ("unify: constraint " ^ (Type.string_of_type s) ^ " <: " ^
+			(Type.string_of_type t))
+      in
 	match (s, t) with
 	  | (Type.Tuple l1, Type.Tuple l2) when (List.length l1) = (List.length l2) ->
 		do_unify ((List.combine l1 l2)@d) res
@@ -318,10 +319,11 @@ let identifier_undeclared n name =
     
     [fresh_name] is a monad used for generating new names.
     
-    The result of this function is to update the input expression
-    with new type variable names and to compute a new constraint
-    set.  The constraint set will be used to compute
-    instantiations for the type variables in [unify].
+    The result of this function is the updated input expression with
+    new type variable names and a constraint set which needs to be
+    satisfiable for the expression to be well-typed.  The constraint
+    set will be used to compute instantiations for the type variables
+    in [unify].
     
     Return the expression with updated type annotations (in Pierce,
     this would be the type), the function generating a new fresh
@@ -412,79 +414,6 @@ let rec type_recon_expression env coiface constr fresh_name =
 	  (StaticAttr (set_type n res.VarDecl.var_type, name, t),
 	   constr, fresh_name)
     | StaticAttr _ -> assert false
-    | Unary (n, op, arg) ->
-	let (arg', constr', fresh_name') =
-	  type_recon_expression env coiface constr fresh_name arg 
-	in
-	let name = string_of_unaryop op in
-	let (fresh_name'', ty1) =
-	  match Program.find_functions env.program name with
-	      [] ->
-		type_error n ("Unary operator " ^ name ^ " not defined")
-	    | [candidate] ->
-		(* This is a small optimisation. *)
-		let r =
-		  Type.Function
-		    (Function.domain_type candidate,
-		     candidate.Function.result_type)
-		in
-		  fresh_names_in_type fresh_name' r
-	    | candidates ->
-		let (fn'', t) =
-		  List.fold_left (fun (fn, t) o ->
-				    let r =
-				      Type.Function (Function.domain_type o,
-						     o.Function.result_type)
-				    in
-				    let (fn', sr) = fresh_names_in_type fn r in
-				      (fn', sr::t))
-		    (fresh_name', [])
-		    candidates
-		in
-		  (fn'', Type.Disjunction t)
-	in
-	let ty2 = Type.Tuple [get_type arg'] in
-	let (v, fresh_name''') = fresh_var fresh_name'' in
-	  (Unary (set_type n v, op, arg'),
-	   (Type.Function (ty2, v), ty1)::constr', fresh_name''')
-    | Binary (n, op, arg1, arg2) ->
-	let (arg1', constr', fresh_name') =
-	  type_recon_expression env coiface constr fresh_name arg1
-	in
-	let (arg2', constr'', fresh_name'') =
-	  type_recon_expression env coiface constr' fresh_name' arg2
-	in
-	let name = string_of_binaryop op in
-	let (fresh_name''', ty1) =
-	  match Program.find_functions env.program name with
-	      [] ->
-		type_error n ("Binary operator " ^ name ^ " not defined")
-	    | [candidate] ->
-		(* This is a small optimisation. *)
-		let r =
-		  Type.Function
-		    (Function.domain_type candidate,
-		     candidate.Function.result_type)
-		in
-		  fresh_names_in_type fresh_name'' r
-	    | candidates ->
-		let (fn'', t) =
-		  List.fold_left (fun (fn, t) o ->
-				    let r =
-				      Type.Function (Function.domain_type o,
-						     o.Function.result_type)
-				    in
-				    let (fn', sr) = fresh_names_in_type fn r in
-				      (fn', sr::t))
-		    (fresh_name'', [])
-		    candidates
-		in
-		  (fn'', Type.Disjunction t)
-	in
-	let ty2 = Type.Tuple [get_type arg1'; get_type arg2'] in
-	let (v, fresh_name'''') = fresh_var fresh_name''' in
-	  (Binary (set_type n v, op, arg1', arg2'),
-	   (Type.Function (ty2, v), ty1)::constr'', fresh_name'''')
     | Expression.If (n, cond, iftrue, iffalse) ->
 	let (cond', constr', fresh_name') =
 	  type_recon_expression env coiface constr fresh_name cond
@@ -1363,7 +1292,8 @@ let typecheck tree: Program.t =
       | Declaration.Interface i ->
 	  Declaration.Interface (type_check_interface program i)
       | _ as d -> d
-  and type_relation_well_formed_p tree =
+  in
+  let type_relation_well_formed_p tree =
     let rel = Program.subtype_relation tree in
       if Program.acyclic_p (Program.transitive_closure rel) then
 	true
