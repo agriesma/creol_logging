@@ -215,7 +215,7 @@ let main () =
   in
   let prelude = Program.hide_all (Passes.parse_from_file "prelude.creol") in
     Target.setup () ;
-    Target.output (Passes.execute_passes BackendXML.emit) !Target.file (Program.concat [ prelude; tree ]) ;
+    Target.output ((Passes.execute_passes BackendXML.emit) !Target.file (Program.concat [ prelude; tree ])) ;
     if !times then Passes.report_timings () ;
     exit 0 ;;
 
