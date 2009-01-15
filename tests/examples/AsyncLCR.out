@@ -33,7 +33,7 @@ result State: {
     "Process2"), "this" |-> ob("Init0"),
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 2 >
+  Lcnt: 5 >
  
 < ob("Process0") : "Process" |
   Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process2"), "status" |-> int(0),
@@ -60,7 +60,7 @@ result State: {
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "Init" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, Mtds:

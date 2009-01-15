@@ -30,13 +30,13 @@ result State: {
   Att: "console" |-> ob("Console0"), "this" |-> ob("Hello0"),
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 3 >
+  Lcnt: 4 >
  
 < ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("output" @

@@ -23,7 +23,7 @@ result State: {
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "Test" : Class | Inh: noInh, Param: noVid, Att: "v" |-> null, "x" |-> null,
     "y" |-> null, Mtds:

@@ -473,12 +473,12 @@ STEP(dnl
   < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
   CLOCK'dnl
 ,dnl
-`< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: F >
+`< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: (s F) >
   <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
   < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
   findAttr(newId(B`,' G), I, S1, 
     $assign(AL ; EVALLIST(EL, compose(S,  L), T)),
-    { noSubst | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
+    { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
     free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK',dnl
 `[label new-object]')
 

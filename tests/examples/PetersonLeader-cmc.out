@@ -1,12 +1,12 @@
 ==========================================
 frewrite in PROGRAM : main(classes, "Main", emp) .
-result (sort not calculated): {discard(label(ob("Main0"), 1))
+result (sort not calculated): {discard(label(ob("Main0"), 6))
  
 < ob("Main0") : "Main" |
   Att: "p1" |-> ob("Process0"), "p2" |-> ob("Process1"), "p3" |-> ob(
     "Process2"), "p4" |-> ob("Process3"), "p5" |-> ob("Process4"), "this" |->
     ob("Main0"),
-  Pr: {".class" |-> str("Main"), ".label" |-> label(ob("Main0"), 1), ".method"
+  Pr: {".class" |-> str("Main"), ".label" |-> label(ob("Main0"), 6), ".method"
     |-> str("run"), "_" |-> null, "caller" |-> ob("Main0") | return(emp)},
   PrQ: {".class" |-> str("Main"), ".label" |-> label(ob("Process0"), 1),
     ".method" |-> str("getNeighbour"), "_" |-> null, "caller" |-> ob(
@@ -39,7 +39,7 @@ result (sort not calculated): {discard(label(ob("Main0"), 1))
     :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th assign("n" ;
     "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el skip fi fi fi fi
     fi ; return("n")},
-  Lcnt: 2 >
+  Lcnt: 7 >
  
 < ob("Process0") : "Process" |
   Att: "i" |-> int(1), "main" |-> ob("Main0"), "mode" |-> bool(true),
@@ -51,9 +51,9 @@ result (sort not calculated): {discard(label(ob("Main0"), 1))
     "Process0"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
     ob("Process0"), 0)},
-  PrQ: {".anon" |-> label(ob("Process0"), 0) | get(label(ob("Process0"), 0) ;
-    noVid) ; free(".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(
-    ".anon")},
+  PrQ: {".anon" |-> label(ob("Process0"), 0), ".label" |-> label(ob("Main0"),
+    1) | get(label(ob("Process0"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
+    "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
 < ob("Process1") : "Process" |
@@ -66,9 +66,9 @@ result (sort not calculated): {discard(label(ob("Main0"), 1))
     "Process1"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
     ob("Process1"), 0)},
-  PrQ: {".anon" |-> label(ob("Process1"), 0) | get(label(ob("Process1"), 0) ;
-    noVid) ; free(".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(
-    ".anon")},
+  PrQ: {".anon" |-> label(ob("Process1"), 0), ".label" |-> label(ob("Main0"),
+    2) | get(label(ob("Process1"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
+    "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
 < ob("Process2") : "Process" |
@@ -81,9 +81,9 @@ result (sort not calculated): {discard(label(ob("Main0"), 1))
     "Process2"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
     ob("Process2"), 0)},
-  PrQ: {".anon" |-> label(ob("Process2"), 0) | get(label(ob("Process2"), 0) ;
-    noVid) ; free(".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(
-    ".anon")},
+  PrQ: {".anon" |-> label(ob("Process2"), 0), ".label" |-> label(ob("Main0"),
+    3) | get(label(ob("Process2"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
+    "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
 < ob("Process3") : "Process" |
@@ -96,9 +96,9 @@ result (sort not calculated): {discard(label(ob("Main0"), 1))
     "Process3"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
     ob("Process3"), 0)},
-  PrQ: {".anon" |-> label(ob("Process3"), 0) | get(label(ob("Process3"), 0) ;
-    noVid) ; free(".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(
-    ".anon")},
+  PrQ: {".anon" |-> label(ob("Process3"), 0), ".label" |-> label(ob("Main0"),
+    4) | get(label(ob("Process3"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
+    "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
 < ob("Process4") : "Process" |
@@ -111,16 +111,16 @@ result (sort not calculated): {discard(label(ob("Main0"), 1))
     "Process4"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
     ob("Process4"), 0)},
-  PrQ: {".anon" |-> label(ob("Process4"), 0) | get(label(ob("Process4"), 0) ;
-    noVid) ; free(".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(
-    ".anon")},
+  PrQ: {".anon" |-> label(ob("Process4"), 0), ".label" |-> label(ob("Main0"),
+    5) | get(label(ob("Process4"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
+    "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
 < ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:

@@ -25,7 +25,7 @@ conf:Configuration --> discard(label(ob("Tailcall0"), 1))
   Att: noSubst,
   Pr: {"var" |-> null | assign("var" ; ob("Tailcall0"))},
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
@@ -66,7 +66,7 @@ result State: {
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
