@@ -32,8 +32,8 @@ changequote dnl
     --- Define object identifiers.
     protecting CONVERSION .
 
-    sorts Msg Class ifdef(`TIME', `Clock ')Object Configuration .
-    subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
+    sorts Msg Class ifdef(`WITH_TIME', `Clock ')Object Configuration .
+    subsorts Class ifdef(`WITH_TIME', `Clock ')Msg Object < Configuration .
 
     vars B M M' : String .
     var C : Cid .
@@ -55,7 +55,7 @@ ifdef(`WITH_UPDATE',
     var CL : Class .
     var OB : Object .
     var MSG : Msg .
-ifdef(`TIME',
+ifdef(`WITH_TIME',
 `    var CLOCK : Clock .
 ')dnl
 ')dnl
@@ -167,7 +167,7 @@ ifdef(`WITH_UPDATE',
     op __ : Configuration Configuration -> Configuration
 	  [ctor assoc comm id: none] .
 
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
   *** Definition of a global clock in the system
   op < clock : Clock | Value:_`,' Delta:_ > : Float Float -> Clock
     [ctor ``format'' (c o c c c c o c o)] .

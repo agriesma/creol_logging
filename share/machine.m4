@@ -58,8 +58,8 @@ ifdef(`WITH_UPDATE',
 
 dnl Define the clock and the variables needed to address clocks.
 dnl
-dnl If TIME is not defined, CLOCK will be defined to empty.
-ifdef(`TIME',
+dnl If WITH_TIME is not defined, CLOCK will be defined to empty.
+ifdef(`WITH_TIME',
   vars delta T : Float .
 `define(`CLOCK', `< T : Clock | delta: delta >')',dnl
 `define(`CLOCK', `')')dnl
@@ -643,7 +643,7 @@ CSTEP(``< O : class(B, T) | Att: S, Pr: idle, PrQ: W, Lcnt: F >
 ---
 --- posit
 ---
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
 `CSTEP(
 `{ < O : C | Att: S, Pr: { L | posit E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `{ < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
@@ -656,7 +656,7 @@ EVALGUARD(E, (S :: L), CN, T) asBool,
 )dnl END if time.
 
 
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
 --- The following formalises the tick rule for real-time Creol.  This rule
 --- is only enabled if and only if all posit constraints are satisfied in
 --- the global state at the new time.
