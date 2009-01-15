@@ -240,12 +240,6 @@ ifdef(`LOGGING',dnl
     vars trans inits : TSubst .
 
     op { _ | _ | _ }    : StmtList TSubst TSubst -> evalState [ctor] .
-    op _[stmts] : evalState -> StmtList .
-    op _[trans] : evalState -> TSubst .
-    op _[init] : evalState -> TSubst .
-    eq { SL | trans | inits }[stmts] = SL .
-    eq { SL | trans | inits }[trans] = trans .
-    eq { SL | trans | inits }[init] = inits .
 
 --- Log object`,' Cnt is the index of the snapshot
     op <log From: _ To: _ Type: _ Data: _ Att: _ Label: _ > : Nat Nat String evalState Subst String -> Object [format (ng! o d d d d b! onssss d d d d r! d no) ] .
