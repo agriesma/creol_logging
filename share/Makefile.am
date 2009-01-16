@@ -66,7 +66,7 @@ creol-interpreter.maude: ${srcdir}/configuration.m4
 creol-interpreter.maude: ${srcdir}/configuration2.m4
 creol-logginginterpreter.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
 creol-logginginterpreter.maude: ${srcdir}/subst.m4 ${srcdir}/process.m4
-creol-logginginterpreter.maude: ${srcdir}/replace.m4 ${srcdir}/logging.m4
+creol-logginginterpreter.maude: ${srcdir}/replace.m4 ${srcdir}/rename.m4 ${srcdir}/logging.m4
 creol-logginginterpreter.maude: ${srcdir}/class-id.m4 ${srcdir}/inherits.m4
 creol-logginginterpreter.maude: ${srcdir}/object-id.m4 ${srcdir}/methods.m4
 creol-logginginterpreter.maude: ${srcdir}/statements.m4

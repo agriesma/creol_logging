@@ -10,25 +10,7 @@ var  CSL : StmtList .
 var CS : Subst .
 vars G1 G2 G3 F1 : Nat .
 
-----------------------------------------------------------------------
---- helper functions for creating the log messages
-----------------------------------------------------------------------
   var logcnt : Nat .
- op toString : Label -> String .
- eq toString( label(ob(C), F) ) = C + "-" + string(F, 10) .
-
- op toString : Oid -> String .
- eq toString(ob(C) ) = C .
-
-
- op getThis : Subst -> String .
- ceq getThis(S) = toString(S["this"]) if $hasMapping(S, "this") .
- eq getThis(S) = "global" [owise] .
-
- op getLabel : Subst -> String .
- ceq getLabel(S) = toString(S[".label"]) if $hasMapping(S, ".label") .
- ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
- eq getLabel(S) = "nolabel" [owise] .
 
 ---  delete an entry from a map
 op delete : Vid TSubst -> TSubst .
@@ -87,73 +69,6 @@ eq insertTrans( (V1 |> E1, TS1), TS2) = insertTrans( TS1, insert (V1, E1, TS2) )
 --- like a normal assign statement
 op appendTrans : TSubst TSubst -> TSubst .
 eq appendTrans ( TS1, TS2 ) = insertTrans(insertValues( TS1, TS2 ), TS1 ) .
-
---- generate a helper map to rename the variables
- op genRenameHelper : Subst String TSubst -> TSubst .
- eq genRenameHelper (noSubst, Q, TS1) = TS1 .
- eq genRenameHelper ((  V1 |-> E1 , S ), Q, TS1) = genRenameHelper( S, Q, insert(V1, (Q + V1), TS1) ) .
-
-----------------------------------------------------------------------
---- rename variables in a list
-----------------------------------------------------------------------
---- renameLHS( S, A, TS1) = rename the LHS of TS1 by prepending A if
---- the Vid is in the keyset of S.  Dont change the other keys.
---- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
- op renameLHS : Subst String TSubst -> TSubst .
- eq renameLHS( noSubst, Q, TS1 ) = TS1 .
---- eq renameLHS( (  C @ CC |-> E1 , S), Q, TS1 ) = renameLHS( S, Q, insert(Q + C, E2, TS1 ) ) .
- eq renameLHS( (  V1 |-> E1 , S ), Q, ( TS1, V1 |> E2) ) = renameLHS( S, Q, insert(  ( Q + V1  ) , E2, TS1 ) ) .
- eq renameLHS( (  V1 |-> E1 , S ), Q,  TS1 ) = renameLHS(S, Q, TS1)  [owise] .
-
---- renameRHS(TS1, TS2) = rename variables in the RHS of TS2 by
---- the replacemap in TS1.
---- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
- op renameRHS : TSubst TSubst -> TSubst .
- eq renameRHS( TS1,  ( A |> E1, TS2) ) = insert( A, replace(E1, TS1), renameRHS(TS1, TS2) ) .
- eq renameRHS( TS1, TnoSubst) = TnoSubst .
-
---- rename the variables in transitions
- op renTrans1 : Subst String TSubst -> TSubst .
- eq renTrans1(S, Q, TS1) = renameRHS(genRenameHelper(S, Q, TnoSubst), renameLHS(S, Q, TS1) ) .
- eq renTrans1(noSubst, Q, TS1) = TS1 .
---- renTrans( S, L, TS1) = rename the variables in TS1 according to the local and global variables.
---- EXAMPLE: rew renTrans( "s" |-> int(3), "f" |-> int(4) , ( "s" |> "f" ) ) .
- op renTrans : Subst Subst TSubst -> TSubst . 
- eq renTrans(S, L, TS1) = renTrans1(S, getThis(S)  + ".", renTrans1(L, getLabel((L,S)) + ".", TS1) ) .
-
-----------------------------------------------------------------------
---- rename the variables in a statement (TODO check: only for pretty print?)
-----------------------------------------------------------------------
- op renStmt1 : Subst String Stmt -> Stmt .
- eq renStmt1(S, Q, assign(AL ; EL ) ) 
-  = assign ( renvlist(genRenameHelper(S, Q, TnoSubst), AL) ; renelist(genRenameHelper(S, Q, TnoSubst), EL) ) .
-
- op renStmt : Subst Subst Stmt -> Stmt .
- eq renStmt(S, L, assign( AL ; EL ) ) 
-  = renStmt1( S, getThis(S) + ".", renStmt1(L, getLabel((L,S)) + ".", assign( AL ; EL ) ) ) .
-
---- ren the variables in an expressionlist TODO:special case of replace?
- op renelist : TSubst ExprList -> ExprList .
- eq renelist( TS1, emp ) = emp .
- eq renelist( TS1, ( E1 :: EL ) ) = ( replace(E1, TS1) :: renelist(TS1, EL ) ) .
-
---- ren the variables in an variableslist TODO:special case of replace?
- op renvlist : TSubst VidList -> VidList .
- eq renvlist( TS1, noVid) = noVid .
- eq renvlist( TS1, (V1, AL) ) = ( replace(V1, TS1) , renvlist(TS1, AL) ) .
-
-----------------------------------------------------------------------
---- rename the variables in an expression
-----------------------------------------------------------------------
-
---- Example rew renExpr( "s" |-> int(2), "f" |-> int(3), "+" ( "s" :: "f" ) ) .
---- replace(E, genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2)))))
---- rew replace( "+" ("s" :: "f") , genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2))), TnoSubst)) .
---- rew renExpr( "mmax" |-> int(2), noSubst,  "&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))) ) .
-op renExpr : Subst Subst Expr -> Expr .
-eq renExpr(S, L, E) 
- = replace(replace(E, genRenameHelper(L, getLabel((L,S)) + ".", TnoSubst)), 
-               genRenameHelper(S, getThis( (L,S)) + ".", TnoSubst) ) .
 
 
 ---------------------

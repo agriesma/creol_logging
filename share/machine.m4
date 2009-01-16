@@ -24,7 +24,7 @@ mod CREOL-SIMULATOR is
 
   protecting `CREOL-EVAL' .
 ifdef(`LOGGING',dnl
-  protecting `CREOL-REPLACE' . 
+  protecting `CREOL-RENAME' . 
 ) dnl
 
   vars F G : Nat .                     --- Counters for generating fresh names
