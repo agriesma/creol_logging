@@ -23,6 +23,17 @@ mod `CREOL-RENAME' is
 
     protecting CREOL-REPLACE .
 
+---------------------------------------------------------------------
+--- give variables a canonical name
+--- ------------------------------------------------------------------
+--- The log is a serialized version of Creol.  Statements from
+--- different methods and objects are interleaved and might operate on
+--- variables that are actually different`,' but have the same name.  To
+--- avoid the necessity to consider the scope at the execution of
+--- every statement`,' the variables are renamed to a canonical name`,' by
+--- prefixim them with an identifyer.  The object ID is used for
+--- global variables`,' and the label for local variables.
+
     vars TS1 TS2 : TSubst .
     var V1 : Vid .
     var S L : Subst .
@@ -33,33 +44,47 @@ mod `CREOL-RENAME' is
     var AL : VidList .
     var EL : ExprList .
 
- op label : Oid Nat -> Label [ctor ``format'' (o o)] .
- eq caller(label(O, F)) = O .
-
-
 ----------------------------------------------------------------------
---- helper functions for creating the log messages
+--- helper functions for creating the variable prefix
 ----------------------------------------------------------------------
- op toString : Label -> String .
- eq toString( label(ob(Q), F) ) = Q + "-" + string(F, 10) .
+--- TODO: the rules for initiating an object should be changed such
+--- that there always is a ".label" also`,' "this" should always be
+--- defined - change the rules accordingly
 
- op toString : Oid -> String .
- eq toString(ob(Q) ) = Q .
+    op label : Oid Nat -> Label [ctor ``format'' (o o)] .
+    op toString : Label -> String .
+    op toString : Oid -> String .
+    op getThis : Subst -> String .
+    op getLabel : Subst -> String .
+
+    eq toString( label(ob(Q), F) ) = Q + "-" + string(F, 10) .
+    eq toString(ob(Q) ) = Q .
+    ceq getThis(S) = toString(S["this"]) if $hasMapping(S, "this") .
+    eq getThis(S) = "global" [owise] .
+
+    ceq getLabel(S) = toString(S[".label"]) if $hasMapping(S, ".label") .
+    ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
+    eq getLabel(S) = "nolabel" [owise] .
 
 
- op getThis : Subst -> String .
- ceq getThis(S) = toString(S["this"]) if $hasMapping(S, "this") .
- eq getThis(S) = "global" [owise] .
+---------------------------------------------------------------------
+---  functions that perform the renaming
+---------------------------------------------------------------------
+--- TODO:  change to a single function with pattern matching
+--- TODO:  move the examples to test cases
 
- op getLabel : Subst -> String .
- ceq getLabel(S) = toString(S[".label"]) if $hasMapping(S, ".label") .
- ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
- eq getLabel(S) = "nolabel" [owise] .
-
-
+ op genRenameHelper : Subst String TSubst -> TSubst .
+ op renameLHS : Subst String TSubst -> TSubst .
+ op renameRHS : TSubst TSubst -> TSubst .
+ op renTrans1 : Subst String TSubst -> TSubst .
+ op renTrans : Subst Subst TSubst -> TSubst . 
+ op renStmt1 : Subst String Stmt -> Stmt .
+ op renStmt : Subst Subst Stmt -> Stmt .
+ op renelist : TSubst ExprList -> ExprList .
+ op renvlist : TSubst VidList -> VidList .
+ op renExpr : Subst Subst Expr -> Expr .
 
 --- generate a helper map to rename the variables
- op genRenameHelper : Subst String TSubst -> TSubst .
  eq genRenameHelper (noSubst, Q, TS1) = TS1 .
  eq genRenameHelper ((  V1 |-> E1 , S ), Q, TS1) = genRenameHelper( S, Q, insert(V1, (Q + V1), TS1) ) .
 
@@ -69,7 +94,6 @@ mod `CREOL-RENAME' is
 --- renameLHS( S, Q, TS1) = rename the LHS of TS1 by prepending Q if
 --- the Vid is in the keyset of S.  Dont change the other keys.
 --- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
- op renameLHS : Subst String TSubst -> TSubst .
  eq renameLHS( noSubst, Q, TS1 ) = TS1 .
  eq renameLHS( (  V1 |-> E1 , S ), Q, ( TS1, V1 |> E2) ) = renameLHS( S, Q, insert(  ( Q + V1  ) , E2, TS1 ) ) .
  eq renameLHS( (  V1 |-> E1 , S ), Q,  TS1 ) = renameLHS(S, Q, TS1)  [owise] .
@@ -77,37 +101,30 @@ mod `CREOL-RENAME' is
 --- renameRHS(TS1, TS2) = rename variables in the RHS of TS2 by
 --- the replacemap in TS1.
 --- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
- op renameRHS : TSubst TSubst -> TSubst .
  eq renameRHS( TS1,  ( Q |> E1, TS2) ) = insert( Q, replace(E1, TS1), renameRHS(TS1, TS2) ) .
  eq renameRHS( TS1, TnoSubst) = TnoSubst .
 
 --- rename the variables in transitions
- op renTrans1 : Subst String TSubst -> TSubst .
  eq renTrans1(S, Q, TS1) = renameRHS(genRenameHelper(S, Q, TnoSubst), renameLHS(S, Q, TS1) ) .
  eq renTrans1(noSubst, Q, TS1) = TS1 .
 --- renTrans( S, Q, TS1) = rename the variables in TS1 according to the local and global variables.
 --- EXAMPLE: rew renTrans( "s" |-> int(3), "f" |-> int(4) , ( "s" |> "f" ) ) .
- op renTrans : Subst Subst TSubst -> TSubst . 
  eq renTrans(S, L, TS1) = renTrans1(S, getThis(S)  + ".", renTrans1(L, getLabel((L,S)) + ".", TS1) ) .
 
 ----------------------------------------------------------------------
 --- rename the variables in a statement (TODO check: only for pretty print?)
 ----------------------------------------------------------------------
- op renStmt1 : Subst String Stmt -> Stmt .
  eq renStmt1(S, Q, assign(AL ; EL ) ) 
   = assign ( renvlist(genRenameHelper(S, Q, TnoSubst), AL) ; renelist(genRenameHelper(S, Q, TnoSubst), EL) ) .
 
- op renStmt : Subst Subst Stmt -> Stmt .
  eq renStmt(S, L, assign( AL ; EL ) ) 
   = renStmt1( S, getThis(S) + ".", renStmt1(L, getLabel((L,S)) + ".", assign( AL ; EL ) ) ) .
 
 --- ren the variables in an expressionlist TODO:special case of replace?
- op renelist : TSubst ExprList -> ExprList .
  eq renelist( TS1, emp ) = emp .
  eq renelist( TS1, ( E1 :: EL ) ) = ( replace(E1, TS1) :: renelist(TS1, EL ) ) .
 
 --- ren the variables in an variableslist TODO:special case of replace?
- op renvlist : TSubst VidList -> VidList .
  eq renvlist( TS1, noVid) = noVid .
  eq renvlist( TS1, (V1, AL) ) = ( replace(V1, TS1) , renvlist(TS1, AL) ) .
 
@@ -119,7 +136,6 @@ mod `CREOL-RENAME' is
 --- replace(E, genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2)))))
 --- rew replace( "+" ("s" :: "f") , genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2))), TnoSubst)) .
 --- rew renExpr( "mmax" |-> int(2), noSubst,  "&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))) ) .
-op renExpr : Subst Subst Expr -> Expr .
 eq renExpr(S, L, E1) 
  = replace(replace(E1, genRenameHelper(L, getLabel((L,S)) + ".", TnoSubst)), 
                genRenameHelper(S, getThis( (L,S)) + ".", TnoSubst) ) .
