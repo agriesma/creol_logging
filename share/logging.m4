@@ -89,47 +89,41 @@ op appendTrans : TSubst TSubst -> TSubst .
 eq appendTrans ( TS1, TS2 ) = insertTrans(insertValues( TS1, TS2 ), TS1 ) .
 
 
-
 ----------------------------------------------------------------------
 ---  replace variables by expressions in expression
 ----------------------------------------------------------------------
 --- replace in the first expression the variable denoted by the second expression by the third expression
 --- expl: rew replace ("&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))), "m", "nte") .
-op replace : Expr Expr Expr -> Expr .
-
-eq replace ( "~" (E1), V1, E2 ) = "~" (replace (E1, V1, E2) ) . 
-eq replace ( "-" (E1), V1, E2 ) = "-" (replace (E1, V1, E2) ) . 
-eq replace ( "#" (E1), V1, E2 ) = "#" (replace (E1, V1, E2) ) . 
-eq replace ( "head" (E1), V1, E2 ) = "head" (replace (E1, V1, E2) ) .
-eq replace ( "tail" (E1), V1, E2 ) = "tail" (replace (E1, V1, E2) ) .
-eq replace ( "+" (E3 :: E4) , V1, E2  ) = "+" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "-" (E3 :: E4) , V1, E2  ) = "-" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "*" (E3 :: E4) , V1, E2  ) = "*" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "/" (E3 :: E4) , V1, E2  ) = "/" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "%" (E3 :: E4) , V1, E2  ) = "%" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "**" (E3 :: E4) , V1, E2 ) = "**" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "<" (E3 :: E4) , V1, E2  ) = "<" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "<=" (E3 :: E4) , V1, E2 ) = "<=" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( ">" (E3 :: E4) , V1, E2  ) = ">" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( ">=" (E3 :: E4) , V1, E2 ) = ">=" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "|-" (E3 :: E4) , V1, E2 ) = "|-" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "|-|" (E3 :: E4) , V1, E2 ) = "|-|" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "&&" (E3 :: E4) , V1, E2 ) = "&&" ( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-
-eq replace ( "&&" (E3 :: E4 :: neEL), V1, E2) = replace ( "&&" ( replace ( "&&" (E3 :: E4) , V1, E2) :: neEL ), V1, E2 ) .
-
---- eq replace ( "=" (E3 :: E4) , V1, E2 )  = bool( replace(E3, V1, E2) == replace (E4, V1, E2 ) ) .
---- eq replace ( "/=" (E3 :: E4) , V1, E2 ) = bool( replace(E3, V1, E2) =/= replace (E4, V1, E2 ) ) .
-eq replace ( "=" (E3 :: E4) , V1, E2 )  = "="( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
-eq replace ( "/=" (E3 :: E4) , V1, E2 ) = "/="( replace(E3, V1, E2) :: replace (E4, V1, E2 ) ) .
+--- op replace : Expr Expr Expr -> Expr .
+var ES : ExprSet .
+var EM : ExprMap .
 
 
----eq replace( C @ CC, V1, E2) = replace ( C, V1, E2 ) .
-ceq replace ( V1, V1, E2 ) = E2 if not ``substr(V1, sd(length(V1),5), 5)'' == "_init" .
-ceq replace ( V1, V1, E2 ) = V1 if  ``substr(V1, sd(length(V1),5), 5)'' == "_init" .
----ceq replace ( V2, V1, E2 ) = V2 if not V1 == V2 .
-eq replace ( E1, V1, E2 ) = E1 [owise].
+op replace : Expr Vid Expr -> Expr .
+op replaceList : ExprList Vid Expr -> ExprList .
+op replaceSet : ExprSet Vid Expr -> ExprSet .
+op replaceMap : ExprMap Vid Expr -> ExprMap .
 
+eq replace (Q ( EL ), V1, E1) = Q ( replaceList(EL, V1, E1) ) .
+eq replace (list(EL), V1, E1) = list(replaceList(EL, V1, E1) ) .
+eq replace (set(ES), V1, E1)  = set(replaceSet(ES, V1, E1) ) .
+eq replace (map(EM), V1, E1)  = map(replaceMap(EM, V1, E1) ) . 
+eq replace (E, V1, E1) =
+   if E == V1 and ``substr(V1, sd(length(V1),5), 5)'' =/= "_init" then
+     E1
+   else
+     E
+   fi .
+
+eq replaceList (emp, V1, E1) = emp .
+eq replaceList (E :: EL, V1, E1) = replace(E, V1, E1) :: replaceList(EL, V1, E1) .
+
+eq replaceSet (emptyset, V1, E1) = emptyset .
+eq replaceSet (E : ES, V1, E1) = replace(E, V1, E1) : replaceSet(ES, V1, E1) .
+
+eq replaceMap (empty, V1, E1) = empty .
+eq replaceMap ((mapentry(E, E1), EM), V1, E2) =
+  mapentry(replace(E, V1, E2), replace(E1, V1, E2))`,' replaceMap(EM, V1, E2) .
 
 --- replace all variables in E1 by the mappings in Tsubst.
 op replaceall : Expr  TSubst -> Expr .
@@ -231,8 +225,8 @@ eq genTrans( transstmt ) = genTransR ( transstmt , TnoSubst ) .
 
 op genTransR : Stmt TSubst -> TSubst .
 eq genTransR(assign( ((C @ CC), AL ) ; EL ) , trans ) = genTransR(assign ( (C, AL ) ; EL ), trans ) . --- get rid of the @
-eq genTransR(assign( (V1, AL) ; emp ) , trans ) 
-   = V1 |> list(emp) . ---weird special case when an empty list is assigned
+--- eq genTransR(assign( (V1, AL) ; emp ) , trans ) 
+---    = V1 |> list(emp) . ---weird special case when an empty list is assigned
 eq genTransR(assign( (V1, AL) ; (E1 :: EL) ) , trans ) 
    = genTransR ( assign( AL ; EL ) , insert (V1, E1, trans) ) .
 eq genTransR(call(A ; E ; Q ; emp ), trans ) = trans .

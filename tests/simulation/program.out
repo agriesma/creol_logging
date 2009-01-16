@@ -571,7 +571,7 @@ result State: {discard(label(ob("Monk0"), 1))
   Ocnt: 1 >
  
 <log From: 0 To: 480 Type: "lastrun"
-    Data: {skip ; new("var" ; "Main" ; int(1) :: int(0)) ; assign(
+    Data:{skip ; new("var" ; "Main" ; int(1) :: int(0)) ; assign(
     "nthreads_init", "maxthreads_init" ; int(1) :: int(0)) ; call(".anon" ;
     "this" ; "init" ; emp) ; assign("nolabel.var" ; ob("Main0")) ; new(
     "threadpool" ; "Abbey" ; "nthreads_init" :: "maxthreads_init") ; assign(
@@ -939,16 +939,16 @@ result State: {discard(label(ob("Monk0"), 1))
   "returnMonk0-2" |> list("Monk0-2.task"), 
   "returnMonk0-4" |> list("Monk0-4.id"), 
   "returnShepherdTask0-4" |> list("ShepherdTask0-4.val"), 
-  "returnShepherdTask0-5" |> list("ShepherdTask0-5.val")} Att: noSubst Label:
+  "returnShepherdTask0-5" |> list("ShepherdTask0-5.val")}Att: noSubst Label:
     "lastrun" >
  
 <log From: 155 To: 156 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-2" >
  
 <log From: 161 To: 162 Type: "await"
-    Data: {await ">"("#"("tasks") :: int(0)) | 
+    Data:{await ">"("#"("tasks") :: int(0)) | 
   "Abbey0-0.mrate" |> int(5), 
   "Abbey0-0.shepherd" |> ob("ShepherdTask0"), 
   "Abbey0-1.amount" |> int(1), 
@@ -1000,66 +1000,66 @@ result State: {discard(label(ob("Monk0"), 1))
   "TaskQueue0.taskCounter" |> ob("Counter0"), 
   "TaskQueue0.tasks" |> list(ob("ShepherdTask0")), 
   "nolabel.var" |> ob("Main0") | 
-  "eq" |> bool(true)} Att: noSubst Label: "Monk0-2" >
+  "eq" |> bool(true)}Att: noSubst Label: "Monk0-2" >
  
 <log From: 176 To: 177 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-3" >
  
 <log From: 189 To: 190 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-4" >
  
 <log From: 197 To: 198 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "/="("ShepherdTask0-3.caller" :: null)} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "/="("ShepherdTask0-3.caller" :: null)}Att: noSubst Label:
     "Counter1-3" >
  
 <log From: 240 To: 241 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-5" >
  
 <log From: 268 To: 269 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-6" >
  
 <log From: 296 To: 297 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-7" >
  
 <log From: 324 To: 325 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-8" >
  
 <log From: 352 To: 353 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-9" >
  
 <log From: 380 To: 381 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-10" >
  
 <log From: 408 To: 409 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-11" >
  
 <log From: 436 To: 437 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-12" >
  
 <log From: 464 To: 465 Type: "ifthenelse"
-    Data: {if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
-  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))} Att: noSubst Label:
+    Data:{if "/="("observer" :: null) th skip el skip fi | TnoSubst | 
+  "eq" |> "~"("/="("ShepherdTask0-1.caller" :: null))}Att: noSubst Label:
     "Counter0-13" >
 }
 Bye.

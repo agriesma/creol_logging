@@ -236,13 +236,12 @@ ifdef(`MODELCHECK',dnl
   op {_} : Configuration -> State [ctor] .
 
 ifdef(`LOGGING',dnl
-    sort evalState .
     vars trans inits : TSubst .
 
-    op { _ | _ | _ }    : StmtList TSubst TSubst -> evalState [ctor] .
-
 --- Log object`,' Cnt is the index of the snapshot
-    op <log From: _ To: _ Type: _ Data: _ Att: _ Label: _ > : Nat Nat String evalState Subst String -> Object [format (ng! o d d d d b! onssss d d d d r! d no) ] .
+    op <log From: _ To: _ Type: _ Data: { _ | _ | _ } Att: _ Label: _ > : 
+          Nat Nat String StmtList TSubst TSubst Subst String -> 
+          Object [format (ng! o d d d d b! onssss d d d d d d d d d d r! d no) ] .
     op <choice Number: _ Type: _ Expression: _ > : Nat String Expr -> Object [format (ng! o b! o b! o o o no) ] .
 ,)dnl
   var CN : Configuration .

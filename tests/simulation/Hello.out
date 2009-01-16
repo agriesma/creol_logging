@@ -42,7 +42,7 @@ result State: {
   Ocnt: 1 >
  
 <log From: 0 To: 22 Type: "lastrun"
-    Data: {skip ; new("var" ; "Hello" ; emp) ; assign("nolabel.var" ; ob(
+    Data:{skip ; new("var" ; "Hello" ; emp) ; assign("nolabel.var" ; ob(
     "Hello0")) ; call(".anon" ; "this" ; "init" ; emp) ; new("console" ;
     "Console" ; emp) ; assign("Hello0.console" ; ob("Console0")) ; call(".anon"
     ; "this" ; "init" ; emp) ; return(emp) ; assign("output" @ "Console" ;
@@ -55,6 +55,6 @@ result State: {
   "Hello0-2.result" |> str("hello, world"), 
   "Hello0.console" |> ob("Console0"), 
   "nolabel.var" |> ob("Hello0") | 
-  "Hello0-2" |> list(str("hello, world"))} Att: noSubst Label: "lastrun" >
+  "Hello0-2" |> list(str("hello, world"))}Att: noSubst Label: "lastrun" >
 }
 Bye.
