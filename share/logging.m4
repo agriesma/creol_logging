@@ -66,7 +66,7 @@ eq insertValues( TS1, TS2 ) = insertValuesR( TS1, TS2, TnoSubst) .
 
 op insertValuesR : TSubst TSubst TSubst -> TSubst .  
 eq insertValuesR( TS1, TnoSubst, TS3 ) = TS3 .
-eq insertValuesR( TS1, (V2 |> E2, TS2), TS3 ) = insertValuesR( TS1, TS2, insert( V2, replaceall (E2, TS1), TS3) ) .
+eq insertValuesR( TS1, (V2 |> E2, TS2), TS3 ) = insertValuesR( TS1, TS2, insert( V2, replace (E2, TS1), TS3) ) .
 
 
 --- insertTrans(T1, T2): insert all variables from T1 into T2`,' overwriting values in T2
@@ -87,49 +87,6 @@ eq insertTrans( (V1 |> E1, TS1), TS2) = insertTrans( TS1, insert (V1, E1, TS2) )
 --- like a normal assign statement
 op appendTrans : TSubst TSubst -> TSubst .
 eq appendTrans ( TS1, TS2 ) = insertTrans(insertValues( TS1, TS2 ), TS1 ) .
-
-
-----------------------------------------------------------------------
----  replace variables by expressions in expression
-----------------------------------------------------------------------
---- replace in the first expression the variable denoted by the second expression by the third expression
---- expl: rew replace ("&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))), "m", "nte") .
---- op replace : Expr Expr Expr -> Expr .
-var ES : ExprSet .
-var EM : ExprMap .
-
-
-op replace : Expr Vid Expr -> Expr .
-op replaceList : ExprList Vid Expr -> ExprList .
-op replaceSet : ExprSet Vid Expr -> ExprSet .
-op replaceMap : ExprMap Vid Expr -> ExprMap .
-
-eq replace (Q ( EL ), V1, E1) = Q ( replaceList(EL, V1, E1) ) .
-eq replace (list(EL), V1, E1) = list(replaceList(EL, V1, E1) ) .
-eq replace (set(ES), V1, E1)  = set(replaceSet(ES, V1, E1) ) .
-eq replace (map(EM), V1, E1)  = map(replaceMap(EM, V1, E1) ) . 
-eq replace (E, V1, E1) =
-   if E == V1 and ``substr(V1, sd(length(V1),5), 5)'' =/= "_init" then
-     E1
-   else
-     E
-   fi .
-
-eq replaceList (emp, V1, E1) = emp .
-eq replaceList (E :: EL, V1, E1) = replace(E, V1, E1) :: replaceList(EL, V1, E1) .
-
-eq replaceSet (emptyset, V1, E1) = emptyset .
-eq replaceSet (E : ES, V1, E1) = replace(E, V1, E1) : replaceSet(ES, V1, E1) .
-
-eq replaceMap (empty, V1, E1) = empty .
-eq replaceMap ((mapentry(E, E1), EM), V1, E2) =
-  mapentry(replace(E, V1, E2), replace(E1, V1, E2))`,' replaceMap(EM, V1, E2) .
-
---- replace all variables in E1 by the mappings in Tsubst.
-op replaceall : Expr  TSubst -> Expr .
-eq replaceall(E1, (V2 |> E2 , TS1) ) = replaceall(replace(E1, V2, E2), TS1 ) .
-eq replaceall(E1, TnoSubst) = E1 .
-
 
 --- generate a helper map to rename the variables
  op genRenameHelper : Subst String TSubst -> TSubst .
@@ -152,7 +109,7 @@ eq replaceall(E1, TnoSubst) = E1 .
 --- the replacemap in TS1.
 --- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
  op renameRHS : TSubst TSubst -> TSubst .
- eq renameRHS( TS1,  ( A |> E1, TS2) ) = insert( A, replaceall(E1, TS1), renameRHS(TS1, TS2) ) .
+ eq renameRHS( TS1,  ( A |> E1, TS2) ) = insert( A, replace(E1, TS1), renameRHS(TS1, TS2) ) .
  eq renameRHS( TS1, TnoSubst) = TnoSubst .
 
 --- rename the variables in transitions
@@ -178,24 +135,24 @@ eq replaceall(E1, TnoSubst) = E1 .
 --- ren the variables in an expressionlist TODO:special case of replace?
  op renelist : TSubst ExprList -> ExprList .
  eq renelist( TS1, emp ) = emp .
- eq renelist( TS1, ( E1 :: EL ) ) = ( replaceall(E1, TS1) :: renelist(TS1, EL ) ) .
+ eq renelist( TS1, ( E1 :: EL ) ) = ( replace(E1, TS1) :: renelist(TS1, EL ) ) .
 
 --- ren the variables in an variableslist TODO:special case of replace?
  op renvlist : TSubst VidList -> VidList .
  eq renvlist( TS1, noVid) = noVid .
- eq renvlist( TS1, (V1, AL) ) = ( replaceall(V1, TS1) , renvlist(TS1, AL) ) .
+ eq renvlist( TS1, (V1, AL) ) = ( replace(V1, TS1) , renvlist(TS1, AL) ) .
 
 ----------------------------------------------------------------------
 --- rename the variables in an expression
 ----------------------------------------------------------------------
 
 --- Example rew renExpr( "s" |-> int(2), "f" |-> int(3), "+" ( "s" :: "f" ) ) .
---- replaceall(E, genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2)))))
---- rew replaceall( "+" ("s" :: "f") , genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2))), TnoSubst)) .
+--- replace(E, genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2)))))
+--- rew replace( "+" ("s" :: "f") , genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2))), TnoSubst)) .
 --- rew renExpr( "mmax" |-> int(2), noSubst,  "&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))) ) .
 op renExpr : Subst Subst Expr -> Expr .
 eq renExpr(S, L, E) 
- = replaceall(replaceall(E, genRenameHelper(L, getLabel((L,S)) + ".", TnoSubst)), 
+ = replace(replace(E, genRenameHelper(L, getLabel((L,S)) + ".", TnoSubst)), 
                genRenameHelper(S, getThis( (L,S)) + ".", TnoSubst) ) .
 
 
@@ -314,27 +271,27 @@ rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "ifthenelse"    Data: {  SL |  trans |  "eq" |> E } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "ifthenelse" Data: { SL | trans |  "eq" |> replaceall(E, ctrans) } Att: S Label: C > 
+  <log From: G To: G1 Type: "ifthenelse" Data: { SL | trans |  "eq" |> replace(E, ctrans) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | ctrans | cinits } Att: CS Label: CLabel > 
-  <choice Number: G Type: "ifthenelse" Expression: replaceall(E, ctrans) > 
+  <choice Number: G Type: "ifthenelse" Expression: replace(E, ctrans) > 
   [label callpassing] .
 
 rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "await"    Data: {  SL |  trans |  "eq" |> E } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "await" Data: { SL | ctrans |  "eq" |> replaceall(E, ctrans) } Att: S Label: C > 
+  <log From: G To: G1 Type: "await" Data: { SL | ctrans |  "eq" |> replace(E, ctrans) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | ctrans | cinits } Att: CS Label: CLabel > 
-  <choice Number: G Type: "await" Expression: replaceall(E, ctrans) > 
+  <choice Number: G Type: "await" Expression: replace(E, ctrans) > 
   [label callpassing] .
 
 rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "blocked await"    Data: {  SL |  trans |  "eq" |> E } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "blocked await" Data: { SL | ctrans |  "eq" |> replaceall(E, ctrans) } Att: S Label: C > 
+  <log From: G To: G1 Type: "blocked await" Data: { SL | ctrans |  "eq" |> replace(E, ctrans) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | ctrans | cinits } Att: CS Label: CLabel > 
-  <choice Number: G Type: "blocked await" Expression: replaceall(E, ctrans) > 
+  <choice Number: G Type: "blocked await" Expression: replace(E, ctrans) > 
   [label callpassing] .
 
 rl 

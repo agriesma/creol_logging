@@ -23,6 +23,9 @@ endfm
 mod CREOL-SIMULATOR is
 
   protecting `CREOL-EVAL' .
+ifdef(`LOGGING',dnl
+  protecting `CREOL-REPLACE' . 
+) dnl
 
   vars F G : Nat .                     --- Counters for generating fresh names
   vars O O1 : Oid .                    --- Object identifiers
