@@ -62,8 +62,8 @@ ifdef(`WITH_UPDATE',
 
 dnl Define the clock and the variables needed to address clocks.
 dnl
-dnl If TIME is not defined, CLOCK will be defined to empty.
-ifdef(`TIME',
+dnl If WITH_TIME is not defined, CLOCK will be defined to empty.
+ifdef(`WITH_TIME',
   vars delta T : Float .
 `define(`CLOCK', `< T : Clock | delta: delta >')',dnl
 `define(`CLOCK', `')')dnl
@@ -531,12 +531,12 @@ PRELOG`'dnl
   CLOCK'dnl
 ,dnl
 POSTLOG(`new (A ; B ; EL)', `"create"', renTrans(S, L, genTrans(new(A ; B ; EL ) ) ), `"dest" |> B + string(G, 10) ' )dnl
-`< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: F >
+`< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: (s F) >
   <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
   < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
   findAttr(newId(B`,' G), I, S1, 
     MARKER("createmarker " + B + string(G, 10))ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S,  L), T)),
-    { noSubst | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
+    { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
     free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK',dnl
 `[label new-object]')
 
@@ -701,7 +701,7 @@ CSTEP(``< O : class(B, T) | Att: S, Pr: idle, PrQ: W, Lcnt: F >
 ---
 --- posit
 ---
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
 `CSTEP(
 `{ < O : C | Att: S, Pr: { L | posit E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `{ < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
@@ -714,7 +714,7 @@ EVALGUARD(E, (S :: L), CN, T) asBool,
 )dnl END if time.
 
 
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
 --- The following formalises the tick rule for real-time Creol.  This rule
 --- is only enabled if and only if all posit constraints are satisfied in
 --- the global state at the new time.

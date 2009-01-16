@@ -43,17 +43,17 @@ result [State]: {
   Pr: {".class" |-> str("B"), ".label" |-> label(ob("D0"), 3), ".method" |->
     str("init"), "_" |-> null, "caller" |-> ob("D0") | failure "="("a" :: "b")
     ; return(emp) ; $cont label(ob("D0"), 3)},
-  PrQ: {".init" |-> label(ob("D0"), 3) | get(label(ob("D0"), 3) ; noVid) ;
-    free(".init") ; call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ;
-    noVid) ; free(".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(
-    ".anon")},
+  PrQ: {".init" |-> label(ob("D0"), 3), ".label" |-> label(ob("main"), 0) |
+    get(label(ob("D0"), 3) ; noVid) ; free(".init") ; call(".anon" ; "this" ;
+    "init" ; emp) ; get(".anon" ; noVid) ; free(".anon") ; call(".anon" ;
+    "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 4 >
  
 < ob("main") : Start |
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)

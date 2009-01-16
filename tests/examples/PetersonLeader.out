@@ -44,7 +44,7 @@ result State: {
     ob("Main0"),
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 2 >
+  Lcnt: 7 >
  
 < ob("Process0") : "Process" |
   Att: "i" |-> int(1), "main" |-> ob("Main0"), "mode" |-> bool(false),
@@ -90,7 +90,7 @@ result State: {
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 0 >
+  Lcnt: 1 >
  
 < "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:

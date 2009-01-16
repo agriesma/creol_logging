@@ -82,7 +82,7 @@ changequote dnl
     op PrQ:_ : MProc -> Attribute [ctor] .
     op Lcnt:_ : Nat -> Attribute [ctor] .
 
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
     sort Clock .
     subsort Clock < Configuration .
 

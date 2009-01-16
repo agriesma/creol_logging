@@ -51,7 +51,7 @@ creol-modelchecker.maude: $(srcdir)/interpreter.m4
 	$(M4) $(M4FLAGS) -I$(srcdir) -DMODELCHECK $(CREOL_VARIANT) $< > $@
 
 creol-realtime.maude: ${srcdir}/interpreter.m4
-	$(M4) $(M4FLAGS) -I$(srcdir) -DTIME $(CREOL_VARIANT) $< > $@
+	$(M4) $(M4FLAGS) -I$(srcdir) -DWITH_TIME $(CREOL_VARIANT) $< > $@
 
 creol-update.maude: ${srcdir}/interpreter.m4
 	$(M4) $(M4FLAGS) -I$(srcdir) -DWITH_UPDATE $(CREOL_VARIANT) $< > $@
