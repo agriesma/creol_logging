@@ -23,14 +23,14 @@ mod `CREOL-RENAME' is
 
     protecting CREOL-REPLACE .
 
----------------------------------------------------------------------
---- give variables a canonical name
---- ------------------------------------------------------------------
+------------------------------------------------------------------------
+--- give variables a unique name
+--- --------------------------------------------------------------------
 --- The log is a serialized version of Creol.  Statements from
 --- different methods and objects are interleaved and might operate on
 --- variables that are actually different`,' but have the same name.  To
 --- avoid the necessity to consider the scope at the execution of
---- every statement`,' the variables are renamed to a canonical name`,' by
+--- every statement`,' the variables are renamed to a unique name`,' by
 --- prefixim them with an identifyer.  The object ID is used for
 --- global variables`,' and the label for local variables.
 
@@ -43,6 +43,13 @@ mod `CREOL-RENAME' is
     var O : Oid .
     var AL : VidList .
     var EL : ExprList .
+
+
+--- examples
+--- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
+--- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
+--- EXAMPLE: rew renTrans( "s" |-> int(3), "f" |-> int(4) , ( "s" |> "f" ) ) .
+
 
 ----------------------------------------------------------------------
 --- helper functions for creating the variable prefix
@@ -66,6 +73,13 @@ mod `CREOL-RENAME' is
     ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
     eq getLabel(S) = "nolabel" [owise] .
 
+
+op replacementMap : Subst Subst -> TSubst .
+op replacementMap : Subst String TSubst -> TSubst .
+
+eq replacementMap(S, L) = replacementMap(S, getThis((L, S)), replacementMap(L, getLabel((L, S)), TnoSubst) ) .
+eq replacementMap((  V1 |-> E1 , S ), Q, TS1) = replacementMap(S, Q, insert(V1, (Q + "." + V1), TS1) ) .
+eq replacementMap( noSubst, Q, TS1) = TS1 .
 
 ---------------------------------------------------------------------
 ---  functions that perform the renaming
@@ -93,14 +107,12 @@ mod `CREOL-RENAME' is
 ----------------------------------------------------------------------
 --- renameLHS( S, Q, TS1) = rename the LHS of TS1 by prepending Q if
 --- the Vid is in the keyset of S.  Dont change the other keys.
---- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
  eq renameLHS( noSubst, Q, TS1 ) = TS1 .
  eq renameLHS( (  V1 |-> E1 , S ), Q, ( TS1, V1 |> E2) ) = renameLHS( S, Q, insert(  ( Q + V1  ) , E2, TS1 ) ) .
  eq renameLHS( (  V1 |-> E1 , S ), Q,  TS1 ) = renameLHS(S, Q, TS1)  [owise] .
 
 --- renameRHS(TS1, TS2) = rename variables in the RHS of TS2 by
 --- the replacemap in TS1.
---- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
  eq renameRHS( TS1,  ( Q |> E1, TS2) ) = insert( Q, replace(E1, TS1), renameRHS(TS1, TS2) ) .
  eq renameRHS( TS1, TnoSubst) = TnoSubst .
 
@@ -108,8 +120,9 @@ mod `CREOL-RENAME' is
  eq renTrans1(S, Q, TS1) = renameRHS(genRenameHelper(S, Q, TnoSubst), renameLHS(S, Q, TS1) ) .
  eq renTrans1(noSubst, Q, TS1) = TS1 .
 --- renTrans( S, Q, TS1) = rename the variables in TS1 according to the local and global variables.
---- EXAMPLE: rew renTrans( "s" |-> int(3), "f" |-> int(4) , ( "s" |> "f" ) ) .
  eq renTrans(S, L, TS1) = renTrans1(S, getThis(S)  + ".", renTrans1(L, getLabel((L,S)) + ".", TS1) ) .
+
+
 
 ----------------------------------------------------------------------
 --- rename the variables in a statement (TODO check: only for pretty print?)
@@ -141,5 +154,56 @@ eq renExpr(S, L, E1)
                genRenameHelper(S, getThis( (L,S)) + ".", TnoSubst) ) .
 
 
+var transstmt : Stmt .
+vars trans : TSubst .
+var E : Expr .
+vars C CC : String .
+
+
+----------------------------------------------------------------------
+--- generate the Transition Relation of an assign statement
+----------------------------------------------------------------------
+
+--- compute the transition of an expression:
+--- EXAMPLE genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) .
+--- EXAMPLE appending two assignments: rew appendTrans( genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) , genTrans(assign("z" ; "x") )  ) .
+op size : TSubst -> Nat .
+eq size(TS1) = sizeR (TS1, 0) .
+
+op sizeR : TSubst Nat -> Nat .
+eq sizeR(TnoSubst, F ) = F .
+eq sizeR((TS1, V1 |> E2), F) = sizeR(TS1, F + 1) .
+ 
+op genTrans : Stmt -> TSubst .
+eq genTrans( transstmt ) = genTransR ( transstmt , TnoSubst ) .
+
+op genTransR : Stmt TSubst -> TSubst .
+eq genTransR(assign( ((C @ CC), AL ) ; EL ) , trans ) = genTransR(assign ( (C, AL ) ; EL ), trans ) . --- get rid of the @
+--- eq genTransR(assign( (V1, AL) ; emp ) , trans ) 
+---    = V1 |> list(emp) . ---weird special case when an empty list is assigned
+eq genTransR(assign( (V1, AL) ; (E1 :: EL) ) , trans ) 
+   = genTransR ( assign( AL ; EL ) , insert (V1, E1, trans) ) .
+eq genTransR(call(A ; E ; Q ; emp ), trans ) = trans .
+eq genTransR(call(A ; E ; Q ; (E1 :: EL) ), trans ) 
+   = genTransR(call(A ; E ; Q ; EL ), insert(string(size(trans),10), E1, trans ) ) .
+eq genTransR(new(A ; CC ; emp ), trans) = trans .
+eq genTransR(new(A ; CC ; (E1 :: EL) ), trans) 
+   = genTransR(new(A ; CC ; EL), insert(string(size(trans), 10), E1, trans) ) .
+eq genTransR(return( emp ), trans) = trans .
+eq genTransR(return((E1 :: EL) ), trans ) 
+   = genTransR(return( EL), insert( string(size(trans), 10), E1, trans ) ) .
+eq genTransR(noStmt , trans ) = trans .
+
+op getTrans : Stmt Subst Subst -> TSubst .
+op getTrans : Stmt TSubst TSubst -> TSubst .
+op getTrans : Stmt TSubst -> TSubst .
+
+eq getTrans( transstmt, S, L) = getTrans (transstmt, replacementMap(S, L), TnoSubst ) .
+eq getTrans( assign( (( C @ CC), AL) ; EL ) , TS1, TS2) = 
+   getTrans( assign( replace(( C, AL), TS1) ; replace(EL, TS1) ), TS2) . --- get rid of @
+eq getTrans( assign( AL ; EL ) , TS1, TS2) = 
+   getTrans( assign( replace(AL , TS1) ; replace(EL, TS1) ), TS2) . 
+eq getTrans( assign((V1, AL) ; (E1 :: EL)), TS2) = getTrans( assign(AL ; EL), insert(V1, E1, TS2) ) .
+eq getTrans( noStmt, TS2) = TS2 .
 
 endm

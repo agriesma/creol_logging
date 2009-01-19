@@ -71,46 +71,6 @@ op appendTrans : TSubst TSubst -> TSubst .
 eq appendTrans ( TS1, TS2 ) = insertTrans(insertValues( TS1, TS2 ), TS1 ) .
 
 
----------------------
---- test only
----------------------
-
-op rmhead : ExprList -> ExprList .
-eq rmhead(E :: EL) = EL .
-
-----------------------------------------------------------------------
---- generate the Transition Relation of an assign statement
-----------------------------------------------------------------------
-
---- compute the transition of an expression:
---- EXAMPLE genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) .
---- EXAMPLE appending two assignments: rew appendTrans( genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) , genTrans(assign("z" ; "x") )  ) .
-op size : TSubst -> Nat .
-eq size(TS1) = sizeR (TS1, 0) .
-
-op sizeR : TSubst Nat -> Nat .
-eq sizeR(TnoSubst, F ) = F .
-eq sizeR((TS1, V1 |> E2), F) = sizeR(TS1, F + 1) .
- 
-op genTrans : Stmt -> TSubst .
-eq genTrans( transstmt ) = genTransR ( transstmt , TnoSubst ) .
-
-op genTransR : Stmt TSubst -> TSubst .
-eq genTransR(assign( ((C @ CC), AL ) ; EL ) , trans ) = genTransR(assign ( (C, AL ) ; EL ), trans ) . --- get rid of the @
---- eq genTransR(assign( (V1, AL) ; emp ) , trans ) 
----    = V1 |> list(emp) . ---weird special case when an empty list is assigned
-eq genTransR(assign( (V1, AL) ; (E1 :: EL) ) , trans ) 
-   = genTransR ( assign( AL ; EL ) , insert (V1, E1, trans) ) .
-eq genTransR(call(A ; E ; Q ; emp ), trans ) = trans .
-eq genTransR(call(A ; E ; Q ; (E1 :: EL) ), trans ) 
-   = genTransR(call(A ; E ; Q ; EL ), insert(string(size(trans),10), E1, trans ) ) .
-eq genTransR(new(A ; CC ; emp ), trans) = trans .
-eq genTransR(new(A ; CC ; (E1 :: EL) ), trans) 
-   = genTransR(new(A ; CC ; EL), insert(string(size(trans), 10), E1, trans) ) .
-eq genTransR(return( emp ), trans) = trans .
-eq genTransR(return((E1 :: EL) ), trans ) 
-   = genTransR(return( EL), insert( string(size(trans), 10), E1, trans ) ) .
-eq genTransR(noStmt , trans ) = trans .
 
 ----------------------------------------------------------------------
 --- handle the new statements $marker and $rmarker

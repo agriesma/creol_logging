@@ -100,7 +100,7 @@ STEP(dnl
 PRELOG`'dnl
 `< O : C | Att: S, Pr: { L | assign(AL ; EL) ; SL },
 	    PrQ: W, Lcnt: F >' CLOCK,
-POSTLOG(` renStmt(S, L, assign(AL ; EL)) ', `"assign"', ` renTrans(S, L, genTrans(assign( AL ; EL )) ) ', `TnoSubst')`'dnl
+POSTLOG(` renStmt(S, L, assign(AL ; EL)) ', `"assign"', ` getTrans(assign( AL ; EL ), S, L) ', `TnoSubst')`'dnl
 `< O : C | Att: S, Pr: { L | $assign(AL ; EVALLIST(EL, (S :: L), T)) ; SL }, 
 	    PrQ: W, Lcnt: F >' CLOCK,
 `[label assignment]')

@@ -47,33 +47,42 @@ mod `CREOL-REPLACE' is
     var ES : ExprSet .
     var EM : ExprMap .
     var EL : ExprList .
-    var V1 : Vid .
+    vars V1 V2 : Vid .
     var TS1 : TSubst .
     var E E1 E2 : Expr .
     var Q : String .
+    var AL : VidList .
 
     op replace : Expr TSubst -> Expr .
     op replace : Expr Vid Expr -> Expr .
     op replaceList : ExprList Vid Expr -> ExprList .
     op replaceSet : ExprSet Vid Expr -> ExprSet .
     op replaceMap : ExprMap Vid Expr -> ExprMap .
+    op replaceVidList : VidList Vid Expr -> VidList .
     
-    eq replace(E1, (V1 |> E2 , TS1) ) = replace(replace(E1, V1, E2), TS1 ) .
-    eq replace(E1, TnoSubst) = E1 .
+    eq replace(EL, (V1 |> E2 , TS1) ) = replace(replace(EL, V1, E2), TS1 ) .
+    eq replace(AL, (V1 |> E2 , TS1) ) = replace(replace(AL, V1, E2), TS1 ) .
+    eq replace(EL, TnoSubst) = EL .
+    eq replace(AL, TnoSubst) = AL .
 
     eq replace (Q ( EL ), V1, E1) = Q ( replaceList(EL, V1, E1) ) .
     eq replace (list(EL), V1, E1) = list(replaceList(EL, V1, E1) ) .
     eq replace (set(ES), V1, E1)  = set(replaceSet(ES, V1, E1) ) .
     eq replace (map(EM), V1, E1)  = map(replaceMap(EM, V1, E1) ) . 
-    eq replace (E, V1, E1) =
+    eq replace (E, V1, E1) = 
        if E == V1 and ``substr(V1, sd(length(V1),5), 5)'' =/= "_init" then
          E1
        else
          E
        fi .
+    eq replace (EL, V1, E1) = replaceList(EL, V1, E1) .
+    eq replace (AL, V1, E1) = replaceVidList(AL, V1, E1) .
 
     eq replaceList (emp, V1, E1) = emp .
     eq replaceList (E :: EL, V1, E1) = replace(E, V1, E1) :: replaceList(EL, V1, E1) .
+
+    eq replaceVidList (V2, V1, E1) = replace(V2, V1, E1) .
+    eq replaceVidList ((V2 , AL), V1, E1) = replace(V2, V1, E1) `,' replaceVidList(AL, V1, E1) .
 
     eq replaceSet (emptyset, V1, E1) = emptyset .
     eq replaceSet (E : ES, V1, E1) = replace(E, V1, E1) : replaceSet(ES, V1, E1) .
