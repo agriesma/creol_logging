@@ -24,6 +24,26 @@ mod `CREOL-SYMBOLIC' is
     protecting CREOL-REPLACE .
 
 ------------------------------------------------------------------------
+--- compute and work with symbolic transition relations
+------------------------------------------------------------------------
+--- a transition relation shows how the variables change by execution
+--- of a statement.  The transitionrelation is stored in a map similar
+--- to an assignment statement - a form that makes backward reasoning
+--- easy.  The key is the next state variable`,' the value an expression
+--- that describes the state change in therm of the current
+--- variables. e.g. for two variables in the writing of parallel
+--- assignments: 
+--- x'`,' y' = f(x, y)`,' g(x,y) ; 
+--- x"`,' y" = f'(x', y')`,' g'(x', y') 
+--- this sequence of statements can be combined by replacing x' and y'
+---  - the "middle" variables - by the expressions f and g to
+--- x"`,' y" = f'(f(x, y), g(x, y))`,' g'(f(x, y), g(x, y))
+---
+--- initial states that fulfill a condition c(x", y") can easily be
+--- computed by replacing x" and y" by their respective expressions in
+--- terms of x and y
+---
+------------------------------------------------------------------------
 --- give variables a unique name
 --- --------------------------------------------------------------------
 --- The log is a serialized version of Creol.  Statements from
@@ -31,16 +51,13 @@ mod `CREOL-SYMBOLIC' is
 --- variables that are actually different`,' but have the same name.  To
 --- avoid the necessity to consider the scope at the execution of
 --- every statement`,' the variables are renamed to a unique name`,' by
---- prefixim them with an identifyer.  The object ID is used for
+--- prefixing them with an identifyer.  The object ID is used for
 --- global variables`,' and the label for local variables.
 
---- examples
---- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
---- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
---- EXAMPLE: rew renTrans( "s" |-> int(3), "f" |-> int(4) , ( "s" |> "f" ) ) .
---- Example rew renExpr( "s" |-> int(2), "f" |-> int(3), "+" ( "s" :: "f" ) ) .
---- EXAMPLE genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) .
---- EXAMPLE appending two assignments: rew appendTrans( genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) , genTrans(assign("z" ; "x") )  ) .
+
+------------
+--- Declarations
+------------
 
     vars TS1 TS2 TS3 : TSubst .
     var V1 : Vid .
@@ -53,22 +70,7 @@ mod `CREOL-SYMBOLIC' is
     var EL : ExprList .
     var transstmt : Stmt .
 
-----------------------------------------------------------------------
---- helper functions for creating the variable prefix
-----------------------------------------------------------------------
---- TODO: the rules for initiating an object should be changed such
---- that there always is a ".label" also`,' "this" should always be
---- defined - change the rules accordingly
-
-    op label : Oid Nat -> Label [ctor ``format'' (o o)] .
-    op toString : Label -> String .
-    op toString : Oid -> String .
-    op getThis : Subst -> String .
-    op getLabel : Subst -> String .
-    op size : TSubst -> Nat .
-    op size : TSubst Nat -> Nat .
-
-
+--- generate Transitions with unique variable names
     op getTrans : Stmt -> TSubst .
     op getTrans : Stmt Subst Subst -> TSubst .
     op getTrans : Stmt TSubst TSubst -> TSubst .
@@ -79,27 +81,29 @@ mod `CREOL-SYMBOLIC' is
     op replacementMap : Subst Subst -> TSubst .
     op replacementMap : Subst String TSubst -> TSubst .
 
-    eq toString( label(ob(Q), F) ) = Q + "-" + string(F, 10) .
-    eq toString(ob(Q) ) = Q .
-    ceq getThis(S) = toString(S["this"]) if $hasMapping(S, "this") .
-    eq getThis(S) = "global" [owise] .
+--- append and merge transitions
+    op appendTrans : TSubst TSubst -> TSubst .
+    op replaceMiddle : TSubst TSubst -> TSubst .
+    op replaceMiddle : TSubst TSubst TSubst -> TSubst .  
+    op mergeTrans : TSubst TSubst -> TSubst .
 
-    ceq getLabel(S) = toString(S[".label"]) if $hasMapping(S, ".label") .
-    ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
-    eq getLabel(S) = "nolabel" [owise] .
+--- helper functions
+    op label : Oid Nat -> Label [ctor ``format'' (o o)] .
+    op toString : Label -> String .
+    op toString : Oid -> String .
+    op getThis : Subst -> String .
+    op getLabel : Subst -> String .
+    op size : TSubst -> Nat .
+    op size : TSubst Nat -> Nat .
+    op delete : Vid TSubst -> TSubst .
+    op toTrans : Subst -> TSubst .
+    op getParamsR : TSubst Nat ExprList -> ExprList .
+    op getParams : TSubst -> ExprList .
+    op insertPassing : Vid ExprList TSubst -> TSubst .
 
-    eq size(TS1) = size (TS1, 0) .
-    eq size(TnoSubst, F ) = F .
-    eq size((TS1, V1 |> E2), F) = size(TS1, F + 1) .
-
-    eq replacementMap(S, L) = replacementMap(S, getThis((L, S)), replacementMap(L, getLabel((L, S)), TnoSubst) ) .
-    eq replacementMap((  V1 |-> E1 , S ), Q, TS1) = replacementMap(S, Q, insert(V1, (Q + "." + V1), TS1) ) .
-    eq replacementMap( noSubst, Q, TS1) = TS1 .
-
-    eq renExpr(S, L, E1) = replace(E1, replacementMap(S, L) ) .
-    eq renStmt( transstmt, S, L) = renStmt( transstmt, replacementMap(S, L) ) .
-    eq renStmt( assign( AL ; EL), TS1) = assign(replace(AL, TS1); replace(EL, TS1) ) .
-
+------------
+--- Equations
+------------
     eq getTrans( transstmt) = getTrans(transstmt, noSubst, noSubst) .
     eq getTrans( transstmt, S, L) = getTrans (transstmt, replacementMap(S, L), TnoSubst ) .
     eq getTrans( assign( (( C @ CC), AL) ; EL ) , TS1, TS2)
@@ -117,68 +121,73 @@ mod `CREOL-SYMBOLIC' is
     eq getTrans( new(C ; CC ; emp ), TS2) = TS2 .
     eq getTrans( return( EL ), TS1, TS2 ) = getTrans( return(replace(EL, TS1)), TS2 ) .
     eq getTrans( return((E1 :: EL) ), TS2 ) 
-       = getTrans(return( EL), insert( string(size(TS2), 10), E1, TS2 ) ) .
+     = getTrans(return( EL), insert( string(size(TS2), 10), E1, TS2 ) ) .
     eq getTrans( return( emp ), TS2) = TS2 .
     eq getTrans( noStmt, TS2) = TS2 .
 
----  delete an entry from a map
-op delete : Vid TSubst -> TSubst .
-eq delete(C , (TS1, C |> E1)) =
-   if $hasMapping( TS1 , C) then delete(C, TS1)
-   else TS1
-   fi .
+    eq renExpr(S, L, E1) = replace(E1, replacementMap(S, L) ) .
+    eq renStmt( transstmt, S, L) = renStmt( transstmt, replacementMap(S, L) ) .
+    eq renStmt( assign( AL ; EL), TS1) = assign(replace(AL, TS1); replace(EL, TS1) ) .
+
+    eq replacementMap(S, L) = replacementMap(S, getThis((L, S)), replacementMap(L, getLabel((L, S)), TnoSubst) ) .
+    eq replacementMap((  V1 |-> E1 , S ), Q, TS1) = replacementMap(S, Q, insert(V1, (Q + "." + V1), TS1) ) .
+    eq replacementMap( noSubst, Q, TS1) = TS1 .
+
+
+--- appendTrans(TS1, TS2) : append TS2 to TS1 by replacing the
+--- variables in TS2 by the expressions given in TS1.  Variables that
+--- are not redefined in TS2 are taken from TS1.
+    eq appendTrans ( TS1, TS2 ) = mergeTrans(TS1, replaceMiddle( TS2, TS1 ) ) .
+
+    eq replaceMiddle( TS1, TS2 ) = replaceMiddle( TS1, TS2, TnoSubst) .
+    eq replaceMiddle( TnoSubst, TS2, TS3 ) = TS3 .
+    eq replaceMiddle( (V1 |> E1, TS1), TS2, TS3 ) = replaceMiddle( TS1, TS2, insert( V1, replace (E1, TS2), TS3) ) .
+
+--- insertTrans(T1, T2): insert all variables from T2 into T1`,' overwriting values in T1
+    eq mergeTrans( TS1, TnoSubst ) = TS1 .
+    eq mergeTrans( TS1, (V1 |> E1, TS2)) = mergeTrans( insert (V1, E1, TS1), TS2 ) .
+
+    eq  toString(label(ob(Q), F) ) = Q + "-" + string(F, 10) .
+    eq  toString(ob(Q) ) = Q .
+    ceq getThis(S) = toString(S["this"]) if $hasMapping(S, "this") .
+    eq  getThis(S) = "global" [owise] .
+    ceq getLabel(S) = toString(S[".label"]) if $hasMapping(S, ".label") .
+    ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
+    eq  getLabel(S) = "nolabel" [owise] .
+
+    eq size(TS1) = size (TS1, 0) .
+    eq size(TnoSubst, F ) = F .
+    eq size((TS1, V1 |> E2), F) = size(TS1, F + 1) .
+
+---  delete the key C from a map (must exist! - deadlock otherwise)
+    eq delete(C , (TS1, C |> E1)) = TS1 .
 
 --- convert a Subst to TSubst
-op toTrans : Subst -> TSubst .
-eq toTrans(noSubst) = TnoSubst .
-eq toTrans( ( V1 |-> E1, S) ) = insert( V1, E1, toTrans(S) ) .
+    eq toTrans(noSubst) = TnoSubst .
+    eq toTrans( ( V1 |-> E1, S) ) = insert( V1, E1, toTrans(S) ) .
 
 --- combine assignment transitions
-op getParamsR : TSubst Nat ExprList -> ExprList .
-eq getParamsR( TnoSubst , F, EL) = EL .
-eq getParamsR( TS1 , F , EL ) = getParamsR( ( delete(string(F, 10) , TS1) ) , (F + 1) , (EL :: (TS1[ string(F, 10) ])) ) .
-
-op getParams : TSubst -> ExprList .
-eq getParams( TS1 ) = getParamsR( TS1, 0, emp ) .
+    eq getParamsR( TnoSubst , F, EL) = EL .
+    eq getParamsR( TS1 , F , EL ) 
+     = getParamsR( ( delete(string(F, 10) , TS1) ) , (F + 1) , (EL :: (TS1[ string(F, 10) ])) ) .
+    eq getParams( TS1 ) = getParamsR( TS1, 0, emp ) .
 
 --- insertPassing: insert params to pass to called methods or new
 --- instances.  if the list of params is empty`,' the call is ignored
-op insertPassing : Vid ExprList TSubst -> TSubst .
-eq insertPassing( V1 , emp , TS1 ) = TS1 .
-eq insertPassing( V1 , EL , TS1 ) = insert(V1, list(EL), TS1) .
+    eq insertPassing( V1 , emp , TS1 ) = TS1 .
+    eq insertPassing( V1 , EL , TS1 ) = insert(V1, list(EL), TS1) .
 
-
---- insertValues (TS1, TS2):  for each RHS in TS2`,' replace the variables by the expressions defined in TS1
+--- examples TODO: change examples to test cases
+--- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
+--- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
+--- EXAMPLE: rew renTrans( "s" |-> int(3), "f" |-> int(4) , ( "s" |> "f" ) ) .
+--- Example rew renExpr( "s" |-> int(2), "f" |-> int(3), "+" ( "s" :: "f" ) ) .
+--- EXAMPLE genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) .
+--- EXAMPLE appending two assignments: rew appendTrans( genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) , genTrans(assign("z" ; "x") )  ) .
 --- EXAMPLE: rew insertValues(  ("y" |> "z" ) , ("x" |> "+" ("y" :: int(1) ) )) .
 ---          rew insertValues(  ("y" |> "z", "f" |> int(1) ) , ("x" |> "+" ("y" :: "f" ) )) .
---- TODO can this be put in an other function?
-op insertValues : TSubst TSubst -> TSubst .
-eq insertValues( TS1, TS2 ) = insertValuesR( TS1, TS2, TnoSubst) .
-
-op insertValuesR : TSubst TSubst TSubst -> TSubst .  
-eq insertValuesR( TS1, TnoSubst, TS3 ) = TS3 .
-eq insertValuesR( TS1, (V1 |> E2, TS2), TS3 ) = insertValuesR( TS1, TS2, insert( V1, replace (E2, TS1), TS3) ) .
-
-
---- insertTrans(T1, T2): insert all variables from T1 into T2`,' overwriting values in T2
---- EXAMPLE: rew insertTrans( ( "x" |> int(4) ), ("x" |> int(5), "y" |> int (4) ) ) .
-op insertTrans : TSubst TSubst -> TSubst .
-eq insertTrans( TnoSubst, TS2) = TS2 .
-eq insertTrans( (V1 |> E1, TS1), TS2) = insertTrans( TS1, insert (V1, E1, TS2) ) .
-
-
---- appendTrans(TS1, TS2) :  append TS2 to TS1.  first`,' the variables 
---- in TS2 are replaced by the expressions in TS1`,' then the definitions 
---- from TS2 are taken and put into TS1`,' overwriting the assignments 
---- if there are new ones in TS2
 --- EXAMPLE rew appendTrans( ( "x" |> "+"("x" :: int(1))), ("z" |> "x") ) .
 ---         rew appendTrans( ( "x" |> "+"("x" :: int(1))), ("z" |> "x", "x" |> int(3) ) ) .
---- NOTE:  variables on the LHS give the new values`,' while variables 
----        on the RHS are the values at the start of execution - 
---- like a normal assign statement
-op appendTrans : TSubst TSubst -> TSubst .
-eq appendTrans ( TS1, TS2 ) = insertTrans(insertValues( TS1, TS2 ), TS1 ) .
-
-
+--- EXAMPLE: rew insertTrans( ( "x" |> int(4) ), ("x" |> int(5), "y" |> int (4) ) ) .
 
 endm
