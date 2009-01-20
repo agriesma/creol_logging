@@ -40,6 +40,8 @@ mod `CREOL-REPLACE' is
 ---        mechanism to select those variables (e.g. a plugin in eclipse 
 ---        that changes the names on the Maude level instead of Creol 
 ---        code)
+--- TODO:  replace the if in replace by filtering the replacement maps 
+---        and reestablish the unique names for "_init" variables.
 ---
 --- expl: rew replace ("&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))), "m", "nte") .
 --- op replace : Expr Expr Expr -> Expr .

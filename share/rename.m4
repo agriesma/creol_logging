@@ -107,39 +107,39 @@ eq replacementMap( noSubst, Q, TS1) = TS1 .
 ----------------------------------------------------------------------
 --- renameLHS( S, Q, TS1) = rename the LHS of TS1 by prepending Q if
 --- the Vid is in the keyset of S.  Dont change the other keys.
- eq renameLHS( noSubst, Q, TS1 ) = TS1 .
- eq renameLHS( (  V1 |-> E1 , S ), Q, ( TS1, V1 |> E2) ) = renameLHS( S, Q, insert(  ( Q + V1  ) , E2, TS1 ) ) .
- eq renameLHS( (  V1 |-> E1 , S ), Q,  TS1 ) = renameLHS(S, Q, TS1)  [owise] .
+---  eq renameLHS( noSubst, Q, TS1 ) = TS1 .
+---  eq renameLHS( (  V1 |-> E1 , S ), Q, ( TS1, V1 |> E2) ) = renameLHS( S, Q, insert(  ( Q + V1  ) , E2, TS1 ) ) .
+---  eq renameLHS( (  V1 |-> E1 , S ), Q,  TS1 ) = renameLHS(S, Q, TS1)  [owise] .
 
 --- renameRHS(TS1, TS2) = rename variables in the RHS of TS2 by
 --- the replacemap in TS1.
- eq renameRHS( TS1,  ( Q |> E1, TS2) ) = insert( Q, replace(E1, TS1), renameRHS(TS1, TS2) ) .
- eq renameRHS( TS1, TnoSubst) = TnoSubst .
+---  eq renameRHS( TS1,  ( Q |> E1, TS2) ) = insert( Q, replace(E1, TS1), renameRHS(TS1, TS2) ) .
+---  eq renameRHS( TS1, TnoSubst) = TnoSubst .
 
 --- rename the variables in transitions
- eq renTrans1(S, Q, TS1) = renameRHS(genRenameHelper(S, Q, TnoSubst), renameLHS(S, Q, TS1) ) .
- eq renTrans1(noSubst, Q, TS1) = TS1 .
+---  eq renTrans1(S, Q, TS1) = renameRHS(genRenameHelper(S, Q, TnoSubst), renameLHS(S, Q, TS1) ) .
+---  eq renTrans1(noSubst, Q, TS1) = TS1 .
 --- renTrans( S, Q, TS1) = rename the variables in TS1 according to the local and global variables.
- eq renTrans(S, L, TS1) = renTrans1(S, getThis(S)  + ".", renTrans1(L, getLabel((L,S)) + ".", TS1) ) .
+---  eq renTrans(S, L, TS1) = renTrans1(S, getThis(S)  + ".", renTrans1(L, getLabel((L,S)) + ".", TS1) ) .
 
 
 
 ----------------------------------------------------------------------
 --- rename the variables in a statement (TODO check: only for pretty print?)
 ----------------------------------------------------------------------
- eq renStmt1(S, Q, assign(AL ; EL ) ) 
-  = assign ( renvlist(genRenameHelper(S, Q, TnoSubst), AL) ; renelist(genRenameHelper(S, Q, TnoSubst), EL) ) .
+--- eq renStmt1(S, Q, assign(AL ; EL ) ) 
+---  = assign ( renvlist(genRenameHelper(S, Q, TnoSubst), AL) ; renelist(genRenameHelper(S, Q, TnoSubst), EL) ) .
 
- eq renStmt(S, L, assign( AL ; EL ) ) 
-  = renStmt1( S, getThis(S) + ".", renStmt1(L, getLabel((L,S)) + ".", assign( AL ; EL ) ) ) .
+--- eq renStmt(S, L, assign( AL ; EL ) ) 
+---  = renStmt1( S, getThis(S) + ".", renStmt1(L, getLabel((L,S)) + ".", assign( AL ; EL ) ) ) .
 
 --- ren the variables in an expressionlist TODO:special case of replace?
- eq renelist( TS1, emp ) = emp .
- eq renelist( TS1, ( E1 :: EL ) ) = ( replace(E1, TS1) :: renelist(TS1, EL ) ) .
+--- eq renelist( TS1, emp ) = emp .
+--- eq renelist( TS1, ( E1 :: EL ) ) = ( replace(E1, TS1) :: renelist(TS1, EL ) ) .
 
 --- ren the variables in an variableslist TODO:special case of replace?
- eq renvlist( TS1, noVid) = noVid .
- eq renvlist( TS1, (V1, AL) ) = ( replace(V1, TS1) , renvlist(TS1, AL) ) .
+--- eq renvlist( TS1, noVid) = noVid .
+--- eq renvlist( TS1, (V1, AL) ) = ( replace(V1, TS1) , renvlist(TS1, AL) ) .
 
 ----------------------------------------------------------------------
 --- rename the variables in an expression
@@ -149,9 +149,12 @@ eq replacementMap( noSubst, Q, TS1) = TS1 .
 --- replace(E, genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2)))))
 --- rew replace( "+" ("s" :: "f") , genRenameHelper("f" |-> int(3), getLabel(("f" |-> int(3),"s" |-> int(2))), TnoSubst)) .
 --- rew renExpr( "mmax" |-> int(2), noSubst,  "&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))) ) .
+--- eq renExpr(S, L, E1) 
+---  = replace(replace(E1, genRenameHelper(L, getLabel((L,S)) + ".", TnoSubst)), 
+---               genRenameHelper(S, getThis( (L,S)) + ".", TnoSubst) ) .
+
 eq renExpr(S, L, E1) 
- = replace(replace(E1, genRenameHelper(L, getLabel((L,S)) + ".", TnoSubst)), 
-               genRenameHelper(S, getThis( (L,S)) + ".", TnoSubst) ) .
+ = replace(E1, replacementMap(S, L) ) .
 
 
 var transstmt : Stmt .
@@ -174,36 +177,61 @@ op sizeR : TSubst Nat -> Nat .
 eq sizeR(TnoSubst, F ) = F .
 eq sizeR((TS1, V1 |> E2), F) = sizeR(TS1, F + 1) .
  
-op genTrans : Stmt -> TSubst .
-eq genTrans( transstmt ) = genTransR ( transstmt , TnoSubst ) .
+--- op genTrans : Stmt -> TSubst .
+--- eq genTrans( transstmt ) = genTransR ( transstmt , TnoSubst ) .
 
-op genTransR : Stmt TSubst -> TSubst .
-eq genTransR(assign( ((C @ CC), AL ) ; EL ) , trans ) = genTransR(assign ( (C, AL ) ; EL ), trans ) . --- get rid of the @
+--- op genTransR : Stmt TSubst -> TSubst .
+--- eq genTransR(assign( ((C @ CC), AL ) ; EL ) , trans ) = genTransR(assign ( (C, AL ) ; EL ), trans ) . --- get rid of the @
 --- eq genTransR(assign( (V1, AL) ; emp ) , trans ) 
 ---    = V1 |> list(emp) . ---weird special case when an empty list is assigned
-eq genTransR(assign( (V1, AL) ; (E1 :: EL) ) , trans ) 
-   = genTransR ( assign( AL ; EL ) , insert (V1, E1, trans) ) .
-eq genTransR(call(A ; E ; Q ; emp ), trans ) = trans .
-eq genTransR(call(A ; E ; Q ; (E1 :: EL) ), trans ) 
-   = genTransR(call(A ; E ; Q ; EL ), insert(string(size(trans),10), E1, trans ) ) .
-eq genTransR(new(A ; CC ; emp ), trans) = trans .
-eq genTransR(new(A ; CC ; (E1 :: EL) ), trans) 
-   = genTransR(new(A ; CC ; EL), insert(string(size(trans), 10), E1, trans) ) .
-eq genTransR(return( emp ), trans) = trans .
-eq genTransR(return((E1 :: EL) ), trans ) 
-   = genTransR(return( EL), insert( string(size(trans), 10), E1, trans ) ) .
-eq genTransR(noStmt , trans ) = trans .
+--- eq genTransR(assign( (V1, AL) ; (E1 :: EL) ) , trans ) 
+---   = genTransR ( assign( AL ; EL ) , insert (V1, E1, trans) ) .
+--- eq genTransR(call(A ; E ; Q ; emp ), trans ) = trans .
+--- eq genTransR(call(A ; E ; Q ; (E1 :: EL) ), trans ) 
+---    = genTransR(call(A ; E ; Q ; EL ), insert(string(size(trans),10), E1, trans ) ) .
+--- eq genTransR(new(A ; CC ; emp ), trans) = trans .
+--- eq genTransR(new(A ; CC ; (E1 :: EL) ), trans) 
+---    = genTransR(new(A ; CC ; EL), insert(string(size(trans), 10), E1, trans) ) .
+--- eq genTransR(return( emp ), trans) = trans .
+--- eq genTransR(return((E1 :: EL) ), trans ) 
+---   = genTransR(return( EL), insert( string(size(trans), 10), E1, trans ) ) .
+--- eq genTransR(noStmt , trans ) = trans .
 
+
+op getTrans : Stmt -> TSubst .
 op getTrans : Stmt Subst Subst -> TSubst .
 op getTrans : Stmt TSubst TSubst -> TSubst .
 op getTrans : Stmt TSubst -> TSubst .
 
+eq getTrans( transstmt) = getTrans(transstmt, noSubst, noSubst) .
 eq getTrans( transstmt, S, L) = getTrans (transstmt, replacementMap(S, L), TnoSubst ) .
-eq getTrans( assign( (( C @ CC), AL) ; EL ) , TS1, TS2) = 
-   getTrans( assign( replace(( C, AL), TS1) ; replace(EL, TS1) ), TS2) . --- get rid of @
-eq getTrans( assign( AL ; EL ) , TS1, TS2) = 
-   getTrans( assign( replace(AL , TS1) ; replace(EL, TS1) ), TS2) . 
+eq getTrans( assign( (( C @ CC), AL) ; EL ) , TS1, TS2)
+ = getTrans( assign( replace(( C, AL), TS1) ; replace(EL, TS1) ), TS2) . --- get rid of @
+eq getTrans( assign( AL ; EL ) , TS1, TS2)
+ = getTrans( assign( replace(AL , TS1) ; replace(EL, TS1) ), TS2) . 
 eq getTrans( assign((V1, AL) ; (E1 :: EL)), TS2) = getTrans( assign(AL ; EL), insert(V1, E1, TS2) ) .
+eq getTrans( call(A ; E ; Q ; EL ), TS1, TS2) = getTrans( call(A ; E ; Q ; replace(EL, TS1) ), TS2 ) .
+eq getTrans( call(A ; E ; Q ; (E1 :: EL) ), TS2)
+ = getTrans( call(A ; E ; Q ; EL ), insert(string(size(TS2),10), E1, TS2 ) ) .
+eq getTrans( call(A ; E ; Q ; emp ), TS2 ) = TS2 .
+eq getTrans( new(A ; CC ; EL ), TS1, TS2 ) = getTrans( new(A ; CC ; replace(EL, TS1) ), TS2 ) .
+eq getTrans( new(A ; CC ; (E1 :: EL) ), TS2) 
+ = getTrans( new(A ; CC ; EL), insert(string(size(TS2), 10), E1, TS2) ) .
+eq getTrans( new(A ; CC ; emp ), TS2) = TS2 .
+eq getTrans( return( EL ), TS1, TS2 ) = getTrans( return(replace(EL, TS1)), TS2 ) .
+eq getTrans( return((E1 :: EL) ), TS2 ) 
+   = getTrans(return( EL), insert( string(size(TS2), 10), E1, TS2 ) ) .
+eq getTrans( return( emp ), TS2) = TS2 .
+
 eq getTrans( noStmt, TS2) = TS2 .
+
+
+
+op renStmt : Stmt Subst Subst -> Stmt .
+op renStmt : Stmt TSubst -> Stmt .
+
+eq renStmt( transstmt, S, L) = renStmt( transstmt, replacementMap(S, L) ) .
+eq renStmt( assign( AL ; EL), TS1) = assign(replace(AL, TS1); replace(EL, TS1) ) .
+
 
 endm

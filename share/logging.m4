@@ -127,7 +127,7 @@ eq
   <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; EL) |    TS3 |    TS4 } Att: S1 Label: C >
   =
   <log From: 0 To: ( G + 1 )  Type: "lastrun" Data: { CSL | ctrans | cinits } Att: CS Label: CLabel > 
-  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; cinits[inits["dest"]] ) | genTrans(assign(AL ; cinits[inits["dest"]] )) | inits } Att: S1 Label: C > .
+  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; cinits[inits["dest"]] ) | getTrans(assign(AL ; cinits[inits["dest"]] )) | inits } Att: S1 Label: C > .
 
 --- marker that is not followed by a related assign - increase the
 --- marker id until the correct assign is found

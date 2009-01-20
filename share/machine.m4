@@ -100,7 +100,7 @@ STEP(dnl
 PRELOG`'dnl
 `< O : C | Att: S, Pr: { L | assign(AL ; EL) ; SL },
 	    PrQ: W, Lcnt: F >' CLOCK,
-POSTLOG(` renStmt(S, L, assign(AL ; EL)) ', `"assign"', ` getTrans(assign( AL ; EL ), S, L) ', `TnoSubst')`'dnl
+POSTLOG(` renStmt(assign(AL ; EL), S, L) ', `"assign"', ` getTrans(assign( AL ; EL ), S, L) ', `TnoSubst')`'dnl
 `< O : C | Att: S, Pr: { L | $assign(AL ; EVALLIST(EL, (S :: L), T)) ; SL }, 
 	    PrQ: W, Lcnt: F >' CLOCK,
 `[label assignment]')
@@ -370,7 +370,7 @@ ifdef(`MODELCHECK',
   PRELOG`'dnl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , renTrans(S, L, genTrans(call(A ; E ; Q ; EL))), ("dest" |> toString(label(O, F)) ) )dnl
+  POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , getTrans(call(A ; E ; Q ; EL), S, L), ("dest" |> toString(label(O, F)) ) )dnl
   < O : C | Att: S, Pr: { insert(A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
   invoc(O, EVAL(E, (S :: L), T), label(O, F), Q , EVALLIST(EL, (S :: L), T)) '
 )dnl
@@ -435,7 +435,7 @@ ifdef(`MODELCHECK',
 ---
 STEP(PRELOG`'dnl
 `< O : C |  Att: S, Pr: { L | return(EL); SL }, PrQ: W, Lcnt: F > CLOCK',
-POSTLOG(`return(EL)', `"return"', renTrans(S, L, genTrans(return(EL) ) ), ` "dest" |> "return" + getLabel((L,S))')dnl
+POSTLOG(`return(EL)', `"return"', getTrans(return(EL), S, L) , ` "dest" |> "return" + getLabel((L,S))')dnl
 `< O : C |  Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CLOCK
   comp(L[".label"], EVALLIST(EL, (S :: L), T))',
 `[label return]')
@@ -530,7 +530,7 @@ PRELOG`'dnl
   < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
   CLOCK'dnl
 ,dnl
-POSTLOG(`new (A ; B ; EL)', `"create"', renTrans(S, L, genTrans(new(A ; B ; EL ) ) ), `"dest" |> B + string(G, 10) ' )dnl
+POSTLOG(`new (A ; B ; EL)', `"create"', getTrans(new(A ; B ; EL ), S, L ), `"dest" |> B + string(G, 10) ' )dnl
 `< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: (s F) >
   <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
   < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >

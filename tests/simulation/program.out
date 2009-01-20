@@ -862,8 +862,6 @@ result State: {discard(label(ob("Monk0"), 1))
   "Main0-7.task" |> ob("CounterTask0"), 
   "Main0-9.task" |> ob("CounterTask1"), 
   "Main0.executionCounter" |> ob("Counter0"), 
-  "Main0.maxthreads_init" |> int(0), 
-  "Main0.nthreads_init" |> int(1), 
   "Main0.threadpool" |> ob("Abbey0"), 
   "Monk0-2.task" |> ob("ShepherdTask0"), 
   "Monk0-4.id" |> int(1), 
@@ -896,7 +894,9 @@ result State: {discard(label(ob("Monk0"), 1))
     "CounterTask1") :: ob("CounterTask1") :: ob("CounterTask2") :: ob(
     "CounterTask2") :: ob("CounterTask3") :: ob("CounterTask3") :: ob(
     "CounterTask4") :: ob("CounterTask4")), 
-  "nolabel.var" |> ob("Main0") | 
+  "maxthreads_init" |> int(0), 
+  "nolabel.var" |> ob("Main0"), 
+  "nthreads_init" |> int(1) | 
   "Abbey0" |> list("nthreads_init" :: "maxthreads_init"), 
   "Abbey0-10" |> list("Abbey0-9.task"), 
   "Abbey0-12" |> list("Main0-5.task"), 
@@ -975,8 +975,6 @@ result State: {discard(label(ob("Monk0"), 1))
   "Main0-3.i" |> int(0), 
   "Main0-3.task" |> ob("CounterTask0"), 
   "Main0.executionCounter" |> ob("Counter0"), 
-  "Main0.maxthreads_init" |> int(0), 
-  "Main0.nthreads_init" |> int(1), 
   "Main0.threadpool" |> ob("Abbey0"), 
   "Monk0.busyCounter" |> ob("Counter1"), 
   "Monk0.kill" |> bool(false), 
@@ -1000,7 +998,9 @@ result State: {discard(label(ob("Monk0"), 1))
   "ShepherdTask0.threads" |> int(1), 
   "TaskQueue0.taskCounter" |> ob("Counter0"), 
   "TaskQueue0.tasks" |> list(ob("ShepherdTask0")), 
-  "nolabel.var" |> ob("Main0") | 
+  "maxthreads_init" |> int(0), 
+  "nolabel.var" |> ob("Main0"), 
+  "nthreads_init" |> int(1) | 
   "eq" |> bool(true)}Att: noSubst Label: "Monk0-2" >
  
 <log From: 176 To: 177 Type: "ifthenelse"
