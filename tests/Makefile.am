@@ -157,7 +157,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  modelchecker/ModelChecker.maude \
 		  modelchecker/ModelChecker.out \
 		  modelchecker/MC3Phil.creol modelchecker/MC3Phil.maude \
-		  modelchecker/MC3Phil.out MC3PhilTest.maude \
+		  modelchecker/MC3Phil.out modelchecker/MC3PhilTest.maude \
 		  modelchecker/MC4Phil.creol modelchecker/MC4Phil.maude \
 		  modelchecker/MC4PhilTest.maude modelchecker/MC5Phil.creol \
 		  modelchecker/MC5Phil.maude modelchecker/MC5PhilTest.maude
