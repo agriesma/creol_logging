@@ -125,6 +125,7 @@ function in(e: `a, s: Set[`a]): Bool == external "in"
 function union(s: Set[`a], t: Set[`a]): Set[`a] == external "union"
 function inter(s: Set[`a], t: Set[`a]): Set[`a] == external "inter"
 function diff(s: Set[`a], t: Set[`a]): Set[`a] == external "diff"
+function choose(s: Set[`a]): `a == external "choose"
 
 // More to come.
 

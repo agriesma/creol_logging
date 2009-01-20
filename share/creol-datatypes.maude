@@ -518,6 +518,9 @@ fmod CREOL-DATA-SET is
         else "add" ("diff" (set(S) :: set(S')) :: D)
 	fi .
 
+    eq "choose" (set(S : D)) = D .
+    eq "choose" (set(emptyset)) = null .
+
 endfm
 
 
