@@ -55,7 +55,7 @@ include(`evaluation.m4')
 
 ifdef(`LOGGING', include(`replace.m4'))dnl
 
-ifdef(`LOGGING', include(`rename.m4'))dnl
+ifdef(`LOGGING', include(`symbolic.m4'))dnl
 
 include(`machine.m4')
 

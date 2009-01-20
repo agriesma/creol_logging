@@ -24,7 +24,7 @@ mod CREOL-SIMULATOR is
 
   protecting `CREOL-EVAL' .
 ifdef(`LOGGING',dnl
-  protecting `CREOL-RENAME' . 
+  protecting `CREOL-SYMBOLIC' . 
 ) dnl
 
   vars F G : Nat .                     --- Counters for generating fresh names
@@ -76,6 +76,7 @@ ifdef(`LOGGING', dnl
   ')
 define(`MARKER', `$marker( $1 ) ; ')
 define(`RMARKER', `$rmarker( $1 , $2 ) ; ')'
+var logcnt : Nat .
 include(`logging.m4'),dnl
 `define(`PRELOG', `')'
 `define(`POSTLOG', `')' 
