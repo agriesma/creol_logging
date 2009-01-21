@@ -27,94 +27,75 @@
 open Creol
 open Arg
 
-(* A list of all file names to parse. *)
+
+(** A list of all file names to parse. *)
 let inputs : string list ref = ref []
 
-
-(* Add a \ocwlowerid{filename} to the list of input files. *)
+(** Add a [filename] to the list of input files. *)
 let add_input filename = inputs := (!inputs)@[filename]
 
-
-(* Whether to report the timings after compilation. *)
+(** Whether to report the timings after compilation. *)
 let times = ref false
+
+(** The name of the output file. *)
+let output = ref "creolc.out"
+
+(** The name of the target. *)
+let target = ref "maude"
+
+(** The name of the subtarget. *)
+let subtarget = ref "interpreter"
 
 module Target =
 struct
-  type t = Null | Creol | Dot | Maude | XML
-
-  let target = ref Maude
-
-  let options = { BackendMaude.target = BackendMaude.Interpreter; }
 
   let setup () =
     match !target with
-	Null -> ()
-      | Creol ->
+	"none" -> ()
+      | "creol" ->
 	  Passes.conflicts (BackendCreol.conflicts ()) ;
 	  Passes.requires (BackendCreol.requires ())
-      | Dot ->
+      | "dot" ->
 	  Passes.conflicts (BackendDot.conflicts ()) ;
 	  Passes.requires (BackendDot.requires ())
-      | Maude ->
-	  Passes.conflicts (BackendMaude.conflicts options) ;
-	  Passes.requires (BackendMaude.requires options)
-      | XML ->
+      | "maude" ->
+          let options = BackendMaude.features_of_subtarget !subtarget in
+	  let _ = Passes.conflicts (BackendMaude.conflicts options) in
+	  let _ = Passes.requires (BackendMaude.requires options) in
+	    ()
+      | "xml" ->
 	  Passes.conflicts (BackendXML.conflicts ()) ;
 	  Passes.requires (BackendXML.requires ())
+      | _ ->
+          prerr_endline ("Unknown target " ^ !target) ;
+	  exit 1
 
   let targets =
-    [ ("none", (fun () -> target := Null), "Do not generate any results.");
-      ("creol", (fun () -> target := Creol), "Generate a Creol program");
-      ("dot", (fun () -> target := Dot), "Generate diagrams in dot format");
-      ("maude", (fun () ->
-	options.BackendMaude.target <- BackendMaude.Interpreter ;
-	target := Maude),
-      "Generate a Maude file suitable for the interpreter");
-      ("maudemc",
-      (fun () ->
-	options.BackendMaude.target <- BackendMaude.Modelchecker ;
-	Passes.enable "tailcall" ;
-	target := Maude),
-      "Generate a Maude file optimized for model checking");
-      ("maudert",
-      (fun () ->
-	options.BackendMaude.target <- BackendMaude.Realtime ;
-	target := Maude),
-      "Generate a Maude file optimized for real-time simulation");
-      ("xml", (fun () -> target := XML), "Generate an XML document") ]
+    [ ("none",	"Do not generate any results.");
+      ("creol", "Generate a Creol program");
+      ("dot",	"Generate diagrams in dot format");
+      ("maude",	"Generate a Maude file suitable for the interpreter");
+      ("xml",	"Generate an XML file that represents the abstract syntax tree.");
+    ]
 
-  let set s =
-    let (_, f, _) =
-      try
-	List.find (fun (x, _, _) -> s = x) targets
-      with
-	  Not_found -> raise (Arg.Bad ("unknown target " ^ s))
-    in
-      f ()
 
-  let file = ref "creolc.out"
-
-  let help () =
-    let line current (name, _, help) =
-      current ^ "\n    " ^ name ^
-	(String.make (11 - String.length name) ' ') ^
-	help
-    in
-      List.fold_left line "" targets
+  let help () = Misc.help targets
 
 
   let output tree =
     let do_output out =
       Messages.message 1 "Emitting tree" ;
       match !target with
-	  Null -> assert false
-	| Creol -> BackendCreol.pretty_print_program out tree
-	| Dot -> BackendDot.emit out tree
-	| Maude -> BackendMaude.emit options out tree
-	| XML -> BackendXML.emit !file tree
+	  "none" -> assert false
+	| "creol" -> BackendCreol.pretty_print_program out tree
+	| "dot" -> BackendDot.emit out tree
+	| "maude" ->
+            let options = BackendMaude.features_of_subtarget !subtarget in
+              BackendMaude.emit options out tree
+	| "xml" -> BackendXML.emit !output tree
     in
-      if !target <> Null then
-	match !file with
+      if !target <> "none" then
+	match !output with
 	    "" -> assert false
           | "-" ->
 	      let (_, elapsed) = Misc.measure (fun () -> do_output stdout) in
@@ -163,7 +144,7 @@ let options = [
   ("-",
   Arg.Unit (function () -> add_input "-"), "Read from standard input");
   ("-o",
-  Set_string Target.file,
+  Set_string output,
   "  Write the output to file");
   ("-v",
   Arg.Unit (function () -> incr Messages.verbose),
@@ -187,8 +168,11 @@ let options = [
   Arg.Set times,
   "  Print timing information");
   ("-T",
-  Arg.String Target.set,
-  "[name]   Provides the target of the translation:" ^ (Target.help ()));
+  Arg.Set_string target,
+  "[name]   Provides the target of the translation:\n" ^ (Target.help ()));
+  ("-m",
+  Arg.Set_string subtarget,
+  "[name]   Provides a subtarget, if the target supports it");
   ("-show-config",
    Arg.Set show_config_flag,
    "  Show the configuration.");
@@ -209,13 +193,13 @@ let main () =
 	  print_endline "No input files given.  Use `-help' for help." ;
 	  exit 0
       | [""] | ["-"] ->
-	  Passes.parse_from_channel "*stdin*" stdin
+	  Passes.parse_from_channel CreolParser.main "*stdin*" stdin
       | _ -> 
-	  Passes.parse_from_files !inputs
+	  Passes.parse_from_files CreolParser.main !inputs
   in
-  let prelude = Program.hide_all (Passes.parse_from_file "prelude.creol") in
+  let prelude = Program.hide_all (Passes.parse_from_file CreolParser.main "prelude.creol") in
     Target.setup () ;
-    Target.output ((Passes.execute_passes BackendXML.emit) !Target.file (Program.concat [ prelude; tree ])) ;
+    Target.output ((Passes.execute_passes BackendXML.emit) !output (Program.concat [ prelude; tree ])) ;
     if !times then Passes.report_timings () ;
     exit 0 ;;
 
