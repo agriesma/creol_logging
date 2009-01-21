@@ -906,7 +906,7 @@ let rec type_check_statement env coiface =
 				   (Type.string_of_sig signature)))
 	| Some y ->
 	    let cands =
-	      Program.class_find_methods env.program c' m signature
+	      Program.find_methods_in_class env.program c' m signature
 	    in
 	    let p m =
 	      Program.subclass_p env.program y m.Method.location
