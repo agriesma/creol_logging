@@ -46,11 +46,11 @@ different names may behave exactly the same in all circumstances, but
 may still be distinguished by their name.
 
 @table @code
-@item fun = (a: Data, b: Data): Bool
+@item function = (a: Data, b: Data): Bool
 @findex =
 This operator represents equality.
 
-@item fun /= (a: Data, b: Data): Bool
+@item function /= (a: Data, b: Data): Bool
 @findex /=
 This operator represents inequality.
 @end table
@@ -66,28 +66,28 @@ the functions displayed below are defined on values of type
 @code{Bool}.
 
 @table @code
-@item fun ~ (a: Bool) : Bool
+@item function ~ (a: Bool) : Bool
 @findex ~
 The function @code{~} represents negation.
 
-@item fun && (a: Bool, b: Bool): Bool
+@item function && (a: Bool, b: Bool): Bool
 @findex &&
 The function @code{&&} represents conjunction.
 
-@item fun || (a: Bool, b: Bool): Bool
+@item function || (a: Bool, b: Bool): Bool
 @findex ||
 The function @code{||} represents disjunction.
 
-@item fun => (a: Bool, b: Bool): Bool
+@item function => (a: Bool, b: Bool): Bool
 @findex =>
 The function @code{=>} represents implication.
 
-@item fun ^ (a: Bool, b: Bool): Bool
+@item function ^ (a: Bool, b: Bool): Bool
 @findex ^
 The function @code{^} represent exclusive disjunction.  It
 is a synonym for inequality (@code{/=}).
 
-@item fun <=> (a: Bool, b: Bool): Bool
+@item function <=> (a: Bool, b: Bool): Bool
 @findex <=>
 The function @code{<=>} represents equivalence or by-implication.  It
 is a synonym for equality (@code{=}).
@@ -109,54 +109,54 @@ The type @code{Float} is supposed to include all values from the real
 number field.
 
 @table @code
-@item fun - (a: Float): Float
+@item function - (a: Float): Float
 @findex -
 The unary operator @code{-} represents negation of a real.
 
-@item fun + (a: Float, b: Float): Float
+@item function + (a: Float, b: Float): Float
 @findex +
 The binary operator @code{+} represents addition of two reals.
 
-@item fun - (a: Float, b: Float): Float
+@item function - (a: Float, b: Float): Float
 @findex -
 The binary operator @code{-} represents subtraction of two reals.
 
-@item fun * (a: Float, b: Float): Float
+@item function * (a: Float, b: Float): Float
 @findex *
 The binary operator @code{*} represents multiplication of two reals.
 
-@item fun / (a: Float, b: Float): Float
+@item function / (a: Float, b: Float): Float
 @findex /
 The binary operator @code{/} represents division of two
 reals.
 
-@c @item fun div(a: Float, b: Float): Float
+@c @item function div(a: Float, b: Float): Float
 @c @findex div
 @c The binary function @code{div} represents Eucledian division of two
 @c reals.
 @c 
-@item fun % (a: Float, b: Float): Float
+@item function % (a: Float, b: Float): Float
 @findex %
 The binary operator @code{%} represents Euclidean remainder of two
 reals.
 
-@item fun ** (a: Float, b: Float): Float
+@item function ** (a: Float, b: Float): Float
 @findex **
 The binary operator @code{**} represents exponentiation of two reals.
 
-@item fun < (a: Float, b: Float): Bool
+@item function < (a: Float, b: Float): Bool
 @findex <
 The binary relation @code{<} represents ``less than''.
 
-@item fun <= (a: Float, b: Float): Bool
+@item function <= (a: Float, b: Float): Bool
 @findex <=
 The binary relation @code{<=} represents ``less than or equal''.
 
-@item fun > (a: Float, b: Float): Bool
+@item function > (a: Float, b: Float): Bool
 @findex >
 The binary relation @code{>} represents ``greater than''.
 
-@item fun >= (a: Float, b: Float): Bool
+@item function >= (a: Float, b: Float): Bool
 @findex >=
 The binary relation @code{>=} represents ``less than or equal''.
 @end table
@@ -174,55 +174,55 @@ The data type @code{Int} includes all integer numbers.  It is a subtype
 of @code{Float}.
 
 @table @code
-@item fun - (a: Int): Int
+@item function - (a: Int): Int
 @findex -
 The unary operator @code{-} represents negation of an integer.
 
-@item fun + (a: Int, b: Int): Int
+@item function + (a: Int, b: Int): Int
 @findex +
 The binary operator @code{+} represents addition of two integers.
 
-@item fun - (a: Int, b: Int): Int
+@item function - (a: Int, b: Int): Int
 @findex -
 The binary operator @code{-} represents subtraction of two integers.
 
-@item fun * (a: Int, b: Int): Int
+@item function * (a: Int, b: Int): Int
 @findex *
 The binary operator @code{*} represents multiplication of two integers.
 
-@item fun / (a: Int, b: Int): Int
+@item function / (a: Int, b: Int): Int
 @findex /
 The binary operator @code{/} represents Euclidean division of two
 integers.  In order to have standard division, at least one of the
 arguments should be coerced to @code{Float} using @code{real_of_int}.
 
-@item fun % (a: Int, b: Int): Int
+@item function % (a: Int, b: Int): Int
 @findex %
 The binary operator @code{%} represents Euclidean remainder of two
 integers.
 
-@item fun ** (a: Int, b: Int): Int
+@item function ** (a: Int, b: Int): Int
 @findex **
 The binary operator @code{**} represents exponentiation of two
 integers.
 
-@item fun < (a: Int, b: Int): Bool
+@item function < (a: Int, b: Int): Bool
 @findex <
 The binary relation @code{<} represents ``less than''.
 
-@item fun <= (a: Int, b: Int): Bool
+@item function <= (a: Int, b: Int): Bool
 @findex <=
 The binary relation @code{<=} represents ``less than or equal''.
 
-@item fun > (a: Int, b: Int): Bool
+@item function > (a: Int, b: Int): Bool
 @findex >
 The binary relation @code{>} represents ``greater than''.
 
-@item fun >= (a: Int, b: Int): Bool
+@item function >= (a: Int, b: Int): Bool
 @findex >=
 The binary relation @code{>=} represents ``less than or equal''.
 
-@item fun real_of_int(a: Int): Float
+@item function real_of_int(a: Int): Float
 @findex real_of_int
 The function @code{real_of_int} converts an integer value into a real
 value such that both represent the same number.
@@ -256,40 +256,40 @@ are strings of length 1) from strings.  It is good style to use
 and @code{|-|} in any other case.
 
 @table @code
-@item fun # (a: String): Int
+@item function # (a: String): Int
 @findex #
 The unary operator @code{#} returns the length of the string.
 
-@item fun |- (a: String, b: String): String
+@item function |- (a: String, b: String): String
 @findex |-
 The binary operator @code{|-} represent string concatenation.
 
-@item fun -| (a: String, b: String): String
+@item function -| (a: String, b: String): String
 @findex -|
 The binary operator @code{-|} represent string concatenation.
 
-@item fun |-| (a: String, b: String): String
+@item function |-| (a: String, b: String): String
 @findex |-|
 The binary operator @code{|-|} represent string concatenation.
 
-@item fun ascii(a: String): Int
+@item function ascii(a: String): Int
 @findex ascii
 If the string @code{a} has length @code{1}, this function will return
 the ASCII code number of the character in the string.  Otherwise, the
 behaviour is not defined.
 
-@item fun char(a: Int): String
+@item function char(a: Int): String
 @findex char
 If @code{a} is a valid ASCII code number for some character, this
 function returnts a string that consists of this character.  Otherwise,
 the behaviour is not defined.
 
-@item fun substr(a: String, b: Int, c: Int): String
+@item function substr(a: String, b: Int, c: Int): String
 @findex substr
 Returns the substring of @code{a} between the positions @code{b} and
 @code{c}.
 
-@item fun find(a: String, b: String, c: Int): Int
+@item function find(a: String, b: String, c: Int): Int
 @findex find
 Returns the index of the first letter of the first string @code{b} in
 the string @code{a} that starts after (or including) position @code{c}.
@@ -299,41 +299,41 @@ the string @code{a} that starts after (or including) position @code{c}.
 Returns the index of the first letter of the last string @code{b} in the
 string @code{a} that starts before (or including) position @code{c}.
 
-@item fun < (a: String, b: String): Bool
+@item function < (a: String, b: String): Bool
 @findex <
 This binary relation compares two strings with respect to their
 lexicographic order.
 
-@item fun <= (a: String, b: String): Bool
+@item function <= (a: String, b: String): Bool
 @findex <=
 This binary relation compares two strings with respect to their
 lexicographic order.
 
-@item fun > (a: String, b: String): Bool
+@item function > (a: String, b: String): Bool
 @findex >
 This binary relation compares two strings with respect to their
 lexicographic order.
 
-@item fun >= (a: String, b: String): Bool
+@item function >= (a: String, b: String): Bool
 @findex >=
 This binary relation compares two strings with respect to their
 lexicographic order.
 
-@item fun string_of_int(i: Int): String
+@item function string_of_int(i: Int): String
 @findex string_of_int
 Convert the integer @code{i} to a string.
 
-@item fun int_of_string(s: String): Int
+@item function int_of_string(s: String): Int
 @findex int_of_string
 Convert a string to an integer number.  If @code{s} does not represent
 an integer literal, the behaviour is undefined.  Integer literals must,
 for now, be recognizable to the @emph{Maude} parser.
 
-@item fun string_of_real(r: Float): String
+@item function string_of_real(r: Float): String
 @findex string_of_real
 Convert a floating point number @code{r} to a string.
 
-@item fun real_of_string(s: String): Float
+@item function real_of_string(s: String): Float
 @findex real_of_string
 Convert a string to a floating point number.  If @code{s} does not
 represent a floating point literal, the behaviour is undefined.
@@ -356,7 +356,7 @@ types.  A list that may contain anything has type @code{List[Data]}
 and a list of object references has type @code{List[Any]}.
 
 @table @code 
-@item fun head(l: List[`a]): `a
+@item function head(l: List[`a]): `a
 @findex head
 The function @code{head} returns the first element of the list.  If
 the list is empty, the result is undefined.@footnote{@acronym{CREOL} does not
@@ -364,116 +364,116 @@ yet support exceptions.  For now we suggest a defencive programming
 approach.  Later, these functions may raise an exception instead of
 having an undefined behaviour.}
 
-@item fun tail(l: List[`a]): List[`a]
+@item function tail(l: List[`a]): List[`a]
 @findex tail
 The function @code{tail} returns a list without its first element.  If
 the list is empty, the result is undefined.
 
-@item fun last(l: List[`a]): `a
+@item function last(l: List[`a]): `a
 @findex last
 The function @code{last} returns the last element of the list.  If
 the list is empty, the result is undefined.
 
-@item fun rest(l: List[`a]): List[`a]
+@item function rest(l: List[`a]): List[`a]
 @findex rest
 The function @code{rest} returns a list without its last element.  If
 the list is empty, the result is undefined.
 
-@item fun nth(l: List[`a], n: Int): `a
+@item function nth(l: List[`a], n: Int): `a
 @findex nth
 The function @code{nth} returns the @code{n}th element of the list.  If
 the list has less than @code{n} elements, the result is undefined.
 
-@item fun rnth(l: List[`a], n: Int): `a
+@item function rnth(l: List[`a], n: Int): `a
 @findex rnth
 The function @code{rnth} returns the @code{n}th element from the back
 of the list.  If the list has less than @code{n} elements, the result
 is undefined.
 
-@item fun reverse(l: List[`a]): List[`a]
+@item function reverse(l: List[`a]): List[`a]
 @findex reverse
 The function @code{reverse} returns a list in which all elements occur
 in reverse order.
 
-@item fun sub(l: List[`a], i: Int, j: Int): List[`a]
+@item function sub(l: List[`a], i: Int, j: Int): List[`a]
 @findex sub
 The function @code{sub} returns a slice of the list, beginning at
 @code{i} and ending at @code{j}.
 
-@item fun after(l: List[`a], n: Int): List[`a]
+@item function after(l: List[`a], n: Int): List[`a]
 @findex after
 The function @code{after} returns a list containing all elements after
 @code{n}.  If @code{n} is larger than the length of the list, the
 empty list is returned.
 
-@item fun in(e: `a, l: List[`a]): Bool
+@item function in(e: `a, l: List[`a]): Bool
 @findex in
 The function @code{in} tests, whether the list @code{l} contains the
 element @code{e}.
 
-@item fun remove(l: List[`a], e: `a): List[`a]
+@item function remove(l: List[`a], e: `a): List[`a]
 @findex remove
 The function @code{remove} returns the largest sub list @code{l'} of
 @code{l} that does not contain @code{e}.
 
-@item fun -|(e: `a, l: List[`a]): List[`a]
+@item function -|(e: `a, l: List[`a]): List[`a]
 @findex -|
 The operator @code{-|} prepends an element to a list.
 
-@item fun |-(l: List[`a], e: `a): List[`a]
+@item function |-(l: List[`a], e: `a): List[`a]
 @findex |-
 The operator @code{|-} appends an element to a list.
 
-@item fun |-|(l: List[`a], m: List[`a]): List[`a]
+@item function |-|(l: List[`a], m: List[`a]): List[`a]
 @findex |-|
 The operator @code{|-|} results in the concatenation of two list.
 
-@item fun #(l: List[`a]): Int
+@item function #(l: List[`a]): Int
 @findex #
 The operator @code{#} returns the length of the list.
 
-@item fun isempty(l: List[`a]): Bool
+@item function isempty(l: List[`a]): Bool
 @findex isempty
 The function @code{isempty} tests, whether the list is empty.  It is
 synonymous to @code{l == nil}.
 
-@item fun begwith(l: List[`a], m: List[`a]) : Bool
+@item function begwith(l: List[`a], m: List[`a]) : Bool
 @findex begwith
 The function @code{begwith} tests whether a list @code{l} begins with
 the list @code{m}.
 
-@item fun endswith(l: List[`a], m: List[`a]) : Bool
+@item function endswith(l: List[`a], m: List[`a]) : Bool
 @findex endswith
 The function @code{endswith} tests whether a list @code{l} ends with
 the list @code{m}.
 
-@item fun index(l: List[`a], e: `a): Int
+@item function index(l: List[`a], e: `a): Int
 @findex index
 The function @code{index} returns the index of the first occurrence of
 an element @code{e}.  If @code{e} does not occur in the list, the
 result is undefined.
 
-@item fun rindex(l: List[`a], e: `a): Int
+@item function rindex(l: List[`a], e: `a): Int
 @findex rindex
 The function @code{rindex} returns the index of the last occurrence of
 an element @code{e}.  If @code{e} does not occur in the list, the
 result is undefined.
 
-@item fun replace(l: List[`a], e: `a, p: Int): List[`a]
+@item function replace(l: List[`a], e: `a, p: Int): List[`a]
 @findex replace
 The function @code{replace} replaces the @code{p}th item of the list
 @code{l} with the data item @code{e}.  If @code{p} is @code{0} or
 larger than the length of the list @code{l}, then the result is not
 defined.
 
-@item fun make_list(e: `a, n: Int): List[`a]
+@item function make_list(e: `a, n: Int): List[`a]
 @findex make_list
 Make a list that contains @code{n} times the data item @code{e}.  If
 @code{n} is @code{0}, the empty list is generated.
 
-@item fun make_range(e: Int): List[Int]
-@item fun make_range(s: Int, e: Int): List[Int]
-@item fun make_range(s: Int, e: Int, t: Int): List[Int]
+@item function make_range(e: Int): List[Int]
+@item function make_range(s: Int, e: Int): List[Int]
+@item function make_range(s: Int, e: Int, t: Int): List[Int]
 @findex make_range
 Make a list of integers.  @code{s} represents the initial element of the
 list, @code{e} the final element.  @code{t} is a stride value.  The
@@ -492,43 +492,50 @@ and a set of object references has type @code{Set[Any]}.
 
 @table @code
 @findex #
-@item fun #(s: Set[`a]): Int
+@item function #(s: Set[`a]): Int
 The function @code{#} returns the number of elements contained in the
 argument set.
 
-@item fun remove(s: Set[`a], e: `a): Set[`a]
+@item function remove(s: Set[`a], e: `a): Set[`a]
 @findex remove
 The function @code{remove} returns the argument set without element
 @code{e}.
 
-@item fun add(s: Set[`a], e: `a): Set[`a]
+@item function add(s: Set[`a], e: `a): Set[`a]
 @findex add
 The function @code{add} returns the argument set with the addition of
 element @code{e}.
 
-@item fun in(e: `a, s: Set[`a]): Bool
+@item function in(e: `a, s: Set[`a]): Bool
 @findex in
 The function @code{in} tests, whether the list @code{s} contains the
 element @code{e}.
 
-@item fun union(s: Set[`a], t: Set[`a]): Set[`a]
+@item function union(s: Set[`a], t: Set[`a]): Set[`a]
 @findex union
 The function @code{union} returns the set union of the two argument
 sets.
 
-@item fun inter(s: Set[`a], t: Set[`a]): Set[`a]
+@item function inter(s: Set[`a], t: Set[`a]): Set[`a]
 @findex inter
 The function @code{inter} returns the set intersection of the two
 argument sets.
 
-@item fun diff(s: Set[`a], t: Set[`a]): Set[`a]
+@item function diff(s: Set[`a], t: Set[`a]): Set[`a]
 @findex diff
 The function @code{diff} returns the set difference of the two
 argument sets.
 
-@item fun isempty(s: Set[`a]): Bool
+@item function isempty(s: Set[`a]): Bool
 @findex isempty
 The predicate @code{isempty} tests, whether the argument set is empty.
+
+@item function choose(s: Set[`a]): `a
+@findex choose
+The function @code{choose} selects an element from the set @code{s}.
+It is not guaranteed that @code{choose} returns the same element each
+time it is called for the same set.  If the set is empty, the result
+is undefined.
 @end table
 
 
@@ -542,11 +549,11 @@ defines two projections on pairs:  @code{fst} projects on the first
 element and @code{snd} projects on the second element.
 
 @table @code
-@item fun fst (a: [`a, `b]): `a
+@item function fst (a: [`a, `b]): `a
 @findex fst
 Returns the first element of a pair.
 
-@item fun snd (a: [`a, `b]): `b
+@item function snd (a: [`a, `b]): `b
 @findex snd
 Returns the second element of a pair.
 @end table
@@ -563,41 +570,41 @@ represents the key type and @var{`b} represents the range type of the
 map.  The following functions are defined on maps:
 
 @table @code
-@item fun empty () : Map[`a, `b]
+@item function empty () : Map[`a, `b]
 @findex empty
 Generate an empty map.
 
-@item fun isempty(m: Map[`a, `b]): Bool
+@item function isempty(m: Map[`a, `b]): Bool
 @findex isempty
 Tests whether the map @code{m} is empty.
 
-@item fun get(m: Map[`a, `b], k: `a): `b
+@item function get(m: Map[`a, `b], k: `a): `b
 @findex get
 Get the value for the key @code{k} from map @code{m}, or @code{null} if
 no such value exists in that map.
 
-@item fun insert(m: Map[`a, `b], k: `a, v: `b): Map[`a, `b]
+@item function insert(m: Map[`a, `b], k: `a, v: `b): Map[`a, `b]
 @findex insert
 Insert a new binding from @code{k} to @code{v} into the map @code{m}.
 If @code{k} is already bound, then the value is replaced in the result.
 
-@item fun remove(m: Map[`a, `b], k: `a): Map[`a, `b]
+@item function remove(m: Map[`a, `b], k: `a): Map[`a, `b]
 @findex remove
 Remove any binding of @code{k} from @code{m}.
 
-@item fun in(k: `a, m: Map[`a, `b]): Bool
+@item function in(k: `a, m: Map[`a, `b]): Bool
 @findex in
 Tests whether @code{k} is bound in @code{m}.
 
-@item fun keys(m: Map[`a, `b]): Set[`a]
+@item function keys(m: Map[`a, `b]): Set[`a]
 @findex keys
 Get the set of all keys used in the map.
 
-@item fun values(m: Map[`a, `b]): Set[`b]
+@item function values(m: Map[`a, `b]): Set[`b]
 @findex values
 Get the set of all values used in the map.
 
-@item fun #(m: Map[`a, `b]): Int
+@item function #(m: Map[`a, `b]): Int
 @findex #
 Results in the number of bindings in @code{m}.
 @end table
@@ -622,16 +629,16 @@ stored in variables.
 On values of type @code{Time} these relations are defined:
 
 @table @code
-@item fun <(a: Time, b: Time): Bool
+@item function <(a: Time, b: Time): Bool
 @findex <
 
-@item fun <=(a: Time, b: Time): Bool
+@item function <=(a: Time, b: Time): Bool
 @findex <=
 
-@item fun >=(a: Time, b: Time): Bool
+@item function >=(a: Time, b: Time): Bool
 @findex >=
 
-@item fun >(a: Time, b: Time): Bool
+@item function >(a: Time, b: Time): Bool
 @findex >
 
 @end table
@@ -641,61 +648,61 @@ events happened.  The type @code{Duration} refers to the difference
 between to instances of time.  A @code{Duration} is not ``negative''.
 
 @table @code
-@item fun dur(a: Float): Duration
+@item function dur(a: Float): Duration
 @findex dur
 The function @code{dur} constructs a new duration from a @code{Float}
 value.  The unit of duration is left unspecified.
 
-@item fun +(a: Time, d: Duration): Time
+@item function +(a: Time, d: Duration): Time
 @findex +
 The operator @code{+(a: Time, d: Duration): Time} returns the time
 after @code{d} has elapsed from @code{a}.
 
-@item fun -(a: Time, d: Duration): Time
+@item function -(a: Time, d: Duration): Time
 @findex -
 The operator @code{-(a: Time, d: Duration): Time} returns the time
 before @code{d} has elapsed until @code{a}.
 
-@item fun -(a: Time, b: Time): Duration
+@item function -(a: Time, b: Time): Duration
 @findex -
 The operator @code{-(a: Time, b: Time): Duration} returns the time
 elapsed between @code{a} and @code{b}.  If @code{a} happened before
 @code{b}, the result is normalised.  Consequently, for all values of
 @code{Time}, we have @code{a - b = b - a}.
 
-@item fun +(a: Duration, d: Duration): Duration
+@item function +(a: Duration, d: Duration): Duration
 @findex +
 The operator @code{+(a: Duration, d: Duration): Duration} is the sum
 of two durations.
 
-@item fun -(a: Duration, d: Duration): Duration
+@item function -(a: Duration, d: Duration): Duration
 @findex -
 The operator @code{-(a: Duration, d: Duration): Duration} is the
 difference between two durations.  The result is undefined if @code{d
 > a}.
 
-@item fun *(a: Duration, s: Float): Duration
-@item fun *(a: Float, s: Duration): Duration
+@item function *(a: Duration, s: Float): Duration
+@item function *(a: Float, s: Duration): Duration
 @findex *
 The operators @code{*(a: Duration, s: Float): Duration} and @code{*(a:
 Float, s: Duration): Duration} represent @emph{scalar} multiplication
 of durations.
 
-@item fun /(a: Duration, s: Float): Duration
+@item function /(a: Duration, s: Float): Duration
 @findex /
 The operator @code{/(a: Duration, s: Float): Duration} is scalar
 division.  It is a shorthand for @code{a * (1.0 / s)}.
 
-@item fun <(a: Duration, b: Duration): Bool
+@item function <(a: Duration, b: Duration): Bool
 @findex <
 
-@item fun <=(a: Duration, b: Duration): Bool
+@item function <=(a: Duration, b: Duration): Bool
 @findex <=
 
-@item fun >=(a: Duration, b: Duration): Bool
+@item function >=(a: Duration, b: Duration): Bool
 @findex >=
 
-@item fun >(a: Duration, b: Duration): Bool
+@item function >(a: Duration, b: Duration): Bool
 @findex >
 @end table
 
@@ -712,39 +719,39 @@ the observation of a call or a reply to a call.  Terms of type
 assertions, the following functions may be used to query a history:
 
 @table @code
-@item fun sender(e: Event): Any
+@item function sender(e: Event): Any
 @findex sender
 The identity of the sender.
 
-@item fun receiver(e: Event): Any
+@item function receiver(e: Event): Any
 @findex receiver
 The identity of the receiver.
 
-@item fun call(e: Event): Bool
+@item function call(e: Event): Bool
 @findex call
 Whether the event is observing a call or a reply.
 
-@item fun method(e: Event): String
+@item function method(e: Event): String
 @findex method
 The name of the called method.
 
-@item fun arguments(e: Event): List[Data]
+@item function arguments(e: Event): List[Data]
 @findex arguments
 This is a list of actual arguments supplied to the call observed by
 this event.
 
-@item fun results(e: Event): List[Data]
+@item function results(e: Event): List[Data]
 @findex results
 If @code{call(e)} is @code{false}, this results in a list of return
 values for the event.  If @code{call(e)} is @code{true}, the meaning
 is undefined.
 
-@item fun id(e: Event): Int
+@item function id(e: Event): Int
 @findex id
 A identity of the event.  A globally unique ID for an event is the
 triplet @code{(caller(e), call(e), id(e))}.
 
-@item fun time(e: Event): Time
+@item function time(e: Event): Time
 @findex time
 The time when that event happened.  If this function is used in
 untimed models, its meaning is not defined.
