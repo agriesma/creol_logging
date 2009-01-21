@@ -91,7 +91,7 @@ AT_CLEANUP
 
 m4_define([TEST_CREOLMC], [dnl
 AT_SETUP([$1])
-AT_CHECK([${CREOLC} -T maudemc ${abs_srcdir}/$2/$1.creol -o $1.maude])
+AT_CHECK([${CREOLC} -T maude -m modelchecker ${abs_srcdir}/$2/$1.creol -o $1.maude])
 DIFF([${abs_srcdir}/$2/$1.maude], [$1.maude])
 AT_DATA([test.maude],
 [
