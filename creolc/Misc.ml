@@ -36,12 +36,16 @@ let rec separated_list elt_fun sep_fun =
         sep_fun ();
         separated_list elt_fun sep_fun r
 
+(** Fold a list and apply a separator function.
+    [f: 'a -> 'b -> 'a]
+    [s: 'a -> 'a -> 'a] *)
+
 let fold_with_sep f s a l =
   let rec work =
     function
         [] -> a
-      | [e] -> f e a
-      | e::r -> s (f e) (work r)
+      | [e] -> f a e
+      | e::r -> s (f a e) (work r)
   in
     work l
 
@@ -85,3 +89,16 @@ let measure f =
   let now' = Unix.gettimeofday () in
   let elapsed = (floor ((now' -. now) *. 1000000.0)) /. 1000.0 in
     (result, elapsed)
+
+
+(** {4 Help formatting} *)
+
+let format_help_line (name, help) =
+  assert (((String.length name) > 0) && ((String.length name) < 11));
+  "    " ^ name ^ (String.make (11 - String.length name) ' ') ^ help
+
+
+(** A list of pairs is formatted for the help messages. *)
+let help info =
+  let line current l = current ^ (format_help_line l) in
+    fold_with_sep line (fun a e -> a ^ "\n" ^ e) "" info

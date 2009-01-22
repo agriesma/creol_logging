@@ -1,4 +1,4 @@
-(*i A lexer for Creol.
+(* A lexer for Creol.
  *
  * This file has been generated from Creol.mll
  *
@@ -23,12 +23,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-i*)
+ *)
 
-(*s Creol's lexer.
-*)
+(** Creol's lexer.  *)
+
 {
-open CreolParser
+open CreolTokens
 open Lexing
 
 exception Reserved of string * int * string
@@ -58,6 +58,7 @@ rule token = parse
     | '!' { BANG }
 	(*i '"' i*)
     | '#' { HASH }
+    | "$$" { reserved lexbuf }
     | '$' { reserved lexbuf }
     | '%' { PERCENT }
     | "&&" { AMPAMP }
@@ -148,14 +149,14 @@ rule token = parse
     | "inv" { INV }
     | "is" { reserved lexbuf }
     | "measure" { MEASURE }
-    | "method" { OP }
+    | "method" { METHOD }
     | "new" { NEW }
     | "nil" { NIL }
     | "now" { NOW }
     | "null" { NULL }
     | "object" { reserved lexbuf }
     | "of" { reserved lexbuf }
-    | "op" { OP }
+    | "op" { METHOD }
     | "out" { OUT }
     | "posit" { POSIT }
     | "pragma" { PRAGMA }
@@ -172,6 +173,7 @@ rule token = parse
     | "throws" { reserved lexbuf }
     | "true" { BOOL(true) }
     | "try" { reserved lexbuf }
+    | "update" { UPDATE }
     | "var" { VAR }
     | "volatile" { reserved lexbuf }
     | "when" { reserved lexbuf }

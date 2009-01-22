@@ -35,11 +35,13 @@ val requires : string list -> unit
 
 val dump_after : string -> unit
 
-val parse_from_channel : string -> in_channel -> Program.t
+type parser_t = (Lexing.lexbuf -> CreolTokens.token) -> Lexing.lexbuf -> Creol.Declaration.t list
 
-val parse_from_file : string -> Program.t
+val parse_from_channel : parser_t -> string -> in_channel -> Program.t
 
-val parse_from_files : string list -> Program.t
+val parse_from_file : parser_t -> string -> Program.t
+
+val parse_from_files : parser_t -> string list -> Program.t
 
 val execute_passes : (string -> Program.t -> unit) -> string -> Program.t -> Program.t
 

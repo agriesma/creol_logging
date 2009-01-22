@@ -482,6 +482,9 @@ fmod CREOL-DATA-SET is
     eq "#" (set(emptyset)) = int(0) .
     eq "#" (set(S : D)) = "+" (int(1) :: ("#" (set(S)))) .
 
+    eq "isempty" (set(emptyset)) = bool(true) .
+    eq "isempty" (set(S : D)) = bool(false) .
+
     eq "remove" (set(emptyset) :: E)  = set(emptyset) .
     eq "remove" (set(S : D) :: D') =
       if D == D' then "remove" (set(S) :: D') else

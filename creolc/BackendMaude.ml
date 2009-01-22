@@ -35,6 +35,29 @@ type options = {
   mutable target: target;
 }
 
+let subtargets =
+  [ ("interpreter", "");
+    ("modelchecker", "");
+    ("realtime", "");
+    ("updates", "");
+  ]
+
+let subtarget_of_string =
+  function
+    | "interpreter" -> Interpreter
+    | "modelchecker" -> Modelchecker
+    | "realtime" -> Realtime
+    | "updates" -> Updates
+
+let string_of_subtarget =
+  function
+    | Interpreter -> "interpreter"
+    | Modelchecker -> "modelchecker"
+    | Realtime -> "realtime"
+    | Updates -> "updates"
+
+
+
 let requires =
   function
       { target = Interpreter } ->
@@ -63,6 +86,16 @@ let interpreter =
     | Modelchecker -> "creol-modelchecker"
     | Realtime -> "creol-realtime"
     | Updates -> "creol-updates"
+
+
+(** Parse the subtarget features and construct a corresponding option
+    structure. *)
+let features_of_subtarget s =
+  match subtarget_of_string s with
+    | Interpreter -> { target = Interpreter }
+    | Modelchecker -> { target = Modelchecker }
+    | Realtime -> { target = Realtime }
+    | Updates -> { target = Updates }
 
 (** Write a Creol program as a maude term. If the program is parsable
     but not semantically correct, this function will only produce
