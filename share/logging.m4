@@ -61,7 +61,7 @@ eq
   <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; EL) |    TS5 |    TS6 } Att: S1 Label: C >
   =
   <log From: 0 To: ( G + 1 )  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
-  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; TS2[TS4["dest"]] ) | 
+  <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; unpack(TS2[TS4["dest"]]) ) | 
    getTrans(assign(AL ; unpack(TS2[TS4["dest"]] ))) | TS4 } Att: S1 Label: C > .
 
 --- marker that is not followed by a related assign - increase the
