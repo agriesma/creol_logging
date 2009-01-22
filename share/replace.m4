@@ -42,9 +42,6 @@ mod `CREOL-REPLACE' is
 ---        code)
 --- TODO:  replace the if in replace by filtering the replacement maps 
 ---        and reestablish the unique names for "_init" variables.
----
---- expl: rew replace ("&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))), "m", "nte") .
---- op replace : Expr Expr Expr -> Expr .
 
     var ES : ExprSet .
     var EM : ExprMap .
@@ -72,7 +69,7 @@ mod `CREOL-REPLACE' is
     eq replace (set(ES), V1, E1)  = set(replaceSet(ES, V1, E1) ) .
     eq replace (map(EM), V1, E1)  = map(replaceMap(EM, V1, E1) ) . 
     eq replace (E, V1, E1) = 
-       if E == V1 and ``substr(V1, sd(length(V1),5), 5)'' =/= "_init" then
+       if E == V1 then --- and ``substr(V1, sd(length(V1),5), 5)'' =/= "_init" then
          E1
        else
          E

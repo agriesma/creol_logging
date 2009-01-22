@@ -1,0 +1,95 @@
+==========================================
+rewrite in PROGRAM : main(classes, "Hello", int(2)) .
+result State: {
+<choice Number: 22 Type: "ifthenelse" Expression: ">"("Hello0.repetitions_init"
+    :: int(0)) >
+ 
+<choice Number: 30 Type: "ifthenelse" Expression: ">"("-"(
+    "Hello0.repetitions_init" :: int(1)) :: int(0)) >
+ 
+< ob("Console0") : "Console" |
+  Att: "output" |-> list(str("hello, world") :: str("hello, world2")), "this"
+    |-> ob("Console0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("Hello0") : "Hello" |
+  Att: "console" |-> ob("Console0"), "repetitions_init" |-> int(2), "this" |->
+    ob("Hello0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 5 >
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 39 >
+ 
+< ob("main") : Start |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 1 >
+ 
+< "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("output" @
+    "Console" ; list(emp)) ; return(emp) >, < "print" : Method | Param:
+    "newstring", Att: "_" |-> null, "newstring" |-> null, Code: assign("output"
+    ; "|-"("output" :: "newstring")) ; return(emp) >, < "run" : Method | Param:
+    noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
+  Ocnt: 1 >
+ 
+< "Hello" : Class | Inh: noInh, Param: "repetitions_init", Att: "console" |->
+    null, "repetitions_init" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("console" ;
+    "Console" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, "label:0" |-> null, "label:1" |-> null, "x" |-> null, Code:
+    assign("x" ; "repetitions_init") ; if ">"("x" :: int(0)) th call("label:0"
+    ; "console" ; "print" ; str("hello, world")) ; get("label:0" ; noVid) ;
+    free("label:0") ; assign("x" ; "-"("x" :: int(1))) ; if ">"("x" :: int(0))
+    th call("label:1" ; "console" ; "print" ; str("hello, world2")) ; get(
+    "label:1" ; noVid) ; free("label:1") ; assign("x" ; "-"("x" :: int(1))) el
+    skip fi el skip fi ; return(emp) >,
+  Ocnt: 1 >
+ 
+<log From: 0 To: 39 Type: "lastrun"
+    Data:{skip ; new("var" ; "Hello" ; int(2)) ; assign(
+    "Hello0.repetitions_init" ; int(2)) ; call(".anon" ; "this" ; "init" ; emp)
+    ; assign("nolabel.var" ; ob("Hello0")) ; new("console" ; "Console" ; emp) ;
+    assign("Hello0.console" ; ob("Console0")) ; call(".anon" ; "this" ; "init"
+    ; emp) ; return(emp) ; assign("output" @ "Console" ; list(emp)) ; return(
+    emp) ; call(".anon" ; "this" ; "run" ; emp) ; return(emp) ; call(".anon" ;
+    "this" ; "run" ; emp) ; assign("Hello0-2.x" ; "Hello0.repetitions_init") ;
+    if ">"("x" :: int(0)) th skip el skip fi ; call("label:0" ; "console" ;
+    "print" ; str("hello, world")) ; assign("Hello0-3.newstring" ; str(
+    "hello, world")) ; assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) ; return(emp) ; assign("Hello0-2.x" ; "-"(
+    "Hello0-2.x" :: int(1))) ; if ">"("x" :: int(0)) th skip el skip fi ; call(
+    "label:1" ; "console" ; "print" ; str("hello, world2")) ; assign(
+    "Hello0-4.newstring" ; str("hello, world2")) ; assign("Console0.output" ;
+    "|-"("Console0.output" :: "Hello0-4.newstring")) ; return(emp) ; assign(
+    "Hello0-2.x" ; "-"("Hello0-2.x" :: int(1))) ; return(emp) | 
+  "Console0.output" |> list(str("hello, world") :: str("hello, world2")), 
+  "Hello0-2.x" |> "-"("-"("Hello0.repetitions_init" :: int(1)) :: int(1)), 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-4.newstring" |> str("hello, world2"), 
+  "Hello0.console" |> ob("Console0"), 
+  "Hello0.repetitions_init" |> int(2), 
+  "nolabel.var" |> ob("Hello0") | 
+  "Hello0-3" |> list(str("hello, world")), 
+  "Hello0-4" |> list(str("hello, world2")), 
+  "main-0" |> list(int(2))}Att: noSubst Label: "lastrun" >
+ 
+<log From: 22 To: 23 Type: "ifthenelse"
+    Data:{if ">"("x" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0.repetitions_init" :: int(0))}Att: noSubst Label:
+    "Hello0-2" >
+ 
+<log From: 30 To: 31 Type: "ifthenelse"
+    Data:{if ">"("x" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("-"("Hello0.repetitions_init" :: int(1)) :: int(0))}Att: noSubst
+    Label: "Hello0-2" >
+}
+Bye.

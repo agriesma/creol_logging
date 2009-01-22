@@ -120,6 +120,9 @@ ifdef(`WITH_TIME',dnl
 
     --- Enabledness
     eq ENABLED(await E ; SL, S, CN, T) = EVALGUARD(E, S, CN, T) asBool .
+ifdef(`LOGGING',dnl
+    eq ENABLED($bawait E ; SL, S, CN, T) = EVALGUARD(E, S, CN, T) asBool .
+)dnl
 dnl ifdef(`WITH_TIME',dnl
 dnl  eq ENABLED(posit E ; SL, S, CN, T) = EVALGUARD(E, S, CN, T) asBool .
 dnl)dnl

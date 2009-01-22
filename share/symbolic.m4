@@ -129,7 +129,7 @@ mod `CREOL-SYMBOLIC' is
     eq renStmt( transstmt, S, L) = renStmt( transstmt, replacementMap(S, L) ) .
     eq renStmt( assign( AL ; EL), TS1) = assign(replace(AL, TS1); replace(EL, TS1) ) .
 
-    eq replacementMap(S, L) = replacementMap(S, getThis((L, S)), replacementMap(L, getLabel((L, S)), TnoSubst) ) .
+    eq replacementMap(S, L) = replacementMap(L, getLabel((L, S)), replacementMap(S, getThis((L, S)), TnoSubst) ) .
     eq replacementMap((  V1 |-> E1 , S ), Q, TS1) = replacementMap(S, Q, insert(V1, (Q + "." + V1), TS1) ) .
     eq replacementMap( noSubst, Q, TS1) = TS1 .
 
@@ -139,9 +139,22 @@ mod `CREOL-SYMBOLIC' is
 --- are not redefined in TS2 are taken from TS1.
     eq appendTrans ( TS1, TS2 ) = mergeTrans(TS1, replaceMiddle( TS2, TS1 ) ) .
 
-    eq replaceMiddle( TS1, TS2 ) = replaceMiddle( TS1, TS2, TnoSubst) .
+    op filter : TSubst -> TSubst .
+    op filter : TSubst TSubst -> TSubst .
+    eq filter( TS1) = filter(TS1, TnoSubst) .
+    eq filter( ( V1 |> E1, TS1 ) , TS2 ) = 
+       if ``substr(V1, sd(length(V1),5), 5)'' =/= "_init" then
+         filter(TS1, insert(V1, E1, TS2) )
+       else
+         filter(TS1, TS2)
+       fi .
+    eq filter(TnoSubst, TS2) = TS2 .
+
+    eq replaceMiddle( TS1, TS2 ) = replaceMiddle( TS1, filter(TS2), TnoSubst) .
     eq replaceMiddle( TnoSubst, TS2, TS3 ) = TS3 .
     eq replaceMiddle( (V1 |> E1, TS1), TS2, TS3 ) = replaceMiddle( TS1, TS2, insert( V1, replace (E1, TS2), TS3) ) .
+
+    
 
 --- insertTrans(T1, T2): insert all variables from T2 into T1`,' overwriting values in T1
     eq mergeTrans( TS1, TnoSubst ) = TS1 .
@@ -152,7 +165,7 @@ mod `CREOL-SYMBOLIC' is
     ceq getThis(S) = toString(S["this"]) if $hasMapping(S, "this") .
     eq  getThis(S) = "global" [owise] .
     ceq getLabel(S) = toString(S[".label"]) if $hasMapping(S, ".label") .
-    ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
+---    ceq getLabel(S) = toString(S["this"]) if $hasMapping(S, "this") .
     eq  getLabel(S) = "nolabel" [owise] .
 
     eq size(TS1) = size (TS1, 0) .
@@ -166,6 +179,10 @@ mod `CREOL-SYMBOLIC' is
     eq toTrans(noSubst) = TnoSubst .
     eq toTrans( ( V1 |-> E1, S) ) = insert( V1, E1, toTrans(S) ) .
 
+    op toTrans : ExprList -> TSubst .
+    eq toTrans(emp) = TnoSubst . 
+    eq toTrans(EL) = "el" |> list(EL) .
+
 --- combine assignment transitions
     eq getParamsR( TnoSubst , F, EL) = EL .
     eq getParamsR( TS1 , F , EL ) 
@@ -176,18 +193,5 @@ mod `CREOL-SYMBOLIC' is
 --- instances.  if the list of params is empty`,' the call is ignored
     eq insertPassing( V1 , emp , TS1 ) = TS1 .
     eq insertPassing( V1 , EL , TS1 ) = insert(V1, list(EL), TS1) .
-
---- examples TODO: change examples to test cases
---- EXAMPLE rew renameLHS ( ( "s" |-> int(4), "d" |-> int(4) ) , "pre", ( "s" |> "sd", "ff" |> "fs") ) .
---- example rew renameRHS( genRenameHelper( ("sd" |-> int(0) ), "pre" ) , ( "s" |> "+"( "sd" :: int(2) ), "ff" |> "fs") ) .
---- EXAMPLE: rew renTrans( "s" |-> int(3), "f" |-> int(4) , ( "s" |> "f" ) ) .
---- Example rew renExpr( "s" |-> int(2), "f" |-> int(3), "+" ( "s" :: "f" ) ) .
---- EXAMPLE genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) .
---- EXAMPLE appending two assignments: rew appendTrans( genTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) , genTrans(assign("z" ; "x") )  ) .
---- EXAMPLE: rew insertValues(  ("y" |> "z" ) , ("x" |> "+" ("y" :: int(1) ) )) .
----          rew insertValues(  ("y" |> "z", "f" |> int(1) ) , ("x" |> "+" ("y" :: "f" ) )) .
---- EXAMPLE rew appendTrans( ( "x" |> "+"("x" :: int(1))), ("z" |> "x") ) .
----         rew appendTrans( ( "x" |> "+"("x" :: int(1))), ("z" |> "x", "x" |> int(3) ) ) .
---- EXAMPLE: rew insertTrans( ( "x" |> int(4) ), ("x" |> int(5), "y" |> int (4) ) ) .
 
 endm

@@ -101,7 +101,7 @@ ifdef(`WITH_TIME',
 
     eq get(M, CLASS(B, F), (MS, < M : Method | Param: AL, Att: S, Code: SL >), O, N, DL) =
         { "caller" |-> O, ".class" |-> str(B), ifdef(`WITH_UPDATE', `".stage" |-> int(F), ')
-          ".label" |-> N, ".method" |-> str(M), S | assign(AL ; DL) ; SL } .
+          ".label" |-> N, ".method" |-> str(M), S | MARKER("callmarker", DL)assign(AL ; DL) ; SL } .
     eq get(M, C, MS, O, N, DL) = notFound [owise] .
 
 

@@ -17,7 +17,7 @@ result State: {
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 22 >
+  Lcnt: 27 >
  
 < ob("main") : Start |
   Att: noSubst,
@@ -41,7 +41,7 @@ result State: {
     emp) >,
   Ocnt: 1 >
  
-<log From: 0 To: 22 Type: "lastrun"
+<log From: 0 To: 27 Type: "lastrun"
     Data:{skip ; new("var" ; "Hello" ; emp) ; assign("nolabel.var" ; ob(
     "Hello0")) ; call(".anon" ; "this" ; "init" ; emp) ; new("console" ;
     "Console" ; emp) ; assign("Hello0.console" ; ob("Console0")) ; call(".anon"

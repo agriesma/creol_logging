@@ -1,0 +1,50 @@
+***
+*** Datatypes.maude -- Test suite for the data types module.
+***
+*** Copyright (c) 2007
+***
+*** The purpose of this file is to create the files `prelude.creol'
+*** and `modelcheck.creol'.  These files have to be processed with
+*** m4, with either one of `CREOL' or `MODELCHECK' defined.
+***
+*** This program is free software; you can redistribute it and/or
+*** modify it under the terms of the GNU General Public License as
+*** published by the Free Software Foundation; either version 2 of the
+*** License, or (at your option) any later version.
+***
+*** This program is distributed in the hope that it will be useful, but
+*** WITHOUT ANY WARRANTY; without even the implied warranty of
+*** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*** General Public License for more details.
+***
+*** You should have received a copy of the GNU General Public License
+*** along with this program; if not, write to the Free Software
+*** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+*** 02111-1307, USA.
+***
+
+set show timing off .
+set show advise off .
+load creol-logginginterpreter
+
+
+rew getThis(("s" |-> int(2), "this" |-> ob("myglobal"))) .
+rew getLabel(("s" |-> int(2), "this" |-> ob("myglobal"))) .
+
+rew replacementMap(("s" |-> int(2), "this" |-> ob("myglobal")), ("f" |-> int(3), ".label" |-> label(ob("mymethod"), 1) ) ) .
+rew replacementMap(("s" |-> int(2)), ("f" |-> int(3), ".label" |-> label(ob("mymethod"), 1) ) ) .
+rew replacementMap(("s" |-> int(2), "this" |-> ob("myglobal")), ("f" |-> int(3) ) ) .
+rew replacementMap(("s" |-> int(2), "this" |-> ob("myglobal")), ("s" |-> int(2), "f" |-> int(3), ".label" |-> label(ob("mymethod"), 1) ) ) .
+
+rew replace ("&&"("<"("m" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("m" :: "mrate"))), "m", "nte") .
+
+rew renExpr( ("s" |-> int(2), "this" |-> ob("myglobal")), ("f" |-> int(3), ".label" |-> label(ob("mymethod"), 1) ), "+" ( "s" :: "f" ) ) .
+rew renExpr( ("s" |-> int(2)), ("f" |-> int(3), ".label" |-> label(ob("mymethod"), 1) ), "+" ( "s" :: "f" ) ) .
+rew renExpr( ("s" |-> int(2), "this" |-> ob("myglobal")), ("f" |-> int(3)), "+" ( "s" :: "f" ) ) .
+
+rew getTrans(assign("x" ; "+" ("x" :: "d" ) ), "x" |-> int(4), "d" |-> int(3) ) .
+rew appendTrans( getTrans(assign("x" ; "+" ("x" :: int(1) ) ) ) , getTrans(assign("z" ; "x") )  ) .
+rew appendTrans( ( "x" |> "+"("x" :: int(1))), ("z" |> "x", "x" |> int(3) ) ) .
+
+
+quit

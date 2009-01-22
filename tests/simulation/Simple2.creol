@@ -1,0 +1,48 @@
+/*
+ * Hello.creol -- Approximation of an hello world example.
+ *
+ * This file is part of creoltools
+ *
+ * Written and Copyright (c) 2007 by Marcel Kyas
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+interface Console
+begin
+  with Any op print(in result: String, repetitions : Int )
+end
+
+class Console implements Console
+begin
+  var output : List[String] := nil
+  with Any op print(in newstring: String, repetitions : Int) == 
+    if (repetitions > 0 ) then
+       output := output |- newstring ;
+       repetitions := repetitions - 1 ;
+        if (repetitions > 0 ) then
+          output := output |- newstring
+        end
+    end
+end
+
+class Hello ( repetitions_init : Int)
+begin
+  var console: Console
+  op init == console := new Console
+  op run == 
+    var x : Int;
+    x := repetitions_init; 
+    console.print("hello, world", x;)
+end

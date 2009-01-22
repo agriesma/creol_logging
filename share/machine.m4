@@ -74,14 +74,11 @@ ifdef(`LOGGING', dnl
   ')define(`POSTLOG', `< ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: logcnt + 1 >
   <log From: logcnt To: ( logcnt + 1 ) Type: $2 Data: { $1 | $3 | $4 }  Att: noSubst  Label: getLabel((L,S)) > 
   ')
-define(`MARKER', `$marker( $1 ) ; ')
-define(`RMARKER', `$rmarker( $1 , $2 ) ; ')'
 var logcnt : Nat .
-include(`logging.m4'),dnl
+include(`logging.m4')',dnl
 `define(`PRELOG', `')'
 `define(`POSTLOG', `')' 
-`define(`MARKER', `')'
-`define(`RMARKER', `')' )dnl
+ )dnl
 
 ifdef(`MODELCHECK',dnl
   op label : Oid Oid String DataList -> Label [ctor ``format'' (! o)] .
@@ -243,12 +240,11 @@ ifdef(`LOGGING',dnl
 --- record an await whose condition is not fulfilled
 crl 
   { PRELOG`'dnl
-  `< O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN ' }
+  `< O : C | Att: S, Pr: idle , PrQ: W, { L | await E ; SL }, Lcnt: F > CN ' }
   =>
-  { POSTLOG(`await E', `"blocked await"', TnoSubst, `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > ' }
----  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'
-  if `not EVALGUARD(E, (S :: L), CN, T) asBool'
+  { POSTLOG(`$bawait E', `"blocked await"', TnoSubst, `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
+  `< O : C | Att: S, Pr: idle , PrQ: W, { L | $bawait E ; SL } , Lcnt: F > CN ' }
+  if `EVALGUARD(E, (S :: L), CN, T) asBool =/= true'
   `[label blockedawait]' .
 
 crl 
@@ -256,7 +252,7 @@ crl
   `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > CN ' }
   =>
  {  POSTLOG(`await E', `"await"', TnoSubst, `"eq" |> renExpr(S, L, (E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'}
+  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN '}
   if `EVALGUARD(E, (S :: L), CN, T) asBool'
   `[label notawait]' .
 
@@ -274,7 +270,6 @@ eq
   =
   < O : C | Att: S, Pr: { L | await ?(L[A]) ; SL }, PrQ: W, Lcnt: F >
   .
-
 
 --- Schedule a new process for execution, if it is ready.
 ---
@@ -307,7 +302,7 @@ rl
   < O : C |  Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W, Lcnt: F >
   comp(N, DL)
   =>
-  < O : C |  Att: S, Pr: { L | RMARKER("receive return from " + toString(N), toString(N) )assign(AL ; DL) ; SL }, PrQ: W, Lcnt: F >
+  < O : C |  Att: S, Pr: { L | RMARKER("receive return from " + toString(N), DL, toString(N) )assign(AL ; DL) ; SL }, PrQ: W, Lcnt: F >
   comp(N, DL)
   [label receive-comp] .
 
@@ -531,12 +526,12 @@ PRELOG`'dnl
   < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
   CLOCK'dnl
 ,dnl
-POSTLOG(`new (A ; B ; EL)', `"create"', getTrans(new(A ; B ; EL ), S, L ), `"dest" |> B + string(G, 10) ' )dnl
+POSTLOG(`new (A ; B ; EL)', `"create"', getTrans(new(A ; B ; EL ), S, L ), `"dest" |> toString(label(O, F) ) ' )dnl
 `< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: (s F) >
   <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
   < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
   findAttr(newId(B`,' G), I, S1, 
-    MARKER("createmarker " + B + string(G, 10))ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S,  L), T)),
+    MARKER("createmarker " + toString(label(O, F) ), EL)ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S,  L), T)),
     { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
     free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK',dnl
 `[label new-object]')

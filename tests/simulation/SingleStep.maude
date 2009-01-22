@@ -1,0 +1,2495 @@
+load creol-logginginterpreter
+
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 24 To: 25 Type: "assign"
+    Data:{assign("Hello0-3.newstring", "Hello0-3.repetitions" ; str(
+    "hello, world") :: int(2)) | 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-3.repetitions" |> int(2) | TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 25 To: 26 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+<log From: 26 To: 27 Type: "assign"
+    Data:{assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) | 
+  "Console0.output" |> "|-"("Console0.output" :: "Hello0-3.newstring") |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 27 To: 28 Type: "assign"
+    Data:{assign("Hello0-3.repetitions" ; "-"("Hello0-3.repetitions" :: int(
+    1))) | 
+  "Hello0-3.repetitions" |> "-"("Hello0-3.repetitions" :: int(1)) |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 28 To: 29 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+<log From: 29 To: 30 Type: "assign"
+    Data:{assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) | 
+  "Console0.output" |> "|-"("Console0.output" :: "Hello0-3.newstring") |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 30 To: 31 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 31 To: 32 Type: "$marker"
+    Data:{$marker("receive return from Hello0-3", emp) | TnoSubst | 
+  "dest" |> "returnHello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 32 To: 33 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-2"}Att: noSubst Label: "Hello0-2" >
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" > 
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" > 
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" > 
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" > 
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+} .
+rew {
+ 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    > 
+
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+} .
+
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 24 To: 25 Type: "assign"
+    Data:{assign("Hello0-3.newstring", "Hello0-3.repetitions" ; str(
+    "hello, world") :: int(2)) | 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-3.repetitions" |> int(2) | TnoSubst}Att: noSubst Label: "Hello0-3" >
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 24 To: 25 Type: "assign"
+    Data:{assign("Hello0-3.newstring", "Hello0-3.repetitions" ; str(
+    "hello, world") :: int(2)) | 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-3.repetitions" |> int(2) | TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 25 To: 26 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 24 To: 25 Type: "assign"
+    Data:{assign("Hello0-3.newstring", "Hello0-3.repetitions" ; str(
+    "hello, world") :: int(2)) | 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-3.repetitions" |> int(2) | TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 25 To: 26 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+<log From: 26 To: 27 Type: "assign"
+    Data:{assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) | 
+  "Console0.output" |> "|-"("Console0.output" :: "Hello0-3.newstring") |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 24 To: 25 Type: "assign"
+    Data:{assign("Hello0-3.newstring", "Hello0-3.repetitions" ; str(
+    "hello, world") :: int(2)) | 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-3.repetitions" |> int(2) | TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 25 To: 26 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+<log From: 26 To: 27 Type: "assign"
+    Data:{assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) | 
+  "Console0.output" |> "|-"("Console0.output" :: "Hello0-3.newstring") |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 27 To: 28 Type: "assign"
+    Data:{assign("Hello0-3.repetitions" ; "-"("Hello0-3.repetitions" :: int(
+    1))) | 
+  "Hello0-3.repetitions" |> "-"("Hello0-3.repetitions" :: int(1)) |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 24 To: 25 Type: "assign"
+    Data:{assign("Hello0-3.newstring", "Hello0-3.repetitions" ; str(
+    "hello, world") :: int(2)) | 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-3.repetitions" |> int(2) | TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 25 To: 26 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+<log From: 26 To: 27 Type: "assign"
+    Data:{assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) | 
+  "Console0.output" |> "|-"("Console0.output" :: "Hello0-3.newstring") |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 27 To: 28 Type: "assign"
+    Data:{assign("Hello0-3.repetitions" ; "-"("Hello0-3.repetitions" :: int(
+    1))) | 
+  "Hello0-3.repetitions" |> "-"("Hello0-3.repetitions" :: int(1)) |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 28 To: 29 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+} .
+rew { 
+< ob("log") : "" |
+  Att: noSubst,
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 33 >
+  
+<log From: 0 To: 0 Type: "lastrun"
+    Data:{skip | TnoSubst | TnoSubst}Att: noSubst Label: "lastrun" >
+ 
+<log From: 0 To: 1 Type: "create"
+    Data:{new("var" ; "Hello" ; int(2)) | 
+  "0" |> int(2) | 
+  "dest" |> "main-0"}Att: noSubst Label: "nolabel" >
+ 
+<log From: 1 To: 2 Type: "$marker"
+    Data:{$marker("call createmarker main-0", int(2)) | 
+  "el" |> list(int(2)) | 
+  "dest" |> "main-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 2 To: 3 Type: "assign"
+    Data:{assign("repetitions_init" ; int(2)) | 
+  "repetitions_init" |> int(2) | TnoSubst}Att: noSubst Label: "main-0" >
+ 
+<log From: 3 To: 4 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 4 To: 5 Type: "assign"
+    Data:{assign("nolabel.var" ; ob("Hello0")) | 
+  "nolabel.var" |> ob("Hello0") | TnoSubst}Att: noSubst Label: "nolabel" >
+ 
+<log From: 5 To: 6 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 6 To: 7 Type: "create"
+    Data:{new("console" ; "Console" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 7 To: 8 Type: "$marker"
+    Data:{$marker("call createmarker Hello0-1", emp) | TnoSubst | 
+  "dest" |> "Hello0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 8 To: 9 Type: "assign"
+    Data:{assign("Hello0.console" ; ob("Console0")) | 
+  "Hello0.console" |> ob("Console0") | TnoSubst}Att: noSubst Label: "Hello0-0"
+    >
+ 
+<log From: 9 To: 10 Type: "call"
+    Data:{call(".anon" ; "this" ; "init" ; emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 10 To: 11 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "Hello0-0" >
+ 
+<log From: 11 To: 12 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 12 To: 13 Type: "assign"
+    Data:{assign("output" @ "Console" ; list(emp)) | 
+  "Console0.output" |> list(emp) | TnoSubst}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 13 To: 14 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Console0-0" >
+ 
+<log From: 14 To: 15 Type: "$marker"
+    Data:{$marker("receive return from Console0-0", emp) | TnoSubst | 
+  "dest" |> "returnConsole0-0"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 15 To: 16 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Hello0-1" >
+ 
+<log From: 16 To: 17 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Console0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 17 To: 18 Type: "return"
+    Data:{return(emp) | TnoSubst | 
+  "dest" |> "returnConsole0-1"}Att: noSubst Label: "Console0-1" >
+ 
+<log From: 18 To: 19 Type: "$marker"
+    Data:{$marker("receive return from Hello0-0", emp) | TnoSubst | 
+  "dest" |> "returnHello0-0"}Att: noSubst Label: "main-0" >
+ 
+<log From: 19 To: 20 Type: "call"
+    Data:{call(".anon" ; "this" ; "run" ; emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "main-0" >
+ 
+<log From: 20 To: 21 Type: "$marker"
+    Data:{$marker("call callmarker", emp) | TnoSubst | 
+  "dest" |> "Hello0-2"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 21 To: 22 Type: "assign"
+    Data:{assign("Hello0-2.x" ; "repetitions_init") | 
+  "Hello0-2.x" |> "repetitions_init" | TnoSubst}Att: noSubst Label: "Hello0-2"
+    >
+ 
+<log From: 22 To: 23 Type: "call"
+    Data:{call("label:0" ; "console" ; "print" ; str("hello, world") :: "x") | 
+  "0" |> str("hello, world"), 
+  "1" |> "Hello0-2.x" | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-2" >
+ 
+<log From: 23 To: 24 Type: "$marker"
+    Data:{$marker("call callmarker", str("hello, world") :: int(2)) | 
+  "el" |> list(str("hello, world") :: int(2)) | 
+  "dest" |> "Hello0-3"}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 24 To: 25 Type: "assign"
+    Data:{assign("Hello0-3.newstring", "Hello0-3.repetitions" ; str(
+    "hello, world") :: int(2)) | 
+  "Hello0-3.newstring" |> str("hello, world"), 
+  "Hello0-3.repetitions" |> int(2) | TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 25 To: 26 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+<log From: 26 To: 27 Type: "assign"
+    Data:{assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) | 
+  "Console0.output" |> "|-"("Console0.output" :: "Hello0-3.newstring") |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 27 To: 28 Type: "assign"
+    Data:{assign("Hello0-3.repetitions" ; "-"("Hello0-3.repetitions" :: int(
+    1))) | 
+  "Hello0-3.repetitions" |> "-"("Hello0-3.repetitions" :: int(1)) |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+<log From: 28 To: 29 Type: "ifthenelse"
+    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
+  "eq" |> ">"("Hello0-3.repetitions" :: int(0))}Att: noSubst Label: "Hello0-3"
+    >
+ 
+<log From: 29 To: 30 Type: "assign"
+    Data:{assign("Console0.output" ; "|-"("Console0.output" ::
+    "Hello0-3.newstring")) | 
+  "Console0.output" |> "|-"("Console0.output" :: "Hello0-3.newstring") |
+    TnoSubst}Att: noSubst Label: "Hello0-3" >
+ 
+} .

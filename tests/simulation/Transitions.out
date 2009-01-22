@@ -1,0 +1,77 @@
+==========================================
+rewrite in CREOL-SIMULATOR : getThis(("s" |-> int(2), "this" |-> ob(
+    "myglobal"))) .
+result String: "myglobal"
+==========================================
+rewrite in CREOL-SIMULATOR : getLabel(("s" |-> int(2), "this" |-> ob(
+    "myglobal"))) .
+result String: "nolabel"
+==========================================
+rewrite in CREOL-SIMULATOR : replacementMap(("s" |-> int(2), "this" |-> ob(
+    "myglobal")), (".label" |-> label(ob("mymethod"), 1), "f" |-> int(3))) .
+result TSubst: 
+  ".label" |> "mymethod-1..label", 
+  "f" |> "mymethod-1.f", 
+  "s" |> "myglobal.s", 
+  "this" |> "myglobal.this"
+==========================================
+rewrite in CREOL-SIMULATOR : replacementMap("s" |-> int(2), (".label" |->
+    label(ob("mymethod"), 1), "f" |-> int(3))) .
+result TSubst: 
+  ".label" |> "mymethod-1..label", 
+  "f" |> "mymethod-1.f", 
+  "s" |> "global.s"
+==========================================
+rewrite in CREOL-SIMULATOR : replacementMap(("s" |-> int(2), "this" |-> ob(
+    "myglobal")), "f" |-> int(3)) .
+result TSubst: 
+  "f" |> "nolabel.f", 
+  "s" |> "myglobal.s", 
+  "this" |> "myglobal.this"
+==========================================
+rewrite in CREOL-SIMULATOR : replacementMap(("s" |-> int(2), "this" |-> ob(
+    "myglobal")), ("s" |-> int(2), ".label" |-> label(ob("mymethod"), 1), "f"
+    |-> int(3))) .
+result TSubst: 
+  ".label" |> "mymethod-1..label", 
+  "f" |> "mymethod-1.f", 
+  "s" |> "mymethod-1.s", 
+  "this" |> "myglobal.this"
+==========================================
+rewrite in CREOL-SIMULATOR : replace("&&"("<"("m" :: "mmax") :: "<"("-"("mfree"
+    :: "t") :: "/"("m" :: "mrate"))), "m", "nte") .
+result Expr: "&&"("<"("nte" :: "mmax") :: "<"("-"("mfree" :: "t") :: "/"("nte"
+    :: "mrate")))
+==========================================
+rewrite in CREOL-SIMULATOR : renExpr(("s" |-> int(2), "this" |-> ob(
+    "myglobal")), (".label" |-> label(ob("mymethod"), 1), "f" |-> int(3)), "+"(
+    "s" :: "f")) .
+result Expr: "+"("myglobal.s" :: "mymethod-1.f")
+==========================================
+rewrite in CREOL-SIMULATOR : renExpr("s" |-> int(2), (".label" |-> label(ob(
+    "mymethod"), 1), "f" |-> int(3)), "+"("s" :: "f")) .
+result Expr: "+"("global.s" :: "mymethod-1.f")
+==========================================
+rewrite in CREOL-SIMULATOR : renExpr(("s" |-> int(2), "this" |-> ob(
+    "myglobal")), "f" |-> int(3), "+"("s" :: "f")) .
+result Expr: "+"("myglobal.s" :: "nolabel.f")
+==========================================
+rewrite in CREOL-SIMULATOR : getTrans(assign("x" ; "+"("x" :: "d")), "x" |->
+    int(4), "d" |-> int(3)) .
+result TBinding: 
+  "global.x" |> "+"("global.x" :: "nolabel.d")
+==========================================
+rewrite in CREOL-SIMULATOR : appendTrans(getTrans(assign("x" ; "+"("x" :: int(
+    1)))), getTrans(assign("z" ; "x"))) .
+result TSubst: 
+  "x" |> "+"("x" :: int(1)), 
+  "z" |> "+"("x" :: int(1))
+==========================================
+rewrite in CREOL-SIMULATOR : appendTrans(
+  "x" |> "+"("x" :: int(1)), (
+  "x" |> int(3), 
+  "z" |> "x")) .
+result TSubst: 
+  "x" |> int(3), 
+  "z" |> "+"("x" :: int(1))
+Bye.

@@ -11,18 +11,18 @@ vars G1 G2 G3 F1 : Nat .
 --- returnmarker`,' handeled like normal marker`,' but label is different
 rl
    PRELOG`'dnl
-   < O : C | Att: S`,' Pr: { L | $rmarker(CC, CLabel) ; SL }`,' PrQ: W`,' Lcnt: F >
+   < O : C | Att: S`,' Pr: { L | $rmarker(CC, EL, CLabel) ; SL }`,' PrQ: W`,' Lcnt: F >
    =>
-   POSTLOG(` $marker(CC) ', `"$marker"', `TnoSubst', "dest" |> "return" + CLabel )dnl
+   POSTLOG(` $marker(CC, EL) ', `"$marker"', `toTrans(EL)', "dest" |> "return" + CLabel )dnl
    < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Lcnt: F > 
    [label returnmarker] .
 
 --- normal marker for calls
 crl
    PRELOG`'dnl
-   < O : C | Att: S`,' Pr: { L | $marker(CC) ; SL }`,' PrQ: W`,' Lcnt: F >
+   < O : C | Att: S`,' Pr: { L | $marker(CC, EL) ; SL }`,' PrQ: W`,' Lcnt: F >
    =>
-   POSTLOG(` $marker("call " + CC) ', `"$marker"', `TnoSubst', ( "dest" |> getLabel((L,S)) ) )dnl
+   POSTLOG(` $marker("call " + CC, EL) ', `"$marker"', `toTrans(EL)', ( "dest" |> getLabel((L,S)) ) )dnl
    < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Lcnt: F > 
    if $hasMapping(L`,' ".label")
    [label marker] .
@@ -30,9 +30,9 @@ crl
 --- marker for calls from the initialing code that is introduced by the interpreter
 crl
    PRELOG`'dnl
-   < O : C | Att: S`,' Pr: { L | $marker(CC) ; SL }`,' PrQ: W`,' Lcnt: F >
+   < O : C | Att: S`,' Pr: { L | $marker(CC, EL) ; SL }`,' PrQ: W`,' Lcnt: F >
    =>
-   POSTLOG(` $marker("internal " + CC) ', `"$marker"', `toTrans(L)', ( "dest" |> getThis(S) ) )dnl
+   POSTLOG(` $marker("internal " + CC, EL) ', `"$marker"', `toTrans(EL)', ( "dest" |> getThis(S) ) )dnl
    < O : C | Att: S`,' Pr: { L | SL }`,'  PrQ: W`,' Lcnt: F > 
    if $hasMapping(S`,' "this") and not $hasMapping(L`,' ".label")
    [label interpretermarker] .
@@ -42,6 +42,8 @@ crl
 ----------------------------------------------------------------------
 
 
+op unpack : Expr -> ExprList .
+eq unpack(list(EL)) = EL .
 
 --- an empty marker is simply removed - ther is no according assign
 eq
@@ -60,7 +62,7 @@ eq
   =
   <log From: 0 To: ( G + 1 )  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
   <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; TS2[TS4["dest"]] ) | 
-   getTrans(assign(AL ; TS2[TS4["dest"]] )) | TS4 } Att: S1 Label: C > .
+   getTrans(assign(AL ; unpack(TS2[TS4["dest"]] ))) | TS4 } Att: S1 Label: C > .
 
 --- marker that is not followed by a related assign - increase the
 --- marker id until the correct assign is found
@@ -79,27 +81,27 @@ rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "ifthenelse"    Data: {  SL |  TS3 |  "eq" |> E } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "ifthenelse" Data: { SL | TS3 |  "eq" |> replace(E, TS1) } Att: S Label: C > 
+  <log From: G To: G1 Type: "ifthenelse" Data: { SL | TS3 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
-  <choice Number: G Type: "ifthenelse" Expression: replace(E, TS1) > 
+  <choice Number: G Type: "ifthenelse" Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
 rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "await"    Data: {  SL |  TS3 |  "eq" |> E } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "await" Data: { SL | TS1 |  "eq" |> replace(E, TS1) } Att: S Label: C > 
+  <log From: G To: G1 Type: "await" Data: { SL | TS1 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
-  <choice Number: G Type: "await" Expression: replace(E, TS1) > 
+  <choice Number: G Type: "await" Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
 rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "blocked await"    Data: {  SL |  TS3 |  "eq" |> E } Att:  S Label: C >
   =>
-  <log From: G To: G1 Type: "blocked await" Data: { SL | TS1 |  "eq" |> replace(E, TS1) } Att: S Label: C > 
+  <log From: G To: G1 Type: "blocked await" Data: { SL | TS1 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
-  <choice Number: G Type: "blocked await" Expression: replace(E, TS1) > 
+  <choice Number: G Type: "blocked await" Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
 rl 
