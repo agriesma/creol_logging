@@ -29,7 +29,7 @@ interface Radio
 begin
   with Network
     op send (in data: Data)
-    op send (in update: Update)
+    op send (in update: Data)
   with Controller
     op write (in data: Data)
     op read (out data: Data)

@@ -1240,10 +1240,15 @@ end
 
 (** Abstract syntax of variable declarations. *)
 module VarDecl =
-  struct
-    type t =
-      { name: string; var_type: Type.t; init: Expression.t option }
-  end
+struct
+  type t =
+    { name: string;
+      var_type: Type.t;
+      init: Expression.t option;
+      file: string;
+      line: int;
+    }
+end
 
 
 (** Abstract syntax of method declarations and definitions *)
@@ -1267,7 +1272,9 @@ module Method =
 	ensures: Expression.t;
         vars: VarDecl.t list;
         body: Statement.t option;
-	location: string
+	location: string;
+        file: string;
+        line: int
       }
 
     (* This is the empty method.  It is used by the type checker
@@ -1277,7 +1284,7 @@ module Method =
       { name = ""; coiface = Type.Internal; inpars = []; outpars = [];
 	requires = Expression.Bool(Expression.make_note (), true);
 	ensures = Expression.Bool(Expression.make_note (), true);
-	vars = []; body = None; location = "" }
+	vars = []; body = None; location = ""; file = ""; line = 0 }
 
     let compare m n =
       let r1 = String.compare m.name n.name in
@@ -1304,9 +1311,10 @@ module Method =
 	  | () when r4 <> 0 -> r4
           | () -> 0
 
-    let make_decl n inp outp r e =
+    let make_decl n inp outp r e file line =
       { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
-	requires = r; ensures = e; vars = []; body = None; location = "" }
+	requires = r; ensures = e; vars = []; body = None; location = "";
+        file = file; line = line }
 
     let set_cointerface cf m = { m with coiface = cf }
 
@@ -1414,7 +1422,9 @@ module With = struct
   type t = {
     co_interface: Type.t;
     methods: Method.t list;
-    invariants: Expression.t list
+    invariants: Expression.t list;
+    file: string;
+    line: int
   }
 
 end
@@ -1454,6 +1464,11 @@ struct
 	line: int;
       }
 
+  let empty =
+    { name = ""; parameters = []; inherits = []; contracts = [];
+      implements = []; attributes = []; invariants = []; with_defs = [];
+      pragmas = []; file = ""; line = 0 }
+
   (** Whether the class is hidden. *)
   let hidden_p c = Pragma.hidden_p c.pragmas
 
@@ -1490,6 +1505,15 @@ struct
 	  Not_found ->
 	    find cls.parameters
 
+  (** Add a new method definition to a class. Assumes that there is no
+      other method definition with the same name and signature. *)
+  let add_method_to_class cls mtd =
+    { cls with with_defs =
+               { With.co_interface = mtd.Method.coiface;
+                 invariants = [];
+                 methods = [mtd];
+                 file = ""; line = 0 }::cls.with_defs; }
+                 
 
 end
 
@@ -1505,7 +1529,10 @@ struct
       { name: string;
 	inherits: Inherits.t list;
 	with_decls: With.t list;
-        pragmas: Pragma.t list }
+        pragmas: Pragma.t list;
+        file: string;
+        line: int;
+      }
 
   (** Whether the interface is hidden. *)
   let hidden_p i = Pragma.hidden_p i.pragmas
@@ -1634,7 +1661,6 @@ struct
 end
 
 
-
 (** Abstract syntax of Declararions. *)
 module Declaration =
 struct
@@ -1740,8 +1766,7 @@ struct
 
 
   let replace_class program cls =
-    let name = cls.Class.name in
-      add_class (remove_class program name) cls
+    add_class (remove_class program cls.Class.name) cls
     
 
 
@@ -2257,7 +2282,10 @@ struct
 
   (** Find all definitions of a method called [name] that matches the
       signature [(coiface, ins, outs)] in class [cls] and its
-      super-classes.  *)
+      super-classes.
+
+      Used by the type checker to find all suitable method definitions
+      or method declarations. *)
   let find_methods_in_class ~program ~cls ~name (coiface, ins, outs) =
     let asco = match coiface with None -> Type.any | Some c -> c in
     let rec find c =

@@ -63,7 +63,7 @@ let fresh_future () =
 *)
 let pass input =
   let future_decl l t =
-    { VarDecl.name = l; var_type = t; init = None }
+    { VarDecl.name = l; var_type = t; init = None; file = ""; line = 0 }
   in
   let rec expand_statement future_decls =
     function
@@ -316,7 +316,8 @@ let pass input =
 	  inpars = []; outpars = [];
 	  requires = Expression.Bool (Expression.make_note (), true);
 	  ensures = Expression.Bool (Expression.make_note (), true);
-	  vars = []; body = Some stmt; location = c.Class.name }
+	  vars = []; body = Some stmt; location = c.Class.name;
+          file = ""; line = 0 }
       in
 
 	(* We use the invariant that each class declaration has at
@@ -375,7 +376,7 @@ let pass input =
 	  { With.co_interface = Type.Internal;
 	    methods = [ make_method "init" assignment ;
 			make_method "run" (Skip (Statement.make_note ()))];
-	    invariants = [] } :: w
+	    invariants = []; file =""; line = 0 } :: w
     in
 
       (* To expand a class, we add an init and a run method if it is

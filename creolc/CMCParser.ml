@@ -321,10 +321,10 @@ let get_process_queue =
     | _ -> assert false
 
 let vardecl_of_binding (n, i) =
-  { VarDecl.name = n; var_type = Type.data; init = Some i }
+  { VarDecl.name = n; var_type = Type.data; init = Some i; file = ""; line = 0 }
 
 let vardecl_of_name n =
-  { VarDecl.name = n; var_type = Type.data; init = None }
+  { VarDecl.name = n; var_type = Type.data; init = None; file = ""; line = 0 }
 
 let parse name input =
   let build_term oid cid props =
@@ -344,7 +344,8 @@ let parse name input =
 		  invariants = [] ;
 		  with_defs = [{ With.co_interface = Type.any;
 				 methods = m;
-				 invariants = []}] ;
+				 invariants = [];
+                                 file = ""; line = 0}] ;
 		  pragmas = [];
 		  file = "";
 		  line = 0 }
@@ -354,14 +355,16 @@ let parse name input =
 	  and a = get_attr (PropMap.find "Att" props)
 	  in
 	    Mtd { Method.name = oid;
-		coiface = Type.any;
-		inpars = List.map vardecl_of_name p;
-		outpars = [];
-		requires = Expression.Bool (Expression.make_note (), true);
-		ensures = Expression.Bool (Expression.make_note (), true);
-		vars = (List.map vardecl_of_binding a);
-		body = Some c;
-		location = "" }
+		  coiface = Type.any;
+		  inpars = List.map vardecl_of_name p;
+		  outpars = [];
+		  requires = Expression.Bool (Expression.make_note (), true);
+		  ensures = Expression.Bool (Expression.make_note (), true);
+		  vars = (List.map vardecl_of_binding a);
+		  body = Some c;
+		  location = "";
+		  file = "";
+                  line = 0 }
       | t ->
 	  let a = get_attr (PropMap.find "Att" props)
 	  and p = get_process (PropMap.find "Pr" props)

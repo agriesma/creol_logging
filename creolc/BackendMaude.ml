@@ -398,7 +398,9 @@ let emit subtarget out_channel input =
 	[] -> print_string "noSubst" 
       | lst -> separated_list of_vardecl print_comma lst
   and of_method cls m =
-    let wildcard = { VarDecl.name = "_"; var_type = Type.data; init = None } in
+    let wildcard = { VarDecl.name = "_"; var_type = Type.data; init = None;
+                     file = ""; line = 0; }
+    in
       open_box 2 ;
       print_string ("< \"" ^ m.Method.name ^ "\" : Method | Param: ");
       of_parameter_list m.Method.inpars ;

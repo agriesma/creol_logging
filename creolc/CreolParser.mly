@@ -160,7 +160,8 @@ interfacedecl:
         pr = list(pragma)
         BEGIN ioption(preceded(INV, expression)) w = list(with_decl) END
         { { Interface.name = n; inherits = inherits i;
-	    with_decls = upd_method_locs n w; pragmas = pr } }
+	    with_decls = upd_method_locs n w; pragmas = pr;
+	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | INTERFACE error
 	{ signal_error $startpos "syntax error in interface declaration" }
     | INTERFACE CID error

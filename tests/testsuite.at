@@ -387,11 +387,11 @@ TEST_CREOLC_TYPECHECK([Nat2],
 ]])
 
 TEST_CREOLC_TYPECHECK([Nat3],
-[[Nat3.creol:22: type Nat of input parameter x does not exist
+[[Nat3.creol:24: type Nat of input parameter x does not exist
 ]])
 
 TEST_CREOLC_TYPECHECK([Nat4],
-[[Nat4.creol:22: type Nat of output parameter x does not exist
+[[Nat4.creol:24: type Nat of output parameter x does not exist
 ]])
 
 TEST_CREOLC_TYPECHECK([Nil], [], [])

@@ -65,9 +65,9 @@ inherits:
 
 %public with_decl:
       WITH c = creol_type l = nonempty_list(method_decl) i = list(invariant)
-     { { With.co_interface = c;
-	 methods = List.map (Method.set_cointerface c) l;
-	 invariants = i } }
+        { { With.co_interface = c;
+	    methods = List.map (Method.set_cointerface c) l; invariants = i;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | WITH error
 	{ signal_error $startpos "syntax error in with block declaration" }
     | WITH CID error
@@ -75,13 +75,14 @@ inherits:
 
 %public anon_with_def:
     l = nonempty_list(method_def) i = list(invariant)
-    { [ { With.co_interface = Type.Internal; methods = l; invariants = i } ] }
+    { [ { With.co_interface = Type.Internal; methods = l; invariants = i;
+          file  = $startpos.pos_fname; line = $startpos.pos_lnum } ] }
 
 %public with_def:
       WITH c = creol_type l = nonempty_list(method_def) i = list(invariant)
-    { { With.co_interface = c;
-	methods = List.map (Method.set_cointerface c) l;
-	invariants = i } }
+        { { With.co_interface = c;
+	    methods = List.map (Method.set_cointerface c) l; invariants = i;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 %public attribute:
       VAR l = separated_nonempty_list(COMMA, vardecl)
@@ -97,7 +98,8 @@ vardecl:
 
 %public vardecl_no_init:
       i = id COLON t = creol_type
-        { { VarDecl.name = i; VarDecl.var_type = t; VarDecl.init = None } }
+        { { VarDecl.name = i; var_type = t; init = None;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | id error
 	{ signal_error $startpos "syntax error in variable declaration" }
     | id COLON error
@@ -116,6 +118,7 @@ method_decl:
 	    | Some x -> x
 	  in
 	    Method.make_decl i (fst p) (snd p) r' e'
+              $startpos.pos_fname $startpos.pos_lnum
 	}
     | METHOD error
 	{ signal_error $startpos "syntax error in method declaration" }

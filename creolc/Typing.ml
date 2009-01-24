@@ -1138,7 +1138,7 @@ let typecheck tree: Program.t =
 	  let i' =
 	    let l = [LhsId (Expression.make_note (), n)]
 	    and r = [i]
-	    and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None }::res } }
+	    and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None; file = ""; line = 0 }::res } }
 	    in
 	    let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
 	      match s with
@@ -1146,21 +1146,18 @@ let typecheck tree: Program.t =
 		| _ -> assert false
 	  in
 	    type_check_inits env coiface
-	      ({ VarDecl.name = n; var_type = t; init = Some i' }::res) r
+	      ({ VarDecl.name = n; var_type = t; init = Some i'; file = ""; line = 0 }::res) r
   and type_check_variables env coiface meth =
     List.rev (type_check_inits env coiface [] meth.Method.vars)
   and type_check_method program cls coiface meth =
     let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
     let env' = { env with meth = { meth with Method.vars = [] } }  in
     let () =
-      let f d { VarDecl.name = n; var_type = t } =
-	if not (Program.type_p program t) then
-	  raise (Type_error (cls.Class.file, cls.Class.line,
-			     "type " ^ (Type.string_of_type t) ^ " of " ^ d ^
-			       " parameter " ^ n ^ " does not exist"))
-      in
-	List.iter (f "input") meth.Method.inpars ;
-	List.iter (f "output") meth.Method.outpars
+      if not
+        ((List.for_all (type_check_parameter "input" program) meth.Method.inpars) &&
+        (List.for_all (type_check_parameter "output" program) meth.Method.outpars))
+      then
+        exit 1
     in
     let r' = type_check_assertion env' coiface meth.Method.requires
     and e' = type_check_assertion env' coiface meth.Method.ensures
@@ -1178,7 +1175,7 @@ let typecheck tree: Program.t =
     in
     let () =
       if not (Program.interface_p program w.With.co_interface) then
-	raise (Type_error (cls.Class.file, cls.Class.line,
+	raise (Type_error (w.With.file, w.With.line,
 			   "cointerface " ^ coiface ^ " is not an interface"))
     in
     let i' =
@@ -1192,6 +1189,18 @@ let typecheck tree: Program.t =
     in
       { w with With.methods = m'; invariants = i' }
 
+  and type_check_parameter kind program vardecl =
+    if Program.type_p program vardecl.VarDecl.var_type then
+      true
+    else
+      begin
+	Messages.error vardecl.VarDecl.file vardecl.VarDecl.line
+	  ("type " ^ (Type.string_of_type vardecl.VarDecl.var_type) ^
+             " of " ^ kind ^ " parameter " ^ vardecl.VarDecl.name ^
+             " does not exist") ;
+	false
+      end
+
   (* A class is well typed, if it provides methods for all the
      interfaces it claims to implement, if the initialisation of all
      attributes are well-typed, and if all with-declarations are
@@ -1202,14 +1211,14 @@ let typecheck tree: Program.t =
 
   and type_check_class program cls =
 
-    let attribute_well_typed { VarDecl.name = n; var_type = t; init = i } =
-      if Program.type_p program t then
-	match i with
-	  | None -> 
-	      { VarDecl.name = n; var_type = t; init = i }
+    let attribute_well_typed vardecl =
+      if Program.type_p program vardecl.VarDecl.var_type then
+	match vardecl.VarDecl.init with
+	  | None ->
+              vardecl
 	  | Some init ->
 	      let i' =
-		let l = [LhsId (Expression.make_note (), n)]
+		let l = [LhsId (Expression.make_note (), vardecl.VarDecl.name)]
 		and r = [init]
 		and env =
 		  { program = program; cls = cls; meth = Method.empty;
@@ -1222,30 +1231,19 @@ let typecheck tree: Program.t =
 		    | Assign (_, _, [i']) -> i'
 		    | _ -> assert false
 	      in
-		{ VarDecl.name = n; var_type = t; init = Some i' }
+		{ vardecl with VarDecl.init = Some i' }
       else
 	raise (Type_error (cls.Class.file, cls.Class.line,
 			   "type " ^
-			     (Type.string_of_type t) ^ " of attribute " ^ n ^
-			     " does not exist"))
+			     (Type.string_of_type vardecl.VarDecl.var_type) ^
+                             " of attribute " ^ vardecl.VarDecl.name ^
+                             " does not exist"))
 
-    and parameter_well_typed { VarDecl.name = n; var_type = t } =
-      if Program.type_p program t then
-	true
-      else
-	begin
-	  Messages.error cls.Class.file cls.Class.line
-	    ("type " ^ (Type.string_of_type t) ^ " of class parameter " ^ n ^
-	       " does not exist") ;
-	  false
-	end
     in
       try
 	ignore (Program.superclasses program cls.Class.name) ;
 	let () =
-	  if (List.fold_left
-		(fun a v -> if parameter_well_typed v then a else a + 1)
-		0 cls.Class.parameters) > 0 then
+	  if not (List.for_all (type_check_parameter "class" program) cls.Class.parameters) then
 	    exit 1
 	in
 	let attributes' =
@@ -1284,7 +1282,19 @@ let typecheck tree: Program.t =
 	    exit 1
 
   and type_check_interface program iface =
-    iface
+    (** Type check an interface declaration. There is not much to do,
+        except that all types should be defined.
+
+        We can reuse type_check_with_def with an empty class, because the
+        method declarations in an interface do {i not} have method
+        bodies. *)
+    let with_decls' =
+      List.map (type_check_with_def program
+        { Class.empty with Class.file = iface.Interface.file;
+                           Class.line = iface.Interface.line })
+        iface.Interface.with_decls
+    in
+      { iface with Interface.with_decls = with_decls' }
   and type_check_declaration program =
     function
 	Declaration.Class c ->
