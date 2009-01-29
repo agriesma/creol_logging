@@ -475,6 +475,14 @@ TEST_CREOLC_TYPECHECK([CyclicClass],
 [*top*:0: class hierarchy has a cycle: A <: B <: C <: A
 ])
 
+TEST_CREOLC_TYPECHECK([Implements],
+[[Implements.creol:27: Class C does not provide a method m[ Any |  ->  ] declared in interface I
+]])
+
+TEST_CREOLC_TYPECHECK([Implements2],
+[Implements2.creol:22: Interface I not found
+])
+
 TEST_CREOLC_TYPECHECK([Missing],
 [[Missing.creol:27: Class Foo does not provide a method foo[ Any |  ->  ] declared in interface Foo
 ]])
