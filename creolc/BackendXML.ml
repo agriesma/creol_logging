@@ -735,6 +735,10 @@ let emit name tree =
           XmlTextWriter.write_attribute writer "name" s ;
 	  List.iter creol_type_to_xml l;
           XmlTextWriter.end_element writer
+      | Type.Future l ->
+	  XmlTextWriter.start_element writer "creol:future" ; 
+	  List.iter creol_type_to_xml l;
+          XmlTextWriter.end_element writer
       | Type.Tuple l ->
 	  XmlTextWriter.start_element writer "creol:tuple" ; 
 	  List.iter creol_type_to_xml l;

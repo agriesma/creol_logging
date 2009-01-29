@@ -427,6 +427,16 @@ TEST_CREOLC_TYPECHECK([Map3],
 
 TEST_CREOLC_TYPECHECK([Map4], [], [])
 
+TEST_CREOLC_TYPECHECK([Future], [], [])
+
+TEST_CREOLC_TYPECHECK([Future2], [], [])
+
+TEST_CREOLC_TYPECHECK([Future3], [], [])
+
+TEST_CREOLC_TYPECHECK([Future4], [], [])
+
+TEST_CREOLC_TYPECHECK([Future5], [], [])
+
 TEST_CREOLC_TYPECHECK([ExprFailure],
 [[ExprFailure.creol:24: expression has type [[String, Int] -> `_0] but expected is type \/ [[[Float, Float] -> Float], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]
   Cannot satisfy constraints: [[String, Int] -> `_0] <: \/ [[[Float, Float] -> Float], [[Int, Int] -> Int], [[Time, Duration] -> Time], [[Duration, Duration] -> Duration]]

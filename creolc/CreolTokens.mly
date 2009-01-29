@@ -55,6 +55,7 @@ i*)
 %token EQ NE LT LE GT GE
 %token TILDE AMPAMP BAR BARBAR HAT WEDGE VEE DLRARROW DARROW MAPSTO
 %token BACKSLASH UNDERSCORE
+%token FUTURE
 %token <string> CID ID STRING
 %token <bool> BOOL
 %token <Big_int.big_int>  INT

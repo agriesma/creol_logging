@@ -34,7 +34,7 @@
       <creol:type name="I"/>
      </creol:vardecl>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -95,7 +95,7 @@
           <creol:identifier name="l">
            <creol:expression-note file="AsyncRepl.creol" line="34">
             <creol:inferred-type>
-             <creol:typeapplication name="Label"/>
+             <creol:future/>
             </creol:inferred-type>
            </creol:expression-note>
           </creol:identifier>

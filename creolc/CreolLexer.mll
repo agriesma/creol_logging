@@ -114,6 +114,7 @@ rule token = parse
     | '|' { BAR }
     | '}' { RBRACE }
     | '~' { TILDE }
+    | "Label" { FUTURE }
     | "as" { AS }
     | "assert" { ASSERT }
     | "await" { AWAIT }

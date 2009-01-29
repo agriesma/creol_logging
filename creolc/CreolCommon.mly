@@ -432,6 +432,10 @@ binding:
 	{ Type.Basic t }
     | t = CID LBRACK p = separated_list(COMMA, creol_type) RBRACK
 	{ Type.Application (t, p) }
+    | FUTURE LBRACK p = separated_list(COMMA, creol_type) RBRACK
+	{ Type.Future p }
+    | FUTURE BOX
+	{ Type.Future [] }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Tuple d }
     | BACKTICK v = id

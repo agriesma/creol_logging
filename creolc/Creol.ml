@@ -72,6 +72,7 @@ struct
     | Basic of string
     | Variable of string
     | Application of string * t list
+    | Future of t list
     | Tuple of t list
     | Intersection of t list
     | Disjunction of t list
@@ -135,11 +136,11 @@ struct
   let time_p t = (t = time)
 
   (** The type of a {i Future} of values of type [l]. *)
-  let future l = Application ("Label", l)
+  let future l = Future l
 
   (** The predicate [future_p t] is true, if the type [t] is the type
       of a {i Future}. *)
-  let future_p t = match t with Application("Label", _) -> true | _ -> false
+  let future_p t = match t with Future _ -> true | _ -> false
 
   (** Make a term representing a {i List} of [t]. *)
   let list t = Application ("List", [t])
@@ -187,6 +188,7 @@ struct
       | Variable s -> "`" ^ s
       | Application (s, []) -> s ^ "[ ]"
       | Application (s, p) -> s ^ "[" ^ (string_of_type_list p) ^ "]"
+      | Future p -> "Label" ^ "[" ^ (string_of_type_list p) ^ "]"
       | Tuple p -> "[" ^ (string_of_type_list p) ^ "]"
       | Intersection l -> "/\\ [" ^ (string_of_type_list l) ^ "]"
       | Disjunction l -> "\\/ [" ^ (string_of_type_list l) ^ "]"
@@ -202,7 +204,7 @@ struct
   (** Returns the type of the future. *)
   let type_of_future =
     function
-	Application ("Label", args) -> args
+	Future args -> args
       | _ -> assert false
 
 
@@ -214,6 +216,7 @@ struct
 	  Basic _ -> a
 	| Variable v -> Vars.add v a
 	| Application (_, l) -> List.fold_left compute a l
+	| Future l -> List.fold_left compute a l
 	| Tuple l -> List.fold_left compute a l
 	| Intersection l -> List.fold_left compute a l
 	| Disjunction l -> List.fold_left compute a l
@@ -252,6 +255,8 @@ struct
       | Variable x -> find_in_subst x s
       | Application (c, l) ->
 	  Application(c, List.map (apply_substitution s) l)
+      | Future l ->
+	  Future (List.map (apply_substitution s) l)
       | Tuple l ->
 	  Tuple (List.map (apply_substitution s) l)
       | Intersection l ->
@@ -2020,6 +2025,8 @@ struct
 	    true
 	| Type.Application (n, a) ->
 	    (List.exists (p n) program.decls) && (List.for_all work_p a)
+	| Type.Future l ->
+	    List.for_all work_p l
 	| Type.Tuple l ->
 	    List.for_all work_p l
 	| Type.Intersection l ->
@@ -2098,6 +2105,14 @@ struct
 		    Invalid_argument _ -> false
 	      end
 	| (Type.Application _, _) -> false
+	| (Type.Future sa, Type.Future ta) ->
+	      begin
+		try 
+		  List.for_all2 (fun u v -> work (u, v)) sa ta
+		with
+		    Invalid_argument _ -> false
+	      end
+	| (Type.Future sa, _) -> false
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	      try 

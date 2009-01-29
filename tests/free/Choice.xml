@@ -51,7 +51,7 @@
     <creol:outputs/>
     <creol:variables>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -125,7 +125,7 @@
            <creol:identifier name="l">
             <creol:expression-note file="Choice.creol" line="27">
              <creol:inferred-type>
-              <creol:typeapplication name="Label"/>
+              <creol:future/>
              </creol:inferred-type>
             </creol:expression-note>
            </creol:identifier>
@@ -278,7 +278,7 @@
     <creol:outputs/>
     <creol:variables>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -351,7 +351,7 @@
           <creol:identifier name="l">
            <creol:expression-note file="Choice.creol" line="38">
             <creol:inferred-type>
-             <creol:typeapplication name="Label"/>
+             <creol:future/>
             </creol:inferred-type>
            </creol:expression-note>
           </creol:identifier>
@@ -443,7 +443,7 @@
             <creol:identifier name="l">
              <creol:expression-note file="Choice.creol" line="43">
               <creol:inferred-type>
-               <creol:typeapplication name="Label"/>
+               <creol:future/>
               </creol:inferred-type>
              </creol:expression-note>
             </creol:identifier>

@@ -31,13 +31,13 @@
     <creol:outputs/>
     <creol:variables>
      <creol:vardecl name="label:0">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
      <creol:vardecl name="i">
       <creol:type name="I"/>
      </creol:vardecl>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -171,7 +171,7 @@
             <creol:identifier name="l">
              <creol:expression-note file="AsyncAnon.creol" line="36">
               <creol:inferred-type>
-               <creol:typeapplication name="Label"/>
+               <creol:future/>
               </creol:inferred-type>
              </creol:expression-note>
             </creol:identifier>
