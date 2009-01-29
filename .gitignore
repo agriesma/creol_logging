@@ -11,6 +11,7 @@ creolc/CreolParser.mli
 creolc/CreolTokens.ml
 creolc/CreolTokens.mli
 creolc/Makefile.in
+creoltools.spec
 info/Makefile.in
 info/creoltools.info
 info/sorts.eps
