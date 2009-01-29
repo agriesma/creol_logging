@@ -459,6 +459,18 @@ TEST_CREOLC_TYPECHECK([Cyclic],
 [*top*:0: subtype relation has a cycle: S <: U <: T <: S
 ])
 
+TEST_CREOLC_TYPECHECK([Cyclic2],
+[Cyclic2.creol:22: data type U not found
+])
+
+TEST_CREOLC_TYPECHECK([Cyclic3],
+[*top*:0: subtype relation has a cycle: I <: K <: J <: I
+])
+
+TEST_CREOLC_TYPECHECK([Cyclic4],
+[Cyclic4.creol:24: interface K not found
+])
+
 TEST_CREOLC_TYPECHECK([CyclicClass],
 [*top*:0: class hierarchy has a cycle: A <: B <: C <: A
 ])

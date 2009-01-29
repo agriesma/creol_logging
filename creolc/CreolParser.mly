@@ -104,7 +104,8 @@ datatypedecl:
     DATATYPE t = creol_type
       s = loption(preceded(FROM, separated_list(COMMA, creol_type)))
       pr = list(pragma)
-    { { Datatype.name = t; supers = s; pragmas = pr } }
+    { { Datatype.name = t; supers = s; pragmas = pr;
+	file = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 
 (* Function declaration *)
@@ -144,7 +145,7 @@ classdecl:
 	  attributes = List.flatten a; invariants = i;
           with_defs = upd_method_locs n (aw @ w);
 	  pragmas = pr;
-	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
+	  file = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }
     | CLASS CID error

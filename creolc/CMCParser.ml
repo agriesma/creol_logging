@@ -564,7 +564,7 @@ let parse name input =
     let () = junk_left_bracket input in
     let a = parse_expression_list input in
     let () = junk_right_bracket input in
-      { Inherits.name = n; arguments = a }
+      { Inherits.name = n; arguments = a; file = ""; line = 0 }
   and parse_process_queue input =
     match Stream.peek input with
       | Some LBrace _ ->

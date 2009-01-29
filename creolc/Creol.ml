@@ -1437,6 +1437,8 @@ struct
   type t = {
     name: string;
     arguments: Expression.t list;
+    file: string;
+    line: int
   }
 
   let name { name = n } = n
@@ -1619,6 +1621,8 @@ struct
     supers: Type.t list;
     pragmas: Pragma.t list;
       (* Hide from output.  Set for datatypes defined in the prelude. *)
+    file: string;
+    line: int;
   }
 
   (** Whether the class is hidden. *)
@@ -1779,12 +1783,16 @@ struct
 
   (** Compute the class hierarchy of a program. *)
   let class_hierarchy program =
+    let add_class a { Inherits.name = n; file = f; line = l } =
+      try
+        ignore (find_class program n) ; IdSet.add n a
+      with
+        | Not_found -> raise (Class_not_found (f, l, n))
+    in
     let f rel =
       function
 	| Declaration.Class { Class.name = name; inherits = inh } ->
-	    IdMap.add name
-	      (List.fold_left (fun a { Inherits.name = n } -> IdSet.add n a) IdSet.empty inh)
-		 rel
+	    IdMap.add name (List.fold_left add_class IdSet.empty inh) rel
 	| _ -> rel
     in
       List.fold_left f IdMap.empty program.decls
@@ -1956,6 +1964,11 @@ struct
   (** {4 Data types}
 
       Functions relating to data types. *)
+
+  (** Raise [Datatype_not_found file line name] if the datatype [name]
+      is not found in file [file] and line [line]. *)
+  exception Datatype_not_found of string * int * string
+
 
   (** Find the definition of the data type called [name] in [program]. *)
   let find_datatype ~program ~name =
@@ -2199,17 +2212,24 @@ struct
 
   (** Compute the subtype relation-ship of the program. *)
   let subtype_relation program =
+    let add_iface a { Inherits.name = i; file = f; line = l } =
+      try 
+        ignore (find_interface program i); IdSet.add i a
+      with
+        | Not_found -> raise (Interface_not_found (f, l, i))
+    and add_datatype f l a d =
+      try
+        ignore (find_datatype program (Type.name d)); IdSet.add (Type.name d) a
+      with
+        Not_found -> raise (Datatype_not_found (f, l, Type.string_of_type d))
+    in
     let f rel =
       function
 	| Declaration.Interface { Interface.name = name; inherits = supers } ->
-	    IdMap.add name
-	      (List.fold_left (fun a i -> IdSet.add (Inherits.name i) a) IdSet.empty supers)
-	      rel
-	| Declaration.Datatype { Datatype.name = name; supers = supers } ->
+	    IdMap.add name (List.fold_left add_iface IdSet.empty supers) rel
+	| Declaration.Datatype { Datatype.name = name; supers = supers; file = file; line = line } ->
 	    IdMap.add (Type.name name)
-	      (List.fold_left (fun a n -> IdSet.add (Type.name n) a)
-                IdSet.empty supers)
-	      rel
+	      (List.fold_left (add_datatype file line) IdSet.empty supers) rel
 	| _ -> rel
     in
       List.fold_left f IdMap.empty program.decls

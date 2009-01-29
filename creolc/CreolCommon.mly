@@ -61,7 +61,8 @@ implements_decl:
 
 inherits:
     n = CID a = plist(expression)
-        { { Inherits.name = n; arguments = a } }
+        { { Inherits.name = n; arguments = a;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 %public with_decl:
       WITH c = creol_type l = nonempty_list(method_decl) i = list(invariant)

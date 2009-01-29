@@ -25,7 +25,7 @@ open Creol
 let set_of_list lst =
   List.fold_left (fun e a -> IdSet.add a e) IdSet.empty lst
 
-let conv_inh (n, a) = { Inherits.name = n; arguments = a }
+let conv_inh (n, a) = { Inherits.name = n; arguments = a; file = ""; line = 0 }
 
 let make_class name ?(contracts=[]) ?(implements=[]) inherits =
   { Class.name = name; parameters = [] ;

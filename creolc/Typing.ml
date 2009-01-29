@@ -1127,6 +1127,32 @@ let methods_missing_for_iface ~program ~cls ~name =
       i.Interface.with_decls
 
 
+let type_relation_well_formed_p tree =
+  let rel = Program.subtype_relation tree in
+    if Program.acyclic_p (Program.transitive_closure rel) then
+      true
+    else
+      begin
+       let cycle = Program.find_cycle rel in
+         Messages.error "*top*" 0 ("subtype relation has a cycle: " ^
+                                     (Program.string_of_cycle cycle)) ;
+         false
+      end
+
+
+let class_hierarchy_well_formed_p tree =
+  let rel = Program.class_hierarchy tree in
+    if Program.acyclic_p (Program.transitive_closure rel) then
+      true
+    else
+      begin
+       let cycle = Program.find_cycle rel in
+         Messages.error "*top*" 0 ("class hierarchy has a cycle: " ^
+                                     (Program.string_of_cycle cycle)) ;
+         false
+      end
+
+
 (** Type check a tree. *)
 let typecheck tree: Program.t =
   let rec type_check_inits env coiface res =
@@ -1303,32 +1329,21 @@ let typecheck tree: Program.t =
 	  Declaration.Interface (type_check_interface program i)
       | _ as d -> d
   in
-  let type_relation_well_formed_p tree =
-    let rel = Program.subtype_relation tree in
-      if Program.acyclic_p (Program.transitive_closure rel) then
-	true
-      else
-	begin
-	  let cycle = Program.find_cycle rel in
-	    Messages.error "*top*" 0 ("subtype relation has a cycle: " ^
-					(Program.string_of_cycle cycle)) ;
-	    false
-	end
-  and class_hierarchy_well_formed_p tree =
-    let rel = Program.class_hierarchy tree in
-      if Program.acyclic_p (Program.transitive_closure rel) then
-	true
-      else
-	begin
-	  let cycle = Program.find_cycle rel in
-	    Messages.error "*top*" 0 ("class hierarchy has a cycle: " ^
-					(Program.string_of_cycle cycle)) ;
-	    false
-	end
-  in
-    if (type_relation_well_formed_p tree) &&
-      (class_hierarchy_well_formed_p tree)
-    then
+  let wf =
+    try
+      (type_relation_well_formed_p tree) && (class_hierarchy_well_formed_p tree)
+    with
+      | Program.Class_not_found (file, line, cls) ->
+	  Messages.error file line ("class " ^ cls ^ " not found") ;
+	  exit 1
+      | Program.Datatype_not_found (file, line, dtype) ->
+	  Messages.error file line ("data type " ^ dtype ^ " not found") ;
+	  exit 1
+      | Program.Interface_not_found (file, line, iface) ->
+	  Messages.error file line ("interface " ^ iface ^ " not found") ;
+	  exit 1
+    in
+    if wf then
       begin
 	try
 	  Program.map tree (type_check_declaration tree)
