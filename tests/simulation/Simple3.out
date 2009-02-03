@@ -126,49 +126,5 @@ result State: {discard(label(ob("Hello0"), 2))
   "nolabel.var" |> ob("Hello0") | 
   "Hello0-3" |> list(str("hello, world") :: "Hello0-2.x"), 
   "main-0" |> list(int(2))}Att: noSubst Label: "lastrun" >
- 
-<log From: 32 To: 33 Type: "ifthenelse"
-    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
-  "eq" |> ">"("Hello0.repetitions_init" :: int(0))}Att: noSubst Label:
-    "Hello0-3" >
- 
-<log From: 35 To: 36 Type: "ifthenelse"
-    Data:{if ">"("repetitions" :: int(0)) th skip el skip fi | TnoSubst | 
-  "eq" |> ">"("-"("Hello0.repetitions_init" :: int(1)) :: int(0))}Att: noSubst
-    Label: "Hello0-3" >
- 
-<log From: 39 To: 40 Type: "blocked await"
-    Data:{$bawait ">"("x" :: int(3)) | 
-  "Console0-0..class" |> str("Console"), 
-  "Console0-0..label" |> label(ob("Console0"), 0), 
-  "Console0-0..method" |> str("init"), 
-  "Console0-0.caller" |> ob("Console0"), 
-  "Console0-1..class" |> str("Console"), 
-  "Console0-1..label" |> label(ob("Console0"), 1), 
-  "Console0-1..method" |> str("run"), 
-  "Console0-1.caller" |> ob("Console0"), 
-  "Console0.output" |> list(str("hello, world") :: str("hello, world")), 
-  "Console0.this" |> ob("Console0"), 
-  "Hello0-0..class" |> str("Hello"), 
-  "Hello0-0..label" |> label(ob("Hello0"), 0), 
-  "Hello0-0..method" |> str("init"), 
-  "Hello0-0.caller" |> ob("Hello0"), 
-  "Hello0-2..class" |> str("Hello"), 
-  "Hello0-2..label" |> label(ob("Hello0"), 2), 
-  "Hello0-2..method" |> str("run"), 
-  "Hello0-2.caller" |> ob("Hello0"), 
-  "Hello0-2.x" |> "Hello0.repetitions_init", 
-  "Hello0-3..class" |> str("Console"), 
-  "Hello0-3..label" |> label(ob("Hello0"), 3), 
-  "Hello0-3..method" |> str("print"), 
-  "Hello0-3.caller" |> ob("Hello0"), 
-  "Hello0-3.newstring" |> str("hello, world"), 
-  "Hello0-3.repetitions" |> "-"("Hello0.repetitions_init" :: int(1)), 
-  "Hello0.console" |> ob("Console0"), 
-  "Hello0.repetitions_init" |> int(2), 
-  "Hello0.this" |> ob("Hello0"), 
-  "nolabel.var" |> ob("Hello0") | 
-  "eq" |> "~"(">"("Hello0.repetitions_init" :: int(3)))}Att: noSubst Label:
-    "Hello0-2" >
 }
 Bye.

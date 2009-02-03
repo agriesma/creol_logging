@@ -122,15 +122,5 @@ result State: {
   "Hello0-3" |> list(str("hello, world")), 
   "Hello0-4" |> list(str("hello, world2")), 
   "main-0" |> list(int(2))}Att: noSubst Label: "lastrun" >
- 
-<log From: 28 To: 29 Type: "ifthenelse"
-    Data:{if ">"("x" :: int(0)) th skip el skip fi | TnoSubst | 
-  "eq" |> ">"("Hello0.repetitions_init" :: int(0))}Att: noSubst Label:
-    "Hello0-2" >
- 
-<log From: 37 To: 38 Type: "ifthenelse"
-    Data:{if ">"("x" :: int(0)) th skip el skip fi | TnoSubst | 
-  "eq" |> ">"("-"("Hello0.repetitions_init" :: int(1)) :: int(0))}Att: noSubst
-    Label: "Hello0-2" >
 }
 Bye.
