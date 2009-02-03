@@ -568,7 +568,7 @@ eq
   foundAttr(O, S1, SL, { L1 | SL1 })
   < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: F >
   =
-  < O : C | Att: ("this" |-> O, S1), Pr: { L1 | SL ; SL1 }, PrQ: W, Lcnt: F > .
+  < O : C | Att: ("this" |-> O, S1), Pr: { L1 | ifdef(`LOGGING',assign("this" ; O) ; )SL ; SL1 }, PrQ: W, Lcnt: F > .
 
 
 

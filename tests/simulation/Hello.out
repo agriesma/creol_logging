@@ -17,7 +17,7 @@ result State: {
   Att: noSubst,
   Pr: idle,
   PrQ: noProc,
-  Lcnt: 27 >
+  Lcnt: 34 >
  
 < ob("main") : Start |
   Att: noSubst,
@@ -41,19 +41,54 @@ result State: {
     emp) >,
   Ocnt: 1 >
  
-<log From: 0 To: 27 Type: "lastrun"
-    Data:{skip ; new("var" ; "Hello" ; emp) ; assign("nolabel.var" ; ob(
-    "Hello0")) ; call(".anon" ; "this" ; "init" ; emp) ; new("console" ;
-    "Console" ; emp) ; assign("Hello0.console" ; ob("Console0")) ; call(".anon"
-    ; "this" ; "init" ; emp) ; return(emp) ; assign("output" @ "Console" ;
-    list(emp)) ; return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; return(
-    emp) ; call(".anon" ; "this" ; "run" ; emp) ; call("label:0" ; "console" ;
-    "print" ; str("hello, world")) ; assign("Hello0-3.result" ; str(
-    "hello, world")) ; assign("Console0.output" ; "|-"("Console0.output" ::
-    str("Hello, world"))) ; return(emp) ; return(emp) | 
+<log From: 0 To: 34 Type: "lastrun"
+    Data:{skip ; new("var" ; "Hello" ; emp) ; assign("Hello0.this" ; ob(
+    "Hello0")) ; assign("nolabel.var" ; ob("Hello0")) ; call(".anon" ; "this" ;
+    "init" ; emp) ; assign("Hello0-0.caller", "Hello0-0..class",
+    "Hello0-0..label", "Hello0-0..method" ; ob("Hello0") :: str("Hello") ::
+    label(ob("Hello0"), 0) :: str("init")) ; new("console" ; "Console" ; emp) ;
+    assign("Console0.this" ; ob("Console0")) ; assign("Hello0.console" ; ob(
+    "Console0")) ; call(".anon" ; "this" ; "init" ; emp) ; return(emp) ;
+    assign("Console0-0.caller", "Console0-0..class", "Console0-0..label",
+    "Console0-0..method" ; ob("Console0") :: str("Console") :: label(ob(
+    "Console0"), 0) :: str("init")) ; assign("output" @ "Console" ; list(emp))
+    ; return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; assign(
+    "Console0-1.caller", "Console0-1..class", "Console0-1..label",
+    "Console0-1..method" ; ob("Console0") :: str("Console") :: label(ob(
+    "Console0"), 1) :: str("run")) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; assign("Hello0-2.caller", "Hello0-2..class",
+    "Hello0-2..label", "Hello0-2..method" ; ob("Hello0") :: str("Hello") ::
+    label(ob("Hello0"), 2) :: str("run")) ; call("label:0" ; "console" ;
+    "print" ; str("hello, world")) ; assign("Hello0-3.caller",
+    "Hello0-3..class", "Hello0-3..label", "Hello0-3..method" ; ob("Hello0") ::
+    str("Console") :: label(ob("Hello0"), 3) :: str("print")) ; assign(
+    "Hello0-3.result" ; str("hello, world")) ; assign("Console0.output" ; "|-"(
+    "Console0.output" :: str("Hello, world"))) ; return(emp) ; return(emp) | 
+  "Console0-0..class" |> str("Console"), 
+  "Console0-0..label" |> label(ob("Console0"), 0), 
+  "Console0-0..method" |> str("init"), 
+  "Console0-0.caller" |> ob("Console0"), 
+  "Console0-1..class" |> str("Console"), 
+  "Console0-1..label" |> label(ob("Console0"), 1), 
+  "Console0-1..method" |> str("run"), 
+  "Console0-1.caller" |> ob("Console0"), 
   "Console0.output" |> list(str("Hello, world")), 
+  "Console0.this" |> ob("Console0"), 
+  "Hello0-0..class" |> str("Hello"), 
+  "Hello0-0..label" |> label(ob("Hello0"), 0), 
+  "Hello0-0..method" |> str("init"), 
+  "Hello0-0.caller" |> ob("Hello0"), 
+  "Hello0-2..class" |> str("Hello"), 
+  "Hello0-2..label" |> label(ob("Hello0"), 2), 
+  "Hello0-2..method" |> str("run"), 
+  "Hello0-2.caller" |> ob("Hello0"), 
+  "Hello0-3..class" |> str("Console"), 
+  "Hello0-3..label" |> label(ob("Hello0"), 3), 
+  "Hello0-3..method" |> str("print"), 
+  "Hello0-3.caller" |> ob("Hello0"), 
   "Hello0-3.result" |> str("hello, world"), 
   "Hello0.console" |> ob("Console0"), 
+  "Hello0.this" |> ob("Hello0"), 
   "nolabel.var" |> ob("Hello0") | 
   "Hello0-3" |> list(str("hello, world"))}Att: noSubst Label: "lastrun" >
 }
