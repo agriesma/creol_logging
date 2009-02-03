@@ -37,10 +37,12 @@ let show_version () =
   exit 0
 
 
+let output_dot = ref false
 
 let options = [
   ("-", Arg.Unit (function () -> ignore (parse_from_channel "*stdin*" stdin)),
     "Read from standard input");
+  ("-dot", Arg.Set output_dot, "  Visualise the object state");
   ("-V", Arg.Unit show_version, "  Show the version and exit");
   ("-version", Arg.Unit show_version, "  Show the version and exit");
   ("--version", Arg.Unit show_version, "  Show the version and exit")]
@@ -48,7 +50,10 @@ let options = [
 let main () =
   let action n =
     let tree = parse_from_file n in
-      BackendCreol.pretty_print_program stdout tree
+      if !output_dot then
+        BackendDot.emit stdout tree
+      else
+        BackendCreol.pretty_print_program stdout tree
   in
     Arg.parse options action "cmcvalid [options] [files]"
 ;;
