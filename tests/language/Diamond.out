@@ -37,14 +37,14 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : main(classes, "D", emp) .
 result [State]: {
-< ob("D0") : "D" |
-  Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this" |-> ob("D0"), "x"
-    |-> null, "y" |-> null,
-  Pr: {".class" |-> str("B"), ".label" |-> label(ob("D0"), 3), ".method" |->
-    str("init"), "_" |-> null, "caller" |-> ob("D0") | failure "="("a" :: "b")
-    ; return(emp) ; $cont label(ob("D0"), 3)},
-  PrQ: {".init" |-> label(ob("D0"), 3), ".label" |-> label(ob("main"), 0) |
-    get(label(ob("D0"), 3) ; noVid) ; free(".init") ; call(".anon" ; "this" ;
+< ob("D-0") : "D" |
+  Att: "a" |-> int(2), "b" |-> int(1), "c" |-> int(2), "this" |-> ob("D-0"),
+    "x" |-> null, "y" |-> null,
+  Pr: {".class" |-> str("B"), ".label" |-> label(ob("D-0"), 3), ".method" |->
+    str("init"), "_" |-> null, "caller" |-> ob("D-0") | failure "="("a" :: "b")
+    ; return(emp) ; $cont label(ob("D-0"), 3)},
+  PrQ: {".init" |-> label(ob("D-0"), 3), ".label" |-> label(ob("main"), 0) |
+    get(label(ob("D-0"), 3) ; noVid) ; free(".init") ; call(".anon" ; "this" ;
     "init" ; emp) ; get(".anon" ; noVid) ; free(".anon") ; call(".anon" ;
     "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 4 >

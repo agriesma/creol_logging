@@ -1,119 +1,119 @@
 ==========================================
 frewrite in PROGRAM : main(classes, "Main", emp) .
-result (sort not calculated): {discard(label(ob("Main0"), 6))
+result (sort not calculated): {discard(label(ob("Main-0"), 6))
  
-< ob("Main0") : "Main" |
-  Att: "p1" |-> ob("Process0"), "p2" |-> ob("Process1"), "p3" |-> ob(
-    "Process2"), "p4" |-> ob("Process3"), "p5" |-> ob("Process4"), "this" |->
-    ob("Main0"),
-  Pr: {".class" |-> str("Main"), ".label" |-> label(ob("Main0"), 6), ".method"
-    |-> str("run"), "_" |-> null, "caller" |-> ob("Main0") | return(emp)},
-  PrQ: {".class" |-> str("Main"), ".label" |-> label(ob("Process0"), 1),
+< ob("Main-0") : "Main" |
+  Att: "p1" |-> ob("Process-0"), "p2" |-> ob("Process-1"), "p3" |-> ob(
+    "Process-2"), "p4" |-> ob("Process-3"), "p5" |-> ob("Process-4"), "this"
+    |-> ob("Main-0"),
+  Pr: {".class" |-> str("Main"), ".label" |-> label(ob("Main-0"), 6), ".method"
+    |-> str("run"), "_" |-> null, "caller" |-> ob("Main-0") | return(emp)},
+  PrQ: {".class" |-> str("Main"), ".label" |-> label(ob("Process-0"), 1),
     ".method" |-> str("getNeighbour"), "_" |-> null, "caller" |-> ob(
-    "Process0"), "n" |-> null | if "="("caller" :: "p1") th assign("n" ; "p2")
+    "Process-0"), "n" |-> null | if "="("caller" :: "p1") th assign("n" ; "p2")
     el if "="("caller" :: "p2") th assign("n" ; "p3") el if "="("caller" ::
     "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th assign("n" ;
     "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el skip fi fi fi fi
     fi ; return("n")}, {".class" |-> str("Main"), ".label" |-> label(ob(
-    "Process1"), 1), ".method" |-> str("getNeighbour"), "_" |-> null, "caller"
-    |-> ob("Process1"), "n" |-> null | if "="("caller" :: "p1") th assign("n" ;
-    "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if "="("caller"
-    :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th assign("n" ;
-    "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el skip fi fi fi fi
-    fi ; return("n")}, {".class" |-> str("Main"), ".label" |-> label(ob(
-    "Process2"), 1), ".method" |-> str("getNeighbour"), "_" |-> null, "caller"
-    |-> ob("Process2"), "n" |-> null | if "="("caller" :: "p1") th assign("n" ;
-    "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if "="("caller"
-    :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th assign("n" ;
-    "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el skip fi fi fi fi
-    fi ; return("n")}, {".class" |-> str("Main"), ".label" |-> label(ob(
-    "Process3"), 1), ".method" |-> str("getNeighbour"), "_" |-> null, "caller"
-    |-> ob("Process3"), "n" |-> null | if "="("caller" :: "p1") th assign("n" ;
-    "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if "="("caller"
-    :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th assign("n" ;
-    "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el skip fi fi fi fi
-    fi ; return("n")}, {".class" |-> str("Main"), ".label" |-> label(ob(
-    "Process4"), 1), ".method" |-> str("getNeighbour"), "_" |-> null, "caller"
-    |-> ob("Process4"), "n" |-> null | if "="("caller" :: "p1") th assign("n" ;
-    "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if "="("caller"
-    :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th assign("n" ;
-    "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el skip fi fi fi fi
-    fi ; return("n")},
+    "Process-1"), 1), ".method" |-> str("getNeighbour"), "_" |-> null, "caller"
+    |-> ob("Process-1"), "n" |-> null | if "="("caller" :: "p1") th assign("n"
+    ; "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if "="(
+    "caller" :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th
+    assign("n" ; "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el
+    skip fi fi fi fi fi ; return("n")}, {".class" |-> str("Main"), ".label" |->
+    label(ob("Process-2"), 1), ".method" |-> str("getNeighbour"), "_" |-> null,
+    "caller" |-> ob("Process-2"), "n" |-> null | if "="("caller" :: "p1") th
+    assign("n" ; "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if
+    "="("caller" :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th
+    assign("n" ; "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el
+    skip fi fi fi fi fi ; return("n")}, {".class" |-> str("Main"), ".label" |->
+    label(ob("Process-3"), 1), ".method" |-> str("getNeighbour"), "_" |-> null,
+    "caller" |-> ob("Process-3"), "n" |-> null | if "="("caller" :: "p1") th
+    assign("n" ; "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if
+    "="("caller" :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th
+    assign("n" ; "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el
+    skip fi fi fi fi fi ; return("n")}, {".class" |-> str("Main"), ".label" |->
+    label(ob("Process-4"), 1), ".method" |-> str("getNeighbour"), "_" |-> null,
+    "caller" |-> ob("Process-4"), "n" |-> null | if "="("caller" :: "p1") th
+    assign("n" ; "p2") el if "="("caller" :: "p2") th assign("n" ; "p3") el if
+    "="("caller" :: "p3") th assign("n" ; "p4") el if "="("caller" :: "p4") th
+    assign("n" ; "p5") el if "="("caller" :: "p5") th assign("n" ; "p1") el
+    skip fi fi fi fi fi ; return("n")},
   Lcnt: 7 >
  
-< ob("Process0") : "Process" |
-  Att: "i" |-> int(1), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process0"),
+< ob("Process-0") : "Process" |
+  Att: "i" |-> int(1), "main" |-> ob("Main-0"), "mode" |-> bool(true),
+    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process-0"),
     "uid1" |-> int(1), "uid2" |-> null,
-  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process0"), 0),
-    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process0"),
-    "label:0" |-> label(ob("Process0"), 1), "label:1" |-> null | get(label(ob(
-    "Process0"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
+  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-0"), 0),
+    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-0"),
+    "label:0" |-> label(ob("Process-0"), 1), "label:1" |-> null | get(label(ob(
+    "Process-0"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
-    ob("Process0"), 0)},
-  PrQ: {".anon" |-> label(ob("Process0"), 0), ".label" |-> label(ob("Main0"),
-    1) | get(label(ob("Process0"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
-    "this" ; "run" ; emp) ; free(".anon")},
+    ob("Process-0"), 0)},
+  PrQ: {".anon" |-> label(ob("Process-0"), 0), ".label" |-> label(ob("Main-0"),
+    1) | get(label(ob("Process-0"), 0) ; noVid) ; free(".anon") ; call(".anon"
+    ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
-< ob("Process1") : "Process" |
-  Att: "i" |-> int(3), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process1"),
+< ob("Process-1") : "Process" |
+  Att: "i" |-> int(3), "main" |-> ob("Main-0"), "mode" |-> bool(true),
+    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process-1"),
     "uid1" |-> int(3), "uid2" |-> null,
-  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process1"), 0),
-    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process1"),
-    "label:0" |-> label(ob("Process1"), 1), "label:1" |-> null | get(label(ob(
-    "Process1"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
+  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-1"), 0),
+    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-1"),
+    "label:0" |-> label(ob("Process-1"), 1), "label:1" |-> null | get(label(ob(
+    "Process-1"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
-    ob("Process1"), 0)},
-  PrQ: {".anon" |-> label(ob("Process1"), 0), ".label" |-> label(ob("Main0"),
-    2) | get(label(ob("Process1"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
-    "this" ; "run" ; emp) ; free(".anon")},
+    ob("Process-1"), 0)},
+  PrQ: {".anon" |-> label(ob("Process-1"), 0), ".label" |-> label(ob("Main-0"),
+    2) | get(label(ob("Process-1"), 0) ; noVid) ; free(".anon") ; call(".anon"
+    ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
-< ob("Process2") : "Process" |
-  Att: "i" |-> int(5), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process2"),
+< ob("Process-2") : "Process" |
+  Att: "i" |-> int(5), "main" |-> ob("Main-0"), "mode" |-> bool(true),
+    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process-2"),
     "uid1" |-> int(5), "uid2" |-> null,
-  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process2"), 0),
-    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process2"),
-    "label:0" |-> label(ob("Process2"), 1), "label:1" |-> null | get(label(ob(
-    "Process2"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
+  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-2"), 0),
+    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-2"),
+    "label:0" |-> label(ob("Process-2"), 1), "label:1" |-> null | get(label(ob(
+    "Process-2"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
-    ob("Process2"), 0)},
-  PrQ: {".anon" |-> label(ob("Process2"), 0), ".label" |-> label(ob("Main0"),
-    3) | get(label(ob("Process2"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
-    "this" ; "run" ; emp) ; free(".anon")},
+    ob("Process-2"), 0)},
+  PrQ: {".anon" |-> label(ob("Process-2"), 0), ".label" |-> label(ob("Main-0"),
+    3) | get(label(ob("Process-2"), 0) ; noVid) ; free(".anon") ; call(".anon"
+    ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
-< ob("Process3") : "Process" |
-  Att: "i" |-> int(4), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process3"),
+< ob("Process-3") : "Process" |
+  Att: "i" |-> int(4), "main" |-> ob("Main-0"), "mode" |-> bool(true),
+    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process-3"),
     "uid1" |-> int(4), "uid2" |-> null,
-  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process3"), 0),
-    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process3"),
-    "label:0" |-> label(ob("Process3"), 1), "label:1" |-> null | get(label(ob(
-    "Process3"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
+  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-3"), 0),
+    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-3"),
+    "label:0" |-> label(ob("Process-3"), 1), "label:1" |-> null | get(label(ob(
+    "Process-3"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
-    ob("Process3"), 0)},
-  PrQ: {".anon" |-> label(ob("Process3"), 0), ".label" |-> label(ob("Main0"),
-    4) | get(label(ob("Process3"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
-    "this" ; "run" ; emp) ; free(".anon")},
+    ob("Process-3"), 0)},
+  PrQ: {".anon" |-> label(ob("Process-3"), 0), ".label" |-> label(ob("Main-0"),
+    4) | get(label(ob("Process-3"), 0) ; noVid) ; free(".anon") ; call(".anon"
+    ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
-< ob("Process4") : "Process" |
-  Att: "i" |-> int(2), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process4"),
+< ob("Process-4") : "Process" |
+  Att: "i" |-> int(2), "main" |-> ob("Main-0"), "mode" |-> bool(true),
+    "neighbour" |-> null, "status" |-> int(0), "this" |-> ob("Process-4"),
     "uid1" |-> int(2), "uid2" |-> null,
-  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process4"), 0),
-    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process4"),
-    "label:0" |-> label(ob("Process4"), 1), "label:1" |-> null | get(label(ob(
-    "Process4"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
+  Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-4"), 0),
+    ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-4"),
+    "label:0" |-> label(ob("Process-4"), 1), "label:1" |-> null | get(label(ob(
+    "Process-4"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
     "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
-    ob("Process4"), 0)},
-  PrQ: {".anon" |-> label(ob("Process4"), 0), ".label" |-> label(ob("Main0"),
-    5) | get(label(ob("Process4"), 0) ; noVid) ; free(".anon") ; call(".anon" ;
-    "this" ; "run" ; emp) ; free(".anon")},
+    ob("Process-4"), 0)},
+  PrQ: {".anon" |-> label(ob("Process-4"), 0), ".label" |-> label(ob("Main-0"),
+    5) | get(label(ob("Process-4"), 0) ; noVid) ; free(".anon") ; call(".anon"
+    ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 2 >
  
 < ob("main") : Start |

@@ -42,14 +42,14 @@ endm
 red in TEST-TAILCALL : classes .
 
 search [1] in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+
-  { < ob("Tailcall0") : "Tailcall" | Att: A:Subst,
-      Pr: { L:Subst | $accept(tag(label(ob("Tailcall0"), 1))) ; SL:StmtList },
+  { < ob("Tailcall-0") : "Tailcall" | Att: A:Subst,
+      Pr: { L:Subst | $accept(tag(label(ob("Tailcall-0"), 1))) ; SL:StmtList },
       PrQ: W:MProc, Lcnt: N:Nat >
     conf:Configuration } .
 
 search [1] in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+
-  { < ob("Tailcall0") : "Tailcall" | Att: A:Subst,
-      Pr: { L:Subst | $accept(tag(label(ob("Tailcall0"), 2))) ; SL:StmtList },
+  { < ob("Tailcall-0") : "Tailcall" | Att: A:Subst,
+      Pr: { L:Subst | $accept(tag(label(ob("Tailcall-0"), 2))) ; SL:StmtList },
       PrQ: W:MProc, Lcnt: N:Nat >
     conf:Configuration } .
 

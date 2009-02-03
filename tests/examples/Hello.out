@@ -20,14 +20,14 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : main(classes, "Hello", emp) .
 result State: {
-< ob("Console0") : "Console" |
-  Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console0"),
+< ob("Console-0") : "Console" |
+  Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 2 >
  
-< ob("Hello0") : "Hello" |
-  Att: "console" |-> ob("Console0"), "this" |-> ob("Hello0"),
+< ob("Hello-0") : "Hello" |
+  Att: "console" |-> ob("Console-0"), "this" |-> ob("Hello-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 4 >

@@ -39,7 +39,7 @@ AT_SETUP([MetaExec])
 TEST_MAUDE([MetaExec], ${abs_srcdir}/MetaExec.maude, [.])
 AT_CLEANUP
 
-AT_SETUP([model-checker])
+AT_SETUP([ModelChecker])
 TEST_MAUDE([ModelChecker], ${abs_srcdir}/modelchecker/ModelChecker.maude,
 	   [modelchecker])
 AT_CLEANUP

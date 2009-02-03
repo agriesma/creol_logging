@@ -28,30 +28,30 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : main(classes, "Init", emp) .
 result State: {
-< ob("Init0") : "Init" |
-  Att: "p1" |-> ob("Process0"), "p2" |-> ob("Process1"), "p3" |-> ob(
-    "Process2"), "this" |-> ob("Init0"),
+< ob("Init-0") : "Init" |
+  Att: "p1" |-> ob("Process-0"), "p2" |-> ob("Process-1"), "p3" |-> ob(
+    "Process-2"), "this" |-> ob("Init-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 5 >
  
-< ob("Process0") : "Process" |
-  Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process2"), "status" |-> int(0),
-    "this" |-> ob("Process0"), "u" |-> int(1),
+< ob("Process-0") : "Process" |
+  Att: "i" |-> ob("Init-0"), "neighbor" |-> ob("Process-2"), "status" |-> int(
+    0), "this" |-> ob("Process-0"), "u" |-> int(1),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process1") : "Process" |
-  Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process0"), "status" |-> int(0),
-    "this" |-> ob("Process1"), "u" |-> int(2),
+< ob("Process-1") : "Process" |
+  Att: "i" |-> ob("Init-0"), "neighbor" |-> ob("Process-0"), "status" |-> int(
+    0), "this" |-> ob("Process-1"), "u" |-> int(2),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 5 >
  
-< ob("Process2") : "Process" |
-  Att: "i" |-> ob("Init0"), "neighbor" |-> ob("Process1"), "status" |-> int(1),
-    "this" |-> ob("Process2"), "u" |-> int(3),
+< ob("Process-2") : "Process" |
+  Att: "i" |-> ob("Init-0"), "neighbor" |-> ob("Process-1"), "status" |-> int(
+    1), "this" |-> ob("Process-2"), "u" |-> int(3),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 4 >

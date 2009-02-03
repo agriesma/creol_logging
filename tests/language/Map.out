@@ -10,8 +10,8 @@ result Class:
 ==========================================
 rewrite in PROGRAM : main(classes, "Map", emp) .
 result State: {
-< ob("Map0") : "Map" |
-  Att: "sem" |-> map(empty), "this" |-> ob("Map0"),
+< ob("Map-0") : "Map" |
+  Att: "sem" |-> map(empty), "this" |-> ob("Map-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 2 >

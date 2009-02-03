@@ -10,8 +10,8 @@ result Class:
 ==========================================
 rewrite in PROGRAM : main(classes, "Test", emp) .
 result State: {
-< ob("Test0") : "Test" |
-  Att: "this" |-> ob("Test0"), "x" |-> list(int(1) :: int(2)),
+< ob("Test-0") : "Test" |
+  Att: "this" |-> ob("Test-0"), "x" |-> list(int(1) :: int(2)),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 2 >

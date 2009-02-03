@@ -16,8 +16,8 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : main(classes, "B", int(1)) .
 result State: {
-< ob("B0") : "B" |
-  Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B0"),
+< ob("B-0") : "B" |
+  Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 3 >

@@ -38,50 +38,50 @@ result Configuration:
 ==========================================
 rewrite in PROGRAM : main(classes, "Main", emp) .
 result State: {
-< ob("Main0") : "Main" |
-  Att: "p1" |-> ob("Process0"), "p2" |-> ob("Process1"), "p3" |-> ob(
-    "Process2"), "p4" |-> ob("Process3"), "p5" |-> ob("Process4"), "this" |->
-    ob("Main0"),
+< ob("Main-0") : "Main" |
+  Att: "p1" |-> ob("Process-0"), "p2" |-> ob("Process-1"), "p3" |-> ob(
+    "Process-2"), "p4" |-> ob("Process-3"), "p5" |-> ob("Process-4"), "this"
+    |-> ob("Main-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 7 >
  
-< ob("Process0") : "Process" |
-  Att: "i" |-> int(1), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process1"), "status" |-> int(0), "this" |-> ob(
-    "Process0"), "uid1" |-> int(1), "uid2" |-> int(2),
+< ob("Process-0") : "Process" |
+  Att: "i" |-> int(1), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-1"), "status" |-> int(0), "this" |-> ob(
+    "Process-0"), "uid1" |-> int(1), "uid2" |-> int(2),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process1") : "Process" |
-  Att: "i" |-> int(3), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process2"), "status" |-> int(0), "this" |-> ob(
-    "Process1"), "uid1" |-> int(3), "uid2" |-> int(1),
+< ob("Process-1") : "Process" |
+  Att: "i" |-> int(3), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-2"), "status" |-> int(0), "this" |-> ob(
+    "Process-1"), "uid1" |-> int(3), "uid2" |-> int(1),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process2") : "Process" |
-  Att: "i" |-> int(5), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process3"), "status" |-> int(0), "this" |-> ob(
-    "Process2"), "uid1" |-> int(5), "uid2" |-> int(3),
+< ob("Process-2") : "Process" |
+  Att: "i" |-> int(5), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-3"), "status" |-> int(0), "this" |-> ob(
+    "Process-2"), "uid1" |-> int(5), "uid2" |-> int(3),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process3") : "Process" |
-  Att: "i" |-> int(4), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> ob("Process4"), "status" |-> int(1), "this" |-> ob(
-    "Process3"), "uid1" |-> int(5), "uid2" |-> null,
+< ob("Process-3") : "Process" |
+  Att: "i" |-> int(4), "main" |-> ob("Main-0"), "mode" |-> bool(true),
+    "neighbour" |-> ob("Process-4"), "status" |-> int(1), "this" |-> ob(
+    "Process-3"), "uid1" |-> int(5), "uid2" |-> null,
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process4") : "Process" |
-  Att: "i" |-> int(2), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process0"), "status" |-> int(0), "this" |-> ob(
-    "Process4"), "uid1" |-> int(2), "uid2" |-> int(4),
+< ob("Process-4") : "Process" |
+  Att: "i" |-> int(2), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-0"), "status" |-> int(0), "this" |-> ob(
+    "Process-4"), "uid1" |-> int(2), "uid2" |-> int(4),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >

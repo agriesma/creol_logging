@@ -11,19 +11,19 @@ result Class:
 ==========================================
 search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
     conf:Configuration 
-< ob("Tailcall0") : "Tailcall" |
+< ob("Tailcall-0") : "Tailcall" |
   Att: A:Subst,
-  Pr: {L:Subst | $accept tag(label(ob("Tailcall0"), 1)) ; SL:StmtList},
+  Pr: {L:Subst | $accept tag(label(ob("Tailcall-0"), 1)) ; SL:StmtList},
   PrQ: W:MProc,
   Lcnt: N:Nat >
 } .
 
 Solution 1 (state 24)
-conf:Configuration --> discard(label(ob("Tailcall0"), 1))
+conf:Configuration --> discard(label(ob("Tailcall-0"), 1))
  
 < ob("main") : Start |
   Att: noSubst,
-  Pr: {"var" |-> null | assign("var" ; ob("Tailcall0"))},
+  Pr: {"var" |-> null | assign("var" ; ob("Tailcall-0"))},
   PrQ: noProc,
   Lcnt: 1 >
  
@@ -34,20 +34,20 @@ conf:Configuration --> discard(label(ob("Tailcall0"), 1))
     return(emp) fi >,
   Ocnt: 1 >
 
-A:Subst --> "this" |-> ob("Tailcall0"), "x" |-> int(4)
+A:Subst --> "this" |-> ob("Tailcall-0"), "x" |-> int(4)
 L:Subst --> noSubst
 SL:StmtList --> noStmt
 W:MProc --> {".class" |-> str("Tailcall"), ".label" |-> tag(label(ob(
-    "Tailcall0"), 1)), ".method" |-> str("run"), "caller" |-> ob("Tailcall0") |
-    if "<"(int(0) :: "x") th assign("x" ; "-"("x" :: int(1))) ; statictail(
+    "Tailcall-0"), 1)), ".method" |-> str("run"), "caller" |-> ob("Tailcall-0")
+    | if "<"(int(0) :: "x") th assign("x" ; "-"("x" :: int(1))) ; statictail(
     "run" ; None ; None ; emp) el return(emp) fi}
 N:Nat --> 2
 ==========================================
 search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
     conf:Configuration 
-< ob("Tailcall0") : "Tailcall" |
+< ob("Tailcall-0") : "Tailcall" |
   Att: A:Subst,
-  Pr: {L:Subst | $accept tag(label(ob("Tailcall0"), 2)) ; SL:StmtList},
+  Pr: {L:Subst | $accept tag(label(ob("Tailcall-0"), 2)) ; SL:StmtList},
   PrQ: W:MProc,
   Lcnt: N:Nat >
 } .
@@ -56,8 +56,8 @@ No solution.
 ==========================================
 rewrite in TEST-TAILCALL : main(classes, "Tailcall", int(5)) .
 result State: {
-< ob("Tailcall0") : "Tailcall" |
-  Att: "this" |-> ob("Tailcall0"), "x" |-> int(0),
+< ob("Tailcall-0") : "Tailcall" |
+  Att: "this" |-> ob("Tailcall-0"), "x" |-> int(0),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 2 >
