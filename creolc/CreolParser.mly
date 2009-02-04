@@ -144,7 +144,7 @@ classdecl:
 	  contracts = contracts s; implements = implements s;
 	  attributes = List.flatten a; invariants = i;
           with_defs = upd_method_locs n (aw @ w);
-	  pragmas = pr;
+	  objects_created = Big_int.zero_big_int; pragmas = pr;
 	  file = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | CLASS error
 	{ signal_error $startpos "syntax error: invalid class name" }

@@ -1466,6 +1466,7 @@ struct
 	attributes: VarDecl.t list;
 	invariants: Expression.t list;
 	with_defs: With.t list;
+	objects_created: Big_int.big_int;
 	pragmas: Pragma.t list;
 	file: string;
 	line: int;
@@ -1474,7 +1475,8 @@ struct
   let empty =
     { name = ""; parameters = []; inherits = []; contracts = [];
       implements = []; attributes = []; invariants = []; with_defs = [];
-      pragmas = []; file = ""; line = 0 }
+      objects_created = Big_int.zero_big_int; pragmas = [];
+      file = ""; line = 0 }
 
   (** Whether the class is hidden. *)
   let hidden_p c = Pragma.hidden_p c.pragmas
@@ -1664,6 +1666,7 @@ struct
     attributes: VarDecl.t list;
     process: Process.t;
     process_queue: Process.t list;
+    emitted_calls: Big_int.big_int;
     pragmas: Pragma.t list;
   }
 

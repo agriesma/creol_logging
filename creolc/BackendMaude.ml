@@ -457,7 +457,7 @@ let emit subtarget out_channel input =
     print_string "Mtds: " ;
     of_with_defs c.Class.name c.Class.with_defs ;
     print_comma () ;
-    print_string "Ocnt: 0 >" ;
+    print_string ("Ocnt: " ^ (Big_int.string_of_big_int c.Class.objects_created) ^ " >") ;
     close_box ()
   and of_mapping =
     function
@@ -499,7 +499,7 @@ let emit subtarget out_channel input =
     print_string "PrQ: " ;
     of_process_list obj.Object.process_queue ;
     print_comma () ;
-    print_string ("Lcnt: " ^ (string_of_int 0)) ;
+    print_string ("Lcnt: " ^ (Big_int.string_of_big_int obj.Object.emitted_calls)) ;
     print_string " >";
     close_box ()
   and of_declaration =

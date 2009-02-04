@@ -281,6 +281,7 @@ type v =
   | Code of Statement.t
   | Inh of Inherits.t list
   | Mtds of Method.t list
+  | Nat of Big_int.big_int
   | Parameters of string list
   | Process of Process.t
   | ProcessQueue of Process.t list
@@ -303,6 +304,11 @@ let get_inh =
 let get_mtds =
   function
     | Mtds res -> res
+    | _ -> assert false
+
+let get_nat =
+  function
+    | Nat res -> res
     | _ -> assert false
 
 let get_parameters =
@@ -334,6 +340,7 @@ let parse name input =
 	  and i = get_inh (PropMap.find "Inh" props)
 	  and m = get_mtds (PropMap.find "Mtds" props)
 	  and a = get_attr (PropMap.find "Att" props)
+          and o = get_nat (PropMap.find "Ocnt" props)
 	  in
 	    Cls { Class.name = oid ;
 		  parameters = (List.map vardecl_of_name p) ;
@@ -346,6 +353,7 @@ let parse name input =
 				 methods = m;
 				 invariants = [];
                                  file = ""; line = 0}] ;
+		  objects_created = o;
 		  pragmas = [];
 		  file = "";
 		  line = 0 }
@@ -369,12 +377,14 @@ let parse name input =
 	  let a = get_attr (PropMap.find "Att" props)
 	  and p = get_process (PropMap.find "Pr" props)
 	  and q = get_process_queue (PropMap.find "PrQ" props)
+	  and c = get_nat (PropMap.find "Lcnt" props)
 	  in
 	    Obj { Object.name = oid;
 		  cls = Type.Basic t;
 		  attributes = (List.map vardecl_of_binding a);
 		  process = p;
 		  process_queue = q;
+                  emitted_calls = c;
 		  pragmas = [] }
   in
   let rec parse_configuration input =
@@ -477,6 +487,10 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let v = parse_inherit_list input in
 	    Inh v
+      | Some Property (("Lcnt" | "Ocnt"), _) ->
+	  let () = Stream.junk input in
+	  let v = parse_integer input in
+	    Nat v
       | Some Property ("Mtds", _) ->
 	  let () = Stream.junk input in
 	    Mtds (List.map (function (Mtd m) -> m | _ -> assert false)
