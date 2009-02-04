@@ -524,7 +524,7 @@ let pretty_print_program out_channel input =
 	  print_class c ; print_space () ; print_space ()
       | Declaration.Interface i when not (Interface.hidden_p i) ->
 	  print_iface i ; print_space () ; print_space ()
-      | Declaration.Object o when not o.Object.hidden ->
+      | Declaration.Object o when not (Object.hidden_p o) ->
 	  print_object o ; print_space () ; print_space ()
       | Declaration.Exception e when not (Exception.hidden_p e) ->
 	  print_exception e ; print_space () ; print_space ()

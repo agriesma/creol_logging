@@ -375,7 +375,7 @@ let parse name input =
 		  attributes = (List.map vardecl_of_binding a);
 		  process = p;
 		  process_queue = q;
-		  hidden = false }
+		  pragmas = [] }
   in
   let rec parse_configuration input =
     match Stream.peek input with

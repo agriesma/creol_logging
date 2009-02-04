@@ -1664,8 +1664,17 @@ struct
     attributes: VarDecl.t list;
     process: Process.t;
     process_queue: Process.t list;
-    hidden: bool;
+    pragmas: Pragma.t list;
   }
+
+  (** Whether the class is hidden. *)
+  let hidden_p c = Pragma.hidden_p c.pragmas
+
+  (** Hide a class. *)
+  let hide c = { c with pragmas = Pragma.hide c.pragmas }
+
+  (** Show a class. *)
+  let show c = { c with pragmas = Pragma.show c.pragmas }
 
 end
 
@@ -1690,7 +1699,7 @@ struct
       | Datatype d -> Datatype (Datatype.hide d)
       | Exception e -> Exception (Exception.hide e)
       | Function f -> Function (Function.hide f)
-      | Object o -> Object { o with Object.hidden = true }
+      | Object o -> Object (Object.hide o)
 
 
   let show =
@@ -1700,7 +1709,7 @@ struct
       | Datatype d -> Datatype (Datatype.show d)
       | Exception e -> Exception (Exception.show e)
       | Function f -> Function (Function.show f)
-      | Object o -> Object { o with Object.hidden = false }
+      | Object o -> Object (Object.show o)
 
 end
 
