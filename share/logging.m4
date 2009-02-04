@@ -104,6 +104,14 @@ rl
   <choice Number: G Type: "blocked await" Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
+
+---remove awaits that just wait for a method to finish
+rl <choice Number: G Type: "await" Expression: (?(E)) >
+   => none .
+
+rl <choice Number: G Type: "blocked await" Expression: "~"(?(E)) >
+   => none .
+
 rl <choice Number: G Type: "await" Expression: bool(true) >
    => none .
 
