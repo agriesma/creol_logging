@@ -29,7 +29,12 @@ let requires _ = []
 
 let conflicts _ = []
 
-let emit out_channel input =
+type features = {
+  classes: bool;
+  objects: bool;
+}
+
+let emit ?(features={ classes = true; objects = true }) out_channel input =
   let c n = "C_" ^ n in
   let i n = "I_" ^ n in
   let d n = "D_" ^ n in
@@ -37,49 +42,49 @@ let emit out_channel input =
     output_string out_channel (f ^ " -> " ^ t ^ "[style=" ^ s ^ "];\n") in
   let emit_node =
     function
-        Declaration.Class { Class.name = n } ->
+        Declaration.Class { Class.name = n } when features.classes ->
   	    output_string out_channel
 	      ((c n) ^ "[shape=box, label=\"" ^ n ^ "\"];\n")
-      | Declaration.Interface { Interface.name = n } ->
+      | Declaration.Interface { Interface.name = n } when features.classes ->
   	    output_string out_channel
 	      ((i n) ^ "[shape=diamond, label=\"" ^ n ^ "\"];\n")
-      | Declaration.Datatype { Datatype.name = t } ->
+      | Declaration.Datatype { Datatype.name = t } when features.classes ->
   	    output_string out_channel
 	      ((d (Type.name t)) ^ "[shape=ellipse, label=\"" ^
 		 (Type.string_of_type t) ^ "\"];\n")
-      | Declaration.Object { Object.name = n } ->
+      | Declaration.Object { Object.name = n } when features.objects ->
   	    output_string out_channel
 	      (n ^ "[shape=circle label=\"" ^ n ^ "\"];\n")
       | _ -> ()
   and emit_inherits =
     function
-        Declaration.Class { Class.name = n; inherits = l } ->
+        Declaration.Class { Class.name = n; inherits = l } when features.classes ->
 	  List.iter (fun t -> edge (c n) (c (Inherits.name t)) "solid") l
-      | Declaration.Interface { Interface.name = n; inherits = [] } ->
+      | Declaration.Interface { Interface.name = n; inherits = [] } when features.classes ->
 	  edge (i n) "I_Any" "solid"
-      | Declaration.Interface { Interface.name = n; inherits = l } ->
+      | Declaration.Interface { Interface.name = n; inherits = l } when features.classes ->
 	  List.iter (fun t -> edge (i n) (i (Inherits.name t)) "solid") l
-      | Declaration.Datatype { Datatype.name = n; supers = [] } ->
+      | Declaration.Datatype { Datatype.name = n; supers = [] } when features.classes ->
 	  edge (d (Type.name n)) "D_Data" "solid"
-      | Declaration.Datatype { Datatype.name = n; supers = l } ->
+      | Declaration.Datatype { Datatype.name = n; supers = l } when features.classes ->
 	  List.iter
 	    (fun t -> edge (d (Type.name n)) (d (Type.name t)) "solid") l
       | _ -> ()
   and emit_implements =
     function
-        Declaration.Class { Class.name = n; implements = l } ->
+        Declaration.Class { Class.name = n; implements = l } when features.classes ->
 	  List.iter (fun t -> edge (c n) (i (Inherits.name t)) "dashed") l
       | _ -> ()
   and emit_contracts =
     function
-        Declaration.Class { Class.name = n; contracts = [] } ->
+        Declaration.Class { Class.name = n; contracts = [] } when features.classes ->
 	  edge (c n) "I_Any" "bold"
-      | Declaration.Class { Class.name = n; contracts = l } ->
+      | Declaration.Class { Class.name = n; contracts = l } when features.classes ->
 	  List.iter (fun t -> edge (c n) (i (Inherits.name t)) "bold") l
       | _ -> ()
   and emit_links =
     function
-        Declaration.Object { Object.name = n; attributes = a } ->
+        Declaration.Object { Object.name = n; attributes = a } when features.objects ->
 	  let e f t s =
             output_string out_channel
               (f ^ " -> " ^ t ^ "[label=\"" ^ s ^ "\"];\n")

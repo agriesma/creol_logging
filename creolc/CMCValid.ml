@@ -39,10 +39,16 @@ let show_version () =
 
 let output_dot = ref false
 
+let without_objects = ref false
+
+let with_classes = ref false
+
 let options = [
   ("-", Arg.Unit (function () -> ignore (parse_from_channel "*stdin*" stdin)),
     "Read from standard input");
   ("-dot", Arg.Set output_dot, "  Visualise the object state");
+  ("-without-objects", Arg.Set without_objects, "  Do not show the objects");
+  ("-with-classes", Arg.Set with_classes, "  Show the classes");
   ("-V", Arg.Unit show_version, "  Show the version and exit");
   ("-version", Arg.Unit show_version, "  Show the version and exit");
   ("--version", Arg.Unit show_version, "  Show the version and exit")]
@@ -51,7 +57,11 @@ let main () =
   let action n =
     let tree = parse_from_file n in
       if !output_dot then
-        BackendDot.emit stdout tree
+        let features = {
+          BackendDot.classes = !with_classes;
+          objects = not !without_objects }
+        in
+          BackendDot.emit ~features:features stdout tree
       else
         BackendCreol.pretty_print_program stdout tree
   in
