@@ -36,6 +36,6 @@ TEST_MAUDE([./PetersonLeader-cmc], test.maude, [examples])
 l=`wc -l < ./PetersonLeader-cmc.out`
 l=`expr $l - 2`
 /bin/sed -e 1d -e 2d -e 3d -e "$l"q ./PetersonLeader-cmc.out > ./output
-AT_CHECK([cmcvalid ./output], [0], [ignore], [])
+AT_CHECK([cmcdisplay ./output], [0], [ignore], [])
 
 AT_CLEANUP
