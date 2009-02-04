@@ -486,7 +486,9 @@ let emit subtarget out_channel input =
       | lst -> separated_list of_process print_comma lst
   and of_object obj =
     open_box 2 ;
-    print_string ("< ob(\"" ^ obj.Object.name ^ "\") :");
+    print_string "< " ;
+    of_expression obj.Object.name ;
+    print_string  " :" ;
     print_space () ;
     print_string ((Type.string_of_type obj.Object.cls) ^ " |") ;
     print_space () ;
@@ -502,6 +504,23 @@ let emit subtarget out_channel input =
     print_string ("Lcnt: " ^ (Big_int.string_of_big_int obj.Object.emitted_calls)) ;
     print_string " >";
     close_box ()
+  and of_future f =
+    open_box 2 ;
+    print_string "< ";
+    of_expression f.Future.name ;
+    print_space () ;
+    print_string ": Future |" ;
+    print_space () ;
+    print_string "Completed: " ;
+    print_string (string_of_bool f.Future.completed) ;
+    print_comma () ;
+    print_string "References: ";
+    print_string (Big_int.string_of_big_int f.Future.references) ;
+    print_comma () ;
+    print_string "Value: " ;
+    of_expression_list f.Future.value ;
+    print_string " >";
+    close_box ()
   and of_declaration =
     function
 	Declaration.Class c -> of_class c
@@ -509,11 +528,13 @@ let emit subtarget out_channel input =
       | Declaration.Exception _
       | Declaration.Datatype _
       | Declaration.Function _ -> assert false
+      | Declaration.Future f -> of_future f
       | Declaration.Object o -> of_object o
   and of_decl_list =
     let relevant_p =
       function
 	| Declaration.Class _ 
+	| Declaration.Future _
 	| Declaration.Object _ -> true
         | Declaration.Interface _
         | Declaration.Exception _

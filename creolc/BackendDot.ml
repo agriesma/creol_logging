@@ -52,7 +52,7 @@ let emit ?(features={ classes = true; objects = true }) out_channel input =
   	    output_string out_channel
 	      ((d (Type.name t)) ^ "[shape=ellipse, label=\"" ^
 		 (Type.string_of_type t) ^ "\"];\n")
-      | Declaration.Object { Object.name = n } when features.objects ->
+      | Declaration.Object { Object.name = Expression.ObjLit (_, n) } when features.objects ->
   	    output_string out_channel
 	      (n ^ "[shape=circle label=\"" ^ n ^ "\"];\n")
       | _ -> ()
@@ -84,7 +84,7 @@ let emit ?(features={ classes = true; objects = true }) out_channel input =
       | _ -> ()
   and emit_links =
     function
-        Declaration.Object { Object.name = n; attributes = a } when features.objects ->
+        Declaration.Object { Object.name = Expression.ObjLit(_, n); attributes = a } when features.objects ->
 	  let e f t s =
             output_string out_channel
               (f ^ " -> " ^ t ^ "[label=\"" ^ s ^ "\"];\n")

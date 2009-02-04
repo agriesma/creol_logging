@@ -19,7 +19,9 @@ search in TEST-TAILCALL : main(classes, "Tailcall", int(5)) =>+ {
 } .
 
 Solution 1 (state 24)
-conf:Configuration --> discard(label(ob("Tailcall-0"), 1))
+conf:Configuration --> 
+< label(ob("Tailcall-0"), 1) : Future |  Completed: false,  References: 0, 
+    Value: emp >
  
 < ob("main") : Start |
   Att: noSubst,

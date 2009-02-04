@@ -272,12 +272,14 @@ module PropMap = Map.Make(String)
 
 type t =
   | Cls of Class.t
+  | Future of Future.t
   | Mtd of Method.t
   | Obj of Object.t
 
 type v =
   | Ignored
   | Attr of (string * Expression.t) list
+  | Bool of bool
   | Code of Statement.t
   | Inh of Inherits.t list
   | Mtds of Method.t list
@@ -285,10 +287,16 @@ type v =
   | Parameters of string list
   | Process of Process.t
   | ProcessQueue of Process.t list
+  | Value of Expression.t list
 
 let get_attr =
   function
     | Attr res -> res
+    | _ -> assert false
+
+let get_bool =
+  function
+    | Bool res -> res
     | _ -> assert false
 
 let get_code =
@@ -326,6 +334,16 @@ let get_process_queue =
     | ProcessQueue res -> res
     | _ -> assert false
 
+let get_value =
+  function
+    | Value res -> res
+    | _ -> assert false
+
+let get_name =
+  function
+    | Expression.Id (_, name) -> name
+    | _ -> assert false
+
 let vardecl_of_binding (n, i) =
   { VarDecl.name = n; var_type = Type.data; init = Some i; file = ""; line = 0 }
 
@@ -342,7 +360,7 @@ let parse name input =
 	  and a = get_attr (PropMap.find "Att" props)
           and o = get_nat (PropMap.find "Ocnt" props)
 	  in
-	    Cls { Class.name = oid ;
+	    Cls { Class.name = get_name oid ;
 		  parameters = (List.map vardecl_of_name p) ;
 		  inherits = i ;
 		  contracts = [] ;
@@ -357,12 +375,18 @@ let parse name input =
 		  pragmas = [];
 		  file = "";
 		  line = 0 }
+      | "~Future" ->
+          Future { Future.name = oid;
+                   completed = get_bool (PropMap.find "Completed" props);
+                   references = get_nat (PropMap.find "References" props);
+                   value = get_value (PropMap.find "Value" props);
+          }
       | "~Method" ->
 	  let c = get_code (PropMap.find "Code" props)
 	  and p = get_parameters (PropMap.find "Param" props)
 	  and a = get_attr (PropMap.find "Att" props)
 	  in
-	    Mtd { Method.name = oid;
+	    Mtd { Method.name = get_name oid;
 		  coiface = Type.any;
 		  inpars = List.map vardecl_of_name p;
 		  outpars = [];
@@ -394,6 +418,7 @@ let parse name input =
 	    match parse_object_term input with 
 	      | Cls c -> Declaration.Class c
 	      | Obj o -> Declaration.Object o
+              | Future f -> Declaration.Future f
 	      | _ -> assert false
 	  in
 	    res::(parse_configuration input)
@@ -434,14 +459,11 @@ let parse name input =
       build_term oid cid props
   and parse_oid input =
     match Stream.peek input with
-      | Some Key ("ob", _) ->
-          let () = Stream.junk input in
-	  let () = junk_lparen input in
-	  let s = parse_string input in
-	  let () = junk_rparen input in
-	    s
+      | Some Key (("label" | "ob"), _) ->
+	  parse_expression input
       | Some Str (v, _) ->
-	  let () = Stream.junk input in v
+	  let () = Stream.junk input in
+            Expression.Id (Expression.make_note (), v)
       | Some t ->
 	  raise (BadToken (error_tokens input, get_token_line t,
 			   "OID: <<key>>,<<string>>"))
@@ -483,11 +505,23 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let v = parse_merge_statement input in
 	    Code v
+      | Some Property ("Completed", _) ->
+	  let () = Stream.junk input in
+	  let v =
+            match Stream.peek input with
+              | Some Key ("false", _) -> let () = Stream.junk input in false
+              | Some Key ("true", _) -> let () = Stream.junk input in true
+              | Some t ->
+	          let tl = error_tokens input in
+	            raise (BadToken (tl, get_token_line t, "false, true"))
+              | None -> raise (Eof "")
+          in
+	    Bool v
       | Some Property ("Inh", _) ->
 	  let () = Stream.junk input in
 	  let v = parse_inherit_list input in
 	    Inh v
-      | Some Property (("Lcnt" | "Ocnt"), _) ->
+      | Some Property (("Lcnt" | "Ocnt" | "References"), _) ->
 	  let () = Stream.junk input in
 	  let v = parse_integer input in
 	    Nat v
@@ -507,6 +541,10 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let q = parse_process_queue input in
 	    ProcessQueue q
+      | Some Property ("Value", _) ->
+	  let () = Stream.junk input in
+	  let l = parse_expression_list input in
+	    Value l
       | Some Property (p, _) ->
 	  let () = Stream.junk input in
 	  let () = junk_property input in

@@ -1,7 +1,8 @@
 ==========================================
 reduce in TEST-TAILCALL : main(classes, "Tailcall", int(5)) .
-result State: {comp(label(ob("Tailcall-0"), ob("Tailcall-0"), "init", emp),
-    emp)
+result State: {
+< label(ob("Tailcall-0"), ob("Tailcall-0"), "init", emp) : Future |  Completed:
+    true,  References: 1,  Value: emp >
  
 < ob("Tailcall-0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall-0"), "x" |-> int(5),
@@ -29,8 +30,9 @@ result State: {comp(label(ob("Tailcall-0"), ob("Tailcall-0"), "init", emp),
 }
 ==========================================
 rewrite [1] in TEST-TAILCALL : main(classes, "Tailcall", int(5)) .
-result State: {comp(label(ob("Tailcall-0"), ob("Tailcall-0"), "init", emp),
-    emp)
+result State: {
+< label(ob("Tailcall-0"), ob("Tailcall-0"), "init", emp) : Future |  Completed:
+    true,  References: 1,  Value: emp >
  
 < ob("Tailcall-0") : "Tailcall" |
   Att: "this" |-> ob("Tailcall-0"), "x" |-> int(5),

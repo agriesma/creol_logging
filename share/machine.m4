@@ -44,6 +44,7 @@ mod CREOL-SIMULATOR is
   vars I I1 : InhList .
   var MS : MMtd .
   var CN : Configuration .
+  var CO : Bool .                      --- Whether a future completed.
 ifdef(`WITH_UPDATE',
 `  var V V1 T T1 T2 : Nat .                --- Class and object versions
   var G1 : Nat .
@@ -258,10 +259,10 @@ eq < O : C | Att: S, Pr: { L | get(A ; AL) ; SL }, PrQ: W, Lcnt: F > =
 ---
 rl
   < O : C |  Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W, Lcnt: F >
-  comp(N, DL)
+  < N : Future | Completed: true, References: G, Value: DL >
   =>
   < O : C |  Att: S, Pr: { L | assign(AL ; DL) ; SL }, PrQ: W, Lcnt: F >
-  comp(N, DL)
+  < N : Future | Completed: true, References: G, Value: DL >
   [label receive-comp] .
 
 
@@ -295,18 +296,22 @@ rl
 --- local-async-static-call
 ---
 ifdef(`MODELCHECK',
-`eq
+`ceq
   < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; None ; EL ); SL }, PrQ: W, Lcnt: F >
   CLOCK
   =
-  < O : C | Att: S, Pr: { insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L) | SL }, PrQ: W, Lcnt: F >
-  bindMtd(O`,' O`,' label(O, O, Q, EVALLIST(EL, (S :: L), T))`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F >
+  < N : Future | Completed: false, References: 1, Value: emp >
+  bindMtd(O`,' O`,' N`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK
+  if N := label(O, O, Q, EVALLIST(EL, (S :: L), T))'
 ,
-`rl
+`crl
   < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; None ; EL ); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
   < O : C | Att: S, Pr: { insert (A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) >
-  bindMtd(O`,' O`,' label(O, F)`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
+  < N : Future | Completed: false, References: 1, Value: emp >
+  bindMtd(O`,' O`,' N`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK
+  if N := label(O, F)'
 )dnl
   [label local-async-static-call] .
 
@@ -385,9 +390,11 @@ ifdef(`MODELCHECK',
 
 --- return
 ---
-STEP(`< O : C |  Att: S, Pr: { L | return(EL); SL }, PrQ: W, Lcnt: F > CLOCK',
+CSTEP(`< O : C |  Att: S, Pr: { L | return(EL); SL }, PrQ: W, Lcnt: F > CLOCK
+  < N : Future | Completed: false, References: G, Value: emp >',
 `< O : C |  Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CLOCK
-  comp(L[".label"], EVALLIST(EL, (S :: L), T))',
+  < N : Future | Completed: true, References: G, Value: EVALLIST(EL, (S :: L), T) >',
+`N == L[".label"]',
 `[label return]')
 
 
@@ -400,6 +407,7 @@ eq
   invoc(O1, O, N, Q, DL)
   =
   < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
+  < N : Future | Completed: false, References: 1, Value: emp >
   bindMtd(O, O1, N, Q, DL, C < emp >)
   [label transport-imsg] .
 
@@ -407,16 +415,14 @@ eq
 ---
 --- Free a label.  Make sure that the use of labels is linear.
 ---
-STEP(< O : C | Att: S`,' Pr: { L | free(A) ; SL }`,' PrQ: W`,' Lcnt: F >,
-  < O : C | Att: S`,' Pr: { insert(A`,' null`,' L) | SL }`,' PrQ: W`,'
-            Lcnt: F >
-  discard(L[A]),
+--- sd(G,1) works, because G is always positive. Maude does not have
+--- a nice decrement operator.
+CSTEP(`< O : C | Att: S, Pr: { L | free(A) ; SL }, PrQ: W, Lcnt: F >
+  < N : Future | Completed: CO, References: G, Value: DL >',
+`< O : C | Att: S, Pr: { insert(A, null, L) | SL }, PrQ: W, Lcnt: F >
+  < N : Future | Completed: CO, References: sd(G, 1), Value: DL >',
+`N = L[A]',
   `[label free]')
-
-
---- deallocate
----
-eq comp(N, DL) discard(N) = none [label deallocate] .
 
 
 --- TAIL CALLS
@@ -478,8 +484,12 @@ STEP(dnl
   < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
   findAttr(newId(B`,' G), I, S1, 
     $assign(AL ; EVALLIST(EL, compose(S,  L), T)),
-    { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
-    free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK',dnl
+    { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') |
+        call(".anon" ; "this" ; "init" ; emp) ;
+        get(".anon" ; noVid) ;
+        free(".anon") ;
+        call (".anon" ; "this" ; "run" ; emp) ;
+        free(".anon") }) CLOCK',dnl
 `[label new-object]')
 
 

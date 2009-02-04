@@ -71,17 +71,6 @@ ifdef(`WITH_TIME',
     op invoc(_,_,_,_,_) : Oid Oid Label String DataList -> Msg
       [ctor `format' (b d o  b so  b so  b so  b so b on)] .
 
-    --- Completion message.
-    ---
-    --- comp(N,DL)
-    --- N: The label
-    --- DL: The result values.
-    op comp(_,_) : Label DataList -> Msg
-      [ctor `format' (b d o  b so  b on)] .
-
-    --- Instruct the runtime system to drop the message.
-    op discard(_) : Label -> Msg [ctor `format' (b d o b on)].
-
     --- Error and warning messages are intended to stop the machine.
     --- For now, nothing is emitting these.
     --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
@@ -108,11 +97,22 @@ ifdef(`WITH_TIME',
     --- Terms of sort Object represent objects (and classes) in the
     --- run-time configuration.
     ---
-
     op noObj : -> Object [ctor] .
     op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
        Oid Cid Subst Process MProc Nat -> Object 
          [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o--  r on)] .
+
+
+    --- Terms that represent futures.
+    ---
+    op <_: Future | Completed:_, References:_, Value:_> :
+       Label Bool Nat DataList -> Object 
+         [ctor `format' (nr d d g ++r ir o  r i o  r i o--  r on)] .
+
+
+    --- Completed futures without references can be removed.
+    ---
+    eq < N : Future | Completed: true, References: 0, Value: DL > = none .
 
 
 ifdef(`WITH_UPDATE',

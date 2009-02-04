@@ -372,22 +372,28 @@ result GroundTerm: '$cont_['label['s_^5['0.Zero]]]
 reduce in CREOL-LABEL-TEST : downTerm(upTerm($cont label(5)), skip) .
 result Stmt: $cont label(5)
 ==========================================
-reduce in CREOL-LABEL-TEST : comp(label(5), emp)
+reduce in CREOL-LABEL-TEST : 
+< label(5) : Future |  Completed: true,  References: 1,  Value: emp >
  .
-result Msg: comp(label(5), emp)
+result Object: 
+< label(5) : Future |  Completed: true,  References: 1,  Value: emp >
 
 ==========================================
-reduce in CREOL-LABEL-TEST : upTerm(comp(label(5), emp)
+reduce in CREOL-LABEL-TEST : upTerm(
+< label(5) : Future |  Completed: true,  References: 1,  Value: emp >
 ) .
-result GroundTerm: 'comp`(_`,_`)['label['s_^5['0.Zero]],'emp.DataList]
+result GroundTerm: '<_:`Future`|`Completed:_`,References:_`,Value:_>['label[
+    's_^5['0.Zero]],'true.Bool,'s_['0.Zero],'emp.DataList]
 ==========================================
-reduce in CREOL-LABEL-TEST : downTerm(upTerm(comp(label(5), emp)
+reduce in CREOL-LABEL-TEST : downTerm(upTerm(
+< label(5) : Future |  Completed: true,  References: 1,  Value: emp >
 ), 
 
 warning("")
 
 ) .
-result Msg: comp(label(5), emp)
+result Object: 
+< label(5) : Future |  Completed: true,  References: 1,  Value: emp >
 
 ==========================================
 reduce in CREOL-LABEL-TEST : invoc(ob("object1"), ob("object2"), label(5),

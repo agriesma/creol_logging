@@ -1,6 +1,38 @@
 ==========================================
 frewrite in PROGRAM : main(classes, "Main", emp) .
-result (sort not calculated): {discard(label(ob("Main-0"), 6))
+result (sort not calculated): {
+< label(ob("Main-0"), 6) : Future |  Completed: false,  References: 0,  Value:
+    emp >
+ 
+< label(ob("Process-0"), 0) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-0"), 1) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-1"), 0) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-1"), 1) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-2"), 0) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-2"), 1) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-3"), 0) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-3"), 1) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-4"), 0) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Process-4"), 1) : Future |  Completed: false,  References: 1, 
+    Value: emp >
  
 < ob("Main-0") : "Main" |
   Att: "p1" |-> ob("Process-0"), "p2" |-> ob("Process-1"), "p3" |-> ob(

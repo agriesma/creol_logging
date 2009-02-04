@@ -532,6 +532,8 @@ let pretty_print_program out_channel input =
           print_datatype d ; print_space () ; print_space ()
       | Declaration.Function f when not (Function.hidden_p f) ->
 	  print_function f ; print_space () ; print_space ()
+      | Declaration.Future f ->
+	  print_future f ; print_space () ; print_space ()
       | _ -> ()
   and print_function f =
     open_box 2 ;
@@ -581,8 +583,8 @@ let pretty_print_program out_channel input =
     close_box ()
   and print_object obj =
     open_vbox 0 ;
-    print_string ("object " ^ obj.Object.name ^ " : " ^
-		   (Type.string_of_type obj.Object.cls)) ;
+    print_expression obj.Object.name ;
+    print_string (" : " ^ (Type.string_of_type obj.Object.cls)) ;
     print_space () ;
     print_string "begin" ;
     print_space () ;
@@ -655,6 +657,25 @@ let pretty_print_program out_channel input =
 	print_statement c;
 	close_box () ;
 	close_box ()
+  and print_future f =
+    open_box 2 ;
+    print_string "Future" ;
+    print_space () ;
+    print_expression f.Future.name ;
+    print_space () ;
+    print_string "with" ;
+    print_space () ;
+    print_string (Big_int.string_of_big_int f.Future.references) ;
+    print_space () ;
+    print_string "references" ;
+    print_space () ;
+    print_string "is" ;
+    print_space () ;
+    if f.Future.completed then
+      print_expression_list f.Future.value
+    else
+      print_string "Pending" ;
+    close_box ()
   and print_iface i =
     open_vbox 0 ;
     begin

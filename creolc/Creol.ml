@@ -1536,12 +1536,16 @@ struct
 
   type  t =
       { name: string;
+	parameters: VarDecl.t list;
 	inherits: Inherits.t list;
 	with_decls: With.t list;
         pragmas: Pragma.t list;
         file: string;
         line: int;
       }
+
+  let empty = { name = ""; parameters = []; inherits = []; with_decls = [];
+                pragmas = []; file = ""; line = 0 }
 
   (** Whether the interface is hidden. *)
   let hidden_p i = Pragma.hidden_p i.pragmas
@@ -1661,7 +1665,7 @@ module Object =
 struct
 
   type t = {
-    name: string;
+    name: Expression.t;
     cls: Type.t;
     attributes: VarDecl.t list;
     process: Process.t;
@@ -1681,6 +1685,19 @@ struct
 
 end
 
+(** Abstract syntax of a future object. *)
+module Future =
+struct
+
+  type t = {
+    name: Expression.t;
+    completed: bool;
+    references: Big_int.big_int;
+    value: Expression.t list;
+  }
+
+end
+
 
 (** Abstract syntax of Declararions. *)
 module Declaration =
@@ -1693,6 +1710,7 @@ struct
       | Exception of Exception.t
       | Function of Function.t
       | Object of Object.t
+      | Future of Future.t
 
 
   let hide =

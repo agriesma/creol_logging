@@ -157,10 +157,10 @@ classdecl:
 (* Interface Declaration *)
 
 interfacedecl:
-      INTERFACE n = CID plist(vardecl_no_init) i = list(inherits_decl)
+      INTERFACE n = CID p = plist(vardecl_no_init) i = list(inherits_decl)
         pr = list(pragma)
         BEGIN ioption(preceded(INV, expression)) w = list(with_decl) END
-        { { Interface.name = n; inherits = inherits i;
+        { { Interface.name = n; parameters = p; inherits = inherits i;
 	    with_decls = upd_method_locs n w; pragmas = pr;
 	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | INTERFACE error

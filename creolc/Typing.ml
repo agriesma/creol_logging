@@ -1114,6 +1114,31 @@ let type_check_class_inherit program cls inh =
     { inh with Inherits.arguments = args' }
 
 
+(** Check that a class is inherited by supplying correct
+    parameters. *)
+let type_check_implements program iface inh =
+  let env = { program = program; cls = Class.empty; meth = Method.empty;
+	      env = Env.empty }
+  and super = Program.find_interface program inh.Inherits.name in
+  let f { VarDecl.name = name } =
+    Expression.LhsAttr (Expression.make_note (), name,
+			Type.Basic super.Interface.name) in
+  let lhs = List.map f super.Interface.parameters
+  and rhs = inh.Inherits.arguments
+  in
+  let ass =
+    Statement.Assign
+      (Statement.make_note ~file:inh.Inherits.file ~line:inh.Inherits.line (),
+       lhs, rhs)
+  in
+  let args' =
+    match type_check_statement env "" ass with
+      | Statement.Assign (_, _, rhs') -> rhs'
+      | _ -> assert false
+  in
+    { inh with Inherits.arguments = args' }
+
+
 (** The function [method_missing_for_interface program cls name]
     checks, whether all methods declared in the interface called
     [name] are defined by the class [cls] or one of its superclasses.
@@ -1166,6 +1191,87 @@ let type_check_parameter kind program vardecl =
     end
 
 
+let rec type_check_inits env coiface res =
+  function
+    | [] -> res
+    | ({ VarDecl.init = None } as v)::r ->
+	  type_check_inits env coiface (v::res) r
+    | { VarDecl.name = n; var_type = t; init = Some i }::r ->
+	let i' =
+	  let l = [LhsId (Expression.make_note (), n)]
+	  and r = [i]
+	  and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None; file = ""; line = 0 }::res } }
+	  in
+	  let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
+	    match s with
+	      | Assign (_, _, [i']) -> i'
+	      | _ -> assert false
+	in
+	  type_check_inits env coiface
+	    ({ VarDecl.name = n; var_type = t; init = Some i'; file = ""; line = 0 }::res) r
+
+
+let type_check_variables env coiface meth =
+  List.rev (type_check_inits env coiface [] meth.Method.vars)
+
+
+let type_check_method program cls coiface meth =
+  let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
+  let env' = { env with meth = { meth with Method.vars = [] } }  in
+  let () =
+    if not
+      ((List.for_all (type_check_parameter "input" program) meth.Method.inpars) &&
+      (List.for_all (type_check_parameter "output" program) meth.Method.outpars))
+    then
+      exit 1
+  in
+  let r' = type_check_assertion env' coiface meth.Method.requires
+  and e' = type_check_assertion env' coiface meth.Method.ensures
+  and v' = type_check_variables env' coiface meth
+  and b' = match meth.Method.body with
+    | None -> None
+    | Some s -> Some (type_check_statement env coiface s)
+  in
+    { meth with Method.requires = r'; ensures = e'; vars = v' ; body = b' }
+
+
+let type_check_with_def program cls w =
+  let coiface =
+    match w.With.co_interface with
+      | Type.Internal -> "" (* The co-interface may also be internal. *)
+      | _ -> Type.name w.With.co_interface
+  in
+  let () =
+    if not (Program.interface_p program w.With.co_interface) then
+      raise (Type_error (w.With.file, w.With.line,
+			 "cointerface " ^ coiface ^ " is not an interface"))
+  in
+  let i' =
+    let env =
+      { program = program; cls = cls; meth = Method.empty; env = Env.empty }
+    in
+      List.map (type_check_assertion env coiface) w.With.invariants
+  in
+  let m' = List.map (type_check_method program cls coiface) w.With.methods in
+    { w with With.methods = m'; invariants = i' }
+
+
+(** Type check an interface declaration. There is not much to do,
+    except that all types should be defined.
+
+    We can reuse type_check_with_def with an empty class, because the
+    method declarations in an interface do {i not} have method
+    bodies. *)
+let type_check_interface program iface =
+  let with_decls' =
+    List.map (type_check_with_def program
+      { Class.empty with Class.file = iface.Interface.file;
+                         Class.line = iface.Interface.line })
+      iface.Interface.with_decls
+  in
+    { iface with Interface.with_decls = with_decls' }
+
+
 let type_relation_well_formed_p tree =
   let rel = Program.subtype_relation tree in
     if Program.acyclic_p (Program.transitive_closure rel) then
@@ -1194,66 +1300,6 @@ let class_hierarchy_well_formed_p tree =
 
 (** Type check a tree. *)
 let typecheck tree: Program.t =
-  let rec type_check_inits env coiface res =
-    function
-      | [] -> res
-      | ({ VarDecl.init = None } as v)::r ->
-	  type_check_inits env coiface (v::res) r
-      | { VarDecl.name = n; var_type = t; init = Some i }::r ->
-	  let i' =
-	    let l = [LhsId (Expression.make_note (), n)]
-	    and r = [i]
-	    and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None; file = ""; line = 0 }::res } }
-	    in
-	    let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
-	      match s with
-		| Assign (_, _, [i']) -> i'
-		| _ -> assert false
-	  in
-	    type_check_inits env coiface
-	      ({ VarDecl.name = n; var_type = t; init = Some i'; file = ""; line = 0 }::res) r
-  and type_check_variables env coiface meth =
-    List.rev (type_check_inits env coiface [] meth.Method.vars)
-  and type_check_method program cls coiface meth =
-    let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
-    let env' = { env with meth = { meth with Method.vars = [] } }  in
-    let () =
-      if not
-        ((List.for_all (type_check_parameter "input" program) meth.Method.inpars) &&
-        (List.for_all (type_check_parameter "output" program) meth.Method.outpars))
-      then
-        exit 1
-    in
-    let r' = type_check_assertion env' coiface meth.Method.requires
-    and e' = type_check_assertion env' coiface meth.Method.ensures
-    and v' = type_check_variables env' coiface meth
-    and b' = match meth.Method.body with
-	None -> None
-      | Some s -> Some (type_check_statement env coiface s)
-    in
-      { meth with Method.requires = r'; ensures = e'; vars = v' ; body = b' }
-  and type_check_with_def program cls w =
-    let coiface =
-      match w.With.co_interface with
-	| Type.Internal -> "" (* The co-interface may also be internal. *)
-	| _ -> Type.name w.With.co_interface
-    in
-    let () =
-      if not (Program.interface_p program w.With.co_interface) then
-	raise (Type_error (w.With.file, w.With.line,
-			   "cointerface " ^ coiface ^ " is not an interface"))
-    in
-    let i' =
-      let env =
-	{ program = program; cls = cls; meth = Method.empty; env = Env.empty }
-      in
-	List.map (type_check_assertion env coiface) w.With.invariants
-    in
-    let m' =
-      List.map (type_check_method program cls coiface) w.With.methods
-    in
-      { w with With.methods = m'; invariants = i' }
-
   (* A class is well typed, if it provides methods for all the
      interfaces it claims to implement, if the initialisation of all
      attributes are well-typed, and if all with-declarations are
@@ -1262,7 +1308,7 @@ let typecheck tree: Program.t =
      Type checking a class starts with checking, whether the class
      provides a method for each interface it declared.  *)
 
-  and type_check_class program cls =
+  let rec type_check_class program cls =
 
     let attribute_well_typed vardecl =
       if Program.type_p program vardecl.VarDecl.var_type then
@@ -1334,20 +1380,6 @@ let typecheck tree: Program.t =
 	    Messages.error f l ("Class " ^ c ^ " not defined") ;
 	    exit 1
 
-  and type_check_interface program iface =
-    (** Type check an interface declaration. There is not much to do,
-        except that all types should be defined.
-
-        We can reuse type_check_with_def with an empty class, because the
-        method declarations in an interface do {i not} have method
-        bodies. *)
-    let with_decls' =
-      List.map (type_check_with_def program
-        { Class.empty with Class.file = iface.Interface.file;
-                           Class.line = iface.Interface.line })
-        iface.Interface.with_decls
-    in
-      { iface with Interface.with_decls = with_decls' }
   and type_check_declaration program =
     function
 	Declaration.Class c ->

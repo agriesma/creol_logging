@@ -37,7 +37,7 @@ let make_class name ?(contracts=[]) ?(implements=[]) inherits =
     file = ""; line = 0 }
 
 let make_iface name inherits =
-  { Interface.name = name;
+  { Interface.name = name; parameters = [];
     inherits = List.map conv_inh inherits;
     with_decls = []; pragmas = []; file = ""; line = 0 }
 
