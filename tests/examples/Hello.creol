@@ -27,12 +27,12 @@ end
 class Console implements Console
 begin
   var output : List[String] := nil
-  with Any op print(in result: String) == output := output |- "Hello, world"
+  with Any op print(in input: String) == output := output |- input
 end
 
 class Hello
 begin
   var console: Console
   op init == console := new Console
-  op run == console.print("hello, world";)
+  op run == console.print("Hello, world";)
 end

@@ -9,9 +9,9 @@ mod PROGRAM is
               return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "print" : Method | Param: "result", Att: "result" |-> null, "_"
+            < "print" : Method | Param: "input", Att: "input" |-> null, "_"
               |-> null, Code: assign( "output" ; "|-" ( "output" ::
-              str("Hello, world") ) ) ; return ( emp ) >,
+              "input" ) ) ; return ( emp ) >,
       Ocnt: 0 >
     
     < "Hello" : Class | Inh: noInh, Param: noVid, Att: "console" |-> null,
@@ -19,7 +19,7 @@ mod PROGRAM is
               Code: new( "console" ; "Console" ; emp ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
               null, Code: call( "label:0" ; "console" ; "print" ;
-              str("hello, world") ) ; get( "label:0" ; noVid ) ;
+              str("Hello, world") ) ; get( "label:0" ; noVid ) ;
               free( "label:0" ) ; return ( emp ) >,
       Ocnt: 0 > .
 endm
