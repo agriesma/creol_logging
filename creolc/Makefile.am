@@ -36,7 +36,7 @@ EXTRA_DIST		= $(srcdir)/CreolLexer.mll \
 			  $(srcdir)/CreolParser.mly
 
 bin_PROGRAMS		= creolc creolc.opt \
-			  cmcvalid cmcvalid.opt
+			  cmcdisplay cmcdisplay.opt
 
 noinst_PROGRAMS		= creoltop
 
@@ -102,13 +102,13 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  CreolLexer.cmx CreolParser.cmx \
 			  CMCParser.cmx Passes.cmx
 
-cmcvalid_SOURCES	= CMCValid.ml
+cmcdisplay_SOURCES	= CMCDisplay.ml
 
-cmcvalid_cmo		= CMCValid.cmo
+cmcdisplay_cmo		= CMCDisplay.cmo
 
-cmcvalid_opt_SOURCES	= $(cmcvalid_SOURCES)
+cmcdisplay_opt_SOURCES	= $(cmcdisplay_SOURCES)
 
-cmcvalid_cmx		= CMCValid.cmx
+cmcdisplay_cmx		= CMCDisplay.cmx
 
 creoltop_SOURCES	=
 
@@ -183,10 +183,10 @@ creol.cma: $(creolc_cmo)
 creol.cmxa: $(creolc_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -a -o $@ $^
 
-cmcvalid: creol.cma $(cmcvalid_cmo)
+cmcdisplay: creol.cma $(cmcdisplay_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $^
 
-cmcvalid.opt: creol.cmxa $(cmcvalid_cmx)
+cmcdisplay.opt: creol.cmxa $(cmcdisplay_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
 
 creoltop: creol.cma
@@ -305,7 +305,7 @@ distclean-local:
 
 
 # Compute the dependencies
-.depend: Makefile $(creolc_SOURCES:.m4=.ml) $(cmcvalid_SOURCES)
+.depend: Makefile $(creolc_SOURCES) $(cmcdisplay_SOURCES)
 	$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $^ | \
 	  sed s,$(srcdir)/,,g > $@
 
