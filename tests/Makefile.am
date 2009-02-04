@@ -139,6 +139,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  typecheck/New.creol typecheck/New2.creol \
 		  typecheck/New3.creol typecheck/New4.creol \
 		  typecheck/New5.creol typecheck/New6.creol \
+		  typecheck/Inherits.creol \
 		  devirt/Devirt.creol devirt/Devirt.xml \
 		  bury/Assign.creol bury/Assign.xml \
 		  bury/If.creol bury/If.xml \

@@ -971,7 +971,7 @@ let rec type_check_statement env coiface =
 	      with
 		  Unify_failure _ ->
 	            raise (Type_error (n.file, n.line,
-			"Type mismatch in assignment: Expected " ^
+			"Type mismatch: Expected " ^
 			(Type.string_of_type lhs_t) ^
 			" but got " ^
 			(Type.string_of_type rhs_t)))
@@ -986,8 +986,8 @@ let rec type_check_statement env coiface =
 	    with
 		Invalid_argument _ ->
 		  raise (Type_error (n.file, n.line,
-				     "Type mismatch in assignment: " ^ 
-				       "length of arguments differ"))
+				     "Type mismatch: number of components " ^
+				       "differ"))
 	  in
 	    Assign (n, lhs', rhs'')
       | Await (n, e) ->
@@ -1089,6 +1089,31 @@ let rec type_check_statement env coiface =
       | Extern _ as s -> s
 
 
+(** Check that a class is inherited by supplying correct
+    parameters. *)
+let type_check_class_inherit program cls inh =
+  let env = { program = program; cls = cls; meth = Method.empty;
+	      env = Env.empty }
+  and super = Program.find_class program inh.Inherits.name in
+  let f { VarDecl.name = name } =
+    Expression.LhsAttr (Expression.make_note (), name,
+			Type.Basic super.Class.name) in
+  let lhs = List.map f super.Class.parameters
+  and rhs = inh.Inherits.arguments
+  in
+  let ass =
+    Statement.Assign
+      (Statement.make_note ~file:inh.Inherits.file ~line:inh.Inherits.line (),
+       lhs, rhs)
+  in
+  let args' =
+    match type_check_statement env "" ass with
+      | Statement.Assign (_, _, rhs') -> rhs'
+      | _ -> assert false
+  in
+    { inh with Inherits.arguments = args' }
+
+
 (** The function [method_missing_for_interface program cls name]
     checks, whether all methods declared in the interface called
     [name] are defined by the class [cls] or one of its superclasses.
@@ -1125,6 +1150,20 @@ let methods_missing_for_iface ~program ~cls ~name =
   in
     List.fold_left (fun a w -> a + (methods_missing_for_with w)) 0
       i.Interface.with_decls
+
+
+(** Check that a parameter declaration is well formed. *)
+let type_check_parameter kind program vardecl =
+  if Program.type_p program vardecl.VarDecl.var_type then
+    true
+  else
+    begin
+      Messages.error vardecl.VarDecl.file vardecl.VarDecl.line
+	("type " ^ (Type.string_of_type vardecl.VarDecl.var_type) ^
+           " of " ^ kind ^ " parameter " ^ vardecl.VarDecl.name ^
+           " does not exist") ;
+      false
+    end
 
 
 let type_relation_well_formed_p tree =
@@ -1215,18 +1254,6 @@ let typecheck tree: Program.t =
     in
       { w with With.methods = m'; invariants = i' }
 
-  and type_check_parameter kind program vardecl =
-    if Program.type_p program vardecl.VarDecl.var_type then
-      true
-    else
-      begin
-	Messages.error vardecl.VarDecl.file vardecl.VarDecl.line
-	  ("type " ^ (Type.string_of_type vardecl.VarDecl.var_type) ^
-             " of " ^ kind ^ " parameter " ^ vardecl.VarDecl.name ^
-             " does not exist") ;
-	false
-      end
-
   (* A class is well typed, if it provides methods for all the
      interfaces it claims to implement, if the initialisation of all
      attributes are well-typed, and if all with-declarations are
@@ -1267,10 +1294,10 @@ let typecheck tree: Program.t =
 
     in
       try
-	ignore (Program.superclasses program cls.Class.name) ;
-	let () =
-	  if not (List.for_all (type_check_parameter "class" program) cls.Class.parameters) then
-	    exit 1
+	let inh' = List.map (type_check_class_inherit program cls) cls.Class.inherits
+	and pwt = List.for_all (type_check_parameter "class" program) cls.Class.parameters
+	in
+	let _ = if not pwt then exit 1
 	in
 	let attributes' =
 	  List.map attribute_well_typed cls.Class.attributes

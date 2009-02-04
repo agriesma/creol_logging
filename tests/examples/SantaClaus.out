@@ -26,7 +26,7 @@ result Configuration:
     "haveProblem" ; emp) ; free("label:0") ; return(emp) >,
   Ocnt: 0 >
  
-< "LeaderElf" : Class | Inh: "Elf" < emp >, Param: "sc", "elves", Att: "elves"
+< "LeaderElf" : Class | Inh: "Elf" < "sc" >, Param: "sc", "elves", Att: "elves"
     |-> null, "sc" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,

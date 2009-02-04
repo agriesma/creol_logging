@@ -138,7 +138,7 @@ mod PROGRAM is
               free( "label:0" ) ; return ( emp ) >,
       Ocnt: 0 >
     
-    < "LeaderElf" : Class | Inh: "Elf" < emp >, Param: "sc", "elves",
+    < "LeaderElf" : Class | Inh: "Elf" < "sc" >, Param: "sc", "elves",
       Att: "sc" |-> null, "elves" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,

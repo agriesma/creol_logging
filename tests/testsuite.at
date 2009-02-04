@@ -406,15 +406,15 @@ TEST_CREOLC_TYPECHECK([Set2], [], [])
 TEST_CREOLC_TYPECHECK([Set3], [], [])
 TEST_CREOLC_TYPECHECK([Set4], [], [])
 TEST_CREOLC_TYPECHECK([Set5],
-[[Set5.creol:26: Type mismatch in assignment: Expected Set[Int] but got Set[Bool]
+[[Set5.creol:26: Type mismatch: Expected Set[Int] but got Set[Bool]
 ]], [])
 
 TEST_CREOLC_TYPECHECK([Set6],
-[[Set6.creol:26: Type mismatch in assignment: Expected Set[Set[Int]] but got Set[Set[String]]
+[[Set6.creol:26: Type mismatch: Expected Set[Set[Int]] but got Set[Set[String]]
 ]], [])
 
 TEST_CREOLC_TYPECHECK([Set7],
-[[Set7.creol:26: Type mismatch in assignment: Expected Set[Int] but got Set[Data]
+[[Set7.creol:26: Type mismatch: Expected Set[Int] but got Set[Data]
 ]], [])
 
 TEST_CREOLC_TYPECHECK([Map], [], [])
@@ -422,7 +422,7 @@ TEST_CREOLC_TYPECHECK([Map], [], [])
 TEST_CREOLC_TYPECHECK([Map2], [], [])
 
 TEST_CREOLC_TYPECHECK([Map3],
-[[Map3.creol:26: Type mismatch in assignment: Expected Map[Data, Int] but got Map[String, String]
+[[Map3.creol:26: Type mismatch: Expected Map[Data, Int] but got Map[String, String]
 ]], [])
 
 TEST_CREOLC_TYPECHECK([Map4], [], [])
@@ -464,6 +464,10 @@ TEST_CREOLC_TYPECHECK([New5],
 ]])
 
 TEST_CREOLC_TYPECHECK([New6], [], [])
+
+TEST_CREOLC_TYPECHECK([Inherits],
+[[Inherits.creol:24: Type mismatch: Expected Int but got Bool
+]], [])
 
 TEST_CREOLC_TYPECHECK([Cyclic],
 [*top*:0: subtype relation has a cycle: S <: U <: T <: S
