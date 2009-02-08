@@ -1370,6 +1370,7 @@ let typecheck tree: Program.t =
 	    in
 	      if (methods_missing = 0) then
 		{ cls with Class.attributes = attributes';
+                           inherits = inh';
 		    with_defs = List.map (type_check_with_def program cls)
 		    cls.Class.with_defs }
 	      else
