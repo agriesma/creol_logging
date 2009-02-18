@@ -31,5 +31,7 @@ let get_library_path () =
       [ Version.datadir ;
         home ^ "/../share/" ^ Version.package ;
         home ^ "/../share" ;
+        home ^ "/../../share/" ^ Version.package ;
+        home ^ "/../../share" ;
         home ]
 
