@@ -349,6 +349,9 @@ red simulate('PROGRAM, upTerm(main(classes, "Butler", emp)), 0, 1) .
 dnl Test the CMC validator.
 m4_include(cmcvalid.at)
 
+dnl Test the meta execution strategies.
+m4_include(metaexec.at)
+
 dnl test cases for the parser.
 TEST_CREOLC_SYNTAX([AttrDecl])
 

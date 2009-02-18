@@ -31,6 +31,7 @@ TESTSUITE		= $(srcdir)/testsuite
 
 TESTPARTS		= $(srcdir)/cmcvalid.at \
 			  $(srcdir)/macros.at \
+			  $(srcdir)/metaexec.at \
 			  $(srcdir)/testsuite.at
 
 TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
@@ -55,7 +56,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/DiscreteTimeout.maude \
 		  examples/DiscreteTimeout.out \
 		  examples/Fibonacci.creol examples/Fibonacci.maude \
-		  examples/Fibonacci.out \
+		  examples/Fibonacci.out examples/meta-Fibonacci-fail.out \
+		  examples/meta-Fibonacci-17.out \
+		  examples/meta-Fibonacci-42.out \
 		  examples/Hello.creol examples/Hello.maude \
 		  examples/Hello.out \
 		  examples/HollywoodBuffer.creol \

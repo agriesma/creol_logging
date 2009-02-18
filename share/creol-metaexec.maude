@@ -76,8 +76,8 @@ if size(LABELS) > 0 /\ LABEL := select(LABELS, random(RAND) rem J) .
 ceq state[term: T , mod: MOD, labels: nil, failed: FAILED, 
       numRls: J, rand: RAND, steps: N, max: I ]
 =
-state[term: upTerm(downTerm(T, none) 
-                   warning("Program terminates after " + string(_-_(I,N),10) + " steps")), 
+state[term: upTerm(warn(downTerm(T, { none }),
+                   "Program terminates after " + string(_-_(I,N),10) + " steps")), 
       mod: MOD, labels: nil, failed: FAILED, numRls: J, rand: RAND, steps: 0, max: I ] 
 if N =/= I .
 

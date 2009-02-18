@@ -236,7 +236,11 @@ ifdef(`MODELCHECK',dnl
   op {_} : Configuration -> State [ctor] .
 
 
-  var CN : Configuration .
+    var CN : Configuration .
+
+    --- Insert a warning into the current state.
+    op warn : State String -> State .
+    eq warn({ CN }, M) = { warning(M) CN } .
 
   --- System initialisation
   op main : Configuration String DataList -> State .
