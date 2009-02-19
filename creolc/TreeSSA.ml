@@ -317,7 +317,8 @@ let into_ssa program =
 	| Declaration.Exception _
 	| Declaration.Datatype _
 	| Declaration.Function _
-	| Declaration.Object _) as d -> d
+	| Declaration.Object _
+        | Declaration.Future _) as d -> d
   in
     Program.map program declaration_to_ssa
 
@@ -491,6 +492,7 @@ let out_of_ssa tree =
 	| Declaration.Exception _
 	| Declaration.Datatype _
 	| Declaration.Function _
-	| Declaration.Object _) as d -> d
+	| Declaration.Object _
+        | Declaration.Future _) as d -> d
   in
     Program.map tree declaration_of_ssa
