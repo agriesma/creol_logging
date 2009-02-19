@@ -1721,6 +1721,7 @@ struct
       | Exception e -> Exception (Exception.hide e)
       | Function f -> Function (Function.hide f)
       | Object o -> Object (Object.hide o)
+      | Future f -> Future f
 
 
   let show =
@@ -1731,6 +1732,7 @@ struct
       | Exception e -> Exception (Exception.show e)
       | Function f -> Function (Function.show f)
       | Object o -> Object (Object.show o)
+      | Future f -> Future f
 
 end
 
@@ -2427,12 +2429,13 @@ struct
     in
     let for_decl d =
       match d with
-	  Declaration.Class c -> Declaration.Class (for_class c)
+	| Declaration.Class c -> Declaration.Class (for_class c)
 	| Declaration.Interface _ -> d
 	| Declaration.Exception _ -> d
 	| Declaration.Datatype _ -> d
 	| Declaration.Function _ -> d
 	| Declaration.Object _ -> d
+        | Declaration.Future _ -> d
     in
       { decls = List.map for_decl program.decls }
 

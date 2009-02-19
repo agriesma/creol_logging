@@ -396,6 +396,7 @@ let pass input =
       | (Declaration.Exception _
       | Declaration.Datatype _
       | Declaration.Function _
-      | Declaration.Object _) as d -> d
+      | Declaration.Object _
+      | Declaration.Future _) as d -> d
   in
     Program.map input expand_declaration
