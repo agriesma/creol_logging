@@ -28,12 +28,14 @@ DISTCLEANFILES		= .depend Version.ml \
 			   creolcint.pdf creolcint.tex ocamldoc.sty
 MAINTAINERCLEANFILES	= $(srcdir)/CreolLexer.ml \
 			  $(srcdir)/CreolTokens.ml $(srcdir)/CreolTokens.mli \
-			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli
+			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli \
+			  $(srcdir)/UpdateParser.ml $(srcdir)/UpdateParser.mli 
 
 EXTRA_DIST		= $(srcdir)/CreolLexer.mll \
 			  $(srcdir)/CreolTokens.mly \
 			  $(srcdir)/CreolCommon.mly \
-			  $(srcdir)/CreolParser.mly
+			  $(srcdir)/CreolParser.mly \
+			  $(srcdir)/UpdateParser.mly 
 
 bin_PROGRAMS		= creolc creolc.opt \
 			  cmcdisplay cmcdisplay.opt
@@ -42,7 +44,8 @@ noinst_PROGRAMS		= creoltop
 
 BUILT_SOURCES		= Version.ml $(srcdir)/CreolLexer.ml \
 			  $(srcdir)/CreolTokens.ml $(srcdir)/CreolTokens.mli \
-			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli
+			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli \
+			  $(srcdir)/UpdateParser.ml $(srcdir)/UpdateParser.mli
 
 creolc_SOURCES		= Version.ml \
 			  Misc.ml \
@@ -67,6 +70,7 @@ creolc_SOURCES		= Version.ml \
 			  CreolTokens.mli CreolTokens.ml \
 			  CreolLexer.mli CreolLexer.ml \
 			  CreolParser.mli CreolParser.ml \
+			  UpdateParser.mli UpdateParser.ml \
 			  BackendCreol.mli BackendCreol.ml \
 			  BackendMaude.ml \
 			  BackendXML.ml \
@@ -84,7 +88,7 @@ creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  CheckUseDef.cmo CreolTokens.cmo \
-			  CreolLexer.cmo CreolParser.cmo \
+			  CreolLexer.cmo CreolParser.cmo UpdateParser.cmo \
 			  CMCParser.cmo Passes.cmo
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)
@@ -99,7 +103,7 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  CheckUseDef.cmx CreolTokens.cmx \
-			  CreolLexer.cmx CreolParser.cmx \
+			  CreolLexer.cmx CreolParser.cmx UpdateParser.cmx \
 			  CMCParser.cmx Passes.cmx
 
 cmcdisplay_SOURCES	= CMCDisplay.ml
@@ -115,7 +119,7 @@ creoltop_SOURCES	=
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 			  $(srcdir)/Creol.ml \
-			  $(srcdir)/Typing.ml \
+			  $(srcdir)/Typing.ml $(srcdir)/Typing.mli \
 			  $(srcdir)/TreeUnassert.ml \
 			  $(srcdir)/TreeExpand.ml \
 			  $(srcdir)/TreeSSA.ml \
@@ -222,7 +226,7 @@ $(srcdir)/CreolTokens.mli: $(srcdir)/CreolTokens.ml
 	fi
 
 # We must make sure that Creol.cmi and Mesages.cmi are built before
-# CreolParser.ml, because we use the --infer flag
+# CreolParser.ml or UpdateParser.ml, because we use the --infer flag
 # during the compilation of them.  We do not want that CreolParser.ml
 # depends on Creol.cmi or Messages.cmi, because then compiling the
 # project at the end user requires recompilation of CreolParser.ml,
@@ -241,7 +245,7 @@ $(srcdir)/CreolParser.ml: $(srcdir)/CreolParser.mly
 	test CreolTokens.cmi -nt $(srcdir)/CreolTokens.mli || \
 	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/CreolTokens.mli -o CreolTokens.cmi
 	rm -f CreolParser.conflicts
-	$(MENHIR) $(MENHIR_FLAGS) -v --infer \
+	$(MENHIR) $(MENHIR_FLAGS) --infer \
 	    --external-tokens CreolTokens \
 	    --base $(srcdir)/CreolParser \
 	    $(srcdir)/CreolTokens.mly $(srcdir)/CreolCommon.mly \
@@ -257,6 +261,33 @@ $(srcdir)/CreolParser.mli: $(srcdir)/CreolParser.ml
 	else \
 	    rm -f $(srcdir)/CreolParser.ml ; \
 	    $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/CreolParser.ml ; \
+	fi
+
+$(srcdir)/UpdateParser.ml: $(srcdir)/UpdateParser.mly
+	test Misc.cmi -nt $(srcdir)/Misc.ml || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Misc.ml -o Misc.cmi
+	test Messages.cmi -nt $(srcdir)/Messages.ml || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Messages.cmi
+	test Creol.cmi -nt $(srcdir)/Creol.ml || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Creol.ml -o Creol.cmi
+	test CreolTokens.cmi -nt $(srcdir)/CreolTokens.mli || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/CreolTokens.mli -o CreolTokens.cmi
+	rm -f UpdateParser.conflicts
+	$(MENHIR) $(MENHIR_FLAGS) --infer --external-tokens CreolTokens \
+	    --base $(srcdir)/UpdateParser \
+	    $(srcdir)/CreolTokens.mly $(srcdir)/CreolCommon.mly \
+	    $(srcdir)/UpdateParser.mly
+	(t=`mktemp menhir.XXXXXXXX` && mv $(srcdir)/UpdateParser.ml $$t && \
+	sed 's,_menhir_shifted = [0123456789][0123456789]*\(.*\)$$,_menhir_shifted = max_int \1,g' $$t > $(srcdir)/UpdateParser.ml && \
+	rm $$t)
+
+$(srcdir)/UpdateParser.mli: $(srcdir)/UpdateParser.ml
+	@if test -f $@ ; \
+	then \
+	    touch $@ ; \
+	else \
+	    rm -f $(srcdir)/UpdateParser.ml ; \
+	    $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/UpdateParser.ml ; \
 	fi
 
 all-local: version-tmp
@@ -311,15 +342,16 @@ distclean-local:
 
 # Dependencies.
 CreolParser.cmi: CreolParser.mli
+UpdateParser.cmi: UpdateParser.mli
 CreolLexer.cmi: CreolTokens.cmi
 CreolLexer.cmo CreolLexer.cmx: CreolLexer.cmi
 
-$(srcdir)/CreolParser.ml: $(srcdir)/CreolTokens.mli
-$(srcdir)/CreolParser.ml: $(srcdir)/CreolTokens.mly
-$(srcdir)/CreolParser.ml: $(srcdir)/CreolCommon.mly
-$(srcdir)/CreolParser.ml: $(srcdir)/Misc.ml
-$(srcdir)/CreolParser.ml: $(srcdir)/Creol.ml
-$(srcdir)/CreolParser.ml: $(srcdir)/Messages.ml
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/CreolTokens.mli
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/CreolTokens.mly
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/CreolCommon.mly
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/Misc.ml
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/Creol.ml
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/Messages.ml
 
 -include .depend
 

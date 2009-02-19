@@ -165,6 +165,7 @@ rule token = parse
     | "provides" { reserved lexbuf }
     | "release" { RELEASE }
     | "requires" { REQUIRES }
+    | "retract" { RETRACT }
     | "skip" { SKIP }
     | "signal" { reserved lexbuf }
     | "some" { SOME }

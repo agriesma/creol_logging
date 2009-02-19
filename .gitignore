@@ -11,6 +11,9 @@ creolc/CreolParser.mli
 creolc/CreolTokens.ml
 creolc/CreolTokens.mli
 creolc/Makefile.in
+creolc/UpdateParser.automaton
+creolc/UpdateParser.ml
+creolc/UpdateParser.mli
 creoltools.spec
 info/Makefile.in
 info/creoltools.info
