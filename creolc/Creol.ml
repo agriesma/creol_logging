@@ -1240,6 +1240,26 @@ struct
 
   let show pragmas = List.filter (fun p -> not (pragma_hidden_p p)) pragmas
 
+
+  let pragma_version_p =
+    function
+      | { name = "Version"; values = [ _ ] } -> true
+      | _ -> false
+
+  let version pragmas =
+    try
+      match List.find pragma_version_p pragmas with
+        | { values = [ Expression.Int (_, v) ] } -> v
+        | _ -> assert false
+    with
+      | Not_found -> Big_int.zero_big_int
+
+  let increase_version pragmas =
+    let v = version pragmas in
+    let v' = Expression.Int (Expression.make_note (), Big_int.succ_big_int v) in
+      { name = "Version"; values = [ v' ] } ::
+        (List.filter (fun e -> not (pragma_version_p e)) pragmas)
+
 end
 
 
@@ -1487,6 +1507,14 @@ struct
   (** Show a class. *)
   let show c = { c with pragmas = Pragma.show c.pragmas }
 
+  (** Get the version of a class. *)
+  let version c = Pragma.version c.pragmas
+
+  (** Increase the version of a class [c] *)
+  let increase_version c =
+    { c with pragmas = Pragma.increase_version c.pragmas }
+
+
   (** Get the interface type implemented by a class.  If it does not
       declare interfaces, then the result is [Any].  Filters
       out duplicates. *)
@@ -1525,7 +1553,6 @@ struct
                  
 
 end
-
 
 
 
@@ -1685,6 +1712,7 @@ struct
 
 end
 
+
 (** Abstract syntax of a future object. *)
 module Future =
 struct
@@ -1704,7 +1732,7 @@ module Declaration =
 struct
 
   type t =
-      Class of Class.t
+      | Class of Class.t
       | Interface of Interface.t
       | Datatype of Datatype.t
       | Exception of Exception.t
@@ -1715,7 +1743,7 @@ struct
 
   let hide =
     function
-	Class c -> Class (Class.hide c)
+      | Class c -> Class (Class.hide c)
       | Interface i -> Interface (Interface.hide i)
       | Datatype d -> Datatype (Datatype.hide d)
       | Exception e -> Exception (Exception.hide e)
@@ -1726,7 +1754,7 @@ struct
 
   let show =
     function
-	Class c -> Class (Class.show c)
+      | Class c -> Class (Class.show c)
       | Interface i -> Interface (Interface.show i)
       | Datatype d -> Datatype (Datatype.show d)
       | Exception e -> Exception (Exception.show e)
@@ -2386,7 +2414,7 @@ struct
            let withs = List.filter q cls'.Class.with_defs in
            let methods =
              List.concat
-               (List.map (find_method_in_with program name (coiface, ins, outs))
+               (List.map (find_method_in_with program name (coiface, ins, outs)
                withs)
             in
              begin
@@ -2403,7 +2431,7 @@ struct
              end
     in
       find_class program (find [cls.Class.name])
-
+ 
 
   (** Check whether the class [cls] or one of its superclasses provide
       a method called [meth] matching the [signature]. *)
