@@ -48,6 +48,7 @@ let subtarget_of_string =
     | "modelchecker" -> Modelchecker
     | "realtime" -> Realtime
     | "updates" -> Updates
+    | _ -> assert false
 
 let string_of_subtarget =
   function
@@ -77,7 +78,7 @@ let conflicts =
 	[]
     | { target = Realtime } ->
 	[]
-    | { target = Realtime } ->
+    | { target = Updates } ->
 	[]
 
 let interpreter =
@@ -107,12 +108,6 @@ let emit subtarget out_channel input =
 	Type.Basic n -> print_string n
       | Type.Application (n, _) -> print_string n
       | _ -> assert false
-  and of_message_list ?(empty = "emp") ?(separator = "::") =
-    let prsep () = print_space () ; print_string separator ; print_space () in
-      (** Compile a list of expressions into the Creol Maude Machine. *)
-      function
-        | [] -> print_string empty
-        | l -> separated_list print_string prsep l
   and of_expression =
     function
       | Expression.This _ -> print_string "\"this\""
