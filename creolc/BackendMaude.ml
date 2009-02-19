@@ -516,6 +516,86 @@ let emit subtarget out_channel input =
     of_expression_list f.Future.value ;
     print_string " >";
     close_box ()
+  and of_dependency dep =
+    print_string ("c(" ^ dep.Dependency.name ^ ", " ^
+                     (Big_int.string_of_big_int dep.Dependency.version) ^ ")")
+  and of_dependencies deps =
+    if Dependencies.is_empty deps then
+      print_string "none"
+    else
+      begin
+        let current = Dependencies.choose deps in
+        let deps' = Dependencies.remove current deps in
+          of_dependency current ;
+          if not (Dependencies.is_empty deps') then
+            begin
+              print_comma () ;
+              of_dependencies deps'
+            end
+      end
+  and of_new_class cls =
+    open_box 2 ;
+    print_string "add(";
+    of_class cls.NewClass.cls ;
+    print_comma () ;
+    print_string "(";
+    of_dependencies cls.NewClass.dependencies ;
+    print_string ")";
+    print_string ")";
+    close_box ()
+  and of_update u =
+    open_box 2 ;
+    print_string "extend(";
+    print_string u.Update.name ;
+    print_comma () ;
+    print_string "(";
+    of_inherits_list u.Update.inherits;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_class_attribute_list u.Update.attributes ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_with_defs u.Update.name u.Update.with_defs ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    (* XXX: of_statement u.Update.statement ; *)
+    print_string "skip";
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_dependencies u.Update.dependencies ;
+    print_string ")";
+    print_string ")";
+    close_box ()
+  and of_retract r =
+    open_box 2;
+    print_string "remove(";
+    print_string r.Retract.name ;
+    print_comma () ;
+    print_string "(";
+    of_inherits_list r.Retract.inherits;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_class_attribute_list r.Retract.attributes ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_with_defs r.Retract.name r.Retract.with_defs ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_dependencies r.Retract.dependencies ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    (* XXX of_dependencies r.Retract.obj_deps *) print_string "none" ;
+    print_string ")";
+    print_string ")";
+    close_box ()
   and of_declaration =
     function
 	Declaration.Class c -> of_class c
@@ -525,12 +605,18 @@ let emit subtarget out_channel input =
       | Declaration.Function _ -> assert false
       | Declaration.Future f -> of_future f
       | Declaration.Object o -> of_object o
+      | Declaration.NewClass cls -> of_new_class cls
+      | Declaration.Update u -> of_update u
+      | Declaration.Retract r -> of_retract r
   and of_decl_list =
     let relevant_p =
       function
 	| Declaration.Class _ 
+	| Declaration.Object _
 	| Declaration.Future _
-	| Declaration.Object _ -> true
+	| Declaration.NewClass _
+	| Declaration.Update _
+	| Declaration.Retract _ -> true
         | Declaration.Interface _
         | Declaration.Exception _
         | Declaration.Datatype _
