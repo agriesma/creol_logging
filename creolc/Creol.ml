@@ -1727,6 +1727,101 @@ struct
 end
 
 
+(** {2 Dynamic Reconfiguration}
+
+  The following modules are concerned with the abstract syntax of dynamic
+  updates *)
+
+(** {3 Dependencies}
+
+    Version dependencies of classes and objects.
+
+    Requires that objects can be uniquely identified by a string. *)
+module Dependency =
+struct
+
+  type t = {
+    name: string;
+    version: Big_int.big_int;
+  }
+
+  let compare d e =
+    let r1 = compare d.name e.name in
+      if r1 <> 0 then
+        r1
+      else
+        Big_int.compare_big_int d.version e.version
+
+end
+
+
+(** {3 Dependencies}
+
+    A set of dependencies. *)
+module Dependencies = Set.Make(Dependency)
+
+
+
+(** {3 New Class}
+
+    New class update term *)
+module NewClass =
+struct
+
+  type t = {
+    cls: Class.t;
+    dependencies: Dependencies.t;
+  }
+
+end
+
+
+
+(** {3 Class Upgrade}
+
+    The abstract syntax of a class upgrade term. *)
+module Update =
+struct
+
+  type t = {
+    name: string; (** The name of the class to upgrade. *)
+    inherits: Inherits.t list;
+    contracts: Inherits.t list;
+    implements: Inherits.t list;
+    attributes: VarDecl.t list;
+    with_defs: With.t list;
+    pragmas: Pragma.t list;
+    dependencies: Dependencies.t
+  }
+
+  let apply u c =
+    assert (u.name = c.Class.name) ;
+    { c with Class.inherits = c.Class.inherits @ u.inherits ;
+      contracts = c.Class.contracts @ u.contracts ;
+      implements = c.Class.implements @ u.implements ;
+      attributes = c.Class.attributes @ u.attributes ;
+      with_defs = c.Class.with_defs @ u.with_defs (** XXX this needs to change. *)
+    }
+
+end
+
+
+(** {3 Retract Features From Class} *)
+module Retract =
+struct
+
+  type t = {
+    name: string; (** The name of the class to simplify. *)
+    inherits: Inherits.t list;
+    attributes: VarDecl.t list;
+    with_defs: With.t list;
+    pragmas: Pragma.t list;
+    dependencies: Dependencies.t
+  }
+
+end
+
+
 (** Abstract syntax of Declararions. *)
 module Declaration =
 struct
@@ -1739,6 +1834,9 @@ struct
       | Function of Function.t
       | Object of Object.t
       | Future of Future.t
+      | NewClass of NewClass.t
+      | Update of Update.t
+      | Retract of Retract.t
 
 
   let hide =
@@ -1750,6 +1848,9 @@ struct
       | Function f -> Function (Function.hide f)
       | Object o -> Object (Object.hide o)
       | Future f -> Future f
+      | NewClass u -> NewClass u
+      | Update u -> Update u
+      | Retract u -> Retract u
 
 
   let show =
@@ -1761,6 +1862,9 @@ struct
       | Function f -> Function (Function.show f)
       | Object o -> Object (Object.show o)
       | Future f -> Future f
+      | NewClass u -> NewClass u
+      | Update u -> Update u
+      | Retract u -> Retract u
 
 end
 
@@ -1814,17 +1918,17 @@ struct
   let find_class program name =
     let class_with_name =
       function
-	  Declaration.Class { Class.name = n } -> n = name
+	| Declaration.Class { Class.name = n } -> n = name
 	| _ -> false
     in
       match List.find class_with_name program.decls with
-	  Declaration.Class cls -> cls
+	| Declaration.Class cls -> cls
 	| _ -> assert false
 
   let remove_class program name =
     let not_class_with_name =
       function
-	  Declaration.Class { Class.name = n } -> n <> name
+	| Declaration.Class { Class.name = n } -> n <> name
 	| _ -> true
     in
       { decls = List.filter not_class_with_name program.decls }
@@ -1936,11 +2040,11 @@ struct
   let find_interface program name =
     let interface_with_name =
       function
-	  Declaration.Interface { Interface.name = n } -> name = n
+	| Declaration.Interface { Interface.name = n } -> name = n
 	| _ -> false
     in
       match List.find interface_with_name program.decls with
-	  Declaration.Interface i -> i
+	| Declaration.Interface i -> i
 	| _ -> assert false
 
 
@@ -1952,7 +2056,7 @@ struct
       | Type.Basic n ->
 	  let p =
 	    function
-		Declaration.Interface { Interface.name = n' } -> n = n'
+	      | Declaration.Interface { Interface.name = n' } -> n = n'
 	      | _ -> false
 	  in
 	    List.exists p program.decls
@@ -2039,14 +2143,14 @@ struct
   let find_datatype ~program ~name =
     let datatype_with_name =
       function
-	  Declaration.Datatype { Datatype.name = Type.Basic n }
+	| Declaration.Datatype { Datatype.name = Type.Basic n }
 	    when n = name -> true
 	| Declaration.Datatype { Datatype.name = Type.Application (n, _) }
 	    when n = name -> true
 	| _ -> false
     in
       match List.find datatype_with_name program.decls with
-	  Declaration.Datatype d -> d
+	| Declaration.Datatype d -> d
 	| _ -> assert false
 
 
@@ -2071,7 +2175,7 @@ struct
   let type_p ~program ~ty =
     let p name' =
       function
-          Declaration.Interface { Interface.name = n } -> (name' = n)
+        | Declaration.Interface { Interface.name = n } -> (name' = n)
         | Declaration.Datatype { Datatype.name = t } -> (name' = (Type.name t))
 	| _ -> false
     in
@@ -2106,7 +2210,7 @@ struct
   let find_functions program name =
     let p a =
       function
-	  Declaration.Function f when f.Function.name  = name -> f::a
+	| Declaration.Function f when f.Function.name  = name -> f::a
 	| _ -> a
     in
       List.fold_left p [] program.decls
@@ -2414,7 +2518,7 @@ struct
            let withs = List.filter q cls'.Class.with_defs in
            let methods =
              List.concat
-               (List.map (find_method_in_with program name (coiface, ins, outs)
+               (List.map (find_method_in_with program name (coiface, ins, outs))
                withs)
             in
              begin
@@ -2431,7 +2535,7 @@ struct
              end
     in
       find_class program (find [cls.Class.name])
- 
+
 
   (** Check whether the class [cls] or one of its superclasses provide
       a method called [meth] matching the [signature]. *)
@@ -2464,6 +2568,9 @@ struct
 	| Declaration.Function _ -> d
 	| Declaration.Object _ -> d
         | Declaration.Future _ -> d
+        | Declaration.NewClass _ -> d
+        | Declaration.Update _ -> d
+        | Declaration.Retract _ -> d
     in
       { decls = List.map for_decl program.decls }
 
