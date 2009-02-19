@@ -131,45 +131,5 @@ functiondecl:
     { signal_error $startpos "syntax error in function declaration" }
 
 
-(* Class declaration *)
-
-classdecl:
-      CLASS n = CID p = plist(vardecl_no_init) s = list(super_decl)
-        pr = list(pragma)
-	BEGIN
-        a = list(terminated(attribute, ioption(SEMI))) i = list(invariant)
-        aw = loption(anon_with_def) w = list(with_def)
-        END
-      { { Class.name = n; parameters = p; inherits = inherits s;
-	  contracts = contracts s; implements = implements s;
-	  attributes = List.flatten a; invariants = i;
-          with_defs = upd_method_locs n (aw @ w);
-	  objects_created = Big_int.zero_big_int; pragmas = pr;
-	  file = $startpos.pos_fname; line = $startpos.pos_lnum } }
-    | CLASS error
-	{ signal_error $startpos "syntax error: invalid class name" }
-    | CLASS CID error
-	{ signal_error $startpos "syntax error in class declaration" }
-    | CLASS CID plist(vardecl_no_init) list(super_decl)
-        list(pragma) BEGIN error
-	{ signal_error $startpos "syntax error in class body definition" }
-
-(* Interface Declaration *)
-
-interfacedecl:
-      INTERFACE n = CID p = plist(vardecl_no_init) i = list(inherits_decl)
-        pr = list(pragma)
-        BEGIN ioption(preceded(INV, expression)) w = list(with_decl) END
-        { { Interface.name = n; parameters = p; inherits = inherits i;
-	    with_decls = upd_method_locs n w; pragmas = pr;
-	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
-    | INTERFACE error
-	{ signal_error $startpos "syntax error in interface declaration" }
-    | INTERFACE CID error
-	{ signal_error $startpos "syntax error in interface declaration" }
-
-
-
-
 %%
 (* The trailer is currently empty *)
