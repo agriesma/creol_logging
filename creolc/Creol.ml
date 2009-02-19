@@ -2544,6 +2544,23 @@ struct
     [] <> (find_methods_in_class program cls meth signature)
 
 
+  (** Remove a method from a class.
+
+      This function is used to replace all methods in a class by its
+      updated method. *)
+  let remove_method_from_class program cls mtd =
+    let m_p m = not ((m.Method.name = mtd.Method.name) &&
+      (subtype_p program m.Method.coiface mtd.Method.coiface) &&
+        (subtype_p program (Method.domain_type m) (Method.domain_type mtd)) &&
+          (subtype_p program (Method.range_type mtd) (Method.range_type m)))
+    in
+    let mf w = { w with With.methods = List.filter m_p w.With.methods } in
+    let m' = List.map mf cls.Class.with_defs in
+    let w' = List.filter (fun w -> [] <> w.With.methods) m'
+    in
+      { cls with Class.with_defs = w' }
+
+
   (** {4 Iterators} *)
 
   let iter program f = List.iter f program.decls
@@ -2600,5 +2617,89 @@ struct
       | d -> d
     in
       map prg f
+
+
+  (** {4 Dynamic Updates} *)
+
+  (** Apply an update to a class. *)
+  let apply_update_to_class program cls upd =
+    let inherits' = cls.Class.inherits @ upd.Update.inherits
+    and contracts' = cls.Class.contracts @ upd.Update.contracts
+    and implements' = cls.Class.implements @ upd.Update.implements
+    and attrs' = cls.Class.attributes @ upd.Update.attributes
+    in
+    let cls' = { cls with Class.inherits = inherits';
+                          contracts = contracts';
+			  implements = implements';
+			  attributes = attrs' }
+    in
+    let cls'' =
+      let with_with c w =
+        List.fold_left (remove_method_from_class program) c w.With.methods
+      in
+        List.fold_left with_with cls' upd.Update.with_defs
+    in
+      let with_with c w =
+        List.fold_left (Class.add_method_to_class) c w.With.methods
+      in
+        List.fold_left with_with cls'' upd.Update.with_defs
+
+
+  let apply_retract_to_class program cls upd =
+    let inherits' =
+      let f a e =
+        List.filter (fun e' -> e.Inherits.name <> e'.Inherits.name) a
+      in
+        List.fold_left f cls.Class.inherits upd.Retract.inherits
+    and attributes' =
+      let f a e =
+        List.filter (fun e' -> e.VarDecl.name <> e'.VarDecl.name) a
+      in
+        List.fold_left f cls.Class.attributes upd.Retract.attributes
+    and with_defs' =
+      let f a e =
+        List.map
+          (fun e' -> if (e.With.co_interface = e'.With.co_interface) then
+                       begin
+                         let g a m =
+                           List.filter (fun m' -> (m.Method.name <> m'.Method.name) && (m.Method.inpars <> m'.Method.inpars) && (m.Method.outpars <> m'.Method.outpars)) a
+                         in
+                           { e with With.methods = List.fold_left g e.With.methods e'.With.methods }
+                       end
+                     else
+                       e) a
+      in
+        List.fold_left f cls.Class.with_defs upd.Retract.with_defs
+    in
+      Class.increase_version { cls with Class.inherits = inherits';
+                                        attributes = attributes';
+                                        with_defs = with_defs' }
+
+
+  (** Apply all updates in [updates] to [program] *)
+  let apply_updates program updates =
+    let f prg =
+      function
+        | Declaration.NewClass upd ->
+            begin
+              try
+                ignore (find_class prg upd.NewClass.cls.Class.name) ;
+                raise (Failure "Class exists")
+              with
+                Not_found ->
+                  let cls = Class.increase_version upd.NewClass.cls in
+                    add_class program cls
+            end
+        | Declaration.Update ({ Update.name = name } as upd) ->
+            let cls = find_class prg name in
+            let cls' = apply_update_to_class prg cls upd in
+              replace_class prg cls'
+        | Declaration.Retract ({ Retract.name = name } as upd) ->
+            let cls = find_class prg name in
+            let cls' = apply_retract_to_class prg cls upd in
+              replace_class prg cls'
+        | _ -> assert false
+    in
+      List.fold_left f program updates.decls
 
 end
