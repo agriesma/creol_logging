@@ -1298,39 +1298,35 @@ let class_hierarchy_well_formed_p tree =
       end
 
 
-(** Type check a tree. *)
-let typecheck tree: Program.t =
-  (* A class is well typed, if it provides methods for all the
-     interfaces it claims to implement, if the initialisation of all
-     attributes are well-typed, and if all with-declarations are
-     well-typed.
+(** A class is well typed, if it provides methods for all the
+    interfaces it claims to implement, if the initialisation of all
+    attributes are well-typed, and if all with-declarations are
+    well-typed.
 
-     Type checking a class starts with checking, whether the class
-     provides a method for each interface it declared.  *)
-
-  let rec type_check_class program cls =
-
-    let attribute_well_typed vardecl =
-      if Program.type_p program vardecl.VarDecl.var_type then
-	match vardecl.VarDecl.init with
-	  | None ->
-              vardecl
-	  | Some init ->
-	      let i' =
-		let l = [LhsId (Expression.make_note (), vardecl.VarDecl.name)]
-		and r = [init]
-		and env =
-		  { program = program; cls = cls; meth = Method.empty;
-		    env = Env.empty }
-		in
-		let s =
-		  type_check_statement env "Any" (Assign (make_note (), l, r))
-		in
-		  match s with
-		    | Assign (_, _, [i']) -> i'
-		    | _ -> assert false
+    Type checking a class starts with checking, whether the class
+    provides a method for each interface it declared.  *)
+let type_check_class program cls =
+  let attribute_well_typed vardecl =
+    if Program.type_p program vardecl.VarDecl.var_type then
+      match vardecl.VarDecl.init with
+	| None ->
+            vardecl
+	| Some init ->
+	    let i' =
+	      let l = [LhsId (Expression.make_note (), vardecl.VarDecl.name)]
+	      and r = [init]
+	      and env =
+		{ program = program; cls = cls; meth = Method.empty;
+		  env = Env.empty }
 	      in
-		{ vardecl with VarDecl.init = Some i' }
+	      let s =
+		type_check_statement env "Any" (Assign (make_note (), l, r))
+              in
+                match s with
+                  | Assign (_, _, [i']) -> i'
+                  | _ -> assert false
+            in
+	      { vardecl with VarDecl.init = Some i' }
       else
 	raise (Type_error (cls.Class.file, cls.Class.line,
 			   "type " ^
@@ -1358,9 +1354,9 @@ let typecheck tree: Program.t =
 		      Messages.error cls.Class.file cls.Class.line
 			("No interface " ^ n ^ " defined") ;
 		      1
-	      in
-		try
-		  IdSet.fold (fun n a -> a + (count n))
+              in
+                try
+                  IdSet.fold (fun n a -> a + (count n))
                     (Program.class_provides program cls) 0
 		with
 	            Program.Interface_not_found (file, line, iface) ->
@@ -1377,16 +1373,60 @@ let typecheck tree: Program.t =
 		exit 1
 	  end
       with
-	  Program.Class_not_found (f, l, c) ->
-	    Messages.error f l ("Class " ^ c ^ " not defined") ;
-	    exit 1
+          Program.Class_not_found (f, l, c) ->
+            Messages.error f l ("Class " ^ c ^ " not defined") ;
+            exit 1
 
-  and type_check_declaration program =
+
+(** Type check new class term. *)
+let type_check_new_class program upd =
+  let cls = upd.NewClass.cls in
+  let program' = Program.add_class program cls in
+    { upd with NewClass.cls = type_check_class program' cls }
+
+
+(** Type check an update term. *)
+let type_check_update program upd =
+  let program' =
+    Program.apply_updates program (Program.make [Declaration.Update upd])
+  in
+  let cls = Program.find_class program' upd.Update.name in
+  let cls' = type_check_class program' cls in
+  let with_defs' =
+    List.map (type_check_with_def program' cls') upd.Update.with_defs
+  in
+    { upd with Update.with_defs = with_defs' }
+
+
+let type_check_retract program upd =
+  let program' =
+     Program.apply_updates program (Program.make [Declaration.Retract upd])
+  and subclasses = [] (* Program.subclasses program upd.Retract.name *)
+  in
+  let f =
+    function
+      | Declaration.Class c -> Declaration.Class (type_check_class program' c)
+      | _ -> assert false
+  in
+  let _ = List.map f subclasses in
+    upd
+
+
+(** Type check a tree. *)
+let typecheck tree: Program.t =
+
+  let type_check_declaration program =
     function
 	Declaration.Class c ->
 	  Declaration.Class (type_check_class program c)
       | Declaration.Interface i ->
 	  Declaration.Interface (type_check_interface program i)
+      | Declaration.NewClass upd ->
+          Declaration.NewClass (type_check_new_class program upd)
+      | Declaration.Update upd ->
+          Declaration.Update (type_check_update program upd)
+      | Declaration.Retract upd ->
+          Declaration.Retract (type_check_retract program upd)
       | _ as d -> d
   in
   let wf =
