@@ -1816,7 +1816,8 @@ struct
     attributes: VarDecl.t list;
     with_defs: With.t list;
     pragmas: Pragma.t list;
-    dependencies: Dependencies.t
+    dependencies: Dependencies.t;
+    obj_deps: Dependencies.t;
   }
 
 end

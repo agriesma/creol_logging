@@ -120,7 +120,7 @@ retractdecl:
       in
         { Retract.name = n; inherits = inherits s; attributes = List.flatten a;
           with_defs = upd_method_locs n (aw @ w); pragmas = pr;
-          dependencies = Dependencies.empty } }
+          dependencies = Dependencies.empty; obj_deps = Dependencies.empty } }
 
 %%
 (* The trailer is currently empty *)
