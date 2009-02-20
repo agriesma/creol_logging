@@ -53,6 +53,7 @@ creolc_SOURCES		= Version.ml \
 			  Messages.ml \
 			  Creol.ml \
 			  Typing.ml \
+			  UpdateDepend.ml UpdateDepend.mli \
 			  TreeFold.ml \
 			  TreeExpand.ml \
 			  TreeUnassert.ml \
@@ -82,7 +83,7 @@ creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
 			  Creol.cmo \
 			  BackendCreol.cmo BackendMaude.cmo \
 			  BackendDot.cmo BackendXML.cmo \
-			  Typing.cmo \
+			  Typing.cmo UpdateDepend.cmo \
 			  TreeExpand.cmo TreeFold.cmo \
 			  TreeUnassert.cmo TreeUnprove.cmo TreeSSA.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
@@ -97,7 +98,7 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  Creol.cmx \
 			  BackendCreol.cmx BackendMaude.cmx \
 			  BackendDot.cmx BackendXML.cmx \
-			  Typing.cmx \
+			  Typing.cmx UpdateDepend.cmx \
 			  TreeExpand.cmx TreeFold.cmx \
 			  TreeUnassert.cmx TreeUnprove.cmx TreeSSA.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
@@ -119,7 +120,9 @@ creoltop_SOURCES	=
 # This is the subset for which we want to generate documentation.
 creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 			  $(srcdir)/Creol.ml \
-			  $(srcdir)/Typing.ml $(srcdir)/Typing.mli \
+			  $(srcdir)/Typing.ml \
+			  $(srcdir)/UpdateDepend.ml \
+			  $(srcdir)/UpdateDepend.mli \
 			  $(srcdir)/TreeUnassert.ml \
 			  $(srcdir)/TreeExpand.ml \
 			  $(srcdir)/TreeSSA.ml \

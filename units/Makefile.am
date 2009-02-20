@@ -31,19 +31,19 @@ OCAMLDEP	= $(OCAMLFIND) ocamldep -I $(srcdir)
 
 OCAMLCFLAGS	+= -g
 OCAMLOPTFLAGS	+= -w a
-OCAMLFINDFLAGS	+= -package "num unix $(OCAML_LIBXML2) str oUnit"
+OCAMLFINDFLAGS	+= -package "num unix libxml2 str oUnit"
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
 
 noinst_PROGRAMS		= unittests unittests.opt
 
-unittests_SOURCES	= CreolTests.ml UnitTests.ml
+unittests_SOURCES	= CreolTests.ml UpdateDependTests.ml UnitTests.ml
 
 unittests_opt_SOURCES	= $(unittests_SOURCES)
 
-unittests_cmo		= CreolTests.cmo UnitTests.cmo
+unittests_cmo		= CreolTests.cmo UpdateDependTests.cmo UnitTests.cmo
 
-unittests_cmx		= CreolTests.cmx UnitTests.cmx
+unittests_cmx		= CreolTests.cmx UpdateDependTests.cmx UnitTests.cmx
 
 unittests: $(unittests_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ creol.cma $(unittests_cmo)
