@@ -2026,6 +2026,17 @@ struct
     in search s
 
 
+  (** Returns the set of names of all subclasses of a class called [c]. *)
+  let subclasses program c =
+    let f a =
+      function
+        | Declaration.Class { Class.name = n } when subclass_p program n c ->
+            IdSet.add n a
+        | _ -> a
+     in
+       List.fold_left f IdSet.empty program.decls
+
+
   (** {4 Interfaces}
 
       The following functions are concerned with interfaces.  *)
