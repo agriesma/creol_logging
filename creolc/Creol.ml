@@ -1794,15 +1794,6 @@ struct
     dependencies: Dependencies.t
   }
 
-  let apply u c =
-    assert (u.name = c.Class.name) ;
-    { c with Class.inherits = c.Class.inherits @ u.inherits ;
-      contracts = c.Class.contracts @ u.contracts ;
-      implements = c.Class.implements @ u.implements ;
-      attributes = c.Class.attributes @ u.attributes ;
-      with_defs = c.Class.with_defs @ u.with_defs (** XXX this needs to change. *)
-    }
-
 end
 
 
