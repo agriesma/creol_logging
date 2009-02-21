@@ -2301,7 +2301,6 @@ struct
 	    List.exists (fun s -> work (s, t)) sa
 	| (Type.Disjunction sa, _) ->
 	    List.for_all (fun s -> work (s, t)) sa
-	| (Type.Internal, Type.Internal) -> true
 	| ((Type.Internal, _) | (_, Type.Internal)) -> false
 	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
 	    (work (d1, d2)) && (work (r2, r1))
