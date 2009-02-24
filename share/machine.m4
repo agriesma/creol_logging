@@ -308,7 +308,7 @@ ifdef(`MODELCHECK',
 `crl
   < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; None ; EL ); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  < O : C | Att: S, Pr: { insert (A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) >
+  < O : C | Att: S, Pr: { insert (A, N, L) | SL }, PrQ: W, Lcnt: (s F) >
   < N : Future | Completed: false, References: 1, Value: emp >
   bindMtd(O`,' O`,' N`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK
   if N := label(O, F)'
@@ -319,17 +319,19 @@ ifdef(`MODELCHECK',
 --- remote-async-call
 ---
 ifdef(`MODELCHECK',
-`eq
+`ceq
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =
-  < O : C | Att: S, Pr: { insert(A, label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)), L) | SL }, PrQ: W, Lcnt: F > CLOCK
-  invoc(O, EVAL(E, (S :: L), T), label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)), Q, EVALLIST(EL, (S :: L), T))'
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F > CLOCK
+  invoc(O, EVAL(E, (S :: L), T), N, Q, EVALLIST(EL, (S :: L), T))
+  if N := label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T))'
 ,dnl
-`rl
+`crl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  < O : C | Att: S, Pr: { insert(A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
-  invoc(O, EVAL(E, (S :: L), T), label(O, F), Q , EVALLIST(EL, (S :: L), T)) '
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
+  invoc(O, EVAL(E, (S :: L), T), N, Q , EVALLIST(EL, (S :: L), T))
+  if N := label(O, F)'
 )dnl
   [label remote-async-call] .
 
