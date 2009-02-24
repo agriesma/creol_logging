@@ -274,10 +274,12 @@ let depend_new_class program update =
 
 
 let depend_update program update =
+  let program' =
+    Program.apply_updates program (Program.make [Declaration.Update update])
+  in
   let cls = Program.find_class program update.Update.name in
-  let cls' = Update.apply update cls in
   let deps = List.fold_left Dependencies.union Dependencies.empty
-    (List.map (depend_with program cls') update.Update.with_defs)
+    (List.map (depend_with program cls) update.Update.with_defs)
   in
     Dependencies.add { Dependency.name = cls.Class.name;
                        version = Class.version cls } deps
