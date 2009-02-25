@@ -698,8 +698,30 @@ let pretty_print_program out_channel input =
       print_string i.Interface.name ;
       close_box ()
     end ;
+    if [] <> i.Interface.inherits then
+      begin
+	open_box 2 ;
+	print_space () ;
+	print_string "inherits ";
+	separated_list print_inherits print_comma i.Interface.inherits ;
+	close_box () 
+      end ;
+    if [] <> i.Interface.pragmas then
+      begin
+	open_box 2 ;
+	print_space () ;
+	separated_list print_pragma print_space i.Interface.pragmas ;
+	close_box () 
+      end ;
     print_space () ;
     print_string "begin";
+    print_break 2 0 ;
+    if [] <> i.Interface.with_decls then
+      begin
+        open_vbox 0 ;
+	separated_list print_with print_space i.Interface.with_decls ;
+        close_box () ;
+      end ;
     print_space () ;
     print_string "end" ;
     close_box ()
