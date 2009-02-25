@@ -199,6 +199,7 @@ method_def:
 id:
       s = ID { s }
     | UPDATE { "update" }
+    | RETRACT { "retract" }
 
 (* Statements *)
 
