@@ -33,6 +33,9 @@ let requires _ = []
 
 let conflicts _ = ["expand"]
 
+(** The indentiation level to use. *)
+let indent_level = 2
+
 
 let print_comma () = print_string "," ; print_space ()
 
@@ -159,7 +162,9 @@ let rec print_expression exp =
 	  print_expression_list l ;
 	  print_string ")";
   in
-    print 121 exp
+    open_box 2 ;
+    print 121 exp ;
+    close_box ()
 and print_expression_list l =
   separated_list print_expression print_comma l
 and print_binding_list l =
@@ -203,7 +208,7 @@ let rec print_statement statement =
   (** Pretty-print statements and write the code to out. *)
   let open_block prec op_prec =
     if prec < op_prec then
-      begin open_box 0 ; print_string "begin" ; print_space () end
+      begin open_vbox 2 ; print_string "begin" ; print_space () end
   and close_block prec op_prec =
     if prec < op_prec then
       begin print_space () ; print_string "end" ; close_box () end
@@ -211,27 +216,27 @@ let rec print_statement statement =
   let rec print (prec : int) : Statement.t -> unit =
     function
 	Statement.Skip _ ->
-	  open_box 0 ; print_string "skip" ; close_box ()
+	  open_box 2 ; print_string "skip" ; close_box ()
       | Statement.Assert (_, e) ->
-	  open_box 0 ; print_string "assert" ; print_space () ;
+	  open_box 2 ; print_string "assert" ; print_space () ;
 	  print_expression e ; close_box ()
       | Statement.Prove (_, e) ->
-	  open_box 0 ; print_string "prove" ; print_space () ;
+	  open_box 2 ; print_string "prove" ; print_space () ;
 	  print_expression e ; close_box ()
       | Statement.Assign (_, i, e) ->
-	  open_box 0 ; print_lhs_list i;
+	  open_box 2 ; print_lhs_list i;
 	  print_space () ; print_string ":=" ; print_space () ;
 	  print_expression_list e ; close_box ()
       | Statement.Await (_, e) -> 
-	  open_box 0 ; print_string "await"; print_space () ;
+	  open_box 2 ; print_string "await"; print_space () ;
 	  print_expression e ; close_box ()
       | Statement.Posit (_, e) -> 
-	  open_box 0 ; print_string "posit"; print_space () ;
+	  open_box 2 ; print_string "posit"; print_space () ;
 	  print_expression e ; close_box ()
       | Statement.Release _ ->
-	  open_box 0 ; print_string "release" ; close_box ()
+	  open_box 2 ; print_string "release" ; close_box ()
       | Statement.AsyncCall (_, l, c, m, (s,_,_), a) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  (match l with
 	       None -> ()
 	     | Some l -> print_lhs l ) ;
@@ -245,32 +250,33 @@ let rec print_statement statement =
 	    match s with
 	        None -> ()
 	      | Some t ->
+	          print_space () ;
 	          print_string "as";
 	          print_space () ;
 	          print_string (Type.string_of_type t)
 	  end ;
 	  close_box ()
       | Statement.Get (_, l, o) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_expression l ;
 	  print_string "?(" ;
 	  print_lhs_list o ;
 	  print_string ")" ;
 	  close_box ()
       | Statement.Free (_, l) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "/* free(" ;
 	  print_lhs_list l ;
 	  print_string ") */" ;
 	  close_box ()
       | Statement.Bury (_, l) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "/* bury(" ;
 	  print_lhs_list l ;
 	  print_string ") */" ;
 	  close_box ()
       | Statement.SyncCall (_, c, m, (s, _, _), a, r) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_expression c ;
 	  print_string ("." ^ m ^ "(") ;
 	  print_expression_list a ;
@@ -281,13 +287,14 @@ let rec print_statement statement =
 	    match s with
 	        None -> ()
 	      | Some t ->
+	          print_space () ;
 	          print_string "as";
 	          print_space () ;
 	          print_string (Type.string_of_type t)
 	  end ;
 	  close_box ()
       | Statement.AwaitSyncCall (_, c, m, (s, _, _), a, r) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "await" ;
 	  print_space () ;
 	  print_expression c ;
@@ -300,13 +307,14 @@ let rec print_statement statement =
 	    match s with
 	        None -> ()
 	      | Some t ->
+	          print_space () ;
 	          print_string "as";
 	          print_space () ;
 	          print_string (Type.string_of_type t)
 	  end ;
 	  close_box ()
       | Statement.LocalAsyncCall (_, l, m, _, lb, ub, i) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  begin
 	    match l with
 		None -> ()
@@ -329,7 +337,7 @@ let rec print_statement statement =
 	  print_string ")" ;
 	  close_box ()
       | Statement.LocalSyncCall (_, m, _, lb, ub, i, o) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string m ;
 	  (match lb with
 	       None -> ()
@@ -344,7 +352,7 @@ let rec print_statement statement =
 	  print_string ")" ;
 	  close_box ()
       | Statement.AwaitLocalSyncCall (_, m, _, lb, ub, i, o) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "await" ;
 	  print_space () ;
 	  print_string m ;
@@ -361,7 +369,7 @@ let rec print_statement statement =
 	  print_string ")" ;
 	  close_box ()
       | Statement.MultiCast (_, c, m, _, a) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "!";
 	  print_expression c ;
 	  print_string ("." ^ m ^ "(") ;
@@ -369,7 +377,7 @@ let rec print_statement statement =
 	  print_string ")" ;
 	  close_box ()
       | Statement.Tailcall (_, c, m, _, i) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "/* tailcall " ;
 	  print_expression c ;
 	  print_string ("." ^ m ^ "(");
@@ -377,7 +385,7 @@ let rec print_statement statement =
 	  print_string ") */" ;
 	  close_box ()
       | Statement.StaticTail (_, m, _, l, u, i) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "/* static tailcall " ;
 	  print_string m ;
 	  (match l with
@@ -391,17 +399,17 @@ let rec print_statement statement =
 	  print_string ") */" ;
 	  close_box ()
       | Statement.Return (_, o) ->
-	  open_box 0 ;
+	  open_hbox () ;
 	  print_string "/* return(" ;
 	  print_expression_list o ;
 	  print_string ") */" ;
 	  close_box ()
       | Statement.If (_, c, t, f) ->
-	  open_box 0 ;
+	  open_box 2 ;
 	  print_string "if" ;
 	  print_space () ;
 	  begin
-	    open_box 0 ;
+	    open_hbox () ;
 	    print_expression c;
 	    close_box ()
 	  end ;
@@ -409,7 +417,7 @@ let rec print_statement statement =
 	  print_string "then";
 	  print_space () ;
 	  begin
-	    open_box 2 ;
+	    open_vbox 2 ;
 	    print 25 t ;
 	    close_box ()
 	  end ;
@@ -417,7 +425,7 @@ let rec print_statement statement =
 	  print_string "else";
 	  print_space () ;
 	  begin
-	    open_box 2 ;
+	    open_vbox 2 ;
 	    print 25 f ;
 	    close_box ()
 	  end ;
@@ -428,20 +436,23 @@ let rec print_statement statement =
 	  (* The text generated in this branch does not parse in standard
 	     Creol.  This should not be changed.  Consult the manual for
 	     the reasons. *)
-	  print_string "while"; print_space () ;
+	  open_hbox () ;
+          print_string "while";
+          print_space () ;
 	  print_expression c;
-	  (match i with
-	     | Expression.Bool (_, true) -> ()
-	     | _ -> 
-		 open_box 2 ;
-		 print_string "inv" ;
-		 print_space () ;
-		 print_expression i ;
-		 close_box ()) ;
+	  begin
+            match i with
+	      | Expression.Bool (_, true) -> ()
+	      | _ -> 
+		  print_string "inv" ;
+		  print_space () ;
+		  print_expression i ;
+          end ;
 	  print_space () ;
 	  print_string "do" ;
-	  print_space () ;
-	  open_box 2 ;
+          close_box () ;
+          print_break 2 2 ;
+	  open_vbox 0 ;
 	  print 25 b ;
 	  close_box () ;
           print_space () ;
@@ -491,9 +502,11 @@ let rec print_statement statement =
 	    print op_prec s2 ;
 	    close_block prec op_prec
       | Statement.Continue (_, e) ->
+          open_hbox () ;
 	  print_string "/* continue " ;
 	  print_expression e ;
-	  print_string "*/"
+	  print_string "*/" ;
+	  close_box ()
       | Statement.Extern (_, s) ->
 	  open_hbox () ;
 	  print_string "external" ;
@@ -506,7 +519,7 @@ let rec print_statement statement =
 
 let pretty_print_statement out_channel stmt =
   let () = set_formatter_out_channel out_channel in
-    open_box 2 ;
+    open_vbox 2 ;
     print_statement stmt ;
     close_box () ;
     print_newline ()
@@ -737,7 +750,7 @@ let pretty_print_program out_channel input =
     print_space () ;
     print_string "begin" ;
     print_space () ;
-    open_hbox () ; print_break 2 0 ; close_box () ;
+    open_hbox () ; print_break 2 2 ; close_box () ;
     open_vbox 0 ;
     if [] <> c.Class.attributes then
       begin
@@ -785,9 +798,9 @@ let pretty_print_program out_channel input =
   and print_inv e =
     open_box 2 ; print_string "inv " ; print_expression e ; close_box ()
   and print_method m =
-    open_box 2 ;
     begin
-      open_hbox () ;
+      open_vbox 4 ;
+      open_box 2 ;
       print_string "op" ;
       print_space () ;
       print_string m.Method.name;
@@ -823,9 +836,9 @@ let pretty_print_program out_channel input =
         | Some stmt ->
 	    print_space () ;
 	    print_string "==" ;
-	    print_space () ;
             close_box () ;
-	    open_box 2 ;
+            print_space () ;
+	    open_vbox 0 ;
 	    if [] <> m.Method.vars then
 	      begin
 	        print_vardecls "var " print_semi m.Method.vars ; print_semi ()
@@ -836,10 +849,7 @@ let pretty_print_program out_channel input =
     close_box ()
   and print_vardecls prefix delimiter vardecls =
     let print vardecl =
-      open_box 2 ;
-      print_string prefix;
-      print_vardecl vardecl ;
-      close_box ()
+      open_box 2 ; print_string prefix; print_vardecl vardecl ; close_box ()
     in
       separated_list print delimiter vardecls
   and print_vardecl v =
