@@ -1498,6 +1498,17 @@ struct
       objects_created = Big_int.zero_big_int; pragmas = [];
       file = ""; line = 0 }
 
+  let equal c1 c2 =
+    (c1.name = c2.name) &&
+    (c1.parameters = c2.parameters) &&
+    (c1.inherits = c2.inherits) &&
+    (c1.implements = c2.implements) &&
+    (c1.attributes = c2.attributes) &&
+    (c1.with_defs = c2.with_defs) &&
+    (Big_int.eq_big_int c1.objects_created c2.objects_created) &&
+    (c1.pragmas = c2.pragmas)
+    
+
   (** Whether the class is hidden. *)
   let hidden_p c = Pragma.hidden_p c.pragmas
 
@@ -1791,8 +1802,20 @@ struct
     attributes: VarDecl.t list;
     with_defs: With.t list;
     pragmas: Pragma.t list;
-    dependencies: Dependencies.t
+    dependencies: Dependencies.t;
+    file: string;
+    line: int;
   }
+
+  let equal u1 u2 =
+    (u1.name = u2.name) &&
+    (u1.inherits = u2.inherits) &&
+    (u1.contracts = u2.contracts) &&
+    (u1.implements = u2.implements) &&
+    (u1.attributes = u2.attributes) &&
+    (u1.with_defs = u2.with_defs) &&
+    (u1.pragmas = u2.pragmas) &&
+    (Dependencies.equal u1.dependencies u2.dependencies)
 
 end
 
@@ -1829,6 +1852,19 @@ struct
       | NewClass of NewClass.t
       | Update of Update.t
       | Retract of Retract.t
+
+
+  let equal d1 d2 =
+    match (d1, d2) with
+      | (Class c1, Class c2) -> Class.equal c1 c2
+      | (Interface i1, Interface i2) -> i1 = i2
+      | (Datatype t1, Datatype t2) -> d1 = d2
+      | (Exception e1, Exception e2) -> e1 = e2
+      | (Function f1, Function f2) -> f1 = f2
+      | (NewClass u1, NewClass u2) -> u1 = u2
+      | (Update u1, Update u2) -> Update.equal u1 u2
+      | (Retract u1, Retract u2) -> u1 = u2
+      | _ -> false
 
 
   let hide =
@@ -1872,6 +1908,11 @@ struct
 
   (** The type of a program. *)
   type t = { decls: Declaration.t list }
+
+
+  (** Whether two programs are equal. *)
+  let equal prg prg' =
+    List.for_all2 Declaration.equal prg.decls prg'.decls
 
 
   (** Make a [Program.t] from a list [l] of declarations. *)
@@ -2699,7 +2740,7 @@ struct
             let cls = find_class prg name in
             let cls' = apply_retract_to_class prg cls upd in
               replace_class prg cls'
-        | _ -> assert false
+        | d -> prg
     in
       List.fold_left f program updates.decls
 
