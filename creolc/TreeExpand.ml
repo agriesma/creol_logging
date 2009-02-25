@@ -251,33 +251,34 @@ let pass input =
      of attributes into the init method and creating of a suitable init
      method and run method for that class. *)
 
+  and expand_attributes name attributes =
+    let rec build =
+      function
+	  [] -> ([], [], [])
+	| ({ VarDecl.name = n; init = Some i } as v)::l ->
+	    let lhs n = Expression.LhsAttr (Expression.make_note (), n,
+					    Type.Basic name)
+	    and (v', n', i') = build l
+	    in
+		({ v with VarDecl.init = None }::v', (lhs n)::n', i::i')
+	| v::l ->
+	    let (v', n', i') = build l in (v::v', n', i')
+    in
+      match build attributes with
+          (a', [], []) ->
+            (a', Skip (Statement.make_note ()))
+        | (a', d', n') when List.length d' = List.length n' ->
+            (a', Assign (Statement.make_note (), d', n'))
+        | _ ->
+            assert false
+
   and expand_class c =
 
     (* Make an assignment for all direct assignments of the attribute
        list.  If no assignment is needed, the function returns a skip
        statement. *)
 
-    let (a', assignment) =
-      let rec build =
-	function
-	    [] -> ([], [], [])
-	  | ({ VarDecl.name = n; init = Some i } as v)::l ->
-	      let lhs n = Expression.LhsAttr (Expression.make_note (), n,
-					     Type.Basic c.Class.name)
-	      and (v', n', i') = build l
-	      in
-		({ v with VarDecl.init = None }::v', (lhs n)::n', i::i')
-	  | v::l ->
-	      let (v', n', i') = build l in (v::v', n', i')
-      in
-	match build c.Class.attributes with
-	    (a', [], []) ->
-	      (a', Skip (Statement.make_note ()))
-	  | (a', d', n') when List.length d' = List.length n' ->
-	      (a', Assign (Statement.make_note (), d', n'))
-	  | _ ->
-	      assert false
-    in
+    let (a', assignment) = expand_attributes c.Class.name c.Class.attributes in
     let with_defs' =
       if Statement.skip_p assignment then
 	c.Class.with_defs
@@ -389,11 +390,20 @@ let pass input =
 	with_defs = List.map expand_with (add_init_and_run with_defs') }
   and expand_interface i =
     i
+  and expand_update u =
+    let (a', assignment) = expand_attributes u.Update.name u.Update.attributes
+    in
+      { u with Update.attributes = a';
+	with_defs = List.map expand_with u.Update.with_defs }
   and expand_declaration =
     function
 	Declaration.Class c -> Declaration.Class (expand_class c)
       | Declaration.Interface i -> Declaration.Interface (expand_interface i)
-      | (Declaration.Exception _
+      | Declaration.NewClass c ->
+          Declaration.NewClass { c with NewClass.cls = expand_class c.NewClass.cls }
+      | Declaration.Update u -> Declaration.Update (expand_update u)
+      | (Declaration.Retract _
+      | Declaration.Exception _
       | Declaration.Datatype _
       | Declaration.Function _
       | Declaration.Object _
