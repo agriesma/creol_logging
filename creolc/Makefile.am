@@ -37,7 +37,7 @@ EXTRA_DIST		= $(srcdir)/CreolLexer.mll \
 			  $(srcdir)/CreolParser.mly \
 			  $(srcdir)/UpdateParser.mly 
 
-bin_PROGRAMS		= creolc creolc.opt \
+bin_PROGRAMS		= creolc creolc.opt creolupdc creolupdc.opt \
 			  cmcdisplay cmcdisplay.opt
 
 noinst_PROGRAMS		= creoltop
@@ -106,6 +106,14 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  CheckUseDef.cmx CreolTokens.cmx \
 			  CreolLexer.cmx CreolParser.cmx UpdateParser.cmx \
 			  CMCParser.cmx Passes.cmx
+
+creolupdc_SOURCES	= UpdateCompiler.ml
+
+creolupdc_cmo		= UpdateCompiler.cmo
+
+creolupdc_opt_SOURCES	= $(creolupdc_SOURCES)
+
+creolupdc_cmx		= UpdateCompiler.cmx
 
 cmcdisplay_SOURCES	= CMCDisplay.ml
 
@@ -183,6 +191,12 @@ creolc.prof: $(creolc_SOURCES)
 	make OCAMLC="$(OCAMLCP)" creolc
 	mv creolc creolc.prof
 	make mostlyclean
+
+creolupdc: creol.cma UpdateCompiler.cmo
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $^
+
+creolupdc.opt: creol.cmxa UpdateCompiler.cmx
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
 
 creol.cma: $(creolc_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -a -o $@ $^
@@ -339,7 +353,7 @@ distclean-local:
 
 
 # Compute the dependencies
-.depend: Makefile $(creolc_SOURCES) $(cmcdisplay_SOURCES)
+.depend: Makefile $(creolc_SOURCES) $(creolupdc_SOURCES) $(cmcdisplay_SOURCES)
 	$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $^ | \
 	  sed s,$(srcdir)/,,g > $@
 
