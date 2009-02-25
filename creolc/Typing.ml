@@ -1053,9 +1053,7 @@ let rec type_check_statement env coiface =
 	    check_local_sync_call n m lb ub ins outs
 	  in
 	    AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
-      | Tailcall _ -> assert false
-      | StaticTail _ -> assert false
-      | Return _ -> assert false
+      | (Tailcall _ | StaticTail _ | Return _ as s) -> s
       | If (n, cond, iftrue, iffalse) ->
 	  let cond' = type_check_assertion env coiface cond in
 	    If (n, cond',
@@ -1085,8 +1083,7 @@ let rec type_check_statement env coiface =
 	  let s1' = type_check_statement env coiface s1
 	  and s2' = type_check_statement env coiface s2 in
 	    Choice (n, s1', s2')
-      | Continue _ -> assert false
-      | Extern _ as s -> s
+      | (Continue _ | Extern _) as s -> s
 
 
 (** Check that a class is inherited by supplying correct
