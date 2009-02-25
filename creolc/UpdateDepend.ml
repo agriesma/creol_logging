@@ -159,7 +159,7 @@ let rec depend_statement program cls meth =
         (List.map (depend_lhs program cls meth) o)
       in
         Dependencies.union c' (Dependencies.union i' o')
-    | LocalAsyncCall (_, l, m, s, ub, lb, i) ->
+    | LocalAsyncCall (n, l, m, s, ub, lb, i) ->
       let l' =
         match l with
           | None -> Dependencies.empty
@@ -167,17 +167,33 @@ let rec depend_statement program cls meth =
       and i' = List.fold_left Dependencies.union Dependencies.empty
         (List.map (depend_expression program cls meth) i)
       and m' =
-        let c' = Program.find_class_of_method program cls m s in
+        let c' =
+          try
+            Program.find_class_of_method program cls m s
+          with
+            | Not_found ->
+                Messages.error n.Statement.file n.Statement.line
+		  ("Method " ^ m ^ " not found in class " ^ cls.Class.name) ;
+		exit 1
+        in
 	  Dependencies.singleton { Dependency.name = c'.Class.name;
                                    version = Class.version c' }
       in
         Dependencies.union m' (Dependencies.union l' i')
-    | LocalSyncCall (_, m, s, _, _, i, o)
-    | AwaitLocalSyncCall (_, m, s, _, _, i, o) ->
+    | LocalSyncCall (n, m, s, _, _, i, o)
+    | AwaitLocalSyncCall (n, m, s, _, _, i, o) ->
       let i' = List.fold_left Dependencies.union Dependencies.empty
         (List.map (depend_expression program cls meth) i)
       and m' =
-        let c' = Program.find_class_of_method program cls m s in
+        let c' =
+          try
+            Program.find_class_of_method program cls m s
+          with
+            | Not_found ->
+                Messages.error n.Statement.file n.Statement.line
+		  ("Method " ^ m ^ " not found in class " ^ cls.Class.name) ;
+		exit 1
+        in
 	  Dependencies.singleton { Dependency.name = c'.Class.name;
                                    version = Class.version c' }
       and o' = List.fold_left Dependencies.union Dependencies.empty
@@ -196,11 +212,19 @@ let rec depend_statement program cls meth =
         (List.map (depend_expression program cls meth) i)
       in
         Dependencies.union c' i'
-    | StaticTail (_, m, s, u, l, i) ->
+    | StaticTail (n, m, s, u, l, i) ->
       let i' = List.fold_left Dependencies.union Dependencies.empty
         (List.map (depend_expression program cls meth) i)
       and m' =
-        let c' = Program.find_class_of_method program cls m s in
+        let c' =
+          try
+            Program.find_class_of_method program cls m s
+          with
+            | Not_found ->
+                Messages.error n.Statement.file n.Statement.line
+		  ("Method " ^ m ^ " not found in class " ^ cls.Class.name) ;
+		exit 1
+        in
 	  Dependencies.singleton { Dependency.name = c'.Class.name;
                                    version = Class.version c' }
       in
@@ -274,12 +298,23 @@ let depend_new_class program update =
 
 
 let depend_update program update =
+  let cls =
+    try
+      Program.find_class program update.Update.name
+    with
+      | Not_found ->
+          let file = update.Update.file
+          and line = update.Update.line
+          and msg = "Class " ^ update.Update.name ^ " not found"
+          in
+            Messages.error file line msg; exit 1
+  in
   let program' =
     Program.apply_updates program (Program.make [Declaration.Update update])
   in
-  let cls = Program.find_class program update.Update.name in
+  let cls' = Program.find_class program' cls.Class.name in
   let deps = List.fold_left Dependencies.union Dependencies.empty
-    (List.map (depend_with program cls) update.Update.with_defs)
+    (List.map (depend_with program' cls') update.Update.with_defs)
   in
     Dependencies.add { Dependency.name = cls.Class.name;
                        version = Class.version cls } deps
