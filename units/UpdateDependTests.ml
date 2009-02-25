@@ -60,12 +60,12 @@ let d1 =
 let upd0 =
   { Update.name = "C"; inherits = []; contracts = []; implements = [];
     attributes = []; with_defs = []; pragmas = [];
-    dependencies = Dependencies.empty }
+    dependencies = Dependencies.empty; file = ""; line = 0 }
 
 let upd1 =
   { Update.name = "D"; inherits = []; contracts = []; implements = [];
     attributes = []; with_defs = []; pragmas = [];
-    dependencies = Dependencies.empty }
+    dependencies = Dependencies.empty; file = ""; line = 0 }
 
 let upd2 =
   { Update.name = "D"; inherits = []; contracts = []; implements = [];
@@ -83,7 +83,7 @@ let upd2 =
                                 location = ""; file = ""; line = 0 }];
                    invariants = []; file = ""; line = 0 }];
     pragmas = [];
-    dependencies = Dependencies.empty }
+    dependencies = Dependencies.empty; file = ""; line = 0 }
 
 let test_fixture = "UpdateDepend" >:::
   [
