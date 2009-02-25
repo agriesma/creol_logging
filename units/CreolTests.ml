@@ -41,6 +41,125 @@ let make_iface name inherits =
     inherits = List.map conv_inh inherits;
     with_decls = []; pragmas = []; file = ""; line = 0 }
 
+let mtd1 =
+  { Method.name = "m";
+    coiface = Type.Internal;
+    inpars = [];
+    outpars = [];
+    requires = Expression.Bool (Expression.make_note (), true);
+    ensures = Expression.Bool (Expression.make_note (), true);
+    vars = [];
+    body = None;
+    location = "C";
+    file = "";
+    line = 0 }
+
+let mtd2 =
+  { Method.name = "m";
+    coiface = Type.Internal;
+    inpars = [];
+    outpars = [];
+    requires = Expression.Bool (Expression.make_note (), true);
+    ensures = Expression.Bool (Expression.make_note (), true);
+    vars = [];
+    body = Some (Statement.Skip (Statement.make_note ()));
+    location = "C";
+    file = "";
+    line = 0 }
+
+let cls1 =
+  { Class.name = "C"; parameters = []; inherits = []; contracts = [];
+    implements = []; attributes = []; invariants = [];
+    with_defs = [];
+    objects_created = Big_int.zero_big_int; pragmas = [];
+    file = ""; line = 0 }
+
+let cls2 =
+  { Class.name = "C"; parameters = []; inherits = []; contracts = [];
+    implements = []; attributes = []; invariants = [];
+    with_defs = [ { With.co_interface = Type.Internal; methods = [mtd1];
+          invariants = []; file = ""; line = 0 }];
+    objects_created = Big_int.zero_big_int; pragmas = [];
+    file = ""; line = 0 }
+
+let cls3 =
+  { Class.name = "C"; parameters = []; inherits = []; contracts = [];
+    implements = []; attributes = []; invariants = [];
+    with_defs = [ { With.co_interface = Type.Internal; methods = [mtd2];
+          invariants = []; file = ""; line = 0 }];
+    objects_created = Big_int.zero_big_int; pragmas = [];
+    file = ""; line = 0 }
+
+let upd1 =
+  { Update.name = "C"; inherits = []; contracts = []; implements = [];
+    attributes = []; with_defs = [];
+    pragmas = []; dependencies = Dependencies.empty; file = ""; line = 0 }
+
+let upd2 =
+  { Update.name = "C"; inherits = []; contracts = []; implements = [];
+    attributes = [];
+    with_defs = [ { With.co_interface = Type.Internal; methods = [mtd1];
+          invariants = []; file = ""; line = 0 }];
+    pragmas = []; dependencies = Dependencies.empty; file = ""; line = 0 }
+
+let upd3 =
+  { Update.name = "C"; inherits = []; contracts = []; implements = [];
+    attributes = [];
+    with_defs = [ { With.co_interface = Type.Internal; methods = [mtd2];
+          invariants = []; file = ""; line = 0 }];
+    pragmas = []; dependencies = Dependencies.empty; file = ""; line = 0 }
+
+let update_tests =
+  "Update" >::: [
+    "NoUpdate" >:: (
+      fun _ ->
+        let prg = Program.make [Declaration.Class cls1]
+        and upd = Program.make []
+        in
+        let prg' = Program.apply_updates prg upd in
+          assert_bool "Update failed" (Program.equal prg prg')
+    );
+    "EmptyUpdate" >:: (
+      fun _ ->
+        let prg = Program.make [Declaration.Class cls1]
+        and upd = Program.make [Declaration.Update upd1]
+        in
+        let prg' = Program.apply_updates prg upd in
+          assert_bool "Update failed" (Program.equal prg prg')
+    );
+    "AddMtd" >:: (
+      fun _ ->
+        let prg = Program.make [Declaration.Class cls1]
+        and upd = Program.make [Declaration.Update upd2]
+        in
+        let prg' = Program.apply_updates prg upd
+        and exp = Program.make [Declaration.Class cls2]
+        in
+          assert_bool "Update failed" (Program.equal exp prg')
+    );
+    "UpdateMtd1" >:: (
+      fun _ ->
+        let prg = Program.make [Declaration.Class cls2]
+        and upd = Program.make [Declaration.Update upd2]
+        in
+        let prg' = Program.apply_updates prg upd
+        and exp = Program.make [Declaration.Class cls2]
+        in
+          assert_bool "Update failed" (Program.equal exp prg')
+    );
+    "UpdateMtd2" >:: (
+      fun _ ->
+        let prg = Program.make [Declaration.Class cls2]
+        and upd = Program.make [Declaration.Update upd3]
+        in
+        let prg' = Program.apply_updates prg upd
+        and exp = Program.make [Declaration.Class cls3]
+        in
+          assert_bool "Update failed" (Program.equal exp prg')
+    );
+  ]
+
+
 let test_fixture = "Creol" >:::
   [
     "Type" >::: [
@@ -417,4 +536,5 @@ let test_fixture = "Creol" >:::
         );
       ] ;
     ] ;
+    update_tests ;
   ]
