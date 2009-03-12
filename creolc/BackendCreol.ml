@@ -710,6 +710,7 @@ let pretty_print_program out_channel input =
       begin
 	open_box 2 ;
 	print_space () ;
+	print_string "pragma " ;
 	separated_list print_pragma print_space i.Interface.pragmas ;
 	close_box () 
       end ;
@@ -766,6 +767,7 @@ let pretty_print_program out_channel input =
       begin
 	open_box 2 ;
 	print_space () ;
+	print_string "pragma " ;
 	separated_list print_pragma print_space c.Class.pragmas ;
 	close_box () 
       end ;
