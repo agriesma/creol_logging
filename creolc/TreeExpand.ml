@@ -44,6 +44,38 @@ let fresh_future () =
   let () = incr next_fresh_future in
     res
 
+(** Compute initialisation statements from a list of variable declarations.
+    Returns a statement that initialises all the variables according to the
+    initialiser in some unspecific order. *)
+
+let initialiser ?(cls="") vdecls =
+  let p = function { VarDecl.init = None } -> false | _ -> true in
+  let q = function { VarDecl.init = Some (New _) } -> true | _ -> false  in
+  let vn, vd = List.partition q (List.filter p vdecls) in
+  let f =
+    function
+      | { VarDecl.name = n } when cls <> "" ->
+            LhsAttr(Expression.make_note (), n, Type.Basic cls)
+      | { VarDecl.name = n } -> LhsId (Expression.make_note (), n)
+      | _ -> assert false
+  in
+  let g =
+    function
+      | { VarDecl.init = Some e } -> e
+      | _ -> assert false
+  in
+  let h v = Assign (Statement.make_note (), [f v], [g v]) in
+  let ns = List.fold_left (fun a v -> Sequence (Statement.make_note (), h v, a)) (Statement.Skip (Statement.make_note ())) vn
+  and vs = Assign (Statement.make_note (), List.map f vd, List.map g vd) in
+  let s =
+    match ns, vs with
+      | (_, Assign (_, [], _)) -> ns
+      | (Skip _, _) -> vs
+      | _ -> Sequence (Statement.make_note (), ns, vs)
+  in
+    remove_redundant_skips s
+
+
 (* Lower a Creol program to the "Core Creol" language.
    
    This function will destroy some statement and expression
@@ -257,26 +289,9 @@ let pass input =
        list.  If no assignment is needed, the function returns a skip
        statement. *)
 
-    let (a', assignment) =
-      let rec build =
-	function
-	    [] -> ([], [], [])
-	  | ({ VarDecl.name = n; init = Some i } as v)::l ->
-	      let lhs n = Expression.LhsAttr (Expression.make_note (), n,
-					     Type.Basic c.Class.name)
-	      and (v', n', i') = build l
-	      in
-		({ v with VarDecl.init = None }::v', (lhs n)::n', i::i')
-	  | v::l ->
-	      let (v', n', i') = build l in (v::v', n', i')
-      in
-	match build c.Class.attributes with
-	    (a', [], []) ->
-	      (a', Skip (Statement.make_note ()))
-	  | (a', d', n') when List.length d' = List.length n' ->
-	      (a', Assign (Statement.make_note (), d', n'))
-	  | _ ->
-	      assert false
+    let a' =
+      List.map (fun v -> { v with VarDecl.init = None }) c.Class.attributes
+    and assignment = initialiser ~cls:c.Class.name c.Class.attributes
     in
     let with_defs' =
       if Statement.skip_p assignment then
