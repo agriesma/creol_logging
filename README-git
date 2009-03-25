@@ -42,14 +42,12 @@ repository.  Make sure that you have the following programs installed:
 
   6. menhir
 
-  7. ocaml-libxml2 0.0h or later (see
+  7. ocaml-libxml2 0.0i or later (see
      <http://heim.ifi.uio.no/~kyas/creoltools>)
 
      a. gcc
 
      b. libxml 2.6.16 or later
-
-     c. libxslt 1.1.11 or later
 
   8. graphviz (for the dot utility).
 
