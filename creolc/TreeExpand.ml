@@ -57,7 +57,6 @@ let initialiser ?(cls="") vdecls =
       | { VarDecl.name = n } when cls <> "" ->
             LhsAttr(Expression.make_note (), n, Type.Basic cls)
       | { VarDecl.name = n } -> LhsId (Expression.make_note (), n)
-      | _ -> assert false
   in
   let g =
     function
