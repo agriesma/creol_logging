@@ -645,7 +645,7 @@ and internal choice as
 The operators @code{;}, @code{[]}, and @code{|||} are binary operators
 on statements.  All of them are @emph{left-associative}, @code{;}
 binds strongest and @code{|||} binds weakest.  Braces may be omitted
-in @code{@{ S; T @} [] U} but not in @code{S; @{ T [] U @}}.
+in @code{begin S; T end [] U} but not in @code{S; begin T [] U end}.
 
 
 @node Variable Declaration
