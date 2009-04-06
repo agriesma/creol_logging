@@ -67,7 +67,7 @@ $(unittests_cmx): ../creolc/creol.cmxa
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -c $< -o $@
 
 check-local: unittests
-	unittests
+	$(builddir)/unittests
 
 # Dependencies.
 .depend: Makefile $(unittests_SOURCES)

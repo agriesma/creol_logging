@@ -86,6 +86,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/Pair.creol language/Pair.maude language/Pair.out \
 		  language/Inheritance.creol language/Inheritance.maude \
 		  language/Inheritance.out \
+		  language/Init.creol language/Init.maude language/Init.out \
+		  language/Init2.creol language/Init2.maude language/Init2.out \
+		  language/Init3.creol language/Init3.maude language/Init3.out \
 		  language/Diamond.creol language/Diamond.maude \
 		  language/Diamond.out \
 		  language/Deadlock.creol language/Deadlock.maude \

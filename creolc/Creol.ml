@@ -1201,6 +1201,30 @@ struct
       | Choice (note, l, r) ->
 	  Choice (note, remove_redundant_skips l, remove_redundant_skips r)
 
+  (** [remove_runtime_statements stmt] removes all runtime statements. *)
+  let remove_runtime_statements stmt =
+    let rec remove =
+      function
+          (Skip _ | Release _ | Assert _ | Prove _ | Assign _ | Await _
+          | Posit _ | AsyncCall _ | Get _ | Free _ | Bury _ | SyncCall _
+          | AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _
+          | AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ | StaticTail _
+	  | Extern _) as s -> s
+        | Return (note, _) | Continue (note, _) -> Skip note
+        | If (note, c, t, f) ->
+	    If (note, c, remove t, remove f)
+        | While (note, c, i, b) -> While (note, c, i, remove b)
+        | DoWhile (note, c, i, b) ->
+	    DoWhile (note, c, i, remove b)
+        | Sequence (note, stmt1, stmt2) -> 
+	    Sequence (note, remove stmt1, remove stmt2)
+        | Merge (note, l, r) ->
+	    Merge (note, remove l, remove r)
+        | Choice (note, l, r) ->
+	    Choice (note, remove l, remove r)
+    in
+      remove_redundant_skips (remove stmt)
+
   let assignment_of_bury =
     function
 	Bury (a, (_::_ as l)) ->

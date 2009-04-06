@@ -488,10 +488,9 @@ fmod CREOL-DATA-SET is
     eq "remove" (set(emptyset) :: E)  = set(emptyset) .
     eq "remove" (set(S : D) :: D') =
       if D == D' then "remove" (set(S) :: D') else
-          "add" (set(D) :: "remove" (set(S) :: D')) fi .
+          "add" ("remove" (set(S) :: D') :: D) fi .
 
-    eq "add" (set(S) :: D) =
-      if "in" (D :: set(S)) asBool then set(S) else set(D : S) fi .    
+    eq "add" (set(S) :: D) = set(S : D) .
 
     eq "in" (E :: set(emptyset)) = bool(false) .
     eq "in" (D' :: set(S : D)) =

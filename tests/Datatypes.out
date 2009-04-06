@@ -66,6 +66,24 @@ result Data: int(0)
 reduce in CREOL-DATA-LIST : "#"(list(int(1) :: int(2))) .
 result Data: int(2)
 ==========================================
+reduce in CREOL-DATA-SET : "add"(set(emptyset) :: int(0)) .
+result Data: set(int(0))
+==========================================
+reduce in CREOL-DATA-SET : "add"(set(int(0)) :: int(0)) .
+result Data: set(int(0))
+==========================================
+reduce in CREOL-DATA-SET : "add"(set(int(1)) :: int(0)) .
+result Data: set(int(0) : int(1))
+==========================================
+reduce in CREOL-DATA-SET : "remove"(set(emptyset) :: int(0)) .
+result Data: set(emptyset)
+==========================================
+reduce in CREOL-DATA-SET : "remove"(set(int(0)) :: int(0)) .
+result Data: set(emptyset)
+==========================================
+reduce in CREOL-DATA-SET : "remove"(set(int(1)) :: int(0)) .
+result Data: set(int(1))
+==========================================
 reduce in CREOL-DATA-MAP : "in"(int(0) :: map(empty)) .
 result Data: bool(false)
 ==========================================
