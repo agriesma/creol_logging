@@ -9,28 +9,28 @@ result Class:
     "availFiles" ; "tail"("sList")) ; await "&&"(?("l1") :: ?("l2")) ; get("l1"
     ; "fList") ; free("l1") ; get("l2" ; "files") ; free("l2") ; assign("files"
     ; "|-"("files" :: list("head"("sList") :: "fList"))) fi ; return("files")
-    >, < "enquire" : Method | Param: noVid, Att: "_" |-> null, "files" |->
-    null, "label:0" |-> null, Code: call("label:0" ; "db" ; "listFiles" ; emp)
-    ; await ?("label:0") ; get("label:0" ; "files") ; free("label:0") ; return(
-    "files") >, < "getLength" : Method | Param: "fId", Att: "_" |-> null, "fId"
-    |-> null, "label:0" |-> null, "lth" |-> null, Code: call("label:0" ; "db" ;
-    "getLength" ; "fId") ; await ?("label:0") ; get("label:0" ; "lth") ; free(
-    "label:0") ; return("lth") >, < "getPack" : Method | Param: "fId", "pNbr",
-    Att: "_" |-> null, "f" |-> null, "fId" |-> null, "label:0" |-> null, "pNbr"
-    |-> null, "pack" |-> null, Code: call("label:0" ; "db" ; "getFile" ; "fId")
-    ; await ?("label:0") ; get("label:0" ; "f") ; free("label:0") ; assign(
-    "pack" ; "nth"("f" :: "pNbr")) ; return("pack") >, < "init" : Method |
-    Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, < "reqFile" :
-    Method | Param: "sId", "fId", Att: "_" |-> null, "fId" |-> null, "file" |->
-    null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, "lth" |->
-    null, "pack" |-> null, "sId" |-> null, Code: call("label:0" ; "sId" ;
-    "getLength" ; "fId") ; await ?("label:0") ; get("label:0" ; "lth") ; free(
-    "label:0") ; while ">"("lth" :: int(0)) do call("label:1" ; "sId" ;
-    "getPack" ; "fId" :: "lth") ; await ?("label:1") ; get("label:1" ; "pack")
-    ; free("label:1") ; assign("file" ; "-|"("pack" :: "file")) ; assign("lth"
-    ; "-"("lth" :: int(1))) od ; call("label:2" ; "db" ; "storeFile" ; "fId" ::
-    "file") ; free("label:2") ; return(emp) >, < "run" : Method | Param: noVid,
-    Att: "_" |-> null, Code: skip ; return(emp) >,
+    >, < "enquire" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |->
+    null, "files" |-> null, Code: call("ccglab0" ; "db" ; "listFiles" ; emp) ;
+    await ?("ccglab0") ; get("ccglab0" ; "files") ; free("ccglab0") ; return(
+    "files") >, < "getLength" : Method | Param: "fId", Att: "_" |-> null,
+    "ccglab0" |-> null, "fId" |-> null, "lth" |-> null, Code: call("ccglab0" ;
+    "db" ; "getLength" ; "fId") ; await ?("ccglab0") ; get("ccglab0" ; "lth") ;
+    free("ccglab0") ; return("lth") >, < "getPack" : Method | Param: "fId",
+    "pNbr", Att: "_" |-> null, "ccglab0" |-> null, "f" |-> null, "fId" |->
+    null, "pNbr" |-> null, "pack" |-> null, Code: call("ccglab0" ; "db" ;
+    "getFile" ; "fId") ; await ?("ccglab0") ; get("ccglab0" ; "f") ; free(
+    "ccglab0") ; assign("pack" ; "nth"("f" :: "pNbr")) ; return("pack") >, <
+    "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "reqFile" : Method | Param: "sId", "fId", Att: "_" |-> null, "ccglab0"
+    |-> null, "ccglab1" |-> null, "ccglab2" |-> null, "fId" |-> null, "file"
+    |-> null, "lth" |-> null, "pack" |-> null, "sId" |-> null, Code: call(
+    "ccglab0" ; "sId" ; "getLength" ; "fId") ; await ?("ccglab0") ; get(
+    "ccglab0" ; "lth") ; free("ccglab0") ; while ">"("lth" :: int(0)) do call(
+    "ccglab1" ; "sId" ; "getPack" ; "fId" :: "lth") ; await ?("ccglab1") ; get(
+    "ccglab1" ; "pack") ; free("ccglab1") ; assign("file" ; "-|"("pack" ::
+    "file")) ; assign("lth" ; "-"("lth" :: int(1))) od ; call("ccglab2" ; "db"
+    ; "storeFile" ; "fId" :: "file") ; free("ccglab2") ; return(emp) >, < "run"
+    : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

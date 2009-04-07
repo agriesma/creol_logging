@@ -17,11 +17,11 @@ result Configuration:
   < "consume" : Method | Param: "x", Att: "_" |-> null, "x" |-> null, Code:
     assign("sum" ; "+"("sum" :: "x")) ; return(emp) >, < "init" : Method |
     Param: noVid, Att: "_" |-> null, Code: assign("sum" @ "Consumer" ; int(0))
-    ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, "j"
-    |-> null, "label:0" |-> null, "label:1" |-> null, Code: call("label:0" ;
-    "buf" ; "take" ; emp) ; get("label:0" ; "j") ; free("label:0") ; assign(
-    "sum" ; "+"("sum" :: "j")) ; call("label:1" ; "this" ; "run" ; emp) ; free(
-    "label:1") ; return(emp) >,
+    ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
+    "ccglab0" |-> null, "ccglab1" |-> null, "j" |-> null, Code: call("ccglab0"
+    ; "buf" ; "take" ; emp) ; get("ccglab0" ; "j") ; free("ccglab0") ; assign(
+    "sum" ; "+"("sum" :: "j")) ; call("ccglab1" ; "this" ; "run" ; emp) ; free(
+    "ccglab1") ; return(emp) >,
   Ocnt: 0 >
  
 < "Main" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
@@ -38,10 +38,10 @@ result Configuration:
     "Producer" ; int(1)) ; return(emp) >, < "produce" : Method | Param: noVid,
     Att: "_" |-> null, "x" |-> null, Code: assign("x" ; "i") ; assign("i" ;
     "+"("i" :: int(1))) ; return("x") >, < "run" : Method | Param: noVid, Att:
-    "_" |-> null, "label:0" |-> null, "label:1" |-> null, Code: call("label:0"
-    ; "buf" ; "put" ; "i") ; get("label:0" ; noVid) ; free("label:0") ; assign(
-    "i" ; "+"("i" :: int(1))) ; call("label:1" ; "this" ; "run" ; emp) ; free(
-    "label:1") ; return(emp) >,
+    "_" |-> null, "ccglab0" |-> null, "ccglab1" |-> null, Code: call("ccglab0"
+    ; "buf" ; "put" ; "i") ; get("ccglab0" ; noVid) ; free("ccglab0") ; assign(
+    "i" ; "+"("i" :: int(1))) ; call("ccglab1" ; "this" ; "run" ; emp) ; free(
+    "ccglab1") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

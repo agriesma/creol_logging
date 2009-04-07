@@ -25,8 +25,8 @@ warning("Program terminates after 2 steps")
     null, "res" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("f" ;
     "Fibonacci" ; "n") ; return(emp) >, < "run" : Method | Param: noVid, Att:
-    "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "f" ; "fibonacci"
-    ; "n") ; get("label:0" ; "res") ; free("label:0") ; return(emp) >,
+    "_" |-> null, "ccglab0" |-> null, Code: call("ccglab0" ; "f" ; "fibonacci"
+    ; "n") ; get("ccglab0" ; "res") ; free("ccglab0") ; return(emp) >,
   Ocnt: 1 >
  
 < "Fibonacci" : Class | Inh: noInh, Param: "n", Att: "n" |-> null, Mtds:

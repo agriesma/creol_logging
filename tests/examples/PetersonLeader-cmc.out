@@ -79,9 +79,9 @@ result (sort not calculated): {
     "uid1" |-> int(1), "uid2" |-> null,
   Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-0"), 0),
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-0"),
-    "label:0" |-> label(ob("Process-0"), 1), "label:1" |-> null | get(label(ob(
-    "Process-0"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
-    "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
+    "ccglab0" |-> label(ob("Process-0"), 1), "ccglab1" |-> null | get(label(ob(
+    "Process-0"), 1) ; "neighbour") ; free("ccglab0") ; call("ccglab1" ;
+    "neighbour" ; "send" ; "i") ; free("ccglab1") ; return(emp) ; $cont label(
     ob("Process-0"), 0)},
   PrQ: {".anon" |-> label(ob("Process-0"), 0), ".label" |-> label(ob("Main-0"),
     1) | get(label(ob("Process-0"), 0) ; noVid) ; free(".anon") ; call(".anon"
@@ -94,9 +94,9 @@ result (sort not calculated): {
     "uid1" |-> int(3), "uid2" |-> null,
   Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-1"), 0),
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-1"),
-    "label:0" |-> label(ob("Process-1"), 1), "label:1" |-> null | get(label(ob(
-    "Process-1"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
-    "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
+    "ccglab0" |-> label(ob("Process-1"), 1), "ccglab1" |-> null | get(label(ob(
+    "Process-1"), 1) ; "neighbour") ; free("ccglab0") ; call("ccglab1" ;
+    "neighbour" ; "send" ; "i") ; free("ccglab1") ; return(emp) ; $cont label(
     ob("Process-1"), 0)},
   PrQ: {".anon" |-> label(ob("Process-1"), 0), ".label" |-> label(ob("Main-0"),
     2) | get(label(ob("Process-1"), 0) ; noVid) ; free(".anon") ; call(".anon"
@@ -109,9 +109,9 @@ result (sort not calculated): {
     "uid1" |-> int(5), "uid2" |-> null,
   Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-2"), 0),
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-2"),
-    "label:0" |-> label(ob("Process-2"), 1), "label:1" |-> null | get(label(ob(
-    "Process-2"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
-    "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
+    "ccglab0" |-> label(ob("Process-2"), 1), "ccglab1" |-> null | get(label(ob(
+    "Process-2"), 1) ; "neighbour") ; free("ccglab0") ; call("ccglab1" ;
+    "neighbour" ; "send" ; "i") ; free("ccglab1") ; return(emp) ; $cont label(
     ob("Process-2"), 0)},
   PrQ: {".anon" |-> label(ob("Process-2"), 0), ".label" |-> label(ob("Main-0"),
     3) | get(label(ob("Process-2"), 0) ; noVid) ; free(".anon") ; call(".anon"
@@ -124,9 +124,9 @@ result (sort not calculated): {
     "uid1" |-> int(4), "uid2" |-> null,
   Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-3"), 0),
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-3"),
-    "label:0" |-> label(ob("Process-3"), 1), "label:1" |-> null | get(label(ob(
-    "Process-3"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
-    "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
+    "ccglab0" |-> label(ob("Process-3"), 1), "ccglab1" |-> null | get(label(ob(
+    "Process-3"), 1) ; "neighbour") ; free("ccglab0") ; call("ccglab1" ;
+    "neighbour" ; "send" ; "i") ; free("ccglab1") ; return(emp) ; $cont label(
     ob("Process-3"), 0)},
   PrQ: {".anon" |-> label(ob("Process-3"), 0), ".label" |-> label(ob("Main-0"),
     4) | get(label(ob("Process-3"), 0) ; noVid) ; free(".anon") ; call(".anon"
@@ -139,9 +139,9 @@ result (sort not calculated): {
     "uid1" |-> int(2), "uid2" |-> null,
   Pr: {".class" |-> str("Process"), ".label" |-> label(ob("Process-4"), 0),
     ".method" |-> str("init"), "_" |-> null, "caller" |-> ob("Process-4"),
-    "label:0" |-> label(ob("Process-4"), 1), "label:1" |-> null | get(label(ob(
-    "Process-4"), 1) ; "neighbour") ; free("label:0") ; call("label:1" ;
-    "neighbour" ; "send" ; "i") ; free("label:1") ; return(emp) ; $cont label(
+    "ccglab0" |-> label(ob("Process-4"), 1), "ccglab1" |-> null | get(label(ob(
+    "Process-4"), 1) ; "neighbour") ; free("ccglab0") ; call("ccglab1" ;
+    "neighbour" ; "send" ; "i") ; free("ccglab1") ; return(emp) ; $cont label(
     ob("Process-4"), 0)},
   PrQ: {".anon" |-> label(ob("Process-4"), 0), ".label" |-> label(ob("Main-0"),
     5) | get(label(ob("Process-4"), 0) ; noVid) ; free(".anon") ; call(".anon"
@@ -171,21 +171,21 @@ result (sort not calculated): {
 < "Process" : Class | Inh: noInh, Param: "i", "main", Att: "i" |-> null, "main"
     |-> null, "mode" |-> null, "neighbour" |-> null, "status" |-> null, "uid1"
     |-> null, "uid2" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    "ccglab1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
     "Process"), ("uid1" @ "Process") ; bool(true) :: int(0) :: "i") ; call(
-    "label:0" ; "main" ; "getNeighbour" ; emp) ; get("label:0" ; "neighbour") ;
-    free("label:0") ; call("label:1" ; "neighbour" ; "send" ; "i") ; free(
-    "label:1") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
+    "ccglab0" ; "main" ; "getNeighbour" ; emp) ; get("ccglab0" ; "neighbour") ;
+    free("ccglab0") ; call("ccglab1" ; "neighbour" ; "send" ; "i") ; free(
+    "ccglab1") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
     null, Code: skip ; return(emp) >, < "send" : Method | Param: "u", Att: "_"
-    |-> null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, "u"
+    |-> null, "ccglab0" |-> null, "ccglab1" |-> null, "ccglab2" |-> null, "u"
     |-> null, Code: if "mode" th if "="("uid2" :: null) th if "="("u" ::
     "uid1") th assign("status" ; int(1)) el assign("uid2" ; "u") ; call(
-    "label:0" ; "neighbour" ; "send" ; "u") ; free("label:0") fi el if "&&"(
+    "ccglab0" ; "neighbour" ; "send" ; "u") ; free("ccglab0") fi el if "&&"(
     ">"("uid2" :: "uid1") :: ">"("uid2" :: "u")) th assign("uid1", "uid2" ;
-    "uid2" :: null) ; call("label:1" ; "neighbour" ; "send" ; "uid1") ; free(
-    "label:1") el assign("mode" ; bool(false)) fi fi el call("label:2" ;
-    "neighbour" ; "send" ; "u") ; free("label:2") fi ; return(emp) >,
+    "uid2" :: null) ; call("ccglab1" ; "neighbour" ; "send" ; "uid1") ; free(
+    "ccglab1") el assign("mode" ; bool(false)) fi fi el call("ccglab2" ;
+    "neighbour" ; "send" ; "u") ; free("ccglab2") fi ; return(emp) >,
   Ocnt: 5 >
 }
 Bye.

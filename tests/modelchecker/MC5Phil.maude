@@ -5,34 +5,34 @@ mod PROGRAM is
   eq classes =
     < "Philosopher" : Class | Inh: noInh, Param: "butler", Att: "butler" |->
       null, "hungry" |-> null, "chopstick" |-> null, "neighbor" |-> null,
-      Mtds: < "init" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+      Mtds: < "init" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
               |-> null,
               Code: assign( ( "chopstick" @ "Philosopher" ) ; bool(true) ) ;
               assign( ( "hungry" @ "Philosopher" ) ; bool(false) ) ;
-              call( "label:0" ; ( "butler" @ "Philosopher" ) ;
+              call( "ccglab0" ; ( "butler" @ "Philosopher" ) ;
               "getNeighbor" ; emp ) ;
-              get( "label:0" ; ( "neighbor" @ "Philosopher" ) ) ;
+              get( "ccglab0" ; ( "neighbor" @ "Philosopher" ) ) ;
               return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "this" ; "think" ; emp ) ;
-              free( "label:0" ) ; call( "label:1" ; "this" ; "eat" ; emp ) ;
-              free( "label:1" ) ; return ( emp ) >,
-            < "eat" : Method | Param: noVid, Att: "label:2" |-> null,
-              "label:1" |-> null, "label:0" |-> null, "_" |-> null,
-              Code: await ( "hungry" @ "Philosopher" ) ; call( "label:0" ;
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "this" ; "think" ; emp ) ;
+              free( "ccglab0" ) ; call( "ccglab1" ; "this" ; "eat" ; emp ) ;
+              free( "ccglab1" ) ; return ( emp ) >,
+            < "eat" : Method | Param: noVid, Att: "ccglab2" |-> null,
+              "ccglab1" |-> null, "ccglab0" |-> null, "_" |-> null,
+              Code: await ( "hungry" @ "Philosopher" ) ; call( "ccglab0" ;
               ( "neighbor" @ "Philosopher" ) ; "borrowStick" ; emp ) ; await
-              ?("label:0") ; get( "label:0" ; noVid ) ; await
+              ?("ccglab0") ; get( "ccglab0" ; noVid ) ; await
               ( "chopstick" @ "Philosopher" ) ;
               assign( ( "hungry" @ "Philosopher" ) ; bool(false) ) ;
-              call( "label:1" ; ( "neighbor" @ "Philosopher" ) ;
-              "returnStick" ; emp ) ; free( "label:1" ) ;
-              call( "label:2" ; "this" ; "eat" ; emp ) ; free( "label:2" ) ;
+              call( "ccglab1" ; ( "neighbor" @ "Philosopher" ) ;
+              "returnStick" ; emp ) ; free( "ccglab1" ) ;
+              call( "ccglab2" ; "this" ; "eat" ; emp ) ; free( "ccglab2" ) ;
               return ( emp ) >,
-            < "think" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+            < "think" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
               |-> null, Code: await "~" ( ( "hungry" @ "Philosopher" ) ) ;
               release ; assign( ( "hungry" @ "Philosopher" ) ; bool(true) ) ;
-              call( "label:0" ; "this" ; "think" ; emp ) ; free( "label:0" )
+              call( "ccglab0" ; "this" ; "think" ; emp ) ; free( "ccglab0" )
               ; return ( emp ) >,
             < "borrowStick" : Method | Param: noVid, Att: "_" |-> null,
               Code: await ( "chopstick" @ "Philosopher" ) ;

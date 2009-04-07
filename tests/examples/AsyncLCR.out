@@ -14,13 +14,13 @@ result Configuration:
  
 < "Process" : Class | Inh: noInh, Param: "i", "u", Att: "i" |-> null,
     "neighbor" |-> null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, Code: assign("status" ; int(0)) ; call("label:0" ; "i"
-    ; "getNeighbor" ; emp) ; get("label:0" ; "neighbor") ; free("label:0") ;
-    call("label:1" ; "neighbor" ; "receive" ; "u") ; free("label:1") ; return(
-    emp) >, < "receive" : Method | Param: "v", Att: "_" |-> null, "label:0" |->
-    null, "v" |-> null, Code: if ">"("v" :: "u") th call("label:0" ; "neighbor"
-    ; "receive" ; "v") ; free("label:0") el if "="("v" :: "u") th assign(
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    "ccglab1" |-> null, Code: assign("status" ; int(0)) ; call("ccglab0" ; "i"
+    ; "getNeighbor" ; emp) ; get("ccglab0" ; "neighbor") ; free("ccglab0") ;
+    call("ccglab1" ; "neighbor" ; "receive" ; "u") ; free("ccglab1") ; return(
+    emp) >, < "receive" : Method | Param: "v", Att: "_" |-> null, "ccglab0" |->
+    null, "v" |-> null, Code: if ">"("v" :: "u") th call("ccglab0" ; "neighbor"
+    ; "receive" ; "v") ; free("ccglab0") el if "="("v" :: "u") th assign(
     "status" ; int(1)) el skip fi fi ; return(emp) >, < "run" : Method | Param:
     noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
@@ -75,13 +75,13 @@ result State: {
  
 < "Process" : Class | Inh: noInh, Param: "i", "u", Att: "i" |-> null,
     "neighbor" |-> null, "status" |-> null, "u" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, Code: assign("status" ; int(0)) ; call("label:0" ; "i"
-    ; "getNeighbor" ; emp) ; get("label:0" ; "neighbor") ; free("label:0") ;
-    call("label:1" ; "neighbor" ; "receive" ; "u") ; free("label:1") ; return(
-    emp) >, < "receive" : Method | Param: "v", Att: "_" |-> null, "label:0" |->
-    null, "v" |-> null, Code: if ">"("v" :: "u") th call("label:0" ; "neighbor"
-    ; "receive" ; "v") ; free("label:0") el if "="("v" :: "u") th assign(
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    "ccglab1" |-> null, Code: assign("status" ; int(0)) ; call("ccglab0" ; "i"
+    ; "getNeighbor" ; emp) ; get("ccglab0" ; "neighbor") ; free("ccglab0") ;
+    call("ccglab1" ; "neighbor" ; "receive" ; "u") ; free("ccglab1") ; return(
+    emp) >, < "receive" : Method | Param: "v", Att: "_" |-> null, "ccglab0" |->
+    null, "v" |-> null, Code: if ">"("v" :: "u") th call("ccglab0" ; "neighbor"
+    ; "receive" ; "v") ; free("ccglab0") el if "="("v" :: "u") th assign(
     "status" ; int(1)) el skip fi fi ; return(emp) >, < "run" : Method | Param:
     noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 3 >

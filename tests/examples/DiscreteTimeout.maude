@@ -8,9 +8,9 @@ mod PROGRAM is
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( ( "clock" @ "DiscreteTimeout" ) ; int(0) ) ;
               return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
+            < "run" : Method | Param: noVid, Att: "ccglab0" |-> null, "_" |->
               null, Code: assign( "clock" ; "+" ( "clock" :: int(1) ) ) ;
-              call( "label:0" ; "this" ; "run" ; emp ) ; free( "label:0" ) ;
+              call( "ccglab0" ; "this" ; "run" ; emp ) ; free( "ccglab0" ) ;
               return ( emp ) >,
             < "timeout" : Method | Param: "n", Att: "n" |-> null, "result"
               |-> null, "timeout" |-> null, "l" |-> null, "_" |-> null,

@@ -17,10 +17,10 @@ mod PROGRAM is
     < "Hello" : Class | Inh: noInh, Param: noVid, Att: "console" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: new( "console" ; "Console" ; emp ) ; return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
-              null, Code: call( "label:0" ; "console" ; "print" ;
-              str("Hello, world") ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "ccglab0" |-> null, "_" |->
+              null, Code: call( "ccglab0" ; "console" ; "print" ;
+              str("Hello, world") ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) ; return ( emp ) >,
       Ocnt: 0 > .
 endm
 

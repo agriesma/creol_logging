@@ -8,10 +8,10 @@ mod PROGRAM is
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: new( "next" ; "Sieve" ; int(2) ) ; assign( "n" ; int(3) )
               ; return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "r" |->
+            < "run" : Method | Param: noVid, Att: "ccglab0" |-> null, "r" |->
               null, "l" |-> null, "_" |-> null, Code: call( "l" ; "next" ;
               "send" ; "n" ) ; assign( "n" ; "+" ( "n" :: int(1) ) ) ;
-              call( "label:0" ; "this" ; "run" ; emp ) ; free( "label:0" ) ;
+              call( "ccglab0" ; "this" ; "run" ; emp ) ; free( "ccglab0" ) ;
               await ?("l") ; get( "l" ; "r" ) ; free( "l" ) ; return ( emp )
               >,
       Ocnt: 0 >
@@ -23,13 +23,13 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
             < "send" : Method | Param: "n", Att: "n" |-> null, "res" |->
-              null, "label:0" |-> null, "d" |-> null, "r" |-> null, "_" |->
+              null, "ccglab0" |-> null, "d" |-> null, "r" |-> null, "_" |->
               null, Code: assign( "d" ; "/" ( "n" :: "p" ) ) ;
               assign( "r" ; "-" ( "n" :: "*" ( "d" :: "p" ) ) ) ; if
               "=" ( "r" :: int(0) ) th assign( "res" ; bool(false) ) el if
-              "/=" ( "next" :: null ) th call( "label:0" ; "next" ; "send" ;
-              "n" ) ; await ?("label:0") ; get( "label:0" ; "res" ) ;
-              free( "label:0" ) el new( "next" ; "Sieve" ; "n" ) ;
+              "/=" ( "next" :: null ) th call( "ccglab0" ; "next" ; "send" ;
+              "n" ) ; await ?("ccglab0") ; get( "ccglab0" ; "res" ) ;
+              free( "ccglab0" ) el new( "next" ; "Sieve" ; "n" ) ;
               assign( "res" ; bool(true) ) fi fi ; return ( "res" ) >,
       Ocnt: 0 > .
 endm

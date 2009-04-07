@@ -5,18 +5,18 @@ mod PROGRAM is
   eq classes =
     < "Process" : Class | Inh: noInh, Param: "i", "u", Att: "i" |-> null, "u"
       |-> null, "status" |-> null, "neighbor" |-> null,
-      Mtds: < "init" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "_" |-> null,
-              Code: assign( "status" ; int(0) ) ; call( "label:0" ; "i" ;
-              "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ;
-              free( "label:0" ) ; call( "label:1" ; "neighbor" ; "receive" ;
-              "u" ) ; free( "label:1" ) ; return ( emp ) >,
+      Mtds: < "init" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
+              Code: assign( "status" ; int(0) ) ; call( "ccglab0" ; "i" ;
+              "getNeighbor" ; emp ) ; get( "ccglab0" ; "neighbor" ) ;
+              free( "ccglab0" ) ; call( "ccglab1" ; "neighbor" ; "receive" ;
+              "u" ) ; free( "ccglab1" ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "receive" : Method | Param: "v", Att: "v" |-> null, "label:0"
+            < "receive" : Method | Param: "v", Att: "v" |-> null, "ccglab0"
               |-> null, "_" |-> null, Code: if ">" ( "v" :: "u" ) th
-              call( "label:0" ; "neighbor" ; "receive" ; "v" ) ;
-              free( "label:0" ) el if "=" ( "v" :: "u" ) th
+              call( "ccglab0" ; "neighbor" ; "receive" ; "v" ) ;
+              free( "ccglab0" ) el if "=" ( "v" :: "u" ) th
               assign( "status" ; int(1) ) el skip fi fi ; return ( emp ) >,
       Ocnt: 0 >
     

@@ -20,29 +20,29 @@ result Configuration:
     null, Mtds:
   < "borrowStick" : Method | Param: noVid, Att: "_" |-> null, Code: await
     "chopstick" ; assign("chopstick" ; bool(false)) ; return(emp) >, < "digest"
-    : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code:
+    : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, Code:
     release ; assign("hungry" ; bool(true)) ; assign("hist" ; "|-"("hist" ::
-    str("d"))) ; release ; call("label:0" ; "this" ; "digest" ; emp) ; free(
-    "label:0") ; return(emp) >, < "eat" : Method | Param: noVid, Att: "_" |->
-    null, "l" |-> null, "label:0" |-> null, "label:1" |-> null, Code: await
+    str("d"))) ; release ; call("ccglab0" ; "this" ; "digest" ; emp) ; free(
+    "ccglab0") ; return(emp) >, < "eat" : Method | Param: noVid, Att: "_" |->
+    null, "ccglab0" |-> null, "ccglab1" |-> null, "l" |-> null, Code: await
     "hungry" ; call("l" ; "neighbor" ; "borrowStick" ; emp) ; await ?("l") ;
     free("l") ; await "chopstick" ; assign("hist" ; "|-"("hist" :: str("e"))) ;
-    assign("hungry" ; bool(false)) ; call("label:0" ; "neighbor" ;
-    "returnStick" ; emp) ; free("label:0") ; release ; call("label:1" ; "this"
-    ; "eat" ; emp) ; free("label:1") ; return(emp) >, < "init" : Method |
-    Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code: assign("hist" ;
+    assign("hungry" ; bool(false)) ; call("ccglab0" ; "neighbor" ;
+    "returnStick" ; emp) ; free("ccglab0") ; release ; call("ccglab1" ; "this"
+    ; "eat" ; emp) ; free("ccglab1") ; return(emp) >, < "init" : Method |
+    Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, Code: assign("hist" ;
     str("")) ; assign("chopstick" ; bool(true)) ; assign("hungry" ; bool(
-    false)) ; call("label:0" ; "butler" ; "getNeighbor" ; emp) ; get("label:0"
-    ; "neighbor") ; free("label:0") ; return(emp) >, < "returnStick" : Method |
+    false)) ; call("ccglab0" ; "butler" ; "getNeighbor" ; emp) ; get("ccglab0"
+    ; "neighbor") ; free("ccglab0") ; return(emp) >, < "returnStick" : Method |
     Param: noVid, Att: "_" |-> null, Code: assign("chopstick" ; bool(true)) ;
     return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
-    "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, Code: call(
-    "label:0" ; "this" ; "think" ; emp) ; free("label:0") ; call("label:1" ;
-    "this" ; "eat" ; emp) ; free("label:1") ; call("label:2" ; "this" ;
-    "digest" ; emp) ; free("label:2") ; return(emp) >, < "think" : Method |
-    Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code: await "~"(
+    "ccglab0" |-> null, "ccglab1" |-> null, "ccglab2" |-> null, Code: call(
+    "ccglab0" ; "this" ; "think" ; emp) ; free("ccglab0") ; call("ccglab1" ;
+    "this" ; "eat" ; emp) ; free("ccglab1") ; call("ccglab2" ; "this" ;
+    "digest" ; emp) ; free("ccglab2") ; return(emp) >, < "think" : Method |
+    Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, Code: await "~"(
     "hungry") ; assign("hist" ; "|-"("hist" :: str("t"))) ; release ; call(
-    "label:0" ; "this" ; "think" ; emp) ; free("label:0") ; return(emp) >,
+    "ccglab0" ; "this" ; "think" ; emp) ; free("ccglab0") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.
