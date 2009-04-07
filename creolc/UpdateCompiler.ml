@@ -142,10 +142,21 @@ let main () =
   in
   let update' = UpdateDepend.depend program update in
   let program' = Program.apply_updates program update' in
+  let program'' =
+    let f program cls =
+      function
+        | { Method.body = None } as mtd ->
+            mtd
+        | { Method.body = Some b } as mtd ->
+            { mtd with Method.body =
+                Some (Statement.remove_runtime_statements b) }
+    in
+      Program.for_each_method program' f
+  in
   let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout update'
   and () =
     let out_channel = open_out "gamma.creol" in
-      BackendCreol.pretty_print_program out_channel program'
+      BackendCreol.pretty_print_program out_channel program''
   in
     if !times then Passes.report_timings () ;
     exit 0
