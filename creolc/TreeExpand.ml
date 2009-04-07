@@ -457,10 +457,14 @@ let pass input =
   and expand_interface i =
     i
   and expand_update u =
-    let (a', assignment) = expand_attributes u.Update.name u.Update.attributes
+    let (a', ass) = expand_attributes u.Update.name u.Update.attributes in
+    let cls = Program.find_class input u.Update.name in
+    let cls' =
+      { cls with Class.attributes =
+                   cls.Class.attributes @u.Update.attributes }
     in
       { u with Update.attributes = a';
-	with_defs = List.map expand_with u.Update.with_defs }
+	with_defs = List.map (expand_with cls') u.Update.with_defs }
   and expand_declaration =
     function
 	Declaration.Class c -> Declaration.Class (expand_class c)
