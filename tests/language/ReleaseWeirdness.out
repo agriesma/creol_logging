@@ -3,10 +3,10 @@ reduce in PROGRAM : classes .
 result Configuration: 
 < "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, "w" |-> null, Code: new("w" ; "Weirdness" ; emp) ;
-    call("label:0" ; "w" ; "m" ; emp) ; free("label:0") ; call("label:1" ; "w"
-    ; "n" ; emp) ; free("label:1") ; return(emp) >,
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    "ccglab1" |-> null, "w" |-> null, Code: new("w" ; "Weirdness" ; emp) ;
+    call("ccglab0" ; "w" ; "m" ; emp) ; free("ccglab0") ; call("ccglab1" ; "w"
+    ; "n" ; emp) ; free("ccglab1") ; return(emp) >,
   Ocnt: 0 >
  
 < "Weirdness" : Class | Inh: noInh, Param: noVid, Att: "c" |-> null, Mtds:

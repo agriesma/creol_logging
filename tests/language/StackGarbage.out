@@ -3,12 +3,12 @@ reduce in PROGRAM : classes .
 result Class: 
 < "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "m" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "r" |-> null, Code: (assign("r" ; int(1))[]call("label:0" ; "this" ; "m" ;
-    emp) ; get("label:0" ; "r") ; free("label:0") ; assign("r" ; "+"("r" ::
+    >, < "m" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    "r" |-> null, Code: (assign("r" ; int(1))[]call("ccglab0" ; "this" ; "m" ;
+    emp) ; get("ccglab0" ; "r") ; free("ccglab0") ; assign("r" ; "+"("r" ::
     int(1)))) ; return("r") >, < "run" : Method | Param: noVid, Att: "_" |->
-    null, "label:0" |-> null, "r" |-> null, Code: call("label:0" ; "this" ; "m"
-    ; emp) ; get("label:0" ; "r") ; free("label:0") ; return(emp) >,
+    null, "ccglab0" |-> null, "r" |-> null, Code: call("ccglab0" ; "this" ; "m"
+    ; emp) ; get("ccglab0" ; "r") ; free("ccglab0") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

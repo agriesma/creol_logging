@@ -267,7 +267,7 @@ let expand_method program cls meth =
       | None -> meth
       | Some mb  ->
 	  let (future_decls, _, mb') =
-            let fresh_name = Misc.fresh_name_gen "label:" in
+            let fresh_name = Misc.fresh_name_gen "ccglab" in
               expand_statement program cls meth [] fresh_name mb
 	  and outs =
 	    List.map

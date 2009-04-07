@@ -14,40 +14,40 @@ result Configuration:
  
 < "Elf" : Class | Inh: noInh, Param: "sc", Att: "sc" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    Code: call("label:0" ; "this" ; "work" ; emp) ; free("label:0") ; return(
-    emp) >, < "showIn" : Method | Param: noVid, Att: "_" |-> null, "label:0"
-    |-> null, Code: call("label:0" ; "this" ; "talkToSanta" ; emp) ; free(
-    "label:0") ; return(emp) >, < "showOut" : Method | Param: noVid, Att: "_"
-    |-> null, "label:0" |-> null, Code: call("label:0" ; "this" ; "work" ; emp)
-    ; free("label:0") ; return(emp) >, < "talkToSanta" : Method | Param: noVid,
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    Code: call("ccglab0" ; "this" ; "work" ; emp) ; free("ccglab0") ; return(
+    emp) >, < "showIn" : Method | Param: noVid, Att: "_" |-> null, "ccglab0"
+    |-> null, Code: call("ccglab0" ; "this" ; "talkToSanta" ; emp) ; free(
+    "ccglab0") ; return(emp) >, < "showOut" : Method | Param: noVid, Att: "_"
+    |-> null, "ccglab0" |-> null, Code: call("ccglab0" ; "this" ; "work" ; emp)
+    ; free("ccglab0") ; return(emp) >, < "talkToSanta" : Method | Param: noVid,
     Att: "_" |-> null, Code: skip ; return(emp) >, < "work" : Method | Param:
-    noVid, Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
-    "haveProblem" ; emp) ; free("label:0") ; return(emp) >,
+    noVid, Att: "_" |-> null, "ccglab0" |-> null, Code: call("ccglab0" ; "sc" ;
+    "haveProblem" ; emp) ; free("ccglab0") ; return(emp) >,
   Ocnt: 0 >
  
 < "LeaderElf" : Class | Inh: "Elf" < "sc" >, Param: "sc", "elves", Att: "elves"
     |-> null, "sc" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
-    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    Code: static("label:0" ; "run" ; "Elf" ; None ; emp) ; get("label:0" ;
-    noVid) ; free("label:0") ; return(emp) >, < "work" : Method | Param: noVid,
-    Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
-    "haveProblem" ; emp) ; free("label:0") ; return(emp) >,
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    Code: static("ccglab0" ; "run" ; "Elf" ; None ; emp) ; get("ccglab0" ;
+    noVid) ; free("ccglab0") ; return(emp) >, < "work" : Method | Param: noVid,
+    Att: "_" |-> null, "ccglab0" |-> null, Code: call("ccglab0" ; "sc" ;
+    "haveProblem" ; emp) ; free("ccglab0") ; return(emp) >,
   Ocnt: 0 >
  
 < "Reindeer" : Class | Inh: noInh, Param: "sc", Att: "sc" |-> null, Mtds:
   < "deliverToys" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
     return(emp) >, < "harness" : Method | Param: noVid, Att: "_" |-> null,
-    "label:0" |-> null, Code: call("label:0" ; "this" ; "deliverToys" ; emp) ;
-    free("label:0") ; return(emp) >, < "holiday" : Method | Param: noVid, Att:
-    "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "sc" ;
-    "backFromHoliday" ; emp) ; free("label:0") ; return(emp) >, < "init" :
+    "ccglab0" |-> null, Code: call("ccglab0" ; "this" ; "deliverToys" ; emp) ;
+    free("ccglab0") ; return(emp) >, < "holiday" : Method | Param: noVid, Att:
+    "_" |-> null, "ccglab0" |-> null, Code: call("ccglab0" ; "sc" ;
+    "backFromHoliday" ; emp) ; free("ccglab0") ; return(emp) >, < "init" :
     Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, <
-    "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, Code:
-    call("label:0" ; "this" ; "holiday" ; emp) ; free("label:0") ; return(emp)
-    >, < "unharness" : Method | Param: noVid, Att: "_" |-> null, "label:0" |->
-    null, Code: call("label:0" ; "this" ; "holiday" ; emp) ; free("label:0") ;
+    "run" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, Code:
+    call("ccglab0" ; "this" ; "holiday" ; emp) ; free("ccglab0") ; return(emp)
+    >, < "unharness" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |->
+    null, Code: call("ccglab0" ; "this" ; "holiday" ; emp) ; free("ccglab0") ;
     return(emp) >,
   Ocnt: 0 >
  
@@ -57,7 +57,7 @@ result Configuration:
   < "backFromHoliday" : Method | Param: noVid, Att: "_" |-> null, Code: assign(
     "ctReindeers" ; "+"("ctReindeers" :: int(1))) ; assign("waitReindeers" ;
     "|-"("waitReindeers" :: "caller")) ; return(emp) >, < "deliverToys" :
-    Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, "label:1" |->
+    Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, "ccglab1" |->
     null, "t1" |-> null, "t2" |-> null, "t3" |-> null, "t4" |-> null, "t5" |->
     null, Code: assign("ctReindeers" ; int(0)) ; call("t1" ; "head"(
     "waitReindeers") ; "harness" ; emp) ; assign("harnessedReindeers" ; "|-"(
@@ -76,10 +76,10 @@ result Configuration:
     "waitReindeers"))) ; assign("waitReindeers" ; "tail"("waitReindeers")) ;
     await "&&"("&&"("&&"("&&"(?("t1") :: ?("t2")) :: ?("t3")) :: ?("t4")) :: ?(
     "t5")) ; free("t5") ; free("t4") ; free("t3") ; free("t2") ; free("t1") ;
-    call("label:0" ; "head"("harnessedReindeers") ; "unharness" ; emp) ; free(
-    "label:0") ; assign("harnessedReindeers" ; "tail"("harnessedReindeers")) ;
-    call("label:1" ; "head"("harnessedReindeers") ; "unharness" ; emp) ; free(
-    "label:1") ; assign("harnessedReindeers" ; "tail"("harnessedReindeers")) ;
+    call("ccglab0" ; "head"("harnessedReindeers") ; "unharness" ; emp) ; free(
+    "ccglab0") ; assign("harnessedReindeers" ; "tail"("harnessedReindeers")) ;
+    call("ccglab1" ; "head"("harnessedReindeers") ; "unharness" ; emp) ; free(
+    "ccglab1") ; assign("harnessedReindeers" ; "tail"("harnessedReindeers")) ;
     return(emp) >, < "haveProblem" : Method | Param: noVid, Att: "_" |-> null,
     Code: assign("ctElves" ; "+"("ctElves" :: int(1))) ; assign("waitElves" ;
     "|-"("waitElves" :: "caller")) ; return(emp) >, < "init" : Method | Param:
@@ -88,14 +88,14 @@ result Configuration:
     "ctElves" @ "SantaClaus"), ("waitElves" @ "SantaClaus"), ("inofficeElves" @
     "SantaClaus") ; int(0) :: list(emp) :: list(emp) :: int(0) :: list(emp) ::
     list(emp)) ; return(emp) >, < "loop" : Method | Param: noVid, Att: "_" |->
-    null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, Code: (
+    null, "ccglab0" |-> null, "ccglab1" |-> null, "ccglab2" |-> null, Code: (
     await "&&"("<="(int(3) :: "ctElves") :: "~"("="("ctReindeers" :: int(9))))
-    ; call("label:1" ; "this" ; "talkToElves" ; emp) ; get("label:1" ; noVid) ;
-    free("label:1")[]await "="("ctReindeers" :: int(5)) ; call("label:0" ;
-    "this" ; "deliverToys" ; emp) ; get("label:0" ; noVid) ; free("label:0")) ;
-    call("label:2" ; "this" ; "loop" ; emp) ; free("label:2") ; return(emp) >,
-    < "run" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    Code: call("label:0" ; "this" ; "loop" ; emp) ; free("label:0") ; return(
+    ; call("ccglab1" ; "this" ; "talkToElves" ; emp) ; get("ccglab1" ; noVid) ;
+    free("ccglab1")[]await "="("ctReindeers" :: int(5)) ; call("ccglab0" ;
+    "this" ; "deliverToys" ; emp) ; get("ccglab0" ; noVid) ; free("ccglab0")) ;
+    call("ccglab2" ; "this" ; "loop" ; emp) ; free("ccglab2") ; return(emp) >,
+    < "run" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    Code: call("ccglab0" ; "this" ; "loop" ; emp) ; free("ccglab0") ; return(
     emp) >, < "talkToElves" : Method | Param: noVid, Att: "_" |-> null, "t1"
     |-> null, "t2" |-> null, "t3" |-> null, Code: assign("ctElves" ; "-"(
     "ctElves" :: int(3))) ; call("t1" ; "head"("waitElves") ; "showIn" ; emp) ;

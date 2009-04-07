@@ -2,9 +2,9 @@
 reduce in PROGRAM : classes .
 result Configuration: 
 < "MutRec" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
-  < "doit" : Method | Param: "other", Att: "_" |-> null, "label:0" |-> null,
-    "other" |-> null, Code: call("label:0" ; "other" ; "doit" ; "this") ; get(
-    "label:0" ; noVid) ; free("label:0") ; return(emp) >, < "init" : Method |
+  < "doit" : Method | Param: "other", Att: "_" |-> null, "ccglab0" |-> null,
+    "other" |-> null, Code: call("ccglab0" ; "other" ; "doit" ; "this") ; get(
+    "ccglab0" ; noVid) ; free("ccglab0") ; return(emp) >, < "init" : Method |
     Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >, < "run" :
     Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
@@ -15,8 +15,8 @@ result Configuration:
     Code: skip ; return(emp) >, < "init" : Method | Param: noVid, Att: "_" |->
     null, Code: new("m1" ; "MutRec" ; emp) ; new("m2" ; "MutRec" ; emp) ;
     return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
-    "label:0" |-> null, Code: call("label:0" ; "m1" ; "doit" ; "m2") ; free(
-    "label:0") ; return(emp) >,
+    "ccglab0" |-> null, Code: call("ccglab0" ; "m1" ; "doit" ; "m2") ; free(
+    "ccglab0") ; return(emp) >,
   Ocnt: 0 >
 
 Bye.

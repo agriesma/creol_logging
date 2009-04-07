@@ -67,8 +67,8 @@ result State: {
     ob("FibTester-0"),
   Pr: {".class" |-> str("FibTester"), ".label" |-> label(ob("FibTester-0"), 2),
     ".method" |-> str("run"), "_" |-> null, "caller" |-> ob("FibTester-0"),
-    "label:0" |-> label(ob("FibTester-0"), 3) | get(label(ob("FibTester-0"), 3)
-    ; "res") ; free("label:0") ; return(emp)},
+    "ccglab0" |-> label(ob("FibTester-0"), 3) | get(label(ob("FibTester-0"), 3)
+    ; "res") ; free("ccglab0") ; return(emp)},
   PrQ: noProc,
   Lcnt: 4 >
  
@@ -210,8 +210,8 @@ result State: {
     null, "res" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("f" ;
     "Fibonacci" ; "n") ; return(emp) >, < "run" : Method | Param: noVid, Att:
-    "_" |-> null, "label:0" |-> null, Code: call("label:0" ; "f" ; "fibonacci"
-    ; "n") ; get("label:0" ; "res") ; free("label:0") ; return(emp) >,
+    "_" |-> null, "ccglab0" |-> null, Code: call("ccglab0" ; "f" ; "fibonacci"
+    ; "n") ; get("ccglab0" ; "res") ; free("ccglab0") ; return(emp) >,
   Ocnt: 1 >
  
 < "Fibonacci" : Class | Inh: noInh, Param: "n", Att: "n" |-> null, Mtds:

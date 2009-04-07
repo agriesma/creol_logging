@@ -8,25 +8,25 @@ mod PROGRAM is
       null, "uid1" |-> null, "uid2" |-> null,
       Mtds: < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "init" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "_" |-> null,
+            < "init" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
               Code: assign( ( "mode" @ "Process" ), ( "status" @ "Process" ),
               ( "uid1" @ "Process" ) ; bool(true) :: int(0) :: "i" ) ;
-              call( "label:0" ; "main" ; "getNeighbour" ; emp ) ;
-              get( "label:0" ; "neighbour" ) ; free( "label:0" ) ;
-              call( "label:1" ; "neighbour" ; "send" ; "i" ) ;
-              free( "label:1" ) ; return ( emp ) >,
-            < "send" : Method | Param: "u", Att: "u" |-> null, "label:2" |->
-              null, "label:1" |-> null, "label:0" |-> null, "_" |-> null,
+              call( "ccglab0" ; "main" ; "getNeighbour" ; emp ) ;
+              get( "ccglab0" ; "neighbour" ) ; free( "ccglab0" ) ;
+              call( "ccglab1" ; "neighbour" ; "send" ; "i" ) ;
+              free( "ccglab1" ) ; return ( emp ) >,
+            < "send" : Method | Param: "u", Att: "u" |-> null, "ccglab2" |->
+              null, "ccglab1" |-> null, "ccglab0" |-> null, "_" |-> null,
               Code: if "mode" th if "=" ( "uid2" :: null ) th if "=" ( "u" ::
               "uid1" ) th assign( "status" ; int(1) ) el
-              assign( "uid2" ; "u" ) ; call( "label:0" ; "neighbour" ;
-              "send" ; "u" ) ; free( "label:0" ) fi el if "&&" ( ">" ( "uid2"
+              assign( "uid2" ; "u" ) ; call( "ccglab0" ; "neighbour" ;
+              "send" ; "u" ) ; free( "ccglab0" ) fi el if "&&" ( ">" ( "uid2"
               :: "uid1" ) :: ">" ( "uid2" :: "u" ) ) th assign( "uid1",
-              "uid2" ; "uid2" :: null ) ; call( "label:1" ; "neighbour" ;
-              "send" ; "uid1" ) ; free( "label:1" ) el
-              assign( "mode" ; bool(false) ) fi fi el call( "label:2" ;
-              "neighbour" ; "send" ; "u" ) ; free( "label:2" ) fi ;
+              "uid2" ; "uid2" :: null ) ; call( "ccglab1" ; "neighbour" ;
+              "send" ; "uid1" ) ; free( "ccglab1" ) el
+              assign( "mode" ; bool(false) ) fi fi el call( "ccglab2" ;
+              "neighbour" ; "send" ; "u" ) ; free( "ccglab2" ) fi ;
               return ( emp ) >,
       Ocnt: 0 >
     
