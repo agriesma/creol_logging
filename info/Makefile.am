@@ -32,6 +32,7 @@ creoltools_TEXINFOS	= introduction.texi \
 			  creolrt.texi \
 			  cmc.texi \
 			  creolc.texi \
+			  creolupdc.texi \
 			  creolshell.texi \
 			  faq.texi \
 			  bugs.texi \

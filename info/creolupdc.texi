@@ -1,0 +1,172 @@
+@node creolupdc
+@chapter The @command{creolupdc} update compiler
+@cindex @command{creolupdc}
+
+The @emph{@acronym{CREOL} tools} provide a compiler for compiling
+updates into the @emph{@acronym{CREOL} Machine Code}, @pxref{CREOL
+Machine Code}.  In this chapter we describe how one may use the
+compiler.
+
+The compiler is a command-line tool.  Its user interface follows the
+@emph{Unix}-tradition: it can be integrated into pipes, and will not
+output anything except to report errors or if explicitly requested to.
+
+Traditionally, two versions are generated: @code{creolupdc} and
+@code{creolupdc.opt}.  The first one is an Objective Caml byte code
+script, and the second one is a native version.  The most important
+differences between the two versions are, that the byte code version
+is slower than the native one but gives better error messages in
+exceptional situations.
+
+@menu
+* creolupdc Command Line Options::    Controlling @command{     creolupdc}.
+@end menu
+
+@node creolupdc Command Line Options
+@section Command Line Options.
+
+When invoking @command{creolupdc}, it normally does compile its input
+file into one Maude module describing the program.
+
+The @command{creolupdc} compiler accepts options and file names as
+operands.  Many options have multi-letter names; therefore multiple
+single-letter options may @emph{not} be grouped:  @option{-dr} is
+very different from @option{-d -r}.
+
+You can mix options and other arguments.  for the most part, the order
+of arguments does not matter.  Order matters if you use several
+options of the same kind.  If you, for example, supply multiple
+warning options, they are enabled and disabled in order from left to
+right.
+
+@menu
+* creolupdc Overall Options::        Controlling the general behaviour.
+* creolupdc Warning Options::        How picky should the compiler be?
+* creolupdc Debugging Options::      Tables, measurements, and debugging dumps.
+* creolupdc Pass Options::           Which passes should be applied?
+* creolupdc Environment Variables::  Environment variables.
+@end menu
+
+
+@node creolupdc Overall Options
+@subsection Overall Options
+
+For any given input file, the name of the file suffix determines what
+kind of compilation is done:
+
+@table @option
+@item -ie FILE.creol
+A @acronym{CREOL} program file that describes the initial environment of
+the update.  This argument is mandatory and has no default value.
+
+@item -oe FILE.creol
+The name of a file to which the environment after applying an update is
+written to. It defaults to @file{gamma.creol}.
+
+@item -state FILE
+Read a runtime state of a Maude interpreter from @file{FILE}. This
+argument is mandatory and has no default value.
+
+@item -o FILE
+Place the output in file @option{FILE}.  This applies regardless to
+whatever sort of output is being produced.
+
+Since only one output file can be specified, it does not make sense to
+use @option{-o} multiple times, even if more than one input file is
+provided.
+
+If @option{-o} is not provided, the default is to write the output
+into @file{creolupdc.out}.  If a file of the output name already exists,
+it may be overwritten.
+
+The file name @file{-} instructs the compiler to write the file to the
+standard output.  This allows processing of the output by other tools.
+
+@item FILE.creol
+A @acronym{CREOL} program that must be compiled.
+@end table
+
+Other options are:
+@table @option
+@item -help
+Print (on standard output) a description of the command line options
+understood by @command{creolupdc}.
+
+@item -version
+Print (on standard output) the version number and copyrights of the
+invoked @command{creolupdc} compiler.
+
+@item -v
+Print (on standard error) some information on the passes applied to
+the input program.  If this option is given multiple times, then more
+information is printed.
+
+@end table
+
+
+
+@node creolupdc Warning Options
+@subsection Warning Options
+
+The @command{creolupdc} allows to enable or disable certain warnings
+which may indicate possible errors in the input program.  @option{-w
+@var{NAME}} is used to @emph{enable} are particular warning, whereas
+@option{-W @var{NAME}} is used to @emph{disable} the same warning.
+The warnings currently are the same as for the @command{creolc} compiler
+and are described in @ref{Warning Options}.
+
+
+@node creolupdc Debugging Options
+@subsection Debugging Options
+
+The compiler provides some options which help in debugging the
+compiler itself: if you are interested in what the compiler is doing
+or if you suspect a bug in the compiler, the following options may
+help in understanding what the compiler does and how much time it
+spent for what.  However, these options are of little use for normal
+users.
+
+@table @option
+@item -d @var{name}
+Write the tree returned after the pass @var{name} to the file
+@file{out.@var{name}} as an XML document.  @xref{Pass Options}.
+This option is only understood if the compiler has been built with
+support for @emph{libxml2}.  Consult the installation instructions
+for details.
+
+@item -times
+Measure the time used for a pass and print a summary of time spent for
+each pass after finishing the compilation.
+
+@end table
+
+
+
+@node creolupdc Pass Options
+@subsection Pass Options
+
+The compiler implements passes and analysis in different passes.  The
+option @option{-p @var{name}} enables a particular pass @var{name},
+whereas @option{-P @var{name}} disables it.  The passes accepted here
+are the same ones as for @command{creolc} and they are listed in
+@ref{Pass Options}.
+
+
+@node creolupdc Environment Variables
+@subsection Environment Variables
+
+The @command{creolupdc} compiler searches for input files in a list of
+directories, if the file cannot be found in the current working
+directory in the same way as @command{creolc}.  The environment variable
+@env{CREOL_LIBRARY_PATH} can be set to a colon-separated list of
+directories in which the compiler searches for missing files.
+
+
+
+
+
+
+@c Local Variables: 
+@c mode: texinfo
+@c TeX-master: "creoltools"
+@c End: 

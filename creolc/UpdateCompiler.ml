@@ -27,9 +27,6 @@
 open Creol
 open Arg
 
-(* Whether to report the timings after compilation. *)
-let times = ref false
-
 (* The license under which this software is distributed. *)
 let license =
   "Copyright (c) 2007, 2008, 2009 Marcel Kyas\n" ^
@@ -47,15 +44,20 @@ let show_version () =
   print_string license ;
   exit 0
 
+
+(** {4 Run-time configuration.} *)
+
+(** Whether to report the timings after compilation. *)
+let times = ref false
+
+(** Show the configuration after parsing *)
 let show_config_flag = ref false
 
-let show_config_p () = !show_config_flag
+let input_env = ref ""
 
-let show_config () =
-  print_endline ("Environment") ;
-  print_endline ("CREOL_LIBRARY_PATH = " ^ (String.concat ":" (Config.get_library_path ())))
+let output_env = ref "gamma"
 
-let environment = ref ""
+let state_file = ref ""
 
 let output_file = ref "creolupdc.out"
 
@@ -66,38 +68,49 @@ let inputs = ref []
 let add_input f = inputs := f::(!inputs)
 
 
-(* A list of all command line options accepted by this program. This
-   list is used by ocamls functions for parsing arguments given to the
-   command line.
-*)
+let show_config_p () = !show_config_flag
+
+let show_config () =
+  print_endline ("Environment") ;
+  print_endline ("CREOL_LIBRARY_PATH = " ^ (String.concat ":" (Config.get_library_path ())))
+
+(** A list of all command line options accepted by this program. This
+    list is used by ocamls functions for parsing arguments given to the
+    command line. *)
 let options = [
-  ("-e",
-  Set_string environment,
-  "file  Read the previous environment from file");
+  ("-ie",
+   Set_string input_env,
+   "file  Read the previous environment from file");
+  ("-oe",
+   Set_string output_env,
+   "file  Write the new environment to file");
+  ("-state",
+   Set_string state_file,
+   "file  Name of a file to read the Maude configuration from");
   ("-o",
-  Set_string output_file,
-  "  Write the output to file");
+   Set_string output_file,
+   "  Write the output to file");
   ("-v",
-  Arg.Unit (function () -> incr Messages.verbose),
-  "  Print some information while processing");
+   Arg.Unit (function () -> incr Messages.verbose),
+   "  Print some information while processing");
   ("-w",
-  Arg.String Messages.enable,
-  "{name,}  Enable warning:\n" ^ (Messages.help_warnings ()));
+   Arg.String Messages.enable,
+   "{name,}  Enable warning:\n" ^ (Messages.help_warnings ()));
   ("-W",
-  Arg.String Messages.disable,
-  "{name,}  Disable the warning.  Names are the same as for `-w'");
+   Arg.String Messages.disable,
+   "{name,}  Disable the warning.  Names are the same as for `-w'");
   ("-p",
-  Arg.String Passes.enable,
-  "{name,}  Enable passes:\n" ^ (Passes.help ()));
+   Arg.String Passes.enable,
+   "{name,}  Enable passes:\n" ^ (Passes.help ()));
   ("-P",
-  Arg.String Passes.disable,
-  "  Disable the pass [name].  [name]s are the same as for `-p'");
+   Arg.String Passes.disable,
+   "  Disable the pass [name].  [name]s are the same as for `-p'");
   ("-d",
-  Arg.String Passes.dump_after,
-  "  Dump tree after [name] to out.[name].  [name]s are identical to ``-p''");
+   Arg.String Passes.dump_after,
+   "  Dump tree after [name] to out.[name].  [name]s are identical to ``-p''");
   ("-times",
-  Arg.Set times,
-  "  Print timing information");
+   Arg.Set times,
+   "  Print timing information");
   ("-show-config",
    Arg.Set show_config_flag,
    "  Show the configuration.");
@@ -106,26 +119,37 @@ let options = [
   ("--version", Unit show_version, "  Show the version and exit")]
 
 
+let load_input_env () =
+  let prelude =
+    Program.hide_all (Passes.parse_from_file CreolParser.main "prelude.creol")
+  in
+    if !input_env <> "" then
+      let tree = Passes.parse_from_file CreolParser.main !input_env in
+	Passes.execute_passes BackendXML.emit !input_env
+          (Program.concat [prelude; tree])
+    else
+      begin
+	prerr_endline ("please provide an input environment file") ;
+	exit 1
+      end
+
+let load_state () =
+  if !state_file <> "" then
+    CMCParser.parse_from_file !state_file
+  else
+    begin
+      prerr_endline ("please provide a Maude state file") ;
+      exit 1
+    end
+
+
 (* The main function parses the command line arguments, parses all
    input programs and executes all phases of the compilation.
 *)
 let main () =
   parse options add_input (Sys.executable_name ^ " [options]") ;
   if show_config_p () then show_config () ;
-  let prelude =
-    Program.hide_all (Passes.parse_from_file CreolParser.main "prelude.creol")
-  in
-  let program =
-    if !environment <> "" then
-      let tree = Passes.parse_from_file CreolParser.main !environment in
-        Passes.execute_passes BackendXML.emit !environment
-          (Program.concat [prelude; tree])
-    else
-      begin
-        prerr_endline ("please provide an environment file") ;
-        exit 1
-      end
-  in
+  let program = load_input_env () in
   let update =
     let tree =
       match !inputs with
@@ -137,10 +161,11 @@ let main () =
         | _ ->
             Passes.parse_from_files UpdateParser.main !inputs
     in
-      Passes.execute_passes BackendXML.emit "gamma"
+      Passes.execute_passes BackendXML.emit !output_env
         (Program.concat [program; tree])
   in
-  let update' = UpdateDepend.depend program update in
+  let update' = UpdateDepend.depend program update
+  and state = load_state () in
   let program' = Program.apply_updates program update' in
   let program'' =
     let f program cls =
@@ -153,9 +178,9 @@ let main () =
     in
       Program.for_each_method program' f
   in
-  let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout update'
+  let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout (Program.concat [update'; state])
   and () =
-    let out_channel = open_out "gamma.creol" in
+    let out_channel = open_out (!output_env ^".creol") in
       BackendCreol.pretty_print_program out_channel program''
   in
     if !times then Passes.report_timings () ;
@@ -163,7 +188,5 @@ let main () =
     ;;
 
 
-(* Finally, invoke the main function.
-*)
-
+(* Finally, invoke the main function to start the program. *)
 main ()
