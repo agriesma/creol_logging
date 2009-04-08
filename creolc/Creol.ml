@@ -2693,13 +2693,11 @@ struct
     and contracts' = cls.Class.contracts @ upd.Update.contracts
     and implements' = cls.Class.implements @ upd.Update.implements
     and attrs' = cls.Class.attributes @ upd.Update.attributes
-    and pragmas' = Pragma.increase_version cls.Class.pragmas
     in
     let cls' = { cls with Class.inherits = inherits';
                           contracts = contracts';
 			  implements = implements';
-			  attributes = attrs';
-			  pragmas = pragmas' }
+			  attributes = attrs' }
     in
     let cls'' =
       let with_with c w =
