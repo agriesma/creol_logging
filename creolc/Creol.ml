@@ -1580,12 +1580,20 @@ struct
   (** Add a new method definition to a class. Assumes that there is no
       other method definition with the same name and signature. *)
   let add_method_to_class cls mtd =
-    { cls with with_defs =
-               { With.co_interface = mtd.Method.coiface;
-                 invariants = [];
-                 methods = [mtd];
-                 file = ""; line = 0 }::cls.with_defs; }
-                 
+    (** Find a suitable with block to add our method to. First one we find
+        wins. *)
+    let p { With.co_interface = c } = c = mtd.Method.coiface 
+    and q { With.co_interface = c } = c = Type.Internal in
+    let m, n = List.partition p cls.with_defs in
+    let m' =
+      match m with
+        | [] -> [{ With.co_interface = mtd.Method.coiface;
+                   invariants = []; methods = [mtd];
+                   file = mtd.Method.file; line = mtd.Method.line }]
+        | hd::tl -> { hd with With.methods = mtd::hd.With.methods }::tl
+    in
+    let n', q' = List.partition q n in (** Internals come first. *)
+      { cls with with_defs = n' @ m' @ q' }
 
 end
 
