@@ -1886,6 +1886,16 @@ struct
       | Retract of Retract.t
 
 
+  let class_p = function
+    | Class _ -> true
+    | _ -> false
+
+
+  let interface_p = function
+    | Interface _ -> true
+    | _ -> false
+
+
   let equal d1 d2 =
     match (d1, d2) with
       | (Class c1, Class c2) -> Class.equal c1 c2
@@ -2122,6 +2132,18 @@ struct
       match List.find interface_with_name program.decls with
 	| Declaration.Interface i -> i
 	| _ -> assert false
+
+
+  (** [add_interface program iface] adds the interface [iface] to
+      [program], if no interface of [iface]'s name exists, and
+      raises an exception otherwise. *)
+  let add_interface program iface =
+    try
+      let _ = find_interface program iface.Interface.name in
+        raise (Failure "add_interface")
+    with
+        | Not_found ->
+            { decls = (Declaration.Interface iface)::program.decls }
 
 
   (** [interface_p program iface] is true, if the type [iface] refers to
@@ -2754,6 +2776,7 @@ struct
   let apply_updates program updates =
     let f prg =
       function
+        | Declaration.Interface upd -> add_interface program upd
         | Declaration.NewClass upd ->
             begin
               try
