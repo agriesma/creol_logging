@@ -137,10 +137,7 @@ let load_state () =
   if !state_file <> "" then
     CMCParser.parse_from_file !state_file
   else
-    begin
-      prerr_endline ("please provide a Maude state file") ;
-      exit 1
-    end
+    Program.make []
 
 
 (* The main function parses the command line arguments, parses all
