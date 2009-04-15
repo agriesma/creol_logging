@@ -166,7 +166,7 @@ let main () =
   in
   let update' = UpdateDepend.depend program update
   and state = load_state () in
-  let program' = Program.apply_updates program update' in
+  let program' = Program.apply_updates ~increase_version:true program update' in
   let program'' =
     let f program cls =
       function

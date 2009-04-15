@@ -2767,34 +2767,51 @@ struct
       in
         List.fold_left f cls.Class.with_defs upd.Retract.with_defs
     in
-      Class.increase_version { cls with Class.inherits = inherits';
-                                        attributes = attributes';
-                                        with_defs = with_defs' }
+      { cls with Class.inherits = inherits'; attributes = attributes';
+                 with_defs = with_defs' }
 
 
   (** Apply all updates in [updates] to [program] *)
-  let apply_updates program updates =
+  let apply_updates ?(increase_version=false) program updates =
     let f prg =
       function
-        | Declaration.Interface upd -> add_interface program upd
+        | Declaration.Interface upd ->
+            add_interface program upd
         | Declaration.NewClass upd ->
             begin
               try
                 ignore (find_class prg upd.NewClass.cls.Class.name) ;
                 raise (Failure "Class exists")
               with
-                Not_found ->
-                  let cls = Class.increase_version upd.NewClass.cls in
-                    add_class program cls
+                  Not_found ->
+                    let cls'' =
+                      if increase_version then
+                        Class.increase_version upd.NewClass.cls
+                      else
+                        upd.NewClass.cls
+                    in
+                      add_class program cls''
             end
         | Declaration.Update ({ Update.name = name } as upd) ->
             let cls = find_class prg name in
             let cls' = apply_update_to_class prg cls upd in
-              replace_class prg cls'
+            let cls'' =
+              if increase_version then
+                Class.increase_version cls'
+              else
+                cls'
+            in
+              replace_class prg cls''
         | Declaration.Retract ({ Retract.name = name } as upd) ->
             let cls = find_class prg name in
             let cls' = apply_retract_to_class prg cls upd in
-              replace_class prg cls'
+            let cls'' =
+              if increase_version then
+                Class.increase_version cls'
+              else
+                cls'
+            in
+              replace_class prg cls''
         | d -> prg
     in
       List.fold_left f program updates.decls
