@@ -115,13 +115,20 @@ retractdecl:
       RETRACT n = CID s = list(super_decl) pr = list(pragma)
       BEGIN
         a = list(terminated(attribute, ioption(SEMI))) i = list(invariant)
-        aw = loption(anon_with_def) w = list(with_def)
+        aw = loption(anon_with_decl) w = list(with_decl)
       END
     { let _ = assert ([] = contracts s); assert ([] = implements s)
       in
         { Retract.name = n; inherits = inherits s; attributes = List.flatten a;
           with_defs = upd_method_locs n (aw @ w); pragmas = pr;
           dependencies = Dependencies.empty; obj_deps = Dependencies.empty } }
+
+anon_with_decl:
+      l = nonempty_list(method_decl) i = list(invariant)
+        { [ { With.co_interface = Type.Internal;
+              methods = List.map (Method.set_cointerface Type.Internal) l;
+              invariants = i;
+              file  = $startpos.pos_fname; line = $startpos.pos_lnum } ] }
 
 %%
 (* The trailer is currently empty *)

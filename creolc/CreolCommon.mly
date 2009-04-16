@@ -146,7 +146,7 @@ vardecl:
     | id COLON error
 	{ signal_error $startpos "syntax error in variable declaration" }
 
-method_decl:
+%public method_decl:
       METHOD i = id p = parameters_opt
       r = ioption(preceded(REQUIRES, expression))
       e = ioption(preceded(ENSURES, expression))
