@@ -2000,6 +2000,18 @@ struct
 	| Declaration.Class cls -> cls
 	| _ -> assert false
 
+
+
+  (** [has_class_p program name] is true, if a class called [name] is in
+      [program]. *)
+  let has_class_p program name =
+    try
+      let _ = find_class program name in
+        true
+    with
+      | Not_found -> false
+
+
   let remove_class program name =
     let not_class_with_name =
       function
@@ -2132,6 +2144,16 @@ struct
       match List.find interface_with_name program.decls with
 	| Declaration.Interface i -> i
 	| _ -> assert false
+
+
+  (** [has_interface_p program name] is true, if an interface called [name]
+      is in [program]. *)
+  let has_interface_p program name =
+    try
+      let _ = find_interface program name in
+        true
+    with
+      | Not_found -> false
 
 
   (** [add_interface program iface] adds the interface [iface] to
@@ -2715,6 +2737,40 @@ struct
       map prg f
 
 
+  let has_declaration_p program =
+    function
+      | Declaration.Class { Class.name = name } ->
+          has_class_p program name
+      | Declaration.Interface { Interface.name = name } ->
+          has_interface_p program name
+      | Declaration.Exception _ ->
+          false (* XXX *)
+      | Declaration.Datatype _ ->
+          false (* XXX *)
+      | Declaration.Function _ ->
+          false (* XXX *)
+      | Declaration.Object _ ->
+          false (* XXX *)
+      | Declaration.Future _ ->
+          false (* XXX *)
+      | Declaration.NewClass _ ->
+          true (* XXX *)
+      | Declaration.Update _ ->
+          true (* XXX *)
+      | Declaration.Retract _ ->
+          true (* XXX *)
+
+
+  (** [filter program program'] selects all declarations from [program']
+      that also occur in [program] *)
+  let filter program program' =
+    make (List.filter (has_declaration_p program) program'.decls)
+
+  (** [filter_classes program] removes all classes from [program] *)
+  let filter_classes program =
+    make (List.filter (fun d -> not (Declaration.class_p d)) program.decls)
+    
+
   (** {4 Dynamic Updates} *)
 
   (** Apply an update to a class. *)
@@ -2812,7 +2868,7 @@ struct
                 cls'
             in
               replace_class prg cls''
-        | d -> prg
+        | d -> assert false
     in
       List.fold_left f program updates.decls
 

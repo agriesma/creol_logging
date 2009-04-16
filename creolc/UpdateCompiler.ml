@@ -139,6 +139,23 @@ let load_state () =
   else
     Program.make []
 
+let load_update input_env =
+  let update =
+    match !inputs with
+      | [] ->
+          print_endline "No input files given.  Use `-help' for help." ;
+          exit 0
+      | [""] | ["-"] ->
+          Passes.parse_from_channel UpdateParser.main "*stdin*" stdin
+      | _ ->
+          Passes.parse_from_files UpdateParser.main !inputs
+  in
+  let update' =
+    Passes.execute_passes BackendXML.emit !output_env
+      (Program.concat [input_env; update])
+  in
+    Program.filter update update'
+
 
 (* The main function parses the command line arguments, parses all
    input programs and executes all phases of the compilation.
@@ -147,20 +164,7 @@ let main () =
   parse options add_input (Sys.executable_name ^ " [options]") ;
   if show_config_p () then show_config () ;
   let program = load_input_env () in
-  let update =
-    let tree =
-      match !inputs with
-        | [] ->
-            print_endline "No input files given.  Use `-help' for help." ;
-            exit 0
-        | [""] | ["-"] ->
-            Passes.parse_from_channel UpdateParser.main "*stdin*" stdin
-        | _ ->
-            Passes.parse_from_files UpdateParser.main !inputs
-    in
-      Passes.execute_passes BackendXML.emit !output_env
-        (Program.concat [program; tree])
-  in
+  let update = load_update program in
   let update' = UpdateDepend.depend program update
   and state = load_state () in
   let program' = Program.apply_updates ~increase_version:true program update' in
@@ -175,7 +179,7 @@ let main () =
     in
       Program.for_each_method program' f
   in
-  let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout (Program.concat [update'; state])
+  let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout (Program.concat [(Program.filter_classes program''); update'; state])
   and () =
     let out_channel = open_out (!output_env ^".creol") in
       BackendCreol.pretty_print_program out_channel program''
