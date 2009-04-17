@@ -2022,7 +2022,12 @@ struct
 
 
   let add_class program cls =
-    { decls = (Declaration.Class cls)::program.decls }
+    try
+      let _ = find_class program cls.Class.name in
+        raise (Failure "Class already exists")
+    with
+        | Not_found ->
+            { decls = (Declaration.Class cls)::program.decls }
 
 
   let replace_class program cls =
@@ -2162,7 +2167,7 @@ struct
   let add_interface program iface =
     try
       let _ = find_interface program iface.Interface.name in
-        raise (Failure "add_interface")
+        raise (Failure "Interface already exists")
     with
         | Not_found ->
             { decls = (Declaration.Interface iface)::program.decls }
@@ -2834,20 +2839,13 @@ struct
         | Declaration.Interface upd ->
             add_interface program upd
         | Declaration.NewClass upd ->
-            begin
-              try
-                ignore (find_class prg upd.NewClass.cls.Class.name) ;
-                raise (Failure "Class exists")
-              with
-                  Not_found ->
-                    let cls'' =
-                      if increase_version then
-                        Class.increase_version upd.NewClass.cls
-                      else
-                        upd.NewClass.cls
-                    in
-                      add_class program cls''
-            end
+            let cls'' =
+              if increase_version then
+                Class.increase_version upd.NewClass.cls
+              else
+                upd.NewClass.cls
+            in
+              add_class program cls''
         | Declaration.Update ({ Update.name = name } as upd) ->
             let cls = find_class prg name in
             let cls' = apply_update_to_class prg cls upd in
