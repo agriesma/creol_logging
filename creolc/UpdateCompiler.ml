@@ -179,7 +179,7 @@ let main () =
     in
       Program.for_each_method program' f
   in
-  let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout (Program.concat [(Program.filter_classes program''); update'; state])
+  let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout (Program.concat [(Program.filter_classes program'); update'; state])
   and () =
     let out_channel = open_out (!output_env ^".creol") in
       BackendCreol.pretty_print_program out_channel program''
