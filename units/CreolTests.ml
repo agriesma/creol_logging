@@ -41,6 +41,14 @@ let make_iface name inherits =
     inherits = List.map conv_inh inherits;
     with_decls = []; pragmas = []; file = ""; line = 0 }
 
+let iface1 =
+  { Interface.name = "Interface"; parameters = []; inherits = [];
+    with_decls = []; pragmas = []; file = ""; line = 0 }
+
+let iface2 =
+  { Interface.name = "Other"; parameters = []; inherits = [];
+    with_decls = []; pragmas = []; file = ""; line = 0 }
+
 let mtd1 =
   { Method.name = "m";
     coiface = Type.Internal;
@@ -127,6 +135,16 @@ let update_tests =
         let prg' = Program.apply_updates prg upd in
           assert_bool "Update failed" (Program.equal prg prg')
     );
+    "AddIface" >:: (
+      fun _ ->
+        let prg = Program.make []
+        and upd = Program.make [Declaration.Interface iface1]
+        in
+        let prg' = Program.apply_updates prg upd
+        and exp = Program.make [Declaration.Interface iface1]
+        in
+          assert_bool "Update failed" (Program.equal exp prg')
+    );
     "AddMtd" >:: (
       fun _ ->
         let prg = Program.make [Declaration.Class cls1]
@@ -154,6 +172,18 @@ let update_tests =
         in
         let prg' = Program.apply_updates prg upd
         and exp = Program.make [Declaration.Class cls3]
+        in
+          assert_bool "Update failed" (Program.equal exp prg')
+    );
+    "TwoUpdates" >:: (
+      fun _ ->
+        let prg = Program.make []
+        and upd = Program.make [Declaration.Interface iface1;
+                                Declaration.Interface iface2]
+        in
+        let prg' = Program.apply_updates prg upd
+        and exp = Program.make [Declaration.Interface iface2;
+                                Declaration.Interface iface1]
         in
           assert_bool "Update failed" (Program.equal exp prg')
     );
