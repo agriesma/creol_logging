@@ -2832,42 +2832,44 @@ struct
                  with_defs = with_defs' }
 
 
+
+  let apply_update increase_version program =
+    function
+      | Declaration.Interface upd ->
+          add_interface program upd
+      | Declaration.NewClass upd ->
+          let cls'' =
+            if increase_version then
+              Class.increase_version upd.NewClass.cls
+            else
+              upd.NewClass.cls
+          in
+            add_class program cls''
+      | Declaration.Update ({ Update.name = name } as upd) ->
+          let cls = find_class program name in
+          let cls' = apply_update_to_class program cls upd in
+          let cls'' =
+            if increase_version then
+              Class.increase_version cls'
+            else
+              cls'
+          in
+            replace_class program cls''
+      | Declaration.Retract ({ Retract.name = name } as upd) ->
+          let cls = find_class program name in
+          let cls' = apply_retract_to_class program cls upd in
+          let cls'' =
+            if increase_version then
+              Class.increase_version cls'
+            else
+              cls'
+          in
+            replace_class program cls''
+      | d -> assert false
+
+
   (** Apply all updates in [updates] to [program] *)
   let apply_updates ?(increase_version=false) program updates =
-    let f prg =
-      function
-        | Declaration.Interface upd ->
-            add_interface program upd
-        | Declaration.NewClass upd ->
-            let cls'' =
-              if increase_version then
-                Class.increase_version upd.NewClass.cls
-              else
-                upd.NewClass.cls
-            in
-              add_class program cls''
-        | Declaration.Update ({ Update.name = name } as upd) ->
-            let cls = find_class prg name in
-            let cls' = apply_update_to_class prg cls upd in
-            let cls'' =
-              if increase_version then
-                Class.increase_version cls'
-              else
-                cls'
-            in
-              replace_class prg cls''
-        | Declaration.Retract ({ Retract.name = name } as upd) ->
-            let cls = find_class prg name in
-            let cls' = apply_retract_to_class prg cls upd in
-            let cls'' =
-              if increase_version then
-                Class.increase_version cls'
-              else
-                cls'
-            in
-              replace_class prg cls''
-        | d -> assert false
-    in
-      List.fold_left f program updates.decls
+    List.fold_left (apply_update increase_version) program updates.decls
 
 end

@@ -187,6 +187,18 @@ let update_tests =
         in
           assert_bool "Update failed" (Program.equal exp prg')
     );
+    "ApplyTwice" >:: (
+      fun _ ->
+        let prg = Program.make []
+        and upd1 = Program.make [Declaration.Interface iface1]
+        and upd2 = Program.make [Declaration.Interface iface2]
+        and exp = Program.make [Declaration.Interface iface2;
+                                Declaration.Interface iface1]
+        in
+        let prg' = Program.apply_updates prg upd1 in
+        let prg'' = Program.apply_updates prg' upd2 in
+          assert_bool "Update failed" (Program.equal exp prg'')
+    );
   ]
 
 
