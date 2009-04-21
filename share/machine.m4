@@ -476,6 +476,9 @@ crl
 --- return of run in ill-behaved programs.  We cannot use a tail-call
 --- here, because there is no caller the initialisation will return to.
 ---
+--- The new object will receive its initial attributes from the foundAttr
+--- message below and will not have attributes before that.
+---
 STEP(dnl
 `< O : C | Att: S, Pr: { L | new(A ; CLASS(B, T) ; EL); SL }, PrQ: W, Lcnt: F >
   < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
@@ -483,7 +486,7 @@ STEP(dnl
 ,dnl
 `< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: (s F) >
   <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
-  < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
+  < newId(B, G) :  CLASS(B, T) | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 0 >
   findAttr(newId(B`,' G), I, S1, 
     $assign(AL ; EVALLIST(EL, compose(S,  L), T)),
     { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') |
