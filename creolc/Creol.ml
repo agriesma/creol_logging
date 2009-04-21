@@ -2846,8 +2846,10 @@ struct
       let retract_from_withs withs retrs =
         List.map (retract_from_with retrs) withs
       in
-        List.fold_left retract_from_withs cls.Class.with_defs
+      let res = List.fold_left retract_from_withs cls.Class.with_defs
             retr.Retract.with_defs
+      in
+        List.filter (fun { With.methods = m } -> m <> []) res
     in
       { cls with Class.inherits = inherits'; attributes = attributes';
                  with_defs = with_defs' }
