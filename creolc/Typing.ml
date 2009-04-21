@@ -1398,13 +1398,9 @@ let type_check_update program upd =
 let type_check_retract program upd =
   let program' =
      Program.apply_updates program (Program.make [Declaration.Retract upd])
-  and subclasses = [] (* Program.subclasses program upd.Retract.name *)
+  and subclasses = IdSet.elements (Program.subclasses program upd.Retract.name)
   in
-  let f =
-    function
-      | Declaration.Class c -> Declaration.Class (type_check_class program' c)
-      | _ -> assert false
-  in
+  let f c = type_check_class program' (Program.find_class program' c) in
   let _ = List.map f subclasses in
     upd
 
