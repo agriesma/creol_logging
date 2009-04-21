@@ -68,6 +68,7 @@ $(unittests_cmx): ../creolc/creol.cmxa
 
 check-local: unittests
 	$(builddir)/unittests
+	@echo
 
 # Dependencies.
 .depend: Makefile $(unittests_SOURCES)

@@ -1297,6 +1297,13 @@ struct
       file: string;
       line: int;
     }
+
+  (** Tests, whether two varianle declarations are equivalent.
+
+      The current limitation is that initializer expressions must be
+      identical.  *)
+  let equivalent_p v1 v2 = (v1.var_type = v2.var_type) && (v1.init = v2.init)
+
 end
 
 
@@ -1334,6 +1341,14 @@ module Method =
 	requires = Expression.Bool(Expression.make_note (), true);
 	ensures = Expression.Bool(Expression.make_note (), true);
 	vars = []; body = None; location = ""; file = ""; line = 0 }
+
+    (** Tests whether two method signatures are equivalent.
+
+        Does not look at the code. *)
+    let equivalent_p m1 m2 =
+      (m1.name = m2.name) && (m1.coiface = m2.coiface) &&
+      (try List.for_all2 VarDecl.equivalent_p m1.inpars m2.inpars with _ -> false) &&
+      (try List.for_all2 VarDecl.equivalent_p m1.outpars m2.outpars with _ -> false)
 
     let compare m n =
       let r1 = String.compare m.name n.name in
@@ -1864,6 +1879,8 @@ struct
     pragmas: Pragma.t list;
     dependencies: Dependencies.t;
     obj_deps: Dependencies.t;
+    file: string;
+    line: int;
   }
 
 end
@@ -2802,31 +2819,35 @@ struct
         List.fold_left with_with cls'' upd.Update.with_defs
 
 
-  let apply_retract_to_class program cls upd =
+  let apply_retract_to_class program cls retr =
     let inherits' =
       let f a e =
         List.filter (fun e' -> e.Inherits.name <> e'.Inherits.name) a
       in
-        List.fold_left f cls.Class.inherits upd.Retract.inherits
+        List.fold_left f cls.Class.inherits retr.Retract.inherits
     and attributes' =
       let f a e =
         List.filter (fun e' -> e.VarDecl.name <> e'.VarDecl.name) a
       in
-        List.fold_left f cls.Class.attributes upd.Retract.attributes
+        List.fold_left f cls.Class.attributes retr.Retract.attributes
     and with_defs' =
-      let f a e =
-        List.map
-          (fun e' -> if (e.With.co_interface = e'.With.co_interface) then
-                       begin
-                         let g a m =
-                           List.filter (fun m' -> (m.Method.name <> m'.Method.name) && (m.Method.inpars <> m'.Method.inpars) && (m.Method.outpars <> m'.Method.outpars)) a
-                         in
-                           { e with With.methods = List.fold_left g e.With.methods e'.With.methods }
-                       end
-                     else
-                       e) a
+      (** Remove methods from each matching with block *)
+      let retract_method methods what =
+        List.filter (fun m' -> not (Method.equivalent_p what m')) methods
       in
-        List.fold_left f cls.Class.with_defs upd.Retract.with_defs
+      let retract_from_with retr wth =
+        if wth.With.co_interface = retr.With.co_interface then
+          { wth with With.methods =
+              List.fold_left retract_method wth.With.methods
+                retr.With.methods }
+        else
+          wth
+      in
+      let retract_from_withs withs retrs =
+        List.map (retract_from_with retrs) withs
+      in
+        List.fold_left retract_from_withs cls.Class.with_defs
+            retr.Retract.with_defs
     in
       { cls with Class.inherits = inherits'; attributes = attributes';
                  with_defs = with_defs' }

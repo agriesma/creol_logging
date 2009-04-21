@@ -75,6 +75,19 @@ let mtd2 =
     file = "";
     line = 0 }
 
+let mtd3 =
+  { Method.name = "n";
+    coiface = Type.Internal;
+    inpars = [];
+    outpars = [];
+    requires = Expression.Bool (Expression.make_note (), true);
+    ensures = Expression.Bool (Expression.make_note (), true);
+    vars = [];
+    body = Some (Statement.Skip (Statement.make_note ()));
+    location = "C";
+    file = "";
+    line = 0 }
+
 let cls1 =
   { Class.name = "C"; parameters = []; inherits = []; contracts = [];
     implements = []; attributes = []; invariants = [];
@@ -98,6 +111,14 @@ let cls3 =
     objects_created = Big_int.zero_big_int; pragmas = [];
     file = ""; line = 0 }
 
+let cls4 =
+  { Class.name = "C"; parameters = []; inherits = []; contracts = [];
+    implements = []; attributes = []; invariants = [];
+    with_defs = [ { With.co_interface = Type.Internal; methods = [mtd1; mtd3];
+          invariants = []; file = ""; line = 0 }];
+    objects_created = Big_int.zero_big_int; pragmas = [];
+    file = ""; line = 0 }
+
 let upd1 =
   { Update.name = "C"; inherits = []; contracts = []; implements = [];
     attributes = []; with_defs = [];
@@ -116,6 +137,14 @@ let upd3 =
     with_defs = [ { With.co_interface = Type.Internal; methods = [mtd2];
           invariants = []; file = ""; line = 0 }];
     pragmas = []; dependencies = Dependencies.empty; file = ""; line = 0 }
+
+let retr1 =
+  { Retract.name = "C"; inherits = []; attributes = [];
+    with_defs = [ { With.co_interface = Type.Internal; methods = [mtd3];
+          invariants = []; file = ""; line = 0 }];
+    pragmas = []; dependencies = Dependencies.empty;
+    obj_deps = Dependencies.empty; file = ""; line = 0 }
+
 
 let update_tests =
   "Update" >::: [
@@ -149,6 +178,16 @@ let update_tests =
       fun _ ->
         let prg = Program.make [Declaration.Class cls1]
         and upd = Program.make [Declaration.Update upd2]
+        in
+        let prg' = Program.apply_updates prg upd
+        and exp = Program.make [Declaration.Class cls2]
+        in
+          assert_bool "Update failed" (Program.equal exp prg')
+    );
+    "RetractMtd" >:: (
+      fun _ ->
+        let prg = Program.make [Declaration.Class cls4]
+        and upd = Program.make [Declaration.Retract retr1]
         in
         let prg' = Program.apply_updates prg upd
         and exp = Program.make [Declaration.Class cls2]

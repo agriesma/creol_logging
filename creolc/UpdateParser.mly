@@ -108,8 +108,8 @@ updatedecl:
     { { Update.name = n; inherits = inherits s; contracts = contracts s;
         implements = implements s; attributes = List.flatten a;
         with_defs = upd_method_locs n (aw @ w); pragmas = pr;
-        dependencies = Dependencies.empty; file = $startpos.pos_fname;
-        line = $startpos.pos_lnum } }
+        dependencies = Dependencies.empty;
+        file = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 retractdecl:
       RETRACT n = CID s = list(super_decl) pr = list(pragma)
@@ -121,7 +121,8 @@ retractdecl:
       in
         { Retract.name = n; inherits = inherits s; attributes = List.flatten a;
           with_defs = upd_method_locs n (aw @ w); pragmas = pr;
-          dependencies = Dependencies.empty; obj_deps = Dependencies.empty } }
+          dependencies = Dependencies.empty; obj_deps = Dependencies.empty;
+          file = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 anon_with_decl:
       l = nonempty_list(method_decl) i = list(invariant)
