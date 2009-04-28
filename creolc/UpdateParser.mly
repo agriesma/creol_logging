@@ -120,7 +120,7 @@ retractdecl:
     { let _ = assert ([] = contracts s); assert ([] = implements s)
       in
         { Retract.name = n; inherits = inherits s; attributes = List.flatten a;
-          with_defs = upd_method_locs n (aw @ w); pragmas = pr;
+          with_decls = upd_method_locs n (aw @ w); pragmas = pr;
           dependencies = Dependencies.empty; obj_deps = Dependencies.empty;
           file = $startpos.pos_fname; line = $startpos.pos_lnum } }
 

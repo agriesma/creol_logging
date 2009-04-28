@@ -1592,6 +1592,11 @@ struct
 	  Not_found ->
 	    find cls.parameters
 
+  let has_method_p cls mtd =
+    let p { With.co_interface = c } = c = mtd.Method.coiface in
+    let c = List.concat (List.map (fun w -> w.With.methods) (List.filter p cls.with_defs)) in
+      List.exists (Method.equivalent_p mtd) c
+
   (** Add a new method definition to a class. Assumes that there is no
       other method definition with the same name and signature. *)
   let add_method_to_class cls mtd =
@@ -1875,7 +1880,7 @@ struct
     name: string; (** The name of the class to simplify. *)
     inherits: Inherits.t list;
     attributes: VarDecl.t list;
-    with_defs: With.t list;
+    with_decls: With.t list;
     pragmas: Pragma.t list;
     dependencies: Dependencies.t;
     obj_deps: Dependencies.t;
@@ -2847,7 +2852,7 @@ struct
         List.map (retract_from_with retrs) withs
       in
       let res = List.fold_left retract_from_withs cls.Class.with_defs
-            retr.Retract.with_defs
+            retr.Retract.with_decls
       in
         List.filter (fun { With.methods = m } -> m <> []) res
     in

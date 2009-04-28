@@ -584,7 +584,7 @@ let emit subtarget out_channel input =
     print_string ")";
     print_comma () ;
     print_string "(";
-    of_with_defs r.Retract.name r.Retract.with_defs ;
+    of_with_defs r.Retract.name r.Retract.with_decls ;
     print_string ")";
     print_comma () ;
     print_string "(";

@@ -1395,7 +1395,36 @@ let type_check_update program upd =
     { upd with Update.with_defs = with_defs' }
 
 
+let type_check_retract_attributes program
+      { Retract.name = name; attributes = decls } =
+  let cls = Program.find_class program name in
+  let present { VarDecl.name = name } =
+    if Class.has_attr_p cls name then
+      ()
+    else
+      raise (Failure ("No attribute " ^ name ^ " in " ^ cls.Class.name))
+  in
+    List.iter present decls
+
+
+let type_check_retract_methods program
+      { Retract.name = name; with_decls = decls } =
+  let cls = Program.find_class program name in
+  let present w =
+    let present m =
+      if Class.has_method_p cls m then
+        ()
+      else
+        raise (Failure ("No method " ^ (Method.name_as_string m) ^ " in " ^ cls.Class.name))
+    in
+      List.iter present w.With.methods
+  in
+    List.iter present decls
+
+
 let type_check_retract program upd =
+  let _ = type_check_retract_attributes program upd in
+  let _ = type_check_retract_methods program upd in
   let program' =
      Program.apply_updates program (Program.make [Declaration.Retract upd])
   and subclasses = IdSet.elements (Program.subclasses program upd.Retract.name)

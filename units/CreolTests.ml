@@ -140,7 +140,7 @@ let upd3 =
 
 let retr1 =
   { Retract.name = "C"; inherits = []; attributes = [];
-    with_defs = [ { With.co_interface = Type.Internal; methods = [mtd3];
+    with_decls = [ { With.co_interface = Type.Internal; methods = [mtd3];
           invariants = []; file = ""; line = 0 }];
     pragmas = []; dependencies = Dependencies.empty;
     obj_deps = Dependencies.empty; file = ""; line = 0 }
