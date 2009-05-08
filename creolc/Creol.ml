@@ -510,12 +510,15 @@ struct
       | SSAId (_, i, n) -> SSAId (note, i, n)
       | Phi (_, l) -> Phi (note, l)
 
-  let get_lhs_type =
+  let lhs_note =
     function
-	LhsId(n, _) -> n.ty
-      | LhsAttr(n, _, _) -> n.ty
-      | LhsWildcard (n, _) -> n.ty
-      | LhsSSAId (n, _, _) -> n.ty
+	LhsId(n, _) -> n
+      | LhsAttr(n, _, _) -> n
+      | LhsWildcard (n, _) -> n
+      | LhsSSAId (n, _, _) -> n
+
+
+  let get_lhs_type l = (lhs_note l).ty
 
   (* Extract the annotation of an expression *)
   let variable =
@@ -1394,14 +1397,13 @@ module Method =
        if the variable is not found. *)
     let find_variable ~meth name =
       let p { VarDecl.name = n } = (n = name) in
-	try
-	  List.find p meth.vars
-	with
-	    Not_found ->
-	      try
-		List.find p meth.inpars
-	      with
-		  Not_found -> List.find p meth.outpars
+	List.find p (List.concat [meth.vars; meth.inpars; meth.outpars])
+
+
+    (** Check whether a variable in method scope is writable. *)
+    let writeable_p meth name =
+      let p { VarDecl.name = n } = n = name in
+        List.exists p (meth.vars @ meth.outpars)
 
 
     (* Determine whether a local variable is a future. *)
@@ -1525,18 +1527,19 @@ struct
 	| [t] -> Type.Basic t
 	| ts -> Type.Intersection (List.map (fun t -> Type.Basic t) ts) 
 
+
+  let has_param_p ~cls ~name =
+    List.exists (function { VarDecl.name = n } -> n = name) cls.parameters
+
+
   let has_attr_p ~cls ~name =
-    let f l = List.exists (function { VarDecl.name = n } -> n = name) l in
-      (f cls.attributes) || (f cls.parameters)
+    List.exists (function { VarDecl.name = n } -> n = name) cls.attributes
+
 
   let find_attr_decl ~cls ~name =
-    let find l = List.find (function { VarDecl.name = n } -> n = name) l
-    in
-      try
-	find cls.attributes
-      with
-	  Not_found ->
-	    find cls.parameters
+    List.find (function { VarDecl.name = n } -> n = name)
+      (cls.attributes @ cls.parameters)
+
 
   (** Add a new method definition to a class. Assumes that there is no
       other method definition with the same name and signature. *)
@@ -2113,7 +2116,7 @@ struct
       attribute. *)
   let find_class_of_attr ~program ~cls ~attr =
     let rec work c =
-      if Class.has_attr_p c attr then
+      if (Class.has_attr_p c attr) || (Class.has_param_p c attr) then
 	Some c
       else
 	search c.Class.inherits
@@ -2129,9 +2132,15 @@ struct
 	  None -> raise Not_found
 	| Some cls' -> cls'
 
-  let find_attr_decl ~program ~cls ~name =
+
+  let find_attr_decl program cls name =
     let c = find_class_of_attr program cls name in
       Class.find_attr_decl c name
+
+
+  let attr_writeable_p program cls name =
+    let c = find_class_of_attr program cls name in
+      Class.has_attr_p c name
 
 
   (** Compute the interface of a class, i.e., the set of all method it

@@ -73,6 +73,11 @@ module MSet = Set.Make(Method)
     type error. *)
 exception Type_error of string * int * string
 
+(** The type checker raises an [Constant_error (file, line, reason)]
+    exception if it has deduced that we assign a value to a constant *)
+exception Constant_error of string * int * string
+
+
 
 (** This exception is raised by the unifier.  The argument is the
     constrained which cannot be resolved. *)
@@ -663,42 +668,85 @@ let type_check_assertion env coiface e =
     else
       type_error (Expression.note e') "Expression is not of type Bool"
 
+let writeable_p env =
+  function
+    | LhsId (n, name) | LhsSSAId(n, name, _) ->
+        if (Method.writeable_p env.meth name) ||
+             (Program.attr_writeable_p env.program env.cls name) then
+          true
+        else
+          raise (Constant_error (n.Expression.file, n.Expression.line, name))
+    | LhsAttr (n, name, (Type.Basic c)) ->
+        let cls = Program.find_class env.program c in
+          if Program.attr_writeable_p env.program cls name then
+            true
+          else
+            raise (Constant_error (n.Expression.file, n.Expression.line, name))
+    | _ -> true
+          
+
 
 let type_check_lhs env coiface =
   function
       LhsId (n, name) ->
-	let res =
+	let res = 
 	  try
-	    try
-	      (Method.find_variable env.meth name).VarDecl.var_type
-	    with
-		Not_found ->
-		  (Program.find_attr_decl env.program env.cls name).VarDecl.var_type
+              Method.find_variable env.meth name
 	  with
-	      Not_found ->
-		identifier_undeclared n name
-	in
-	  LhsId (set_type n res, name)
+	    | Not_found ->
+                begin
+                  try
+                    Program.find_attr_decl env.program env.cls name
+	          with
+	            | Not_found ->
+		        identifier_undeclared n name
+                end
+        in
+	  LhsId (set_type n res.VarDecl.var_type, name)
     | LhsAttr (n, name, (Type.Basic c)) ->
-	let res =
-	  (Program.find_attr_decl env.program
-	     (Program.find_class env.program c) name).VarDecl.var_type
-	in
-	  LhsAttr (set_type n res, name, (Type.Basic c))
+        begin
+          let cls = Program.find_class env.program c in
+	  let res = Program.find_attr_decl env.program cls name in
+	    LhsAttr (set_type n res.VarDecl.var_type, name, (Type.Basic c))
+        end
     | LhsAttr _ -> assert false
     | LhsWildcard (n, None) ->
 	LhsWildcard(set_type n Type.data, None)
     | LhsWildcard (n, Some ty) ->
 	LhsWildcard(set_type n ty, Some ty)
     | LhsSSAId (n, name, version) ->
-	let res =
+        begin
 	  try
-	    (Method.find_variable env.meth name).VarDecl.var_type
+	    let res = Method.find_variable env.meth name in
+	      LhsSSAId (set_type n res.VarDecl.var_type, name, version)
 	  with
-	      Not_found ->
+	    | Not_found ->
 		identifier_undeclared n name
-	in
-	  LhsSSAId (set_type n res, name, version)
+        end
+
+
+let check_assignment_pair env lhs rhs =
+  (* It has to be checked whether for each assignment part we find a free
+     type variable in the right-hand-side.  If this is the case we have to
+     unify it with the type of the left-hand-side.  On the left hand side
+     the type must not contain any free variables. *)
+  let lhs_t = Expression.get_lhs_type lhs
+  and rhs_t = Expression.get_type rhs in
+  let s =
+    try
+      unify env.program [(rhs_t, lhs_t)]
+    with
+      | Unify_failure _ ->
+          let file = (Expression.lhs_note lhs).Expression.file
+          and line = (Expression.lhs_note lhs).Expression.line
+          in
+            raise (Type_error (file, line, "Type mismatch: Expected " ^
+                                           (Type.string_of_type lhs_t) ^
+                                           " but got " ^
+                                           (Type.string_of_type rhs_t)))
+  in
+  let () = log 1 (Type.string_of_substitution s) in
+    substitute_types_in_expression s rhs
 
 
 let rec type_check_statement env coiface =
@@ -956,35 +1004,15 @@ let rec type_check_statement env coiface =
       | Assign (n, lhs, rhs) ->
 	  let lhs' = List.map (type_check_lhs env coiface) lhs
 	  and rhs' = type_check_expression_list env coiface [] rhs
-	  in
-	  let check_assignment_pair lhs rhs =
-	    (* It has to be checked whether for each assignment part
-	       we find a free type variable in the right-hand-side.
-	       If this is the case we have to unify it with the type
-	       of the left-hand-side.  On the left hand side the
-	       type must not contain any free variables. *)
-	    let lhs_t = Expression.get_lhs_type lhs
-	    and rhs_t = Expression.get_type rhs in
-	    let s =
-	      try
-		unify env.program [(rhs_t, lhs_t)]
-	      with
-		  Unify_failure _ ->
-	            raise (Type_error (n.file, n.line,
-			"Type mismatch: Expected " ^
-			(Type.string_of_type lhs_t) ^
-			" but got " ^
-			(Type.string_of_type rhs_t)))
-
-		in
-                  let () = log 1 (Type.string_of_substitution s) in
-		    substitute_types_in_expression s rhs
+          and _ = List.for_all (writeable_p env) lhs
 	  in
 	  let rhs'' =
 	    try
-	      List.map2 check_assignment_pair lhs' rhs'
+	      List.map2 (check_assignment_pair env) lhs' rhs'
 	    with
-		Invalid_argument _ ->
+              | Type_error (_, _, msg) ->
+                  raise (Type_error (n.file, n.line, msg))
+	      | Invalid_argument _ ->
 		  raise (Type_error (n.file, n.line,
 				     "Type mismatch: number of components " ^
 				       "differ"))
@@ -1101,40 +1129,19 @@ let type_check_class_inherit program cls inh =
   let lhs = List.map f super.Class.parameters
   and rhs = inh.Inherits.arguments
   in
-  let ass =
-    Statement.Assign
-      (Statement.make_note ~file:inh.Inherits.file ~line:inh.Inherits.line (),
-       lhs, rhs)
+  let lhs' = List.map (type_check_lhs env "") lhs
+  and rhs' = type_check_expression_list env "" [] rhs
   in
   let args' =
-    match type_check_statement env "" ass with
-      | Statement.Assign (_, _, rhs') -> rhs'
-      | _ -> assert false
-  in
-    { inh with Inherits.arguments = args' }
-
-
-(** Check that a class is inherited by supplying correct
-    parameters. *)
-let type_check_implements program iface inh =
-  let env = { program = program; cls = Class.empty; meth = Method.empty;
-	      env = Env.empty }
-  and super = Program.find_interface program inh.Inherits.name in
-  let f { VarDecl.name = name } =
-    Expression.LhsAttr (Expression.make_note (), name,
-			Type.Basic super.Interface.name) in
-  let lhs = List.map f super.Interface.parameters
-  and rhs = inh.Inherits.arguments
-  in
-  let ass =
-    Statement.Assign
-      (Statement.make_note ~file:inh.Inherits.file ~line:inh.Inherits.line (),
-       lhs, rhs)
-  in
-  let args' =
-    match type_check_statement env "" ass with
-      | Statement.Assign (_, _, rhs') -> rhs'
-      | _ -> assert false
+    try
+      List.map2 (check_assignment_pair env) lhs' rhs'
+    with
+      | Type_error (_, _, msg) ->
+          raise (Type_error (inh.Inherits.file, inh.Inherits.line, msg))
+      | Invalid_argument _ ->
+	  raise (Type_error (inh.Inherits.file, inh.Inherits.line,
+			     "Type mismatch: number of components " ^
+			       "differ"))
   in
     { inh with Inherits.arguments = args' }
 
@@ -1324,7 +1331,7 @@ let typecheck tree: Program.t =
 		    env = Env.empty }
 		in
 		let s =
-		  type_check_statement env "Any" (Assign (make_note (), l, r))
+		  type_check_statement env "" (Assign (make_note (), l, r))
 		in
 		  match s with
 		    | Assign (_, _, [i']) -> i'
