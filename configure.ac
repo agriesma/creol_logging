@@ -18,11 +18,13 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_INIT([Creol Tools], [0.0n-git], [kyas@ifi.uio.no], [creoltools])
+RELEASE='release'
 RELEASE_DATE='2008-11-24'
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([creolc/Driver.ml])
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
+AC_SUBST([RELEASE])
 AC_SUBST([RELEASE_DATE])
 
 dnl Check for the tools needed to run the tests.
