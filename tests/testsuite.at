@@ -408,6 +408,14 @@ TEST_CREOLC_SYNTAX([MissingEnd5],
 
 
 dnl test cases for the type checker
+TEST_CREOLC_TYPECHECK([Constant],
+[[Constant.creol:24: cannot assign to constant x
+]])
+
+TEST_CREOLC_TYPECHECK([Constant1],
+[[Constant1.creol:24: cannot assign to constant x
+]])
+
 TEST_CREOLC_TYPECHECK([Nat],
 [[Nat.creol:22: type Nat of attribute x does not exist
 ]])

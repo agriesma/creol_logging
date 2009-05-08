@@ -2111,6 +2111,10 @@ struct
       List.fold_left p [] program.decls
 
 
+  (** Raise [Attribute_not_found file line name] if the attribute [name]
+      is not found in file [file] and line [line]. *)
+  exception Attribute_not_found of string * int * string
+
   (** Find the class declaration for an attribute. [cls] is the class
       in which we search for the attribute. [name] is the name of the
       attribute. *)
@@ -2129,7 +2133,8 @@ struct
 	      | cls' -> cls'
     in
       match work cls with
-	  None -> raise Not_found
+	| None ->
+            raise (Attribute_not_found (cls.Class.file, cls.Class.line, attr))
 	| Some cls' -> cls'
 
 
@@ -2139,8 +2144,11 @@ struct
 
 
   let attr_writeable_p program cls name =
-    let c = find_class_of_attr program cls name in
-      Class.has_attr_p c name
+    try 
+      let c = find_class_of_attr program cls name in
+        Class.has_attr_p c name
+    with
+      | Attribute_not_found _ -> false
 
 
   (** Compute the interface of a class, i.e., the set of all method it
