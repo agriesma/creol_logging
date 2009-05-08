@@ -122,6 +122,7 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  typecheck/Ambiguous3.creol typecheck/Ambiguous4.creol \
 		  typecheck/Ambiguous5.creol typecheck/Ambiguous6.creol \
 		  typecheck/Ambiguous7.creol typecheck/Ambiguous8.creol \
+		  typecheck/Constant.creol typecheck/Constant1.creol \
 		  typecheck/Contracts.creol typecheck/Cyclic.creol \
 		  typecheck/Cyclic2.creol typecheck/Cyclic3.creol \
 		  typecheck/Cyclic4.creol typecheck/CyclicClass.creol \

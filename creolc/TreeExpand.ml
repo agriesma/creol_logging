@@ -82,7 +82,7 @@ let expand_statement program cls meth future_decls fresh_name =
 		  let _ = Program.find_attr_decl program cls name in
 		    make fn'
 		with
-		    Not_found -> (name, fn')
+		    Program.Attribute_not_found _ -> (name, fn')
 	      end
     in
       function

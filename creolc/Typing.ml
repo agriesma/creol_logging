@@ -406,7 +406,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	    with Not_found ->
 	      (Program.find_attr_decl env.program env.cls name).VarDecl.var_type
 	  with
-	      Not_found ->
+	      Program.Attribute_not_found _ ->
 		identifier_undeclared n name
 	in
 	  (Id (set_type n res, name), constr, fresh_name)
@@ -698,7 +698,7 @@ let type_check_lhs env coiface =
                   try
                     Program.find_attr_decl env.program env.cls name
 	          with
-	            | Not_found ->
+	            | Program.Attribute_not_found _ ->
 		        identifier_undeclared n name
                 end
         in
@@ -1477,9 +1477,12 @@ let typecheck tree: Program.t =
 	try
 	  Program.map tree (type_check_declaration tree)
 	with
-	    Type_error (file, line, msg) ->
+	  | Type_error (file, line, msg) ->
 	      Messages.error file line msg ;
 	      exit 1
+          | Constant_error (file, line, msg) ->
+              Messages.error file line ("cannot assign to constant " ^ msg) ;
+              exit 1
       end
     else
       exit 1
