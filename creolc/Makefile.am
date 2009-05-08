@@ -149,7 +149,7 @@ OCAMLDOC	= $(OCAMLFIND) ocamldoc
 
 GITVERSION = \
         if test -d $(top_srcdir)/.git ; then \
-	    env LANG=C git whatchanged --pretty=tformat:'git commit %h' | head -1 ; \
+	    env LANG=C git whatchanged --pretty=format:'git commit %h' | head -1 ; \
 	else \
 	    echo -n "release" ; \
         fi
@@ -157,7 +157,7 @@ GITVERSION = \
 GITDATE = \
 	if test -d $(top_srcdir)/.git ; \
 	then \
-	    env LANG=C git whatchanged --pretty=tformat:'%ci' | head -1 ; \
+	    env LANG=C git whatchanged --pretty=format:'%ci' | head -1 ; \
 	else \
 	    echo -n "$(RELEASE_DATE)" ; \
 	fi
