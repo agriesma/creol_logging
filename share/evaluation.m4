@@ -102,6 +102,7 @@ ifdef(`WITH_TIME',dnl
     eq EVALGUARDLIST(E :: NeEL, S, CN, T) =
       EVALGUARD(E, S, CN, T) :: EVALGUARDLIST(NeEL, S, CN, T) .
 
+    --- Evaluate a set.
     eq EVALGUARDSET(emptyset, S, CN, T) = emptyset .
     eq EVALGUARDSET(DS, S, CN, T) = DS .  ---  No need to evaluate
     eq EVALGUARDSET(E, S, CN, T) = EVALGUARD(E, S, CN, T) .
