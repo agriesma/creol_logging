@@ -49,12 +49,12 @@ mod `CREOL-EVAL' is
 
     --- Check if a message is in the queue.
     op inqueue  : Label Configuration -> Bool .
-    eq inqueue(L, none) = false .
-    eq inqueue(L, CL CN) = inqueue(L, CN) .
-    eq inqueue(L, OB CN) = inqueue(L, CN) .
     eq inqueue(L, < L' : Future | Completed: B, References: N, Value: DL > CN) =
         if L == L' then B else inqueue(L, CN) fi .
-    eq inqueue(L, MS CN) = inqueue(L, CN) [owise] .
+    eq inqueue(L, CL CN) = inqueue(L, CN) .
+    eq inqueue(L, OB CN) = inqueue(L, CN) .
+    eq inqueue(L, MS CN) = inqueue(L, CN) .
+    eq inqueue(L, none) = false .
 
 dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
