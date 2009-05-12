@@ -79,24 +79,24 @@ result State: {
     label(ob("Fibonacci-0"), 15)},
   PrQ: {".class" |-> str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"),
     1), ".method" |-> str("run"), "_" |-> null, "caller" |-> ob("Fibonacci-0"),
-    "res" |-> null, "t" |-> label(ob("Fibonacci-0"), 2) | await ?(label(ob(
-    "Fibonacci-0"), 2)) ; get("t" ; "res") ; free("t") ; return(emp)}, {
-    ".class" |-> str("Fibonacci"), ".label" |-> label(ob("FibTester-0"), 3),
-    ".method" |-> str("fibonacci"), "_" |-> null, "caller" |-> ob(
-    "FibTester-0"), "f" |-> null, "n" |-> null, "t" |-> null | assign("n" ;
-    int(10)) ; call("t" ; "this" ; "fib" ; "n") ; get("t" ; "f") ; free("t") ;
-    return("f")}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
-    "Fibonacci-0"), 2), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
-    "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> int(
-    10), "s" |-> label(ob("Fibonacci-0"), 3), "t" |-> label(ob("Fibonacci-0"),
-    4) | get(label(ob("Fibonacci-0"), 3) ; "a") ; free("s") ; get("t" ; "b") ;
-    free("t") ; assign("f" ; "+"("a" :: "b")) ; return("f")}, {".class" |->
-    str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 3), ".method" |->
-    str("fib"), "_" |-> null, "a" |-> null, "b" |-> null, "caller" |-> ob(
-    "Fibonacci-0"), "f" |-> null, "n" |-> int(9), "s" |-> label(ob(
-    "Fibonacci-0"), 5), "t" |-> label(ob("Fibonacci-0"), 6) | get(label(ob(
-    "Fibonacci-0"), 5) ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
+    "res" |-> null, "t" |-> null | call("t" ; "this" ; "fib" ; "n") ; await ?(
+    "t") ; get("t" ; "res") ; free("t") ; return(emp)}, {".class" |-> str(
+    "Fibonacci"), ".label" |-> label(ob("FibTester-0"), 3), ".method" |-> str(
+    "fibonacci"), "_" |-> null, "caller" |-> ob("FibTester-0"), "f" |-> null,
+    "n" |-> int(10), "t" |-> label(ob("Fibonacci-0"), 2) | get(label(ob(
+    "Fibonacci-0"), 2) ; "f") ; free("t") ; return("f")}, {".class" |-> str(
+    "Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 2), ".method" |-> str(
+    "fib"), "_" |-> null, "a" |-> null, "b" |-> null, "caller" |-> ob(
+    "Fibonacci-0"), "f" |-> null, "n" |-> int(10), "s" |-> label(ob(
+    "Fibonacci-0"), 3), "t" |-> label(ob("Fibonacci-0"), 4) | get(label(ob(
+    "Fibonacci-0"), 3) ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
     assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 2)}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
+    "Fibonacci-0"), 3), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
+    "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> int(9),
+    "s" |-> label(ob("Fibonacci-0"), 5), "t" |-> label(ob("Fibonacci-0"), 6) |
+    get(label(ob("Fibonacci-0"), 5) ; "a") ; free("s") ; get("t" ; "b") ; free(
+    "t") ; assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
     "Fibonacci-0"), 3)}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
     "Fibonacci-0"), 4), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
     "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> null,
