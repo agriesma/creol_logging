@@ -42,24 +42,24 @@ check-local: Phil1b.prof Phil1p.prof Phil2b.prof Phil2p.prof
 
 Phil1p.maude: Philosophers.creol Philosophers.tests $(srcdir)/profile.sh
 	rm -f model.maude
-	$(CREOLC) -T maudemc -o model.maude $<
+	$(CREOLC) -T maude -m modelchecker -o model.maude $<
 	$(PROFILE) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
 
 Phil2p.maude: Philosophers.creol Philosophers.tests $(srcdir)/profile.sh
 	rm -f model.maude
-	$(CREOLC) -T maudemc -p devirt -o model.maude $<
+	$(CREOLC) -T maude -m modelchecker -p devirt -o model.maude $<
 	$(PROFILE) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
 
 Phil1b.maude: Philosophers.creol Philosophers.tests $(srcdir)/benchmark.sh
 	rm -f model.maude
-	$(CREOLC) -T maudemc -o model.maude $<
+	$(CREOLC) -T maude -m modelchecker -o model.maude $<
 	$(BENCHMARK) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
 
 Phil2b.maude: Philosophers.creol Philosophers.tests $(srcdir)/benchmark.sh
 	rm -f model.maude
-	$(CREOLC) -T maudemc -p devirt -o model.maude $<
+	$(CREOLC) -T maude -m modelchecker -p devirt -o model.maude $<
 	$(BENCHMARK) model.maude $(srcdir)/Philosophers.tests $@
 	rm -f model.maude
