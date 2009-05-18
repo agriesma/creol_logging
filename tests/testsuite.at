@@ -379,6 +379,10 @@ m4_include(cmcvalid.at)
 dnl Test the meta execution strategies.
 m4_include(metaexec.at)
 
+
+dnl Test cases for the parser.
+m4_include(syntax.at)
+
 dnl test cases for the parser.
 TEST_CREOLC_SYNTAX([AttrDecl])
 

@@ -32,6 +32,7 @@ TESTSUITE		= $(srcdir)/testsuite
 TESTPARTS		= $(srcdir)/cmcvalid.at \
 			  $(srcdir)/macros.at \
 			  $(srcdir)/metaexec.at \
+			  $(srcdir)/syntax.at \
 			  $(srcdir)/testsuite.at
 
 TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
