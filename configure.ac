@@ -17,7 +17,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([Creol Tools], [0.0n-git], [kyas@ifi.uio.no], [creoltools])
+AC_INIT([Creol Tools], [0.0m-git], [kyas@ifi.uio.no], [creoltools])
 RELEASE='release'
 RELEASE_DATE='2008-11-24'
 AC_PREREQ([2.59])
