@@ -124,6 +124,10 @@ inherits:
         { { With.co_interface = c;
 	    methods = List.map (Method.set_cointerface c) l; invariants = i;
             file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
+    | WITH THIS l = nonempty_list(method_def) i = list(invariant)
+        { { With.co_interface = Type.Internal;
+	    methods = l; invariants = i;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 %public attribute:
       VAR l = separated_nonempty_list(COMMA, vardecl)
