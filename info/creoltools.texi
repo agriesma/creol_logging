@@ -70,7 +70,6 @@ Documentation License.''
 * CREOL Machine Code::    @acronym{CREOL} Machine Code.
 * Model-checking CREOL::  Using Maude to Model-Check @acronym{CREOL} programs.
 * creolc::                How to use the @command{creolc} compiler.
-* creolshell::            How to use the @command{creolshell}.
 * Installation Instructions::	Installation instructions.
 @c Appendices start here
 * Grammar::               The grammar definition of @acronym{CREOL}.
@@ -98,7 +97,6 @@ Documentation License.''
 @include cmc.texi
 @include creolmc.texi
 @include creolc.texi
-@include creolshell.texi
 
 
 @node Installation Instructions

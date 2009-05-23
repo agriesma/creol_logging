@@ -31,6 +31,8 @@ Other:
 * The documentation has been improved.
 * cmcvalid has been renamed to cmcdisplay and can also generate dot
   files now for visualising object structures.
+* creolshell has been dropped, because it is unmaintained and should
+  be replaced by the Eclipse plug-in.
 
 creoltools 0.0m (2008-11-24): alpha release.
 
