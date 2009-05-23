@@ -233,7 +233,7 @@ ifdef(`MODELCHECK',dnl
   sort State .
 )dnl
 
-  op {_} : Configuration -> State [ctor] .
+    op {_} : Configuration -> State [ctor] .
 
 
     var CN : Configuration .
@@ -242,11 +242,22 @@ ifdef(`MODELCHECK',dnl
     op warn : State String -> State .
     eq warn({ CN }, M) = { warning(M) CN } .
 
-  --- System initialisation
-  op main : Configuration String DataList -> State .
-  eq main(CN, B, DL) =
-    { CN < ob("main") : Start | Att: noSubst, 
-           Pr: { "var" |-> null | new("var" ; CLASS(B, 0) ; DL) }, PrQ: noProc,
-           Lcnt: 0 > } .
+    --- System initialisation, old style.
+    op main : Configuration String DataList -> State .
+    eq main(CN, B, DL) =
+      { CN < ob("main") : Start | Att: noSubst, 
+             Pr: { "var" |-> null | new("var" ; CLASS(B, 0) ; DL) },
+             PrQ: noProc, Lcnt: 0 > } .
+
+    --- System initialisation, new style.
+    op main : State String DataList -> State .
+    eq main({ CN }, B, DL) =
+      { CN < ob("main") : Start | Att: noSubst, 
+             Pr: { "var" |-> null | new("var" ; CLASS(B, 0) ; DL) },
+             PrQ: noProc, Lcnt: 0 > } .
+
+    --- The initial object commits suicide after it did its job.
+    eq < ob("main") : Start | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 1 > =
+      none .
 
 endm
