@@ -153,7 +153,7 @@ let token input =
 	    Stream.junk stream; incr line; next_token stream 
 	| Some ('$' | 'A'..'Z' | 'a'..'z' | '_' | '\192'..'\255' as c) ->
 	    Stream.junk stream ; reset_buffer () ; store c; parse_key stream
-	| Some ('0'..'9' as c) ->
+	| Some (('-' | '0'..'9') as c) ->
 	    Stream.junk stream; reset_buffer (); store c; parse_number stream
 	| Some '@' -> let () = Stream.junk input in Some(At !line)
 	| Some '(' -> Stream.junk stream; Some(LParen !line)
@@ -1026,7 +1026,8 @@ let parse name input =
 	    begin
 	      match Stream.peek input with
 	        | Some Comma _ ->
-		    (d, r)::(parse_bindings input)
+                    let () = Stream.junk input in
+		      (d, r)::(parse_bindings input)
 	        | _ -> [(d, r)]
 	    end
       | Some t ->
