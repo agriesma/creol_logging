@@ -715,36 +715,48 @@ let pretty_print_program out_channel input =
 	print_string ")"
       end ;
     close_box () ;
-    if [] <> c.Class.implements then
+    if [] <> c.Class.implements || [] <> c.Class.contracts ||
+       [] <> c.Class.inherits || [] <> c.Class.pragmas 
+    then
       begin
-	open_box 2 ;
-	print_space () ;
-	print_string "implements " ;
-	separated_list print_inherits print_comma c.Class.implements ;
- 	close_box ()
-      end;
-    if [] <> c.Class.contracts then
-      begin
-	open_box 2 ;
-	print_space () ;
-	print_string "contracts " ;
-	separated_list print_inherits print_comma c.Class.contracts ;
-	close_box ()
-      end;
-    if [] <> c.Class.inherits then
-      begin
-	open_box 2 ;
-	print_space () ;
-	print_string "inherits ";
-	separated_list print_inherits print_comma c.Class.inherits ;
-	close_box () 
-      end ;
-    if [] <> c.Class.pragmas then
-      begin
-	open_box 2 ;
-	print_space () ;
-	separated_list print_pragma print_space c.Class.pragmas ;
-	close_box () 
+        print_space () ;
+        open_hbox () ;
+        print_space () ;
+        print_space () ;
+        close_box () ;
+        open_vbox 0 ;
+        if [] <> c.Class.implements then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "implements " ;
+	    separated_list print_inherits print_comma c.Class.implements ;
+ 	    close_box ()
+          end;
+        if [] <> c.Class.contracts then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "contracts " ;
+	    separated_list print_inherits print_comma c.Class.contracts ;
+	    close_box ()
+          end;
+        if [] <> c.Class.inherits then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "inherits ";
+	    separated_list print_inherits print_comma c.Class.inherits ;
+	    close_box () 
+          end ;
+        if [] <> c.Class.pragmas then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    separated_list print_pragma print_space c.Class.pragmas ;
+	    close_box () 
+          end ;
+        close_box ()
       end ;
     print_space () ;
     print_string "begin" ;
