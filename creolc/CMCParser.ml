@@ -155,8 +155,23 @@ let token input =
 	    Stream.junk stream; incr line; next_token stream 
 	| Some ('$' | 'A'..'Z' | 'a'..'z' | '_' | '\192'..'\255' as c) ->
 	    Stream.junk stream ; reset_buffer () ; store c; parse_key stream
-	| Some (('-' | '0'..'9') as c) ->
-	    Stream.junk stream; reset_buffer (); store c; parse_number stream
+        | Some '-' ->
+            begin
+              match Stream.npeek 2 input with
+                | ['-'; '0'..'9'] ->
+	            let () = Stream.junk stream
+                    and () = reset_buffer () in
+                    let () = store '-' in
+                      parse_number stream
+                | _ ->
+	            let () = Stream.junk stream in
+                      Some (Unknown ("-", !line))
+            end
+	| Some ('0'..'9' as c) ->
+	    let () = Stream.junk stream
+            and () = reset_buffer () in
+            let () = store c in
+              parse_number stream
 	| Some '@' -> let () = Stream.junk input in Some(At !line)
 	| Some '(' -> Stream.junk stream; Some(LParen !line)
 	| Some ')' -> Stream.junk stream; Some(RParen !line)
@@ -229,7 +244,8 @@ let token input =
 	    store 'e';
 	    parse_exponent_part stream
 	| _ ->
-	    Some (Int (Big_int.big_int_of_string (get_string ()), !line))
+	    let s = get_string () in
+              Some (Int (Big_int.big_int_of_string s, !line))
     and parse_decimal_part stream =
       match Stream.peek stream with
 	  Some ('0'..'9' as c) ->
@@ -451,6 +467,9 @@ let parse from_maude name input =
                   let () = Stream.junk input in
                   let () = Stream.junk input in
                     (* And then wait for eof during the next call. *)
+	            parse_configuration input
+              | _ ->
+	          let _ = parse_expression input in
 	            parse_configuration input
           end
       | Some Key (_, _) ->
@@ -1141,8 +1160,17 @@ let parse from_maude name input =
 	  raise (Eof "")
   and parse_bound input =
     match Stream.peek input with
-      | Some Key("None", _) -> let () = Stream.junk input in None
-      | Some Str _ -> let s = parse_string input in Some s
+      | Some Key ("None", _) ->
+          let () = Stream.junk input in
+            None
+      | Some Str _ ->
+          let s = parse_string input in
+            Some s
+      | Some t ->
+	  raise (BadToken (error_tokens input, get_token_line t,
+			   "<<Class>>, None"))
+      | None ->
+	  raise (Eof "")
   and parse_string input =
     match Stream.peek input with
       | Some Str (s, _) ->
