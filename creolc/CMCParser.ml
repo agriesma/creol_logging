@@ -28,6 +28,7 @@ exception Eof of string
 exception BadToken of string * int * string
 
 type token =
+  | Unknown of string * int
   | Key of string * int
   | Property of string * int
   | Int of Big_int.big_int * int
@@ -56,8 +57,8 @@ type token =
 
 let get_token_line =
   function
-      Key (_, line) | Property (_, line) | Str (_, line)
-    | Int (_, line) | Float (_, line)
+    | Unknown (_, line) | Key (_, line) | Property (_, line)
+    | Str (_, line) | Int (_, line) | Float (_, line)
     | LParen line | RParen line
     | Comma line | Semi line | Colon line | DColon line
     | Lt line | Gt line | Question line | At line
@@ -70,6 +71,7 @@ let get_token_line =
 
 let get_token_name =
   function
+    | Unknown (name, _) -> "<<unkown: " ^ name ^ ">>"
     | Key (name, _) -> "<<key: " ^ name ^ ">>"
     | Property(name, _) -> "<<property: " ^ name ^ ">>"
     | Str (s, _) -> "<<string: '" ^ s ^ "'>>"
@@ -182,7 +184,8 @@ let token input =
 		  | Some ']' -> 
 		      let () = Stream.junk stream in Some (Box !line)
 		  | t ->
-		      raise (BadToken (Char.escaped '[', !line, "Tokenizer"))
+		      let () = Stream.junk stream in
+                        Some (Unknown (Char.escaped '[', !line))
 	    end
 	| Some '{' -> Stream.junk stream; Some (LBrace !line)
 	| Some '|' -> Stream.junk stream; 
@@ -195,7 +198,9 @@ let token input =
 		| _ -> Some (Bar !line)
             end
 	| Some '}' -> Stream.junk stream; Some (RBrace !line)
-	| Some c -> raise (BadToken (Char.escaped c, !line, "Tokenizer"))
+	| Some c ->
+            let () = Stream.junk stream in
+              Some (Unknown (Char.escaped c, !line))
 	| None -> None
     and parse_key stream =
       match Stream.peek stream with
