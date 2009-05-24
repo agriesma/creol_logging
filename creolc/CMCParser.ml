@@ -259,7 +259,23 @@ let token input =
       Stream.from (fun count -> next_token input)
 
 
-
+(** Skip over the Maude header. *)
+let rec skip_to_state input =
+  match Stream.peek input with
+    | Some Key ("result", _) ->
+        begin
+          let () = Stream.junk input in   
+            match Stream.peek input with
+              | Some Property _ ->
+                  Stream.junk input
+              | _ -> skip_to_state input
+        end
+    | Some LBrace _ ->
+        () (* Maybe we face preprocessed input? *)
+    | Some _ ->
+        let () = Stream.junk input in
+          skip_to_state input
+    | None -> raise (Eof "skip_to_state")
 
 (*s CMC Parser.
 
@@ -355,7 +371,7 @@ let vardecl_of_binding (n, i) =
 let vardecl_of_name n =
   { VarDecl.name = n; var_type = Type.data; init = None; file = ""; line = 0 }
 
-let parse name input =
+let parse from_maude name input =
   let build_term oid cid props =
     match cid with
       | "~Class" ->
@@ -427,8 +443,18 @@ let parse name input =
 	      | _ -> assert false
 	  in
 	    res::(parse_configuration input)
+      | Some Key ("Bye", _) when from_maude ->
+          (* Here it means that input is about to end. *)
+          begin
+            match Stream.npeek 2 input with
+              | [Key ("Bye", _); Unknown (".", _);] ->
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                    (* And then wait for eof during the next call. *)
+	            parse_configuration input
+          end
       | Some Key (_, _) ->
-	  let res = parse_expression input in
+	  let _ = parse_expression input in
 	    parse_configuration input
       | _ ->
 	  []
@@ -1222,6 +1248,7 @@ let parse name input =
       | None ->
 	  raise (Eof "")
   in
+  let () = if from_maude then skip_to_state input in
     match Stream.peek input with
       | Some LBrace _ ->
           let () = junk_left_brace input in
@@ -1242,10 +1269,11 @@ let parse name input =
   Read the contents from a channel and return a abstract syntax tree
   and measure the time used for it.
 *)
-let parse_from_channel (name: string) (channel: in_channel) =
-  Program.make (parse name (token (Stream.of_channel channel)))
+let parse_from_channel from_maude name channel =
+  Program.make (parse from_maude name (token (Stream.of_channel channel)))
 
 
 (* Read the contents of a file and return an abstract syntax tree.
 *)
-let parse_from_file name = parse_from_channel name (open_in name)
+let parse_from_file (from_maude: bool) name =
+  parse_from_channel from_maude name (open_in name)
