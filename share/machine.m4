@@ -23,6 +23,9 @@ endfm
 mod CREOL-SIMULATOR is
 
   protecting `CREOL-EVAL' .
+ifdef(`LOGGING',dnl
+  protecting `CREOL-SYMBOLIC' . 
+) dnl
 
   vars F G : Nat .                     --- Counters for generating fresh names
   vars O O1 : Oid .                    --- Object identifiers
@@ -59,8 +62,8 @@ ifdef(`WITH_UPDATE',
 
 dnl Define the clock and the variables needed to address clocks.
 dnl
-dnl If TIME is not defined, CLOCK will be defined to empty.
-ifdef(`TIME',
+dnl If WITH_TIME is not defined, CLOCK will be defined to empty.
+ifdef(`WITH_TIME',
   vars delta T : Float .
 `define(`CLOCK', `< T : Clock | delta: delta >')',dnl
 `define(`CLOCK', `')')dnl
@@ -71,13 +74,11 @@ ifdef(`LOGGING', dnl
   ')define(`POSTLOG', `< ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: logcnt + 1 >
   <log From: logcnt To: ( logcnt + 1 ) Type: $2 Data: { $1 | $3 | $4 }  Att: noSubst  Label: getLabel((L,S)) > 
   ')
-define(`MARKER', `$marker( $1 ) ; ')
-define(`RMARKER', `$rmarker( $1 , $2 ) ; ')'
-include(`logging.m4'),dnl
+var logcnt : Nat .
+include(`logging.m4')',dnl
 `define(`PRELOG', `')'
 `define(`POSTLOG', `')' 
-`define(`MARKER', `')'
-`define(`RMARKER', `')' )dnl
+ )dnl
 
 ifdef(`MODELCHECK',dnl
   op label : Oid Oid String DataList -> Label [ctor ``format'' (! o)] .
@@ -97,7 +98,7 @@ STEP(dnl
 PRELOG`'dnl
 `< O : C | Att: S, Pr: { L | assign(AL ; EL) ; SL },
 	    PrQ: W, Lcnt: F >' CLOCK,
-POSTLOG(` renStmt(S, L, assign(AL ; EL)) ', `"assign"', ` renTrans(S, L, genTrans(assign( AL ; EL )) ) ', `TnoSubst')`'dnl
+POSTLOG(` renStmt(assign(AL ; EL), S, L) ', `"assign"', ` getTrans(assign( AL ; EL ), S, L) ', `TnoSubst')`'dnl
 `< O : C | Att: S, Pr: { L | $assign(AL ; EVALLIST(EL, (S :: L), T)) ; SL }, 
 	    PrQ: W, Lcnt: F >' CLOCK,
 `[label assignment]')
@@ -239,12 +240,11 @@ ifdef(`LOGGING',dnl
 --- record an await whose condition is not fulfilled
 crl 
   { PRELOG`'dnl
-  `< O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN ' }
+  `< O : C | Att: S, Pr: idle , PrQ: W, { L | await E ; SL }, Lcnt: F > CN ' }
   =>
-  { POSTLOG(`await E', `"blocked await"', TnoSubst, `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > ' }
----  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'
-  if `not EVALGUARD(E, (S :: L), CN, T) asBool'
+  { POSTLOG(`$bawait E', `"blocked await"', TnoSubst, `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
+  `< O : C | Att: S, Pr: idle , PrQ: W, { L | $bawait E ; SL } , Lcnt: F > CN ' }
+  if `EVALGUARD(E, (S :: L), CN, T) asBool =/= true'
   `[label blockedawait]' .
 
 crl 
@@ -252,7 +252,7 @@ crl
   `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > CN ' }
   =>
  {  POSTLOG(`await E', `"await"', TnoSubst, `"eq" |> renExpr(S, L, (E) )' )`'dnl
-  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F >'}
+  `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN '}
   if `EVALGUARD(E, (S :: L), CN, T) asBool'
   `[label notawait]' .
 
@@ -270,7 +270,6 @@ eq
   =
   < O : C | Att: S, Pr: { L | await ?(L[A]) ; SL }, PrQ: W, Lcnt: F >
   .
-
 
 --- Schedule a new process for execution, if it is ready.
 ---
@@ -303,7 +302,7 @@ rl
   < O : C |  Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W, Lcnt: F >
   comp(N, DL)
   =>
-  < O : C |  Att: S, Pr: { L | RMARKER("receive return from " + toString(N), toString(N) )assign(AL ; DL) ; SL }, PrQ: W, Lcnt: F >
+  < O : C |  Att: S, Pr: { L | RMARKER("receive return from " + toString(N), DL, toString(N) )assign(AL ; DL) ; SL }, PrQ: W, Lcnt: F >
   comp(N, DL)
   [label receive-comp] .
 
@@ -367,7 +366,7 @@ ifdef(`MODELCHECK',
   PRELOG`'dnl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , renTrans(S, L, genTrans(call(A ; E ; Q ; EL))), ("dest" |> toString(label(O, F)) ) )dnl
+  POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , getTrans(call(A ; E ; Q ; EL), S, L), ("dest" |> toString(label(O, F)) ) )dnl
   < O : C | Att: S, Pr: { insert(A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
   invoc(O, EVAL(E, (S :: L), T), label(O, F), Q , EVALLIST(EL, (S :: L), T)) '
 )dnl
@@ -432,7 +431,7 @@ ifdef(`MODELCHECK',
 ---
 STEP(PRELOG`'dnl
 `< O : C |  Att: S, Pr: { L | return(EL); SL }, PrQ: W, Lcnt: F > CLOCK',
-POSTLOG(`return(EL)', `"return"', renTrans(S, L, genTrans(return(EL) ) ), ` "dest" |> "return" + getLabel((L,S))')dnl
+POSTLOG(`return(EL)', `"return"', getTrans(return(EL), S, L) , ` "dest" |> "return" + getLabel((L,S))')dnl
 `< O : C |  Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CLOCK
   comp(L[".label"], EVALLIST(EL, (S :: L), T))',
 `[label return]')
@@ -527,13 +526,13 @@ PRELOG`'dnl
   < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
   CLOCK'dnl
 ,dnl
-POSTLOG(`new (A ; B ; EL)', `"create"', renTrans(S, L, genTrans(new(A ; B ; EL ) ) ), `"dest" |> B + string(G, 10) ' )dnl
-`< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: F >
+POSTLOG(`new (A ; B ; EL)', `"create"', getTrans(new(A ; B ; EL ), S, L ), `"dest" |> toString(label(O, F) ) ' )dnl
+`< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: (s F) >
   <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
   < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
   findAttr(newId(B`,' G), I, S1, 
-    MARKER("createmarker " + B + string(G, 10))ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S,  L), T)),
-    { noSubst | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
+    MARKER("createmarker " + toString(label(O, F) ), EL)ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S,  L), T)),
+    { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
     free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK',dnl
 `[label new-object]')
 
@@ -569,7 +568,7 @@ eq
   foundAttr(O, S1, SL, { L1 | SL1 })
   < O : C | Att: S, Pr: idle, PrQ: W, Lcnt: F >
   =
-  < O : C | Att: ("this" |-> O, S1), Pr: { L1 | SL ; SL1 }, PrQ: W, Lcnt: F > .
+  < O : C | Att: ("this" |-> O, S1), Pr: { L1 | ifdef(`LOGGING',assign("this" ; O) ; )SL ; SL1 }, PrQ: W, Lcnt: F > .
 
 
 
@@ -698,7 +697,7 @@ CSTEP(``< O : class(B, T) | Att: S, Pr: idle, PrQ: W, Lcnt: F >
 ---
 --- posit
 ---
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
 `CSTEP(
 `{ < O : C | Att: S, Pr: { L | posit E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `{ < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
@@ -711,7 +710,7 @@ EVALGUARD(E, (S :: L), CN, T) asBool,
 )dnl END if time.
 
 
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
 --- The following formalises the tick rule for real-time Creol.  This rule
 --- is only enabled if and only if all posit constraints are satisfied in
 --- the global state at the new time.

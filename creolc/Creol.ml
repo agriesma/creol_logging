@@ -1234,6 +1234,7 @@ struct
       pragmas
 
   let show pragmas = List.filter (fun p -> not (pragma_hidden_p p)) pragmas
+
 end
 
 
@@ -1462,7 +1463,6 @@ struct
   (** Show a class. *)
   let show c = { c with pragmas = Pragma.show c.pragmas }
 
-
   (** Get the interface type implemented by a class.  If it does not
       declare interfaces, then the result is [Any].  Filters
       out duplicates. *)
@@ -1635,7 +1635,6 @@ end
 
 
 
-
 (** Abstract syntax of Declararions. *)
 module Declaration =
 struct
@@ -1726,6 +1725,24 @@ struct
       match List.find class_with_name program.decls with
 	  Declaration.Class cls -> cls
 	| _ -> assert false
+
+  let remove_class program name =
+    let not_class_with_name =
+      function
+	  Declaration.Class { Class.name = n } -> n <> name
+	| _ -> true
+    in
+      { decls = List.filter not_class_with_name program.decls }
+
+
+  let add_class program cls =
+    { decls = (Declaration.Class cls)::program.decls }
+
+
+  let replace_class program cls =
+    let name = cls.Class.name in
+      add_class (remove_class program name) cls
+    
 
 
   (** [type_of_class program name] returns the type of the class
@@ -2196,7 +2213,7 @@ struct
 
   (** {4 Methods} *)
 
-  let find_method_in_with ~program ~name ~signature w =
+  let find_method_in_with program name signature w =
     let (_, ins, outs) = signature in
     let rng = match outs with None -> Type.data | Some t -> Type.Tuple t in
     let p m =
@@ -2241,9 +2258,9 @@ struct
   (** Find all definitions of a method called [name] that matches the
       signature [(coiface, ins, outs)] in class [cls] and its
       super-classes.  *)
-  let class_find_methods ~program ~cls ~name (coiface, ins, outs) =
+  let find_methods_in_class ~program ~cls ~name (coiface, ins, outs) =
     let asco = match coiface with None -> Type.any | Some c -> c in
-    let rec find_methods_in_class c =
+    let rec find c =
       let q w = subtype_p program asco w.With.co_interface in
       let withs = List.filter q c.Class.with_defs in
       let here =
@@ -2254,17 +2271,49 @@ struct
       and supers = List.map Inherits.name c.Class.inherits
       in
 	List.fold_left
-          (fun r i ->
-             (find_methods_in_class (find_class program i))@r)
+          (fun r i -> (find (find_class program i))@r)
           here supers
     in
-      find_methods_in_class cls
+      find cls
+
+
+  (** Find the first class in [cls] or below that defines a method called
+      [meth] with signature [(coiface, ins, outs)].  *)
+  let find_class_of_method program cls name (coiface, ins, outs) =
+    let co = match coiface with None -> Type.any | Some c -> c in
+    let q w = subtype_p program co w.With.co_interface in
+    let rec find =
+      function
+        | [] ->
+            raise Not_found
+        | c::l ->
+           let cls' = find_class program c in
+           let withs = List.filter q cls'.Class.with_defs in
+           let methods =
+             List.concat
+               (List.map (find_method_in_with program name (coiface, ins, outs))
+               withs)
+            in
+             begin
+               match methods with
+                 | [] ->
+                    let supers = List.map Inherits.name cls'.Class.inherits in
+                      begin
+                        try
+                          find supers
+                        with
+                          | Not_found -> find l
+                      end
+                 | _ -> c
+             end
+    in
+      find_class program (find [cls.Class.name])
 
 
   (** Check whether the class [cls] or one of its superclasses provide
       a method called [meth] matching the [signature]. *)
   let class_provides_method_p ~program ~cls meth signature =
-    [] <> (class_find_methods program cls meth signature)
+    [] <> (find_methods_in_class program cls meth signature)
 
 
   (** {4 Iterators} *)

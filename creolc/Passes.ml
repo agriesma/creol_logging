@@ -30,6 +30,8 @@
 open Creol
 open Messages
 
+type parser_t = (Lexing.lexbuf -> CreolTokens.token) -> Lexing.lexbuf -> Creol.Declaration.t list
+
 (** Defines the type of a pass.  [help] represents the help
     message for that pass.  [dependencies] is a string
     containing a comma-separated list of passes this pass depends on.
@@ -148,17 +150,10 @@ let passes = [
 
 (** Results in a help string from the list of passes. *)
 let help () =
-  let pass_help_line current ps =
-    let name = fst ps
-    and help = (snd ps).help
-    in
-      assert (((String.length name) > 0) && ((String.length name) < 11));
-      current ^ "    " ^ name ^
-	(String.make (11 - String.length name) ' ') ^
-	help ^ "\n"
+  let help' = List.map (fun (help, { help = text}) -> (help, text)) passes
+  and all' = Misc.format_help_line ("all", "all passes mentioned above.")
   in
-    (List.fold_left pass_help_line "" passes) ^
-      "    all        all passes mentioned above."
+    (Misc.help help') ^ "\n" ^ all'
 
 
 
@@ -262,19 +257,19 @@ let dump_after arg =
 
     Read the contents from a channel and return a abstract syntax tree
     and measure the time used for it.  *)
-let parse_from_channel (name: string) (channel: in_channel) =
+let parse_from_channel main (name: string) (channel: in_channel) =
   let buf = Lexing.from_channel channel in
   let pos = buf.Lexing.lex_curr_p in
   let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in
   let _ = message 1 ("Reading " ^ name) in
-  let do_parse () = Program.make (CreolParser.main CreolLexer.token buf) in
+  let do_parse () = Program.make (main CreolLexer.token buf) in
   let (result, elapsed) = Misc.measure do_parse in
     time_parse := !time_parse +. elapsed ;
     result
 
 
 (** Read the contents of a file and return an abstract syntax tree.  *)
-let parse_from_file name =
+let parse_from_file main name =
   let file =
     if (Sys.file_exists name) || (String.contains name '/') then
       name
@@ -284,13 +279,13 @@ let parse_from_file name =
       with
           Not_found -> name
   in
-    parse_from_channel file (open_in file)
+    parse_from_channel main file (open_in file)
 
 
 (** Read the contents of a list of files and return an abstract syntax
     tree.  *)
-let parse_from_files files =
-  Program.concat (List.map parse_from_file files)
+let parse_from_files main files =
+  Program.concat (List.map (parse_from_file main) files)
 
 
 (** The following functions comprise the {e middle end} of the

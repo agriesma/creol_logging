@@ -62,9 +62,12 @@ fmod CREOL-STATEMENT is
   op $accept_ : Label -> Stmt [ctor `format' (r o d)] .
 ifdef(`LOGGING',dnl
   op $bawait_ : Expr -> SuspStmt [ctor `format' (b o d)] .
-  op $marker_ : String -> Stmt [ctor] .
-  op $rmarker(_, _) : String String -> Stmt [ctor] .
-)dnl
+  op $marker : String ExprList -> Stmt [ctor] .
+  op $rmarker : String ExprList String -> Stmt [ctor] .
+  define(`MARKER', `$marker( $1, $2 ) ; ')
+  define(`RMARKER', `$rmarker( $1 , $2, $3 ) ; ')
+,`define(`MARKER', `')'
+`define(`RMARKER', `')')dnl
 
   --- Assertion Failure.
   --- This ``statement'' represents an assertion failure.  It 

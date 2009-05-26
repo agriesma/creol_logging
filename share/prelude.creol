@@ -118,6 +118,7 @@ function make_range(s: Int, e: Int, t: Int): List[Int] == external "make_range"
 
 datatype Set[`a]
 
+function isempty(s: Set[`a]): Bool == external "isempty"
 function #(s: Set[`a]): Int == external "#"
 function remove(s: Set[`a], e: `a): Set[`a] == external "remove"
 function add(s: Set[`a], e: `a): Set[`a] == external "add"
@@ -125,6 +126,7 @@ function in(e: `a, s: Set[`a]): Bool == external "in"
 function union(s: Set[`a], t: Set[`a]): Set[`a] == external "union"
 function inter(s: Set[`a], t: Set[`a]): Set[`a] == external "inter"
 function diff(s: Set[`a], t: Set[`a]): Set[`a] == external "diff"
+function choose(s: Set[`a]): `a == external "choose"
 
 // More to come.
 

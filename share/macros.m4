@@ -10,7 +10,11 @@ dnl
 dnl See the lines below for its license
 dnl
 changecom`'dnl
-define(`KIND', ifdef(`TIME', `real-time ')ifdef(`MODELCHECK', `model-checker', `interpreter'))dnl
+define(`KIND', dnl
+ifdef(`WITH_TIME', `real-time ')dnl
+ifdef(`WITH_LOGGING', `logging ')dnl
+ifdef(`WITH_UPDATE', `updating ')dnl
+ifdef(`MODELCHECK', `model-checker', `interpreter'))dnl
 dnl
 dnl The macro STEP is used to indicate that the specified transition
 dnl may be both an equation (this is the case for model checking,
@@ -68,7 +72,7 @@ dnl $2 is the state valuation,
 dnl $3 is the message queue, and
 dnl $4 is the current time.
 dnl
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
 `define(`EVALGUARD', evalGuard($1, $2, $3, $4))dnl
 define(`EVALGUARDLIST', evalGuardList($1, $2, $3, $4))dnl
 define(`EVALGUARDSET', evalGuardSet($1, $2, $3, $4))dnl

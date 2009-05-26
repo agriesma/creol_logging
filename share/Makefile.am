@@ -51,7 +51,7 @@ creol-modelchecker.maude: $(srcdir)/interpreter.m4
 	$(M4) $(M4FLAGS) -I$(srcdir) -DMODELCHECK $(CREOL_VARIANT) $< > $@
 
 creol-realtime.maude: ${srcdir}/interpreter.m4
-	$(M4) $(M4FLAGS) -I$(srcdir) -DTIME $(CREOL_VARIANT) $< > $@
+	$(M4) $(M4FLAGS) -I$(srcdir) -DWITH_TIME $(CREOL_VARIANT) $< > $@
 
 creol-update.maude: ${srcdir}/interpreter.m4
 	$(M4) $(M4FLAGS) -I$(srcdir) -DWITH_UPDATE $(CREOL_VARIANT) $< > $@
@@ -65,7 +65,10 @@ creol-interpreter.maude: ${srcdir}/evaluation.m4
 creol-interpreter.maude: ${srcdir}/configuration.m4
 creol-interpreter.maude: ${srcdir}/configuration2.m4
 creol-logginginterpreter.maude: ${srcdir}/macros.m4 ${srcdir}/machine.m4
-creol-logginginterpreter.maude: ${srcdir}/subst.m4 ${srcdir}/logging.m4
+creol-logginginterpreter.maude: ${srcdir}/subst.m4 ${srcdir}/process.m4
+creol-logginginterpreter.maude: ${srcdir}/replace.m4 ${srcdir}/symbolic.m4 ${srcdir}/logging.m4
+creol-logginginterpreter.maude: ${srcdir}/class-id.m4 ${srcdir}/inherits.m4
+creol-logginginterpreter.maude: ${srcdir}/object-id.m4 ${srcdir}/methods.m4
 creol-logginginterpreter.maude: ${srcdir}/statements.m4
 creol-logginginterpreter.maude: ${srcdir}/evaluation.m4
 creol-logginginterpreter.maude: ${srcdir}/configuration.m4

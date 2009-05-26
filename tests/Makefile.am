@@ -154,10 +154,13 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  Signature.out \
 		  Interpreter.maude Interpreter.out \
 		  MetaExec.maude MetaExec.out \
-		  ModelChecker.maude ModelChecker.out \
-		  MC3Phil.creol MC3Phil.maude MC3Phil.out MC3PhilTest.maude \
-		  MC4Phil.creol MC4Phil.maude MC4PhilTest.maude \
-		  MC5Phil.creol MC5Phil.maude MC5PhilTest.maude
+		  modelchecker/ModelChecker.maude \
+		  modelchecker/ModelChecker.out \
+		  modelchecker/MC3Phil.creol modelchecker/MC3Phil.maude \
+		  modelchecker/MC3Phil.out modelchecker/MC3PhilTest.maude \
+		  modelchecker/MC4Phil.creol modelchecker/MC4Phil.maude \
+		  modelchecker/MC4PhilTest.maude modelchecker/MC5Phil.creol \
+		  modelchecker/MC5Phil.maude modelchecker/MC5PhilTest.maude
 
 EXTRA_DIST	= $(srcdir)/atlocal.in \
 		  $(srcdir)/package.m4 \

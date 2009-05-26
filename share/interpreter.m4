@@ -53,6 +53,10 @@ include(`configuration.m4')
 
 include(`evaluation.m4')
 
+ifdef(`LOGGING', include(`replace.m4'))dnl
+
+ifdef(`LOGGING', include(`symbolic.m4'))dnl
+
 include(`machine.m4')
 
 ifdef(`MODELCHECK', include(`predicates.m4'))dnl

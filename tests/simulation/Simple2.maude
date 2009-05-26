@@ -1,0 +1,33 @@
+load creol-logginginterpreter .
+mod PROGRAM is
+  protecting CREOL-SIMULATOR .
+  op classes : -> Configuration [ctor] .
+  eq classes =
+    < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "output" @ "Console" ) ; list(emp) ) ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "print" : Method | Param: "newstring", "repetitions",
+              Att: "newstring" |-> null, "repetitions" |-> null, "_" |->
+              null, Code: if ">" ( "repetitions" :: int(0) ) th
+              assign( "output" ; "|-" ( "output" :: "newstring" ) ) ;
+              assign( "repetitions" ; "-" ( "repetitions" :: int(1) ) ) ; if
+              ">" ( "repetitions" :: int(0) ) th
+              assign( "output" ; "|-" ( "output" :: "newstring" ) ) el skip
+              fi el skip fi ; return ( emp ) >,
+      Ocnt: 0 >
+    
+    < "Hello" : Class | Inh: noInh, Param: "repetitions_init",
+      Att: "repetitions_init" |-> null, "console" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: new( "console" ; "Console" ; emp ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "x" |->
+              null, "_" |-> null, Code: assign( "x" ; "repetitions_init" ) ;
+              call( "label:0" ; "console" ; "print" ; str("hello, world") ::
+              "x" ) ; get( "label:0" ; noVid ) ; free( "label:0" ) ;
+              return ( emp ) >,
+      Ocnt: 0 > .
+endm
+

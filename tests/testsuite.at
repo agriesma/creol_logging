@@ -38,7 +38,15 @@ AT_CLEANUP
 AT_SETUP([Logging])
 TEST_LOGGING([Hello], [rew [[100]] main(classes, "Hello", emp) . 
 ])
-TEST_LOGGING([program], [rew [[3000]] main(classes, "Main", int(1) :: int(0) ) .
+TEST_LOGGING([Simple], [rew main(classes, "Hello", int(2) ) . 
+])
+TEST_LOGGING([Simple2], [rew main(classes, "Hello", int(2) ) . 
+])
+TEST_LOGGING([Simple3], [rew main(classes, "Hello", int(2) ) . 
+])
+TEST_MAUDE([Transitions], ${abs_srcdir}/simulation/Transitions.maude, [simulation])
+TEST_MAUDE([passparams], ${abs_srcdir}/simulation/passparams.maude, [simulation])
+TEST_LOGGING([program], [rew [[6000]] main(classes, "Main", int(2) :: int(1) ) .
 ])
 AT_CLEANUP
 
@@ -46,8 +54,9 @@ AT_SETUP([MetaExec])
 TEST_MAUDE([MetaExec], ${abs_srcdir}/MetaExec.maude, [.])
 AT_CLEANUP
 
-AT_SETUP([ModelChecker])
-TEST_MAUDE([ModelChecker], ${abs_srcdir}/ModelChecker.maude, [.])
+AT_SETUP([model-checker])
+TEST_MAUDE([ModelChecker], ${abs_srcdir}/modelchecker/ModelChecker.maude,
+	   [modelchecker])
 AT_CLEANUP
 
 AT_SETUP([PrettyPrinter])
@@ -80,9 +89,9 @@ TEST_CREOLC_PP([PeerToPeer], [examples])
 TEST_CREOLC_PP([Philosophers], [examples])
 TEST_CREOLC_PP([SantaClaus], [examples])
 TEST_CREOLC_PP([SingleCellBuffer], [examples])
-TEST_CREOLC_PP([MC3Phil], [.])
-TEST_CREOLC_PP([MC4Phil], [.])
-TEST_CREOLC_PP([MC5Phil], [.])
+TEST_CREOLC_PP([MC3Phil], [modelchecker])
+TEST_CREOLC_PP([MC4Phil], [modelchecker])
+TEST_CREOLC_PP([MC5Phil], [modelchecker])
 AT_CLEANUP
 
 AT_SETUP([XML-output])
@@ -115,9 +124,9 @@ TEST_CREOLC_XML([PeerToPeer], [examples])
 TEST_CREOLC_XML([Philosophers], [examples])
 TEST_CREOLC_XML([SantaClaus], [examples])
 TEST_CREOLC_XML([SingleCellBuffer], [examples])
-TEST_CREOLC_XML([MC3Phil], [.])
-TEST_CREOLC_XML([MC4Phil], [.])
-TEST_CREOLC_XML([MC5Phil], [.])
+TEST_CREOLC_XML([MC3Phil], [modelchecker])
+TEST_CREOLC_XML([MC4Phil], [modelchecker])
+TEST_CREOLC_XML([MC5Phil], [modelchecker])
 AT_CLEANUP
 
 dnl Test the prelude.  Currently, we only try to parse and pretty-print it.
@@ -346,7 +355,7 @@ red classes .
 red simulate('PROGRAM, upTerm(main(classes, "Network", emp)), 0, 1) .
 ])
 
-TEST_CREOLMC([MC3Phil], [.], [dnl
+TEST_CREOLMC([MC3Phil], [modelchecker], [dnl
 red classes .
 ],[dnl
 red simulate('PROGRAM, upTerm(main(classes, "Butler", emp)), 0, 1) .

@@ -58,7 +58,7 @@ dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
 dnl untimed cases.
 dnl
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
     var T : Float .
 
     op evalGuard : Expr Subst Configuration Float -> Data .
@@ -78,7 +78,7 @@ ifdef(`TIME',dnl
 )dnl
 
     eq EVALGUARD(D, S, CN, T) = D .
-    eq EVALGUARD(now, S, CN, T) = ifdef(`TIME', time(T), time(0.0)) .
+    eq EVALGUARD(now, S, CN, T) = ifdef(`WITH_TIME', time(T), time(0.0)) .
     eq EVALGUARD((Q @ C), (S :: S'), CN, T) =  S [Q] .
     eq EVALGUARD(A, S, CN, T) =  S [A] .
     eq EVALGUARD(Q (EL), S, CN, T) = Q ( EVALGUARDLIST(EL, S, CN, T) ) .
@@ -120,7 +120,10 @@ ifdef(`TIME',dnl
 
     --- Enabledness
     eq ENABLED(await E ; SL, S, CN, T) = EVALGUARD(E, S, CN, T) asBool .
-dnl ifdef(`TIME',dnl
+ifdef(`LOGGING',dnl
+    eq ENABLED($bawait E ; SL, S, CN, T) = EVALGUARD(E, S, CN, T) asBool .
+)dnl
+dnl ifdef(`WITH_TIME',dnl
 dnl  eq ENABLED(posit E ; SL, S, CN, T) = EVALGUARD(E, S, CN, T) asBool .
 dnl)dnl
     eq ENABLED((SL1 [] SL2) ; SL,  S, CN, T) =

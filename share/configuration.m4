@@ -32,8 +32,8 @@ changequote dnl
     --- Define object identifiers.
     protecting CONVERSION .
 
-    sorts Msg Class ifdef(`TIME', `Clock ')Object Configuration .
-    subsorts Class ifdef(`TIME', `Clock ')Msg Object < Configuration .
+    sorts Msg Class ifdef(`WITH_TIME', `Clock ')Object Configuration .
+    subsorts Class ifdef(`WITH_TIME', `Clock ')Msg Object < Configuration .
 
     vars B M M' : String .
     var C : Cid .
@@ -55,7 +55,7 @@ ifdef(`WITH_UPDATE',
     var CL : Class .
     var OB : Object .
     var MSG : Msg .
-ifdef(`TIME',
+ifdef(`WITH_TIME',
 `    var CLOCK : Clock .
 ')dnl
 ')dnl
@@ -101,7 +101,7 @@ ifdef(`TIME',
 
     eq get(M, CLASS(B, F), (MS, < M : Method | Param: AL, Att: S, Code: SL >), O, N, DL) =
         { "caller" |-> O, ".class" |-> str(B), ifdef(`WITH_UPDATE', `".stage" |-> int(F), ')
-          ".label" |-> N, ".method" |-> str(M), S | assign(AL ; DL) ; SL } .
+          ".label" |-> N, ".method" |-> str(M), S | ifdef(`LOGGING',assign("caller" , ".class" , ".label" , ".method" ; O :: str(B) :: N :: str(M) ) ; )MARKER("callmarker", DL)assign(AL ; DL) ; SL } .
     eq get(M, C, MS, O, N, DL) = notFound [owise] .
 
 
@@ -167,7 +167,7 @@ ifdef(`WITH_UPDATE',
     op __ : Configuration Configuration -> Configuration
 	  [ctor assoc comm id: none] .
 
-ifdef(`TIME',dnl
+ifdef(`WITH_TIME',dnl
   *** Definition of a global clock in the system
   op < clock : Clock | Value:_`,' Delta:_ > : Float Float -> Clock
     [ctor ``format'' (c o c c c c o c o)] .
@@ -236,13 +236,12 @@ ifdef(`MODELCHECK',dnl
   op {_} : Configuration -> State [ctor] .
 
 ifdef(`LOGGING',dnl
-    sort evalState .
     vars trans inits : TSubst .
 
-    op { _ | _ | _ }    : StmtList TSubst TSubst -> evalState [ctor] .
-
 --- Log object`,' Cnt is the index of the snapshot
-    op <log From: _ To: _ Type: _ Data: _ Att: _ Label: _ > : Nat Nat String evalState Subst String -> Object [format (ng! o d d d d b! onssss d d d d r! d no) ] .
+    op <log From: _ To: _ Type: _ Data: { _ | _ | _ } Att: _ Label: _ > : 
+          Nat Nat String StmtList TSubst TSubst Subst String -> 
+          Object [format (ng! o d d d d b! onssss d d d d d d d d d d r! d no) ] .
     op <choice Number: _ Type: _ Expression: _ > : Nat String Expr -> Object [format (ng! o b! o b! o o o no) ] .
 ,)dnl
   var CN : Configuration .

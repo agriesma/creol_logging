@@ -21,7 +21,7 @@ AC_INIT([Creol Tools], [0.0m], [kyas@ifi.uio.no], [creoltools])
 RELEASE_DATE='2008-11-24'
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
-AC_CONFIG_SRCDIR([creolc/Driver.m4])
+AC_CONFIG_SRCDIR([creolc/Driver.ml])
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 readme-alpha check-news])
 AC_SUBST([RELEASE_DATE])
@@ -133,50 +133,21 @@ MAUDE=/path/to/your/maude
 fi
 AC_SUBST([MAUDE_VERSION])
 
-AC_ARG_WITH([libxml2],
-    AS_HELP_STRING([--without-libxml2],
-		   [use libxml2 and the XML Backend (default=check).]),
-[],
-[with_libxml2=check])
-
 AC_MSG_CHECKING([for ocaml-libxml2])
-if test "$with_libxml2" = "yes" || test "$with_libxml2" = "check"
+OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' libxml2 2>/dev/null`
+if test "$?" = "0"
 then
-    OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' libxml2 2>/dev/null`
-    if test "$?" = "0"
-    then
-        AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
-        OCAML_LIBXML2="libxml2"
-        BACKEND_XML="-DBACKEND_XML"
-        BACKEND_XML_CMO="BackendXML.cmo"
-        BACKEND_XML_CMX="BackendXML.cmx"
-    else
-        AC_MSG_RESULT([no])
-        AC_MSG_WARN([ocaml-libxml2 cannot be found.
+    AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
+else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([ocaml-libxml2 cannot be found.
 
 You have to install ocaml-libxml2 from
 <http://heim.ifi.uio.no/~kyas/creoltools/> to compile the creoltools.
 ])
-        OCAML_LIBXML2_VERSION=""
-        OCAML_LIBXML2=""
-        BACKEND_XML=""
-        BACKEND_XML_CMO=""
-        BACKEND_XML_CMX=""
-    fi
-else
-    AC_MSG_RESULT([disabled])
-    OCAML_LIBXML2_VERSION=""
-    OCAML_LIBXML2=""
-    BACKEND_XML=""
-    BACKEND_XML_CMO=""
-    BACKEND_XML_CMX=""
 fi
 
 AC_SUBST([OCAML_LIBXML2_VERSION])
-AC_SUBST([OCAML_LIBXML2])
-AC_SUBST([BACKEND_XML])
-AC_SUBST([BACKEND_XML_CMO])
-AC_SUBST([BACKEND_XML_CMX])
 
 
 AC_ARG_WITH([ounit],
