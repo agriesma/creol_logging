@@ -298,12 +298,10 @@ let expand_method program cls meth =
     analysis should be performed after this function.
 
     The following two invariant holds for this function:
-    \begin{itemize}
-    \item A type correct program remains type correct and the
+    - A type correct program remains type correct and the
     annotations of unchanged statements are the same after
     reconstruction.
-    \item [expand (expand tree) == expand tree]
-    \end{itemize}
+    - [expand (expand tree) = expand tree]
 *)
 let pass input =
   let rec expand_with cls w =
