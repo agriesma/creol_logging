@@ -323,16 +323,21 @@ ifdef(`MODELCHECK',
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =
   < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F > CLOCK
-  invoc(O, O1, N, Q, EVALLIST(EL, (S :: L), T))
-  if N := label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)) /\
-     O1 := EVAL(E, (S :: L), T) /\ O =/= O1'
+  invoc(O, O1, N, Q, DL)
+  if DL := EVALLIST(EL, (S :: L), T)
+  /\ O1 := EVAL(E, (S :: L), T)
+  /\ N := label(O, O1, Q, DL)
+  /\ O =/= O1'
 ,dnl
 `crl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
   < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
-  invoc(O, O1, N, Q , EVALLIST(EL, (S :: L), T))
-  if N := label(O, F) /\ O1 := EVAL(E, (S :: L), T) /\ O =/= O1'
+  invoc(O, O1, N, Q , DL)
+  if DL :=  EVALLIST(EL, (S :: L), T)
+  /\ O1 := EVAL(E, (S :: L), T)
+  /\ N := label(O, F)
+  /\ O =/= O1'
 )dnl
   [label remote-async-call] .
 
