@@ -134,13 +134,34 @@ MAUDE=/path/to/your/maude
 fi
 AC_SUBST([MAUDE_VERSION])
 
-AC_MSG_CHECKING([for ocaml-libxml2])
-OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' libxml2 2>/dev/null`
-if test "$?" = "0"
+if test -z "$OCAML_LIBXML2"
 then
-    AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
+    for i in libxml2 ocaml-libxml2
+    do
+        AC_MSG_CHECKING([for $i bindings])
+        OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' $i 2>/dev/null`
+        if test "$?" = "0"
+        then
+            AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
+            OCAML_LIBXML2="$i"
+            break
+        else
+            AC_MSG_RESULT([no])
+        fi
+    done
 else
-    AC_MSG_RESULT([no])
+    OCAML_LIBXML2_VERSION=`$OCAMLFIND query -format '%v' $i 2>/dev/null`
+    if test "$?" = "0"
+    then
+        AC_MSG_RESULT($OCAML_LIBXML2_VERSION)
+    else
+        AC_MSG_RESULT([no])
+        unset OCAML_LIBXML2
+    fi
+fi
+
+if test -z "$OCAML_LIBXML2"
+then
     AC_MSG_ERROR([ocaml-libxml2 cannot be found.
 
 You have to install ocaml-libxml2 from
@@ -148,6 +169,7 @@ You have to install ocaml-libxml2 from
 ])
 fi
 
+AC_SUBST([OCAML_LIBXML2])
 AC_SUBST([OCAML_LIBXML2_VERSION])
 
 
