@@ -32,6 +32,7 @@ OCAMLDEP	= $(OCAMLFIND) ocamldep -I $(srcdir)
 OCAMLCFLAGS	+= -g
 OCAMLOPTFLAGS	+= -w a
 OCAMLFINDFLAGS	+= -package "num unix $(OCAML_LIBXML2) str oUnit"
+export OCAMLPATH
 
 SUFFIXES = .ml .mli .mll .mly .cmi .cmo .cmx
 

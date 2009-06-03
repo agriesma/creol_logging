@@ -38,6 +38,11 @@ AC_CHECK_PROG([AUTOM4TE], [autom4te], [autom4te],
 	      [[\${top_srcdir}/missing autom4te]])
 
 dnl Check for the tools needed to compile ocaml code.
+dnl
+dnl The user may provide a path for ocamlfind
+export OCAMLPATH
+AC_SUBST([OCAMLPATH])
+
 AC_CHECK_PROG([OCAMLFIND], [ocamlfind], [ocamlfind], [])
 if test -z "$OCAMLFIND"
 then
