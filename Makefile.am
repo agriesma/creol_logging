@@ -35,6 +35,7 @@ bin_SCRIPTS		= creolbug
 EXTRA_DIST		= creoltools.spec creoltools.spec.in
 
 AM_MAKEINFOFLAGS = --no-headers --no-validate --no-split
+export OCAMLPATH
 
 $(srcdir)/INSTALL: $(top_srcdir)/info/install.texi
 	rm -f $@
