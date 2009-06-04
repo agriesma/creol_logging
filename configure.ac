@@ -116,7 +116,7 @@ AC_SUBST([OCAMLFINDFLAGS])
 AC_SUBST([CREOL_VARIANTS])
 
 dnl Check for maude.
-AC_CHECK_PROGS([MAUDE], [maude.linux maude.darwin maude],
+AC_CHECK_PROGS([MAUDE], [maude.linux maude.linux64 maude.darwin maude],
 	       [[\${abs_top_srcdir}/maude-sh]])
 
 dnl Check whether the maude we found is usable.
