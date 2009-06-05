@@ -124,6 +124,10 @@ inherits:
         { { With.co_interface = c;
 	    methods = List.map (Method.set_cointerface c) l; invariants = i;
             file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
+    | WITH THIS l = nonempty_list(method_def) i = list(invariant)
+        { { With.co_interface = Type.Internal;
+	    methods = l; invariants = i;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 %public attribute:
       VAR l = separated_nonempty_list(COMMA, vardecl)
@@ -136,15 +140,19 @@ vardecl:
 	{ v }
     | v = vardecl_no_init ASSIGN i = expression_or_new
 	{ { v with VarDecl.init = Some i } }
+    | vardecl_no_init ASSIGN error
+	{ signal_error $startpos "syntax error in variable initialiser" }
+    | vardecl_no_init error
+	{ signal_error $startpos "syntax error in variable declaration (missing initialiser?)" }
 
 %public vardecl_no_init:
       i = id COLON t = creol_type
         { { VarDecl.name = i; var_type = t; init = None;
             file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
-    | id error
-	{ signal_error $startpos "syntax error in variable declaration" }
     | id COLON error
-	{ signal_error $startpos "syntax error in variable declaration" }
+	{ signal_error $startpos "syntax error in variable declaration (not a type?)" }
+    | id error
+	{ signal_error $startpos "syntax error in variable declaration (missing type?)" }
 
 %public method_decl:
       METHOD i = id p = parameters_opt

@@ -379,32 +379,9 @@ m4_include(cmcvalid.at)
 dnl Test the meta execution strategies.
 m4_include(metaexec.at)
 
-dnl test cases for the parser.
-TEST_CREOLC_SYNTAX([AttrDecl])
 
-TEST_CREOLC_SYNTAX([StrayChar],
-[[StrayChar.creol:22: syntax error
-]])
-
-TEST_CREOLC_SYNTAX([MissingEnd],
-[[MissingEnd.creol:30: syntax error in method body
-]])
-
-TEST_CREOLC_SYNTAX([MissingEnd2],
-[[MissingEnd2.creol:30: syntax error in else block
-]])
-
-TEST_CREOLC_SYNTAX([MissingEnd3],
-[[MissingEnd3.creol:28: syntax error in if statement
-]])
-
-TEST_CREOLC_SYNTAX([MissingEnd4],
-[[MissingEnd4.creol:29: syntax error in while statement
-]])
-
-TEST_CREOLC_SYNTAX([MissingEnd5],
-[[MissingEnd5.creol:29: syntax error in if statement
-]])
+dnl Test cases for the parser.
+m4_include(syntax.at)
 
 
 dnl test cases for the type checker

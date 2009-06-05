@@ -91,7 +91,6 @@ fi
 %{_bindir}/cmcvalid
 %{_bindir}/creolc
 %{_bindir}/creolbug
-%{_bindir}/creolshell
 %{_datadir}/%{name}
 %{_infodir}/*.info*
 %config(noreplace) %{_sysconfdir}/profile.d/creol.sh

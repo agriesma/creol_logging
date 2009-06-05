@@ -28,6 +28,7 @@ exception Eof of string
 exception BadToken of string * int * string
 
 type token =
+  | Unknown of string * int
   | Key of string * int
   | Property of string * int
   | Int of Big_int.big_int * int
@@ -56,8 +57,8 @@ type token =
 
 let get_token_line =
   function
-      Key (_, line) | Property (_, line) | Str (_, line)
-    | Int (_, line) | Float (_, line)
+    | Unknown (_, line) | Key (_, line) | Property (_, line)
+    | Str (_, line) | Int (_, line) | Float (_, line)
     | LParen line | RParen line
     | Comma line | Semi line | Colon line | DColon line
     | Lt line | Gt line | Question line | At line
@@ -70,6 +71,7 @@ let get_token_line =
 
 let get_token_name =
   function
+    | Unknown (name, _) -> "<<unkown: " ^ name ^ ">>"
     | Key (name, _) -> "<<key: " ^ name ^ ">>"
     | Property(name, _) -> "<<property: " ^ name ^ ">>"
     | Str (s, _) -> "<<string: '" ^ s ^ "'>>"
@@ -153,8 +155,23 @@ let token input =
 	    Stream.junk stream; incr line; next_token stream 
 	| Some ('$' | 'A'..'Z' | 'a'..'z' | '_' | '\192'..'\255' as c) ->
 	    Stream.junk stream ; reset_buffer () ; store c; parse_key stream
+        | Some '-' ->
+            begin
+              match Stream.npeek 2 input with
+                | ['-'; '0'..'9'] ->
+	            let () = Stream.junk stream
+                    and () = reset_buffer () in
+                    let () = store '-' in
+                      parse_number stream
+                | _ ->
+	            let () = Stream.junk stream in
+                      Some (Unknown ("-", !line))
+            end
 	| Some ('0'..'9' as c) ->
-	    Stream.junk stream; reset_buffer (); store c; parse_number stream
+	    let () = Stream.junk stream
+            and () = reset_buffer () in
+            let () = store c in
+              parse_number stream
 	| Some '@' -> let () = Stream.junk input in Some(At !line)
 	| Some '(' -> Stream.junk stream; Some(LParen !line)
 	| Some ')' -> Stream.junk stream; Some(RParen !line)
@@ -182,7 +199,8 @@ let token input =
 		  | Some ']' -> 
 		      let () = Stream.junk stream in Some (Box !line)
 		  | t ->
-		      raise (BadToken (Char.escaped '[', !line, "Tokenizer"))
+		      let () = Stream.junk stream in
+                        Some (Unknown (Char.escaped '[', !line))
 	    end
 	| Some '{' -> Stream.junk stream; Some (LBrace !line)
 	| Some '|' -> Stream.junk stream; 
@@ -195,7 +213,9 @@ let token input =
 		| _ -> Some (Bar !line)
             end
 	| Some '}' -> Stream.junk stream; Some (RBrace !line)
-	| Some c -> raise (BadToken (Char.escaped c, !line, "Tokenizer"))
+	| Some c ->
+            let () = Stream.junk stream in
+              Some (Unknown (Char.escaped c, !line))
 	| None -> None
     and parse_key stream =
       match Stream.peek stream with
@@ -224,7 +244,8 @@ let token input =
 	    store 'e';
 	    parse_exponent_part stream
 	| _ ->
-	    Some (Int (Big_int.big_int_of_string (get_string ()), !line))
+	    let s = get_string () in
+              Some (Int (Big_int.big_int_of_string s, !line))
     and parse_decimal_part stream =
       match Stream.peek stream with
 	  Some ('0'..'9' as c) ->
@@ -254,7 +275,23 @@ let token input =
       Stream.from (fun count -> next_token input)
 
 
-
+(** Skip over the Maude header. *)
+let rec skip_to_state input =
+  match Stream.peek input with
+    | Some Key ("result", _) ->
+        begin
+          let () = Stream.junk input in   
+            match Stream.peek input with
+              | Some Property _ ->
+                  Stream.junk input
+              | _ -> skip_to_state input
+        end
+    | Some LBrace _ ->
+        () (* Maybe we face preprocessed input? *)
+    | Some _ ->
+        let () = Stream.junk input in
+          skip_to_state input
+    | None -> raise (Eof "skip_to_state")
 
 (*s CMC Parser.
 
@@ -350,7 +387,7 @@ let vardecl_of_binding (n, i) =
 let vardecl_of_name n =
   { VarDecl.name = n; var_type = Type.data; init = None; file = ""; line = 0 }
 
-let parse name input =
+let parse from_maude name input =
   let build_term oid cid props =
     match cid with
       | "~Class" ->
@@ -422,8 +459,21 @@ let parse name input =
 	      | _ -> assert false
 	  in
 	    res::(parse_configuration input)
+      | Some Key ("Bye", _) when from_maude ->
+          (* Here it means that input is about to end. *)
+          begin
+            match Stream.npeek 2 input with
+              | [Key ("Bye", _); Unknown (".", _);] ->
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                    (* And then wait for eof during the next call. *)
+	            parse_configuration input
+              | _ ->
+	          let _ = parse_expression input in
+	            parse_configuration input
+          end
       | Some Key (_, _) ->
-	  let res = parse_expression input in
+	  let _ = parse_expression input in
 	    parse_configuration input
       | _ ->
 	  []
@@ -1026,7 +1076,8 @@ let parse name input =
 	    begin
 	      match Stream.peek input with
 	        | Some Comma _ ->
-		    (d, r)::(parse_bindings input)
+                    let () = Stream.junk input in
+		      (d, r)::(parse_bindings input)
 	        | _ -> [(d, r)]
 	    end
       | Some t ->
@@ -1109,8 +1160,17 @@ let parse name input =
 	  raise (Eof "")
   and parse_bound input =
     match Stream.peek input with
-      | Some Key("None", _) -> let () = Stream.junk input in None
-      | Some Str _ -> let s = parse_string input in Some s
+      | Some Key ("None", _) ->
+          let () = Stream.junk input in
+            None
+      | Some Str _ ->
+          let s = parse_string input in
+            Some s
+      | Some t ->
+	  raise (BadToken (error_tokens input, get_token_line t,
+			   "<<Class>>, None"))
+      | None ->
+	  raise (Eof "")
   and parse_string input =
     match Stream.peek input with
       | Some Str (s, _) ->
@@ -1216,6 +1276,7 @@ let parse name input =
       | None ->
 	  raise (Eof "")
   in
+  let () = if from_maude then skip_to_state input in
     match Stream.peek input with
       | Some LBrace _ ->
           let () = junk_left_brace input in
@@ -1236,10 +1297,11 @@ let parse name input =
   Read the contents from a channel and return a abstract syntax tree
   and measure the time used for it.
 *)
-let parse_from_channel (name: string) (channel: in_channel) =
-  Program.make (parse name (token (Stream.of_channel channel)))
+let parse_from_channel from_maude name channel =
+  Program.make (parse from_maude name (token (Stream.of_channel channel)))
 
 
 (* Read the contents of a file and return an abstract syntax tree.
 *)
-let parse_from_file name = parse_from_channel name (open_in name)
+let parse_from_file (from_maude: bool) name =
+  parse_from_channel from_maude name (open_in name)

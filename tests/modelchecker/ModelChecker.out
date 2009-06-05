@@ -15,12 +15,6 @@ result State: {
     ".anon") ; call(".anon" ; "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 0 >
  
-< ob("main") : Start |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Lcnt: 1 >
- 
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
@@ -42,12 +36,6 @@ result State: {
   PrQ: noProc,
   Lcnt: 0 >
  
-< ob("main") : Start |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Lcnt: 1 >
- 
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"
     : Method | Param: noVid, Att: noSubst, Code: if "<"(int(0) :: "x") th
@@ -63,12 +51,6 @@ result State: {
   Pr: idle,
   PrQ: noProc,
   Lcnt: 0 >
- 
-< ob("main") : Start |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Lcnt: 1 >
  
 < "Tailcall" : Class | Inh: noInh, Param: "x", Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: noSubst, Code: return(emp) >, < "run"

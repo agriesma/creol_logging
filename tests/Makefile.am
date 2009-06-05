@@ -32,6 +32,7 @@ TESTSUITE		= $(srcdir)/testsuite
 TESTPARTS		= $(srcdir)/cmcvalid.at \
 			  $(srcdir)/macros.at \
 			  $(srcdir)/metaexec.at \
+			  $(srcdir)/syntax.at \
 			  $(srcdir)/testsuite.at
 
 TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
@@ -111,13 +112,6 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/Interleave.out \
 		  language/While.creol language/While.maude \
 		  language/While.out \
-		  syntax/AttrDecl.creol \
-		  syntax/MissingEnd.creol \
-		  syntax/MissingEnd2.creol \
-		  syntax/MissingEnd3.creol \
-		  syntax/MissingEnd4.creol \
-		  syntax/MissingEnd5.creol \
-		  syntax/StrayChar.creol \
 		  typecheck/Ambiguous.creol typecheck/Ambiguous2.creol \
 		  typecheck/Ambiguous3.creol typecheck/Ambiguous4.creol \
 		  typecheck/Ambiguous5.creol typecheck/Ambiguous6.creol \

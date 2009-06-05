@@ -607,43 +607,29 @@ let pretty_print_program out_channel input =
     close_box () ;
     open_vbox 0 ;
     if [] <> obj.Object.attributes then
-      begin
-        open_vbox 0 ;
-	print_vardecls "var " print_space obj.Object.attributes;
-	close_box () ;
-        print_space () ;
-        print_space ()
-      end ;
-    begin
-      match obj.Object.process with
-	| { Process.attributes = []; code = (Statement.Skip _) } ->
-	    open_box 2 ;
-	    print_string "No active process." ;
-	    close_box ()
-	| { Process.attributes = []; code = c } ->
-	    open_box 2 ;
-	    print_string "Active Process:\n" ;
-	    open_box 2 ;
-	    print_statement c ;
-	    close_box () ;
-	    close_box ()
-	| { Process.attributes = a; code = c } ->
-	    open_box 2 ;
-	    print_string "Active Process:\n" ;
-	    open_box 2 ;
-	    print_vardecls "var " print_space a ;
-	    close_box ();
-	    open_box 2 ;
-	    print_statement c ;
-	    close_box () ;
-	    close_box ()
-    end ;
+	print_vardecls "var " print_space obj.Object.attributes ;
+    print_space () ;
+    print_string "Active Process:" ;
+    print_space () ;
+    open_hbox () ;
+    print_space () ;
+    print_space () ;
+    close_box () ;
+    open_vbox 0 ;
+    print_process obj.Object.process ;
+    close_box () ;
+    print_space () ;
     if [] <> obj.Object.process_queue then
       begin
-	open_box 2 ;
-	print_string "Process Queue:\n" ;
-	List.iter print_process obj.Object.process_queue ;
-	close_box ()
+	print_string "Process Queue:" ;
+        print_space () ;
+        open_hbox () ;
+        print_space () ;
+        print_space () ;
+        close_box () ;
+        open_vbox 0;
+	separated_list print_process print_space obj.Object.process_queue ;
+        close_box ()
       end ;
     close_box () ;
     print_space () ;
@@ -652,24 +638,15 @@ let pretty_print_program out_channel input =
   and print_process =
     function 
       | { Process.attributes = []; code = (Statement.Skip _) } ->
-	print_string "idle"
+        open_hbox () ; print_string "idle" ; close_box ()
       | { Process.attributes = []; code = c } ->
-	open_box 2 ;
-	print_string "Process:\n" ;
-	open_box 2 ;
 	print_statement c ;
-	close_box () ;
-	close_box ()
+        print_space ()
       | { Process.attributes = a; code = c } ->
-	open_box 2 ;
-	print_string "Process:\n" ;
-	open_box 2 ;
 	print_vardecls "var " print_space a;
-	close_box () ;
-	open_box 2 ;
+        print_space () ;
 	print_statement c;
-	close_box () ;
-	close_box ()
+        print_space ()
   and print_future f =
     open_box 2 ;
     print_string "Future" ;
@@ -739,37 +716,48 @@ let pretty_print_program out_channel input =
 	print_string ")"
       end ;
     close_box () ;
-    if [] <> c.Class.implements then
+    if [] <> c.Class.implements || [] <> c.Class.contracts ||
+       [] <> c.Class.inherits || [] <> c.Class.pragmas 
+    then
       begin
-	open_box 2 ;
-	print_space () ;
-	print_string "implements " ;
-	separated_list print_inherits print_comma c.Class.implements ;
- 	close_box ()
-      end;
-    if [] <> c.Class.contracts then
-      begin
-	open_box 2 ;
-	print_space () ;
-	print_string "contracts " ;
-	separated_list print_inherits print_comma c.Class.contracts ;
-	close_box ()
-      end;
-    if [] <> c.Class.inherits then
-      begin
-	open_box 2 ;
-	print_space () ;
-	print_string "inherits ";
-	separated_list print_inherits print_comma c.Class.inherits ;
-	close_box () 
-      end ;
-    if [] <> c.Class.pragmas then
-      begin
-	open_box 2 ;
-	print_space () ;
-	print_string "pragma " ;
-	separated_list print_pragma print_space c.Class.pragmas ;
-	close_box () 
+        print_space () ;
+        open_hbox () ;
+        print_space () ;
+        print_space () ;
+        close_box () ;
+        open_vbox 0 ;
+        if [] <> c.Class.implements then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "implements " ;
+	    separated_list print_inherits print_comma c.Class.implements ;
+ 	    close_box ()
+          end;
+        if [] <> c.Class.contracts then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "contracts " ;
+	    separated_list print_inherits print_comma c.Class.contracts ;
+	    close_box ()
+          end;
+        if [] <> c.Class.inherits then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "inherits ";
+	    separated_list print_inherits print_comma c.Class.inherits ;
+	    close_box () 
+          end ;
+        if [] <> c.Class.pragmas then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    separated_list print_pragma print_space c.Class.pragmas ;
+	    close_box () 
+          end ;
+        close_box ()
       end ;
     print_space () ;
     print_string "begin" ;
@@ -873,10 +861,11 @@ let pretty_print_program out_channel input =
     close_box ()
   and print_vardecls prefix delimiter vardecls =
     let print vardecl =
-      open_box 2 ; print_string prefix; print_vardecl vardecl ; close_box ()
+      print_string prefix; print_vardecl vardecl
     in
       separated_list print delimiter vardecls
   and print_vardecl v =
+    open_box 2 ;
     print_string v.VarDecl.name ;
     print_string ":" ;
     print_space () ;
@@ -888,10 +877,9 @@ let pretty_print_program out_channel input =
 	    print_space () ;
 	    print_string ":=" ;
 	    print_space () ;
-	    open_box 2 ;
 	    print_expression e ;
-	    close_box ()
-    end
+    end ;
+    close_box ()
   and print_pragma { Pragma.name = n; values = v } =
     print_string n ;
     if List.length v > 0 then

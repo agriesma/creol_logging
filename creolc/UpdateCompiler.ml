@@ -57,6 +57,8 @@ let input_env = ref ""
 
 let output_env = ref "gamma"
 
+let from_maude = ref true
+
 let state_file = ref ""
 
 let output_file = ref "creolupdc.out"
@@ -135,7 +137,7 @@ let load_input_env () =
 
 let load_state () =
   if !state_file <> "" then
-    CMCParser.parse_from_file !state_file
+    CMCParser.parse_from_file !from_maude !state_file
   else
     Program.make []
 

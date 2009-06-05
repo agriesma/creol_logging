@@ -127,14 +127,14 @@ STEP(dnl
 --- if_then_else
 ---
 STEP(dnl
-< O : C | Att: S`,' Pr: { L | if E th SL1 el SL2 fi ; SL }`,' PrQ: W`,' Lcnt: F >
-  CLOCK,
-if EVAL(E, (S :: L), T) asBool then
-    < O : C | Att: S`,' Pr: { L | SL1 ; SL }`,' PrQ: W`,' Lcnt: F >
+`< O : C | Att: S, Pr: { L | if E th SL1 el SL2 fi ; SL }, PrQ: W, Lcnt: F >
+  CLOCK',
+`if EVAL(E, (S :: L), T) asBool then
+    < O : C | Att: S, Pr: { L | SL1 ; SL }, PrQ: W, Lcnt: F >
   else
-    < O : C | Att: S`,' Pr: { L | SL2 ; SL }`,' PrQ: W`,' Lcnt: F >
+    < O : C | Att: S, Pr: { L | SL2 ; SL }, PrQ: W, Lcnt: F >
   fi
-  CLOCK,
+  CLOCK',
 `[label if-then-else]')
 
 
@@ -302,7 +302,7 @@ ifdef(`MODELCHECK',
   =
   < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F >
   < N : Future | Completed: false, References: 1, Value: emp >
-  bindMtd(O`,' O`,' N`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK
+  bindMtd(O, O, N, Q, EVALLIST(EL, (S :: L), T), CC < emp >) CLOCK
   if N := label(O, O, Q, EVALLIST(EL, (S :: L), T))'
 ,
 `crl
@@ -310,7 +310,7 @@ ifdef(`MODELCHECK',
   =>
   < O : C | Att: S, Pr: { insert (A, N, L) | SL }, PrQ: W, Lcnt: (s F) >
   < N : Future | Completed: false, References: 1, Value: emp >
-  bindMtd(O`,' O`,' N`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK
+  bindMtd(O, O, N, Q, EVALLIST(EL, (S :: L), T), CC < emp >) CLOCK
   if N := label(O, F)'
 )dnl
   [label local-async-static-call] .
@@ -323,17 +323,44 @@ ifdef(`MODELCHECK',
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =
   < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F > CLOCK
-  invoc(O, EVAL(E, (S :: L), T), N, Q, EVALLIST(EL, (S :: L), T))
-  if N := label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T))'
+  invoc(O, O1, N, Q, DL)
+  if DL := EVALLIST(EL, (S :: L), T)
+  /\ O1 := EVAL(E, (S :: L), T)
+  /\ N := label(O, O1, Q, DL)
+  /\ O =/= O1'
 ,dnl
 `crl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
   < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
-  invoc(O, EVAL(E, (S :: L), T), N, Q , EVALLIST(EL, (S :: L), T))
-  if N := label(O, F)'
+  invoc(O, O1, N, Q , DL)
+  if DL :=  EVALLIST(EL, (S :: L), T)
+  /\ O1 := EVAL(E, (S :: L), T)
+  /\ N := label(O, F)
+  /\ O =/= O1'
 )dnl
   [label remote-async-call] .
+
+--- remote-async-self-call
+---
+ifdef(`MODELCHECK',
+`ceq
+  < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
+  =
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F > CLOCK
+  invoc(O, O, N, Q, EVALLIST(EL, (S :: L), T))
+  if N := label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)) /\
+     O = EVAL(E, (S :: L), T)'
+,dnl
+`crl
+  < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
+  =>
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
+  invoc(O, O, N, Q , EVALLIST(EL, (S :: L), T))
+  if N := label(O, F) /\ O = EVAL(E, (S :: L), T)'
+)dnl
+  [label remote-async-self-call] .
+
 
 
 STEP(`< O : C | Att: S, Pr: { L | multicast(E ; Q ; EL) ; SL }, PrQ: W,
@@ -356,14 +383,14 @@ ifdef(`MODELCHECK',
   =
   < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
-  invoc(O, 'O1`, label(O, 'O1`, Q, DL2), Q, DL2)',
+  invoc(O, O1, label(O, O1, Q, DL2), Q, DL2)',
 `eq
   < O : C | Att: S, Pr: { L | $multicast(list('O1` :: DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: (s F) >
-  invoc(O, O1'`, label(O, F), Q , DL2)')
+  invoc(O, O1, label(O, F), Q , DL2)')
   [label multicast-emit-list] .
 
 eq 
@@ -380,14 +407,14 @@ ifdef(`MODELCHECK',
   =
   < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
-  invoc(O, 'O1`, label(O, 'O1`, Q, DL2), Q, DL2)',
+  invoc(O, O1, label(O, O1, Q, DL2), Q, DL2)',
 `eq
   < O : C | Att: S, Pr: { L | $multicast(set('O1` : DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: (s F) >
-  invoc(O,' O1`, label(O, F), Q , DL2)')
+  invoc(O, O1, label(O, F), Q , DL2)')
   [label multicast-emit-set] .
 
 --- return

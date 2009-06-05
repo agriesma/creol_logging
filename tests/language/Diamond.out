@@ -52,12 +52,6 @@ result [State]: {
     "this" ; "run" ; emp) ; free(".anon")},
   Lcnt: 4 >
  
-< ob("main") : Start |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Lcnt: 1 >
- 
 < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "m" : Method | Param: noVid, Att: "_" |-> null, "r" |-> null, Code:
