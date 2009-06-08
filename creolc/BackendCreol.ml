@@ -550,7 +550,8 @@ let pretty_print_program out_channel input =
       | Declaration.NewClass c ->
 	  print_new_class c ; print_space () ; print_space ()
       | Declaration.Retract c -> assert false
-      | Declaration.Update c -> assert false
+      | Declaration.Update u -> 
+	  print_update u ; print_space () ; print_space ()
       | _ -> ()
   and print_function f =
     open_box 2 ;
@@ -792,6 +793,78 @@ let pretty_print_program out_channel input =
     let () = print_class c.NewClass.cls in
     let () = print_dependencies c.NewClass.dependencies in
       ()
+  and print_update upd =
+    open_vbox 0 ;
+    open_hbox () ;
+    print_string "update" ;
+    print_space () ;
+    print_string upd.Update.name ;
+    close_box () ;
+    if [] <> upd.Update.implements || [] <> upd.Update.contracts ||
+       [] <> upd.Update.inherits || [] <> upd.Update.pragmas 
+    then
+      begin
+        print_space () ;
+        open_hbox () ;
+        print_space () ;
+        print_space () ;
+        close_box () ;
+        open_vbox 0 ;
+        if [] <> upd.Update.implements then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "implements " ;
+	    separated_list print_inherits print_comma upd.Update.implements ;
+ 	    close_box ()
+          end;
+        if [] <> upd.Update.contracts then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "contracts " ;
+	    separated_list print_inherits print_comma upd.Update.contracts ;
+	    close_box ()
+          end;
+        if [] <> upd.Update.inherits then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "inherits ";
+	    separated_list print_inherits print_comma upd.Update.inherits ;
+	    close_box () 
+          end ;
+        if [] <> upd.Update.pragmas then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "pragma " ;
+	    separated_list print_pragma print_space upd.Update.pragmas ;
+	    close_box () 
+          end ;
+        close_box ()
+      end ;
+    print_space () ;
+    print_string "begin" ;
+    print_space () ;
+    open_hbox () ; print_break 2 2 ; close_box () ;
+    open_vbox 0 ;
+    if [] <> upd.Update.attributes then
+      begin
+	print_vardecls "var " print_space upd.Update.attributes ;
+	print_space ()
+      end;
+    if [] <> upd.Update.with_defs then
+      begin
+	separated_list print_with print_space upd.Update.with_defs ;
+      end ;
+    if [] = upd.Update.attributes && [] = upd.Update.with_defs then
+      print_space () ;
+    print_dependencies upd.Update.dependencies ;
+    close_box () ;
+    print_space () ;
+    print_string "end" ;
+    close_box ()      
   and print_dependencies deps =
     ()
   and print_inherits inh =
