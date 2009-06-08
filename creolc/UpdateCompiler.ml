@@ -181,7 +181,22 @@ let main () =
     in
       Program.for_each_method program' f
   in
-  let () = BackendMaude.emit (BackendMaude.features_of_subtarget "updates") stdout (Program.concat [(Program.filter_classes program'); update'; state])
+  let () =
+    let do_output out =
+      BackendMaude.emit (BackendMaude.features_of_subtarget "updates") out
+          (Program.concat [(Program.filter_classes program'); update'; state])
+    in
+      match !output_file with
+          "" -> assert false
+        | "-" ->
+            let (_, elapsed) = Misc.measure (fun () -> do_output stdout) in
+              Passes.time_emit := !Passes.time_emit +. elapsed
+        | s ->
+            let out = open_out s in
+            let (_, elapsed) = Misc.measure (fun () -> do_output out)
+            in
+              close_out out ;
+              Passes.time_emit := !Passes.time_emit +. elapsed
   and () =
     let out_channel = open_out (!output_env ^".creol") in
       BackendCreol.pretty_print_program out_channel program''
