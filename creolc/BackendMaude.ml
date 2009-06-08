@@ -141,7 +141,12 @@ let emit subtarget out_channel input =
 	  and dt = List.map (Expression.get_type) a in
 	  let sg = Type.Function (Type.Tuple dt, rt) in
 	  let fd =
-            Function.external_definition (Program.find_function input f sg)
+            try
+              Function.external_definition (Program.find_function input f sg)
+            with
+              | (Failure _) as e when subtarget.target = Updates ->
+                  f (* Assume that the expression occurs in the context of
+                       a class that comes from the run-time state. *)
           in
 	    print_string ("\"" ^ fd ^ "\" ( " );
 	    of_expression_list a;
