@@ -472,6 +472,39 @@ let parse from_maude name input =
 	          let _ = parse_expression input in
 	            parse_configuration input
           end
+      | Some Key ("add", _) ->
+          begin
+            match Stream.npeek 2 input with
+              | [Key ("add", _); LParen _;] ->
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                  let cls =
+	            match parse_object_term input with 
+	              | Cls c -> c
+                      | _ -> assert false
+                  in
+                    begin
+                      match Stream.peek input with
+                        | Some Comma _ ->
+                            let () = Stream.junk input in
+                            let deps = parse_dependencies input in
+                              begin
+                                match Stream.peek input with
+                                  | Some RParen _ ->
+                                      let () = Stream.junk input in
+                                        Declaration.NewClass
+                                          { NewClass.cls = cls;
+                                            NewClass.dependencies = deps } ::
+					  (parse_configuration input)
+                                  | Some t -> 
+	                              raise (BadToken (error_tokens input,
+                                                       get_token_line t,
+			                               ")"))
+                                  | None -> raise (Eof (""))
+                              end
+                        | _ -> assert false
+                    end
+          end
       | Some Key (_, _) ->
 	  let _ = parse_expression input in
 	    parse_configuration input
@@ -511,6 +544,19 @@ let parse from_maude name input =
     match Stream.peek input with
       | Some Key (("label" | "ob"), _) ->
 	  parse_expression input
+      | Some Key ("class", _) ->
+          begin
+            let () = Stream.junk input in
+              match Stream.npeek 5 input with
+                | [LParen _; Str (v, _); Comma _; Int (s, _); RParen _] ->
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                    Expression.Id (Expression.make_note (), v)
+                | _ -> assert false
+          end
       | Some Str (v, _) ->
 	  let () = Stream.junk input in
             Expression.Id (Expression.make_note (), v)
@@ -744,6 +790,16 @@ let parse from_maude name input =
       |  Some t ->
 	   raise (BadToken (error_tokens input, get_token_line t,
 			    "noSubst, <<string>>"))
+      | None ->
+	  raise (Eof "")
+  and parse_dependencies input =
+    match Stream.peek input with
+      | Some Key ("none", _) ->
+          let () = Stream.junk input in
+            Dependencies.empty
+      |  Some t ->
+	   raise (BadToken (error_tokens input, get_token_line t,
+			    "dependencies"))
       | None ->
 	  raise (Eof "")
   and parse_merge_statement input =
