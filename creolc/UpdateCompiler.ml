@@ -198,7 +198,7 @@ let main () =
               close_out out ;
               Passes.time_emit := !Passes.time_emit +. elapsed
   and () =
-    let out_channel = open_out (!output_env ^".creol") in
+    let out_channel = open_out !output_env in
       BackendCreol.pretty_print_program out_channel program''
   in
     if !times then Passes.report_timings () ;
