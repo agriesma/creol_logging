@@ -580,3 +580,7 @@ dnl Test PASS: tailcall
 dnl
 TEST_CREOLC_PASS([tailcall], [StaticTail])
 TEST_CREOLC_PASS([tailcall], [Tailcall])
+
+
+dnl Test dynamic class updates.
+m4_include([updates.at])

@@ -33,7 +33,8 @@ TESTPARTS		= $(srcdir)/cmcvalid.at \
 			  $(srcdir)/macros.at \
 			  $(srcdir)/metaexec.at \
 			  $(srcdir)/syntax.at \
-			  $(srcdir)/testsuite.at
+			  $(srcdir)/testsuite.at \
+			  $(srcdir)/updates.at
 
 TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Alarmclock.out \
@@ -167,7 +168,10 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  modelchecker/MC3Phil.out modelchecker/MC3PhilTest.maude \
 		  modelchecker/MC4Phil.creol modelchecker/MC4Phil.maude \
 		  modelchecker/MC4PhilTest.maude modelchecker/MC5Phil.creol \
-		  modelchecker/MC5Phil.maude modelchecker/MC5PhilTest.maude
+		  modelchecker/MC5Phil.maude modelchecker/MC5PhilTest.maude \
+		  updates/bankexp.creol updates/update1.creol \
+		  updates/update2.creol updates/update3.creol \
+		  updates/update4.creol updates/update5.creol
 
 EXTRA_DIST	= $(srcdir)/atlocal.in \
 		  $(srcdir)/package.m4 \

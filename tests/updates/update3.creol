@@ -1,0 +1,50 @@
+/*
+ * update3.creol
+ *
+ * This file is part of creoltools
+ *
+ * Written and Copyright (c) 2009 by Ingrid Chieh Yu de Vibe
+ *   <ingridcy@ifi.uio.no>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+new interface Transfer
+begin
+with Any
+ op  transfer(in s: Int, acc: Account)
+ op withdraw(in s:Int)
+
+end
+
+
+
+update BankAccount implements Transfer
+ begin
+
+   with Any
+
+   op transfer(in sum : Int, acc : Account) ==  await sum <= bal; 
+                                          this.transaction(-sum, "transfer amount" |-| string_of_int(sum);); 
+                                          acc.deposit(sum;) 
+
+   op withdraw(in sum : Int) == await sum <= bal;
+                          this.transaction(-sum, "withdraw amount" |-| string_of_int(sum);) 
+
+   op deposit(in sum : Int) == !this.transaction(sum, "deposit amount" |-| string_of_int(sum))
+
+ end
+
+//dep : (bankAccount,1)
+//after upgrade: bankAccount-> version 2
+
