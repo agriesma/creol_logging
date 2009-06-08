@@ -580,7 +580,7 @@ let emit subtarget out_channel input =
   and of_retract r =
     open_box 2;
     print_string "remove(";
-    print_string r.Retract.name ;
+    print_string ("\"" ^ r.Retract.name ^ "\"");
     print_comma () ;
     print_string "(";
     of_inherits_list r.Retract.inherits;
