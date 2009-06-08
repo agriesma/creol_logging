@@ -246,14 +246,14 @@ ifdef(`MODELCHECK',dnl
     op main : Configuration String DataList -> State .
     eq main(CN, B, DL) =
       { CN < ob("main") : Start | Att: noSubst, 
-             Pr: { "var" |-> null | new("var" ; CLASS(B, 0) ; DL) },
+             Pr: { "var" |-> null | new("var" ; B ; DL) },
              PrQ: noProc, Lcnt: 0 > } .
 
     --- System initialisation, new style.
     op main : State String DataList -> State .
     eq main({ CN }, B, DL) =
       { CN < ob("main") : Start | Att: noSubst, 
-             Pr: { "var" |-> null | new("var" ; CLASS(B, 0) ; DL) },
+             Pr: { "var" |-> null | new("var" ; B ; DL) },
              PrQ: noProc, Lcnt: 0 > } .
 
     --- The initial object commits suicide after it did its job.

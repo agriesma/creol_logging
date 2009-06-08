@@ -46,7 +46,7 @@ fmod CREOL-STATEMENT is
   op posit_ : Expr -> SuspStmt [ctor `format' (b o d)] .
   op assert_ : Expr -> Stmt [ctor `format' (b o d)] .
   op assign(_;_) : VidList ExprList -> Stmt [ctor `format' (b d o b o b o)] .
-  op new(_;_;_) : Vid Cid ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
+  op new(_;_;_) : Vid String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .
   op call(_;_;_;_) : Vid Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o b o)] . 
   op static(_;_;_;_;_) : Vid String Cid Cid ExprList -> Stmt [ctor `format' (b d o b o b o b o b o b o)] . 
   op multicast(_;_;_) : Expr String ExprList -> Stmt [ctor `format' (b d o b o b o b o)] .

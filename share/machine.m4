@@ -507,7 +507,7 @@ crl
 --- message below and will not have attributes before that.
 ---
 STEP(dnl
-`< O : C | Att: S, Pr: { L | new(A ; CLASS(B, T) ; EL); SL }, PrQ: W, Lcnt: F >
+`< O : C | Att: S, Pr: { L | new(A ; B ; EL); SL }, PrQ: W, Lcnt: F >
   < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
   CLOCK'dnl
 ,dnl
@@ -576,7 +576,9 @@ ifdef(`WITH_UPDATE',dnl
 --- The following rules implement the operational semantics of class
 --- updates.
 ---
-STEP(`add(CL, none)', `CL', `[label add-class]')
+STEP(``add(< class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >, none)'',
+``< class(B, (s T)) : Class | Version: (s V), Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
+`[label add-class]')
 
 --- Extend a class. B is the name of the class we wany to upgrade.
 --- A method .update is added that updates an object of class B#T to
