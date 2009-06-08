@@ -505,6 +505,9 @@ let parse from_maude name input =
                         | _ -> assert false
                     end
           end
+      | Some Key ("extend", _) ->
+          let res = parse_extend_message input in
+            (Declaration.Update res) :: (parse_configuration input)
       | Some Key (_, _) ->
 	  let _ = parse_expression input in
 	    parse_configuration input
@@ -540,6 +543,35 @@ let parse from_maude name input =
     let props = parse_properties PropMap.empty input in
     let () = junk_right_bracket input in
       build_term oid cid props
+  and parse_extend_message input =
+    let () = Stream.junk input in
+    let () = junk_lparen input in
+    let c = parse_string input in
+    let () = junk_comma input in
+    let inh = parse_inherit_list input in
+    let () = junk_comma input in
+    let attr = parse_substitution input in
+    let () = junk_comma input in
+    let meths = List.map (function (Mtd m) -> m | _ -> assert false)
+		      (parse_object_term_list input) in
+    (* BUG? let () = junk_comma input in *)
+    let init = parse_statement input in
+    let () = junk_comma input in
+    let deps = parse_dependencies input in
+    let () = junk_rparen input in
+      { Update.name = c;
+        inherits = inh;
+        contracts = [];
+        implements = [];
+        attributes = (List.map vardecl_of_binding attr);
+        with_defs = [{ With.co_interface = Type.any;
+	               methods = meths;
+		       invariants = [];
+                       file = ""; line = 0}];
+        pragmas = [];
+        dependencies = deps;
+        file = "";
+        line = 0 }
   and parse_oid input =
     match Stream.peek input with
       | Some Key (("label" | "ob"), _) ->
@@ -793,15 +825,37 @@ let parse from_maude name input =
       | None ->
 	  raise (Eof "")
   and parse_dependencies input =
-    match Stream.peek input with
-      | Some Key ("none", _) ->
-          let () = Stream.junk input in
-            Dependencies.empty
-      |  Some t ->
-	   raise (BadToken (error_tokens input, get_token_line t,
-			    "dependencies"))
-      | None ->
-	  raise (Eof "")
+    let rec work acc =
+      match Stream.peek input with
+        | Some Key ("none", _) ->
+            let () = Stream.junk input in
+              Dependencies.empty
+        | Some Key ("c", _) ->
+            begin
+              (* Parse a class dependency *)
+              let () = Stream.junk input in
+              let () = junk_lparen input in
+              let c = parse_string input in
+              let () = junk_comma input in
+              let i = parse_integer input in
+              let () = junk_rparen input in
+              let d = { Dependency.name = c; version = i } in
+              let acc' =
+                match Stream.npeek 2 input with
+                  | [Comma _; Key ("c", _)] -> 
+                    let () = junk_comma input in
+                      work acc
+                  | _ -> acc
+              in
+                Dependencies.add d acc
+            end
+        | Some t ->
+	    raise (BadToken (error_tokens input, get_token_line t,
+			      "dependencies"))
+        | None ->
+	    raise (Eof "")
+    in
+      work Dependencies.empty
   and parse_merge_statement input =
     let lhs = parse_choice_statement input in
       match Stream.peek input with
