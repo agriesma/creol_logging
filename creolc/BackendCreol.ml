@@ -547,6 +547,10 @@ let pretty_print_program out_channel input =
 	  print_function f ; print_space () ; print_space ()
       | Declaration.Future f ->
 	  print_future f ; print_space () ; print_space ()
+      | Declaration.NewClass c ->
+	  print_new_class c ; print_space () ; print_space ()
+      | Declaration.Retract c -> assert false
+      | Declaration.Update c -> assert false
       | _ -> ()
   and print_function f =
     open_box 2 ;
@@ -754,6 +758,7 @@ let pretty_print_program out_channel input =
           begin
 	    open_box 2 ;
 	    print_space () ;
+	    print_string "pragma " ;
 	    separated_list print_pragma print_space c.Class.pragmas ;
 	    close_box () 
           end ;
@@ -782,6 +787,13 @@ let pretty_print_program out_channel input =
     print_space () ;
     print_string "end" ;
     close_box ()
+  and print_new_class c =
+    let () = print_string "new " in
+    let () = print_class c.NewClass.cls in
+    let () = print_dependencies c.NewClass.dependencies in
+      ()
+  and print_dependencies deps =
+    ()
   and print_inherits inh =
     print_string inh.Inherits.name ;
     if inh.Inherits.arguments <> [] then
