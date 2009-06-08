@@ -508,6 +508,9 @@ let parse from_maude name input =
       | Some Key ("extend", _) ->
           let res = parse_extend_message input in
             (Declaration.Update res) :: (parse_configuration input)
+      | Some Key ("remove", _) ->
+          let res = parse_retract_message input in
+            (Declaration.Retract res) :: (parse_configuration input)
       | Some Key (_, _) ->
 	  let _ = parse_expression input in
 	    parse_configuration input
@@ -570,6 +573,34 @@ let parse from_maude name input =
                        file = ""; line = 0}];
         pragmas = [];
         dependencies = deps;
+        file = "";
+        line = 0 }
+  and parse_retract_message input =
+    let () = Stream.junk input in
+    let () = junk_lparen input in
+    let c = parse_string input in
+    let () = junk_comma input in
+    let inh = parse_inherit_list input in
+    let () = junk_comma input in
+    let attr = parse_substitution input in
+    let () = junk_comma input in
+    let meths = List.map (function (Mtd m) -> m | _ -> assert false)
+		      (parse_object_term_list input) in
+    (* BUG? let () = junk_comma input in *)
+    let cdeps = parse_dependencies input in
+    let () = junk_comma input in
+    let odeps = parse_dependencies ~obj:true input in
+    let () = junk_rparen input in
+      { Retract.name = c;
+        inherits = inh;
+        attributes = (List.map vardecl_of_binding attr);
+        with_decls = [{ With.co_interface = Type.any;
+	                methods = meths;
+		        invariants = [];
+                        file = ""; line = 0}];
+        pragmas = [];
+        dependencies = cdeps;
+        obj_deps = odeps;
         file = "";
         line = 0 }
   and parse_oid input =
@@ -824,13 +855,13 @@ let parse from_maude name input =
 			    "noSubst, <<string>>"))
       | None ->
 	  raise (Eof "")
-  and parse_dependencies input =
+  and parse_dependencies ?(obj=false) input =
     let rec work acc =
       match Stream.peek input with
         | Some Key ("none", _) ->
             let () = Stream.junk input in
               Dependencies.empty
-        | Some Key ("c", _) ->
+        | Some Key (("c"|"o") as k, _) when obj || k = "c" ->
             begin
               (* Parse a class dependency *)
               let () = Stream.junk input in
