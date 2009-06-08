@@ -549,7 +549,8 @@ let pretty_print_program out_channel input =
 	  print_future f ; print_space () ; print_space ()
       | Declaration.NewClass c ->
 	  print_new_class c ; print_space () ; print_space ()
-      | Declaration.Retract c -> assert false
+      | Declaration.Retract r -> 
+	  print_retract r ; print_space () ; print_space ()
       | Declaration.Update u -> 
 	  print_update u ; print_space () ; print_space ()
       | _ -> ()
@@ -793,6 +794,61 @@ let pretty_print_program out_channel input =
     let () = print_class c.NewClass.cls in
     let () = print_dependencies c.NewClass.dependencies in
       ()
+  and print_retract upd =
+    open_vbox 0 ;
+    open_hbox () ;
+    print_string "retract" ;
+    print_space () ;
+    print_string upd.Retract.name ;
+    close_box () ;
+    if [] <> upd.Retract.inherits || [] <> upd.Retract.pragmas 
+    then
+      begin
+        print_space () ;
+        open_hbox () ;
+        print_space () ;
+        print_space () ;
+        close_box () ;
+        open_vbox 0 ;
+        if [] <> upd.Retract.inherits then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "inherits ";
+	    separated_list print_inherits print_comma upd.Retract.inherits ;
+	    close_box () 
+          end ;
+        if [] <> upd.Retract.pragmas then
+          begin
+	    open_box 2 ;
+	    print_space () ;
+	    print_string "pragma " ;
+	    separated_list print_pragma print_space upd.Retract.pragmas ;
+	    close_box () 
+          end ;
+        close_box ()
+      end ;
+    print_space () ;
+    print_string "begin" ;
+    print_space () ;
+    open_hbox () ; print_break 2 2 ; close_box () ;
+    open_vbox 0 ;
+    if [] <> upd.Retract.attributes then
+      begin
+	print_vardecls "var " print_space upd.Retract.attributes ;
+	print_space ()
+      end;
+    if [] <> upd.Retract.with_decls then
+      begin
+	separated_list print_with print_space upd.Retract.with_decls ;
+      end ;
+    if [] = upd.Retract.attributes && [] = upd.Retract.with_decls then
+      print_space () ;
+    print_dependencies upd.Retract.dependencies ;
+    close_box () ;
+    print_space () ;
+    print_string "end" ;
+    close_box ()
   and print_update upd =
     open_vbox 0 ;
     open_hbox () ;
