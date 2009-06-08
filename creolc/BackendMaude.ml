@@ -86,7 +86,7 @@ let interpreter =
     | Interpreter -> "creol-interpreter"
     | Modelchecker -> "creol-modelchecker"
     | Realtime -> "creol-realtime"
-    | Updates -> "creol-updates"
+    | Updates -> "creol-update"
 
 
 (** Parse the subtarget features and construct a corresponding option
@@ -441,7 +441,9 @@ let emit subtarget out_channel input =
     print_string " : Class |" ;
     begin
       match subtarget.target with
-	| Updates -> print_space (); print_string ("Version: 0,")
+	| Updates -> print_space ();
+            let v = Class.version c in
+              print_string ("Version: " ^ (Big_int.string_of_big_int v) ^ ",")
 	| _ -> ()
     end ;
     print_space () ;
@@ -522,7 +524,7 @@ let emit subtarget out_channel input =
     print_string " >";
     close_box ()
   and of_dependency dep =
-    print_string ("c(" ^ dep.Dependency.name ^ ", " ^
+    print_string ("c(\"" ^ dep.Dependency.name ^ "\", " ^
                      (Big_int.string_of_big_int dep.Dependency.version) ^ ")")
   and of_dependencies deps =
     if Dependencies.is_empty deps then
@@ -551,7 +553,7 @@ let emit subtarget out_channel input =
   and of_update u =
     open_box 2 ;
     print_string "extend(";
-    print_string u.Update.name ;
+    print_string ("\"" ^ u.Update.name ^ "\"") ;
     print_comma () ;
     print_string "(";
     of_inherits_list u.Update.inherits;
