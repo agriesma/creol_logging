@@ -435,15 +435,17 @@ let emit subtarget out_channel input =
     print_string "< " ;
     begin
       match subtarget.target with
-	| Updates -> print_string ("class(\"" ^ c.Class.name ^ "\", 0)")
+	| Updates ->
+            let s = Big_int.string_of_big_int (Class.stage c) in
+              print_string ("class(\"" ^ c.Class.name ^ "\", " ^ s ^ ")")
 	| _ -> print_string ("\"" ^ c.Class.name ^ "\"")
     end ;
     print_string " : Class |" ;
     begin
       match subtarget.target with
 	| Updates -> print_space ();
-            let v = Class.version c in
-              print_string ("Version: " ^ (Big_int.string_of_big_int v) ^ ",")
+            let v = Big_int.string_of_big_int (Class.version c) in
+              print_string ("Version: " ^ v ^ ",")
 	| _ -> ()
     end ;
     print_space () ;
