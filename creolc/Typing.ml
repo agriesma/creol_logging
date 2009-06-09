@@ -854,7 +854,6 @@ let rec type_check_statement env coiface =
 	     (fun m ->
 		Type.Function (Method.domain_type m, Method.range_type m))
 	     (MSet.elements cands'))
-
       and call_type =
 	(* the actual call will have a parameterised type. *)
 	match outs_t with
@@ -862,17 +861,25 @@ let rec type_check_statement env coiface =
 	  | Some t -> Type.Function (Type.Tuple ins_t'', Type.Tuple t)
       in
       let subst = 
-	try
-	  unify env.program [(call_type, cands_type)]
-	with
-	    Unify_failure (s, t) ->
-	      raise (Type_error (n.file, n.line,
-				 (Type.string_of_type s) ^
-				   " but expected is type " ^
-				   (Type.string_of_type t) ^
-				   "\n  Cannot satisfy constraints: " ^
-				   (string_of_constraint_set
-				      [(call_type, cands_type)])))
+	if not (MSet.is_empty cands') then
+	  begin
+	    try
+	      unify env.program [(call_type, cands_type)]
+	    with
+		Unify_failure (s, t) ->
+		  raise (Type_error (n.file, n.line,
+                                     "method " ^ m ^
+				       " has type " ^
+				       (Type.string_of_type s) ^
+				       " but expected is type " ^
+				       (Type.string_of_type t) ^
+				       "\n  Cannot satisfy constraints: " ^
+				       (string_of_constraint_set
+					  [(call_type, cands_type)])))
+	  end
+	else
+	  raise (Type_error (n.file, n.line, "No method called " ^
+			       m ^ " found."))
       in
         Messages.message 2 (Type.string_of_substitution subst) ;
 	let i = List.map (substitute_types_in_expression subst) ins'' in
