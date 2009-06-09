@@ -1268,24 +1268,36 @@ struct
   let show pragmas = List.filter (fun p -> not (pragma_hidden_p p)) pragmas
 
 
-  let pragma_version_p =
+  (** {5 Unary valued pragmas} *)
+
+  let unary_valued_pragma_p name =
     function
-      | { name = "Version"; values = [ _ ] } -> true
+      | { name = n; values = [ _ ] } when n = name -> true
       | _ -> false
 
-  let version pragmas =
+  let number_of_pragma name pragmas =
     try
-      match List.find pragma_version_p pragmas with
+      match List.find (unary_valued_pragma_p name) pragmas with
         | { values = [ Expression.Int (_, v) ] } -> v
         | _ -> assert false
     with
       | Not_found -> Big_int.zero_big_int
 
+
+  (** {5 Version pragma} *)
+
+  let version pragmas = number_of_pragma "Version" pragmas
+
   let increase_version pragmas =
     let v = version pragmas in
     let v' = Expression.Int (Expression.make_note (), Big_int.succ_big_int v) in
       { name = "Version"; values = [ v' ] } ::
-        (List.filter (fun e -> not (pragma_version_p e)) pragmas)
+        (List.filter (fun e -> not (unary_valued_pragma_p "Version" e)) pragmas)
+
+
+  (** {5 Stage pragma} *)
+
+  let stage pragmas = number_of_pragma "Stage" pragmas
 
 end
 
@@ -1561,6 +1573,9 @@ struct
 
   (** Get the version of a class. *)
   let version c = Pragma.version c.pragmas
+
+  (** Get the stage of a class. *)
+  let stage c = Pragma.stage c.pragmas
 
   (** Increase the version of a class [c] *)
   let increase_version c =
