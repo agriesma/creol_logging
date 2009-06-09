@@ -35,16 +35,16 @@ changequote dnl
     sorts Msg Class ifdef(`WITH_TIME', `Clock ')Object Configuration .
     subsorts Class ifdef(`WITH_TIME', `Clock ')Msg Object < Configuration .
 
-    vars B M M' : String .
+    vars B M : String .
     var C : Cid .
     vars O O' : Oid .
-    var S : Subst .
-    vars I I' : InhList .
+    vars S S1 : Subst .
+    vars I I1 : InhList .
     vars P P' : Process .
-    vars W : MProc .
-    var MS : MMtd .
+    vars MS MS1 : MMtd .
+    var W : MProc .
     var AL : VidList .
-    var SL : StmtList .
+    vars SL SL1 : StmtList .
     var EL : ExprList .
     var DL : DataList .
     var N : Label .
@@ -130,6 +130,15 @@ ifdef(`WITH_UPDATE',
        [ctor `format' (ng ! og o d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .')
 
 
+ifdef(`WITH_UPDATE',
+`    --- Remove methods.
+    op remove : MMtd MMtd -> MMtd .
+    eq remove (MS, noMethod) = MS .
+    eq remove ((< M : Method | Param: AL, Att: S, Code: SL >, MS),
+               (< M : Method | Param: AL, Att: S1, Code: SL1 >, MS1)) =
+              remove(MS, MS1) .')
+
+
     --- Method binding messages.
     --- Bind method request
     --- Given: caller callee label method params (list of classes to look in)
@@ -144,11 +153,11 @@ ifdef(`WITH_UPDATE',
     --- Method binding with multiple inheritance
     ---
     eq
-      bindMtd(O, O', N, M, DL, (C < EL > , I'))
+      bindMtd(O, O', N, M, DL, (C < EL > , I1))
       < C : Class | VERSION(V)Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F >
       =
       if get(M, C, MS, O', N, DL) == notFound then
-        bindMtd(O, O', N, M, DL, (I , I'))
+        bindMtd(O, O', N, M, DL, (I , I1))
       else
         boundMtd(O, get(M, C, MS, O', N, DL))
       fi

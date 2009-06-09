@@ -600,7 +600,7 @@ STEP(dnl
 STEP(dnl
 ``remove(B, I, S, MS, none, none)
     < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S1, Mtds: MS1, Ocnt: G >'',
-``< class(B, s T) : Class | Version: (s V), Inh: I, Param: AL, Att: remove(S1, S), Mtds: (MS1 \ MS), Ocnt: G >'',
+``< class(B, s T) : Class | Version: (s V), Inh: I, Param: AL, Att: remove(S1, S), Mtds: remove(MS1, MS), Ocnt: G >'',
 `[label simplify-class]')
 
 --- Resolve dependencies
@@ -621,11 +621,11 @@ CSTEP(dnl
 `[label depend-extend]')
 
 CSTEP(dnl
-``{ remove(B, I, S, MS, (c(B1, V1), CD), OD)
-    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
+``{ remove(B1, I1, S1, MS1, (c(B, V1), CD), OD)
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
     CN }'',
-``{ remove(B, I, S, MS, CD, (OD, allinstances(B1, T, CN)))
-    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
+``{ remove(B1, I1, S1, MS1, CD, (OD, allinstances(B, T, CN)))
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
     CN }'',
 `V >= V1',
 `[label depend-remove]')
