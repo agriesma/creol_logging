@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Producer" : Class | Inh: noInh, Param: "buf", Att: "buf" |-> null, "i"
       |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
@@ -58,6 +58,6 @@ mod PROGRAM is
               Code: new( "buf" ; "Buffer" ; emp ) ;
               new( "prod" ; "Producer" ; "buf" ) ;
               new( "cons" ; "Consumer" ; "buf" ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

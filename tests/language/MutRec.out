@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "MutRec" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
   < "doit" : Method | Param: "other", Att: "_" |-> null, "ccglab0" |-> null,
     "other" |-> null, Code: call("ccglab0" ; "other" ; "doit" ; "this") ; get(
@@ -18,5 +18,5 @@ result Configuration:
     "ccglab0" |-> null, Code: call("ccglab0" ; "m1" ; "doit" ; "m2") ; free(
     "ccglab0") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

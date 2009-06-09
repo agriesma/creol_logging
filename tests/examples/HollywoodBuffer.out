@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Buffer" : Class | Inh: noInh, Param: noVid, Att: "full" |-> null, "value"
     |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("full" ;
@@ -43,5 +43,5 @@ result Configuration:
     "i" ; "+"("i" :: int(1))) ; call("ccglab1" ; "this" ; "run" ; emp) ; free(
     "ccglab1") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

@@ -29,7 +29,7 @@ set break off .
 set profile off .
 load Fibonacci .
 load creol-metaexec .
-reduce simulate('PROGRAM, upTerm(main(classes, "FibTester", int(10))), 42, 112) .
+reduce simulate('PROGRAM, upTerm(main(state, "FibTester", int(10))), 42, 112) .
 quit .
 ])
 TEST_MAUDE([./meta-Fibonacci-42], test.maude, [examples])
@@ -50,7 +50,7 @@ set break off .
 set profile off .
 load Fibonacci .
 load creol-metaexec .
-reduce simulate('PROGRAM, upTerm(main(classes, "FibTester", int(10))), 17, 112) .
+reduce simulate('PROGRAM, upTerm(main(state, "FibTester", int(10))), 17, 112) .
 quit .
 ])
 TEST_MAUDE([./meta-Fibonacci-17], test.maude, [examples])
@@ -71,7 +71,7 @@ set break off .
 set profile off .
 load Fibonacci .
 load creol-metaexec .
-reduce simulate('PROGRAM, upTerm(main(classes, "FibTester", emp)), 0, 10) .
+reduce simulate('PROGRAM, upTerm(main(state, "FibTester", emp)), 0, 10) .
 quit .
 ])
 TEST_MAUDE([./meta-Fibonacci-fail], test.maude, [examples])

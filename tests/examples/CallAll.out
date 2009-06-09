@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "CallAll" : Class | Inh: noInh, Param: noVid, Att: "list" |-> null,
     "outstanding" |-> null, "results" |-> null, Mtds:
   < "call_all" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
@@ -16,5 +16,5 @@ result Class:
     "_" |-> null, Code: skip ; return(emp) >, < "run" : Method | Param: noVid,
     Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

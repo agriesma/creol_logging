@@ -653,15 +653,15 @@ let emit subtarget out_channel input =
         open_vbox 0 ;
         print_string "protecting CREOL-SIMULATOR ." ;
 	print_space () ;
-	print_string "op classes : -> Configuration [ctor] ." ;
+	print_string "op state : -> State [ctor] ." ;
 	print_space () ;
-	print_string "eq classes =" ;
+	print_string "eq state = {" ;
 	print_space () ;
         begin
           open_hbox () ; print_space () ; print_space () ; close_box () ;
 	  open_vbox 0 ;
           of_decl_list input ;
-	  print_string " ." ;
+	  print_string " } ." ;
 	  close_box ()
 	end ;
 	close_box ()

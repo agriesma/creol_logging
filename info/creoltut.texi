@@ -88,8 +88,8 @@ This example may be executed in Maude, as shown in the following
 session:
 
 @example
-Maude> rewrite main(classes, "Hello", emp) .
-rewrite in PROGRAM : main(classes, "Hello", emp) .
+Maude> rewrite main(state, "Hello", emp) .
+rewrite in PROGRAM : main(state, "Hello", emp) .
 result State: @{
 < ob("Console-0") : "Console" |
   Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console-0"),
@@ -127,8 +127,8 @@ result State: @{
 Maude>
 @end example
 
-The command @command{rew main(classes, "Hello", emp) .} instructs the
-Maude interpreter to rewrite the program text @code{classes} and a first
+The command @command{rew main(state, "Hello", emp) .} instructs the
+Maude interpreter to rewrite the program text @code{state} and a first
 object of class @code{"Hello"}, which is created without class
 parameters.  Maude responds with the a term repeating the input program
 and a collection of queues and objects.  We observe that all activities
@@ -400,7 +400,7 @@ steps.@footnote{The depth of @code{75} is the depth of the first
 example Maude finds and has been determined empirically.}
 
 @example
-search [1, 75] in PROGRAM : main(classes, "Generator", emp) =>+
+search [1, 75] in PROGRAM : main(state, "Generator", emp) =>+
  < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
                      L:Subst, SL:StmList, PrQ: W:MProc,
                      Dealloc: F:Labels, Ev: MM:MMsg, Lcnt: N:Nat >
@@ -410,7 +410,7 @@ search [1, 75] in PROGRAM : main(classes, "Generator", emp) =>+
 This search command is written in the language of Maude and uses terms
 in the run-time syntax of @acronym{CREOL}.  The meaning of this
 expression is, that we search from the initial state
-@code{main(classes, "Generator", emp)} a state that matches the
+@code{main(state, "Generator", emp)} a state that matches the
 @emph{pattern} where one object of type @code{Sieve} has an attribute
 @code{p} with value @code{p}, designated @code{"p" |-> int(9)} in the
 pattern.@footnote{The runtime syntax is described inadequateness

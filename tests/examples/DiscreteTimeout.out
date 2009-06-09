@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "DiscreteTimeout" : Class | Inh: noInh, Param: "other", Att: "clock" |->
     null, "other" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("clock" @
@@ -14,5 +14,5 @@ result Class:
     ; bool(false))[]await "&&"(?("l") :: "<="("clock" :: "timeout")) ; get("l"
     ; noVid) ; free("l") ; assign("result" ; bool(true))) ; return("result") >,
   Ocnt: 0 >
-
+}
 Bye.

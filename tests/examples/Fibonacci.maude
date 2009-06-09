@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Fibonacci" : Class | Inh: noInh, Param: "n", Att: "n" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
@@ -31,6 +31,6 @@ mod PROGRAM is
             < "run" : Method | Param: noVid, Att: "ccglab0" |-> null, "_" |->
               null, Code: call( "ccglab0" ; "f" ; "fibonacci" ; "n" ) ;
               get( "ccglab0" ; "res" ) ; free( "ccglab0" ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Test" : Class | Inh: noInh, Param: noVid, Att: "depth" |-> null, "max"
       |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
@@ -18,6 +18,6 @@ mod PROGRAM is
               get( "ccglab0" ; noVid ) ; free( "ccglab0" ) el skip fi ; await
               "=" ( "depth" :: "temp" ) ; assign( "depth" ; "-" ( "depth" ::
               int(1) ) ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Weirdness" : Class | Inh: noInh, Param: noVid, Att: "c" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( ( "c" @ "Weirdness" ) ; bool(false) ) ;
@@ -23,6 +23,6 @@ mod PROGRAM is
               Code: new( "w" ; "Weirdness" ; emp ) ; call( "ccglab0" ; "w" ;
               "m" ; emp ) ; free( "ccglab0" ) ; call( "ccglab1" ; "w" ; "n" ;
               emp ) ; free( "ccglab1" ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

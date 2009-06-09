@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Butler" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |->
     null, "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
   < "getNeighbor" : Method | Param: noVid, Att: "_" |-> null, "neighbor" |->
@@ -44,5 +44,5 @@ result Configuration:
     "hungry") ; assign("hist" ; "|-"("hist" :: str("t"))) ; release ; call(
     "ccglab0" ; "this" ; "think" ; emp) ; free("ccglab0") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

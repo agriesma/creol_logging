@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(
@@ -12,9 +12,9 @@ result Configuration:
     "b") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
     Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 ==========================================
-rewrite in PROGRAM : main(classes, "B", int(1)) .
+rewrite in PROGRAM : main(state, "B", int(1)) .
 result State: {
 < ob("B-0") : "B" |
   Att: "a" |-> int(1), "b" |-> int(1), "this" |-> ob("B-0"),

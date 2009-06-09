@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Node" : Class | Inh: noInh, Param: "db", Att: "db" |-> null, Mtds:
   < "availFiles" : Method | Param: "sList", Att: "_" |-> null, "fList" |->
     null, "files" |-> null, "l1" |-> null, "l2" |-> null, "sList" |-> null,
@@ -32,5 +32,5 @@ result Class:
     ; "storeFile" ; "fId" :: "file") ; free("ccglab2") ; return(emp) >, < "run"
     : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

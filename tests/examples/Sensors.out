@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "ActiveSensor" : Class | Inh: noInh, Param: "controller", "initialRate", Att:
     "controller" |-> null, "initialRate" |-> null, "rate" |-> null, "t0" |->
     null, Mtds:
@@ -114,5 +114,5 @@ result Configuration:
     :: "+"("t0" :: "rate0")) ; return(emp) >, < "write" : Method | Param:
     "data", Att: "_" |-> null, "data" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

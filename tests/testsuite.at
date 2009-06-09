@@ -132,140 +132,140 @@ fi])
 AT_CLEANUP
 
 TEST_CREOLC([Float], [language], [dnl
-red classes .
-rew main(classes, "Test", emp) .
+red state .
+rew main(state, "Test", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Main", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Main", emp)), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Pair], [language], [dnl
-red classes .
-rew main(classes, "Test", emp) .
+red state .
+rew main(state, "Test", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Main", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Main", emp)), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Map], [language], [dnl
-red classes .
-rew main(classes, "Map", emp) .
+red state .
+rew main(state, "Map", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Map", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Map", emp)), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Inheritance], [language], [dnl
-red classes .
-rew main(classes, "B", int(1)) .
+red state .
+rew main(state, "B", int(1)) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "B", int(1))), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "B", int(1))), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Init], [language], [dnl
-red classes .
-rew main(classes, "Test", emp) .
+red state .
+rew main(state, "Test", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "B", int(1))), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "B", int(1))), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Init2], [language], [dnl
-red classes .
-rew main(classes, "Test", emp) .
+red state .
+rew main(state, "Test", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "B", int(1))), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "B", int(1))), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Init3], [language], [dnl
-red classes .
-rew main(classes, "Test", emp) .
+red state .
+rew main(state, "Test", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "B", int(1))), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "B", int(1))), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Diamond], [language], [dnl
-red classes .
-rew main(classes, "D", emp) .
+red state .
+rew main(state, "D", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "D", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "D", emp)), 0, 1) .
 ], [no])
 
 TEST_CREOLC([Deadlock], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Butler", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Butler", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([MultiCast], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([MutRec], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([MutRec2], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 ])
 
 dnl TEST_CREOLC([Interleave], [language], [dnl
-dnl red classes .
+dnl red state .
 dnl ],[dnl
-dnl red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+dnl red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 dnl ])
 dnl 
 TEST_CREOLC([ReleaseWeirdness], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([StackCheck], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([StackGarbage], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([While], [language], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Test", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Test", emp)), 0, 1) .
 ])
 
 dnl This set of tests is testing our existing programs.
 dnl
 
 TEST_CREOLC([Alarmclock], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Alarmclock", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Alarmclock", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([AsyncLCR], [examples], [dnl
-red classes .
-rew main(classes, "Init", emp) .
+red state .
+rew main(state, "Init", emp) .
 ],[
-red simulate('PROGRAM, upTerm(main(classes, "Init", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Init", emp)), 0, 1) .
 ], [no])
 
 TEST_CREOLC([PetersonLeader], [examples], [dnl
-red classes .
-rew main(classes, "Main", emp) .
+red state .
+rew main(state, "Main", emp) .
 ],[
-red simulate('PROGRAM, upTerm(main(classes, "Main", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Main", emp)), 0, 1) .
 ], [no])
 
 TEST_CREOLC([AsyncSieveBuggy], [examples], [dnl
-red classes .
+red state .
 
 *** Shows the bug.
 ***
@@ -274,103 +274,103 @@ red classes .
 ***
 *** The model checker will find the bug in a second.
 ***
-*** search [[1, 62]] in PROGRAM : main(classes, "Generator", emp) =>+
+*** search [[1, 62]] in PROGRAM : main(state, "Generator", emp) =>+
 ***  < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
 ***                      L:Subst, SL:StmList, PrQ: W:MProc, Lcnt: N:Nat >
 ***  conf:Configuration .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Generator", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Generator", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([AsyncSieve], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Generator", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Generator", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([CallAll], [examples], [dnl
-red classes .
+red state .
 ],[
-red simulate('PROGRAM, upTerm(main(classes, "CallAll", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "CallAll", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Hello], [examples], [dnl
-red classes .
-rew main(classes, "Hello", emp) .
+red state .
+rew main(state, "Hello", emp) .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Hello", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Hello", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Sieve], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Generator", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Generator", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Philosophers], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Butler", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Butler", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([SingleCellBuffer], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Main", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Main", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Buffer], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Main", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Main", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([BoundedBuffer], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Starter", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Starter", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([HollywoodBuffer], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Main", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Main", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Fibonacci], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Fibonacci", int(6))), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Fibonacci", int(6))), 0, 1) .
 ])
 
 TEST_CREOLC([SantaClaus], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Christmas", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Christmas", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([PeerToPeer], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Christmas", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Christmas", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([DiscreteTimeout], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "DiscreteTimeout", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "DiscreteTimeout", emp)), 0, 1) .
 ])
 
 TEST_CREOLC([Sensors], [examples], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Network", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Network", emp)), 0, 1) .
 ])
 
 TEST_CREOLMC([MC3Phil], [modelchecker], [dnl
-red classes .
+red state .
 ],[dnl
-red simulate('PROGRAM, upTerm(main(classes, "Butler", emp)), 0, 1) .
+red simulate('PROGRAM, upTerm(main(state, "Butler", emp)), 0, 1) .
 ])
 
 dnl Test the CMC validator.

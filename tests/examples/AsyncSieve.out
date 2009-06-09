@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Generator" : Class | Inh: noInh, Param: noVid, Att: "n" |-> null, "next" |->
     null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("n" @
@@ -25,5 +25,5 @@ result Configuration:
     ?("l") ; get("l" ; "res") ; free("l") el new("next" ; "Sieve" ; "n") ;
     assign("res" ; bool(true)) fi fi ; return("res") >,
   Ocnt: 0 >
-
+}
 Bye.

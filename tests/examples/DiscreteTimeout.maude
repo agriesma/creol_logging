@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "DiscreteTimeout" : Class | Inh: noInh, Param: "other", Att: "other"
       |-> null, "clock" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
@@ -21,6 +21,6 @@ mod PROGRAM is
                 assign( "result" ; bool(true) ) [] await ">" ( "clock" ::
                 "timeout" ) ; free( "l" ) ; assign( "result" ; bool(false) ))
               ; return ( "result" ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

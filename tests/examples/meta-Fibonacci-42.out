@@ -1,6 +1,6 @@
 ==========================================
-reduce in RANDOM-EXEC : simulate('PROGRAM, upTerm(main(classes, "FibTester",
-    int(10))), 42, 112) .
+reduce in RANDOM-EXEC : simulate('PROGRAM, upTerm(main(state, "FibTester", int(
+    10))), 42, 112) .
 result State: {
 < label(ob("FibTester-0"), 2) : Future |  Completed: false,  References: 0, 
     Value: emp >

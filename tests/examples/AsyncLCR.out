@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Init" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, Mtds:
   < "getNeighbor" : Method | Param: noVid, Att: "_" |-> null, "p" |-> null,
@@ -24,9 +24,9 @@ result Configuration:
     "status" ; int(1)) el skip fi fi ; return(emp) >, < "run" : Method | Param:
     noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 ==========================================
-rewrite in PROGRAM : main(classes, "Init", emp) .
+rewrite in PROGRAM : main(state, "Init", emp) .
 result State: {
 < ob("Init-0") : "Init" |
   Att: "p1" |-> ob("Process-0"), "p2" |-> ob("Process-1"), "p3" |-> ob(

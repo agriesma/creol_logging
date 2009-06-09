@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Deadlock" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "n" : Method | Param: noVid, Att: "_" |-> null, Code: release ;
@@ -8,5 +8,5 @@ result Class:
     null, Code: call("l" ; "this" ; "n" ; emp) ; release ; skip ; get("l" ;
     noVid) ; free("l") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

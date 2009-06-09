@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Alarmclock" : Class | Inh: noInh, Param: noVid, Att: "clock" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( "clock" ; int(0) ) ; return ( emp ) >,
@@ -14,6 +14,6 @@ mod PROGRAM is
               "alarmsetting" |-> null, "_" |-> null,
               Code: assign( "alarmsetting" ; "+" ( "clock" :: "n" ) ) ; await
               ">=" ( "clock" :: "alarmsetting" ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

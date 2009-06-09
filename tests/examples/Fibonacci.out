@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "FibTester" : Class | Inh: noInh, Param: "n", Att: "f" |-> null, "n" |->
     null, "res" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("f" ;
@@ -23,5 +23,5 @@ result Configuration:
     |-> null, "res" |-> null, "t" |-> null, Code: call("t" ; "this" ; "fib" ;
     "n") ; await ?("t") ; get("t" ; "res") ; free("t") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

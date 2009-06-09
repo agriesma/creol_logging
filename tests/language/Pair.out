@@ -1,14 +1,14 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Test" : Class | Inh: noInh, Param: noVid, Att: "x" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("x" ; list(
     int(1) :: int(2))) ; return(emp) >, < "run" : Method | Param: noVid, Att:
     "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 ==========================================
-rewrite in PROGRAM : main(classes, "Test", emp) .
+rewrite in PROGRAM : main(state, "Test", emp) .
 result State: {
 < ob("Test-0") : "Test" |
   Att: "this" |-> ob("Test-0"), "x" |-> list(int(1) :: int(2)),

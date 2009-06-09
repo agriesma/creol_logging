@@ -1,5 +1,5 @@
 ==========================================
-frewrite in PROGRAM : main(classes, "Main", emp) .
+frewrite in PROGRAM : main(state, "Main", emp) .
 result (sort not calculated): {
 < label(ob("Main-0"), 6) : Future |  Completed: false,  References: 0,  Value:
     emp >

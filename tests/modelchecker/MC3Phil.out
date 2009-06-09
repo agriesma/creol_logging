@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM-CHECKER : classes .
-result Configuration: 
+reduce in PROGRAM-CHECKER : state .
+result State: {
 < "Butler" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |->
     null, "p3" |-> null, Mtds:
   < "getNeighbor" : Method | Param: noVid, Att: "_" |-> null, "neighbor" |->
@@ -36,5 +36,5 @@ result Configuration:
     "hungry") ; release ; assign("hungry" ; bool(true)) ; call("ccglab0" ;
     "this" ; "think" ; emp) ; free("ccglab0") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

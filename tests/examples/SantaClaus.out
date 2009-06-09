@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Christmas" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, "e" |-> null, "r"
@@ -114,5 +114,5 @@ result Configuration:
     "inofficeElves")) ; await "&&"("&&"(?("t1") :: ?("t2")) :: ?("t3")) ; free(
     "t3") ; free("t2") ; free("t1") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

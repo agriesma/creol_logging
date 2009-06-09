@@ -1,8 +1,8 @@
 load creol-modelchecker .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Philosopher" : Class | Inh: noInh, Param: "butler", Att: "butler" |->
       null, "hungry" |-> null, "chopstick" |-> null, "neighbor" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
@@ -49,7 +49,7 @@ mod PROGRAM is
               assign( "neighbor" ; "p2" ) el if "=" ( "caller" :: "p2" ) th
               assign( "neighbor" ; "p3" ) el assign( "neighbor" ; "p1" ) fi
               fi ; return ( "neighbor" ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 
 mod PROGRAM-CHECKER is

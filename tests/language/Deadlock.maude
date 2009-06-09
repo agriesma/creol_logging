@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Deadlock" : Class | Inh: noInh, Param: noVid, Att: noSubst,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
@@ -11,6 +11,6 @@ mod PROGRAM is
               get( "l" ; noVid ) ; free( "l" ) ; return ( emp ) >,
             < "n" : Method | Param: noVid, Att: "_" |-> null, Code: release ;
               return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

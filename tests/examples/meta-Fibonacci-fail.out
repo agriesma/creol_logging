@@ -1,5 +1,5 @@
 ==========================================
-reduce in RANDOM-EXEC : simulate('PROGRAM, upTerm(main(classes, "FibTester",
+reduce in RANDOM-EXEC : simulate('PROGRAM, upTerm(main(state, "FibTester",
     emp)), 0, 10) .
 result [State]: {
 

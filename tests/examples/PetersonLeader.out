@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
   < "getNeighbour" : Method | Param: noVid, Att: "_" |-> null, "n" |-> null,
@@ -34,9 +34,9 @@ result Configuration:
     "ccglab1") el assign("mode" ; bool(false)) fi fi el call("ccglab2" ;
     "neighbour" ; "send" ; "u") ; free("ccglab2") fi ; return(emp) >,
   Ocnt: 0 >
-
+}
 ==========================================
-rewrite in PROGRAM : main(classes, "Main", emp) .
+rewrite in PROGRAM : main(state, "Main", emp) .
 result State: {
 < ob("Main-0") : "Main" |
   Att: "p1" |-> ob("Process-0"), "p2" |-> ob("Process-1"), "p3" |-> ob(

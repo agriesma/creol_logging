@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "SantaClaus" : Class | Inh: noInh, Param: noVid, Att: "ctReindeers" |->
       null, "waitReindeers" |-> null, "harnessedReindeers" |-> null,
       "ctElves" |-> null, "waitElves" |-> null, "inofficeElves" |-> null,
@@ -163,6 +163,6 @@ mod PROGRAM is
               new( "e" ; "Elf" ; "sc" ) ; new( "e" ; "Elf" ; "sc" ) ;
               new( "e" ; "Elf" ; "sc" ) ; new( "e" ; "Elf" ; "sc" ) ;
               new( "e" ; "Elf" ; "sc" ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

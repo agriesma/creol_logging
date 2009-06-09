@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Alarmclock" : Class | Inh: noInh, Param: noVid, Att: "clock" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("clock" ;
     int(0)) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
@@ -10,5 +10,5 @@ result Class:
     "n" |-> null, Code: assign("alarmsetting" ; "+"("clock" :: "n")) ; await
     ">="("clock" :: "alarmsetting") ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

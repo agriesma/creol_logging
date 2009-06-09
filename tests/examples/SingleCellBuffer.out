@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Buffer" : Class | Inh: noInh, Param: noVid, Att: "cell" |-> null, "ctr" |->
     null, "next" |-> null, Mtds:
   < "get" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, "x"
@@ -16,5 +16,5 @@ result Class:
     assign("ctr" ; "+"("ctr" :: int(1))) ; return(emp) >, < "run" : Method |
     Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("output" @
     "Console" ; list(emp)) ; return(emp) >, < "print" : Method | Param:
@@ -16,9 +16,9 @@ result Configuration:
     str("Hello, world")) ; get("ccglab0" ; noVid) ; free("ccglab0") ; return(
     emp) >,
   Ocnt: 0 >
-
+}
 ==========================================
-rewrite in PROGRAM : main(classes, "Hello", emp) .
+rewrite in PROGRAM : main(state, "Hello", emp) .
 result State: {
 < ob("Console-0") : "Console" |
   Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console-0"),

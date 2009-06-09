@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Philosopher" : Class | Inh: noInh, Param: "butler", Att: "butler" |->
       null, "hungry" |-> null, "chopstick" |-> null, "neighbor" |-> null,
       "hist" |-> null,
@@ -61,6 +61,6 @@ mod PROGRAM is
               assign( "neighbor" ; "p4" ) el if "=" ( "caller" :: "p4" ) th
               assign( "neighbor" ; "p5" ) el assign( "neighbor" ; "p1" ) fi
               fi fi fi ; return ( "neighbor" ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

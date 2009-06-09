@@ -1,14 +1,14 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Map" : Class | Inh: noInh, Param: noVid, Att: "sem" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: assign("sem" ;
     map(empty)) ; return(emp) >,
   Ocnt: 0 >
-
+}
 ==========================================
-rewrite in PROGRAM : main(classes, "Map", emp) .
+rewrite in PROGRAM : main(state, "Map", emp) .
 result State: {
 < ob("Map-0") : "Map" |
   Att: "sem" |-> map(empty), "this" |-> ob("Map-0"),

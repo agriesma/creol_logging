@@ -28,7 +28,7 @@ set trace off .
 set break off .
 set profile off .
 load PetersonLeader .
-frew [[42]] main(classes, "Main", emp) .
+frew [[42]] main(state, "Main", emp) .
 quit .
 ])
 TEST_MAUDE([./PetersonLeader-cmc], test.maude, [examples])
