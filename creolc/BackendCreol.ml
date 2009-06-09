@@ -694,7 +694,7 @@ let pretty_print_program out_channel input =
 	open_box 2 ;
 	print_space () ;
 	print_string "pragma " ;
-	separated_list print_pragma print_space i.Interface.pragmas ;
+	separated_list print_pragma print_comma i.Interface.pragmas ;
 	close_box () 
       end ;
     print_space () ;
@@ -761,7 +761,7 @@ let pretty_print_program out_channel input =
 	    open_box 2 ;
 	    print_space () ;
 	    print_string "pragma " ;
-	    separated_list print_pragma print_space c.Class.pragmas ;
+	    separated_list print_pragma print_comma c.Class.pragmas ;
 	    close_box () 
           end ;
         close_box ()
@@ -823,7 +823,7 @@ let pretty_print_program out_channel input =
 	    open_box 2 ;
 	    print_space () ;
 	    print_string "pragma " ;
-	    separated_list print_pragma print_space upd.Retract.pragmas ;
+	    separated_list print_pragma print_comma upd.Retract.pragmas ;
 	    close_box () 
           end ;
         close_box ()
@@ -895,7 +895,7 @@ let pretty_print_program out_channel input =
 	    open_box 2 ;
 	    print_space () ;
 	    print_string "pragma " ;
-	    separated_list print_pragma print_space upd.Update.pragmas ;
+	    separated_list print_pragma print_comma upd.Update.pragmas ;
 	    close_box () 
           end ;
         close_box ()
