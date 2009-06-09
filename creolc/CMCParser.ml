@@ -379,7 +379,16 @@ let get_value =
 let get_name =
   function
     | Expression.Id (_, name) -> name
+    | Expression.SSAId (_, name, _) -> name
     | _ -> assert false
+
+let get_stage =
+  function
+    | Expression.SSAId (_, _, s) ->
+        Expression.Int (Expression.make_note (), Big_int.big_int_of_int s)
+    | _ ->
+        (* XXX: Revise that? *)
+        Expression.Int (Expression.make_note (), Big_int.zero_big_int)
 
 let vardecl_of_binding (n, i) =
   { VarDecl.name = n; var_type = Type.data; init = Some i; file = ""; line = 0 }
@@ -396,6 +405,21 @@ let parse from_maude name input =
 	  and m = get_mtds (PropMap.find "Mtds" props)
 	  and a = get_attr (PropMap.find "Att" props)
           and o = get_nat (PropMap.find "Ocnt" props)
+          and pr = [] in
+          let pr' =
+            try
+              { Pragma.name = "Version";
+                values = [Expression.Int (Expression.make_note (),
+                                  get_nat (PropMap.find "Version" props))] } ::
+              pr
+            with
+              | Not_found -> pr
+          in
+          let pr'' =
+            try
+              { Pragma.name = "Version"; values = [ get_stage oid ]} :: pr'
+            with
+              | Not_found -> pr'
 	  in
 	    Cls { Class.name = get_name oid ;
 		  parameters = (List.map vardecl_of_name p) ;
@@ -409,7 +433,7 @@ let parse from_maude name input =
 				 invariants = [];
                                  file = ""; line = 0}] ;
 		  objects_created = o;
-		  pragmas = [];
+		  pragmas = pr'';
 		  file = "";
 		  line = 0 }
       | "~Future" ->
@@ -439,6 +463,14 @@ let parse from_maude name input =
 	  and p = get_process (PropMap.find "Pr" props)
 	  and q = get_process_queue (PropMap.find "PrQ" props)
 	  and c = get_nat (PropMap.find "Lcnt" props)
+          and pr = [] in
+          let pr' =
+            try
+              (** XXX: This will give us the wrong stage, since cid is
+                  either an [id] or a [class(id, stage)] term. *)
+              { Pragma.name = "Stage"; values = [ get_stage oid ]} :: pr
+            with
+              | Not_found -> pr
 	  in
 	    Obj { Object.name = oid;
 		  cls = Type.Basic t;
@@ -446,7 +478,7 @@ let parse from_maude name input =
 		  process = p;
 		  process_queue = q;
                   emitted_calls = c;
-		  pragmas = [] }
+		  pragmas = pr }
   in
   let rec parse_configuration input =
     match Stream.peek input with
@@ -610,15 +642,12 @@ let parse from_maude name input =
       | Some Key ("class", _) ->
           begin
             let () = Stream.junk input in
-              match Stream.npeek 5 input with
-                | [LParen _; Str (v, _); Comma _; Int (s, _); RParen _] ->
-                  let () = Stream.junk input in
-                  let () = Stream.junk input in
-                  let () = Stream.junk input in
-                  let () = Stream.junk input in
-                  let () = Stream.junk input in
-                    Expression.Id (Expression.make_note (), v)
-                | _ -> assert false
+            let () = junk_lparen input in
+            let v = parse_string input in
+            let () = junk_comma input in
+            let s = Big_int.int_of_big_int (parse_integer input) in
+            let () = junk_rparen input in
+              Expression.SSAId (Expression.make_note (), v, s)
           end
       | Some Str (v, _) ->
 	  let () = Stream.junk input in
@@ -680,7 +709,7 @@ let parse from_maude name input =
 	  let () = Stream.junk input in
 	  let v = parse_inherit_list input in
 	    Inh v
-      | Some Property (("Lcnt" | "Ocnt" | "References"), _) ->
+      | Some Property (("Lcnt" | "Ocnt" | "References" | "Version"), _) ->
 	  let () = Stream.junk input in
 	  let v = parse_integer input in
 	    Nat v
