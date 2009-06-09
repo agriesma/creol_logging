@@ -38,7 +38,7 @@ changequote dnl
     vars B M : String .
     var C : Cid .
     vars O O' : Oid .
-    vars S S1 : Subst .
+    vars L S S1 : Subst .
     vars I I1 : InhList .
     vars P P' : Process .
     vars MS MS1 : MMtd .
@@ -89,8 +89,8 @@ ifdef(`WITH_TIME',
     op get : String Cid MMtd Oid Label DataList -> Process .
 
     eq get(M, CLASS(B, F), (MS, < M : Method | Param: AL, Att: S, Code: SL >), O, N, DL) =
-        { "caller" |-> O, ".class" |-> str(B), ifdef(`WITH_UPDATE', `".stage" |-> int(F), ')
-          ".label" |-> N, ".method" |-> str(M), S | assign(AL ; DL) ; SL } .
+        { "caller" |-> O, ".class" |-> str(B), ".label" |-> N,
+          ".method" |-> str(M), S | assign(AL ; DL) ; SL } .
     eq get(M, C, MS, O, N, DL) = notFound [owise] .
 
 
@@ -164,10 +164,12 @@ ifdef(`WITH_UPDATE',
       < C : Class | VERSION(V)Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F > .
 
     eq
-      boundMtd(O, P')
-      < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
+      boundMtd(O, { L | SL })
+      < O : CLASS(B, T) | Att: S, Pr: P, PrQ: W, Lcnt: F >
       =
-      < O : C | Att: S, Pr: P, PrQ: (W , P'), Lcnt: F > .
+      < O : CLASS(B, T) | Att: S, Pr: P,
+                          PrQ: (W , { ifdef(`WITH_UPDATE', `insert(".stage", int(T), L)', `L') | SL }),
+                          Lcnt: F > .
 
 
 
