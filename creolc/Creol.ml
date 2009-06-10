@@ -1782,15 +1782,17 @@ struct
     pragmas: Pragma.t list;
   }
 
-  (** Whether the class is hidden. *)
-  let hidden_p c = Pragma.hidden_p c.pragmas
+  (** Whether the object is hidden. *)
+  let hidden_p obj = Pragma.hidden_p obj.pragmas
 
-  (** Hide a class. *)
-  let hide c = { c with pragmas = Pragma.hide c.pragmas }
+  (** Hide a object. *)
+  let hide obj = { obj with pragmas = Pragma.hide obj.pragmas }
 
-  (** Show a class. *)
-  let show c = { c with pragmas = Pragma.show c.pragmas }
+  (** Show a object. *)
+  let show obj = { obj with pragmas = Pragma.show obj.pragmas }
 
+  (** Returns the stage of the object. *)
+  let stage obj = Pragma.stage obj.pragmas
 end
 
 
