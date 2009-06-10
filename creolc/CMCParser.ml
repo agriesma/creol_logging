@@ -417,7 +417,7 @@ let parse from_maude name input =
           in
           let pr'' =
             try
-              { Pragma.name = "Version"; values = [ get_stage oid ]} :: pr'
+              { Pragma.name = "Stage"; values = [ get_stage oid ]} :: pr'
             with
               | Not_found -> pr'
 	  in
@@ -458,27 +458,36 @@ let parse from_maude name input =
 		  location = "";
 		  file = "";
                   line = 0 }
-      | t ->
+      | cid ->
 	  let a = get_attr (PropMap.find "Att" props)
+          and (c, s) =
+            try
+              let i = String.index cid ':' in
+              let c' = String.sub cid 0 i
+              and s' = String.sub cid (i + 1) ((String.length cid) - i - 1) in
+                (c', Big_int.big_int_of_string s')
+            with
+              | Not_found -> (cid, Big_int.zero_big_int)
 	  and p = get_process (PropMap.find "Pr" props)
 	  and q = get_process_queue (PropMap.find "PrQ" props)
-	  and c = get_nat (PropMap.find "Lcnt" props)
-          and pr = [] in
+	  and l = get_nat (PropMap.find "Lcnt" props) in
+          let pr = [{ Pragma.name = "Calls" ;
+                      values = [ Expression.Int (Expression.make_note (), l)]}]
+          in
           let pr' =
             try
-              (** XXX: This will give us the wrong stage, since cid is
-                  either an [id] or a [class(id, stage)] term. *)
-              { Pragma.name = "Stage"; values = [ get_stage oid ]} :: pr
+              { Pragma.name = "Stage";
+                values = [ Expression.Int (Expression.make_note (), s) ]} :: pr
             with
               | Not_found -> pr
 	  in
 	    Obj { Object.name = oid;
-		  cls = Type.Basic t;
+		  cls = Type.Basic c;
 		  attributes = (List.map vardecl_of_binding a);
 		  process = p;
 		  process_queue = q;
-                  emitted_calls = c;
-		  pragmas = pr }
+                  emitted_calls = l;
+		  pragmas = pr' }
   in
   let rec parse_configuration input =
     match Stream.peek input with
@@ -658,6 +667,14 @@ let parse from_maude name input =
       | None -> raise (Eof "")
   and parse_cid input =
     match Stream.peek input with
+      | Some Key ("class", _) ->
+          let () = Stream.junk input in
+          let () = junk_lparen input in
+          let c = parse_string input in
+          let () = junk_comma input in
+          let s = parse_integer input in
+          let () = junk_rparen input in
+            c ^ ":" ^ (Big_int.string_of_big_int s)
       | Some Key (v, _) ->
 	  let () = Stream.junk input in
 	    "~" ^ v
