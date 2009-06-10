@@ -214,17 +214,13 @@ ifdef(`WITH_UPDATE',
       -> Msg [ctor format (b d o  b so  b so  b so  b on)] .
 
     op allinstances : String Nat Configuration -> ObjectDeps .
-    eq allinstances(B, T, CL CN) = allinstances(B, T, CN) .
-    eq allinstances(B, T, MSG CN) = allinstances(B, T, CN) .
-ifdef(`WITH_TIME', `    eq allinstances(B, T, CLOCK CN) = allinstances(B, T, CN) .
-')dnl
     eq allinstances(B, T, < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F > CN) =
         if B == B1 then
             allinstances(B, T, CN), o(O, T)
         else
             allinstances(B, T, CN)
         fi .
-    eq allinstances(B, T, none) = none .
+    eq allinstances(B, T, CN) = none [owise] .
 
     op update : Nat Nat MMtd -> StmtList .
     ceq update(T, T1, MS) = noStmt if T >= T1 .

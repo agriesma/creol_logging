@@ -637,7 +637,7 @@ CSTEP(dnl
     < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
 ``remove(B, I, S, MS, CD, OD)
     < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
-`T1 >= T',
+`T <= T1',
 `[label depend-object1]')
 
 --- Update a sub class.
