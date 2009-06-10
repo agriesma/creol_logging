@@ -163,15 +163,25 @@ let emit subtarget out_channel input =
 	  of_expression f ;
 	  print_string " fi)"
       | Expression.Extern _ -> assert false
-      | Expression.LabelLit (_, label) ->
+      | Expression.LabelLit (_, [oid; Expression.Int(_, num)]) ->
+          open_hbox () ;
           print_string "label(" ;
-	  of_expression_list label ;
-	    (* XXX: Actually broken, but we don't care *)
-	  print_string ")"
+          of_expression oid ;
+          print_string "," ;
+          print_space () ;
+          print_string (Big_int.string_of_big_int num) ;
+	  print_string ")" ;
+          close_box ()
+      | Expression.LabelLit (_, [oid; oid'; m; lst]) ->
+          open_hbox () ;
+          print_string "label(" ;
+            (** XXX: This is currently broken. *)
+          print_string ")";
+          close_box ()
+      | Expression.LabelLit _ ->
+          assert false
       | Expression.ObjLit (_, name) ->
-          print_string "ob(" ;
-	  print_string name ;
-	  print_string ")"
+          print_string ("ob(\"" ^ name ^ "\")")
       | Expression.SSAId (_, n, v) -> 
 	  print_string ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")") ;
       | Expression.Phi (_, i::l) ->
@@ -415,8 +425,15 @@ let emit subtarget out_channel input =
       print_comma () ;
       print_string "Att: " ;
       of_class_attribute_list
-        (List.concat [ m.Method.inpars ; m.Method.outpars ; m.Method.vars ;
-		      [wildcard] ]) ;
+        (if List.exists (fun { VarDecl.name = n } -> n = "_") m.Method.vars then
+          (* Since the wildcard is already in the list of method variables,
+             we must assume that the list comes from a maude term and
+             thus already contains all the inpars, outpars and the
+             wildcard. *)
+          m.Method.vars
+        else
+          (List.concat [ m.Method.inpars ; m.Method.outpars ; m.Method.vars ;
+		        [wildcard] ])) ;
       print_comma () ;
       print_string "Code: " ;
       begin
@@ -464,7 +481,19 @@ let emit subtarget out_channel input =
     of_parameter_list c.Class.parameters;
     print_comma () ;
     print_string "Att: " ;
-    of_class_attribute_list (c.Class.parameters @ c.Class.attributes) ;
+    of_class_attribute_list
+      (if ((List.length c.Class.parameters)) > 0 &&
+            (List.exists
+              (fun { VarDecl.name = n } -> n = (List.hd c.Class.parameters).VarDecl.name)
+              c.Class.attributes)
+      then
+          (* Since a class parameter is already in the list of attributes,
+             we must assume that the list comes from a maude term and
+             thus already contains all class parameters. Remember that
+             class attributes must not shadow any class parameters. *)
+        c.Class.attributes
+       else
+         (c.Class.parameters @ c.Class.attributes)) ;
     print_comma () ;
     print_string "Mtds: " ;
     of_with_defs c.Class.name c.Class.with_defs ;
@@ -474,7 +503,7 @@ let emit subtarget out_channel input =
   and of_mapping =
     function
       | { VarDecl.name = name; init = Some init } ->
-          print_string name ;
+          print_string ("\"" ^ name ^ "\"") ;
           print_space () ;
           print_string "|->" ;
           print_space () ;
@@ -502,7 +531,21 @@ let emit subtarget out_channel input =
     of_expression obj.Object.name ;
     print_string  " :" ;
     print_space () ;
-    print_string ((Type.string_of_type obj.Object.cls) ^ " |") ;
+    begin
+      match subtarget.target with
+        | Updates ->
+            open_hbox () ;
+            print_string "class(" ;
+            print_string ("\"" ^ (Type.string_of_type obj.Object.cls) ^ "\",");
+            print_space () ;
+            print_string (Big_int.string_of_big_int (Object.stage obj)) ;
+            print_string ")" ;
+            close_box () ;
+        | _ ->
+          print_string ("\"" ^ (Type.string_of_type obj.Object.cls) ^ "\"") ;
+    end ;
+    print_space () ;
+    print_string "|" ;
     print_space () ;
     print_string "Att: " ;
     of_substitution obj.Object.attributes ;
