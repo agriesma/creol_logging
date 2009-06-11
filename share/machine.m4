@@ -633,11 +633,11 @@ CSTEP(dnl
 --- Resolve dependencies on the object level. This is only relevant for
 --- simplification.
 CSTEP(dnl
-``remove(B, I, S, MS, CD, (o(O, T), OD))
-    < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
-``remove(B, I, S, MS, CD, OD)
-    < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
-`T <= T1',
+``remove(B1, I1, S1, MS, CD, (o(O, T1), OD))
+    < O : class(B, T) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
+``remove(B1, I1, S1, MS, CD, OD)
+    < O : class(B, T) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
+`T1 <= T',
 `[label depend-object1]')
 
 --- Update a sub class.

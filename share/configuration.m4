@@ -222,10 +222,13 @@ ifdef(`WITH_UPDATE',
         fi .
     eq allinstances(B, T, CN) = none [owise] .
 
+    --- Collect initialisation code that is used to reestablish the invariant
+    --- of an object after attributes have been added or removed.
     op update : Nat Nat MMtd -> StmtList .
     ceq update(T, T1, MS) = noStmt if T >= T1 .
     eq update(T, T1, (< ".update" : Method | Param: noVid, Att: ".version" |-> int(T), Code: SL >, MS)) =
-          SL ; update(s T, T1, MS) [owise] .'
+          SL ; update(s T, T1, MS) .
+    eq update(T, T1, MS) = update(s T, T1, MS) [owise] .'
 )dnl
 
   *** Useful for real-time maude and some other tricks.
