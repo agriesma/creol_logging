@@ -405,12 +405,16 @@ let emit subtarget out_channel input =
     function
 	[] -> print_string "noVid"
       | lst -> separated_list of_parameter print_comma lst
-  and of_vardecl { VarDecl.name = n } =
+  and of_vardecl { VarDecl.name = n; init = i } =
     print_string ("\"" ^ n ^ "\"") ;
     print_space () ;
     print_string "|->" ;
     print_space () ;
-    print_string "null" 
+    begin
+      match i with
+        | None -> print_string "null" 
+        | Some e -> of_expression e
+    end
   and of_class_attribute_list =
     function
 	[] -> print_string "noSubst" 
