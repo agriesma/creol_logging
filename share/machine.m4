@@ -588,7 +588,7 @@ STEP(dnl
 ``extend(B, I1, S1, MS1, SL, none)
     < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
 ``< class(B, s T) : Class | Version: (s V), Inh: (I, I1), Param: AL, Att: (compose(S, S1)),
-                          Mtds: MS, MS1,
+                          Mtds: MS1, remove(MS, MS1),
                           < ".update" : Method | Param: noVid,
                                                  Att: ".version" |-> int(T),
                                                  Code: SL >,

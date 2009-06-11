@@ -131,12 +131,15 @@ ifdef(`WITH_UPDATE',
 
 
 ifdef(`WITH_UPDATE',
-`    --- Remove methods.
+`   --- Remove methods.
+    ---
+    --- remove(MS, MS1) removes all methods listed in MS1 from the set MS.
     op remove : MMtd MMtd -> MMtd .
-    eq remove (MS, noMethod) = MS .
     eq remove ((< M : Method | Param: AL, Att: S, Code: SL >, MS),
                (< M : Method | Param: AL, Att: S1, Code: SL1 >, MS1)) =
-              remove(MS, MS1) .')
+              remove(MS, MS1) .
+    eq remove (MS, MS1) = MS [owise] .
+')dnl
 
 
     --- Method binding messages.
