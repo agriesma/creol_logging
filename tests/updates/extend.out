@@ -1,0 +1,18 @@
+==========================================
+rewrite in PROGRAM : state .
+result Class: 
+< class("BankAccount",1) : Class | Version: 1, Inh: noInh, Param: noVid, Att:
+    "bal" |-> null, "logger" |-> null, Mtds:
+  < ".update" : Method | Param: noVid, Att: ".version" |-> int(0), Code: skip
+    >, < "balance" : Method | Param: noVid, Att: "_" |-> null, "b" |-> null,
+    Code: assign("b" ; "bal") ; return("b") >, < "init" : Method | Param:
+    noVid, Att: "_" |-> null, Code: assign("bal" @ "BankAccount" ; int(0)) ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code:
+    skip ; return(emp) >, < "transaction" : Method | Param: "sum", "s", Att:
+    "_" |-> null, "ccglab0" |-> null, "s" |-> null, "sum" |-> null, Code:
+    assign("bal" ; "+"("bal" :: "sum")) ; new("logger" ; "Log" ; emp) ; call(
+    "ccglab0" ; "logger" ; "log" ; "s") ; get("ccglab0" ; noVid) ; return(emp)
+    >,
+  Ocnt: 0 >
+
+Bye.

@@ -1,0 +1,26 @@
+load creol-update .
+mod PROGRAM is
+  protecting CREOL-SIMULATOR .
+  op state : -> Configuration [ctor] .
+  eq state =
+    extend("BankAccount", (noInh), ("logger" |-> null),
+      (< "transaction" : Method | Param: "sum", "s", Att: "sum" |-> null, "s"
+         |-> null, "ccglab0" |-> null, "_" |-> null,
+         Code: assign( "bal" ; "+" ( "bal" :: "sum" ) ) ;
+         new( "logger" ; "Log" ; emp ) ; call( "ccglab0" ; "logger" ; "log" ;
+         "s" ) ; get( "ccglab0" ; noVid ) ; return ( emp ) >),
+      (skip), (c("BankAccount", 0)))
+    
+    < class("BankAccount", 0) : Class | Version: 0, Inh: noInh, Param: noVid,
+      Att: "bal" |-> null,
+      Mtds: < "balance" : Method | Param: noVid, Att: "_" |->
+              null, "b" |-> null, Code: assign( "b" ; "bal" ) ;
+              return ( "b" ) >,
+            < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "bal" @ "BankAccount" ) ; int(0) ) ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null,
+              Code: skip ; return ( emp ) >,
+      Ocnt: 0 > .
+endm
+

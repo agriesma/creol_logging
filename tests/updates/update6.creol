@@ -1,5 +1,5 @@
 /*
- * update2.creol
+ * update5.creol
  *
  * This file is part of creoltools
  *
@@ -20,30 +20,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-new interface Transaction
+new class BusinessAccount inherits BankAccount contracts Account, Transfer
 begin
-with Any
-op transaction(in s:Int, s:String)
-end
+   var credit : Int;
+   var creditlim : Int 
 
+   with Any op withdraw2(in sum : Int) == 
+     if ((bal < sum) && ((credit + sum) <= creditlim)) then
+       credit := sum + credit
+     else
+       this.withdraw(sum;)
+     end
 
-update BankAccount implements Transaction 
- begin
+    op investments(in investIn : String) == skip
   
-   var logger : Log
-
-   with Any
-     op transaction(in sum: Int, s:String) == 
-       bal:= (bal + sum);
-       if logger = null then
-         logger := new Log() end;
-       logger.log(s;)
-
- end
-
-
-//dep : (bankAccount,0), (Log,1)
-// after upgrade: bankAccount -> version 1
-
-
-
+end

@@ -20,13 +20,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-new class BusinessAccount inherits BankAccount contracts Account
-begin
-   var credit : Int;
-   var creditlim : Int 
+/* Do nothing. */
 
-    op withdraw(in sum : Int) ==  if ((bal < sum) && ((credit + sum) <= creditlim)) then credit := (sum + credit) else withdraw@BankAccount(sum) fi
-
-    op investments(in investIn : String) == skip
-  
-end

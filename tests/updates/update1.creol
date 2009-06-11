@@ -29,9 +29,9 @@ end
 new class Log implements Log
  begin
 
-   var log : String
+   var log : List[String] := nil
    with Any 
-   op log(in message : String) == log := log|-| message
+   op log(in message : String) == log := log |- message
  
  end
 

@@ -34,73 +34,27 @@ class BankAccount implements Account
 
    var bal: Int := 0;
    op increaseBalance (in sum : Int) == bal := bal + sum
-   
 
    with Any
    op balance (out b : Int)==  b := bal
    op deposit(in sum : Int) == !increaseBalance(sum)
  end
 
+class Customer
+ begin
+   var timer : Int := 0
 
-// new class Log implements Log
-//  begin
+   var account : Account := new BankAccount();
 
-//    var history : String;
-//    op log(in message : String) == history := history|-| message; 
- 
-//  end
+   op run == !tick() ; !trade()
 
+   op tick == await timer < 6; timer := timer + 1; !tick()
 
-// update BankAccount 
-//  begin
-  
-//    var logger : Log
-
-//    with Any
-
-//    op transaction(in sum: Int, s : String) ==  bal:= bal + sum; logger.log(s)
-
-//  end
-
-
-
-
-// update BankAccount
-//  begin
-
-//    with Any
-
-//    op transfer(in sum : Int, acc : Account) ==  await sum <= bal; 
-//                                           this.transaction(-sum, "transfer amount" |-| String_of_Int(sum)); 
-//                                           acc.deposit(sum) 
-
-//    op withdraw(in sum : Int) == await sum <= bal;
-//                           this.transaction(-sum, "withdraw amount" |-| String_of_Int(sum)) 
-
-//    op deposit(in sum : Int) == !this.transaction(sum, "deposit amount" |-| String_ofInt(sum) )
-
-//  end
-
-
-
-
-
-// simplify BankAccount 
-//  begin
-//    op increaseBalance (in sum : Int)
-//  end
-
-
-
-
-// new class BusinessAccount inherits BankAccount contracts Account
-// begin
-//    var credit : Int
-//    var creditlim : Int 
-
-//    op withdraw(in sum : Int) ==  if ((bal < sum) && ((credit + sum) <= creditlim)) then credit := sum + credit else withdraw@BankAccount(sum) fi;
-
-//    op investments(in investIn:String) == skip;
-  
-//   op 
-// end
+   op trade ==
+     var balance : Int;
+     await timer > 5;
+     timer := 0;
+     account.balance(; balance);
+     if balance <= 100 then account.deposit(10;) end ;
+     !trade()
+ end

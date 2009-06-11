@@ -169,9 +169,23 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  modelchecker/MC4Phil.creol modelchecker/MC4Phil.maude \
 		  modelchecker/MC4PhilTest.maude modelchecker/MC5Phil.creol \
 		  modelchecker/MC5Phil.maude modelchecker/MC5PhilTest.maude \
-		  updates/bankexp.creol updates/update1.creol \
-		  updates/update2.creol updates/update3.creol \
-		  updates/update4.creol updates/update5.creol
+		  updates/bankexp.creol updates/bankexp.maude \
+		  updates/bankexp.out \
+		  updates/update1.creol updates/bankexp1.creol \
+		  updates/update1.maude updates/update1.out \
+		  updates/update2.creol updates/bankexp2.creol \
+		  updates/update2.maude updates/update2.out \
+		  updates/update3.creol updates/bankexp3.creol \
+		  updates/update3.maude updates/update3.out \
+		  updates/update4.creol updates/bankexp4.creol \
+		  updates/update4.maude updates/update4.out \
+		  updates/update5.creol updates/bankexp5.creol \
+		  updates/update5.maude updates/update5.out \
+		  updates/update6.creol updates/bankexp6.creol \
+		  updates/update6.maude updates/update6.out \
+                  updates/add.maude updates/add.out \
+		  updates/extend.maude updates/extend.out \
+		  updates/retract.maude updates/retract.out
 
 EXTRA_DIST	= $(srcdir)/atlocal.in \
 		  $(srcdir)/package.m4 \

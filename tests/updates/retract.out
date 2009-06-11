@@ -1,0 +1,11 @@
+==========================================
+rewrite in PROGRAM : state .
+result State: {
+< class("BankAccount",1) : Class | Version: 1, Inh: noInh, Param: noVid, Att:
+    "bal" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("bal" @
+    "BankAccount" ; int(0)) ; return(emp) >, < "run" : Method | Param: noVid,
+    Att: "_" |-> null, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+}
+Bye.
