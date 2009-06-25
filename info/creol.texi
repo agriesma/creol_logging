@@ -31,7 +31,8 @@ and ].  Repetitions are enclosed in braces @{ and @}.  A separator
 * Interface Declaration::       Types for objects.
 * Class Declaration::           Implementation for types.
 * Data Type Declaration::       Declaring data types.
-* Function Definitions::        How to define new functions. 
+* Function Definitions::        How to define new functions.
+* Dynamic Updates::             How to specify changes to running programs.
 * Parse Errors::                A note on parse errors.
 @end menu
 
@@ -884,6 +885,91 @@ For details, see @ref{User Defined Data Types}.
 
 Currently, only @code{external} declarations are supported by the
 compiler.  No code will be emitted for functions.
+
+
+
+@node Dynamic Updates
+@section Dynamic Updates
+
+Creol offers safe updates to running programs. In this section, we
+describe the basic syntax and semantics of these dynamic updates.
+
+@menu
+* New Interfaces::
+* New Classes::
+* Updating Classes::
+* Retracting From Classes::
+@end menu
+
+@node New Interfaces
+@subsection New Interfaces
+
+A new interface declaration is introduced with the syntax @code{new
+@var{interface-decl}}. That is, the syntax is like the normal interface
+declaration, except that it is introduced by the keyword @code{new}.
+
+This statement checks whether an interface of the same name exists and
+makes it available if not. This means that existing classes can be 
+updated to implement the new interface (and consequently providing the
+interface described in it).
+
+
+@node New Classes
+@subsection New Classes
+
+A new interface declaration is introduced with the syntax @code{new
+@var{class-definition}}. That is, the syntax is like the normal class
+definition, except that it is introduced by the keyword @code{new}.
+
+This statement checks whether a class of the same name exists and makes
+it available if not. This means, that after the update has been
+executed, new instances of that class can be created. The code to create
+such updates must be introduced by additional updates, however.
+
+
+@node Updating Classes
+@subsection Updating Existing Classes
+
+The term to update a class is writen:
+@example
+update @var{name} @{ @var{super-decl} @} @{ @var{pragma} @}
+begin
+  @{ @var{attribute} [;] @}
+  @{ @var{method-def} @}
+  @{ with @var{name} @var{method-def} @{ @var{method-def} @} @}
+end
+@end example
+The effect of this update is, that the class called @var{name} is
+updated to include all the @var{super} declarations, that is, to
+implement or contract all listed interfaces and to inherit the listed
+classes. The newly inherited classes are always @emph{appended} to the
+list of super classes and their method implementations are therefore not
+used when a method already exists or has already been inherited. Then,
+the listed attributes and methods are added to the class.
+
+
+@node Retracting From Classes
+@subsection Retracting From Classes
+
+The update to retract features from a class is writen:
+@example
+retract @var{name} @{ @var{super-decl} @} @{ @var{pragma} @}
+begin
+  @{ @var{attribute} [;] @}
+  @{ @var{method-decl} @}
+  @{ with @var{name} @var{method-decl} @{ @var{method-decl} @} @}
+end
+@end example
+The effect of this update is, that the class called @var{name} is
+updated to exclude all the @var{super} declarations, that is, to cease
+implementing or contracting all listed interfaces and to cease
+inheriting the listed classes. If a class or an interface is
+implemented, contracted, or inherited multiple times, then all of these
+clauses are removed. Then, the listed attributes and methods are
+retracted from the class, effectively removing the feature from the
+program.
+
+
 
 
 @node Parse Errors
