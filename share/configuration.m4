@@ -202,19 +202,19 @@ ifdef(`WITH_UPDATE',
     
     --- Add a new class into the system.
     op add(_,_) : Class ClassDeps -> Msg 
-      [ctor format (b d o  b so  b on)] .
+      [ctor `format' (b d o  b so  b on)] .
 
     --- Extend an existing class.
     op extend(_,_,_,_,_,_) : String InhList Subst MMtd StmtList ClassDeps -> Msg
-      [ctor format (b d o  b so  b so  b so  b so  b so  b on)] .
+      [ctor `format' (b d o  b so  b so  b so  b so  b so  b on)] .
 
     --- Simplify a class.
     op remove(_,_,_,_,_,_) : String InhList Subst MMtd ClassDeps ObjectDeps
-      -> Msg [ctor format (b d o  b so  b so  b so  b so  b so  b on)] .
+      -> Msg [ctor `format' (b d o  b so  b so  b so  b so  b so  b on)] .
 
     --- Transfer updates class state to object state.
     op transfer(_,_,_,_) : Oid Subst InhList StmtList
-      -> Msg [ctor format (b d o  b so  b so  b so  b on)] .
+      -> Msg [ctor `format' (b d o  b so  b so  b so  b on)] .
 
     op allinstances : String Nat Configuration -> ObjectDeps .
     eq allinstances(B, T, < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F > CN) =
