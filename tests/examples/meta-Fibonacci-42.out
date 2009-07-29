@@ -1,0 +1,211 @@
+==========================================
+reduce in RANDOM-EXEC : simulate('PROGRAM, upTerm(main(state, "FibTester", int(
+    10))), 42, 112) .
+result State: {
+< label(ob("FibTester-0"), 2) : Future |  Completed: false,  References: 0, 
+    Value: emp >
+ 
+< label(ob("FibTester-0"), 3) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 1) : Future |  Completed: false,  References: 0, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 2) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 3) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 4) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 5) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 6) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 7) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 8) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 9) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 10) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 11) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 12) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 13) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 14) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 15) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 16) : Future |  Completed: false,  References: 1, 
+    Value: emp >
+ 
+< label(ob("Fibonacci-0"), 18) : Future |  Completed: true,  References: 1, 
+    Value: int(1) >
+ 
+< ob("FibTester-0") : "FibTester" |
+  Att: "f" |-> ob("Fibonacci-0"), "n" |-> int(10), "res" |-> null, "this" |->
+    ob("FibTester-0"),
+  Pr: {".class" |-> str("FibTester"), ".label" |-> label(ob("FibTester-0"), 2),
+    ".method" |-> str("run"), "_" |-> null, "caller" |-> ob("FibTester-0"),
+    "ccglab0" |-> label(ob("FibTester-0"), 3) | get(label(ob("FibTester-0"), 3)
+    ; "res") ; free("ccglab0") ; return(emp)},
+  PrQ: noProc,
+  Lcnt: 4 >
+ 
+< ob("Fibonacci-0") : "Fibonacci" |
+  Att: "n" |-> int(10), "this" |-> ob("Fibonacci-0"),
+  Pr: {".class" |-> str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"),
+    15), ".method" |-> str("fib"), "_" |-> null, "a" |-> int(2), "b" |-> null,
+    "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> int(3), "s" |-> null,
+    "t" |-> label(ob("Fibonacci-0"), 18) | get(label(ob("Fibonacci-0"), 18) ;
+    "b") ; free("t") ; assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont
+    label(ob("Fibonacci-0"), 15)},
+  PrQ: {".class" |-> str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"),
+    1), ".method" |-> str("run"), "_" |-> null, "caller" |-> ob("Fibonacci-0"),
+    "res" |-> null, "t" |-> null | call("t" ; "this" ; "fib" ; "n") ; await ?(
+    "t") ; get("t" ; "res") ; free("t") ; return(emp)}, {".class" |-> str(
+    "Fibonacci"), ".label" |-> label(ob("FibTester-0"), 3), ".method" |-> str(
+    "fibonacci"), "_" |-> null, "caller" |-> ob("FibTester-0"), "f" |-> null,
+    "n" |-> int(10), "t" |-> label(ob("Fibonacci-0"), 2) | get(label(ob(
+    "Fibonacci-0"), 2) ; "f") ; free("t") ; return("f")}, {".class" |-> str(
+    "Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 2), ".method" |-> str(
+    "fib"), "_" |-> null, "a" |-> null, "b" |-> null, "caller" |-> ob(
+    "Fibonacci-0"), "f" |-> null, "n" |-> int(10), "s" |-> label(ob(
+    "Fibonacci-0"), 3), "t" |-> label(ob("Fibonacci-0"), 4) | get(label(ob(
+    "Fibonacci-0"), 3) ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
+    assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 2)}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
+    "Fibonacci-0"), 3), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
+    "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> int(9),
+    "s" |-> label(ob("Fibonacci-0"), 5), "t" |-> label(ob("Fibonacci-0"), 6) |
+    get(label(ob("Fibonacci-0"), 5) ; "a") ; free("s") ; get("t" ; "b") ; free(
+    "t") ; assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 3)}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
+    "Fibonacci-0"), 4), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
+    "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> null,
+    "s" |-> null, "t" |-> null | assign("n" ; int(8)) ; if "="("n" :: int(0))
+    th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ; int(1)) el
+    call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ; "this" ; "fib"
+    ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t" ; "b") ; free(
+    "t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f")}, {".class" |->
+    str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 5), ".method" |->
+    str("fib"), "_" |-> null, "a" |-> null, "b" |-> null, "caller" |-> ob(
+    "Fibonacci-0"), "f" |-> null, "n" |-> int(8), "s" |-> label(ob(
+    "Fibonacci-0"), 7), "t" |-> label(ob("Fibonacci-0"), 8) | get(label(ob(
+    "Fibonacci-0"), 7) ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
+    assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 5)}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
+    "Fibonacci-0"), 6), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
+    "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> null,
+    "s" |-> null, "t" |-> null | assign("n" ; int(7)) ; if "="("n" :: int(0))
+    th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ; int(1)) el
+    call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ; "this" ; "fib"
+    ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t" ; "b") ; free(
+    "t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f")}, {".class" |->
+    str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 7), ".method" |->
+    str("fib"), "_" |-> null, "a" |-> null, "b" |-> null, "caller" |-> ob(
+    "Fibonacci-0"), "f" |-> null, "n" |-> int(7), "s" |-> label(ob(
+    "Fibonacci-0"), 9), "t" |-> label(ob("Fibonacci-0"), 10) | get(label(ob(
+    "Fibonacci-0"), 9) ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
+    assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 7)}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
+    "Fibonacci-0"), 8), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
+    "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> null,
+    "s" |-> null, "t" |-> null | assign("n" ; int(6)) ; if "="("n" :: int(0))
+    th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ; int(1)) el
+    call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ; "this" ; "fib"
+    ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t" ; "b") ; free(
+    "t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f")}, {".class" |->
+    str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 9), ".method" |->
+    str("fib"), "_" |-> null, "a" |-> null, "b" |-> null, "caller" |-> ob(
+    "Fibonacci-0"), "f" |-> null, "n" |-> int(6), "s" |-> label(ob(
+    "Fibonacci-0"), 11), "t" |-> label(ob("Fibonacci-0"), 12) | get(label(ob(
+    "Fibonacci-0"), 11) ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
+    assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 9)}, {".class" |-> str("Fibonacci"), ".label" |-> label(ob(
+    "Fibonacci-0"), 10), ".method" |-> str("fib"), "_" |-> null, "a" |-> null,
+    "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> null,
+    "s" |-> null, "t" |-> null | assign("n" ; int(5)) ; if "="("n" :: int(0))
+    th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ; int(1)) el
+    call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ; "this" ; "fib"
+    ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t" ; "b") ; free(
+    "t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f")}, {".class" |->
+    str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 11), ".method" |->
+    str("fib"), "_" |-> null, "a" |-> null, "b" |-> null, "caller" |-> ob(
+    "Fibonacci-0"), "f" |-> null, "n" |-> int(5), "s" |-> label(ob(
+    "Fibonacci-0"), 13), "t" |-> label(ob("Fibonacci-0"), 14) | get(label(ob(
+    "Fibonacci-0"), 13) ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
+    assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 11)}, {".class" |-> str("Fibonacci"), ".label" |-> label(
+    ob("Fibonacci-0"), 12), ".method" |-> str("fib"), "_" |-> null, "a" |->
+    null, "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |->
+    null, "s" |-> null, "t" |-> null | assign("n" ; int(4)) ; if "="("n" ::
+    int(0)) th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ;
+    int(1)) el call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ;
+    "this" ; "fib" ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t"
+    ; "b") ; free("t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f")}, {
+    ".class" |-> str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 13),
+    ".method" |-> str("fib"), "_" |-> null, "a" |-> null, "b" |-> null,
+    "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> int(4), "s" |->
+    label(ob("Fibonacci-0"), 15), "t" |-> label(ob("Fibonacci-0"), 16) | get(
+    label(ob("Fibonacci-0"), 15) ; "a") ; free("s") ; get("t" ; "b") ; free(
+    "t") ; assign("f" ; "+"("a" :: "b")) ; return("f") ; $cont label(ob(
+    "Fibonacci-0"), 13)}, {".class" |-> str("Fibonacci"), ".label" |-> label(
+    ob("Fibonacci-0"), 14), ".method" |-> str("fib"), "_" |-> null, "a" |->
+    null, "b" |-> null, "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |->
+    null, "s" |-> null, "t" |-> null | assign("n" ; int(3)) ; if "="("n" ::
+    int(0)) th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ;
+    int(1)) el call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ;
+    "this" ; "fib" ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t"
+    ; "b") ; free("t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f")}, {
+    ".class" |-> str("Fibonacci"), ".label" |-> label(ob("Fibonacci-0"), 16),
+    ".method" |-> str("fib"), "_" |-> null, "a" |-> null, "b" |-> null,
+    "caller" |-> ob("Fibonacci-0"), "f" |-> null, "n" |-> null, "s" |-> null,
+    "t" |-> null | assign("n" ; int(2)) ; if "="("n" :: int(0)) th assign("f" ;
+    int(1)) el if "="("n" :: int(1)) th assign("f" ; int(1)) el call("s" ;
+    "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ; "this" ; "fib" ; "-"("n"
+    :: int(2))) ; get("s" ; "a") ; free("s") ; get("t" ; "b") ; free("t") ;
+    assign("f" ; "+"("a" :: "b")) fi fi ; return("f")},
+  Lcnt: 21 >
+ 
+< "FibTester" : Class | Inh: noInh, Param: "n", Att: "f" |-> null, "n" |->
+    null, "res" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("f" ;
+    "Fibonacci" ; "n") ; return(emp) >, < "run" : Method | Param: noVid, Att:
+    "_" |-> null, "ccglab0" |-> null, Code: call("ccglab0" ; "f" ; "fibonacci"
+    ; "n") ; get("ccglab0" ; "res") ; free("ccglab0") ; return(emp) >,
+  Ocnt: 1 >
+ 
+< "Fibonacci" : Class | Inh: noInh, Param: "n", Att: "n" |-> null, Mtds:
+  < "fib" : Method | Param: "n", Att: "_" |-> null, "a" |-> null, "b" |-> null,
+    "f" |-> null, "n" |-> null, "s" |-> null, "t" |-> null, Code: if "="("n" ::
+    int(0)) th assign("f" ; int(1)) el if "="("n" :: int(1)) th assign("f" ;
+    int(1)) el call("s" ; "this" ; "fib" ; "-"("n" :: int(1))) ; call("t" ;
+    "this" ; "fib" ; "-"("n" :: int(2))) ; get("s" ; "a") ; free("s") ; get("t"
+    ; "b") ; free("t") ; assign("f" ; "+"("a" :: "b")) fi fi ; return("f") >, <
+    "fibonacci" : Method | Param: "n", Att: "_" |-> null, "f" |-> null, "n" |->
+    null, "t" |-> null, Code: call("t" ; "this" ; "fib" ; "n") ; get("t" ; "f")
+    ; free("t") ; return("f") >, < "init" : Method | Param: noVid, Att: "_" |->
+    null, Code: skip ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
+    |-> null, "res" |-> null, "t" |-> null, Code: call("t" ; "this" ; "fib" ;
+    "n") ; await ?("t") ; get("t" ; "res") ; free("t") ; return(emp) >,
+  Ocnt: 1 >
+}
+Bye.

@@ -1,0 +1,131 @@
+class BusinessAccount
+   contracts Account, Transfer inherits BankAccount pragma Version(1)
+begin
+  var credit: Int
+  var creditlim: Int
+  op init ==
+      skip
+  op run ==
+      skip
+  with Any
+    op withdraw2(in sum: Int) ==
+        var ccglab0: Label[];
+        if bal < sum && credit + sum <= creditlim then credit := sum + credit
+          else ccglab0!this.withdraw(sum)  as Any;
+                 ccglab0?()
+          end
+    op investments(in investIn: String) ==
+        skip
+end
+
+class BankAccount
+   implements Account, Transaction, Transfer pragma Version(3)
+begin
+  var bal: Int
+  var logger: Log
+  op init ==
+      bal@BankAccount := 0
+  op run ==
+      skip
+  with Any
+    op deposit(in sum: Int) ==
+        var ccglab0: Label[];
+        ccglab0!this.transaction(sum,
+          "deposit amount" |-| string_of_int(sum))  as Any
+    op withdraw(in sum: Int) ==
+        var ccglab0: Label[];
+        await sum <= bal;
+        ccglab0!this.transaction(- sum,
+          "withdraw amount" |-| string_of_int(sum))  as Any;
+        ccglab0?()
+    op transfer(in sum: Int, acc: Account) ==
+        var ccglab1: Label[];
+        var ccglab0: Label[];
+        await sum <= bal;
+        ccglab0!this.transaction(- sum,
+          "transfer amount" |-| string_of_int(sum))  as Any;
+        ccglab0?();
+        ccglab1!acc.deposit(sum)  as Any;
+        ccglab1?()
+    op transaction(in sum: Int, s: String) ==
+        var ccglab0: Label[];
+        bal := bal + sum;
+        if logger = null then logger := new Log() else skip end;
+        ccglab0!logger.log(s)  as Any;
+        ccglab0?()
+    op balance(out b: Int) ==
+        b := bal
+end
+
+interface Transfer
+begin
+with Any
+  op transfer(in s: Int, acc: Account)
+  op withdraw(in s: Int)
+end
+
+interface Transaction
+begin
+with Any
+  op transaction(in s: Int, s: String)
+end
+
+class Log
+   implements Log pragma Version(1)
+begin
+  var log: List[String]
+  op init ==
+      log@Log := nil
+  op run ==
+      skip
+  with Any
+    op log(in message: String) ==
+        log := log |- message
+end
+
+interface Log
+begin
+with Any
+  op log(in message: String)
+end
+
+interface Account
+begin
+with Any
+  op balance(out b: Int)
+  op deposit(in sum: Int)
+end
+
+class Customer
+begin
+  var timer: Int
+  var account: Account
+  op init ==
+      account@Customer := new BankAccount();
+      timer@Customer := 0
+  op run ==
+      var ccglab1: Label[];
+      var ccglab0: Label[];
+      ccglab0!tick();
+      ccglab1!trade()
+  op tick ==
+      var ccglab0: Label[];
+      await timer < 6;
+      timer := timer + 1;
+      ccglab0!tick()
+  op trade ==
+      var ccglab2: Label[];
+      var ccglab1: Label[];
+      var ccglab0: Label[Int];
+      var balance: Int;
+      await timer > 5;
+      timer := 0;
+      ccglab0!account.balance()  as Any;
+      ccglab0?(balance);
+      if balance <= 100 then ccglab1!account.deposit(10)  as Any;
+                               ccglab1?()
+        else skip end;
+      ccglab2!trade()
+end
+
+

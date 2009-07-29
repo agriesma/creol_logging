@@ -49,8 +49,15 @@ let FLOAT = ((['0'-'9']*'.'['0'-'9']+)|(['0'-'9']+'.'['0'-'9']*))('e' ('+'|'-')?
 let CID = [ 'A'-'Z' ] [ '_' 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let ID =  [ '_' 'a'-'z' ] [ '_' '\'' 'a'-'z' 'A'-'Z' '0'-'9' ]*
 let STRING = '"' [^ '\n' '\r' '"' ]* '"'
+
 rule token = parse
       [' ' '\t'] { token lexbuf }
+    | '#' ' ' (['0' - '9']+ as l) ' ' (STRING as f) ([ ^ '\n' '\r' ]*) NEWLINE
+	{ let nl = int_of_string l
+          and pos = lexbuf.lex_curr_p in
+	  let pos' = { pos with pos_lnum = nl; pos_fname = f; pos_bol = 0 } in
+          let () = lexbuf.lex_curr_p <- pos' in
+	    token lexbuf }
     | COMMENT { token lexbuf }
     | "/*" { c_style_comment lexbuf }
     | NEWLINE { update_loc lexbuf; token lexbuf }
@@ -114,6 +121,7 @@ rule token = parse
     | '|' { BAR }
     | '}' { RBRACE }
     | '~' { TILDE }
+    | "Label" { FUTURE }
     | "as" { AS }
     | "assert" { ASSERT }
     | "await" { AWAIT }
@@ -164,6 +172,7 @@ rule token = parse
     | "provides" { reserved lexbuf }
     | "release" { RELEASE }
     | "requires" { REQUIRES }
+    | "retract" { RETRACT }
     | "skip" { SKIP }
     | "signal" { reserved lexbuf }
     | "some" { SOME }

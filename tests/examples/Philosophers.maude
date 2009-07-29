@@ -1,41 +1,41 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Philosopher" : Class | Inh: noInh, Param: "butler", Att: "butler" |->
       null, "hungry" |-> null, "chopstick" |-> null, "neighbor" |-> null,
       "hist" |-> null,
-      Mtds: < "init" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+      Mtds: < "init" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
               |-> null, Code: assign( "hist" ; str("") ) ;
               assign( "chopstick" ; bool(true) ) ;
-              assign( "hungry" ; bool(false) ) ; call( "label:0" ; "butler" ;
-              "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ;
-              free( "label:0" ) ; return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:2" |-> null,
-              "label:1" |-> null, "label:0" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "this" ; "think" ; emp ) ;
-              free( "label:0" ) ; call( "label:1" ; "this" ; "eat" ; emp ) ;
-              free( "label:1" ) ; call( "label:2" ; "this" ; "digest" ; emp )
-              ; free( "label:2" ) ; return ( emp ) >,
-            < "digest" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+              assign( "hungry" ; bool(false) ) ; call( "ccglab0" ; "butler" ;
+              "getNeighbor" ; emp ) ; get( "ccglab0" ; "neighbor" ) ;
+              free( "ccglab0" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "ccglab2" |-> null,
+              "ccglab1" |-> null, "ccglab0" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "this" ; "think" ; emp ) ;
+              free( "ccglab0" ) ; call( "ccglab1" ; "this" ; "eat" ; emp ) ;
+              free( "ccglab1" ) ; call( "ccglab2" ; "this" ; "digest" ; emp )
+              ; free( "ccglab2" ) ; return ( emp ) >,
+            < "digest" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
               |-> null, Code: release ; assign( "hungry" ; bool(true) ) ;
               assign( "hist" ; "|-" ( "hist" :: str("d") ) ) ; release ;
-              call( "label:0" ; "this" ; "digest" ; emp ) ; free( "label:0" )
+              call( "ccglab0" ; "this" ; "digest" ; emp ) ; free( "ccglab0" )
               ; return ( emp ) >,
-            < "eat" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "l" |-> null, "_" |-> null, Code: await
+            < "eat" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "l" |-> null, "_" |-> null, Code: await
               "hungry" ; call( "l" ; "neighbor" ; "borrowStick" ; emp ) ;
               await ?("l") ; free( "l" ) ; await "chopstick" ;
               assign( "hist" ; "|-" ( "hist" :: str("e") ) ) ;
-              assign( "hungry" ; bool(false) ) ; call( "label:0" ;
-              "neighbor" ; "returnStick" ; emp ) ; free( "label:0" ) ;
-              release ; call( "label:1" ; "this" ; "eat" ; emp ) ;
-              free( "label:1" ) ; return ( emp ) >,
-            < "think" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+              assign( "hungry" ; bool(false) ) ; call( "ccglab0" ;
+              "neighbor" ; "returnStick" ; emp ) ; free( "ccglab0" ) ;
+              release ; call( "ccglab1" ; "this" ; "eat" ; emp ) ;
+              free( "ccglab1" ) ; return ( emp ) >,
+            < "think" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
               |-> null, Code: await "~" ( "hungry" ) ;
               assign( "hist" ; "|-" ( "hist" :: str("t") ) ) ; release ;
-              call( "label:0" ; "this" ; "think" ; emp ) ; free( "label:0" )
+              call( "ccglab0" ; "this" ; "think" ; emp ) ; free( "ccglab0" )
               ; return ( emp ) >,
             < "borrowStick" : Method | Param: noVid, Att: "_" |-> null,
               Code: await "chopstick" ; assign( "chopstick" ; bool(false) ) ;
@@ -61,6 +61,6 @@ mod PROGRAM is
               assign( "neighbor" ; "p4" ) el if "=" ( "caller" :: "p4" ) th
               assign( "neighbor" ; "p5" ) el assign( "neighbor" ; "p1" ) fi
               fi fi fi ; return ( "neighbor" ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

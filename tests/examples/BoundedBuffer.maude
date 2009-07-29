@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "BoundedBuffer" : Class | Inh: noInh, Param: noVid, Att: "buffer" |->
       null, "max" |-> null, "n" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
@@ -26,25 +26,25 @@ mod PROGRAM is
     < "Producer" : Class | Inh: noInh, Param: "b", Att: "b" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
-              null, Code: call( "label:0" ; "this" ; "loop" ; int(0) ) ;
-              free( "label:0" ) ; return ( emp ) >,
-            < "loop" : Method | Param: "i", Att: "i" |-> null, "label:1" |->
-              null, "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
-              "b" ; "append" ; "i" ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) ;
-              call( "label:1" ; "this" ; "loop" ; "+" ( "i" :: int(1) ) ) ;
-              free( "label:1" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "ccglab0" |-> null, "_" |->
+              null, Code: call( "ccglab0" ; "this" ; "loop" ; int(0) ) ;
+              free( "ccglab0" ) ; return ( emp ) >,
+            < "loop" : Method | Param: "i", Att: "i" |-> null, "ccglab1" |->
+              null, "ccglab0" |-> null, "_" |-> null, Code: call( "ccglab0" ;
+              "b" ; "append" ; "i" ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) ;
+              call( "ccglab1" ; "this" ; "loop" ; "+" ( "i" :: int(1) ) ) ;
+              free( "ccglab1" ) ; return ( emp ) >,
       Ocnt: 0 >
     
     < "Consumer" : Class | Inh: noInh, Param: "b", Att: "b" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "y" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "b" ; "remove" ; emp ) ;
-              get( "label:0" ; "y" ) ; free( "label:0" ) ;
-              call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" ) ;
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "y" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "b" ; "remove" ; emp ) ;
+              get( "ccglab0" ; "y" ) ; free( "ccglab0" ) ;
+              call( "ccglab1" ; "this" ; "run" ; emp ) ; free( "ccglab1" ) ;
               return ( emp ) >,
       Ocnt: 0 >
     
@@ -56,6 +56,6 @@ mod PROGRAM is
               Code: new( "b" ; "BoundedBuffer" ; emp ) ;
               new( "p" ; "Producer" ; "b" ) ; new( "c" ; "Consumer" ; "b" ) ;
               return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

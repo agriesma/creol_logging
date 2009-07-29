@@ -1,20 +1,20 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "ActiveSensor" : Class | Inh: noInh, Param: "controller", "initialRate", Att:
     "controller" |-> null, "initialRate" |-> null, "rate" |-> null, "t0" |->
     null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("rate",
     "t0" ; "initialRate" :: now) ; return(emp) >, < "run" : Method | Param:
-    noVid, Att: "_" |-> null, "label:0" |-> null, Code: await ">="(now :: "+"(
-    "t0" :: "rate")) ; call("label:0" ; "controller" ; "write" ; int(37)) ;
-    get("label:0" ; noVid) ; free("label:0") ; posit "<="(now :: "+"("t0" ::
+    noVid, Att: "_" |-> null, "ccglab0" |-> null, Code: await ">="(now :: "+"(
+    "t0" :: "rate")) ; call("ccglab0" ; "controller" ; "write" ; int(37)) ;
+    get("ccglab0" ; noVid) ; free("ccglab0") ; posit "<="(now :: "+"("t0" ::
     "rate")) ; assign("t0" ; now) ; return(emp) >, < "setEncoding" : Method |
     Param: "data", Att: "_" |-> null, "data" |-> null, Code: skip ; return(emp)
-    >, < "setRate" : Method | Param: "newRate", Att: "_" |-> null, "label:0"
+    >, < "setRate" : Method | Param: "newRate", Att: "_" |-> null, "ccglab0"
     |-> null, "newRate" |-> null, Code: if "&&"("<"("newRate" :: "rate") ::
-    ">"(now :: "+"("t0" :: "newRate"))) th call("label:0" ; "controller" ;
-    "write" ; int(37)) ; get("label:0" ; noVid) ; free("label:0") ; assign("t0"
+    ">"(now :: "+"("t0" :: "newRate"))) th call("ccglab0" ; "controller" ;
+    "write" ; int(37)) ; get("ccglab0" ; noVid) ; free("ccglab0") ; assign("t0"
     ; now) el skip fi ; assign("rate" ; "newRate") ; posit "<"(now :: "+"("t0"
     :: "rate")) ; return(emp) >, < "setResolution" : Method | Param: "data",
     Att: "_" |-> null, "data" |-> null, Code: skip ; return(emp) >, <
@@ -44,26 +44,26 @@ result Configuration:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("buffer" ;
     list(emp)) ; assign("slots" ; "size") ; assign("rate" ; "initialRate") ;
     assign("t0" ; now) ; return(emp) >, < "packAndSend" : Method | Param:
-    noVid, Att: "_" |-> null, "label:0" |-> null, Code: call("label:0" ;
-    "radio" ; "write" ; "-|"("this" :: "-|"(now :: "buffer"))) ; get("label:0"
-    ; noVid) ; free("label:0") ; assign("buffer" ; list(emp)) ; assign("slots"
+    noVid, Att: "_" |-> null, "ccglab0" |-> null, Code: call("ccglab0" ;
+    "radio" ; "write" ; "-|"("this" :: "-|"(now :: "buffer"))) ; get("ccglab0"
+    ; noVid) ; free("ccglab0") ; assign("buffer" ; list(emp)) ; assign("slots"
     ; "size") ; return(emp) >, < "read" : Method | Param: noVid, Att: "_" |->
-    null, "label:0" |-> null, "label:1" |-> null, "temp" |-> null, Code: call(
-    "label:0" ; "sensor" ; "read" ; emp) ; get("label:0" ; "temp") ; free(
-    "label:0") ; posit "<="(now :: "t0") ; await ">"("slots" :: int(0)) ;
+    null, "ccglab0" |-> null, "ccglab1" |-> null, "temp" |-> null, Code: call(
+    "ccglab0" ; "sensor" ; "read" ; emp) ; get("ccglab0" ; "temp") ; free(
+    "ccglab0") ; posit "<="(now :: "t0") ; await ">"("slots" :: int(0)) ;
     assign("buffer" ; "|-"("buffer" :: "temp")) ; assign("slots" ; "-"("slots"
-    :: int(1))) ; if "="("slots" :: int(0)) th call("label:1" ; "this" ;
-    "packAndSend" ; emp) ; get("label:1" ; noVid) ; free("label:1") el skip fi
+    :: int(1))) ; if "="("slots" :: int(0)) th call("ccglab1" ; "this" ;
+    "packAndSend" ; emp) ; get("ccglab1" ; noVid) ; free("ccglab1") el skip fi
     ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
-    "label:0" |-> null, "label:1" |-> null, Code: call("label:0" ; "this" ;
-    "read" ; emp) ; get("label:0" ; noVid) ; free("label:0") ; await ">="(now
+    "ccglab0" |-> null, "ccglab1" |-> null, Code: call("ccglab0" ; "this" ;
+    "read" ; emp) ; get("ccglab0" ; noVid) ; free("ccglab0") ; await ">="(now
     :: "+"("t0" :: "rate")) ; posit "<="(now :: "+"("t0" :: "rate")) ; assign(
-    "t0" ; now) ; call("label:1" ; "this" ; "run" ; emp) ; free("label:1") ;
+    "t0" ; now) ; call("ccglab1" ; "this" ; "run" ; emp) ; free("ccglab1") ;
     return(emp) >, < "setRate" : Method | Param: "newRate", Att: "_" |-> null,
-    "label:0" |-> null, "newRate" |-> null, Code: if "&&"("<"("newRate" ::
+    "ccglab0" |-> null, "newRate" |-> null, Code: if "&&"("<"("newRate" ::
     "rate") :: ">"(now :: "+"("t0" :: "newRate"))) th assign("t0" ; now) ;
-    call("label:0" ; "this" ; "read" ; emp) ; get("label:0" ; noVid) ; free(
-    "label:0") el skip fi ; assign("rate" ; "newRate") ; posit "<"(now :: "+"(
+    call("ccglab0" ; "this" ; "read" ; emp) ; get("ccglab0" ; noVid) ; free(
+    "ccglab0") el skip fi ; assign("rate" ; "newRate") ; posit "<"(now :: "+"(
     "t0" :: "rate")) ; return(emp) >, < "write" : Method | Param: "data", Att:
     "_" |-> null, "data" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
@@ -76,43 +76,43 @@ result Configuration:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("buffer",
     "slots", "rate0", "rate1", "t0", "t1" ; list(emp) :: "size" ::
     "initialRate0" :: "initialRate1" :: now :: now) ; return(emp) >, <
-    "packAndSend" : Method | Param: noVid, Att: "_" |-> null, "label:0" |->
-    null, Code: call("label:0" ; "radio" ; "write" ; "-|"("this" :: "-|"(now ::
-    "buffer"))) ; get("label:0" ; noVid) ; free("label:0") ; assign("buffer" ;
+    "packAndSend" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |->
+    null, Code: call("ccglab0" ; "radio" ; "write" ; "-|"("this" :: "-|"(now ::
+    "buffer"))) ; get("ccglab0" ; noVid) ; free("ccglab0") ; assign("buffer" ;
     list(emp)) ; assign("slots" ; "size") ; return(emp) >, < "read0" : Method |
-    Param: noVid, Att: "_" |-> null, "label:0" |-> null, "label:1" |-> null,
-    "temp" |-> null, Code: call("label:0" ; "sensor0" ; "read" ; emp) ; get(
-    "label:0" ; "temp") ; free("label:0") ; posit "<="(now :: "t0") ; await
+    Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, "ccglab1" |-> null,
+    "temp" |-> null, Code: call("ccglab0" ; "sensor0" ; "read" ; emp) ; get(
+    "ccglab0" ; "temp") ; free("ccglab0") ; posit "<="(now :: "t0") ; await
     ">"("slots" :: int(0)) ; assign("buffer" ; "|-"("buffer" :: "temp")) ;
     assign("slots" ; "-"("slots" :: int(1))) ; if "="("slots" :: int(0)) th
-    call("label:1" ; "this" ; "packAndSend" ; emp) ; get("label:1" ; noVid) ;
-    free("label:1") el skip fi ; return(emp) >, < "read1" : Method | Param:
-    noVid, Att: "_" |-> null, "label:0" |-> null, "label:1" |-> null, "temp"
-    |-> null, Code: call("label:0" ; "sensor1" ; "read" ; emp) ; get("label:0"
-    ; "temp") ; free("label:0") ; posit "<="(now :: "t1") ; await ">"("slots"
+    call("ccglab1" ; "this" ; "packAndSend" ; emp) ; get("ccglab1" ; noVid) ;
+    free("ccglab1") el skip fi ; return(emp) >, < "read1" : Method | Param:
+    noVid, Att: "_" |-> null, "ccglab0" |-> null, "ccglab1" |-> null, "temp"
+    |-> null, Code: call("ccglab0" ; "sensor1" ; "read" ; emp) ; get("ccglab0"
+    ; "temp") ; free("ccglab0") ; posit "<="(now :: "t1") ; await ">"("slots"
     :: int(0)) ; assign("buffer" ; "|-"("buffer" :: "temp")) ; assign("slots" ;
-    "-"("slots" :: int(1))) ; if "="("slots" :: int(0)) th call("label:1" ;
-    "this" ; "packAndSend" ; emp) ; get("label:1" ; noVid) ; free("label:1") el
+    "-"("slots" :: int(1))) ; if "="("slots" :: int(0)) th call("ccglab1" ;
+    "this" ; "packAndSend" ; emp) ; get("ccglab1" ; noVid) ; free("ccglab1") el
     skip fi ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
-    null, "label:0" |-> null, "label:1" |-> null, Code: call("label:0" ; "this"
-    ; "run0" ; emp) ; free("label:0") ; call("label:1" ; "this" ; "run1" ; emp)
-    ; free("label:1") ; return(emp) >, < "run0" : Method | Param: noVid, Att:
-    "_" |-> null, "label:0" |-> null, "label:1" |-> null, Code: call("label:0"
-    ; "this" ; "read0" ; emp) ; get("label:0" ; noVid) ; free("label:0") ;
+    null, "ccglab0" |-> null, "ccglab1" |-> null, Code: call("ccglab0" ; "this"
+    ; "run0" ; emp) ; free("ccglab0") ; call("ccglab1" ; "this" ; "run1" ; emp)
+    ; free("ccglab1") ; return(emp) >, < "run0" : Method | Param: noVid, Att:
+    "_" |-> null, "ccglab0" |-> null, "ccglab1" |-> null, Code: call("ccglab0"
+    ; "this" ; "read0" ; emp) ; get("ccglab0" ; noVid) ; free("ccglab0") ;
     await ">="(now :: "+"("t0" :: "rate0")) ; posit "<="(now :: "+"("t0" ::
-    "rate0")) ; assign("t0" ; now) ; call("label:1" ; "this" ; "run0" ; emp) ;
-    free("label:1") ; return(emp) >, < "run1" : Method | Param: noVid, Att: "_"
-    |-> null, "label:0" |-> null, "label:1" |-> null, Code: call("label:0" ;
-    "this" ; "read1" ; emp) ; get("label:0" ; noVid) ; free("label:0") ; await
+    "rate0")) ; assign("t0" ; now) ; call("ccglab1" ; "this" ; "run0" ; emp) ;
+    free("ccglab1") ; return(emp) >, < "run1" : Method | Param: noVid, Att: "_"
+    |-> null, "ccglab0" |-> null, "ccglab1" |-> null, Code: call("ccglab0" ;
+    "this" ; "read1" ; emp) ; get("ccglab0" ; noVid) ; free("ccglab0") ; await
     ">="(now :: "+"("t1" :: "rate1")) ; posit "<="(now :: "+"("t1" :: "rate1"))
-    ; assign("t1" ; now) ; call("label:1" ; "this" ; "run1" ; emp) ; free(
-    "label:1") ; return(emp) >, < "setRate" : Method | Param: "newRate", Att:
-    "_" |-> null, "label:0" |-> null, "newRate" |-> null, Code: if "&&"("<"(
+    ; assign("t1" ; now) ; call("ccglab1" ; "this" ; "run1" ; emp) ; free(
+    "ccglab1") ; return(emp) >, < "setRate" : Method | Param: "newRate", Att:
+    "_" |-> null, "ccglab0" |-> null, "newRate" |-> null, Code: if "&&"("<"(
     "newRate" :: "rate0") :: ">"(now :: "+"("t0" :: "newRate"))) th assign("t0"
-    ; now) ; call("label:0" ; "this" ; "read0" ; emp) ; get("label:0" ; noVid)
-    ; free("label:0") el skip fi ; assign("rate0" ; "newRate") ; posit "<"(now
+    ; now) ; call("ccglab0" ; "this" ; "read0" ; emp) ; get("ccglab0" ; noVid)
+    ; free("ccglab0") el skip fi ; assign("rate0" ; "newRate") ; posit "<"(now
     :: "+"("t0" :: "rate0")) ; return(emp) >, < "write" : Method | Param:
     "data", Att: "_" |-> null, "data" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

@@ -31,7 +31,10 @@ TESTSUITE		= $(srcdir)/testsuite
 
 TESTPARTS		= $(srcdir)/cmcvalid.at \
 			  $(srcdir)/macros.at \
-			  $(srcdir)/testsuite.at
+			  $(srcdir)/metaexec.at \
+			  $(srcdir)/syntax.at \
+			  $(srcdir)/testsuite.at \
+			  $(srcdir)/updates.at
 
 TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/Alarmclock.out \
@@ -55,7 +58,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  examples/DiscreteTimeout.maude \
 		  examples/DiscreteTimeout.out \
 		  examples/Fibonacci.creol examples/Fibonacci.maude \
-		  examples/Fibonacci.out \
+		  examples/Fibonacci.out examples/meta-Fibonacci-fail.out \
+		  examples/meta-Fibonacci-17.out \
+		  examples/meta-Fibonacci-42.out \
 		  examples/Hello.creol examples/Hello.maude \
 		  examples/Hello.out \
 		  examples/HollywoodBuffer.creol \
@@ -83,6 +88,9 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/Pair.creol language/Pair.maude language/Pair.out \
 		  language/Inheritance.creol language/Inheritance.maude \
 		  language/Inheritance.out \
+		  language/Init.creol language/Init.maude language/Init.out \
+		  language/Init2.creol language/Init2.maude language/Init2.out \
+		  language/Init3.creol language/Init3.maude language/Init3.out \
 		  language/Diamond.creol language/Diamond.maude \
 		  language/Diamond.out \
 		  language/Deadlock.creol language/Deadlock.maude \
@@ -105,20 +113,16 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  language/Interleave.out \
 		  language/While.creol language/While.maude \
 		  language/While.out \
-		  syntax/AttrDecl.creol \
-		  syntax/MissingEnd.creol \
-		  syntax/MissingEnd2.creol \
-		  syntax/MissingEnd3.creol \
-		  syntax/MissingEnd4.creol \
-		  syntax/MissingEnd5.creol \
-		  syntax/StrayChar.creol \
 		  typecheck/Ambiguous.creol typecheck/Ambiguous2.creol \
 		  typecheck/Ambiguous3.creol typecheck/Ambiguous4.creol \
 		  typecheck/Ambiguous5.creol typecheck/Ambiguous6.creol \
 		  typecheck/Ambiguous7.creol typecheck/Ambiguous8.creol \
+		  typecheck/Constant.creol typecheck/Constant1.creol \
 		  typecheck/Contracts.creol typecheck/Cyclic.creol \
-		  typecheck/CyclicClass.creol \
+		  typecheck/Cyclic2.creol typecheck/Cyclic3.creol \
+		  typecheck/Cyclic4.creol typecheck/CyclicClass.creol \
 		  typecheck/ExprFailure.creol typecheck/If.creol \
+		  typecheck/Implements.creol typecheck/Implements2.creol \
 		  typecheck/Missing.creol typecheck/Missing2.creol \
 		  typecheck/Missing3.creol \
 		  typecheck/Nat.creol typecheck/Nat2.creol \
@@ -129,11 +133,15 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  typecheck/Set3.creol typecheck/Set4.creol \
 		  typecheck/Set5.creol typecheck/Set6.creol \
 		  typecheck/Set7.creol \
+		  typecheck/Future.creol typecheck/Future2.creol \
+		  typecheck/Future3.creol typecheck/Future4.creol \
+		  typecheck/Future5.creol \
 		  typecheck/Map.creol typecheck/Map2.creol \
 		  typecheck/Map3.creol typecheck/Map4.creol \
 		  typecheck/New.creol typecheck/New2.creol \
 		  typecheck/New3.creol typecheck/New4.creol \
 		  typecheck/New5.creol typecheck/New6.creol \
+		  typecheck/Inherits.creol \
 		  devirt/Devirt.creol devirt/Devirt.xml \
 		  bury/Assign.creol bury/Assign.xml \
 		  bury/If.creol bury/If.xml \
@@ -160,7 +168,24 @@ TESTFILES	= examples/Alarmclock.creol examples/Alarmclock.maude \
 		  modelchecker/MC3Phil.out modelchecker/MC3PhilTest.maude \
 		  modelchecker/MC4Phil.creol modelchecker/MC4Phil.maude \
 		  modelchecker/MC4PhilTest.maude modelchecker/MC5Phil.creol \
-		  modelchecker/MC5Phil.maude modelchecker/MC5PhilTest.maude
+		  modelchecker/MC5Phil.maude modelchecker/MC5PhilTest.maude \
+		  updates/bankexp.creol updates/bankexp.maude \
+		  updates/bankexp.out \
+		  updates/update1.creol updates/bankexp1.creol \
+		  updates/update1.maude updates/update1.out \
+		  updates/update2.creol updates/bankexp2.creol \
+		  updates/update2.maude updates/update2.out \
+		  updates/update3.creol updates/bankexp3.creol \
+		  updates/update3.maude updates/update3.out \
+		  updates/update4.creol updates/bankexp4.creol \
+		  updates/update4.maude updates/update4.out \
+		  updates/update5.creol updates/bankexp5.creol \
+		  updates/update5.maude updates/update5.out \
+		  updates/update6.creol updates/bankexp6.creol \
+		  updates/update6.maude updates/update6.out \
+                  updates/add.maude updates/add.out \
+		  updates/extend.maude updates/extend.out \
+		  updates/retract.maude updates/retract.out
 
 EXTRA_DIST	= $(srcdir)/atlocal.in \
 		  $(srcdir)/package.m4 \

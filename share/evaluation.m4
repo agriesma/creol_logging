@@ -44,15 +44,17 @@ mod `CREOL-EVAL' is
     var CL : Class .
     var OB : Object .
     var MS : Msg .
+    var N : Nat .
+    var B : Bool .
 
     --- Check if a message is in the queue.
     op inqueue  : Label Configuration -> Bool .
-    eq inqueue(L, none) = false .
+    eq inqueue(L, < L' : Future | Completed: B, References: N, Value: DL > CN) =
+        if L == L' then B else inqueue(L, CN) fi .
     eq inqueue(L, CL CN) = inqueue(L, CN) .
     eq inqueue(L, OB CN) = inqueue(L, CN) .
-    eq inqueue(L, comp(L', DL) CN) =
-        if L == L' then true else inqueue(L, CN) fi .
-    eq inqueue(L, MS CN) = inqueue(L, CN) [owise] .
+    eq inqueue(L, MS CN) = inqueue(L, CN) .
+    eq inqueue(L, none) = false .
 
 dnl
 dnl Macros for dealing with enabledness and readyness in the timed and
@@ -100,6 +102,7 @@ ifdef(`WITH_TIME',dnl
     eq EVALGUARDLIST(E :: NeEL, S, CN, T) =
       EVALGUARD(E, S, CN, T) :: EVALGUARDLIST(NeEL, S, CN, T) .
 
+    --- Evaluate a set.
     eq EVALGUARDSET(emptyset, S, CN, T) = emptyset .
     eq EVALGUARDSET(DS, S, CN, T) = DS .  ---  No need to evaluate
     eq EVALGUARDSET(E, S, CN, T) = EVALGUARD(E, S, CN, T) .

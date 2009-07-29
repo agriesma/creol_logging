@@ -35,14 +35,14 @@ end
 class Console implements Console
 begin
   var output : List[String] := nil
-  with Any op print(in result: String) == output := output |- "Hello, world"
+  with Any op print(in input: String) == output := output |- input
 end
 
 class Hello
 begin
   var console: Console
   op init == console := new Console
-  op run == console.print("hello, world";)
+  op run == console.print("Hello, world";)
 end
 @end example
 
@@ -88,17 +88,17 @@ This example may be executed in Maude, as shown in the following
 session:
 
 @example
-Maude> rewrite main(classes, "Hello", emp) .
-rewrite in PROGRAM : main(classes, "Hello", emp) .
+Maude> rewrite main(state, "Hello", emp) .
+rewrite in PROGRAM : main(state, "Hello", emp) .
 result State: @{
-< ob("Console0") : "Console" |
-  Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console0"),
+< ob("Console-0") : "Console" |
+  Att: "output" |-> list(str("Hello, world")), "this" |-> ob("Console-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 2 >
  
-< ob("Hello0") : "Hello" |
-  Att: "console" |-> ob("Console0"), "this" |-> ob("Hello0"),
+< ob("Hello-0") : "Hello" |
+  Att: "console" |-> ob("Console-0"), "this" |-> ob("Hello-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 3 >
@@ -112,8 +112,8 @@ result State: @{
 < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("output" @
     "Console" ; list(emp)) ; return(emp) >, < "print" : Method | Param:
-    "result", Att: "_" |-> null, "result" |-> null, Code: assign("output" ;
-    "|-"("output" :: str("Hello, world"))) ; return(emp) >, < "run" : Method |
+    "input", Att: "_" |-> null, "result" |-> null, Code: assign("output" ;
+    "|-"("output" :: "input")) ; return(emp) >, < "run" : Method |
     Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 1 >
  
@@ -121,14 +121,14 @@ result State: @{
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("console" ;
     "Console" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
     |-> null, "label:0" |-> null, Code: call("label:0" ; "console" ; "print" ;
-    str("hello, world")) ; get("label:0" ; noVid) ; return(emp) >,
+    str("Hello, world")) ; get("label:0" ; noVid) ; return(emp) >,
   Ocnt: 1 >
 @}
 Maude>
 @end example
 
-The command @command{rew main(classes, "Hello", emp) .} instructs the
-Maude interpreter to rewrite the program text @code{classes} and a first
+The command @command{rew main(state, "Hello", emp) .} instructs the
+Maude interpreter to rewrite the program text @code{state} and a first
 object of class @code{"Hello"}, which is created without class
 parameters.  Maude responds with the a term repeating the input program
 and a collection of queues and objects.  We observe that all activities
@@ -400,7 +400,7 @@ steps.@footnote{The depth of @code{75} is the depth of the first
 example Maude finds and has been determined empirically.}
 
 @example
-search [1, 75] in PROGRAM : main(classes, "Generator", emp) =>+
+search [1, 75] in PROGRAM : main(state, "Generator", emp) =>+
  < O:Oid : "Sieve" | Att: A:Subst, "p" |-> int(9), Pr:
                      L:Subst, SL:StmList, PrQ: W:MProc,
                      Dealloc: F:Labels, Ev: MM:MMsg, Lcnt: N:Nat >
@@ -410,7 +410,7 @@ search [1, 75] in PROGRAM : main(classes, "Generator", emp) =>+
 This search command is written in the language of Maude and uses terms
 in the run-time syntax of @acronym{CREOL}.  The meaning of this
 expression is, that we search from the initial state
-@code{main(classes, "Generator", emp)} a state that matches the
+@code{main(state, "Generator", emp)} a state that matches the
 @emph{pattern} where one object of type @code{Sieve} has an attribute
 @code{p} with value @code{p}, designated @code{"p" |-> int(9)} in the
 pattern.@footnote{The runtime syntax is described inadequateness

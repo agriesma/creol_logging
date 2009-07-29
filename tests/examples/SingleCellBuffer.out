@@ -1,20 +1,20 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Buffer" : Class | Inh: noInh, Param: noVid, Att: "cell" |-> null, "ctr" |->
     null, "next" |-> null, Mtds:
-  < "get" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null, "x"
+  < "get" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, "x"
     |-> null, Code: await ">"("ctr" :: int(0)) ; if "/="("cell" :: null) th
-    assign("x" ; "cell") el call("label:0" ; "next" ; "get" ; emp) ; get(
-    "label:0" ; "x") ; free("label:0") fi ; assign("ctr" ; "-"("ctr" :: int(
+    assign("x" ; "cell") el call("ccglab0" ; "next" ; "get" ; emp) ; get(
+    "ccglab0" ; "x") ; free("ccglab0") fi ; assign("ctr" ; "-"("ctr" :: int(
     1))) ; assign("cell" ; null) ; return("x") >, < "init" : Method | Param:
     noVid, Att: "_" |-> null, Code: assign("ctr" ; int(0)) ; return(emp) >, <
-    "put" : Method | Param: "x", Att: "_" |-> null, "label:0" |-> null, "x" |->
+    "put" : Method | Param: "x", Att: "_" |-> null, "ccglab0" |-> null, "x" |->
     null, Code: if "="("ctr" :: int(0)) th assign("cell" ; "x") el if "="(
-    "next" :: null) th new("next" ; "Buffer" ; emp) el skip fi ; call("label:0"
-    ; "next" ; "put" ; "x") ; get("label:0" ; noVid) ; free("label:0") fi ;
+    "next" :: null) th new("next" ; "Buffer" ; emp) el skip fi ; call("ccglab0"
+    ; "next" ; "put" ; "x") ; get("ccglab0" ; noVid) ; free("ccglab0") fi ;
     assign("ctr" ; "+"("ctr" :: int(1))) ; return(emp) >, < "run" : Method |
     Param: noVid, Att: "_" |-> null, Code: skip ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

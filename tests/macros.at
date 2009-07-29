@@ -105,7 +105,7 @@ fi
 
 if test "x$5" != "xno"
 then
-    AT_CHECK([/bin/sed -e '/^======/,+2 d' -e '/^Bye.$/ d' ${abs_srcdir}/$2/$1.out | cmcvalid -], [0], [ignore], [])
+    AT_CHECK([/bin/sed -e '/^======/,+2 d' -e '/^Bye.$/ d' ${abs_srcdir}/$2/$1.out | cmcdisplay -], [0], [ignore], [])
 fi
 
 AT_CLEANUP
@@ -142,7 +142,7 @@ fi
 
 l=`wc -l < ${abs_srcdir}/$2/$1.out`
 l=`expr $l - 2`
-AT_CHECK([/bin/sed -e 1d -e 2d -e 3d -e "$l"q ${abs_srcdir}/$2/$1.out | cmcvalid -], [0], [ignore], [])
+AT_CHECK([/bin/sed -e 1d -e 2d -e 3d -e "$l"q ${abs_srcdir}/$2/$1.out | cmcdisplay -], [0], [ignore], [])
 
 AT_CLEANUP
 ])

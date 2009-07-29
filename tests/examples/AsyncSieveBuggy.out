@@ -1,13 +1,13 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Generator" : Class | Inh: noInh, Param: noVid, Att: "n" |-> null, "next" |->
     null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("next" ;
     "Sieve" ; int(2)) ; assign("n" ; int(3)) ; return(emp) >, < "run" : Method
-    | Param: noVid, Att: "_" |-> null, "l" |-> null, "label:0" |-> null, "r"
+    | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null, "l" |-> null, "r"
     |-> null, Code: call("l" ; "next" ; "send" ; "n") ; assign("n" ; "+"("n" ::
-    int(1))) ; call("label:0" ; "this" ; "run" ; emp) ; free("label:0") ; await
+    int(1))) ; call("ccglab0" ; "this" ; "run" ; emp) ; free("ccglab0") ; await
     ?("l") ; get("l" ; "r") ; free("l") ; return(emp) >,
   Ocnt: 0 >
  
@@ -15,13 +15,13 @@ result Configuration:
     Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(
-    emp) >, < "send" : Method | Param: "n", Att: "_" |-> null, "d" |-> null,
-    "label:0" |-> null, "n" |-> null, "r" |-> null, "res" |-> null, Code:
+    emp) >, < "send" : Method | Param: "n", Att: "_" |-> null, "ccglab0" |->
+    null, "d" |-> null, "n" |-> null, "r" |-> null, "res" |-> null, Code:
     assign("d" ; "/"("n" :: "p")) ; assign("r" ; "-"("n" :: "*"("d" :: "p"))) ;
     if "="("r" :: int(0)) th assign("res" ; bool(false)) el if "/="("next" ::
-    null) th call("label:0" ; "next" ; "send" ; "n") ; await ?("label:0") ;
-    get("label:0" ; "res") ; free("label:0") el new("next" ; "Sieve" ; "n") ;
+    null) th call("ccglab0" ; "next" ; "send" ; "n") ; await ?("ccglab0") ;
+    get("ccglab0" ; "res") ; free("ccglab0") el new("next" ; "Sieve" ; "n") ;
     assign("res" ; bool(true)) fi fi ; return("res") >,
   Ocnt: 0 >
-
+}
 Bye.

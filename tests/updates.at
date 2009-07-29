@@ -1,0 +1,234 @@
+dnl updates.at - Test dynamic class updates
+dnl
+dnl This file is part of creoltools
+dnl
+dnl Written and Copyright (c) 2009 by Ingrid Chieh Yu de Vibe and Marcel Kyas
+dnl
+dnl This program is free software; you can redistribute it and/or
+dnl modify it under the terms of the GNU General Public License as
+dnl published by the Free Software Foundation; either version 3 of the
+dnl License, or (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+
+AT_SETUP([bankexp])
+AT_CHECK([${CREOLC} -T maude -m updates -W all ${abs_srcdir}/updates/bankexp.creol -o bankexp.maude])
+DIFF([${abs_srcdir}/updates/bankexp.maude], [bankexp.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load bankexp .
+frew[[550]] main(state, "Customer", emp) .
+quit .
+])
+TEST_MAUDE([bankexp], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([update1])
+AT_CHECK([dnl
+creolupdc \
+    -state ${top_srcdir}/tests/updates/bankexp.out \
+    -ie ${top_srcdir}/tests/updates/bankexp.creol \
+    -oe bankexp1.creol \
+    -o update1.maude \
+    ${top_srcdir}/tests/updates/update1.creol
+])
+DIFF([${top_srcdir}/tests/updates/bankexp1.creol], [bankexp1.creol])
+DIFF([${top_srcdir}/tests/updates/update1.maude], [update1.maude])
+
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load update1.maude .
+frew[[50]] state .
+quit .
+])
+TEST_MAUDE([update1], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([update2])
+AT_CHECK([dnl
+creolupdc \
+    -state ${top_srcdir}/tests/updates/update1.out \
+    -ie ${top_srcdir}/tests/updates/bankexp1.creol \
+    -oe bankexp2.creol \
+    -o update2.maude \
+    ${top_srcdir}/tests/updates/update2.creol
+])
+DIFF([${top_srcdir}/tests/updates/bankexp2.creol], [bankexp2.creol])
+DIFF([${top_srcdir}/tests/updates/update2.maude], [update2.maude])
+
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load update2.maude .
+frew[[30]] state .
+quit .
+])
+TEST_MAUDE([update2], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([update3])
+AT_CHECK([dnl
+creolupdc \
+    -state ${top_srcdir}/tests/updates/update2.out \
+    -ie ${top_srcdir}/tests/updates/bankexp2.creol \
+    -oe bankexp3.creol \
+    -o update3.maude \
+    ${top_srcdir}/tests/updates/update3.creol
+])
+DIFF([${top_srcdir}/tests/updates/bankexp3.creol], [bankexp3.creol])
+DIFF([${top_srcdir}/tests/updates/update3.maude], [update3.maude])
+
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load update3.maude .
+frew[[35]] state .
+quit .
+])
+TEST_MAUDE([update3], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([update4])
+AT_CHECK([dnl
+creolupdc \
+    -state ${top_srcdir}/tests/updates/update3.out \
+    -ie ${top_srcdir}/tests/updates/bankexp3.creol \
+    -oe bankexp4.creol \
+    -o update4.maude \
+    ${top_srcdir}/tests/updates/update4.creol
+])
+DIFF([${top_srcdir}/tests/updates/bankexp4.creol], [bankexp4.creol])
+DIFF([${top_srcdir}/tests/updates/update4.maude], [update4.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load update4.maude .
+frew[[35]] state .
+quit .
+])
+TEST_MAUDE([update4], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([update5])
+AT_CHECK([dnl
+creolupdc \
+    -state ${top_srcdir}/tests/updates/update4.out \
+    -ie ${top_srcdir}/tests/updates/bankexp4.creol \
+    -oe bankexp5.creol \
+    -o update5.maude \
+    ${top_srcdir}/tests/updates/update5.creol
+])
+DIFF([${top_srcdir}/tests/updates/bankexp5.creol], [bankexp5.creol])
+DIFF([${top_srcdir}/tests/updates/update5.maude], [update5.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load update5.maude .
+frew[[20]] state .
+quit .
+])
+TEST_MAUDE([update5], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([update6])
+AT_CHECK([dnl
+creolupdc \
+    -state ${top_srcdir}/tests/updates/update4.out \
+    -ie ${top_srcdir}/tests/updates/bankexp4.creol \
+    -oe bankexp6.creol \
+    -o update6.maude \
+    ${top_srcdir}/tests/updates/update6.creol
+])
+DIFF([${top_srcdir}/tests/updates/bankexp6.creol], [bankexp6.creol])
+DIFF([${top_srcdir}/tests/updates/update6.maude], [update6.maude])
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load update6.maude .
+frew[[50]] state .
+quit .
+])
+TEST_MAUDE([update6], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([add-update])
+cp ${top_srcdir}/tests/updates/add.maude .
+AT_DATA([test.maude],
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load add .
+rew state .
+quit .
+)
+TEST_MAUDE([add], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([extend-update])
+cp ${top_srcdir}/tests/updates/extend.maude .
+AT_DATA([test.maude],
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load extend .
+rew state .
+quit .
+)
+TEST_MAUDE([extend], test.maude, [updates])
+AT_CLEANUP
+
+AT_SETUP([retract-update])
+cp ${top_srcdir}/tests/updates/retract.maude .
+AT_DATA([test.maude],
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load retract .
+rew state .
+quit .
+)
+TEST_MAUDE([retract], test.maude, [updates])
+AT_CLEANUP

@@ -28,6 +28,7 @@ exception Eof of string
 exception BadToken of string * int * string
 
 type token =
+  | Unknown of string * int
   | Key of string * int
   | Property of string * int
   | Int of Big_int.big_int * int
@@ -56,8 +57,8 @@ type token =
 
 let get_token_line =
   function
-      Key (_, line) | Property (_, line) | Str (_, line)
-    | Int (_, line) | Float (_, line)
+    | Unknown (_, line) | Key (_, line) | Property (_, line)
+    | Str (_, line) | Int (_, line) | Float (_, line)
     | LParen line | RParen line
     | Comma line | Semi line | Colon line | DColon line
     | Lt line | Gt line | Question line | At line
@@ -70,6 +71,7 @@ let get_token_line =
 
 let get_token_name =
   function
+    | Unknown (name, _) -> "<<unkown: " ^ name ^ ">>"
     | Key (name, _) -> "<<key: " ^ name ^ ">>"
     | Property(name, _) -> "<<property: " ^ name ^ ">>"
     | Str (s, _) -> "<<string: '" ^ s ^ "'>>"
@@ -153,8 +155,23 @@ let token input =
 	    Stream.junk stream; incr line; next_token stream 
 	| Some ('$' | 'A'..'Z' | 'a'..'z' | '_' | '\192'..'\255' as c) ->
 	    Stream.junk stream ; reset_buffer () ; store c; parse_key stream
+        | Some '-' ->
+            begin
+              match Stream.npeek 2 input with
+                | ['-'; '0'..'9'] ->
+	            let () = Stream.junk stream
+                    and () = reset_buffer () in
+                    let () = store '-' in
+                      parse_number stream
+                | _ ->
+	            let () = Stream.junk stream in
+                      Some (Unknown ("-", !line))
+            end
 	| Some ('0'..'9' as c) ->
-	    Stream.junk stream; reset_buffer (); store c; parse_number stream
+	    let () = Stream.junk stream
+            and () = reset_buffer () in
+            let () = store c in
+              parse_number stream
 	| Some '@' -> let () = Stream.junk input in Some(At !line)
 	| Some '(' -> Stream.junk stream; Some(LParen !line)
 	| Some ')' -> Stream.junk stream; Some(RParen !line)
@@ -182,7 +199,8 @@ let token input =
 		  | Some ']' -> 
 		      let () = Stream.junk stream in Some (Box !line)
 		  | t ->
-		      raise (BadToken (Char.escaped '[', !line, "Tokenizer"))
+		      let () = Stream.junk stream in
+                        Some (Unknown (Char.escaped '[', !line))
 	    end
 	| Some '{' -> Stream.junk stream; Some (LBrace !line)
 	| Some '|' -> Stream.junk stream; 
@@ -195,7 +213,9 @@ let token input =
 		| _ -> Some (Bar !line)
             end
 	| Some '}' -> Stream.junk stream; Some (RBrace !line)
-	| Some c -> raise (BadToken (Char.escaped c, !line, "Tokenizer"))
+	| Some c ->
+            let () = Stream.junk stream in
+              Some (Unknown (Char.escaped c, !line))
 	| None -> None
     and parse_key stream =
       match Stream.peek stream with
@@ -224,7 +244,8 @@ let token input =
 	    store 'e';
 	    parse_exponent_part stream
 	| _ ->
-	    Some (Int (Big_int.big_int_of_string (get_string ()), !line))
+	    let s = get_string () in
+              Some (Int (Big_int.big_int_of_string s, !line))
     and parse_decimal_part stream =
       match Stream.peek stream with
 	  Some ('0'..'9' as c) ->
@@ -254,7 +275,23 @@ let token input =
       Stream.from (fun count -> next_token input)
 
 
-
+(** Skip over the Maude header. *)
+let rec skip_to_state input =
+  match Stream.peek input with
+    | Some Key ("result", _) ->
+        begin
+          let () = Stream.junk input in   
+            match Stream.peek input with
+              | Some Property _ ->
+                  Stream.junk input
+              | _ -> skip_to_state input
+        end
+    | Some LBrace _ ->
+        () (* Maybe we face preprocessed input? *)
+    | Some _ ->
+        let () = Stream.junk input in
+          skip_to_state input
+    | None -> raise (Eof "skip_to_state")
 
 (*s CMC Parser.
 
@@ -272,22 +309,31 @@ module PropMap = Map.Make(String)
 
 type t =
   | Cls of Class.t
+  | Future of Future.t
   | Mtd of Method.t
   | Obj of Object.t
 
 type v =
   | Ignored
   | Attr of (string * Expression.t) list
+  | Bool of bool
   | Code of Statement.t
   | Inh of Inherits.t list
   | Mtds of Method.t list
+  | Nat of Big_int.big_int
   | Parameters of string list
   | Process of Process.t
   | ProcessQueue of Process.t list
+  | Value of Expression.t list
 
 let get_attr =
   function
     | Attr res -> res
+    | _ -> assert false
+
+let get_bool =
+  function
+    | Bool res -> res
     | _ -> assert false
 
 let get_code =
@@ -305,6 +351,11 @@ let get_mtds =
     | Mtds res -> res
     | _ -> assert false
 
+let get_nat =
+  function
+    | Nat res -> res
+    | _ -> assert false
+
 let get_parameters =
   function
     | Parameters res -> res
@@ -320,13 +371,32 @@ let get_process_queue =
     | ProcessQueue res -> res
     | _ -> assert false
 
+let get_value =
+  function
+    | Value res -> res
+    | _ -> assert false
+
+let get_name =
+  function
+    | Expression.Id (_, name) -> name
+    | Expression.SSAId (_, name, _) -> name
+    | _ -> assert false
+
+let get_stage =
+  function
+    | Expression.SSAId (_, _, s) ->
+        Expression.Int (Expression.make_note (), Big_int.big_int_of_int s)
+    | _ ->
+        (* XXX: Revise that? *)
+        Expression.Int (Expression.make_note (), Big_int.zero_big_int)
+
 let vardecl_of_binding (n, i) =
-  { VarDecl.name = n; var_type = Type.data; init = Some i }
+  { VarDecl.name = n; var_type = Type.data; init = Some i; file = ""; line = 0 }
 
 let vardecl_of_name n =
-  { VarDecl.name = n; var_type = Type.data; init = None }
+  { VarDecl.name = n; var_type = Type.data; init = None; file = ""; line = 0 }
 
-let parse name input =
+let parse from_maude name input =
   let build_term oid cid props =
     match cid with
       | "~Class" ->
@@ -334,8 +404,24 @@ let parse name input =
 	  and i = get_inh (PropMap.find "Inh" props)
 	  and m = get_mtds (PropMap.find "Mtds" props)
 	  and a = get_attr (PropMap.find "Att" props)
+          and o = get_nat (PropMap.find "Ocnt" props)
+          and pr = [] in
+          let pr' =
+            try
+              { Pragma.name = "Version";
+                values = [Expression.Int (Expression.make_note (),
+                                  get_nat (PropMap.find "Version" props))] } ::
+              pr
+            with
+              | Not_found -> pr
+          in
+          let pr'' =
+            try
+              { Pragma.name = "Stage"; values = [ get_stage oid ]} :: pr'
+            with
+              | Not_found -> pr'
 	  in
-	    Cls { Class.name = oid ;
+	    Cls { Class.name = get_name oid ;
 		  parameters = (List.map vardecl_of_name p) ;
 		  inherits = i ;
 		  contracts = [] ;
@@ -344,35 +430,64 @@ let parse name input =
 		  invariants = [] ;
 		  with_defs = [{ With.co_interface = Type.any;
 				 methods = m;
-				 invariants = []}] ;
-		  pragmas = [];
+				 invariants = [];
+                                 file = ""; line = 0}] ;
+		  objects_created = o;
+		  pragmas = pr'';
 		  file = "";
 		  line = 0 }
+      | "~Future" ->
+          Future { Future.name = oid;
+                   completed = get_bool (PropMap.find "Completed" props);
+                   references = get_nat (PropMap.find "References" props);
+                   value = get_value (PropMap.find "Value" props);
+          }
       | "~Method" ->
 	  let c = get_code (PropMap.find "Code" props)
 	  and p = get_parameters (PropMap.find "Param" props)
 	  and a = get_attr (PropMap.find "Att" props)
 	  in
-	    Mtd { Method.name = oid;
-		coiface = Type.any;
-		inpars = List.map vardecl_of_name p;
-		outpars = [];
-		requires = Expression.Bool (Expression.make_note (), true);
-		ensures = Expression.Bool (Expression.make_note (), true);
-		vars = (List.map vardecl_of_binding a);
-		body = Some c;
-		location = "" }
-      | t ->
+	    Mtd { Method.name = get_name oid;
+		  coiface = Type.any;
+		  inpars = List.map vardecl_of_name p;
+		  outpars = [];
+		  requires = Expression.Bool (Expression.make_note (), true);
+		  ensures = Expression.Bool (Expression.make_note (), true);
+		  vars = (List.map vardecl_of_binding a);
+		  body = Some c;
+		  location = "";
+		  file = "";
+                  line = 0 }
+      | cid ->
 	  let a = get_attr (PropMap.find "Att" props)
+          and (c, s) =
+            try
+              let i = String.index cid ':' in
+              let c' = String.sub cid 0 i
+              and s' = String.sub cid (i + 1) ((String.length cid) - i - 1) in
+                (c', Big_int.big_int_of_string s')
+            with
+              | Not_found -> (cid, Big_int.zero_big_int)
 	  and p = get_process (PropMap.find "Pr" props)
 	  and q = get_process_queue (PropMap.find "PrQ" props)
+	  and l = get_nat (PropMap.find "Lcnt" props) in
+          let pr = [{ Pragma.name = "Calls" ;
+                      values = [ Expression.Int (Expression.make_note (), l)]}]
+          in
+          let pr' =
+            try
+              { Pragma.name = "Stage";
+                values = [ Expression.Int (Expression.make_note (), s) ]} :: pr
+            with
+              | Not_found -> pr
 	  in
 	    Obj { Object.name = oid;
-		  cls = Type.Basic t;
+		  cls = Type.Basic c;
 		  attributes = (List.map vardecl_of_binding a);
 		  process = p;
 		  process_queue = q;
-		  hidden = false }
+                  emitted_calls = l;
+		  pragmas = pr' }
   in
   let rec parse_configuration input =
     match Stream.peek input with
@@ -381,11 +496,64 @@ let parse name input =
 	    match parse_object_term input with 
 	      | Cls c -> Declaration.Class c
 	      | Obj o -> Declaration.Object o
+              | Future f -> Declaration.Future f
 	      | _ -> assert false
 	  in
 	    res::(parse_configuration input)
+      | Some Key ("Bye", _) when from_maude ->
+          (* Here it means that input is about to end. *)
+          begin
+            match Stream.npeek 2 input with
+              | [Key ("Bye", _); Unknown (".", _);] ->
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                    (* And then wait for eof during the next call. *)
+	            parse_configuration input
+              | _ ->
+	          let _ = parse_expression input in
+	            parse_configuration input
+          end
+      | Some Key ("add", _) ->
+          begin
+            match Stream.npeek 2 input with
+              | [Key ("add", _); LParen _;] ->
+                  let () = Stream.junk input in
+                  let () = Stream.junk input in
+                  let cls =
+	            match parse_object_term input with 
+	              | Cls c -> c
+                      | _ -> assert false
+                  in
+                    begin
+                      match Stream.peek input with
+                        | Some Comma _ ->
+                            let () = Stream.junk input in
+                            let deps = parse_dependencies input in
+                              begin
+                                match Stream.peek input with
+                                  | Some RParen _ ->
+                                      let () = Stream.junk input in
+                                        Declaration.NewClass
+                                          { NewClass.cls = cls;
+                                            NewClass.dependencies = deps } ::
+					  (parse_configuration input)
+                                  | Some t -> 
+	                              raise (BadToken (error_tokens input,
+                                                       get_token_line t,
+			                               ")"))
+                                  | None -> raise (Eof (""))
+                              end
+                        | _ -> assert false
+                    end
+          end
+      | Some Key ("extend", _) ->
+          let res = parse_extend_message input in
+            (Declaration.Update res) :: (parse_configuration input)
+      | Some Key ("remove", _) ->
+          let res = parse_retract_message input in
+            (Declaration.Retract res) :: (parse_configuration input)
       | Some Key (_, _) ->
-	  let res = parse_expression input in
+	  let _ = parse_expression input in
 	    parse_configuration input
       | _ ->
 	  []
@@ -419,22 +587,94 @@ let parse name input =
     let props = parse_properties PropMap.empty input in
     let () = junk_right_bracket input in
       build_term oid cid props
+  and parse_extend_message input =
+    let () = Stream.junk input in
+    let () = junk_lparen input in
+    let c = parse_string input in
+    let () = junk_comma input in
+    let inh = parse_inherit_list input in
+    let () = junk_comma input in
+    let attr = parse_substitution input in
+    let () = junk_comma input in
+    let meths = List.map (function (Mtd m) -> m | _ -> assert false)
+		      (parse_object_term_list input) in
+    (* BUG? let () = junk_comma input in *)
+    let init = parse_statement input in
+    let () = junk_comma input in
+    let deps = parse_dependencies input in
+    let () = junk_rparen input in
+      { Update.name = c;
+        inherits = inh;
+        contracts = [];
+        implements = [];
+        attributes = (List.map vardecl_of_binding attr);
+        with_defs = [{ With.co_interface = Type.any;
+	               methods = meths;
+		       invariants = [];
+                       file = ""; line = 0}];
+        pragmas = [];
+        dependencies = deps;
+        file = "";
+        line = 0 }
+  and parse_retract_message input =
+    let () = Stream.junk input in
+    let () = junk_lparen input in
+    let c = parse_string input in
+    let () = junk_comma input in
+    let inh = parse_inherit_list input in
+    let () = junk_comma input in
+    let attr = parse_substitution input in
+    let () = junk_comma input in
+    let meths = List.map (function (Mtd m) -> m | _ -> assert false)
+		      (parse_object_term_list input) in
+    (* BUG? let () = junk_comma input in *)
+    let cdeps = parse_dependencies input in
+    let () = junk_comma input in
+    let odeps = parse_dependencies ~obj:true input in
+    let () = junk_rparen input in
+      { Retract.name = c;
+        inherits = inh;
+        attributes = (List.map vardecl_of_binding attr);
+        with_decls = [{ With.co_interface = Type.any;
+	                methods = meths;
+		        invariants = [];
+                        file = ""; line = 0}];
+        pragmas = [];
+        dependencies = cdeps;
+        obj_deps = odeps;
+        file = "";
+        line = 0 }
   and parse_oid input =
     match Stream.peek input with
-      | Some Key ("ob", _) ->
-          let () = Stream.junk input in
-	  let () = junk_lparen input in
-	  let s = parse_string input in
-	  let () = junk_rparen input in
-	    s
+      | Some Key (("label" | "ob"), _) ->
+	  parse_expression input
+      | Some Key ("class", _) ->
+          begin
+            let () = Stream.junk input in
+            let () = junk_lparen input in
+            let v = parse_string input in
+            let () = junk_comma input in
+            let s = Big_int.int_of_big_int (parse_integer input) in
+            let () = junk_rparen input in
+              Expression.SSAId (Expression.make_note (), v, s)
+          end
       | Some Str (v, _) ->
-	  let () = Stream.junk input in v
+	  let () = Stream.junk input in
+            Expression.Id (Expression.make_note (), v)
       | Some t ->
 	  raise (BadToken (error_tokens input, get_token_line t,
 			   "OID: <<key>>,<<string>>"))
       | None -> raise (Eof "")
   and parse_cid input =
     match Stream.peek input with
+      | Some Key ("class", _) ->
+          let () = Stream.junk input in
+          let () = junk_lparen input in
+          let c = parse_string input in
+          let () = junk_comma input in
+          let s = parse_integer input in
+          let () = junk_rparen input in
+            c ^ ":" ^ (Big_int.string_of_big_int s)
       | Some Key (v, _) ->
 	  let () = Stream.junk input in
 	    "~" ^ v
@@ -470,10 +710,26 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let v = parse_merge_statement input in
 	    Code v
+      | Some Property ("Completed", _) ->
+	  let () = Stream.junk input in
+	  let v =
+            match Stream.peek input with
+              | Some Key ("false", _) -> let () = Stream.junk input in false
+              | Some Key ("true", _) -> let () = Stream.junk input in true
+              | Some t ->
+	          let tl = error_tokens input in
+	            raise (BadToken (tl, get_token_line t, "false, true"))
+              | None -> raise (Eof "")
+          in
+	    Bool v
       | Some Property ("Inh", _) ->
 	  let () = Stream.junk input in
 	  let v = parse_inherit_list input in
 	    Inh v
+      | Some Property (("Lcnt" | "Ocnt" | "References" | "Version"), _) ->
+	  let () = Stream.junk input in
+	  let v = parse_integer input in
+	    Nat v
       | Some Property ("Mtds", _) ->
 	  let () = Stream.junk input in
 	    Mtds (List.map (function (Mtd m) -> m | _ -> assert false)
@@ -490,6 +746,10 @@ let parse name input =
 	  let () = Stream.junk input in
 	  let q = parse_process_queue input in
 	    ProcessQueue q
+      | Some Property ("Value", _) ->
+	  let () = Stream.junk input in
+	  let l = parse_expression_list input in
+	    Value l
       | Some Property (p, _) ->
 	  let () = Stream.junk input in
 	  let () = junk_property input in
@@ -561,7 +821,7 @@ let parse name input =
     let () = junk_left_bracket input in
     let a = parse_expression_list input in
     let () = junk_right_bracket input in
-      { Inherits.name = n; arguments = a }
+      { Inherits.name = n; arguments = a; file = ""; line = 0 }
   and parse_process_queue input =
     match Stream.peek input with
       | Some LBrace _ ->
@@ -641,6 +901,38 @@ let parse name input =
 			    "noSubst, <<string>>"))
       | None ->
 	  raise (Eof "")
+  and parse_dependencies ?(obj=false) input =
+    let rec work acc =
+      match Stream.peek input with
+        | Some Key ("none", _) ->
+            let () = Stream.junk input in
+              Dependencies.empty
+        | Some Key (("c"|"o") as k, _) when obj || k = "c" ->
+            begin
+              (* Parse a class dependency *)
+              let () = Stream.junk input in
+              let () = junk_lparen input in
+              let c = parse_string input in
+              let () = junk_comma input in
+              let i = parse_integer input in
+              let () = junk_rparen input in
+              let d = { Dependency.name = c; version = i } in
+              let acc' =
+                match Stream.npeek 2 input with
+                  | [Comma _; Key ("c", _)] -> 
+                    let () = junk_comma input in
+                      work acc
+                  | _ -> acc
+              in
+                Dependencies.add d acc
+            end
+        | Some t ->
+	    raise (BadToken (error_tokens input, get_token_line t,
+			      "dependencies"))
+        | None ->
+	    raise (Eof "")
+    in
+      work Dependencies.empty
   and parse_merge_statement input =
     let lhs = parse_choice_statement input in
       match Stream.peek input with
@@ -971,7 +1263,8 @@ let parse name input =
 	    begin
 	      match Stream.peek input with
 	        | Some Comma _ ->
-		    (d, r)::(parse_bindings input)
+                    let () = Stream.junk input in
+		      (d, r)::(parse_bindings input)
 	        | _ -> [(d, r)]
 	    end
       | Some t ->
@@ -1054,8 +1347,17 @@ let parse name input =
 	  raise (Eof "")
   and parse_bound input =
     match Stream.peek input with
-      | Some Key("None", _) -> let () = Stream.junk input in None
-      | Some Str _ -> let s = parse_string input in Some s
+      | Some Key ("None", _) ->
+          let () = Stream.junk input in
+            None
+      | Some Str _ ->
+          let s = parse_string input in
+            Some s
+      | Some t ->
+	  raise (BadToken (error_tokens input, get_token_line t,
+			   "<<Class>>, None"))
+      | None ->
+	  raise (Eof "")
   and parse_string input =
     match Stream.peek input with
       | Some Str (s, _) ->
@@ -1161,6 +1463,7 @@ let parse name input =
       | None ->
 	  raise (Eof "")
   in
+  let () = if from_maude then skip_to_state input in
     match Stream.peek input with
       | Some LBrace _ ->
           let () = junk_left_brace input in
@@ -1181,10 +1484,11 @@ let parse name input =
   Read the contents from a channel and return a abstract syntax tree
   and measure the time used for it.
 *)
-let parse_from_channel (name: string) (channel: in_channel) =
-  Program.make (parse name (token (Stream.of_channel channel)))
+let parse_from_channel from_maude name channel =
+  Program.make (parse from_maude name (token (Stream.of_channel channel)))
 
 
 (* Read the contents of a file and return an abstract syntax tree.
 *)
-let parse_from_file name = parse_from_channel name (open_in name)
+let parse_from_file (from_maude: bool) name =
+  parse_from_channel from_maude name (open_in name)

@@ -1,9 +1,9 @@
 /*
- * MissingEnd4.creol -- Error with missing end, test 4.
+ * Cyclic4.creol -- Subtype relation with missing interface.
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2009 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,10 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Foo
-begin
-  op init ==
-    while true do
-      if true then
-	skip
-end
+interface I inherits J begin end
+
+interface J inherits K begin end

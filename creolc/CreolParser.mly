@@ -104,7 +104,8 @@ datatypedecl:
     DATATYPE t = creol_type
       s = loption(preceded(FROM, separated_list(COMMA, creol_type)))
       pr = list(pragma)
-    { { Datatype.name = t; supers = s; pragmas = pr } }
+    { { Datatype.name = t; supers = s; pragmas = pr;
+	file = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 
 (* Function declaration *)
@@ -128,45 +129,6 @@ functiondecl:
   | FUNCTION id_or_op plist(vardecl_no_init) COLON creol_type list(pragma)
     EQEQ error
     { signal_error $startpos "syntax error in function declaration" }
-
-
-(* Class declaration *)
-
-classdecl:
-      CLASS n = CID p = plist(vardecl_no_init) s = list(super_decl)
-        pr = list(pragma)
-	BEGIN
-        a = list(terminated(attribute, ioption(SEMI))) i = list(invariant)
-        aw = loption(anon_with_def) w = list(with_def)
-        END
-      { { Class.name = n; parameters = p; inherits = inherits s;
-	  contracts = contracts s; implements = implements s;
-	  attributes = List.flatten a; invariants = i;
-          with_defs = upd_method_locs n (aw @ w);
-	  pragmas = pr;
-	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
-    | CLASS error
-	{ signal_error $startpos "syntax error: invalid class name" }
-    | CLASS CID error
-	{ signal_error $startpos "syntax error in class declaration" }
-    | CLASS CID plist(vardecl_no_init) list(super_decl)
-        list(pragma) BEGIN error
-	{ signal_error $startpos "syntax error in class body definition" }
-
-(* Interface Declaration *)
-
-interfacedecl:
-      INTERFACE n = CID plist(vardecl_no_init) i = list(inherits_decl)
-        pr = list(pragma)
-        BEGIN ioption(preceded(INV, expression)) w = list(with_decl) END
-        { { Interface.name = n; inherits = inherits i;
-	    with_decls = upd_method_locs n w; pragmas = pr } }
-    | INTERFACE error
-	{ signal_error $startpos "syntax error in interface declaration" }
-    | INTERFACE CID error
-	{ signal_error $startpos "syntax error in interface declaration" }
-
-
 
 
 %%

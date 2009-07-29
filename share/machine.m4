@@ -48,6 +48,7 @@ ifdef(`LOGGING',dnl
   vars I I1 : InhList .
   var MS : MMtd .
   var CN : Configuration .
+  var CO : Bool .                      --- Whether a future completed.
 ifdef(`WITH_UPDATE',
 `  var V V1 T T1 T2 : Nat .                --- Class and object versions
   var G1 : Nat .
@@ -144,17 +145,16 @@ STEP(dnl
 --- if_then_else
 ---
 STEP(dnl
-PRELOG`'dnl
-< O : C | Att: S`,' Pr: { L | if E th SL1 el SL2 fi ; SL }`,' PrQ: W`,' Lcnt: F >
-  CLOCK,
-if EVAL(E, (S :: L), T) asBool then
-    < O : C | Att: S`,' Pr: { L | SL1 ; SL }`,' PrQ: W`,' Lcnt: F >
-POSTLOG(`if E th skip el skip fi', `"ifthenelse"', `TnoSubst', "eq" |> renExpr(S, L, E) ) dnl
+`< O : C | Att: S, Pr: { L | if E th SL1 el SL2 fi ; SL }, PrQ: W, Lcnt: F >
+  CLOCK',
+`if EVAL(E, (S :: L), T) asBool then
+    < O : C | Att: S, Pr: { L | SL1 ; SL }, PrQ: W, Lcnt: F >
+POSTLOG(if E th skip el skip fi, "ifthenelse", TnoSubst, "eq" |> renExpr(S, L, E) ) dnl
   else
-    < O : C | Att: S`,' Pr: { L | SL2 ; SL }`,' PrQ: W`,' Lcnt: F >
-POSTLOG(`if E th skip el skip fi', `"ifthenelse"', `TnoSubst', "eq" |> "~"(renExpr(S, L, E)) ) dnl
+    < O : C | Att: S, Pr: { L | SL2 ; SL }, PrQ: W, Lcnt: F >
+POSTLOG(if E th skip el skip fi, "ifthenelse", TnoSubst, "eq" |> "~"(renExpr(S, L, E)) ) dnl
   fi
-  CLOCK,
+  CLOCK',
 `[label if-then-else]')
 
 
@@ -300,10 +300,10 @@ eq < O : C | Att: S, Pr: { L | get(A ; AL) ; SL }, PrQ: W, Lcnt: F > =
 ---
 rl
   < O : C |  Att: S, Pr: { L | get(N ; AL) ; SL }, PrQ: W, Lcnt: F >
-  comp(N, DL)
+  < N : Future | Completed: true, References: G, Value: DL >
   =>
   < O : C |  Att: S, Pr: { L | RMARKER("receive return from " + toString(N), DL, toString(N) )assign(AL ; DL) ; SL }, PrQ: W, Lcnt: F >
-  comp(N, DL)
+  < N : Future | Completed: true, References: G, Value: DL >
   [label receive-comp] .
 
 
@@ -337,18 +337,22 @@ rl
 --- local-async-static-call
 ---
 ifdef(`MODELCHECK',
-`eq
+`ceq
   < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; None ; EL ); SL }, PrQ: W, Lcnt: F >
   CLOCK
   =
-  < O : C | Att: S, Pr: { insert(A, label(O, O, Q, EVALLIST(EL, (S :: L), T)), L) | SL }, PrQ: W, Lcnt: F >
-  bindMtd(O`,' O`,' label(O, O, Q, EVALLIST(EL, (S :: L), T))`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F >
+  < N : Future | Completed: false, References: 1, Value: emp >
+  bindMtd(O, O, N, Q, EVALLIST(EL, (S :: L), T), CC < emp >) CLOCK
+  if N := label(O, O, Q, EVALLIST(EL, (S :: L), T))'
 ,
-`rl
+`crl
   < O : C | Att: S, Pr: { L | static( A ; Q ; CC ; None ; EL ); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  < O : C | Att: S, Pr: { insert (A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) >
-  bindMtd(O`,' O`,' label(O, F)`,' Q`,' EVALLIST(EL, (S :: L), T)`,' CC < emp >) CLOCK'
+  < O : C | Att: S, Pr: { insert (A, N, L) | SL }, PrQ: W, Lcnt: (s F) >
+  < N : Future | Completed: false, References: 1, Value: emp >
+  bindMtd(O, O, N, Q, EVALLIST(EL, (S :: L), T), CC < emp >) CLOCK
+  if N := label(O, F)'
 )dnl
   [label local-async-static-call] .
 
@@ -356,21 +360,50 @@ ifdef(`MODELCHECK',
 --- remote-async-call
 ---
 ifdef(`MODELCHECK',
-`eq
+`ceq
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =
-  < O : C | Att: S, Pr: { insert(A, label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)), L) | SL }, PrQ: W, Lcnt: F > CLOCK
-  invoc(O, EVAL(E, (S :: L), T), label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)), Q, EVALLIST(EL, (S :: L), T))'
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F > CLOCK
+  invoc(O, O1, N, Q, DL)
+  if DL := EVALLIST(EL, (S :: L), T)
+  /\ O1 := EVAL(E, (S :: L), T)
+  /\ N := label(O, O1, Q, DL)
+  /\ O =/= O1'
 ,dnl
-`rl
+`crl
   PRELOG`'dnl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
   POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , getTrans(call(A ; E ; Q ; EL), S, L), ("dest" |> toString(label(O, F)) ) )dnl
-  < O : C | Att: S, Pr: { insert(A, label(O, F), L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
-  invoc(O, EVAL(E, (S :: L), T), label(O, F), Q , EVALLIST(EL, (S :: L), T)) '
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
+  invoc(O, O1, N, Q , DL)
+  if DL :=  EVALLIST(EL, (S :: L), T)
+  /\ O1 := EVAL(E, (S :: L), T)
+  /\ N := label(O, F)
+  /\ O =/= O1'
 )dnl
   [label remote-async-call] .
+
+--- remote-async-self-call
+---
+ifdef(`MODELCHECK',
+`ceq
+  < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
+  =
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: F > CLOCK
+  invoc(O, O, N, Q, EVALLIST(EL, (S :: L), T))
+  if N := label(O, EVAL(E, (S :: L), T), Q, EVALLIST(EL, (S :: L), T)) /\
+     O = EVAL(E, (S :: L), T)'
+,dnl
+`crl
+  < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
+  =>
+  < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
+  invoc(O, O, N, Q , EVALLIST(EL, (S :: L), T))
+  if N := label(O, F) /\ O = EVAL(E, (S :: L), T)'
+)dnl
+  [label remote-async-self-call] .
+
 
 
 STEP(`< O : C | Att: S, Pr: { L | multicast(E ; Q ; EL) ; SL }, PrQ: W,
@@ -393,14 +426,14 @@ ifdef(`MODELCHECK',
   =
   < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
-  invoc(O, 'O1`, label(O, 'O1`, Q, DL2), Q, DL2)',
+  invoc(O, O1, label(O, O1, Q, DL2), Q, DL2)',
 `eq
   < O : C | Att: S, Pr: { L | $multicast(list('O1` :: DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(list(DL) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: (s F) >
-  invoc(O, O1'`, label(O, F), Q , DL2)')
+  invoc(O, O1, label(O, F), Q , DL2)')
   [label multicast-emit-list] .
 
 eq 
@@ -417,23 +450,25 @@ ifdef(`MODELCHECK',
   =
   < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
-  invoc(O, 'O1`, label(O, 'O1`, Q, DL2), Q, DL2)',
+  invoc(O, O1, label(O, O1, Q, DL2), Q, DL2)',
 `eq
   < O : C | Att: S, Pr: { L | $multicast(set('O1` : DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: F >
   =
   < O : C | Att: S, Pr: { L | $multicast(set(DS) ; Q ; DL2) ; SL },
             PrQ: W, Lcnt: (s F) >
-  invoc(O,' O1`, label(O, F), Q , DL2)')
+  invoc(O, O1, label(O, F), Q , DL2)')
   [label multicast-emit-set] .
 
 --- return
 ---
-STEP(PRELOG`'dnl
-`< O : C |  Att: S, Pr: { L | return(EL); SL }, PrQ: W, Lcnt: F > CLOCK',
+CSTEP(PRELOG`'dnl
+`< O : C |  Att: S, Pr: { L | return(EL); SL }, PrQ: W, Lcnt: F > CLOCK
+  < N : Future | Completed: false, References: G, Value: emp >',
 POSTLOG(`return(EL)', `"return"', getTrans(return(EL), S, L) , ` "dest" |> "return" + getLabel((L,S))')dnl
 `< O : C |  Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CLOCK
-  comp(L[".label"], EVALLIST(EL, (S :: L), T))',
+  < N : Future | Completed: true, References: G, Value: EVALLIST(EL, (S :: L), T) >',
+`N == L[".label"]',
 `[label return]')
 
 
@@ -446,6 +481,7 @@ eq
   invoc(O1, O, N, Q, DL)
   =
   < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
+  < N : Future | Completed: false, References: 1, Value: emp >
   bindMtd(O, O1, N, Q, DL, C < emp >)
   [label transport-imsg] .
 
@@ -453,16 +489,14 @@ eq
 ---
 --- Free a label.  Make sure that the use of labels is linear.
 ---
-STEP(< O : C | Att: S`,' Pr: { L | free(A) ; SL }`,' PrQ: W`,' Lcnt: F >,
-  < O : C | Att: S`,' Pr: { insert(A`,' null`,' L) | SL }`,' PrQ: W`,'
-            Lcnt: F >
-  discard(L[A]),
+--- sd(G,1) works, because G is always positive. Maude does not have
+--- a nice decrement operator.
+CSTEP(`< O : C | Att: S, Pr: { L | free(A) ; SL }, PrQ: W, Lcnt: F >
+  < N : Future | Completed: CO, References: G, Value: DL >',
+`< O : C | Att: S, Pr: { insert(A, null, L) | SL }, PrQ: W, Lcnt: F >
+  < N : Future | Completed: CO, References: sd(G, 1), Value: DL >',
+`N = L[A]',
   `[label free]')
-
-
---- deallocate
----
-eq comp(N, DL) discard(N) = none [label deallocate] .
 
 
 --- TAIL CALLS
@@ -518,22 +552,29 @@ ifdef(`LOGGING',dnl
 --- A $marker identifies the start of execution of a method.  Assignment 
 --- of parameters to local variables was changed from $assign to assign 
 --- to enable logging for it.
-
 ,)dnl
+--- The new object will receive its initial attributes from the foundAttr
+--- message below and will not have attributes before that.
+---
+
 STEP(dnl
 PRELOG`'dnl
-`< O : C | Att: S, Pr: { L | new(A ; CLASS(B, T) ; EL); SL }, PrQ: W, Lcnt: F >
+`< O : C | Att: S, Pr: { L | new(A ; B ; EL); SL }, PrQ: W, Lcnt: F >
   < CLASS(B, T) : Class | VERSION(V)Inh: I , Param: AL, Att: S1, Mtds: MS, Ocnt: G >
   CLOCK'dnl
 ,dnl
 POSTLOG(`new (A ; B ; EL)', `"create"', getTrans(new(A ; B ; EL ), S, L ), `"dest" |> toString(label(O, F) ) ' )dnl
 `< O : C | Att: S, Pr: { L | assign(A ; newId(B, G)); SL }, PrQ: W, Lcnt: (s F) >
   <  CLASS(B, T) : Class | VERSION(V)Inh: I, Param: AL, Att: S1, Mtds: MS, Ocnt: (s G) >
-  < newId(B, G) :  CLASS(B, T) | Att: S, Pr: idle, PrQ: noProc, Lcnt: 0 >
+  < newId(B, G) :  CLASS(B, T) | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 0 >
   findAttr(newId(B`,' G), I, S1, 
     MARKER("createmarker " + toString(label(O, F) ), EL)ifdef(`LOGGING',,`$')assign(AL ; EVALLIST(EL, compose(S,  L), T)),
-    { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') | call(".anon" ; "this" ; "init" ; emp) ; get(".anon" ; noVid) ;
-    free(".anon") ; call (".anon" ; "this" ; "run" ; emp) ; free(".anon")}) CLOCK',dnl
+    { ifdef(`MODELCHECK', `noSubst', `".label" |-> label(O, F)') |
+        call(".anon" ; "this" ; "init" ; emp) ;
+        get(".anon" ; noVid) ;
+        free(".anon") ;
+        call (".anon" ; "this" ; "run" ; emp) ;
+        free(".anon") }) CLOCK',dnl
 `[label new-object]')
 
 
@@ -588,7 +629,9 @@ ifdef(`WITH_UPDATE',dnl
 --- The following rules implement the operational semantics of class
 --- updates.
 ---
-STEP(`add(CL, none)', `CL', `[label add-class]')
+STEP(``add(< class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >, none)'',
+``< class(B, (s T)) : Class | Version: (s V), Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
+`[label add-class]')
 
 --- Extend a class. B is the name of the class we wany to upgrade.
 --- A method .update is added that updates an object of class B#T to
@@ -598,7 +641,7 @@ STEP(dnl
 ``extend(B, I1, S1, MS1, SL, none)
     < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >'',
 ``< class(B, s T) : Class | Version: (s V), Inh: (I, I1), Param: AL, Att: (compose(S, S1)),
-                          Mtds: MS, MS1,
+                          Mtds: MS1, remove(MS, MS1),
                           < ".update" : Method | Param: noVid,
                                                  Att: ".version" |-> int(T),
                                                  Code: SL >,
@@ -610,7 +653,7 @@ STEP(dnl
 STEP(dnl
 ``remove(B, I, S, MS, none, none)
     < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S1, Mtds: MS1, Ocnt: G >'',
-``< class(B, s T) : Class | Version: (s V), Inh: I, Param: AL, Att: remove(S1, S), Mtds: (MS1 \ MS), Ocnt: G >'',
+``< class(B, s T) : Class | Version: (s V), Inh: I, Param: AL, Att: remove(S1, S), Mtds: remove(MS1, MS), Ocnt: G >'',
 `[label simplify-class]')
 
 --- Resolve dependencies
@@ -631,11 +674,11 @@ CSTEP(dnl
 `[label depend-extend]')
 
 CSTEP(dnl
-``{ remove(B, I, S, MS, (c(B1, V1), CD), OD)
-    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
+``{ remove(B1, I1, S1, MS1, (c(B, V1), CD), OD)
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
     CN }'',
-``{ remove(B, I, S, MS, CD, (OD, allinstances(B1, T, CN)))
-    < class(B1, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
+``{ remove(B1, I1, S1, MS1, CD, (OD, allinstances(B, T, CN)))
+    < class(B, T) : Class | Version: V, Inh: I, Param: AL, Att: S, Mtds: MS, Ocnt: G >
     CN }'',
 `V >= V1',
 `[label depend-remove]')
@@ -643,11 +686,11 @@ CSTEP(dnl
 --- Resolve dependencies on the object level. This is only relevant for
 --- simplification.
 CSTEP(dnl
-``remove(B, I, S, MS, CD, (o(O, T), OD))
-    < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
-``remove(B, I, S, MS, CD, OD)
-    < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
-`T1 >= T',
+``remove(B1, I1, S1, MS, CD, (o(O, T1), OD))
+    < O : class(B, T) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
+``remove(B1, I1, S1, MS, CD, OD)
+    < O : class(B, T) | Att: S, Pr: P, PrQ: W, Lcnt: F >'',
+`T1 <= T',
 `[label depend-object1]')
 
 --- Update a sub class.

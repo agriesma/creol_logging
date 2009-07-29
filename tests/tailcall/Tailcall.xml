@@ -51,8 +51,8 @@
     <creol:inputs/>
     <creol:outputs/>
     <creol:variables>
-     <creol:vardecl name="label:0">
-      <creol:typeapplication name="Label"/>
+     <creol:vardecl name="ccglab0">
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -83,7 +83,7 @@
     <creol:outputs/>
     <creol:variables>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -117,10 +117,10 @@
      </creol:vardecl>
     </creol:outputs>
     <creol:variables>
-     <creol:vardecl name="label:0">
-      <creol:typeapplication name="Label">
+     <creol:vardecl name="ccglab0">
+      <creol:future>
        <creol:type name="Int"/>
-      </creol:typeapplication>
+      </creol:future>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -157,9 +157,9 @@
     </creol:outputs>
     <creol:variables>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label">
+      <creol:future>
        <creol:type name="Int"/>
-      </creol:typeapplication>
+      </creol:future>
      </creol:vardecl>
     </creol:variables>
     <creol:body>

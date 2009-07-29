@@ -35,16 +35,16 @@ changequote dnl
     sorts Msg Class ifdef(`WITH_TIME', `Clock ')Object Configuration .
     subsorts Class ifdef(`WITH_TIME', `Clock ')Msg Object < Configuration .
 
-    vars B M M' : String .
+    vars B M : String .
     var C : Cid .
     vars O O' : Oid .
-    var S : Subst .
-    vars I I' : InhList .
+    vars L S S1 : Subst .
+    vars I I1 : InhList .
     vars P P' : Process .
-    vars W : MProc .
-    var MS : MMtd .
+    vars MS MS1 : MMtd .
+    var W : MProc .
     var AL : VidList .
-    var SL : StmtList .
+    vars SL SL1 : StmtList .
     var EL : ExprList .
     var DL : DataList .
     var N : Label .
@@ -71,17 +71,6 @@ ifdef(`WITH_TIME',
     op invoc(_,_,_,_,_) : Oid Oid Label String DataList -> Msg
       [ctor `format' (b d o  b so  b so  b so  b so b on)] .
 
-    --- Completion message.
-    ---
-    --- comp(N,DL)
-    --- N: The label
-    --- DL: The result values.
-    op comp(_,_) : Label DataList -> Msg
-      [ctor `format' (b d o  b so  b on)] .
-
-    --- Instruct the runtime system to drop the message.
-    op discard(_) : Label -> Msg [ctor `format' (b d o b on)].
-
     --- Error and warning messages are intended to stop the machine.
     --- For now, nothing is emitting these.
     --- op error(_) : String -> [Msg] [ctor `format' (nnr r o! or onn)] .
@@ -100,19 +89,30 @@ ifdef(`WITH_TIME',
     op get : String Cid MMtd Oid Label DataList -> Process .
 
     eq get(M, CLASS(B, F), (MS, < M : Method | Param: AL, Att: S, Code: SL >), O, N, DL) =
-        { "caller" |-> O, ".class" |-> str(B), ifdef(`WITH_UPDATE', `".stage" |-> int(F), ')
-          ".label" |-> N, ".method" |-> str(M), S | ifdef(`LOGGING',assign("caller" , ".class" , ".label" , ".method" ; O :: str(B) :: N :: str(M) ) ; )MARKER("callmarker", DL)assign(AL ; DL) ; SL } .
+        { "caller" |-> O, ".class" |-> str(B), ".label" |-> N, 
+          ".method" |-> str(M), S | ifdef(`LOGGING',assign("caller" , ".class" , ".label" , ".method" ; O :: str(B) :: N :: str(M) ) ; )MARKER("callmarker", DL)assign(AL ; DL) ; SL } .
     eq get(M, C, MS, O, N, DL) = notFound [owise] .
 
 
     --- Terms of sort Object represent objects (and classes) in the
     --- run-time configuration.
     ---
-
     op noObj : -> Object [ctor] .
     op <_:_ | Att:_, Pr:_, PrQ:_, Lcnt:_> : 
        Oid Cid Subst Process MProc Nat -> Object 
          [ctor `format' (nr d d g ++r nir o  r ni o  r ni o  r ni o--  r on)] .
+
+
+    --- Terms that represent futures.
+    ---
+    op <_: Future | Completed:_, References:_, Value:_> :
+       Label Bool Nat DataList -> Object 
+         [ctor `format' (nr d d g ++r ir o  r i o  r i o--  r on)] .
+
+
+    --- Completed futures without references can be removed.
+    ---
+    eq < N : Future | Completed: true, References: 0, Value: DL > = none .
 
 
 ifdef(`WITH_UPDATE',
@@ -130,6 +130,18 @@ ifdef(`WITH_UPDATE',
        [ctor `format' (ng ! og o d  sg o d  sg o d  sg o d  sg++ oni o  gni o-- g on)] .')
 
 
+ifdef(`WITH_UPDATE',
+`   --- Remove methods.
+    ---
+    --- remove(MS, MS1) removes all methods listed in MS1 from the set MS.
+    op remove : MMtd MMtd -> MMtd .
+    eq remove ((< M : Method | Param: AL, Att: S, Code: SL >, MS),
+               (< M : Method | Param: AL, Att: S1, Code: SL1 >, MS1)) =
+              remove(MS, MS1) .
+    eq remove (MS, MS1) = MS [owise] .
+')dnl
+
+
     --- Method binding messages.
     --- Bind method request
     --- Given: caller callee label method params (list of classes to look in)
@@ -144,21 +156,23 @@ ifdef(`WITH_UPDATE',
     --- Method binding with multiple inheritance
     ---
     eq
-      bindMtd(O, O', N, M, DL, (C < EL > , I'))
+      bindMtd(O, O', N, M, DL, (C < EL > , I1))
       < C : Class | VERSION(V)Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F >
       =
       if get(M, C, MS, O', N, DL) == notFound then
-        bindMtd(O, O', N, M, DL, (I , I'))
+        bindMtd(O, O', N, M, DL, (I , I1))
       else
         boundMtd(O, get(M, C, MS, O', N, DL))
       fi
       < C : Class | VERSION(V)Inh: I , Param: AL, Att: S , Mtds: MS , Ocnt: F > .
 
     eq
-      boundMtd(O, P')
-      < O : C | Att: S, Pr: P, PrQ: W, Lcnt: F >
+      boundMtd(O, { L | SL })
+      < O : CLASS(B, T) | Att: S, Pr: P, PrQ: W, Lcnt: F >
       =
-      < O : C | Att: S, Pr: P, PrQ: (W , P'), Lcnt: F > .
+      < O : CLASS(B, T) | Att: S, Pr: P,
+                          PrQ: (W , { ifdef(`WITH_UPDATE', `insert(".stage", int(T), L)', `L') | SL }),
+                          Lcnt: F > .
 
 
 
@@ -188,37 +202,36 @@ ifdef(`WITH_UPDATE',
     
     --- Add a new class into the system.
     op add(_,_) : Class ClassDeps -> Msg 
-      [ctor format (b d o  b so  b on)] .
+      [ctor `format' (b d o  b so  b on)] .
 
     --- Extend an existing class.
     op extend(_,_,_,_,_,_) : String InhList Subst MMtd StmtList ClassDeps -> Msg
-      [ctor format (b d o  b so  b so  b so  b so  b so  b on)] .
+      [ctor `format' (b d o  b so  b so  b so  b so  b so  b on)] .
 
     --- Simplify a class.
     op remove(_,_,_,_,_,_) : String InhList Subst MMtd ClassDeps ObjectDeps
-      -> Msg [ctor format (b d o  b so  b so  b so  b so  b so  b on)] .
+      -> Msg [ctor `format' (b d o  b so  b so  b so  b so  b so  b on)] .
 
     --- Transfer updates class state to object state.
     op transfer(_,_,_,_) : Oid Subst InhList StmtList
-      -> Msg [ctor format (b d o  b so  b so  b so  b on)] .
+      -> Msg [ctor `format' (b d o  b so  b so  b so  b on)] .
 
     op allinstances : String Nat Configuration -> ObjectDeps .
-    eq allinstances(B, T, CL CN) = allinstances(B, T, CN) .
-    eq allinstances(B, T, MSG CN) = allinstances(B, T, CN) .
-ifdef(`WITH_TIME', `    eq allinstances(B, T, CLOCK CN) = allinstances(B, T, CN) .
-')dnl
     eq allinstances(B, T, < O : class(B1, T1) | Att: S, Pr: P, PrQ: W, Lcnt: F > CN) =
         if B == B1 then
             allinstances(B, T, CN), o(O, T)
         else
             allinstances(B, T, CN)
         fi .
-    eq allinstances(B, T, none) = none .
+    eq allinstances(B, T, CN) = none [owise] .
 
+    --- Collect initialisation code that is used to reestablish the invariant
+    --- of an object after attributes have been added or removed.
     op update : Nat Nat MMtd -> StmtList .
     ceq update(T, T1, MS) = noStmt if T >= T1 .
     eq update(T, T1, (< ".update" : Method | Param: noVid, Att: ".version" |-> int(T), Code: SL >, MS)) =
-          SL ; update(s T, T1, MS) [owise] .'
+          SL ; update(s T, T1, MS) .
+    eq update(T, T1, MS) = update(s T, T1, MS) [owise] .'
 )dnl
 
   *** Useful for real-time maude and some other tricks.
@@ -233,7 +246,14 @@ ifdef(`MODELCHECK',dnl
   sort State .
 )dnl
 
-  op {_} : Configuration -> State [ctor] .
+    op {_} : Configuration -> State [ctor] .
+
+
+    var CN : Configuration .
+
+    --- Insert a warning into the current state.
+    op warn : State String -> State .
+    eq warn({ CN }, M) = { warning(M) CN } .
 
 ifdef(`LOGGING',dnl
     vars trans inits : TSubst .
@@ -246,14 +266,28 @@ ifdef(`LOGGING',dnl
 ,)dnl
   var CN : Configuration .
 
-  --- System initialisation
+  --- System initialisation, old style.
   op main : Configuration String DataList -> State .
   eq main(CN, B, DL) =
     { CN < ob("main") : Start | Att: noSubst, 
-           Pr: { "var" |-> null | new("var" ; CLASS(B, 0) ; DL) }, PrQ: noProc,
-           Lcnt: 0 > ifdef(`LOGGING',`
+           Pr: { "var" |-> null | new("var" ; B ; DL) }, 
+           PrQ: noProc, Lcnt: 0 > ifdef(`LOGGING',`
 '      < ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 0 > 
       <log From: 0 To: 0 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > 
 )} .
+
+    --- System initialisation, new style.
+    op main : State String DataList -> State .
+    eq main({ CN }, B, DL) =
+      { CN < ob("main") : Start | Att: noSubst, 
+             Pr: { "var" |-> null | new("var" ; B ; DL) },
+             PrQ: noProc, Lcnt: 0 > ifdef(`LOGGING',`
+'      < ob("log") : "" | Att: noSubst`,' Pr: idle`,' PrQ: noProc`,' Lcnt: 0 > 
+      <log From: 0 To: 0 Type: "lastrun" Data: { skip | TnoSubst | TnoSubst } Att: noSubst Label: "lastrun" > 
+)} .
+
+    --- The initial object commits suicide after it did its job.
+    eq < ob("main") : Start | Att: noSubst, Pr: idle, PrQ: noProc, Lcnt: 1 > =
+      none .
 
 endm

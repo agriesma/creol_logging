@@ -28,21 +28,24 @@ DISTCLEANFILES		= .depend Version.ml \
 			   creolcint.pdf creolcint.tex ocamldoc.sty
 MAINTAINERCLEANFILES	= $(srcdir)/CreolLexer.ml \
 			  $(srcdir)/CreolTokens.ml $(srcdir)/CreolTokens.mli \
-			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli
+			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli \
+			  $(srcdir)/UpdateParser.ml $(srcdir)/UpdateParser.mli 
 
 EXTRA_DIST		= $(srcdir)/CreolLexer.mll \
 			  $(srcdir)/CreolTokens.mly \
 			  $(srcdir)/CreolCommon.mly \
-			  $(srcdir)/CreolParser.mly
+			  $(srcdir)/CreolParser.mly \
+			  $(srcdir)/UpdateParser.mly 
 
-bin_PROGRAMS		= creolc creolc.opt \
-			  cmcvalid cmcvalid.opt
+bin_PROGRAMS		= creolc creolc.opt creolupdc creolupdc.opt \
+			  cmcdisplay cmcdisplay.opt
 
 noinst_PROGRAMS		= creoltop
 
 BUILT_SOURCES		= Version.ml $(srcdir)/CreolLexer.ml \
 			  $(srcdir)/CreolTokens.ml $(srcdir)/CreolTokens.mli \
-			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli
+			  $(srcdir)/CreolParser.ml $(srcdir)/CreolParser.mli \
+			  $(srcdir)/UpdateParser.ml $(srcdir)/UpdateParser.mli
 
 creolc_SOURCES		= Version.ml \
 			  Misc.ml \
@@ -50,6 +53,7 @@ creolc_SOURCES		= Version.ml \
 			  Messages.ml \
 			  Creol.ml \
 			  Typing.ml \
+			  UpdateDepend.ml UpdateDepend.mli \
 			  TreeFold.ml \
 			  TreeExpand.ml \
 			  TreeUnassert.ml \
@@ -67,6 +71,7 @@ creolc_SOURCES		= Version.ml \
 			  CreolTokens.mli CreolTokens.ml \
 			  CreolLexer.mli CreolLexer.ml \
 			  CreolParser.mli CreolParser.ml \
+			  UpdateParser.mli UpdateParser.ml \
 			  BackendCreol.mli BackendCreol.ml \
 			  BackendMaude.ml \
 			  BackendXML.ml \
@@ -78,13 +83,13 @@ creolc_cmo		= Version.cmo Misc.cmo Config.cmo Messages.cmo \
 			  Creol.cmo \
 			  BackendCreol.cmo BackendMaude.cmo \
 			  BackendDot.cmo BackendXML.cmo \
-			  Typing.cmo \
+			  Typing.cmo UpdateDepend.cmo \
 			  TreeExpand.cmo TreeFold.cmo \
 			  TreeUnassert.cmo TreeUnprove.cmo TreeSSA.cmo \
 			  TreeDef.cmo TreeLife.cmo TreeFree.cmo TreeBury.cmo \
 			  TreeDevirt.cmo TreeTailcall.cmo TreeSplitAss.cmo \
 			  CheckUseDef.cmo CreolTokens.cmo \
-			  CreolLexer.cmo CreolParser.cmo \
+			  CreolLexer.cmo CreolParser.cmo UpdateParser.cmo \
 			  CMCParser.cmo Passes.cmo
 
 creolc_opt_SOURCES	= $(creolc_SOURCES)
@@ -93,22 +98,30 @@ creolc_cmx		= Version.cmx Misc.cmx Config.cmx Messages.cmx \
 			  Creol.cmx \
 			  BackendCreol.cmx BackendMaude.cmx \
 			  BackendDot.cmx BackendXML.cmx \
-			  Typing.cmx \
+			  Typing.cmx UpdateDepend.cmx \
 			  TreeExpand.cmx TreeFold.cmx \
 			  TreeUnassert.cmx TreeUnprove.cmx TreeSSA.cmx \
 			  TreeDef.cmx TreeLife.cmx TreeFree.cmx TreeBury.cmx \
 			  TreeDevirt.cmx TreeTailcall.cmx TreeSplitAss.cmx \
 			  CheckUseDef.cmx CreolTokens.cmx \
-			  CreolLexer.cmx CreolParser.cmx \
+			  CreolLexer.cmx CreolParser.cmx UpdateParser.cmx \
 			  CMCParser.cmx Passes.cmx
 
-cmcvalid_SOURCES	= CMCValid.ml
+creolupdc_SOURCES	= UpdateCompiler.ml
 
-cmcvalid_cmo		= CMCValid.cmo
+creolupdc_cmo		= UpdateCompiler.cmo
 
-cmcvalid_opt_SOURCES	= $(cmcvalid_SOURCES)
+creolupdc_opt_SOURCES	= $(creolupdc_SOURCES)
 
-cmcvalid_cmx		= CMCValid.cmx
+creolupdc_cmx		= UpdateCompiler.cmx
+
+cmcdisplay_SOURCES	= CMCDisplay.ml
+
+cmcdisplay_cmo		= CMCDisplay.cmo
+
+cmcdisplay_opt_SOURCES	= $(cmcdisplay_SOURCES)
+
+cmcdisplay_cmx		= CMCDisplay.cmx
 
 creoltop_SOURCES	=
 
@@ -116,6 +129,8 @@ creoltop_SOURCES	=
 creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 			  $(srcdir)/Creol.ml \
 			  $(srcdir)/Typing.ml \
+			  $(srcdir)/UpdateDepend.ml \
+			  $(srcdir)/UpdateDepend.mli \
 			  $(srcdir)/TreeUnassert.ml \
 			  $(srcdir)/TreeExpand.ml \
 			  $(srcdir)/TreeSSA.ml \
@@ -138,7 +153,8 @@ creolc_DOCSOURCES	= $(srcdir)/Passes.ml $(srcdir)/Passes.mli \
 
 OCAMLCFLAGS		+= -g
 OCAMLOPTFLAGS		+= -w a -noassert -unsafe -inline 20
-OCAMLFINDFLAGS		+= -package "num unix libxml2 str"
+OCAMLFINDFLAGS		+= -package "num unix ${OCAML_LIBXML2} str"
+export OCAMLPATH
 
 # The compilers.
 OCAMLC		= $(OCAMLFIND) ocamlc
@@ -147,20 +163,27 @@ OCAMLOPT	= $(OCAMLFIND) ocamlopt
 OCAMLDEP	= $(OCAMLFIND) ocamldep -I $(srcdir)
 OCAMLDOC	= $(OCAMLFIND) ocamldoc
 
-SVNVERSION = \
-	if test -d $(top_srcdir)/.svn ; \
-	then \
-	    env LANG=C svn info $(top_srcdir) | env LANG=C LC_ALL=C $(AWK) 'BEGIN { FS=":" } ($$1 == "Last Changed Rev") { printf "svn (r%d)", $$2 ; }' ; \
+GITVERSION = \
+        if test -d $(top_srcdir)/.git ; then \
+	    env LANG=C git whatchanged --pretty=format:'git commit %h' | head -1 ; \
 	else \
 	    echo -n "release" ; \
-	fi
+        fi
 
-SVNDATE = \
-	if test -d $(top_srcdir)/.svn ; \
+GITDATE = \
+	if test -d $(top_srcdir)/.git ; \
 	then \
-	    env LANG=C svn info $(top_srcdir) | env LANG=C LC_ALL=C $(AWK) 'BEGIN { FS=":" } ($$1 == "Last Changed Date") { s = $$2; sub(/ /, "", s) ; sub(/ .+/, "", s); print s }' ; \
+	    env LANG=C git whatchanged --pretty=format:'%ci' | head -1 ; \
 	else \
 	    echo -n "$(RELEASE_DATE)" ; \
+	fi
+
+GITBRANCH = \
+	if test -d $(top_srcdir)/.git ; \
+	then \
+	    env LANG=C git branch | env LANG=C LC_ALL=C awk '($$1 == \"*\") { printf (\" (%s)\", $$2) }' ; \
+	else \
+	    echo -n "$(RELEASE)" ; \
 	fi
 
 SUFFIXES = .a .ml .mli .mll .mly .cma .cmi .cmo .cmx .cmxa
@@ -177,16 +200,22 @@ creolc.prof: $(creolc_SOURCES)
 	mv creolc creolc.prof
 	make mostlyclean
 
+creolupdc: creol.cma UpdateCompiler.cmo
+	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $^
+
+creolupdc.opt: creol.cmxa UpdateCompiler.cmx
+	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
+
 creol.cma: $(creolc_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -a -o $@ $^
 
 creol.cmxa: $(creolc_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -a -o $@ $^
 
-cmcvalid: creol.cma $(cmcvalid_cmo)
+cmcdisplay: creol.cma $(cmcdisplay_cmo)
 	$(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -linkpkg -o $@ $^
 
-cmcvalid.opt: creol.cmxa $(cmcvalid_cmx)
+cmcdisplay.opt: creol.cmxa $(cmcdisplay_cmx)
 	$(OCAMLOPT) $(OCAMLFINDFLAGS) $(OCAMLOPTFLAGS) -linkpkg -o $@ $^
 
 creoltop: creol.cma
@@ -222,7 +251,7 @@ $(srcdir)/CreolTokens.mli: $(srcdir)/CreolTokens.ml
 	fi
 
 # We must make sure that Creol.cmi and Mesages.cmi are built before
-# CreolParser.ml, because we use the --infer flag
+# CreolParser.ml or UpdateParser.ml, because we use the --infer flag
 # during the compilation of them.  We do not want that CreolParser.ml
 # depends on Creol.cmi or Messages.cmi, because then compiling the
 # project at the end user requires recompilation of CreolParser.ml,
@@ -241,7 +270,7 @@ $(srcdir)/CreolParser.ml: $(srcdir)/CreolParser.mly
 	test CreolTokens.cmi -nt $(srcdir)/CreolTokens.mli || \
 	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/CreolTokens.mli -o CreolTokens.cmi
 	rm -f CreolParser.conflicts
-	$(MENHIR) $(MENHIR_FLAGS) -v --infer \
+	$(MENHIR) $(MENHIR_FLAGS) --infer \
 	    --external-tokens CreolTokens \
 	    --base $(srcdir)/CreolParser \
 	    $(srcdir)/CreolTokens.mly $(srcdir)/CreolCommon.mly \
@@ -259,6 +288,33 @@ $(srcdir)/CreolParser.mli: $(srcdir)/CreolParser.ml
 	    $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/CreolParser.ml ; \
 	fi
 
+$(srcdir)/UpdateParser.ml: $(srcdir)/UpdateParser.mly
+	test Misc.cmi -nt $(srcdir)/Misc.ml || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Misc.ml -o Misc.cmi
+	test Messages.cmi -nt $(srcdir)/Messages.ml || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Messages.ml -o Messages.cmi
+	test Creol.cmi -nt $(srcdir)/Creol.ml || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/Creol.ml -o Creol.cmi
+	test CreolTokens.cmi -nt $(srcdir)/CreolTokens.mli || \
+	    $(OCAMLC) $(OCAMLFINDFLAGS) $(OCAMLCFLAGS) -c $(srcdir)/CreolTokens.mli -o CreolTokens.cmi
+	rm -f UpdateParser.conflicts
+	$(MENHIR) $(MENHIR_FLAGS) --infer --external-tokens CreolTokens \
+	    --base $(srcdir)/UpdateParser \
+	    $(srcdir)/CreolTokens.mly $(srcdir)/CreolCommon.mly \
+	    $(srcdir)/UpdateParser.mly
+	(t=`mktemp menhir.XXXXXXXX` && mv $(srcdir)/UpdateParser.ml $$t && \
+	sed 's,_menhir_shifted = [0123456789][0123456789]*\(.*\)$$,_menhir_shifted = max_int \1,g' $$t > $(srcdir)/UpdateParser.ml && \
+	rm $$t)
+
+$(srcdir)/UpdateParser.mli: $(srcdir)/UpdateParser.ml
+	@if test -f $@ ; \
+	then \
+	    touch $@ ; \
+	else \
+	    rm -f $(srcdir)/UpdateParser.ml ; \
+	    $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/UpdateParser.ml ; \
+	fi
+
 all-local: version-tmp
 
 Version.ml: version-tmp
@@ -268,10 +324,11 @@ Version.ml: version-tmp
 version-tmp:
 	@(echo "(* This file is automatically generated.  Do not modify. *)" ; \
 	 echo "let version = \"$(VERSION)\"" ; \
-	 echo "let release = \"`$(SVNVERSION)`\"" ; \
+	 echo "let release = \"`$(GITVERSION)`\"" ; \
+	 echo "let branch = \"`$(GITBRANCH)`\"" ; \
 	 echo "let package = \"$(PACKAGE)\"" ; \
 	 echo "let datadir = \"$(pkgdatadir)\"" ; \
-	 echo "let reldate = \"`$(SVNDATE)`\"" ) > $@
+	 echo "let reldate = \"`$(GITDATE)`\"" ) > $@
 	@cmp -s $@ Version.ml || \
 	    (echo "Updating Version.ml" ; cp $@ Version.ml)
 	@rm -f $@
@@ -305,21 +362,22 @@ distclean-local:
 
 
 # Compute the dependencies
-.depend: Makefile $(creolc_SOURCES:.m4=.ml) $(cmcvalid_SOURCES)
+.depend: Makefile $(creolc_SOURCES) $(creolupdc_SOURCES) $(cmcdisplay_SOURCES)
 	$(OCAMLDEP) $(OCAMLFINDFLAGS) $(OCAMLDEPFLAGS) $^ | \
 	  sed s,$(srcdir)/,,g > $@
 
 # Dependencies.
 CreolParser.cmi: CreolParser.mli
+UpdateParser.cmi: UpdateParser.mli
 CreolLexer.cmi: CreolTokens.cmi
 CreolLexer.cmo CreolLexer.cmx: CreolLexer.cmi
 
-$(srcdir)/CreolParser.ml: $(srcdir)/CreolTokens.mli
-$(srcdir)/CreolParser.ml: $(srcdir)/CreolTokens.mly
-$(srcdir)/CreolParser.ml: $(srcdir)/CreolCommon.mly
-$(srcdir)/CreolParser.ml: $(srcdir)/Misc.ml
-$(srcdir)/CreolParser.ml: $(srcdir)/Creol.ml
-$(srcdir)/CreolParser.ml: $(srcdir)/Messages.ml
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/CreolTokens.mli
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/CreolTokens.mly
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/CreolCommon.mly
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/Misc.ml
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/Creol.ml
+$(srcdir)/CreolParser.ml $(srcdir)/UpdateParser.ml: $(srcdir)/Messages.ml
 
 -include .depend
 

@@ -37,7 +37,7 @@ ifdef(`WITH_MAUDE_CONFIG',
 
     --- Create a new fresh name for an object
     op newId : String Nat -> Oid .
-    eq newId(B, F)  = ob(B + string(F,10)) .
+    eq newId(B, F)  = ob(B + "-" + string(F,10)) .
 
 endfm
 

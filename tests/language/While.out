@@ -1,11 +1,11 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
     >, < "run" : Method | Param: noVid, Att: "_" |-> null, "f" |-> null, "l"
     |-> null, Code: while "/="("l" :: list(emp)) do assign("f", "l" ; "head"(
     "l") :: "tail"("l")) od ; return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

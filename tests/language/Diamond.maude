@@ -1,8 +1,8 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "A" : Class | Inh: noInh, Param: "a", Att: "a" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
@@ -17,10 +17,10 @@ mod PROGRAM is
               "=" ( "a" :: "b" ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "n" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
+            < "n" : Method | Param: noVid, Att: "r" |-> null, "ccglab0" |->
               null, "_" |-> null,
-              Code: call( "label:0" ; "this" ; "m" ; emp ) ;
-              get( "label:0" ; "r" ) ; free( "label:0" ) ; return ( "r" ) >,
+              Code: call( "ccglab0" ; "this" ; "m" ; emp ) ;
+              get( "ccglab0" ; "r" ) ; free( "ccglab0" ) ; return ( "r" ) >,
       Ocnt: 0 >
     
     < "C" : Class | Inh: "A" < "c" >, Param: "c", Att: "c" |-> null,
@@ -28,23 +28,23 @@ mod PROGRAM is
               "=" ( "a" :: "c" ) ; return ( emp ) >,
             < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "o" : Method | Param: noVid, Att: "r" |-> null, "label:0" |->
+            < "o" : Method | Param: noVid, Att: "r" |-> null, "ccglab0" |->
               null, "_" |-> null,
-              Code: call( "label:0" ; "this" ; "m" ; emp ) ;
-              get( "label:0" ; "r" ) ; free( "label:0" ) ; return ( "r" ) >,
+              Code: call( "ccglab0" ; "this" ; "m" ; emp ) ;
+              get( "ccglab0" ; "r" ) ; free( "ccglab0" ) ; return ( "r" ) >,
       Ocnt: 0 >
     
     < "D" : Class | Inh: "B" < int(1) >, "C" < int(2) >, Param: noVid,
       Att: "x" |-> null, "y" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "this" ; "n" ; emp ) ;
-              get( "label:0" ; "x" ) ; free( "label:0" ) ;
-              call( "label:1" ; "this" ; "o" ; emp ) ; get( "label:1" ; "y" )
-              ; free( "label:1" ) ; assert "&&" ( "=" ( "x" :: int(1) ) ::
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "this" ; "n" ; emp ) ;
+              get( "ccglab0" ; "x" ) ; free( "ccglab0" ) ;
+              call( "ccglab1" ; "this" ; "o" ; emp ) ; get( "ccglab1" ; "y" )
+              ; free( "ccglab1" ) ; assert "&&" ( "=" ( "x" :: int(1) ) ::
               "=" ( "y" :: int(2) ) ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

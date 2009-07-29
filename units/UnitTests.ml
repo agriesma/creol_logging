@@ -45,6 +45,7 @@ let options = [
 let test_fixture =
   "Tests" >::: [
     CreolTests.test_fixture ;
+    UpdateDependTests.test_fixture ;
   ]
 
 (* The main function parses the command line arguments, parses all

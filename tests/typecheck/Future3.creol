@@ -1,9 +1,9 @@
 /*
- * MissingEnd2.creol -- Error with missing end, test 2.
+ * Future3.creol -- Type inference for futures.
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2009 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,13 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Foo
+class Test
 begin
-  op init ==
-    if true then
-      skip
-    else
-      skip
-
-  op run == skip
+  op m(in f: Label[]) == skip
 end
+  

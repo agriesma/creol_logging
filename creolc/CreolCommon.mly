@@ -36,6 +36,46 @@
 
 %%
 
+(* Class declaration *)
+
+%public classdecl:
+      CLASS n = CID p = plist(vardecl_no_init) s = list(super_decl)
+        pr = list(pragma)
+	BEGIN
+        a = list(terminated(attribute, ioption(SEMI))) i = list(invariant)
+        aw = loption(anon_with_def) w = list(with_def)
+        END
+      { { Class.name = n; parameters = p; inherits = inherits s;
+	  contracts = contracts s; implements = implements s;
+	  attributes = List.flatten a; invariants = i;
+          with_defs = upd_method_locs n (aw @ w);
+	  objects_created = Big_int.zero_big_int; pragmas = pr;
+	  file = $startpos.pos_fname; line = $startpos.pos_lnum } }
+    | CLASS error
+	{ signal_error $startpos "syntax error: invalid class name" }
+    | CLASS CID error
+	{ signal_error $startpos "syntax error in class declaration" }
+    | CLASS CID plist(vardecl_no_init) list(super_decl)
+        list(pragma) BEGIN error
+	{ signal_error $startpos "syntax error in class body definition" }
+
+(* Interface Declaration *)
+
+%public interfacedecl:
+      INTERFACE n = CID p = plist(vardecl_no_init) i = list(inherits_decl)
+        pr = list(pragma)
+        BEGIN ioption(preceded(INV, expression)) w = list(with_decl) END
+        { { Interface.name = n; parameters = p; inherits = inherits i;
+	    with_decls = upd_method_locs n w; pragmas = pr;
+	  file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
+    | INTERFACE error
+	{ signal_error $startpos "syntax error in interface declaration" }
+    | INTERFACE CID error
+	{ signal_error $startpos "syntax error in interface declaration" }
+
+
+
+
 %public super_decl:
       d = implements_decl { d }
     | d = contracts_decl { d }
@@ -61,13 +101,14 @@ implements_decl:
 
 inherits:
     n = CID a = plist(expression)
-        { { Inherits.name = n; arguments = a } }
+        { { Inherits.name = n; arguments = a;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 %public with_decl:
       WITH c = creol_type l = nonempty_list(method_decl) i = list(invariant)
-     { { With.co_interface = c;
-	 methods = List.map (Method.set_cointerface c) l;
-	 invariants = i } }
+        { { With.co_interface = c;
+	    methods = List.map (Method.set_cointerface c) l; invariants = i;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | WITH error
 	{ signal_error $startpos "syntax error in with block declaration" }
     | WITH CID error
@@ -75,13 +116,18 @@ inherits:
 
 %public anon_with_def:
     l = nonempty_list(method_def) i = list(invariant)
-    { [ { With.co_interface = Type.Internal; methods = l; invariants = i } ] }
+    { [ { With.co_interface = Type.Internal; methods = l; invariants = i;
+          file  = $startpos.pos_fname; line = $startpos.pos_lnum } ] }
 
 %public with_def:
       WITH c = creol_type l = nonempty_list(method_def) i = list(invariant)
-    { { With.co_interface = c;
-	methods = List.map (Method.set_cointerface c) l;
-	invariants = i } }
+        { { With.co_interface = c;
+	    methods = List.map (Method.set_cointerface c) l; invariants = i;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
+    | WITH THIS l = nonempty_list(method_def) i = list(invariant)
+        { { With.co_interface = Type.Internal;
+	    methods = l; invariants = i;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
 
 %public attribute:
       VAR l = separated_nonempty_list(COMMA, vardecl)
@@ -94,16 +140,21 @@ vardecl:
 	{ v }
     | v = vardecl_no_init ASSIGN i = expression_or_new
 	{ { v with VarDecl.init = Some i } }
+    | vardecl_no_init ASSIGN error
+	{ signal_error $startpos "syntax error in variable initialiser" }
+    | vardecl_no_init error
+	{ signal_error $startpos "syntax error in variable declaration (missing initialiser?)" }
 
 %public vardecl_no_init:
       i = id COLON t = creol_type
-        { { VarDecl.name = i; VarDecl.var_type = t; VarDecl.init = None } }
-    | id error
-	{ signal_error $startpos "syntax error in variable declaration" }
+        { { VarDecl.name = i; var_type = t; init = None;
+            file  = $startpos.pos_fname; line = $startpos.pos_lnum } }
     | id COLON error
-	{ signal_error $startpos "syntax error in variable declaration" }
+	{ signal_error $startpos "syntax error in variable declaration (not a type?)" }
+    | id error
+	{ signal_error $startpos "syntax error in variable declaration (missing type?)" }
 
-method_decl:
+%public method_decl:
       METHOD i = id p = parameters_opt
       r = ioption(preceded(REQUIRES, expression))
       e = ioption(preceded(ENSURES, expression))
@@ -116,6 +167,7 @@ method_decl:
 	    | Some x -> x
 	  in
 	    Method.make_decl i (fst p) (snd p) r' e'
+              $startpos.pos_fname $startpos.pos_lnum
 	}
     | METHOD error
 	{ signal_error $startpos "syntax error in method declaration" }
@@ -155,6 +207,7 @@ method_def:
 id:
       s = ID { s }
     | UPDATE { "update" }
+    | RETRACT { "retract" }
 
 (* Statements *)
 
@@ -428,6 +481,10 @@ binding:
 	{ Type.Basic t }
     | t = CID LBRACK p = separated_list(COMMA, creol_type) RBRACK
 	{ Type.Application (t, p) }
+    | FUTURE LBRACK p = separated_list(COMMA, creol_type) RBRACK
+	{ Type.Future p }
+    | FUTURE BOX
+	{ Type.Future [] }
     | LBRACK d = separated_nonempty_list(COMMA, creol_type) RBRACK
 	{ Type.Tuple d }
     | BACKTICK v = id

@@ -1,5 +1,5 @@
 /*
- * AttrDecl.creol -- Demontrate attribute declarations.
+ * InheritFailure.creol -- Inherit from non-existing class.
  *
  * This file is part of creoltools
  *
@@ -19,11 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Foo
-begin
-  var a: Int
-  var b: Int := 1
-  var c: Int;
-  var d: Int := 1;
-  op init == skip
-end
+class A(a: Int) begin end
+
+class B inherits A(true) begin end

@@ -1,0 +1,60 @@
+/*
+ * bankexp.creol
+ *
+ * This file is part of creoltools
+ *
+ * Written and Copyright (c) 2009 by Ingrid Chieh Yu de Vibe
+ *   <ingridcy@ifi.uio.no>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+interface Account
+begin
+  with Any
+   // op increaseBalance(in s:Int)
+    op balance(out b: Int)
+    op deposit(in sum: Int)
+end
+
+
+class BankAccount implements Account 
+ begin
+
+   var bal: Int := 0;
+   op increaseBalance (in sum : Int) == bal := bal + sum
+
+   with Any
+   op balance (out b : Int)==  b := bal
+   op deposit(in sum : Int) == !increaseBalance(sum)
+ end
+
+class Customer
+ begin
+   var timer : Int := 0
+
+   var account : Account := new BankAccount();
+
+   op run == !tick() ; !trade()
+
+   op tick == await timer < 6; timer := timer + 1; !tick()
+
+   op trade ==
+     var balance : Int;
+     await timer > 5;
+     timer := 0;
+     account.balance(; balance);
+     if balance <= 100 then account.deposit(10;) end ;
+     !trade()
+ end

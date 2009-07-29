@@ -1,0 +1,134 @@
+0. The golden repository rule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To safe us the pain of incomplete build, mysterious errors, and the like,
+any file that can be built from other source files *must* *not* be
+checked into the repository.  This is especially true for pdf files,
+because subversion is especially bad in handling different versions of
+such content (and pdftex/dvips insist on embedding the compilation
+time into the file, causing new and different versions to be created).
+If you do not observe this rule, we also have to expect check-in and
+check-out times in the area of hours.
+
+The only exception to this rule is the file README.  This file must be
+present in order to regenerate the Makefile.in files using the command
+`autoreconf' (see below).
+
+This single exception gives rise to a second rule:  Whenever the file
+info/readme.texi, which is the source for README, is commited to the
+repository, the file README must be remade and commited in the same
+transaction.  It is a serious error if a check-out triggers a rebuild
+of the README file.
+
+
+1. Installing the dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building the creol tools from a subversion check-out requires more tools
+in your development environment than just building the tools from a
+source distribution.  Some generated files are included in the tar file
+which are (in accordance with the golden rule) not checked into the
+repository.  Make sure that you have the following programs installed:
+
+  0. git
+
+  1. Autoconf 2.59 or later
+
+  2. Automake 1.9 or later
+
+  3. Texinfo 4.8 or later
+
+  4. ocaml 3.08 or later
+
+  5. findlib 1.0 or later
+
+  6. menhir
+
+  7. ocaml-libxml2 0.0i or later (see
+     <http://heim.ifi.uio.no/~kyas/creoltools>)
+
+     a. gcc
+
+     b. libxml 2.6.16 or later
+
+  8. graphviz (for the dot utility).
+
+and what ever these tools will require in addition.
+
+
+2. Installing missing files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This also means that after checking out the creoltools, and installing
+or making sure that all dependencies are met, these generated files
+are recreated.  Fortunately, this is a very simple procedure.
+
+  1. After checking out the project from the repository, execute the
+     command `autoreconf -i -s'.  This will create the configure
+     script and the templates for the `Makefiles.in'.
+
+  2. Execute the configure script to setup the build environment.
+     make will then rebuild all files when needed.  Please respect
+     the golden rule above.
+
+
+* share/interpreter.m4:
+~~~~~~~~~~~~~~~~~~~~~~~
+This file contains the code of both the interpreter and the model checker.
+It is used to generate the Maude modules INTERPRETER and MODEL-CHECKER in
+the files interpreter.maude and modelchecker.maude.
+
+If you need to apply changes to the interpreter, you have to edit the
+file interpreter.m4, since all changes to the other files may be
+overwritten.
+
+Additional parts of the interpreter are found in the files configuration.m4,
+machine.m4, and predicates.m4.
+
+
+* Coding style
+~~~~~~~~~~~~~~
+Study the code and try to adhere the coding style.  A line is 80 characters
+long, not longer.  Try to break around column 75.  This makes the code
+printable.  Avoid mutable members and references.  All functions that
+return a `Boolean' value should end in _p, which means ``predicate''.
+
+
+* How to extend the compiler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you feel the need to add a function to the compiler, first check
+whether there is a function defined which provides similar functionality.
+Maybe the function can be used as is or adapted to your needs.
+
+If you do not find such a function, write down a specification for
+that function.  Put it into the source code.  Determine the most
+suitable module for your new function, and add a declaration of that
+function to that module.
+
+Define unit tests for the function and add them to
+'units/<module>Tests.ml'.  Make sure to cover as many behaviours as
+possible.
+
+Implement the function, and stay functional (there are a few places
+where the compiler uses side effects but we want to minimise these
+places).
+
+Check the code base for as many places where your function can be used.
+Maybe the function may obsolete some other function, which we can
+remove.
+
+* How to extend the interpreter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The first consideration is to think about the extension and whether it
+is really necessary.  If you can find a way to express the new
+functionality using existing statements.  If this is the case, then do
+not extend the interpreter.
+
+If you find an extension that generalises existing functionality, then
+your extension should replace the existing functionality it generalises.
+This involves the following additional steps:
+
+1. Update the backend to use your extension wherever the older, more
+   special version is used.
+
+2. Check and update all test cases.  Especially the behaviour of the
+   execution and search tests must be maintained.
+
+3. Update the documentation.

@@ -1,9 +1,10 @@
 /*
- * StrayChar.creol -- Display a parse error caused by a stray character.
+ * update4.creol
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2009 by Ingrid Chieh Yu de Vibe
+ *   <ingridcy@ifi.uio.no>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,8 +20,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-x/* Comment */
+retract BankAccount 
+ begin
+   op increaseBalance (in sum : Int)
+ end
 
-class Foo
-begin
-end
+

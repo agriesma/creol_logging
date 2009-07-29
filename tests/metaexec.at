@@ -1,0 +1,82 @@
+dnl metaexec.at  -- Test the meta execution strategy.
+dnl
+dnl This file is part of creoltools
+dnl
+dnl Written and Copyright (c) 2008 by Marcel Kyas
+dnl
+dnl This program is free software; you can redistribute it and/or
+dnl modify it under the terms of the GNU General Public License as
+dnl published by the Free Software Foundation; either version 3 of the
+dnl License, or (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+
+AT_SETUP([meta-Fibonacci-42])
+cp ${abs_srcdir}/examples/Fibonacci.maude .
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load Fibonacci .
+load creol-metaexec .
+reduce simulate('PROGRAM, upTerm(main(state, "FibTester", int(10))), 42, 112) .
+quit .
+])
+TEST_MAUDE([./meta-Fibonacci-42], test.maude, [examples])
+
+l=`wc -l < ./Fibonacci-meta.out`
+l=`expr $l - 2`
+/bin/sed -e 1d -e 2d -e 3d -e "$l"q ./meta-Fibonacci-42.out > ./output
+AT_CLEANUP
+
+AT_SETUP([meta-Fibonacci-17])
+cp ${abs_srcdir}/examples/Fibonacci.maude .
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load Fibonacci .
+load creol-metaexec .
+reduce simulate('PROGRAM, upTerm(main(state, "FibTester", int(10))), 17, 112) .
+quit .
+])
+TEST_MAUDE([./meta-Fibonacci-17], test.maude, [examples])
+
+l=`wc -l < ./meta-Fibonacci-17.out`
+l=`expr $l - 2`
+/bin/sed -e 1d -e 2d -e 3d -e "$l"q ./meta-Fibonacci-17.out > ./output
+AT_CLEANUP
+
+AT_SETUP([meta-Fibonacci-fail])
+cp ${abs_srcdir}/examples/Fibonacci.maude .
+AT_DATA([test.maude],
+[
+set show timing off .
+set show advise off .
+set trace off .
+set break off .
+set profile off .
+load Fibonacci .
+load creol-metaexec .
+reduce simulate('PROGRAM, upTerm(main(state, "FibTester", emp)), 0, 10) .
+quit .
+])
+TEST_MAUDE([./meta-Fibonacci-fail], test.maude, [examples])
+
+l=`wc -l < ./meta-Fibonacci-fail.out`
+l=`expr $l - 2`
+/bin/sed -e 1d -e 2d -e 3d -e "$l"q ./meta-Fibonacci-fail.out > ./output
+AT_CLEANUP

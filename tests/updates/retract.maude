@@ -1,0 +1,22 @@
+load creol-update .
+mod PROGRAM is
+  protecting CREOL-SIMULATOR .
+  op state : -> State [ctor] .
+  eq state = {
+    remove("BankAccount", (noInh), (noSubst),
+      (< "balance" : Method | Param: (noVid), Att: (noSubst),
+         Code: skip >), (c("BankAccount", 0)), (none))
+
+    < class("BankAccount", 0) : Class | Version: 0, Inh: noInh, Param: noVid,
+      Att: "bal" |-> null,
+      Mtds: < "balance" : Method | Param: noVid, Att: "_" |->
+              null, "b" |-> null, Code: assign( "b" ; "bal" ) ;
+              return ( "b" ) >,
+            < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "bal" @ "BankAccount" ) ; int(0) ) ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null,
+              Code: skip ; return ( emp ) >,
+      Ocnt: 0 > } .
+endm
+

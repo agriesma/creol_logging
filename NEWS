@@ -1,3 +1,39 @@
+creoltools 0.0m-git (2009-XX-XX): alpha release.
+
+This version implements new features.
+
+In the language:
+* Support for a Map data type and map literals have been added. See the
+  manual for an explanation.
+* A "choose" function has been added to the Set data type.
+
+In the compiler:
+* The type checking algorithm has been improved and will accept more
+  well-typed programs than before.
+* Errors in unification during type checking have been corrected.
+* The internal data structures have been simplified, resulting in
+  much more robust code generation and analysis.
+* Well-formedness of interface declarations and uses are added.
+* The compiler uses a new mechanism for selecting subtargets.
+* Generated label names are proper identifiers now. The compiler can
+  read its own output.
+
+In the interpreter:
+* The calls and returns are reference counted objects now.
+* The interpreter format has been revised to accomodate for first-class
+  futures.
+* The interpreter is much more consistent now in setting up auxiliary
+  attributes.
+* Meta-level execution works now.
+
+Other:
+* Many errors have been corrected.
+* The documentation has been improved.
+* cmcvalid has been renamed to cmcdisplay and can also generate dot
+  files now for visualising object structures.
+* creolshell has been dropped, because it is unmaintained and should
+  be replaced by the Eclipse plug-in.
+
 creoltools 0.0m (2008-11-24): alpha release.
 
 This version is mainly a bug fix release.  It includes some new language

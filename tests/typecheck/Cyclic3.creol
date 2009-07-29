@@ -1,9 +1,9 @@
 /*
- * MissingEnd.creol -- Display a parse error caused by a missing end.
+ * Cyclic3.creol -- Figure out that the subtype relation has a cycle.
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2009 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,11 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Foo
-begin
-  op init ==
-    if true then
-      skip
-    else
-      skip
-end
+interface I inherits J begin end
+
+interface J inherits K begin end
+
+interface K inherits I begin end

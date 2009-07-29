@@ -161,7 +161,8 @@ with SantaClausE
 end
 
 class LeaderElf(sc:SantaClaus, elves: List[Elf])
-	contracts Elf inherits Elf
+  inherits Elf(sc)
+  contracts Elf
 begin
   op run == run:>Elf(;)
   op work ==

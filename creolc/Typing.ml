@@ -73,6 +73,11 @@ module MSet = Set.Make(Method)
     type error. *)
 exception Type_error of string * int * string
 
+(** The type checker raises an [Constant_error (file, line, reason)]
+    exception if it has deduced that we assign a value to a constant *)
+exception Constant_error of string * int * string
+
+
 
 (** This exception is raised by the unifier.  The argument is the
     constrained which cannot be resolved. *)
@@ -401,7 +406,7 @@ let rec type_recon_expression env coiface constr fresh_name =
 	    with Not_found ->
 	      (Program.find_attr_decl env.program env.cls name).VarDecl.var_type
 	  with
-	      Not_found ->
+	      Program.Attribute_not_found _ ->
 		identifier_undeclared n name
 	in
 	  (Id (set_type n res, name), constr, fresh_name)
@@ -663,42 +668,85 @@ let type_check_assertion env coiface e =
     else
       type_error (Expression.note e') "Expression is not of type Bool"
 
+let writeable_p env =
+  function
+    | LhsId (n, name) | LhsSSAId(n, name, _) ->
+        if (Method.writeable_p env.meth name) ||
+             (Program.attr_writeable_p env.program env.cls name) then
+          true
+        else
+          raise (Constant_error (n.Expression.file, n.Expression.line, name))
+    | LhsAttr (n, name, (Type.Basic c)) ->
+        let cls = Program.find_class env.program c in
+          if Program.attr_writeable_p env.program cls name then
+            true
+          else
+            raise (Constant_error (n.Expression.file, n.Expression.line, name))
+    | _ -> true
+          
+
 
 let type_check_lhs env coiface =
   function
       LhsId (n, name) ->
-	let res =
+	let res = 
 	  try
-	    try
-	      (Method.find_variable env.meth name).VarDecl.var_type
-	    with
-		Not_found ->
-		  (Program.find_attr_decl env.program env.cls name).VarDecl.var_type
+              Method.find_variable env.meth name
 	  with
-	      Not_found ->
-		identifier_undeclared n name
-	in
-	  LhsId (set_type n res, name)
+	    | Not_found ->
+                begin
+                  try
+                    Program.find_attr_decl env.program env.cls name
+	          with
+	            | Program.Attribute_not_found _ ->
+		        identifier_undeclared n name
+                end
+        in
+	  LhsId (set_type n res.VarDecl.var_type, name)
     | LhsAttr (n, name, (Type.Basic c)) ->
-	let res =
-	  (Program.find_attr_decl env.program
-	     (Program.find_class env.program c) name).VarDecl.var_type
-	in
-	  LhsAttr (set_type n res, name, (Type.Basic c))
+        begin
+          let cls = Program.find_class env.program c in
+	  let res = Program.find_attr_decl env.program cls name in
+	    LhsAttr (set_type n res.VarDecl.var_type, name, (Type.Basic c))
+        end
     | LhsAttr _ -> assert false
     | LhsWildcard (n, None) ->
 	LhsWildcard(set_type n Type.data, None)
     | LhsWildcard (n, Some ty) ->
 	LhsWildcard(set_type n ty, Some ty)
     | LhsSSAId (n, name, version) ->
-	let res =
+        begin
 	  try
-	    (Method.find_variable env.meth name).VarDecl.var_type
+	    let res = Method.find_variable env.meth name in
+	      LhsSSAId (set_type n res.VarDecl.var_type, name, version)
 	  with
-	      Not_found ->
+	    | Not_found ->
 		identifier_undeclared n name
-	in
-	  LhsSSAId (set_type n res, name, version)
+        end
+
+
+let check_assignment_pair env lhs rhs =
+  (* It has to be checked whether for each assignment part we find a free
+     type variable in the right-hand-side.  If this is the case we have to
+     unify it with the type of the left-hand-side.  On the left hand side
+     the type must not contain any free variables. *)
+  let lhs_t = Expression.get_lhs_type lhs
+  and rhs_t = Expression.get_type rhs in
+  let s =
+    try
+      unify env.program [(rhs_t, lhs_t)]
+    with
+      | Unify_failure _ ->
+          let file = (Expression.lhs_note lhs).Expression.file
+          and line = (Expression.lhs_note lhs).Expression.line
+          in
+            raise (Type_error (file, line, "Type mismatch: Expected " ^
+                                           (Type.string_of_type lhs_t) ^
+                                           " but got " ^
+                                           (Type.string_of_type rhs_t)))
+  in
+  let () = log 1 (Type.string_of_substitution s) in
+    substitute_types_in_expression s rhs
 
 
 let rec type_check_statement env coiface =
@@ -806,7 +854,6 @@ let rec type_check_statement env coiface =
 	     (fun m ->
 		Type.Function (Method.domain_type m, Method.range_type m))
 	     (MSet.elements cands'))
-
       and call_type =
 	(* the actual call will have a parameterised type. *)
 	match outs_t with
@@ -814,17 +861,25 @@ let rec type_check_statement env coiface =
 	  | Some t -> Type.Function (Type.Tuple ins_t'', Type.Tuple t)
       in
       let subst = 
-	try
-	  unify env.program [(call_type, cands_type)]
-	with
-	    Unify_failure (s, t) ->
-	      raise (Type_error (n.file, n.line,
-				 (Type.string_of_type s) ^
-				   " but expected is type " ^
-				   (Type.string_of_type t) ^
-				   "\n  Cannot satisfy constraints: " ^
-				   (string_of_constraint_set
-				      [(call_type, cands_type)])))
+	if not (MSet.is_empty cands') then
+	  begin
+	    try
+	      unify env.program [(call_type, cands_type)]
+	    with
+		Unify_failure (s, t) ->
+		  raise (Type_error (n.file, n.line,
+                                     "method " ^ m ^
+				       " has type " ^
+				       (Type.string_of_type s) ^
+				       " but expected is type " ^
+				       (Type.string_of_type t) ^
+				       "\n  Cannot satisfy constraints: " ^
+				       (string_of_constraint_set
+					  [(call_type, cands_type)])))
+	  end
+	else
+	  raise (Type_error (n.file, n.line, "No method called " ^
+			       m ^ " found."))
       in
         Messages.message 2 (Type.string_of_substitution subst) ;
 	let i = List.map (substitute_types_in_expression subst) ins'' in
@@ -956,38 +1011,18 @@ let rec type_check_statement env coiface =
       | Assign (n, lhs, rhs) ->
 	  let lhs' = List.map (type_check_lhs env coiface) lhs
 	  and rhs' = type_check_expression_list env coiface [] rhs
-	  in
-	  let check_assignment_pair lhs rhs =
-	    (* It has to be checked whether for each assignment part
-	       we find a free type variable in the right-hand-side.
-	       If this is the case we have to unify it with the type
-	       of the left-hand-side.  On the left hand side the
-	       type must not contain any free variables. *)
-	    let lhs_t = Expression.get_lhs_type lhs
-	    and rhs_t = Expression.get_type rhs in
-	    let s =
-	      try
-		unify env.program [(rhs_t, lhs_t)]
-	      with
-		  Unify_failure _ ->
-	            raise (Type_error (n.file, n.line,
-			"Type mismatch in assignment: Expected " ^
-			(Type.string_of_type lhs_t) ^
-			" but got " ^
-			(Type.string_of_type rhs_t)))
-
-		in
-                  let () = log 1 (Type.string_of_substitution s) in
-		    substitute_types_in_expression s rhs
+          and _ = List.for_all (writeable_p env) lhs
 	  in
 	  let rhs'' =
 	    try
-	      List.map2 check_assignment_pair lhs' rhs'
+	      List.map2 (check_assignment_pair env) lhs' rhs'
 	    with
-		Invalid_argument _ ->
+              | Type_error (_, _, msg) ->
+                  raise (Type_error (n.file, n.line, msg))
+	      | Invalid_argument _ ->
 		  raise (Type_error (n.file, n.line,
-				     "Type mismatch in assignment: " ^ 
-				       "length of arguments differ"))
+				     "Type mismatch: number of components " ^
+				       "differ"))
 	  in
 	    Assign (n, lhs', rhs'')
       | Await (n, e) ->
@@ -1053,9 +1088,7 @@ let rec type_check_statement env coiface =
 	    check_local_sync_call n m lb ub ins outs
 	  in
 	    AwaitLocalSyncCall (n, m, signature, lb, ub, ins', outs')
-      | Tailcall _ -> assert false
-      | StaticTail _ -> assert false
-      | Return _ -> assert false
+      | (Tailcall _ | StaticTail _ | Return _ as s) -> s
       | If (n, cond, iftrue, iffalse) ->
 	  let cond' = type_check_assertion env coiface cond in
 	    If (n, cond',
@@ -1085,8 +1118,36 @@ let rec type_check_statement env coiface =
 	  let s1' = type_check_statement env coiface s1
 	  and s2' = type_check_statement env coiface s2 in
 	    Choice (n, s1', s2')
-      | Continue _ -> assert false
-      | Extern _ as s -> s
+      | (Continue _ | Extern _) as s -> s
+
+
+(** Check that a class is inherited by supplying correct
+    parameters. *)
+let type_check_class_inherit program cls inh =
+  let env = { program = program; cls = cls; meth = Method.empty;
+	      env = Env.empty }
+  and super = Program.find_class program inh.Inherits.name in
+  let f { VarDecl.name = name } =
+    Expression.LhsAttr (Expression.make_note (), name,
+			Type.Basic super.Class.name) in
+  let lhs = List.map f super.Class.parameters
+  and rhs = inh.Inherits.arguments
+  in
+  let lhs' = List.map (type_check_lhs env "") lhs
+  and rhs' = type_check_expression_list env "" [] rhs
+  in
+  let args' =
+    try
+      List.map2 (check_assignment_pair env) lhs' rhs'
+    with
+      | Type_error (_, _, msg) ->
+          raise (Type_error (inh.Inherits.file, inh.Inherits.line, msg))
+      | Invalid_argument _ ->
+	  raise (Type_error (inh.Inherits.file, inh.Inherits.line,
+			     "Type mismatch: number of components " ^
+			       "differ"))
+  in
+    { inh with Inherits.arguments = args' }
 
 
 (** The function [method_missing_for_interface program cls name]
@@ -1127,126 +1188,169 @@ let methods_missing_for_iface ~program ~cls ~name =
       i.Interface.with_decls
 
 
-(** Type check a tree. *)
-let typecheck tree: Program.t =
-  let rec type_check_inits env coiface res =
-    function
-      | [] -> res
-      | ({ VarDecl.init = None } as v)::r ->
+(** Check that a parameter declaration is well formed. *)
+let type_check_parameter kind program vardecl =
+  if Program.type_p program vardecl.VarDecl.var_type then
+    true
+  else
+    begin
+      Messages.error vardecl.VarDecl.file vardecl.VarDecl.line
+	("type " ^ (Type.string_of_type vardecl.VarDecl.var_type) ^
+           " of " ^ kind ^ " parameter " ^ vardecl.VarDecl.name ^
+           " does not exist") ;
+      false
+    end
+
+
+let rec type_check_inits env coiface res =
+  function
+    | [] -> res
+    | ({ VarDecl.init = None } as v)::r ->
 	  type_check_inits env coiface (v::res) r
-      | { VarDecl.name = n; var_type = t; init = Some i }::r ->
-	  let i' =
-	    let l = [LhsId (Expression.make_note (), n)]
-	    and r = [i]
-	    and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None }::res } }
-	    in
-	    let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
-	      match s with
-		| Assign (_, _, [i']) -> i'
-		| _ -> assert false
+    | { VarDecl.name = n; var_type = t; init = Some i }::r ->
+	let i' =
+	  let l = [LhsId (Expression.make_note (), n)]
+	  and r = [i]
+	  and e = { env with meth = { env.meth with Method.vars = { VarDecl.name = n; var_type = t; init = None; file = ""; line = 0 }::res } }
 	  in
-	    type_check_inits env coiface
-	      ({ VarDecl.name = n; var_type = t; init = Some i' }::res) r
-  and type_check_variables env coiface meth =
-    List.rev (type_check_inits env coiface [] meth.Method.vars)
-  and type_check_method program cls coiface meth =
-    let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
-    let env' = { env with meth = { meth with Method.vars = [] } }  in
-    let () =
-      let f d { VarDecl.name = n; var_type = t } =
-	if not (Program.type_p program t) then
-	  raise (Type_error (cls.Class.file, cls.Class.line,
-			     "type " ^ (Type.string_of_type t) ^ " of " ^ d ^
-			       " parameter " ^ n ^ " does not exist"))
-      in
-	List.iter (f "input") meth.Method.inpars ;
-	List.iter (f "output") meth.Method.outpars
-    in
-    let r' = type_check_assertion env' coiface meth.Method.requires
-    and e' = type_check_assertion env' coiface meth.Method.ensures
-    and v' = type_check_variables env' coiface meth
-    and b' = match meth.Method.body with
-	None -> None
-      | Some s -> Some (type_check_statement env coiface s)
-    in
-      { meth with Method.requires = r'; ensures = e'; vars = v' ; body = b' }
-  and type_check_with_def program cls w =
-    let coiface =
-      match w.With.co_interface with
-	| Type.Internal -> "" (* The co-interface may also be internal. *)
-	| _ -> Type.name w.With.co_interface
-    in
-    let () =
-      if not (Program.interface_p program w.With.co_interface) then
-	raise (Type_error (cls.Class.file, cls.Class.line,
-			   "cointerface " ^ coiface ^ " is not an interface"))
-    in
-    let i' =
-      let env =
-	{ program = program; cls = cls; meth = Method.empty; env = Env.empty }
-      in
-	List.map (type_check_assertion env coiface) w.With.invariants
-    in
-    let m' =
-      List.map (type_check_method program cls coiface) w.With.methods
-    in
-      { w with With.methods = m'; invariants = i' }
+	  let s = type_check_statement e coiface (Assign (make_note (), l, r)) in
+	    match s with
+	      | Assign (_, _, [i']) -> i'
+	      | _ -> assert false
+	in
+	  type_check_inits env coiface
+	    ({ VarDecl.name = n; var_type = t; init = Some i'; file = ""; line = 0 }::res) r
 
-  (* A class is well typed, if it provides methods for all the
-     interfaces it claims to implement, if the initialisation of all
-     attributes are well-typed, and if all with-declarations are
-     well-typed.
 
-     Type checking a class starts with checking, whether the class
-     provides a method for each interface it declared.  *)
+let type_check_variables env coiface meth =
+  List.rev (type_check_inits env coiface [] meth.Method.vars)
 
-  and type_check_class program cls =
 
-    let attribute_well_typed { VarDecl.name = n; var_type = t; init = i } =
-      if Program.type_p program t then
-	match i with
-	  | None -> 
-	      { VarDecl.name = n; var_type = t; init = i }
-	  | Some init ->
-	      let i' =
-		let l = [LhsId (Expression.make_note (), n)]
-		and r = [init]
-		and env =
-		  { program = program; cls = cls; meth = Method.empty;
-		    env = Env.empty }
-		in
-		let s =
-		  type_check_statement env "Any" (Assign (make_note (), l, r))
-		in
-		  match s with
-		    | Assign (_, _, [i']) -> i'
-		    | _ -> assert false
+let type_check_method program cls coiface meth =
+  let env = { program = program; cls = cls; meth = meth; env = Env.empty } in
+  let env' = { env with meth = { meth with Method.vars = [] } }  in
+  let () =
+    if not
+      ((List.for_all (type_check_parameter "input" program) meth.Method.inpars) &&
+      (List.for_all (type_check_parameter "output" program) meth.Method.outpars))
+    then
+      exit 1
+  in
+  let r' = type_check_assertion env' coiface meth.Method.requires
+  and e' = type_check_assertion env' coiface meth.Method.ensures
+  and v' = type_check_variables env' coiface meth
+  and b' = match meth.Method.body with
+    | None -> None
+    | Some s -> Some (type_check_statement env coiface s)
+  in
+    { meth with Method.requires = r'; ensures = e'; vars = v' ; body = b' }
+
+
+let type_check_with_def program cls w =
+  let coiface =
+    match w.With.co_interface with
+      | Type.Internal -> "" (* The co-interface may also be internal. *)
+      | _ -> Type.name w.With.co_interface
+  in
+  let () =
+    if not (Program.interface_p program w.With.co_interface) then
+      raise (Type_error (w.With.file, w.With.line,
+			 "cointerface " ^ coiface ^ " is not an interface"))
+  in
+  let i' =
+    let env =
+      { program = program; cls = cls; meth = Method.empty; env = Env.empty }
+    in
+      List.map (type_check_assertion env coiface) w.With.invariants
+  in
+  let m' = List.map (type_check_method program cls coiface) w.With.methods in
+    { w with With.methods = m'; invariants = i' }
+
+
+(** Type check an interface declaration. There is not much to do,
+    except that all types should be defined.
+
+    We can reuse type_check_with_def with an empty class, because the
+    method declarations in an interface do {i not} have method
+    bodies. *)
+let type_check_interface program iface =
+  let with_decls' =
+    List.map (type_check_with_def program
+      { Class.empty with Class.file = iface.Interface.file;
+                         Class.line = iface.Interface.line })
+      iface.Interface.with_decls
+  in
+    { iface with Interface.with_decls = with_decls' }
+
+
+let type_relation_well_formed_p tree =
+  let rel = Program.subtype_relation tree in
+    if Program.acyclic_p (Program.transitive_closure rel) then
+      true
+    else
+      begin
+       let cycle = Program.find_cycle rel in
+         Messages.error "*top*" 0 ("subtype relation has a cycle: " ^
+                                     (Program.string_of_cycle cycle)) ;
+         false
+      end
+
+
+let class_hierarchy_well_formed_p tree =
+  let rel = Program.class_hierarchy tree in
+    if Program.acyclic_p (Program.transitive_closure rel) then
+      true
+    else
+      begin
+       let cycle = Program.find_cycle rel in
+         Messages.error "*top*" 0 ("class hierarchy has a cycle: " ^
+                                     (Program.string_of_cycle cycle)) ;
+         false
+      end
+
+
+(** A class is well typed, if it provides methods for all the
+    interfaces it claims to implement, if the initialisation of all
+    attributes are well-typed, and if all with-declarations are
+    well-typed.
+
+    Type checking a class starts with checking, whether the class
+    provides a method for each interface it declared.  *)
+let type_check_class program cls =
+  let attribute_well_typed vardecl =
+    if Program.type_p program vardecl.VarDecl.var_type then
+      match vardecl.VarDecl.init with
+	| None ->
+            vardecl
+	| Some init ->
+	    let i' =
+	      let l = [LhsId (Expression.make_note (), vardecl.VarDecl.name)]
+	      and r = [init]
+	      and env =
+		{ program = program; cls = cls; meth = Method.empty;
+		  env = Env.empty }
 	      in
-		{ VarDecl.name = n; var_type = t; init = Some i' }
+	      let s =
+		type_check_statement env "Any" (Assign (make_note (), l, r))
+              in
+                match s with
+                  | Assign (_, _, [i']) -> i'
+                  | _ -> assert false
+            in
+	      { vardecl with VarDecl.init = Some i' }
       else
 	raise (Type_error (cls.Class.file, cls.Class.line,
 			   "type " ^
-			     (Type.string_of_type t) ^ " of attribute " ^ n ^
-			     " does not exist"))
+			     (Type.string_of_type vardecl.VarDecl.var_type) ^
+                             " of attribute " ^ vardecl.VarDecl.name ^
+                             " does not exist"))
 
-    and parameter_well_typed { VarDecl.name = n; var_type = t } =
-      if Program.type_p program t then
-	true
-      else
-	begin
-	  Messages.error cls.Class.file cls.Class.line
-	    ("type " ^ (Type.string_of_type t) ^ " of class parameter " ^ n ^
-	       " does not exist") ;
-	  false
-	end
     in
       try
-	ignore (Program.superclasses program cls.Class.name) ;
-	let () =
-	  if (List.fold_left
-		(fun a v -> if parameter_well_typed v then a else a + 1)
-		0 cls.Class.parameters) > 0 then
-	    exit 1
+	let inh' = List.map (type_check_class_inherit program cls) cls.Class.inherits
+	and pwt = List.for_all (type_check_parameter "class" program) cls.Class.parameters
+	in
+	let _ = if not pwt then exit 1
 	in
 	let attributes' =
 	  List.map attribute_well_typed cls.Class.attributes
@@ -1261,9 +1365,9 @@ let typecheck tree: Program.t =
 		      Messages.error cls.Class.file cls.Class.line
 			("No interface " ^ n ^ " defined") ;
 		      1
-	      in
-		try
-		  IdSet.fold (fun n a -> a + (count n))
+              in
+                try
+                  IdSet.fold (fun n a -> a + (count n))
                     (Program.class_provides program cls) 0
 		with
 	            Program.Interface_not_found (file, line, iface) ->
@@ -1273,59 +1377,119 @@ let typecheck tree: Program.t =
 	    in
 	      if (methods_missing = 0) then
 		{ cls with Class.attributes = attributes';
+                           inherits = inh';
 		    with_defs = List.map (type_check_with_def program cls)
 		    cls.Class.with_defs }
 	      else
 		exit 1
 	  end
       with
-	  Program.Class_not_found (f, l, c) ->
-	    Messages.error f l ("Class " ^ c ^ " not defined") ;
-	    exit 1
+          Program.Class_not_found (f, l, c) ->
+            Messages.error f l ("Class " ^ c ^ " not defined") ;
+            exit 1
 
-  and type_check_interface program iface =
-    iface
-  and type_check_declaration program =
+
+(** Type check new class term. *)
+let type_check_new_class program upd =
+  let cls = upd.NewClass.cls in
+  let program' = Program.add_class program cls in
+    { upd with NewClass.cls = type_check_class program' cls }
+
+
+(** Type check an update term. *)
+let type_check_update program upd =
+  let program' =
+    Program.apply_updates program (Program.make [Declaration.Update upd])
+  in
+  let cls = Program.find_class program' upd.Update.name in
+  let cls' = type_check_class program' cls in
+  let with_defs' =
+    List.map (type_check_with_def program' cls') upd.Update.with_defs
+  in
+    { upd with Update.with_defs = with_defs' }
+
+
+let type_check_retract_attributes program
+      { Retract.name = name; attributes = decls } =
+  let cls = Program.find_class program name in
+  let present { VarDecl.name = name } =
+    if Class.has_attr_p cls name then
+      ()
+    else
+      raise (Failure ("No attribute " ^ name ^ " in " ^ cls.Class.name))
+  in
+    List.iter present decls
+
+
+let type_check_retract_methods program
+      { Retract.name = name; with_decls = decls } =
+  let cls = Program.find_class program name in
+  let present w =
+    let present m =
+      if Class.has_method_p cls m then
+        ()
+      else
+        raise (Failure ("No method " ^ (Method.name_as_string m) ^ " in " ^ cls.Class.name))
+    in
+      List.iter present w.With.methods
+  in
+    List.iter present decls
+
+
+let type_check_retract program upd =
+  let _ = type_check_retract_attributes program upd in
+  let _ = type_check_retract_methods program upd in
+  let program' =
+     Program.apply_updates program (Program.make [Declaration.Retract upd])
+  and subclasses = IdSet.elements (Program.subclasses program upd.Retract.name)
+  in
+  let f c = type_check_class program' (Program.find_class program' c) in
+  let _ = List.map f subclasses in
+    upd
+
+
+(** Type check a tree. *)
+let typecheck tree: Program.t =
+
+  let type_check_declaration program =
     function
 	Declaration.Class c ->
 	  Declaration.Class (type_check_class program c)
       | Declaration.Interface i ->
 	  Declaration.Interface (type_check_interface program i)
+      | Declaration.NewClass upd ->
+          Declaration.NewClass (type_check_new_class program upd)
+      | Declaration.Update upd ->
+          Declaration.Update (type_check_update program upd)
+      | Declaration.Retract upd ->
+          Declaration.Retract (type_check_retract program upd)
       | _ as d -> d
   in
-  let type_relation_well_formed_p tree =
-    let rel = Program.subtype_relation tree in
-      if Program.acyclic_p (Program.transitive_closure rel) then
-	true
-      else
-	begin
-	  let cycle = Program.find_cycle rel in
-	    Messages.error "*top*" 0 ("subtype relation has a cycle: " ^
-					(Program.string_of_cycle cycle)) ;
-	    false
-	end
-  and class_hierarchy_well_formed_p tree =
-    let rel = Program.class_hierarchy tree in
-      if Program.acyclic_p (Program.transitive_closure rel) then
-	true
-      else
-	begin
-	  let cycle = Program.find_cycle rel in
-	    Messages.error "*top*" 0 ("class hierarchy has a cycle: " ^
-					(Program.string_of_cycle cycle)) ;
-	    false
-	end
-  in
-    if (type_relation_well_formed_p tree) &&
-      (class_hierarchy_well_formed_p tree)
-    then
+  let wf =
+    try
+      (type_relation_well_formed_p tree) && (class_hierarchy_well_formed_p tree)
+    with
+      | Program.Class_not_found (file, line, cls) ->
+	  Messages.error file line ("class " ^ cls ^ " not found") ;
+	  exit 1
+      | Program.Datatype_not_found (file, line, dtype) ->
+	  Messages.error file line ("data type " ^ dtype ^ " not found") ;
+	  exit 1
+      | Program.Interface_not_found (file, line, iface) ->
+	  Messages.error file line ("interface " ^ iface ^ " not found") ;
+	  exit 1
+    in
+    if wf then
       begin
 	try
 	  Program.map tree (type_check_declaration tree)
 	with
-	    Type_error (file, line, msg) ->
+	  | Type_error (file, line, msg) ->
 	      Messages.error file line msg ;
 	      exit 1
+          | Constant_error (file, line, msg) ->
+              Messages.error file line ("cannot assign to constant " ^ msg) ;
+              exit 1
       end
     else
       exit 1

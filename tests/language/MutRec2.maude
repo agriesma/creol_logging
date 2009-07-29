@@ -1,18 +1,18 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Test" : Class | Inh: noInh, Param: noVid, Att: noSubst,
       Mtds: < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "init" : Method | Param: noVid, Att: "label:0" |-> null, "a"
+            < "init" : Method | Param: noVid, Att: "ccglab0" |-> null, "a"
               |-> null, "_" |-> null, Code: new( "a" ; "Test" ; emp ) ;
-              call( "label:0" ; "a" ; "m" ; emp ) ; get( "label:0" ; noVid )
-              ; free( "label:0" ) ; return ( emp ) >,
-            < "m" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
-              null, Code: call( "label:0" ; "caller" ; "m" ; emp ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
-      Ocnt: 0 > .
+              call( "ccglab0" ; "a" ; "m" ; emp ) ; get( "ccglab0" ; noVid )
+              ; free( "ccglab0" ) ; return ( emp ) >,
+            < "m" : Method | Param: noVid, Att: "ccglab0" |-> null, "_" |->
+              null, Code: call( "ccglab0" ; "caller" ; "m" ; emp ) ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ; return ( emp ) >,
+      Ocnt: 0 > } .
 endm
 

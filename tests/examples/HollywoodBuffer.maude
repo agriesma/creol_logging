@@ -1,18 +1,18 @@
 load creol-interpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Producer" : Class | Inh: noInh, Param: "buf", Att: "buf" |-> null, "i"
       |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( ( "i" @ "Producer" ) ; int(1) ) ; return ( emp )
               >,
-            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
-              "buf" ; "put" ; "i" ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) ; assign( "i" ; "+" ( "i" :: int(1) ) ) ;
-              call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" ) ;
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null, Code: call( "ccglab0" ;
+              "buf" ; "put" ; "i" ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) ; assign( "i" ; "+" ( "i" :: int(1) ) ) ;
+              call( "ccglab1" ; "this" ; "run" ; emp ) ; free( "ccglab1" ) ;
               return ( emp ) >,
             < "produce" : Method | Param: noVid, Att: "x" |-> null, "_" |->
               null, Code: assign( "x" ; "i" ) ; assign( "i" ; "+" ( "i" ::
@@ -24,12 +24,12 @@ mod PROGRAM is
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( ( "sum" @ "Consumer" ) ; int(0) ) ;
               return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "j" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "buf" ; "take" ; emp ) ;
-              get( "label:0" ; "j" ) ; free( "label:0" ) ;
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "j" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "buf" ; "take" ; emp ) ;
+              get( "ccglab0" ; "j" ) ; free( "ccglab0" ) ;
               assign( "sum" ; "+" ( "sum" :: "j" ) ) ;
-              call( "label:1" ; "this" ; "run" ; emp ) ; free( "label:1" ) ;
+              call( "ccglab1" ; "this" ; "run" ; emp ) ; free( "ccglab1" ) ;
               return ( emp ) >,
             < "consume" : Method | Param: "x", Att: "x" |-> null, "_" |->
               null, Code: assign( "sum" ; "+" ( "sum" :: "x" ) ) ;
@@ -58,6 +58,6 @@ mod PROGRAM is
               Code: new( "buf" ; "Buffer" ; emp ) ;
               new( "prod" ; "Producer" ; "buf" ) ;
               new( "cons" ; "Consumer" ; "buf" ) ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

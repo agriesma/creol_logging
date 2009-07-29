@@ -1,0 +1,51 @@
+load creol-update .
+mod PROGRAM is
+  protecting CREOL-SIMULATOR .
+  op state : -> State [ctor] .
+  eq state = {
+    < class("BankAccount", 0) : Class | Version: 0, Inh: noInh, Param: noVid,
+      Att: "bal" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: assign( ( "bal" @ "BankAccount" ) ; int(0) ) ;
+              return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
+              return ( emp ) >,
+            < "increaseBalance" : Method | Param: "sum", Att: "sum" |-> null,
+              "_" |-> null, Code: assign( "bal" ; "+" ( "bal" :: "sum" ) ) ;
+              return ( emp ) >,
+            < "balance" : Method | Param: noVid, Att: "b" |-> null, "_" |->
+              null, Code: assign( "b" ; "bal" ) ; return ( "b" ) >,
+            < "deposit" : Method | Param: "sum", Att: "sum" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "this" ; "increaseBalance" ; "sum" ) ;
+              free( "ccglab0" ) ; return ( emp ) >,
+      Ocnt: 0 >
+    
+    < class("Customer", 0) : Class | Version: 0, Inh: noInh, Param: noVid,
+      Att: "timer" |-> null, "account" |-> null,
+      Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
+              Code: new( ( "account" @ "Customer" ) ; "BankAccount" ; emp ) ;
+              assign( ( "timer" @ "Customer" ) ; int(0) ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "this" ; "tick" ; emp ) ;
+              free( "ccglab0" ) ; call( "ccglab1" ; "this" ; "trade" ; emp )
+              ; free( "ccglab1" ) ; return ( emp ) >,
+            < "tick" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
+              |-> null, Code: await "<" ( "timer" :: int(6) ) ;
+              assign( "timer" ; "+" ( "timer" :: int(1) ) ) ;
+              call( "ccglab0" ; "this" ; "tick" ; emp ) ; free( "ccglab0" ) ;
+              return ( emp ) >,
+            < "trade" : Method | Param: noVid, Att: "ccglab2" |-> null,
+              "ccglab1" |-> null, "ccglab0" |-> null, "balance" |-> null, "_"
+              |-> null, Code: await ">" ( "timer" :: int(5) ) ;
+              assign( "timer" ; int(0) ) ; call( "ccglab0" ; "account" ;
+              "balance" ; emp ) ; get( "ccglab0" ; "balance" ) ;
+              free( "ccglab0" ) ; if "<=" ( "balance" :: int(100) ) th
+              call( "ccglab1" ; "account" ; "deposit" ; int(10) ) ;
+              get( "ccglab1" ; noVid ) ; free( "ccglab1" ) el skip fi ;
+              call( "ccglab2" ; "this" ; "trade" ; emp ) ; free( "ccglab2" )
+              ; return ( emp ) >,
+      Ocnt: 0 > } .
+endm
+

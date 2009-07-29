@@ -3,7 +3,7 @@
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2007, 2008, 2009 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -112,7 +112,7 @@ end
 
 (* The license under which this software is distributed. *)
 let license =
-  "Copyright (c) 2007, 2008 Marcel Kyas\n" ^
+  "Copyright (c) 2007-2009 Marcel Kyas\n" ^
   "This is free software; see the source for copying conditions.\n" ^
   "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n" ^
   "PARTICULAR PURPOSE.\n"
@@ -123,7 +123,8 @@ let license =
 let show_version () =
   (** Show the name and the version of the program and exit. *)
   print_string (Version.package ^ " " ^ Version.version ^ " (" ^
-		   Version.release ^ " of " ^ Version.reldate ^ ")\n" );
+		   Version.release ^ Version.branch ^ " of " ^
+                   Version.reldate ^ ")\n");
   print_string license ;
   exit 0
 

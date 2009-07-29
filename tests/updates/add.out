@@ -1,0 +1,27 @@
+==========================================
+rewrite in PROGRAM : state .
+result Configuration: 
+< class("BankAccount",0) : Class | Version: 0, Inh: noInh, Param: noVid, Att:
+    "bal" |-> null, Mtds:
+  < "balance" : Method | Param: noVid, Att: "_" |-> null, "_" |-> null, "b" |->
+    null, Code: assign("b" ; "bal") ; return("b") >, < "deposit" : Method |
+    Param: "sum", Att: "_" |-> null, "_" |-> null, "ccglab0" |-> null, "sum"
+    |-> null, "sum" |-> null, Code: call("ccglab0" ; "this" ; "increaseBalance"
+    ; "sum") ; free("ccglab0") ; return(emp) >, < "increaseBalance" : Method |
+    Param: "sum", Att: "_" |-> null, "_" |-> null, "sum" |-> null, "sum" |->
+    null, Code: assign("bal" ; "+"("bal" :: "sum")) ; return(emp) >, < "init" :
+    Method | Param: noVid, Att: "_" |-> null, "_" |-> null, Code: assign("bal"
+    @ "BankAccount" ; int(0)) ; return(emp) >, < "run" : Method | Param: noVid,
+    Att: "_" |-> null, "_" |-> null, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+ 
+< class("Log",1) : Class | Version: 1, Inh: noInh, Param: noVid, Att: "log" |->
+    null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "log" : Method | Param: "message", Att: "_" |-> null, "message" |->
+    null, Code: assign("log" ; "|-|"("log" :: "message")) ; return(emp) >, <
+    "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >,
+  Ocnt: 0 >
+
+Bye.

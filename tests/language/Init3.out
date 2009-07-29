@@ -1,0 +1,48 @@
+==========================================
+reduce in PROGRAM : state .
+result State: {
+< "C" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(
+    emp) >,
+  Ocnt: 0 >
+ 
+< "Test" : Class | Inh: noInh, Param: noVid, Att: "x" |-> null, "y" |-> null,
+    "z" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("y" @ "Test" ;
+    "C" ; emp) ; assign(("x" @ "Test"), ("z" @ "Test") ; int(1) :: int(2)) ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code:
+    skip ; return(emp) >,
+  Ocnt: 0 >
+}
+==========================================
+rewrite in PROGRAM : main(state, "Test", emp) .
+result State: {
+< ob("C-0") : "C" |
+  Att: "this" |-> ob("C-0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 2 >
+ 
+< ob("Test-0") : "Test" |
+  Att: "this" |-> ob("Test-0"), "x" |-> int(1), "y" |-> ob("C-0"), "z" |-> int(
+    2),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 3 >
+ 
+< "C" : Class | Inh: noInh, Param: noVid, Att: noSubst, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(
+    emp) >,
+  Ocnt: 1 >
+ 
+< "Test" : Class | Inh: noInh, Param: noVid, Att: "x" |-> null, "y" |-> null,
+    "z" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("y" @ "Test" ;
+    "C" ; emp) ; assign(("x" @ "Test"), ("z" @ "Test") ; int(1) :: int(2)) ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code:
+    skip ; return(emp) >,
+  Ocnt: 1 >
+}
+Bye.

@@ -257,7 +257,7 @@ let dump_after arg =
 
     Read the contents from a channel and return a abstract syntax tree
     and measure the time used for it.  *)
-let parse_from_channel main (name: string) (channel: in_channel) =
+let parse_from_channel main name channel =
   let buf = Lexing.from_channel channel in
   let pos = buf.Lexing.lex_curr_p in
   let _ =  buf.Lexing.lex_curr_p <- { pos with Lexing.pos_fname = name } in

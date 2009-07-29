@@ -88,7 +88,7 @@ endm
 GRAMMAR_TEST(LABEL-TEST, $cont(label(1)), skip)
 GRAMMAR_TEST(LABEL-TEST, $accept(label(1)), skip)
 GRAMMAR_TEST(LABEL-TEST, $cont (label(5)), skip)
-GRAMMAR_TEST(LABEL-TEST, {| comp(label(5), emp) |}, warning(""))
+GRAMMAR_TEST(LABEL-TEST, {| < label(5) : Future | Completed: true, References: 1, Value:  emp > |}, warning(""))
 GRAMMAR_TEST(LABEL-TEST, {| invoc(ob("object1"), ob("object2"), label(5), "method1", emp) |}, warning(""))
 
 quit

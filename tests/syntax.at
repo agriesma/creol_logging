@@ -1,0 +1,200 @@
+dnl syntax.at  -- Test the Creol parser.
+dnl
+dnl This file is part of creoltools
+dnl
+dnl Written and Copyright (c) 2009 by Marcel Kyas
+dnl
+dnl This program is free software; you can redistribute it and/or
+dnl modify it under the terms of the GNU General Public License as
+dnl published by the Free Software Foundation; either version 3 of the
+dnl License, or (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+
+AT_SETUP([syntax-vardecl])
+AT_DATA([test.creol], [])
+AT_CHECK([${CREOLC} -T none test.creol], [0], [], [])
+
+AT_DATA([test.creol], [[x/* Comment */
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error
+]])
+
+AT_DATA([test.creol], [[class C begin var x: Int end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [0], [], [])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int := 0 end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [0], [], [])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int var y: Int end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [0], [], [])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int 0 end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable declaration (missing initialiser?)
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int := a 0 end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable initialiser
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x Int end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable declaration (missing type?)
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x: int end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable declaration (not a type?)
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x := 0 end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable declaration (missing type?)
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x; end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable declaration (missing type?)
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x: ; end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable declaration (not a type?)
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int; end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [0], [], [[]])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int := ; end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in variable initialiser
+]])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int := 0; end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [0], [], [[]])
+
+AT_DATA([test.creol],
+[[class C begin var x: Int; 0 end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in class body definition
+]])
+
+AT_CLEANUP
+
+AT_SETUP([syntax-end])
+AT_DATA([test.creol],
+[[class C begin
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:1: syntax error in class body definition
+]])
+
+AT_DATA([test.creol],
+[[class Foo
+begin
+  op init ==
+    if true then
+      skip
+    else
+      skip
+end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:9: syntax error in method body
+]])
+
+AT_DATA([test.creol],
+[[class Foo
+begin
+  op init ==
+    if true then
+      skip
+    else
+      skip
+
+  op run == skip
+end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:9: syntax error in else block
+]])
+
+AT_DATA([test.creol],
+[[class Foo
+begin
+  op init ==
+    if true then
+      skip
+
+  op run == skip
+end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:7: syntax error in if statement
+]])
+
+AT_DATA([test.creol],
+[[class Foo
+begin
+  op init ==
+    while true do
+      if true then
+	skip
+end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:8: syntax error in while statement
+]])
+
+AT_DATA([test.creol],
+[[class Foo
+begin
+  op init ==
+    while true do
+      if true then
+	skip
+
+  op run == skip
+end
+]])
+AT_CHECK([${CREOLC} -T none test.creol], [1], [],
+[[test.creol:8: syntax error in if statement
+]])
+
+AT_CLEANUP

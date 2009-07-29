@@ -72,6 +72,7 @@ struct
     | Basic of string
     | Variable of string
     | Application of string * t list
+    | Future of t list
     | Tuple of t list
     | Intersection of t list
     | Disjunction of t list
@@ -135,11 +136,11 @@ struct
   let time_p t = (t = time)
 
   (** The type of a {i Future} of values of type [l]. *)
-  let future l = Application ("Label", l)
+  let future l = Future l
 
   (** The predicate [future_p t] is true, if the type [t] is the type
       of a {i Future}. *)
-  let future_p t = match t with Application("Label", _) -> true | _ -> false
+  let future_p t = match t with Future _ -> true | _ -> false
 
   (** Make a term representing a {i List} of [t]. *)
   let list t = Application ("List", [t])
@@ -187,6 +188,7 @@ struct
       | Variable s -> "`" ^ s
       | Application (s, []) -> s ^ "[ ]"
       | Application (s, p) -> s ^ "[" ^ (string_of_type_list p) ^ "]"
+      | Future p -> "Label" ^ "[" ^ (string_of_type_list p) ^ "]"
       | Tuple p -> "[" ^ (string_of_type_list p) ^ "]"
       | Intersection l -> "/\\ [" ^ (string_of_type_list l) ^ "]"
       | Disjunction l -> "\\/ [" ^ (string_of_type_list l) ^ "]"
@@ -202,7 +204,7 @@ struct
   (** Returns the type of the future. *)
   let type_of_future =
     function
-	Application ("Label", args) -> args
+	Future args -> args
       | _ -> assert false
 
 
@@ -214,6 +216,7 @@ struct
 	  Basic _ -> a
 	| Variable v -> Vars.add v a
 	| Application (_, l) -> List.fold_left compute a l
+	| Future l -> List.fold_left compute a l
 	| Tuple l -> List.fold_left compute a l
 	| Intersection l -> List.fold_left compute a l
 	| Disjunction l -> List.fold_left compute a l
@@ -252,6 +255,8 @@ struct
       | Variable x -> find_in_subst x s
       | Application (c, l) ->
 	  Application(c, List.map (apply_substitution s) l)
+      | Future l ->
+	  Future (List.map (apply_substitution s) l)
       | Tuple l ->
 	  Tuple (List.map (apply_substitution s) l)
       | Intersection l ->
@@ -505,12 +510,15 @@ struct
       | SSAId (_, i, n) -> SSAId (note, i, n)
       | Phi (_, l) -> Phi (note, l)
 
-  let get_lhs_type =
+  let lhs_note =
     function
-	LhsId(n, _) -> n.ty
-      | LhsAttr(n, _, _) -> n.ty
-      | LhsWildcard (n, _) -> n.ty
-      | LhsSSAId (n, _, _) -> n.ty
+	LhsId(n, _) -> n
+      | LhsAttr(n, _, _) -> n
+      | LhsWildcard (n, _) -> n
+      | LhsSSAId (n, _, _) -> n
+
+
+  let get_lhs_type l = (lhs_note l).ty
 
   (* Extract the annotation of an expression *)
   let variable =
@@ -1196,6 +1204,30 @@ struct
       | Choice (note, l, r) ->
 	  Choice (note, remove_redundant_skips l, remove_redundant_skips r)
 
+  (** [remove_runtime_statements stmt] removes all runtime statements. *)
+  let remove_runtime_statements stmt =
+    let rec remove =
+      function
+          (Skip _ | Release _ | Assert _ | Prove _ | Assign _ | Await _
+          | Posit _ | AsyncCall _ | Get _ | Free _ | Bury _ | SyncCall _
+          | AwaitSyncCall _ | LocalAsyncCall _ | LocalSyncCall _
+          | AwaitLocalSyncCall _ | MultiCast _ | Tailcall _ | StaticTail _
+	  | Extern _) as s -> s
+        | Return (note, _) | Continue (note, _) -> Skip note
+        | If (note, c, t, f) ->
+	    If (note, c, remove t, remove f)
+        | While (note, c, i, b) -> While (note, c, i, remove b)
+        | DoWhile (note, c, i, b) ->
+	    DoWhile (note, c, i, remove b)
+        | Sequence (note, stmt1, stmt2) -> 
+	    Sequence (note, remove stmt1, remove stmt2)
+        | Merge (note, l, r) ->
+	    Merge (note, remove l, remove r)
+        | Choice (note, l, r) ->
+	    Choice (note, remove l, remove r)
+    in
+      remove_redundant_skips (remove stmt)
+
   let assignment_of_bury =
     function
 	Bury (a, (_::_ as l)) ->
@@ -1235,15 +1267,59 @@ struct
 
   let show pragmas = List.filter (fun p -> not (pragma_hidden_p p)) pragmas
 
+
+  (** {5 Unary valued pragmas} *)
+
+  let unary_valued_pragma_p name =
+    function
+      | { name = n; values = [ _ ] } when n = name -> true
+      | _ -> false
+
+  let number_of_pragma name pragmas =
+    try
+      match List.find (unary_valued_pragma_p name) pragmas with
+        | { values = [ Expression.Int (_, v) ] } -> v
+        | _ -> assert false
+    with
+      | Not_found -> Big_int.zero_big_int
+
+
+  (** {5 Version pragma} *)
+
+  let version pragmas = number_of_pragma "Version" pragmas
+
+  let increase_version pragmas =
+    let v = version pragmas in
+    let v' = Expression.Int (Expression.make_note (), Big_int.succ_big_int v) in
+      { name = "Version"; values = [ v' ] } ::
+        (List.filter (fun e -> not (unary_valued_pragma_p "Version" e)) pragmas)
+
+
+  (** {5 Stage pragma} *)
+
+  let stage pragmas = number_of_pragma "Stage" pragmas
+
 end
 
 
 (** Abstract syntax of variable declarations. *)
 module VarDecl =
-  struct
-    type t =
-      { name: string; var_type: Type.t; init: Expression.t option }
-  end
+struct
+  type t =
+    { name: string;
+      var_type: Type.t;
+      init: Expression.t option;
+      file: string;
+      line: int;
+    }
+
+  (** Tests, whether two varianle declarations are equivalent.
+
+      The current limitation is that initializer expressions must be
+      identical.  *)
+  let equivalent_p v1 v2 = (v1.var_type = v2.var_type) && (v1.init = v2.init)
+
+end
 
 
 (** Abstract syntax of method declarations and definitions *)
@@ -1267,7 +1343,9 @@ module Method =
 	ensures: Expression.t;
         vars: VarDecl.t list;
         body: Statement.t option;
-	location: string
+	location: string;
+        file: string;
+        line: int
       }
 
     (* This is the empty method.  It is used by the type checker
@@ -1277,7 +1355,15 @@ module Method =
       { name = ""; coiface = Type.Internal; inpars = []; outpars = [];
 	requires = Expression.Bool(Expression.make_note (), true);
 	ensures = Expression.Bool(Expression.make_note (), true);
-	vars = []; body = None; location = "" }
+	vars = []; body = None; location = ""; file = ""; line = 0 }
+
+    (** Tests whether two method signatures are equivalent.
+
+        Does not look at the code. *)
+    let equivalent_p m1 m2 =
+      (m1.name = m2.name) && (m1.coiface = m2.coiface) &&
+      (try List.for_all2 VarDecl.equivalent_p m1.inpars m2.inpars with _ -> false) &&
+      (try List.for_all2 VarDecl.equivalent_p m1.outpars m2.outpars with _ -> false)
 
     let compare m n =
       let r1 = String.compare m.name n.name in
@@ -1304,9 +1390,10 @@ module Method =
 	  | () when r4 <> 0 -> r4
           | () -> 0
 
-    let make_decl n inp outp r e =
+    let make_decl n inp outp r e file line =
       { name = n; coiface = Type.Internal; inpars = inp; outpars = outp;
-	requires = r; ensures = e; vars = []; body = None; location = "" }
+	requires = r; ensures = e; vars = []; body = None; location = "";
+        file = file; line = line }
 
     let set_cointerface cf m = { m with coiface = cf }
 
@@ -1357,14 +1444,13 @@ module Method =
        if the variable is not found. *)
     let find_variable ~meth name =
       let p { VarDecl.name = n } = (n = name) in
-	try
-	  List.find p meth.vars
-	with
-	    Not_found ->
-	      try
-		List.find p meth.inpars
-	      with
-		  Not_found -> List.find p meth.outpars
+	List.find p (List.concat [meth.vars; meth.inpars; meth.outpars])
+
+
+    (** Check whether a variable in method scope is writable. *)
+    let writeable_p meth name =
+      let p { VarDecl.name = n } = n = name in
+        List.exists p (meth.vars @ meth.outpars)
 
 
     (* Determine whether a local variable is a future. *)
@@ -1414,7 +1500,9 @@ module With = struct
   type t = {
     co_interface: Type.t;
     methods: Method.t list;
-    invariants: Expression.t list
+    invariants: Expression.t list;
+    file: string;
+    line: int
   }
 
 end
@@ -1427,6 +1515,8 @@ struct
   type t = {
     name: string;
     arguments: Expression.t list;
+    file: string;
+    line: int
   }
 
   let name { name = n } = n
@@ -1449,10 +1539,28 @@ struct
 	attributes: VarDecl.t list;
 	invariants: Expression.t list;
 	with_defs: With.t list;
+	objects_created: Big_int.big_int;
 	pragmas: Pragma.t list;
 	file: string;
 	line: int;
       }
+
+  let empty =
+    { name = ""; parameters = []; inherits = []; contracts = [];
+      implements = []; attributes = []; invariants = []; with_defs = [];
+      objects_created = Big_int.zero_big_int; pragmas = [];
+      file = ""; line = 0 }
+
+  let equal c1 c2 =
+    (c1.name = c2.name) &&
+    (c1.parameters = c2.parameters) &&
+    (c1.inherits = c2.inherits) &&
+    (c1.implements = c2.implements) &&
+    (c1.attributes = c2.attributes) &&
+    (c1.with_defs = c2.with_defs) &&
+    (Big_int.eq_big_int c1.objects_created c2.objects_created) &&
+    (c1.pragmas = c2.pragmas)
+    
 
   (** Whether the class is hidden. *)
   let hidden_p c = Pragma.hidden_p c.pragmas
@@ -1462,6 +1570,17 @@ struct
 
   (** Show a class. *)
   let show c = { c with pragmas = Pragma.show c.pragmas }
+
+  (** Get the version of a class. *)
+  let version c = Pragma.version c.pragmas
+
+  (** Get the stage of a class. *)
+  let stage c = Pragma.stage c.pragmas
+
+  (** Increase the version of a class [c] *)
+  let increase_version c =
+    { c with pragmas = Pragma.increase_version c.pragmas }
+
 
   (** Get the interface type implemented by a class.  If it does not
       declare interfaces, then the result is [Any].  Filters
@@ -1477,22 +1596,44 @@ struct
 	| [t] -> Type.Basic t
 	| ts -> Type.Intersection (List.map (fun t -> Type.Basic t) ts) 
 
+
+  let has_param_p ~cls ~name =
+    List.exists (function { VarDecl.name = n } -> n = name) cls.parameters
+
+
   let has_attr_p ~cls ~name =
-    let f l = List.exists (function { VarDecl.name = n } -> n = name) l in
-      (f cls.attributes) || (f cls.parameters)
+    List.exists (function { VarDecl.name = n } -> n = name) cls.attributes
+
 
   let find_attr_decl ~cls ~name =
-    let find l = List.find (function { VarDecl.name = n } -> n = name) l
-    in
-      try
-	find cls.attributes
-      with
-	  Not_found ->
-	    find cls.parameters
+    List.find (function { VarDecl.name = n } -> n = name)
+      (cls.attributes @ cls.parameters)
 
+
+  let has_method_p cls mtd =
+    let p { With.co_interface = c } = c = mtd.Method.coiface in
+    let c = List.concat (List.map (fun w -> w.With.methods) (List.filter p cls.with_defs)) in
+      List.exists (Method.equivalent_p mtd) c
+
+  (** Add a new method definition to a class. Assumes that there is no
+      other method definition with the same name and signature. *)
+  let add_method_to_class cls mtd =
+    (** Find a suitable with block to add our method to. First one we find
+        wins. *)
+    let p { With.co_interface = c } = c = mtd.Method.coiface 
+    and q { With.co_interface = c } = c = Type.Internal in
+    let m, n = List.partition p cls.with_defs in
+    let m' =
+      match m with
+        | [] -> [{ With.co_interface = mtd.Method.coiface;
+                   invariants = []; methods = [mtd];
+                   file = mtd.Method.file; line = mtd.Method.line }]
+        | hd::tl -> { hd with With.methods = mtd::hd.With.methods }::tl
+    in
+    let n', q' = List.partition q n in (** Internals come first. *)
+      { cls with with_defs = n' @ m' @ q' }
 
 end
-
 
 
 
@@ -1503,9 +1644,16 @@ struct
 
   type  t =
       { name: string;
+	parameters: VarDecl.t list;
 	inherits: Inherits.t list;
 	with_decls: With.t list;
-        pragmas: Pragma.t list }
+        pragmas: Pragma.t list;
+        file: string;
+        line: int;
+      }
+
+  let empty = { name = ""; parameters = []; inherits = []; with_decls = [];
+                pragmas = []; file = ""; line = 0 }
 
   (** Whether the interface is hidden. *)
   let hidden_p i = Pragma.hidden_p i.pragmas
@@ -1592,6 +1740,8 @@ struct
     supers: Type.t list;
     pragmas: Pragma.t list;
       (* Hide from output.  Set for datatypes defined in the prelude. *)
+    file: string;
+    line: int;
   }
 
   (** Whether the class is hidden. *)
@@ -1623,16 +1773,142 @@ module Object =
 struct
 
   type t = {
-    name: string;
+    name: Expression.t;
     cls: Type.t;
     attributes: VarDecl.t list;
     process: Process.t;
     process_queue: Process.t list;
-    hidden: bool;
+    emitted_calls: Big_int.big_int;
+    pragmas: Pragma.t list;
+  }
+
+  (** Whether the object is hidden. *)
+  let hidden_p obj = Pragma.hidden_p obj.pragmas
+
+  (** Hide a object. *)
+  let hide obj = { obj with pragmas = Pragma.hide obj.pragmas }
+
+  (** Show a object. *)
+  let show obj = { obj with pragmas = Pragma.show obj.pragmas }
+
+  (** Returns the stage of the object. *)
+  let stage obj = Pragma.stage obj.pragmas
+end
+
+
+(** Abstract syntax of a future object. *)
+module Future =
+struct
+
+  type t = {
+    name: Expression.t;
+    completed: bool;
+    references: Big_int.big_int;
+    value: Expression.t list;
   }
 
 end
 
+
+(** {2 Dynamic Reconfiguration}
+
+  The following modules are concerned with the abstract syntax of dynamic
+  updates *)
+
+(** {3 Dependencies}
+
+    Version dependencies of classes and objects.
+
+    Requires that objects can be uniquely identified by a string. *)
+module Dependency =
+struct
+
+  type t = {
+    name: string;
+    version: Big_int.big_int;
+  }
+
+  let compare d e =
+    let r1 = compare d.name e.name in
+      if r1 <> 0 then
+        r1
+      else
+        Big_int.compare_big_int d.version e.version
+
+end
+
+
+(** {3 Dependencies}
+
+    A set of dependencies. *)
+module Dependencies = Set.Make(Dependency)
+
+
+
+(** {3 New Class}
+
+    New class update term *)
+module NewClass =
+struct
+
+  type t = {
+    cls: Class.t;
+    dependencies: Dependencies.t;
+  }
+
+end
+
+
+
+(** {3 Class Upgrade}
+
+    The abstract syntax of a class upgrade term. *)
+module Update =
+struct
+
+  type t = {
+    name: string; (** The name of the class to upgrade. *)
+    inherits: Inherits.t list;
+    contracts: Inherits.t list;
+    implements: Inherits.t list;
+    attributes: VarDecl.t list;
+    with_defs: With.t list;
+    pragmas: Pragma.t list;
+    dependencies: Dependencies.t;
+    file: string;
+    line: int;
+  }
+
+  let equal u1 u2 =
+    (u1.name = u2.name) &&
+    (u1.inherits = u2.inherits) &&
+    (u1.contracts = u2.contracts) &&
+    (u1.implements = u2.implements) &&
+    (u1.attributes = u2.attributes) &&
+    (u1.with_defs = u2.with_defs) &&
+    (u1.pragmas = u2.pragmas) &&
+    (Dependencies.equal u1.dependencies u2.dependencies)
+
+end
+
+
+(** {3 Retract Features From Class} *)
+module Retract =
+struct
+
+  type t = {
+    name: string; (** The name of the class to simplify. *)
+    inherits: Inherits.t list;
+    attributes: VarDecl.t list;
+    with_decls: With.t list;
+    pragmas: Pragma.t list;
+    dependencies: Dependencies.t;
+    obj_deps: Dependencies.t;
+    file: string;
+    line: int;
+  }
+
+end
 
 
 (** Abstract syntax of Declararions. *)
@@ -1640,32 +1916,67 @@ module Declaration =
 struct
 
   type t =
-      Class of Class.t
+      | Class of Class.t
       | Interface of Interface.t
       | Datatype of Datatype.t
       | Exception of Exception.t
       | Function of Function.t
       | Object of Object.t
+      | Future of Future.t
+      | NewClass of NewClass.t
+      | Update of Update.t
+      | Retract of Retract.t
+
+
+  let class_p = function
+    | Class _ -> true
+    | _ -> false
+
+
+  let interface_p = function
+    | Interface _ -> true
+    | _ -> false
+
+
+  let equal d1 d2 =
+    match (d1, d2) with
+      | (Class c1, Class c2) -> Class.equal c1 c2
+      | (Interface i1, Interface i2) -> i1 = i2
+      | (Datatype t1, Datatype t2) -> d1 = d2
+      | (Exception e1, Exception e2) -> e1 = e2
+      | (Function f1, Function f2) -> f1 = f2
+      | (NewClass u1, NewClass u2) -> u1 = u2
+      | (Update u1, Update u2) -> Update.equal u1 u2
+      | (Retract u1, Retract u2) -> u1 = u2
+      | _ -> false
 
 
   let hide =
     function
-	Class c -> Class (Class.hide c)
+      | Class c -> Class (Class.hide c)
       | Interface i -> Interface (Interface.hide i)
       | Datatype d -> Datatype (Datatype.hide d)
       | Exception e -> Exception (Exception.hide e)
       | Function f -> Function (Function.hide f)
-      | Object o -> Object { o with Object.hidden = true }
+      | Object o -> Object (Object.hide o)
+      | Future f -> Future f
+      | NewClass u -> NewClass u
+      | Update u -> Update u
+      | Retract u -> Retract u
 
 
   let show =
     function
-	Class c -> Class (Class.show c)
+      | Class c -> Class (Class.show c)
       | Interface i -> Interface (Interface.show i)
       | Datatype d -> Datatype (Datatype.show d)
       | Exception e -> Exception (Exception.show e)
       | Function f -> Function (Function.show f)
-      | Object o -> Object { o with Object.hidden = false }
+      | Object o -> Object (Object.show o)
+      | Future f -> Future f
+      | NewClass u -> NewClass u
+      | Update u -> Update u
+      | Retract u -> Retract u
 
 end
 
@@ -1681,6 +1992,11 @@ struct
 
   (** The type of a program. *)
   type t = { decls: Declaration.t list }
+
+
+  (** Whether two programs are equal. *)
+  let equal prg prg' =
+    List.for_all2 Declaration.equal prg.decls prg'.decls
 
 
   (** Make a [Program.t] from a list [l] of declarations. *)
@@ -1719,29 +2035,45 @@ struct
   let find_class program name =
     let class_with_name =
       function
-	  Declaration.Class { Class.name = n } -> n = name
+	| Declaration.Class { Class.name = n } -> n = name
 	| _ -> false
     in
       match List.find class_with_name program.decls with
-	  Declaration.Class cls -> cls
+	| Declaration.Class cls -> cls
 	| _ -> assert false
+
+
+
+  (** [has_class_p program name] is true, if a class called [name] is in
+      [program]. *)
+  let has_class_p program name =
+    try
+      let _ = find_class program name in
+        true
+    with
+      | Not_found -> false
+
 
   let remove_class program name =
     let not_class_with_name =
       function
-	  Declaration.Class { Class.name = n } -> n <> name
+	| Declaration.Class { Class.name = n } -> n <> name
 	| _ -> true
     in
       { decls = List.filter not_class_with_name program.decls }
 
 
   let add_class program cls =
-    { decls = (Declaration.Class cls)::program.decls }
+    try
+      let _ = find_class program cls.Class.name in
+        raise (Failure "Class already exists")
+    with
+        | Not_found ->
+            { decls = (Declaration.Class cls)::program.decls }
 
 
   let replace_class program cls =
-    let name = cls.Class.name in
-      add_class (remove_class program name) cls
+    add_class (remove_class program cls.Class.name) cls
     
 
 
@@ -1754,12 +2086,16 @@ struct
 
   (** Compute the class hierarchy of a program. *)
   let class_hierarchy program =
+    let add_class a { Inherits.name = n; file = f; line = l } =
+      try
+        ignore (find_class program n) ; IdSet.add n a
+      with
+        | Not_found -> raise (Class_not_found (f, l, n))
+    in
     let f rel =
       function
 	| Declaration.Class { Class.name = name; inherits = inh } ->
-	    IdMap.add name
-	      (List.fold_left (fun a { Inherits.name = n } -> IdSet.add n a) IdSet.empty inh)
-		 rel
+	    IdMap.add name (List.fold_left add_class IdSet.empty inh) rel
 	| _ -> rel
     in
       List.fold_left f IdMap.empty program.decls
@@ -1823,6 +2159,17 @@ struct
     in search s
 
 
+  (** Returns the set of names of all subclasses of a class called [c]. *)
+  let subclasses program c =
+    let f a =
+      function
+        | Declaration.Class { Class.name = n } when subclass_p program n c ->
+            IdSet.add n a
+        | _ -> a
+     in
+       List.fold_left f IdSet.empty program.decls
+
+
   (** {4 Interfaces}
 
       The following functions are concerned with interfaces.  *)
@@ -1838,12 +2185,34 @@ struct
   let find_interface program name =
     let interface_with_name =
       function
-	  Declaration.Interface { Interface.name = n } -> name = n
+	| Declaration.Interface { Interface.name = n } -> name = n
 	| _ -> false
     in
       match List.find interface_with_name program.decls with
-	  Declaration.Interface i -> i
+	| Declaration.Interface i -> i
 	| _ -> assert false
+
+
+  (** [has_interface_p program name] is true, if an interface called [name]
+      is in [program]. *)
+  let has_interface_p program name =
+    try
+      let _ = find_interface program name in
+        true
+    with
+      | Not_found -> false
+
+
+  (** [add_interface program iface] adds the interface [iface] to
+      [program], if no interface of [iface]'s name exists, and
+      raises an exception otherwise. *)
+  let add_interface program iface =
+    try
+      let _ = find_interface program iface.Interface.name in
+        raise (Failure "Interface already exists")
+    with
+        | Not_found ->
+            { decls = (Declaration.Interface iface)::program.decls }
 
 
   (** [interface_p program iface] is true, if the type [iface] refers to
@@ -1854,7 +2223,7 @@ struct
       | Type.Basic n ->
 	  let p =
 	    function
-		Declaration.Interface { Interface.name = n' } -> n = n'
+	      | Declaration.Interface { Interface.name = n' } -> n = n'
 	      | _ -> false
 	  in
 	    List.exists p program.decls
@@ -1932,18 +2301,23 @@ struct
 
       Functions relating to data types. *)
 
+  (** Raise [Datatype_not_found file line name] if the datatype [name]
+      is not found in file [file] and line [line]. *)
+  exception Datatype_not_found of string * int * string
+
+
   (** Find the definition of the data type called [name] in [program]. *)
   let find_datatype ~program ~name =
     let datatype_with_name =
       function
-	  Declaration.Datatype { Datatype.name = Type.Basic n }
+	| Declaration.Datatype { Datatype.name = Type.Basic n }
 	    when n = name -> true
 	| Declaration.Datatype { Datatype.name = Type.Application (n, _) }
 	    when n = name -> true
 	| _ -> false
     in
       match List.find datatype_with_name program.decls with
-	  Declaration.Datatype d -> d
+	| Declaration.Datatype d -> d
 	| _ -> assert false
 
 
@@ -1968,7 +2342,7 @@ struct
   let type_p ~program ~ty =
     let p name' =
       function
-          Declaration.Interface { Interface.name = n } -> (name' = n)
+        | Declaration.Interface { Interface.name = n } -> (name' = n)
         | Declaration.Datatype { Datatype.name = t } -> (name' = (Type.name t))
 	| _ -> false
     in
@@ -1982,6 +2356,8 @@ struct
 	    true
 	| Type.Application (n, a) ->
 	    (List.exists (p n) program.decls) && (List.for_all work_p a)
+	| Type.Future l ->
+	    List.for_all work_p l
 	| Type.Tuple l ->
 	    List.for_all work_p l
 	| Type.Intersection l ->
@@ -2001,18 +2377,22 @@ struct
   let find_functions program name =
     let p a =
       function
-	  Declaration.Function f when f.Function.name  = name -> f::a
+	| Declaration.Function f when f.Function.name  = name -> f::a
 	| _ -> a
     in
       List.fold_left p [] program.decls
 
+
+  (** Raise [Attribute_not_found file line name] if the attribute [name]
+      is not found in file [file] and line [line]. *)
+  exception Attribute_not_found of string * int * string
 
   (** Find the class declaration for an attribute. [cls] is the class
       in which we search for the attribute. [name] is the name of the
       attribute. *)
   let find_class_of_attr ~program ~cls ~attr =
     let rec work c =
-      if Class.has_attr_p c attr then
+      if (Class.has_attr_p c attr) || (Class.has_param_p c attr) then
 	Some c
       else
 	search c.Class.inherits
@@ -2025,12 +2405,22 @@ struct
 	      | cls' -> cls'
     in
       match work cls with
-	  None -> raise Not_found
+	| None ->
+            raise (Attribute_not_found (cls.Class.file, cls.Class.line, attr))
 	| Some cls' -> cls'
 
-  let find_attr_decl ~program ~cls ~name =
+
+  let find_attr_decl program cls name =
     let c = find_class_of_attr program cls name in
       Class.find_attr_decl c name
+
+
+  let attr_writeable_p program cls name =
+    try 
+      let c = find_class_of_attr program cls name in
+        Class.has_attr_p c name
+    with
+      | Attribute_not_found _ -> false
 
 
   (** Compute the interface of a class, i.e., the set of all method it
@@ -2060,6 +2450,14 @@ struct
 		    Invalid_argument _ -> false
 	      end
 	| (Type.Application _, _) -> false
+	| (Type.Future sa, Type.Future ta) ->
+	      begin
+		try 
+		  List.for_all2 (fun u v -> work (u, v)) sa ta
+		with
+		    Invalid_argument _ -> false
+	      end
+	| (Type.Future sa, _) -> false
 	| (Type.Tuple sa, Type.Tuple ta) ->
 	    begin
 	      try 
@@ -2072,7 +2470,6 @@ struct
 	    List.exists (fun s -> work (s, t)) sa
 	| (Type.Disjunction sa, _) ->
 	    List.for_all (fun s -> work (s, t)) sa
-	| (Type.Internal, Type.Internal) -> true
 	| ((Type.Internal, _) | (_, Type.Internal)) -> false
 	| (Type.Function (d1, r1), Type.Function (d2, r2)) -> 
 	    (work (d1, d2)) && (work (r2, r1))
@@ -2174,17 +2571,24 @@ struct
 
   (** Compute the subtype relation-ship of the program. *)
   let subtype_relation program =
+    let add_iface a { Inherits.name = i; file = f; line = l } =
+      try 
+        ignore (find_interface program i); IdSet.add i a
+      with
+        | Not_found -> raise (Interface_not_found (f, l, i))
+    and add_datatype f l a d =
+      try
+        ignore (find_datatype program (Type.name d)); IdSet.add (Type.name d) a
+      with
+        Not_found -> raise (Datatype_not_found (f, l, Type.string_of_type d))
+    in
     let f rel =
       function
 	| Declaration.Interface { Interface.name = name; inherits = supers } ->
-	    IdMap.add name
-	      (List.fold_left (fun a i -> IdSet.add (Inherits.name i) a) IdSet.empty supers)
-	      rel
-	| Declaration.Datatype { Datatype.name = name; supers = supers } ->
+	    IdMap.add name (List.fold_left add_iface IdSet.empty supers) rel
+	| Declaration.Datatype { Datatype.name = name; supers = supers; file = file; line = line } ->
 	    IdMap.add (Type.name name)
-	      (List.fold_left (fun a n -> IdSet.add (Type.name n) a)
-                IdSet.empty supers)
-	      rel
+	      (List.fold_left (add_datatype file line) IdSet.empty supers) rel
 	| _ -> rel
     in
       List.fold_left f IdMap.empty program.decls
@@ -2257,7 +2661,10 @@ struct
 
   (** Find all definitions of a method called [name] that matches the
       signature [(coiface, ins, outs)] in class [cls] and its
-      super-classes.  *)
+      super-classes.
+
+      Used by the type checker to find all suitable method definitions
+      or method declarations. *)
   let find_methods_in_class ~program ~cls ~name (coiface, ins, outs) =
     let asco = match coiface with None -> Type.any | Some c -> c in
     let rec find c =
@@ -2316,6 +2723,23 @@ struct
     [] <> (find_methods_in_class program cls meth signature)
 
 
+  (** Remove a method from a class.
+
+      This function is used to replace all methods in a class by its
+      updated method. *)
+  let remove_method_from_class program cls mtd =
+    let m_p m = not ((m.Method.name = mtd.Method.name) &&
+      (subtype_p program m.Method.coiface mtd.Method.coiface) &&
+        (subtype_p program (Method.domain_type m) (Method.domain_type mtd)) &&
+          (subtype_p program (Method.range_type mtd) (Method.range_type m)))
+    in
+    let mf w = { w with With.methods = List.filter m_p w.With.methods } in
+    let m' = List.map mf cls.Class.with_defs in
+    let w' = List.filter (fun w -> [] <> w.With.methods) m'
+    in
+      { cls with Class.with_defs = w' }
+
+
   (** {4 Iterators} *)
 
   let iter program f = List.iter f program.decls
@@ -2334,12 +2758,16 @@ struct
     in
     let for_decl d =
       match d with
-	  Declaration.Class c -> Declaration.Class (for_class c)
+	| Declaration.Class c -> Declaration.Class (for_class c)
 	| Declaration.Interface _ -> d
 	| Declaration.Exception _ -> d
 	| Declaration.Datatype _ -> d
 	| Declaration.Function _ -> d
 	| Declaration.Object _ -> d
+        | Declaration.Future _ -> d
+        | Declaration.NewClass _ -> d
+        | Declaration.Update _ -> d
+        | Declaration.Retract _ -> d
     in
       { decls = List.map for_decl program.decls }
 
@@ -2368,5 +2796,142 @@ struct
       | d -> d
     in
       map prg f
+
+
+  let has_declaration_p program =
+    function
+      | Declaration.Class { Class.name = name } ->
+          has_class_p program name
+      | Declaration.Interface { Interface.name = name } ->
+          has_interface_p program name
+      | Declaration.Exception _ ->
+          false (* XXX *)
+      | Declaration.Datatype _ ->
+          false (* XXX *)
+      | Declaration.Function _ ->
+          false (* XXX *)
+      | Declaration.Object _ ->
+          false (* XXX *)
+      | Declaration.Future _ ->
+          false (* XXX *)
+      | Declaration.NewClass _ ->
+          true (* XXX *)
+      | Declaration.Update _ ->
+          true (* XXX *)
+      | Declaration.Retract _ ->
+          true (* XXX *)
+
+
+  (** [filter program program'] selects all declarations from [program']
+      that also occur in [program] *)
+  let filter program program' =
+    make (List.filter (has_declaration_p program) program'.decls)
+
+  (** [filter_classes program] removes all classes from [program] *)
+  let filter_classes program =
+    make (List.filter (fun d -> not (Declaration.class_p d)) program.decls)
+    
+
+  (** {4 Dynamic Updates} *)
+
+  (** Apply an update to a class. *)
+  let apply_update_to_class program cls upd =
+    let inherits' = cls.Class.inherits @ upd.Update.inherits
+    and contracts' = cls.Class.contracts @ upd.Update.contracts
+    and implements' = cls.Class.implements @ upd.Update.implements
+    and attrs' = cls.Class.attributes @ upd.Update.attributes
+    in
+    let cls' = { cls with Class.inherits = inherits';
+                          contracts = contracts';
+			  implements = implements';
+			  attributes = attrs' }
+    in
+    let cls'' =
+      let with_with c w =
+        List.fold_left (remove_method_from_class program) c w.With.methods
+      in
+        List.fold_left with_with cls' upd.Update.with_defs
+    in
+      let with_with c w =
+        List.fold_left (Class.add_method_to_class) c w.With.methods
+      in
+        List.fold_left with_with cls'' upd.Update.with_defs
+
+
+  let apply_retract_to_class program cls retr =
+    let inherits' =
+      let f a e =
+        List.filter (fun e' -> e.Inherits.name <> e'.Inherits.name) a
+      in
+        List.fold_left f cls.Class.inherits retr.Retract.inherits
+    and attributes' =
+      let f a e =
+        List.filter (fun e' -> e.VarDecl.name <> e'.VarDecl.name) a
+      in
+        List.fold_left f cls.Class.attributes retr.Retract.attributes
+    and with_defs' =
+      (** Remove methods from each matching with block *)
+      let retract_method methods what =
+        List.filter (fun m' -> not (Method.equivalent_p what m')) methods
+      in
+      let retract_from_with retr wth =
+        if wth.With.co_interface = retr.With.co_interface then
+          { wth with With.methods =
+              List.fold_left retract_method wth.With.methods
+                retr.With.methods }
+        else
+          wth
+      in
+      let retract_from_withs withs retrs =
+        List.map (retract_from_with retrs) withs
+      in
+      let res = List.fold_left retract_from_withs cls.Class.with_defs
+            retr.Retract.with_decls
+      in
+        List.filter (fun { With.methods = m } -> m <> []) res
+    in
+      { cls with Class.inherits = inherits'; attributes = attributes';
+                 with_defs = with_defs' }
+
+
+
+  let apply_update increase_version program =
+    function
+      | Declaration.Interface upd ->
+          add_interface program upd
+      | Declaration.NewClass upd ->
+          let cls'' =
+            if increase_version then
+              Class.increase_version upd.NewClass.cls
+            else
+              upd.NewClass.cls
+          in
+            add_class program cls''
+      | Declaration.Update ({ Update.name = name } as upd) ->
+          let cls = find_class program name in
+          let cls' = apply_update_to_class program cls upd in
+          let cls'' =
+            if increase_version then
+              Class.increase_version cls'
+            else
+              cls'
+          in
+            replace_class program cls''
+      | Declaration.Retract ({ Retract.name = name } as upd) ->
+          let cls = find_class program name in
+          let cls' = apply_retract_to_class program cls upd in
+          let cls'' =
+            if increase_version then
+              Class.increase_version cls'
+            else
+              cls'
+          in
+            replace_class program cls''
+      | d -> assert false
+
+
+  (** Apply all updates in [updates] to [program] *)
+  let apply_updates ?(increase_version=false) program updates =
+    List.fold_left (apply_update increase_version) program updates.decls
 
 end

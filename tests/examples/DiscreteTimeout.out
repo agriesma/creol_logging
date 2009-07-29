@@ -1,18 +1,18 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Class: 
+reduce in PROGRAM : state .
+result State: {
 < "DiscreteTimeout" : Class | Inh: noInh, Param: "other", Att: "clock" |->
     null, "other" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("clock" @
     "DiscreteTimeout" ; int(0)) ; return(emp) >, < "run" : Method | Param:
-    noVid, Att: "_" |-> null, "label:0" |-> null, Code: assign("clock" ; "+"(
-    "clock" :: int(1))) ; call("label:0" ; "this" ; "run" ; emp) ; free(
-    "label:0") ; return(emp) >, < "timeout" : Method | Param: "n", Att: "_" |->
+    noVid, Att: "_" |-> null, "ccglab0" |-> null, Code: assign("clock" ; "+"(
+    "clock" :: int(1))) ; call("ccglab0" ; "this" ; "run" ; emp) ; free(
+    "ccglab0") ; return(emp) >, < "timeout" : Method | Param: "n", Att: "_" |->
     null, "l" |-> null, "n" |-> null, "result" |-> null, "timeout" |-> null,
     Code: assign("timeout" ; "+"("clock" :: int(10))) ; call("l" ; "other" ;
     "m" ; emp) ; (await ">"("clock" :: "timeout") ; free("l") ; assign("result"
     ; bool(false))[]await "&&"(?("l") :: "<="("clock" :: "timeout")) ; get("l"
     ; noVid) ; free("l") ; assign("result" ; bool(true))) ; return("result") >,
   Ocnt: 0 >
-
+}
 Bye.

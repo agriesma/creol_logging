@@ -1,0 +1,81 @@
+==========================================
+frewrite in PROGRAM : state .
+result (sort not calculated): {
+< label(ob("Customer-0"), 85) : Future |  Completed: false,  References: 0, 
+    Value: emp >
+ 
+< label(ob("Customer-0"), 90) : Future |  Completed: false,  References: 0, 
+    Value: emp >
+ 
+< ob("BankAccount-0") : class("BankAccount",1) |
+  Att: "bal" |-> int(90), "logger" |-> null, "this" |-> ob("BankAccount-0"),
+  Pr: idle,
+  PrQ: noProc,
+  Lcnt: 11 >
+ 
+< ob("Customer-0") : class("Customer",0) |
+  Att: "account" |-> ob("BankAccount-0"), "this" |-> ob("Customer-0"), "timer"
+    |-> int(6),
+  Pr: {".class" |-> str("Customer"), ".label" |-> label(ob("Customer-0"), 90),
+    ".method" |-> str("tick"), ".stage" |-> int(0), "_" |-> null, "caller" |->
+    ob("Customer-0"), "ccglab0" |-> null | call("ccglab0" ; "this" ; "tick" ;
+    emp) ; free("ccglab0") ; return(emp)},
+  PrQ: {".class" |-> str("Customer"), ".label" |-> label(ob("Customer-0"), 85),
+    ".method" |-> str("trade"), ".stage" |-> int(0), "_" |-> null, "balance"
+    |-> null, "caller" |-> ob("Customer-0"), "ccglab0" |-> null, "ccglab1" |->
+    null, "ccglab2" |-> null | await ">"("timer" :: int(5)) ; assign("timer" ;
+    int(0)) ; call("ccglab0" ; "account" ; "balance" ; emp) ; get("ccglab0" ;
+    "balance") ; free("ccglab0") ; if "<="("balance" :: int(100)) th call(
+    "ccglab1" ; "account" ; "deposit" ; int(10)) ; get("ccglab1" ; noVid) ;
+    free("ccglab1") el skip fi ; call("ccglab2" ; "this" ; "trade" ; emp) ;
+    free("ccglab2") ; return(emp)},
+  Lcnt: 91 >
+ 
+< class("BankAccount",1) : Class | Version: 1, Inh: noInh, Param: noVid, Att:
+    "bal" |-> null, "logger" |-> null, Mtds:
+  < ".update" : Method | Param: noVid, Att: ".version" |-> int(0), Code: skip
+    >, < "balance" : Method | Param: noVid, Att: "_" |-> null, "b" |-> null,
+    Code: assign("b" ; "bal") ; return("b") >, < "deposit" : Method | Param:
+    "sum", Att: "_" |-> null, "ccglab0" |-> null, "sum" |-> null, Code: call(
+    "ccglab0" ; "this" ; "increaseBalance" ; "sum") ; free("ccglab0") ; return(
+    emp) >, < "increaseBalance" : Method | Param: "sum", Att: "_" |-> null,
+    "sum" |-> null, Code: assign("bal" ; "+"("bal" :: "sum")) ; return(emp) >,
+    < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("bal" @
+    "BankAccount" ; int(0)) ; return(emp) >, < "run" : Method | Param: noVid,
+    Att: "_" |-> null, Code: skip ; return(emp) >, < "transaction" : Method |
+    Param: "sum", "s", Att: "_" |-> null, "ccglab0" |-> null, "s" |-> null,
+    "sum" |-> null, Code: assign("bal" ; "+"("bal" :: "sum")) ; if "="("logger"
+    :: null) th new("logger" ; "Log" ; emp) el skip fi ; call("ccglab0" ;
+    "logger" ; "log" ; "s") ; get("ccglab0" ; noVid) ; return(emp) >,
+  Ocnt: 1 >
+ 
+< class("Customer",0) : Class | Version: 0, Inh: noInh, Param: noVid, Att:
+    "account" |-> null, "timer" |-> null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("account" @
+    "Customer" ; "BankAccount" ; emp) ; assign("timer" @ "Customer" ; int(0)) ;
+    return(emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null,
+    "ccglab0" |-> null, "ccglab1" |-> null, Code: call("ccglab0" ; "this" ;
+    "tick" ; emp) ; free("ccglab0") ; call("ccglab1" ; "this" ; "trade" ; emp)
+    ; free("ccglab1") ; return(emp) >, < "tick" : Method | Param: noVid, Att:
+    "_" |-> null, "ccglab0" |-> null, Code: await "<"("timer" :: int(6)) ;
+    assign("timer" ; "+"("timer" :: int(1))) ; call("ccglab0" ; "this" ; "tick"
+    ; emp) ; free("ccglab0") ; return(emp) >, < "trade" : Method | Param:
+    noVid, Att: "_" |-> null, "balance" |-> null, "ccglab0" |-> null, "ccglab1"
+    |-> null, "ccglab2" |-> null, Code: await ">"("timer" :: int(5)) ; assign(
+    "timer" ; int(0)) ; call("ccglab0" ; "account" ; "balance" ; emp) ; get(
+    "ccglab0" ; "balance") ; free("ccglab0") ; if "<="("balance" :: int(100))
+    th call("ccglab1" ; "account" ; "deposit" ; int(10)) ; get("ccglab1" ;
+    noVid) ; free("ccglab1") el skip fi ; call("ccglab2" ; "this" ; "trade" ;
+    emp) ; free("ccglab2") ; return(emp) >,
+  Ocnt: 1 >
+ 
+< class("Log",1) : Class | Version: 1, Inh: noInh, Param: noVid, Att: "log" |->
+    null, Mtds:
+  < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("log" @
+    "Log" ; list(emp)) ; return(emp) >, < "log" : Method | Param: "message",
+    Att: "_" |-> null, "message" |-> null, Code: assign("log" ; "|-"("log" ::
+    "message")) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
+    null, Code: skip ; return(emp) >,
+  Ocnt: 0 >
+}
+Bye.

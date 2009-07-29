@@ -1,9 +1,9 @@
 /*
- * MissingEnd5.creol -- Error with missing end, test 5.
+ * Contracts.creol -- Corner cases of the creol semantics.
  *
  * This file is part of creoltools
  *
- * Written and Copyright (c) 2007 by Marcel Kyas
+ * Written and Copyright (c) 2009 by Marcel Kyas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,12 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Foo
+class Test
 begin
-  op init ==
-    while true do
-      if true then
-	skip
-
-  op run == skip
+  op run(in x: Int) == x := 1
 end
+

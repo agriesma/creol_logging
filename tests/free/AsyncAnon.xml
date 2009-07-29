@@ -30,14 +30,14 @@
     <creol:inputs/>
     <creol:outputs/>
     <creol:variables>
-     <creol:vardecl name="label:0">
-      <creol:typeapplication name="Label"/>
+     <creol:vardecl name="ccglab0">
+      <creol:future/>
      </creol:vardecl>
      <creol:vardecl name="i">
       <creol:type name="I"/>
      </creol:vardecl>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>
@@ -104,25 +104,25 @@
             <creol:unknown/>
            </creol:output-parameters>
           </creol:signature>
-          <creol:identifier name="label:0"/>
+          <creol:identifier name="ccglab0"/>
           <creol:arguments/>
           <creol:statement-note file="AsyncAnon.creol" line="34">
+           <creol:maybe-def-var name="ccglab0"/>
            <creol:maybe-def-var name="i"/>
            <creol:maybe-def-var name="l"/>
-           <creol:maybe-def-var name="label:0"/>
+           <creol:mustbe-def-var name="ccglab0"/>
            <creol:mustbe-def-var name="i"/>
            <creol:mustbe-def-var name="l"/>
-           <creol:mustbe-def-var name="label:0"/>
            <creol:maybe-life-var name="l"/>
            <creol:mustbe-life-var name="l"/>
           </creol:statement-note>
          </creol:localasynccall>
          <creol:free>
-          <creol:identifier name="label:0"/>
+          <creol:identifier name="ccglab0"/>
           <creol:statement-note file="AsyncAnon.creol" line="34">
+           <creol:maybe-def-var name="ccglab0"/>
            <creol:maybe-def-var name="i"/>
            <creol:maybe-def-var name="l"/>
-           <creol:maybe-def-var name="label:0"/>
            <creol:mustbe-def-var name="i"/>
            <creol:mustbe-def-var name="l"/>
            <creol:maybe-life-var name="l"/>
@@ -130,9 +130,9 @@
           </creol:statement-note>
          </creol:free>
          <creol:statement-note file="AsyncAnon.creol" line="34">
+          <creol:maybe-def-var name="ccglab0"/>
           <creol:maybe-def-var name="i"/>
           <creol:maybe-def-var name="l"/>
-          <creol:maybe-def-var name="label:0"/>
           <creol:mustbe-def-var name="i"/>
           <creol:mustbe-def-var name="l"/>
           <creol:maybe-life-var name="l"/>
@@ -156,9 +156,9 @@
            </creol:expression-note>
           </creol:label>
           <creol:statement-note file="AsyncAnon.creol" line="35">
+           <creol:maybe-def-var name="ccglab0"/>
            <creol:maybe-def-var name="i"/>
            <creol:maybe-def-var name="l"/>
-           <creol:maybe-def-var name="label:0"/>
            <creol:mustbe-def-var name="i"/>
            <creol:mustbe-def-var name="l"/>
            <creol:maybe-life-var name="l"/>
@@ -171,15 +171,15 @@
             <creol:identifier name="l">
              <creol:expression-note file="AsyncAnon.creol" line="36">
               <creol:inferred-type>
-               <creol:typeapplication name="Label"/>
+               <creol:future/>
               </creol:inferred-type>
              </creol:expression-note>
             </creol:identifier>
             <creol:results/>
             <creol:statement-note file="AsyncAnon.creol" line="36">
+             <creol:maybe-def-var name="ccglab0"/>
              <creol:maybe-def-var name="i"/>
              <creol:maybe-def-var name="l"/>
-             <creol:maybe-def-var name="label:0"/>
              <creol:mustbe-def-var name="i"/>
              <creol:mustbe-def-var name="l"/>
              <creol:maybe-life-var name="l"/>
@@ -189,18 +189,18 @@
            <creol:free>
             <creol:identifier name="l"/>
             <creol:statement-note file="AsyncAnon.creol" line="36">
+             <creol:maybe-def-var name="ccglab0"/>
              <creol:maybe-def-var name="i"/>
              <creol:maybe-def-var name="l"/>
-             <creol:maybe-def-var name="label:0"/>
              <creol:mustbe-def-var name="i"/>
              <creol:maybe-life-var name="l"/>
              <creol:mustbe-life-var name="l"/>
             </creol:statement-note>
            </creol:free>
            <creol:statement-note file="AsyncAnon.creol" line="36">
+            <creol:maybe-def-var name="ccglab0"/>
             <creol:maybe-def-var name="i"/>
             <creol:maybe-def-var name="l"/>
-            <creol:maybe-def-var name="label:0"/>
             <creol:mustbe-def-var name="i"/>
             <creol:maybe-life-var name="l"/>
             <creol:mustbe-life-var name="l"/>
@@ -209,52 +209,52 @@
           <creol:return>
            <creol:arguments/>
            <creol:statement-note file="AsyncAnon.creol" line="32">
+            <creol:maybe-def-var name="ccglab0"/>
             <creol:maybe-def-var name="i"/>
             <creol:maybe-def-var name="l"/>
-            <creol:maybe-def-var name="label:0"/>
             <creol:mustbe-def-var name="i"/>
            </creol:statement-note>
           </creol:return>
           <creol:statement-note file="AsyncAnon.creol" line="35">
+           <creol:maybe-def-var name="ccglab0"/>
            <creol:maybe-def-var name="i"/>
            <creol:maybe-def-var name="l"/>
-           <creol:maybe-def-var name="label:0"/>
            <creol:mustbe-def-var name="i"/>
            <creol:maybe-life-var name="l"/>
            <creol:mustbe-life-var name="l"/>
           </creol:statement-note>
          </creol:sequence>
          <creol:statement-note file="AsyncAnon.creol" line="34">
+          <creol:maybe-def-var name="ccglab0"/>
           <creol:maybe-def-var name="i"/>
           <creol:maybe-def-var name="l"/>
-          <creol:maybe-def-var name="label:0"/>
           <creol:mustbe-def-var name="i"/>
           <creol:maybe-life-var name="l"/>
           <creol:mustbe-life-var name="l"/>
          </creol:statement-note>
         </creol:sequence>
         <creol:statement-note file="AsyncAnon.creol" line="33">
+         <creol:maybe-def-var name="ccglab0"/>
          <creol:maybe-def-var name="i"/>
          <creol:maybe-def-var name="l"/>
-         <creol:maybe-def-var name="label:0"/>
          <creol:mustbe-def-var name="i"/>
          <creol:maybe-life-var name="l"/>
          <creol:mustbe-life-var name="l"/>
         </creol:statement-note>
        </creol:sequence>
        <creol:statement-note file="AsyncAnon.creol" line="32">
+        <creol:maybe-def-var name="ccglab0"/>
         <creol:maybe-def-var name="i"/>
         <creol:maybe-def-var name="l"/>
-        <creol:maybe-def-var name="label:0"/>
         <creol:mustbe-def-var name="i"/>
         <creol:maybe-life-var name="i"/>
         <creol:mustbe-life-var name="i"/>
        </creol:statement-note>
       </creol:sequence>
       <creol:statement-note file="AsyncAnon.creol" line="32">
+       <creol:maybe-def-var name="ccglab0"/>
        <creol:maybe-def-var name="i"/>
        <creol:maybe-def-var name="l"/>
-       <creol:maybe-def-var name="label:0"/>
        <creol:mustbe-def-var name="i"/>
       </creol:statement-note>
      </creol:sequence>

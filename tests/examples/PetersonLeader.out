@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
   < "getNeighbour" : Method | Param: noVid, Att: "_" |-> null, "n" |-> null,
@@ -18,79 +18,73 @@ result Configuration:
 < "Process" : Class | Inh: noInh, Param: "i", "main", Att: "i" |-> null, "main"
     |-> null, "mode" |-> null, "neighbour" |-> null, "status" |-> null, "uid1"
     |-> null, "uid2" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    "ccglab1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
     "Process"), ("uid1" @ "Process") ; bool(true) :: int(0) :: "i") ; call(
-    "label:0" ; "main" ; "getNeighbour" ; emp) ; get("label:0" ; "neighbour") ;
-    free("label:0") ; call("label:1" ; "neighbour" ; "send" ; "i") ; free(
-    "label:1") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
+    "ccglab0" ; "main" ; "getNeighbour" ; emp) ; get("ccglab0" ; "neighbour") ;
+    free("ccglab0") ; call("ccglab1" ; "neighbour" ; "send" ; "i") ; free(
+    "ccglab1") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
     null, Code: skip ; return(emp) >, < "send" : Method | Param: "u", Att: "_"
-    |-> null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, "u"
+    |-> null, "ccglab0" |-> null, "ccglab1" |-> null, "ccglab2" |-> null, "u"
     |-> null, Code: if "mode" th if "="("uid2" :: null) th if "="("u" ::
     "uid1") th assign("status" ; int(1)) el assign("uid2" ; "u") ; call(
-    "label:0" ; "neighbour" ; "send" ; "u") ; free("label:0") fi el if "&&"(
+    "ccglab0" ; "neighbour" ; "send" ; "u") ; free("ccglab0") fi el if "&&"(
     ">"("uid2" :: "uid1") :: ">"("uid2" :: "u")) th assign("uid1", "uid2" ;
-    "uid2" :: null) ; call("label:1" ; "neighbour" ; "send" ; "uid1") ; free(
-    "label:1") el assign("mode" ; bool(false)) fi fi el call("label:2" ;
-    "neighbour" ; "send" ; "u") ; free("label:2") fi ; return(emp) >,
+    "uid2" :: null) ; call("ccglab1" ; "neighbour" ; "send" ; "uid1") ; free(
+    "ccglab1") el assign("mode" ; bool(false)) fi fi el call("ccglab2" ;
+    "neighbour" ; "send" ; "u") ; free("ccglab2") fi ; return(emp) >,
   Ocnt: 0 >
-
+}
 ==========================================
-rewrite in PROGRAM : main(classes, "Main", emp) .
+rewrite in PROGRAM : main(state, "Main", emp) .
 result State: {
-< ob("Main0") : "Main" |
-  Att: "p1" |-> ob("Process0"), "p2" |-> ob("Process1"), "p3" |-> ob(
-    "Process2"), "p4" |-> ob("Process3"), "p5" |-> ob("Process4"), "this" |->
-    ob("Main0"),
+< ob("Main-0") : "Main" |
+  Att: "p1" |-> ob("Process-0"), "p2" |-> ob("Process-1"), "p3" |-> ob(
+    "Process-2"), "p4" |-> ob("Process-3"), "p5" |-> ob("Process-4"), "this"
+    |-> ob("Main-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 7 >
  
-< ob("Process0") : "Process" |
-  Att: "i" |-> int(1), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process1"), "status" |-> int(0), "this" |-> ob(
-    "Process0"), "uid1" |-> int(1), "uid2" |-> int(2),
+< ob("Process-0") : "Process" |
+  Att: "i" |-> int(1), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-1"), "status" |-> int(0), "this" |-> ob(
+    "Process-0"), "uid1" |-> int(1), "uid2" |-> int(2),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process1") : "Process" |
-  Att: "i" |-> int(3), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process2"), "status" |-> int(0), "this" |-> ob(
-    "Process1"), "uid1" |-> int(3), "uid2" |-> int(1),
+< ob("Process-1") : "Process" |
+  Att: "i" |-> int(3), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-2"), "status" |-> int(0), "this" |-> ob(
+    "Process-1"), "uid1" |-> int(3), "uid2" |-> int(1),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process2") : "Process" |
-  Att: "i" |-> int(5), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process3"), "status" |-> int(0), "this" |-> ob(
-    "Process2"), "uid1" |-> int(5), "uid2" |-> int(3),
+< ob("Process-2") : "Process" |
+  Att: "i" |-> int(5), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-3"), "status" |-> int(0), "this" |-> ob(
+    "Process-2"), "uid1" |-> int(5), "uid2" |-> int(3),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process3") : "Process" |
-  Att: "i" |-> int(4), "main" |-> ob("Main0"), "mode" |-> bool(true),
-    "neighbour" |-> ob("Process4"), "status" |-> int(1), "this" |-> ob(
-    "Process3"), "uid1" |-> int(5), "uid2" |-> null,
+< ob("Process-3") : "Process" |
+  Att: "i" |-> int(4), "main" |-> ob("Main-0"), "mode" |-> bool(true),
+    "neighbour" |-> ob("Process-4"), "status" |-> int(1), "this" |-> ob(
+    "Process-3"), "uid1" |-> int(5), "uid2" |-> null,
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
  
-< ob("Process4") : "Process" |
-  Att: "i" |-> int(2), "main" |-> ob("Main0"), "mode" |-> bool(false),
-    "neighbour" |-> ob("Process0"), "status" |-> int(0), "this" |-> ob(
-    "Process4"), "uid1" |-> int(2), "uid2" |-> int(4),
+< ob("Process-4") : "Process" |
+  Att: "i" |-> int(2), "main" |-> ob("Main-0"), "mode" |-> bool(false),
+    "neighbour" |-> ob("Process-0"), "status" |-> int(0), "this" |-> ob(
+    "Process-4"), "uid1" |-> int(2), "uid2" |-> int(4),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 6 >
- 
-< ob("main") : Start |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Lcnt: 1 >
  
 < "Main" : Class | Inh: noInh, Param: noVid, Att: "p1" |-> null, "p2" |-> null,
     "p3" |-> null, "p4" |-> null, "p5" |-> null, Mtds:
@@ -109,21 +103,21 @@ result State: {
 < "Process" : Class | Inh: noInh, Param: "i", "main", Att: "i" |-> null, "main"
     |-> null, "mode" |-> null, "neighbour" |-> null, "status" |-> null, "uid1"
     |-> null, "uid2" |-> null, Mtds:
-  < "init" : Method | Param: noVid, Att: "_" |-> null, "label:0" |-> null,
-    "label:1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
+  < "init" : Method | Param: noVid, Att: "_" |-> null, "ccglab0" |-> null,
+    "ccglab1" |-> null, Code: assign(("mode" @ "Process"), ("status" @
     "Process"), ("uid1" @ "Process") ; bool(true) :: int(0) :: "i") ; call(
-    "label:0" ; "main" ; "getNeighbour" ; emp) ; get("label:0" ; "neighbour") ;
-    free("label:0") ; call("label:1" ; "neighbour" ; "send" ; "i") ; free(
-    "label:1") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
+    "ccglab0" ; "main" ; "getNeighbour" ; emp) ; get("ccglab0" ; "neighbour") ;
+    free("ccglab0") ; call("ccglab1" ; "neighbour" ; "send" ; "i") ; free(
+    "ccglab1") ; return(emp) >, < "run" : Method | Param: noVid, Att: "_" |->
     null, Code: skip ; return(emp) >, < "send" : Method | Param: "u", Att: "_"
-    |-> null, "label:0" |-> null, "label:1" |-> null, "label:2" |-> null, "u"
+    |-> null, "ccglab0" |-> null, "ccglab1" |-> null, "ccglab2" |-> null, "u"
     |-> null, Code: if "mode" th if "="("uid2" :: null) th if "="("u" ::
     "uid1") th assign("status" ; int(1)) el assign("uid2" ; "u") ; call(
-    "label:0" ; "neighbour" ; "send" ; "u") ; free("label:0") fi el if "&&"(
+    "ccglab0" ; "neighbour" ; "send" ; "u") ; free("ccglab0") fi el if "&&"(
     ">"("uid2" :: "uid1") :: ">"("uid2" :: "u")) th assign("uid1", "uid2" ;
-    "uid2" :: null) ; call("label:1" ; "neighbour" ; "send" ; "uid1") ; free(
-    "label:1") el assign("mode" ; bool(false)) fi fi el call("label:2" ;
-    "neighbour" ; "send" ; "u") ; free("label:2") fi ; return(emp) >,
+    "uid2" :: null) ; call("ccglab1" ; "neighbour" ; "send" ; "uid1") ; free(
+    "ccglab1") el assign("mode" ; bool(false)) fi fi el call("ccglab2" ;
+    "neighbour" ; "send" ; "u") ; free("ccglab2") fi ; return(emp) >,
   Ocnt: 5 >
 }
 Bye.

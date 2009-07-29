@@ -48,6 +48,7 @@ let subtarget_of_string =
     | "modelchecker" -> Modelchecker
     | "realtime" -> Realtime
     | "updates" -> Updates
+    | _ -> assert false
 
 let string_of_subtarget =
   function
@@ -77,7 +78,7 @@ let conflicts =
 	[]
     | { target = Realtime } ->
 	[]
-    | { target = Realtime } ->
+    | { target = Updates } ->
 	[]
 
 let interpreter =
@@ -85,7 +86,7 @@ let interpreter =
     | Interpreter -> "creol-interpreter"
     | Modelchecker -> "creol-modelchecker"
     | Realtime -> "creol-realtime"
-    | Updates -> "creol-updates"
+    | Updates -> "creol-update"
 
 
 (** Parse the subtarget features and construct a corresponding option
@@ -107,12 +108,6 @@ let emit subtarget out_channel input =
 	Type.Basic n -> print_string n
       | Type.Application (n, _) -> print_string n
       | _ -> assert false
-  and of_message_list ?(empty = "emp") ?(separator = "::") =
-    let prsep () = print_space () ; print_string separator ; print_space () in
-      (** Compile a list of expressions into the Creol Maude Machine. *)
-      function
-        | [] -> print_string empty
-        | l -> separated_list print_string prsep l
   and of_expression =
     function
       | Expression.This _ -> print_string "\"this\""
@@ -146,7 +141,12 @@ let emit subtarget out_channel input =
 	  and dt = List.map (Expression.get_type) a in
 	  let sg = Type.Function (Type.Tuple dt, rt) in
 	  let fd =
-            Function.external_definition (Program.find_function input f sg)
+            try
+              Function.external_definition (Program.find_function input f sg)
+            with
+              | (Failure _) as e when subtarget.target = Updates ->
+                  f (* Assume that the expression occurs in the context of
+                       a class that comes from the run-time state. *)
           in
 	    print_string ("\"" ^ fd ^ "\" ( " );
 	    of_expression_list a;
@@ -163,15 +163,25 @@ let emit subtarget out_channel input =
 	  of_expression f ;
 	  print_string " fi)"
       | Expression.Extern _ -> assert false
-      | Expression.LabelLit (_, label) ->
+      | Expression.LabelLit (_, [oid; Expression.Int(_, num)]) ->
+          open_hbox () ;
           print_string "label(" ;
-	  of_expression_list label ;
-	    (* XXX: Actually broken, but we don't care *)
-	  print_string ")"
+          of_expression oid ;
+          print_string "," ;
+          print_space () ;
+          print_string (Big_int.string_of_big_int num) ;
+	  print_string ")" ;
+          close_box ()
+      | Expression.LabelLit (_, [oid; oid'; m; lst]) ->
+          open_hbox () ;
+          print_string "label(" ;
+            (** XXX: This is currently broken. *)
+          print_string ")";
+          close_box ()
+      | Expression.LabelLit _ ->
+          assert false
       | Expression.ObjLit (_, name) ->
-          print_string "ob(" ;
-	  print_string name ;
-	  print_string ")"
+          print_string ("ob(\"" ^ name ^ "\")")
       | Expression.SSAId (_, n, v) -> 
 	  print_string ("\"" ^ n ^ "\" ***(" ^ (string_of_int v) ^ ")") ;
       | Expression.Phi (_, i::l) ->
@@ -373,10 +383,18 @@ let emit subtarget out_channel input =
 	       a (special) function call. *)
 	    assert false
     in print 25 stmt
-  and of_inherits  inh =
-	print_string ("\"" ^ inh.Inherits.name ^ "\" < ");
-	of_expression_list inh.Inherits.arguments ;
-	print_string " >"
+  and of_inherits inh =
+    open_box 2 ;
+    begin
+      match subtarget.target with
+        | Updates ->
+             print_string ("class(\"" ^ inh.Inherits.name ^ "\", 0)")
+        | _ -> print_string ("\"" ^ inh.Inherits.name ^ "\"")
+      end ;
+      print_string " < " ;
+      of_expression_list inh.Inherits.arguments ;
+      print_string " >" ;
+      close_box ()
   and of_inherits_list =
     function
 	[] -> print_string "noInh"
@@ -387,26 +405,39 @@ let emit subtarget out_channel input =
     function
 	[] -> print_string "noVid"
       | lst -> separated_list of_parameter print_comma lst
-  and of_vardecl { VarDecl.name = n } =
+  and of_vardecl { VarDecl.name = n; init = i } =
     print_string ("\"" ^ n ^ "\"") ;
     print_space () ;
     print_string "|->" ;
     print_space () ;
-    print_string "null" 
+    begin
+      match i with
+        | None -> print_string "null" 
+        | Some e -> of_expression e
+    end
   and of_class_attribute_list =
     function
 	[] -> print_string "noSubst" 
       | lst -> separated_list of_vardecl print_comma lst
   and of_method cls m =
-    let wildcard = { VarDecl.name = "_"; var_type = Type.data; init = None } in
+    let wildcard = { VarDecl.name = "_"; var_type = Type.data; init = None;
+                     file = ""; line = 0; }
+    in
       open_box 2 ;
       print_string ("< \"" ^ m.Method.name ^ "\" : Method | Param: ");
       of_parameter_list m.Method.inpars ;
       print_comma () ;
       print_string "Att: " ;
       of_class_attribute_list
-        (List.concat [ m.Method.inpars ; m.Method.outpars ; m.Method.vars ;
-		      [wildcard] ]) ;
+        (if List.exists (fun { VarDecl.name = n } -> n = "_") m.Method.vars then
+          (* Since the wildcard is already in the list of method variables,
+             we must assume that the list comes from a maude term and
+             thus already contains all the inpars, outpars and the
+             wildcard. *)
+          m.Method.vars
+        else
+          (List.concat [ m.Method.inpars ; m.Method.outpars ; m.Method.vars ;
+		        [wildcard] ])) ;
       print_comma () ;
       print_string "Code: " ;
       begin
@@ -433,13 +464,17 @@ let emit subtarget out_channel input =
     print_string "< " ;
     begin
       match subtarget.target with
-	| Updates -> print_string ("class(\"" ^ c.Class.name ^ "\", 0)")
+	| Updates ->
+            let s = Big_int.string_of_big_int (Class.stage c) in
+              print_string ("class(\"" ^ c.Class.name ^ "\", " ^ s ^ ")")
 	| _ -> print_string ("\"" ^ c.Class.name ^ "\"")
     end ;
     print_string " : Class |" ;
     begin
       match subtarget.target with
-	| Updates -> print_space (); print_string ("Version: 0,")
+	| Updates -> print_space ();
+            let v = Big_int.string_of_big_int (Class.version c) in
+              print_string ("Version: " ^ v ^ ",")
 	| _ -> ()
     end ;
     print_space () ;
@@ -450,17 +485,29 @@ let emit subtarget out_channel input =
     of_parameter_list c.Class.parameters;
     print_comma () ;
     print_string "Att: " ;
-    of_class_attribute_list (c.Class.parameters @ c.Class.attributes) ;
+    of_class_attribute_list
+      (if ((List.length c.Class.parameters)) > 0 &&
+            (List.exists
+              (fun { VarDecl.name = n } -> n = (List.hd c.Class.parameters).VarDecl.name)
+              c.Class.attributes)
+      then
+          (* Since a class parameter is already in the list of attributes,
+             we must assume that the list comes from a maude term and
+             thus already contains all class parameters. Remember that
+             class attributes must not shadow any class parameters. *)
+        c.Class.attributes
+       else
+         (c.Class.parameters @ c.Class.attributes)) ;
     print_comma () ;
     print_string "Mtds: " ;
     of_with_defs c.Class.name c.Class.with_defs ;
     print_comma () ;
-    print_string "Ocnt: 0 >" ;
+    print_string ("Ocnt: " ^ (Big_int.string_of_big_int c.Class.objects_created) ^ " >") ;
     close_box ()
   and of_mapping =
     function
       | { VarDecl.name = name; init = Some init } ->
-          print_string name ;
+          print_string ("\"" ^ name ^ "\"") ;
           print_space () ;
           print_string "|->" ;
           print_space () ;
@@ -484,9 +531,25 @@ let emit subtarget out_channel input =
       | lst -> separated_list of_process print_comma lst
   and of_object obj =
     open_box 2 ;
-    print_string ("< ob(\"" ^ obj.Object.name ^ "\") :");
+    print_string "< " ;
+    of_expression obj.Object.name ;
+    print_string  " :" ;
     print_space () ;
-    print_string ((Type.string_of_type obj.Object.cls) ^ " |") ;
+    begin
+      match subtarget.target with
+        | Updates ->
+            open_hbox () ;
+            print_string "class(" ;
+            print_string ("\"" ^ (Type.string_of_type obj.Object.cls) ^ "\",");
+            print_space () ;
+            print_string (Big_int.string_of_big_int (Object.stage obj)) ;
+            print_string ")" ;
+            close_box () ;
+        | _ ->
+          print_string ("\"" ^ (Type.string_of_type obj.Object.cls) ^ "\"") ;
+    end ;
+    print_space () ;
+    print_string "|" ;
     print_space () ;
     print_string "Att: " ;
     of_substitution obj.Object.attributes ;
@@ -497,8 +560,105 @@ let emit subtarget out_channel input =
     print_string "PrQ: " ;
     of_process_list obj.Object.process_queue ;
     print_comma () ;
-    print_string ("Lcnt: " ^ (string_of_int 0)) ;
+    print_string ("Lcnt: " ^ (Big_int.string_of_big_int obj.Object.emitted_calls)) ;
     print_string " >";
+    close_box ()
+  and of_future f =
+    open_box 2 ;
+    print_string "< ";
+    of_expression f.Future.name ;
+    print_space () ;
+    print_string ": Future |" ;
+    print_space () ;
+    print_string "Completed: " ;
+    print_string (string_of_bool f.Future.completed) ;
+    print_comma () ;
+    print_string "References: ";
+    print_string (Big_int.string_of_big_int f.Future.references) ;
+    print_comma () ;
+    print_string "Value: " ;
+    of_expression_list f.Future.value ;
+    print_string " >";
+    close_box ()
+  and of_dependency dep =
+    print_string ("c(\"" ^ dep.Dependency.name ^ "\", " ^
+                     (Big_int.string_of_big_int dep.Dependency.version) ^ ")")
+  and of_dependencies deps =
+    if Dependencies.is_empty deps then
+      print_string "none"
+    else
+      begin
+        let current = Dependencies.choose deps in
+        let deps' = Dependencies.remove current deps in
+          of_dependency current ;
+          if not (Dependencies.is_empty deps') then
+            begin
+              print_comma () ;
+              of_dependencies deps'
+            end
+      end
+  and of_new_class cls =
+    open_box 2 ;
+    print_string "add(";
+    of_class cls.NewClass.cls ;
+    print_comma () ;
+    print_string "(";
+    of_dependencies cls.NewClass.dependencies ;
+    print_string ")";
+    print_string ")";
+    close_box ()
+  and of_update u =
+    open_box 2 ;
+    print_string "extend(";
+    print_string ("\"" ^ u.Update.name ^ "\"") ;
+    print_comma () ;
+    print_string "(";
+    of_inherits_list u.Update.inherits;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_class_attribute_list u.Update.attributes ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_with_defs u.Update.name u.Update.with_defs ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    (* XXX: of_statement u.Update.statement ; *)
+    print_string "skip";
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_dependencies u.Update.dependencies ;
+    print_string ")";
+    print_string ")";
+    close_box ()
+  and of_retract r =
+    open_box 2;
+    print_string "remove(";
+    print_string ("\"" ^ r.Retract.name ^ "\"");
+    print_comma () ;
+    print_string "(";
+    of_inherits_list r.Retract.inherits;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_class_attribute_list r.Retract.attributes ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_with_defs r.Retract.name r.Retract.with_decls ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    of_dependencies r.Retract.dependencies ;
+    print_string ")";
+    print_comma () ;
+    print_string "(";
+    (* XXX of_dependencies r.Retract.obj_deps *) print_string "none" ;
+    print_string ")";
+    print_string ")";
     close_box ()
   and of_declaration =
     function
@@ -507,12 +667,20 @@ let emit subtarget out_channel input =
       | Declaration.Exception _
       | Declaration.Datatype _
       | Declaration.Function _ -> assert false
+      | Declaration.Future f -> of_future f
       | Declaration.Object o -> of_object o
+      | Declaration.NewClass cls -> of_new_class cls
+      | Declaration.Update u -> of_update u
+      | Declaration.Retract r -> of_retract r
   and of_decl_list =
     let relevant_p =
       function
 	| Declaration.Class _ 
-	| Declaration.Object _ -> true
+	| Declaration.Object _
+	| Declaration.Future _
+	| Declaration.NewClass _
+	| Declaration.Update _
+	| Declaration.Retract _ -> true
         | Declaration.Interface _
         | Declaration.Exception _
         | Declaration.Datatype _
@@ -540,15 +708,15 @@ let emit subtarget out_channel input =
         open_vbox 0 ;
         print_string "protecting CREOL-SIMULATOR ." ;
 	print_space () ;
-	print_string "op classes : -> Configuration [ctor] ." ;
+	print_string "op state : -> State [ctor] ." ;
 	print_space () ;
-	print_string "eq classes =" ;
+	print_string "eq state = {" ;
 	print_space () ;
         begin
           open_hbox () ; print_space () ; print_space () ; close_box () ;
 	  open_vbox 0 ;
           of_decl_list input ;
-	  print_string " ." ;
+	  print_string " } ." ;
 	  close_box ()
 	end ;
 	close_box ()

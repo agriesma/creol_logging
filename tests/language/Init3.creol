@@ -1,5 +1,5 @@
 /*
- * MissingEnd3.creol -- Error with missing end, test 3.
+ * Init.creol -- Class initialisation
  *
  * This file is part of creoltools
  *
@@ -18,12 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+class C begin end
 
-class Foo
+class Test
 begin
-  op init ==
-    if true then
-      skip
-
-  op run == skip
+  var x: Int := 1
+  var y: Any := new C
+  var z: Int := 2
 end

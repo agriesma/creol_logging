@@ -1,33 +1,33 @@
 load creol-modelchecker .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Philosopher" : Class | Inh: noInh, Param: "butler", Att: "butler" |->
       null, "hungry" |-> null, "chopstick" |-> null, "neighbor" |-> null,
-      Mtds: < "init" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+      Mtds: < "init" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
               |-> null, Code: assign( "chopstick" ; bool(true) ) ;
-              assign( "hungry" ; bool(false) ) ; call( "label:0" ; "butler" ;
-              "getNeighbor" ; emp ) ; get( "label:0" ; "neighbor" ) ;
-              free( "label:0" ) ; return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "_" |-> null,
-              Code: call( "label:0" ; "this" ; "think" ; emp ) ;
-              free( "label:0" ) ; call( "label:1" ; "this" ; "eat" ; emp ) ;
-              free( "label:1" ) ; return ( emp ) >,
-            < "eat" : Method | Param: noVid, Att: "label:2" |-> null,
-              "label:1" |-> null, "label:0" |-> null, "_" |-> null,
-              Code: await "hungry" ; call( "label:0" ; "neighbor" ;
-              "borrowStick" ; emp ) ; await ?("label:0") ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ; await
+              assign( "hungry" ; bool(false) ) ; call( "ccglab0" ; "butler" ;
+              "getNeighbor" ; emp ) ; get( "ccglab0" ; "neighbor" ) ;
+              free( "ccglab0" ) ; return ( emp ) >,
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
+              Code: call( "ccglab0" ; "this" ; "think" ; emp ) ;
+              free( "ccglab0" ) ; call( "ccglab1" ; "this" ; "eat" ; emp ) ;
+              free( "ccglab1" ) ; return ( emp ) >,
+            < "eat" : Method | Param: noVid, Att: "ccglab2" |-> null,
+              "ccglab1" |-> null, "ccglab0" |-> null, "_" |-> null,
+              Code: await "hungry" ; call( "ccglab0" ; "neighbor" ;
+              "borrowStick" ; emp ) ; await ?("ccglab0") ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ; await
               "chopstick" ; assign( "hungry" ; bool(false) ) ;
-              call( "label:1" ; "neighbor" ; "returnStick" ; emp ) ;
-              free( "label:1" ) ; call( "label:2" ; "this" ; "eat" ; emp ) ;
-              free( "label:2" ) ; return ( emp ) >,
-            < "think" : Method | Param: noVid, Att: "label:0" |-> null, "_"
+              call( "ccglab1" ; "neighbor" ; "returnStick" ; emp ) ;
+              free( "ccglab1" ) ; call( "ccglab2" ; "this" ; "eat" ; emp ) ;
+              free( "ccglab2" ) ; return ( emp ) >,
+            < "think" : Method | Param: noVid, Att: "ccglab0" |-> null, "_"
               |-> null, Code: await "~" ( "hungry" ) ; release ;
               assign( "hungry" ; bool(true) ) ;
-              call( "label:0" ; "this" ; "think" ; emp ) ; free( "label:0" )
+              call( "ccglab0" ; "this" ; "think" ; emp ) ; free( "ccglab0" )
               ; return ( emp ) >,
             < "borrowStick" : Method | Param: noVid, Att: "_" |-> null,
               Code: await "chopstick" ; assign( "chopstick" ; bool(false) ) ;
@@ -49,7 +49,7 @@ mod PROGRAM is
               assign( "neighbor" ; "p2" ) el if "=" ( "caller" :: "p2" ) th
               assign( "neighbor" ; "p3" ) el assign( "neighbor" ; "p1" ) fi
               fi ; return ( "neighbor" ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 
 mod PROGRAM-CHECKER is

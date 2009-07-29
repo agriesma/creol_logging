@@ -1,6 +1,6 @@
 ==========================================
-reduce in PROGRAM : classes .
-result Configuration: 
+reduce in PROGRAM : state .
+result State: {
 < "Main" : Class | Inh: noInh, Param: noVid, Att: "l" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, "o" |-> null, Code:
     assign("l" @ "Main" ; list(emp)) ; new("o" ; "Test" ; emp) ; assign("l" ;
@@ -15,5 +15,5 @@ result Configuration:
     emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
     return(emp) >,
   Ocnt: 0 >
-
+}
 Bye.

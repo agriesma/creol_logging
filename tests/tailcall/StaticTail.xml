@@ -46,8 +46,8 @@
     <creol:inputs/>
     <creol:outputs/>
     <creol:variables>
-     <creol:vardecl name="label:0">
-      <creol:typeapplication name="Label"/>
+     <creol:vardecl name="ccglab0">
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>

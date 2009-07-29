@@ -30,7 +30,7 @@
     <creol:outputs/>
     <creol:variables>
      <creol:vardecl name="l">
-      <creol:typeapplication name="Label"/>
+      <creol:future/>
      </creol:vardecl>
     </creol:variables>
     <creol:body>

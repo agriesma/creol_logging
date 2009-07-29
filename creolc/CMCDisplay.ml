@@ -36,21 +36,48 @@ let show_version () =
   print_string license ;
   exit 0
 
+let from_maude = ref false
+
+let output_dot = ref false
+
+let without_objects = ref false
+
+let with_classes = ref false
+
+let inputs = ref []
+
+let process_file name =
+  let tree =
+    match name with
+      | "" -> assert false
+      | "-" -> parse_from_channel !from_maude "*stdin*" stdin
+      | _ -> parse_from_file !from_maude name
+  in
+    if !output_dot then
+      let features = {
+        BackendDot.classes = !with_classes;
+        objects = not !without_objects }
+      in
+        BackendDot.emit ~features:features stdout tree
+    else
+      BackendCreol.pretty_print_program stdout tree
 
 
 let options = [
-  ("-", Arg.Unit (function () -> ignore (parse_from_channel "*stdin*" stdin)),
-    "Read from standard input");
+  ("-", Arg.Unit (fun () -> inputs := !inputs@["-"]),
+   "  Read from standard input");
+  ("-dot", Arg.Set output_dot, "  Visualise the object state");
+  ("-from-maude", Arg.Set from_maude, "  Expect output from Maude");
+  ("-without-objects", Arg.Set without_objects, "  Do not show the objects");
+  ("-with-classes", Arg.Set with_classes, "  Show the classes");
   ("-V", Arg.Unit show_version, "  Show the version and exit");
   ("-version", Arg.Unit show_version, "  Show the version and exit");
   ("--version", Arg.Unit show_version, "  Show the version and exit")]
 
 let main () =
-  let action n =
-    let tree = parse_from_file n in
-      BackendCreol.pretty_print_program stdout tree
-  in
-    Arg.parse options action "cmcvalid [options] [files]"
+  let action n = inputs := !inputs@[n] in
+  let () = Arg.parse options action "cmcdisplay [options] [files]" in
+    List.iter process_file !inputs
 ;;
 
 main ()
