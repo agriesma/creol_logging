@@ -36,17 +36,17 @@ TEST_MAUDE([Interpreter], ${abs_srcdir}/Interpreter.maude, [.])
 AT_CLEANUP
 
 AT_SETUP([Logging])
-TEST_LOGGING([Hello], [rew [[100]] main(classes, "Hello", emp) . 
+TEST_LOGGING([Hello], [rew [[100]] main(state, "Hello", emp) . 
 ])
-TEST_LOGGING([Simple], [rew main(classes, "Hello", int(2) ) . 
+TEST_LOGGING([Simple], [rew main(state, "Hello", int(2) ) . 
 ])
-TEST_LOGGING([Simple2], [rew main(classes, "Hello", int(2) ) . 
+TEST_LOGGING([Simple2], [rew main(state, "Hello", int(2) ) . 
 ])
-TEST_LOGGING([Simple3], [rew main(classes, "Hello", int(2) ) . 
+TEST_LOGGING([Simple3], [rew main(state, "Hello", int(2) ) . 
 ])
 TEST_MAUDE([Transitions], ${abs_srcdir}/simulation/Transitions.maude, [simulation])
 TEST_MAUDE([passparams], ${abs_srcdir}/simulation/passparams.maude, [simulation])
-TEST_LOGGING([program], [rew [[6000]] main(classes, "Main", int(2) :: int(1) ) .
+TEST_LOGGING([program], [rew [[6000]] main(state, "Main", int(2) :: int(1) ) .
 ])
 AT_CLEANUP
 

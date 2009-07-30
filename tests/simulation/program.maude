@@ -1,8 +1,8 @@
 load creol-logginginterpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Counter" : Class | Inh: noInh, Param: noVid, Att: "value" |-> null,
       "observer" |-> null, "observertoken" |-> null,
       Mtds: < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
@@ -10,19 +10,19 @@ mod PROGRAM is
             < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( "value" ; int(0) ) ; assign( "observer" ; null )
               ; assign( "observertoken" ; str("") ) ; return ( emp ) >,
-            < "informObserver" : Method | Param: noVid, Att: "label:0" |->
+            < "informObserver" : Method | Param: noVid, Att: "ccglab0" |->
               null, "l" |-> null, "_" |-> null, Code: if "/=" ( "observer" ::
-              null ) th call( "label:0" ; "observer" ; "newCounterValue" ;
-              "observertoken" :: "value" ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) el skip fi ; return ( emp ) >,
-            < "inc" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
+              null ) th call( "ccglab0" ; "observer" ; "newCounterValue" ;
+              "observertoken" :: "value" ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) el skip fi ; return ( emp ) >,
+            < "inc" : Method | Param: noVid, Att: "ccglab0" |-> null, "_" |->
               null, Code: assign( "value" ; "+" ( "value" :: int(1) ) ) ;
-              call( "label:0" ; "this" ; "informObserver" ; emp ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
-            < "dec" : Method | Param: noVid, Att: "label:0" |-> null, "_" |->
+              call( "ccglab0" ; "this" ; "informObserver" ; emp ) ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ; return ( emp ) >,
+            < "dec" : Method | Param: noVid, Att: "ccglab0" |-> null, "_" |->
               null, Code: assign( "value" ; "-" ( "value" :: int(1) ) ) ;
-              call( "label:0" ; "this" ; "informObserver" ; emp ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
+              call( "ccglab0" ; "this" ; "informObserver" ; emp ) ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ; return ( emp ) >,
             < "value" : Method | Param: noVid, Att: "val" |-> null, "_" |->
               null, Code: assign( "val" ; "value" ) ; return ( "val" ) >,
             < "registerObserver" : Method | Param: "token", Att: "token" |->
@@ -36,8 +36,8 @@ mod PROGRAM is
       "threads" |-> null,
       Mtds: < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "init" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "shepherd" |-> null, "mrate" |-> null, "_"
+            < "init" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "shepherd" |-> null, "mrate" |-> null, "_"
               |-> null, Code: new( "taskCounter" ; "Counter" ; emp ) ;
               new( "threadCounter" ; "Counter" ; emp ) ;
               new( "busyCounter" ; "Counter" ; emp ) ;
@@ -45,23 +45,23 @@ mod PROGRAM is
               assign( "threads" ; list(emp) ) ; assign( "mrate" ; int(5) ) ;
               new( "shepherd" ; "ShepherdTask" ; int(1) :: "taskCounter" ::
               "threadCounter" :: "busyCounter" :: "maxNofThreads" :: "mrate"
-              :: "taskQueue" :: "this" ) ; call( "label:0" ; "this" ;
-              "createThreads" ; "size" ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) ; call( "label:1" ; "this" ; "dispatchTask" ;
-              "shepherd" ) ; get( "label:1" ; noVid ) ; free( "label:1" ) ;
+              :: "taskQueue" :: "this" ) ; call( "ccglab0" ; "this" ;
+              "createThreads" ; "size" ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) ; call( "ccglab1" ; "this" ; "dispatchTask" ;
+              "shepherd" ) ; get( "ccglab1" ; noVid ) ; free( "ccglab1" ) ;
               return ( emp ) >,
             < "dispatchTask" : Method | Param: "task", Att: "task" |-> null,
-              "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
+              "ccglab0" |-> null, "_" |-> null, Code: call( "ccglab0" ;
               "taskQueue" ; "enqueueTask" ; "task" ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ; return ( emp ) >,
             < "createThreads" : Method | Param: "amount", Att: "amount" |->
-              null, "label:0" |-> null, "i" |-> null, "thread" |-> null, "_"
+              null, "ccglab0" |-> null, "i" |-> null, "thread" |-> null, "_"
               |-> null, Code: assign( "i" ; int(0) ) ; while "<" ( "i" ::
               "amount" ) do new( "thread" ; "Monk" ; "taskQueue" ::
               "busyCounter" :: "threadCounter" ) ;
               assign( "threads" ; "|-" ( "threads" :: "thread" ) ) ;
-              call( "label:0" ; "threadCounter" ; "inc" ; emp ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ;
+              call( "ccglab0" ; "threadCounter" ; "inc" ; emp ) ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ;
               assign( "i" ; "+" ( "i" :: int(1) ) ) od  ; return ( emp ) >,
       Ocnt: 0 >
     
@@ -74,9 +74,9 @@ mod PROGRAM is
             < "getId" : Method | Param: noVid, Att: "id" |-> null, "_" |->
               null, Code: assign( "id" ; "taskId" ) ; return ( "id" ) >,
             < "execute" : Method | Param: noVid, Att: "kill" |-> null,
-              "label:0" |-> null, "_" |-> null, Code: call( "label:0" ;
-              "myCounter" ; "inc" ; emp ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) ; assign( "kill" ; bool(false) ) ;
+              "ccglab0" |-> null, "_" |-> null, Code: call( "ccglab0" ;
+              "myCounter" ; "inc" ; emp ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) ; assign( "kill" ; bool(false) ) ;
               return ( "kill" ) >,
       Ocnt: 0 >
     
@@ -98,50 +98,50 @@ mod PROGRAM is
       "threadpool", Att: "taskId" |-> null, "taskCounter" |-> null,
       "threadCounter" |-> null, "busyCounter" |-> null, "maxthreads" |->
       null, "mrate" |-> null, "taskQueue" |-> null, "threadpool" |-> null,
-      "tasks" |-> null, "threads" |-> null, "busythreads" |-> null,
+      "tasks" |-> null, "threads" |-> null, "busythreads" |-> null, "maxt"
+      |-> null,
       Mtds: < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
               return ( emp ) >,
-            < "init" : Method | Param: noVid, Att: "label:4" |-> null,
-              "label:3" |-> null, "label:2" |-> null, "label:1" |-> null,
-              "label:0" |-> null, "_" |-> null,
-              Code: assign( "maxthreads" ; "+" ( "maxthreads" :: int(1) ) ) ;
-              call( "label:0" ; "taskCounter" ; "registerObserver" ;
-              str("tasks") ) ; get( "label:0" ; noVid ) ; free( "label:0" ) ;
-              call( "label:1" ; "threadCounter" ; "registerObserver" ;
-              str("threads") ) ; get( "label:1" ; noVid ) ; free( "label:1" )
-              ; call( "label:2" ; "busyCounter" ; "registerObserver" ;
-              str("busythreads") ) ; get( "label:2" ; noVid ) ;
-              free( "label:2" ) ; call( "label:3" ; "threadCounter" ;
-              "value" ; emp ) ; get( "label:3" ; "threads" ) ;
-              free( "label:3" ) ; call( "label:4" ; "busyCounter" ; "value" ;
-              emp ) ; get( "label:4" ; "busythreads" ) ; free( "label:4" ) ;
+            < "init" : Method | Param: noVid, Att: "ccglab4" |-> null,
+              "ccglab3" |-> null, "ccglab2" |-> null, "ccglab1" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
+              Code: assign( "maxt" ; "+" ( "maxthreads" :: int(1) ) ) ;
+              call( "ccglab0" ; "taskCounter" ; "registerObserver" ;
+              str("tasks") ) ; get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ;
+              call( "ccglab1" ; "threadCounter" ; "registerObserver" ;
+              str("threads") ) ; get( "ccglab1" ; noVid ) ; free( "ccglab1" )
+              ; call( "ccglab2" ; "busyCounter" ; "registerObserver" ;
+              str("busythreads") ) ; get( "ccglab2" ; noVid ) ;
+              free( "ccglab2" ) ; call( "ccglab3" ; "threadCounter" ;
+              "value" ; emp ) ; get( "ccglab3" ; "threads" ) ;
+              free( "ccglab3" ) ; call( "ccglab4" ; "busyCounter" ; "value" ;
+              emp ) ; get( "ccglab4" ; "busythreads" ) ; free( "ccglab4" ) ;
               return ( emp ) >,
-            < "createThreads" : Method | Param: noVid, Att: "label:0" |->
+            < "createThreads" : Method | Param: noVid, Att: "ccglab0" |->
               null, "l" |-> null, "task" |-> null, "amountToCreate" |-> null,
               "idlethreads" |-> null, "_" |-> null,
               Code: assign( "idlethreads" ; "-" ( "threads" ::
-              "busythreads" ) ) ; await "&&" ( "<" ( "threads" ::
-              "maxthreads" ) :: "<" ( "-" ( "idlethreads" :: "tasks" ) ::
-              "/" ( "threads" :: "mrate" ) ) ) ;
-              assign( "amountToCreate" ; "+" ( "-" ( "tasks" ::
-              "idlethreads" ) :: "/" ( "threads" :: "mrate" ) ) ) ; if
-              ">" ( "amountToCreate" :: "-" ( "maxthreads" :: "threads" ) )
-              th assign( "amountToCreate" ; "-" ( "maxthreads" ::
-              "threads" ) ) el skip fi ; if ">" ( "amountToCreate" ::
-              int(0) ) th call( "l" ; "threadpool" ; "createThreads" ;
-              "amountToCreate" ) ; await ?("l") ; free( "l" ) el skip fi ;
-              call( "label:0" ; "this" ; "createThreads" ; emp ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
-            < "killThreads" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "task" |-> null, "idlethreads" |-> null,
+              "busythreads" ) ) ; await "&&" ( "<" ( "threads" :: "maxt" ) ::
+              "<" ( "-" ( "idlethreads" :: "tasks" ) :: "/" ( "threads" ::
+              "mrate" ) ) ) ; assign( "amountToCreate" ; "+" ( "-" ( "tasks"
+              :: "idlethreads" ) :: "/" ( "threads" :: "mrate" ) ) ) ; if
+              ">" ( "amountToCreate" :: "-" ( "maxt" :: "threads" ) ) th
+              assign( "amountToCreate" ; "-" ( "maxt" :: "threads" ) ) el
+              skip fi ; if ">" ( "amountToCreate" :: int(0) ) th call( "l" ;
+              "threadpool" ; "createThreads" ; "amountToCreate" ) ; await
+              ?("l") ; free( "l" ) el skip fi ;
+              call( "ccglab0" ; "this" ; "createThreads" ; emp ) ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ; return ( emp ) >,
+            < "killThreads" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "task" |-> null, "idlethreads" |-> null,
               "_" |-> null, Code: assign( "idlethreads" ; "-" ( "threads" ::
               "busythreads" ) ) ; await ">" ( "idlethreads" ::
               "/" ( "threads" :: int(2) ) ) ;
-              new( "task" ; "PoisonTask" ; int(0) ) ; call( "label:0" ;
+              new( "task" ; "PoisonTask" ; int(0) ) ; call( "ccglab0" ;
               "taskQueue" ; "enqueueTask" ; "task" ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ;
-              call( "label:1" ; "this" ; "killThreads" ; emp ) ;
-              get( "label:1" ; noVid ) ; free( "label:1" ) ; return ( emp ) >,
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ;
+              call( "ccglab1" ; "this" ; "killThreads" ; emp ) ;
+              get( "ccglab1" ; noVid ) ; free( "ccglab1" ) ; return ( emp ) >,
             < "getId" : Method | Param: noVid, Att: "id" |-> null, "_" |->
               null, Code: assign( "id" ; "taskId" ) ; return ( "id" ) >,
             < "execute" : Method | Param: noVid, Att: "kill" |-> null, "l1"
@@ -166,17 +166,17 @@ mod PROGRAM is
             < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( "tasks" ; list(emp) ) ; return ( emp ) >,
             < "enqueueTask" : Method | Param: "task", Att: "task" |-> null,
-              "label:0" |-> null, "_" |-> null,
+              "ccglab0" |-> null, "_" |-> null,
               Code: assign( "tasks" ; "|-" ( "tasks" :: "task" ) ) ;
-              call( "label:0" ; "taskCounter" ; "inc" ; emp ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ; return ( emp ) >,
+              call( "ccglab0" ; "taskCounter" ; "inc" ; emp ) ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ; return ( emp ) >,
             < "dequeueTask" : Method | Param: noVid, Att: "task" |-> null,
-              "label:0" |-> null, "_" |-> null, Code: await
+              "ccglab0" |-> null, "_" |-> null, Code: await
               ">" ( "#" ( "tasks" ) :: int(0) ) ;
               assign( "task" ; "head" ( "tasks" ) ) ;
-              assign( "tasks" ; "tail" ( "tasks" ) ) ; call( "label:0" ;
-              "taskCounter" ; "dec" ; emp ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) ; return ( "task" ) >,
+              assign( "tasks" ; "tail" ( "tasks" ) ) ; call( "ccglab0" ;
+              "taskCounter" ; "dec" ; emp ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) ; return ( "task" ) >,
       Ocnt: 0 >
     
     < "Main" : Class | Inh: noInh, Param: "nthreads_init", "maxthreads_init",
@@ -186,12 +186,12 @@ mod PROGRAM is
               Code: new( "threadpool" ; "Abbey" ; "nthreads_init" ::
               "maxthreads_init" ) ;
               new( "executionCounter" ; "Counter" ; emp ) ; return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:0" |-> null, "task"
+            < "run" : Method | Param: noVid, Att: "ccglab0" |-> null, "task"
               |-> null, "i" |-> null, "_" |-> null,
               Code: assign( "i" ; int(0) ) ; while "<" ( "i" :: int(10) ) do
               new( "task" ; "CounterTask" ; "i" :: "executionCounter" ) ;
-              call( "label:0" ; "threadpool" ; "dispatchTask" ; "task" ) ;
-              get( "label:0" ; noVid ) ; free( "label:0" ) ;
+              call( "ccglab0" ; "threadpool" ; "dispatchTask" ; "task" ) ;
+              get( "ccglab0" ; noVid ) ; free( "ccglab0" ) ;
               assign( "i" ; "+" ( "i" :: int(1) ) ) od  ; return ( emp ) >,
       Ocnt: 0 >
     
@@ -202,25 +202,25 @@ mod PROGRAM is
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( "taskHistory" ; list(emp) ) ;
               assign( "kill" ; bool(false) ) ; return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:6" |-> null,
-              "label:5" |-> null, "label:4" |-> null, "label:3" |-> null,
-              "label:2" |-> null, "label:1" |-> null, "label:0" |-> null, "_"
-              |-> null, Code: call( "label:0" ; "queue" ; "dequeueTask" ;
-              emp ) ; get( "label:0" ; "task" ) ; free( "label:0" ) ;
-              call( "label:1" ; "busyCounter" ; "inc" ; emp ) ;
-              get( "label:1" ; noVid ) ; free( "label:1" ) ;
-              call( "label:2" ; "task" ; "getId" ; emp ) ;
-              get( "label:2" ; "taskId" ) ; free( "label:2" ) ;
+            < "run" : Method | Param: noVid, Att: "ccglab6" |-> null,
+              "ccglab5" |-> null, "ccglab4" |-> null, "ccglab3" |-> null,
+              "ccglab2" |-> null, "ccglab1" |-> null, "ccglab0" |-> null, "_"
+              |-> null, Code: call( "ccglab0" ; "queue" ; "dequeueTask" ;
+              emp ) ; get( "ccglab0" ; "task" ) ; free( "ccglab0" ) ;
+              call( "ccglab1" ; "busyCounter" ; "inc" ; emp ) ;
+              get( "ccglab1" ; noVid ) ; free( "ccglab1" ) ;
+              call( "ccglab2" ; "task" ; "getId" ; emp ) ;
+              get( "ccglab2" ; "taskId" ) ; free( "ccglab2" ) ;
               assign( "taskHistory" ; "|-" ( "taskHistory" :: "taskId" ) ) ;
-              call( "label:3" ; "task" ; "execute" ; emp ) ;
-              get( "label:3" ; "kill" ) ; free( "label:3" ) ;
-              call( "label:4" ; "busyCounter" ; "dec" ; emp ) ;
-              get( "label:4" ; noVid ) ; free( "label:4" ) ; if "kill" th
-              call( "label:5" ; "threadCounter" ; "dec" ; emp ) ;
-              get( "label:5" ; noVid ) ; free( "label:5" ) el release ;
-              call( "label:6" ; "this" ; "run" ; emp ) ;
-              get( "label:6" ; noVid ) ; free( "label:6" ) fi ;
+              call( "ccglab3" ; "task" ; "execute" ; emp ) ;
+              get( "ccglab3" ; "kill" ) ; free( "ccglab3" ) ;
+              call( "ccglab4" ; "busyCounter" ; "dec" ; emp ) ;
+              get( "ccglab4" ; noVid ) ; free( "ccglab4" ) ; if "kill" th
+              call( "ccglab5" ; "threadCounter" ; "dec" ; emp ) ;
+              get( "ccglab5" ; noVid ) ; free( "ccglab5" ) el release ;
+              call( "ccglab6" ; "this" ; "run" ; emp ) ;
+              get( "ccglab6" ; noVid ) ; free( "ccglab6" ) fi ;
               return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

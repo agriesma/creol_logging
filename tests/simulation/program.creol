@@ -149,9 +149,10 @@ begin
   var tasks: Int
   var threads: Int
   var busythreads: Int
+  var maxt: Int  
 
   op init ==
-    maxthreads := maxthreads + 1;
+    maxt := maxthreads + 1;
     taskCounter.registerObserver("tasks";);
     threadCounter.registerObserver("threads";);
     busyCounter.registerObserver("busythreads";);
@@ -163,11 +164,11 @@ begin
     var task: Task;
     var amountToCreate: Int;
     var idlethreads: Int := threads - busythreads;
-    await ((threads < maxthreads)
+    await ((threads < maxt)
       && ((idlethreads - tasks) < (threads / mrate)));
     amountToCreate := tasks - idlethreads + (threads / mrate);
-    if (amountToCreate > (maxthreads - threads)) then
-      amountToCreate := maxthreads - threads
+    if (amountToCreate > (maxt - threads)) then
+      amountToCreate := maxt - threads
     end;
     if (amountToCreate > 0) then
       l!threadpool.createThreads(amountToCreate);

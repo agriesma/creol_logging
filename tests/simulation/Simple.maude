@@ -1,8 +1,8 @@
 load creol-logginginterpreter .
 mod PROGRAM is
   protecting CREOL-SIMULATOR .
-  op classes : -> Configuration [ctor] .
-  eq classes =
+  op state : -> State [ctor] .
+  eq state = {
     < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: assign( ( "output" @ "Console" ) ; list(emp) ) ;
@@ -18,16 +18,16 @@ mod PROGRAM is
       Att: "repetitions_init" |-> null, "console" |-> null,
       Mtds: < "init" : Method | Param: noVid, Att: "_" |-> null,
               Code: new( "console" ; "Console" ; emp ) ; return ( emp ) >,
-            < "run" : Method | Param: noVid, Att: "label:1" |-> null,
-              "label:0" |-> null, "x" |-> null, "_" |-> null,
+            < "run" : Method | Param: noVid, Att: "ccglab1" |-> null,
+              "ccglab0" |-> null, "x" |-> null, "_" |-> null,
               Code: assign( "x" ; "repetitions_init" ) ; if ">" ( "x" ::
-              int(0) ) th call( "label:0" ; "console" ; "print" ;
-              str("hello, world") ) ; get( "label:0" ; noVid ) ;
-              free( "label:0" ) ; assign( "x" ; "-" ( "x" :: int(1) ) ) ; if
-              ">" ( "x" :: int(0) ) th call( "label:1" ; "console" ;
-              "print" ; str("hello, world2") ) ; get( "label:1" ; noVid ) ;
-              free( "label:1" ) ; assign( "x" ; "-" ( "x" :: int(1) ) ) el
+              int(0) ) th call( "ccglab0" ; "console" ; "print" ;
+              str("hello, world") ) ; get( "ccglab0" ; noVid ) ;
+              free( "ccglab0" ) ; assign( "x" ; "-" ( "x" :: int(1) ) ) ; if
+              ">" ( "x" :: int(0) ) th call( "ccglab1" ; "console" ;
+              "print" ; str("hello, world2") ) ; get( "ccglab1" ; noVid ) ;
+              free( "ccglab1" ) ; assign( "x" ; "-" ( "x" :: int(1) ) ) el
               skip fi el skip fi ; return ( emp ) >,
-      Ocnt: 0 > .
+      Ocnt: 0 > } .
 endm
 

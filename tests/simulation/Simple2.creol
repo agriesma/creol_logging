@@ -28,10 +28,11 @@ class Console implements Console
 begin
   var output : List[String] := nil
   with Any op print(in newstring: String, repetitions : Int) == 
+    var reps : Int;
     if (repetitions > 0 ) then
        output := output |- newstring ;
-       repetitions := repetitions - 1 ;
-        if (repetitions > 0 ) then
+       reps := repetitions - 1 ;
+        if (reps > 0 ) then
           output := output |- newstring
         end
     end

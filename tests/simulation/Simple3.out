@@ -1,32 +1,34 @@
 ==========================================
-rewrite in PROGRAM : main(classes, "Hello", int(2)) .
-result State: {discard(label(ob("Hello0"), 2))
- 
-<choice Number: 32 Type: "ifthenelse" Expression: ">"("Hello0.repetitions_init"
-    :: int(0)) >
+rewrite in PROGRAM : main(state, "Hello", int(2)) .
+result State: {
+<choice Number: 32 Type: "ifthenelse" Expression: ">"(
+    "Hello-0.repetitions_init" :: int(0)) >
  
 <choice Number: 35 Type: "ifthenelse" Expression: ">"("-"(
-    "Hello0.repetitions_init" :: int(1)) :: int(0)) >
+    "Hello-0.repetitions_init" :: int(1)) :: int(0)) >
  
 <choice Number: 39 Type: "blocked await" Expression: "~"(">"(
-    "Hello0.repetitions_init" :: int(3))) >
+    "Hello-0.repetitions_init" :: int(3))) >
  
-< ob("Console0") : "Console" |
+< label(ob("Hello-0"), 2) : Future |  Completed: false,  References: 0,  Value:
+    emp >
+ 
+< ob("Console-0") : "Console" |
   Att: "output" |-> list(str("hello, world") :: str("hello, world")), "this"
-    |-> ob("Console0"),
+    |-> ob("Console-0"),
   Pr: idle,
   PrQ: noProc,
   Lcnt: 2 >
  
-< ob("Hello0") : "Hello" |
-  Att: "console" |-> ob("Console0"), "repetitions_init" |-> int(2), "this" |->
-    ob("Hello0"),
+< ob("Hello-0") : "Hello" |
+  Att: "console" |-> ob("Console-0"), "repetitions_init" |-> int(2), "this" |->
+    ob("Hello-0"),
   Pr: idle,
-  PrQ: {".class" |-> str("Hello"), ".label" |-> label(ob("Hello0"), 2),
-    ".method" |-> str("run"), "_" |-> null, "caller" |-> ob("Hello0"),
-    "label:0" |-> null, "label:1" |-> null, "x" |-> int(2) | $bawait ">"("x" ::
-    int(3)) ; call("label:1" ; "console" ; "print" ; str("hello, world2") ::
-    "-"("x" :: int(2))) ; get("label:1" ; noVid) ; free("label:1") ; return(
+  PrQ: {".class" |-> str("Hello"), ".label" |-> label(ob("Hello-0"), 2),
+    ".method" |-> str("run"), "_" |-> null, "caller" |-> ob("Hello-0"),
+    "ccglab0" |-> null, "ccglab1" |-> null, "x" |-> int(2) | $bawait ">"("x" ::
+    int(3)) ; call("ccglab1" ; "console" ; "print" ; str("hello, world2") ::
+    "-"("x" :: int(2))) ; get("ccglab1" ; noVid) ; free("ccglab1") ; return(
     emp)},
   Lcnt: 4 >
  
@@ -36,95 +38,91 @@ result State: {discard(label(ob("Hello0"), 2))
   PrQ: noProc,
   Lcnt: 40 >
  
-< ob("main") : Start |
-  Att: noSubst,
-  Pr: idle,
-  PrQ: noProc,
-  Lcnt: 1 >
- 
 < "Console" : Class | Inh: noInh, Param: noVid, Att: "output" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: assign("output" @
     "Console" ; list(emp)) ; return(emp) >, < "print" : Method | Param:
     "newstring", "repetitions", Att: "_" |-> null, "newstring" |-> null,
-    "repetitions" |-> null, Code: if ">"("repetitions" :: int(0)) th assign(
-    "output" ; "|-"("output" :: "newstring")) ; assign("repetitions" ; "-"(
-    "repetitions" :: int(1))) ; if ">"("repetitions" :: int(0)) th assign(
-    "output" ; "|-"("output" :: "newstring")) el skip fi el skip fi ; return(
-    emp) >, < "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ;
-    return(emp) >,
+    "repetitions" |-> null, "reps" |-> null, Code: if ">"("repetitions" :: int(
+    0)) th assign("output" ; "|-"("output" :: "newstring")) ; assign("reps" ;
+    "-"("repetitions" :: int(1))) ; if ">"("reps" :: int(0)) th assign("output"
+    ; "|-"("output" :: "newstring")) el skip fi el skip fi ; return(emp) >, <
+    "run" : Method | Param: noVid, Att: "_" |-> null, Code: skip ; return(emp)
+    >,
   Ocnt: 1 >
  
 < "Hello" : Class | Inh: noInh, Param: "repetitions_init", Att: "console" |->
     null, "repetitions_init" |-> null, Mtds:
   < "init" : Method | Param: noVid, Att: "_" |-> null, Code: new("console" ;
     "Console" ; emp) ; return(emp) >, < "run" : Method | Param: noVid, Att: "_"
-    |-> null, "label:0" |-> null, "label:1" |-> null, "x" |-> null, Code:
-    assign("x" ; "repetitions_init") ; call("label:0" ; "console" ; "print" ;
-    str("hello, world") :: "x") ; get("label:0" ; noVid) ; free("label:0") ;
-    await ">"("x" :: int(3)) ; call("label:1" ; "console" ; "print" ; str(
-    "hello, world2") :: "-"("x" :: int(2))) ; get("label:1" ; noVid) ; free(
-    "label:1") ; return(emp) >,
+    |-> null, "ccglab0" |-> null, "ccglab1" |-> null, "x" |-> null, Code:
+    assign("x" ; "repetitions_init") ; call("ccglab0" ; "console" ; "print" ;
+    str("hello, world") :: "x") ; get("ccglab0" ; noVid) ; free("ccglab0") ;
+    await ">"("x" :: int(3)) ; call("ccglab1" ; "console" ; "print" ; str(
+    "hello, world2") :: "-"("x" :: int(2))) ; get("ccglab1" ; noVid) ; free(
+    "ccglab1") ; return(emp) >,
   Ocnt: 1 >
  
 <log From: 0 To: 40 Type: "lastrun"
-    Data:{skip ; new("var" ; "Hello" ; int(2)) ; assign("Hello0.this" ; ob(
-    "Hello0")) ; assign("Hello0.repetitions_init" ; int(2)) ; call(".anon" ;
-    "this" ; "init" ; emp) ; assign("nolabel.var" ; ob("Hello0")) ; assign(
-    "Hello0-0.caller", "Hello0-0..class", "Hello0-0..label", "Hello0-0..method"
-    ; ob("Hello0") :: str("Hello") :: label(ob("Hello0"), 0) :: str("init")) ;
-    new("console" ; "Console" ; emp) ; assign("Console0.this" ; ob("Console0"))
-    ; assign("Hello0.console" ; ob("Console0")) ; call(".anon" ; "this" ;
-    "init" ; emp) ; return(emp) ; assign("Console0-0.caller",
-    "Console0-0..class", "Console0-0..label", "Console0-0..method" ; ob(
-    "Console0") :: str("Console") :: label(ob("Console0"), 0) :: str("init")) ;
-    assign("output" @ "Console" ; list(emp)) ; return(emp) ; call(".anon" ;
-    "this" ; "run" ; emp) ; assign("Console0-1.caller", "Console0-1..class",
-    "Console0-1..label", "Console0-1..method" ; ob("Console0") :: str(
-    "Console") :: label(ob("Console0"), 1) :: str("run")) ; return(emp) ; call(
-    ".anon" ; "this" ; "run" ; emp) ; assign("Hello0-2.caller",
-    "Hello0-2..class", "Hello0-2..label", "Hello0-2..method" ; ob("Hello0") ::
-    str("Hello") :: label(ob("Hello0"), 2) :: str("run")) ; assign("Hello0-2.x"
-    ; "Hello0.repetitions_init") ; call("label:0" ; "console" ; "print" ; str(
-    "hello, world") :: "x") ; assign("Hello0-3.caller", "Hello0-3..class",
-    "Hello0-3..label", "Hello0-3..method" ; ob("Hello0") :: str("Console") ::
-    label(ob("Hello0"), 3) :: str("print")) ; assign("Hello0-3.newstring",
-    "Hello0-3.repetitions" ; str("hello, world") :: "Hello0-2.x") ; if ">"(
-    "repetitions" :: int(0)) th skip el skip fi ; assign("Console0.output" ;
-    "|-"("Console0.output" :: "Hello0-3.newstring")) ; assign(
-    "Hello0-3.repetitions" ; "-"("Hello0-3.repetitions" :: int(1))) ; if ">"(
-    "repetitions" :: int(0)) th skip el skip fi ; assign("Console0.output" ;
-    "|-"("Console0.output" :: "Hello0-3.newstring")) ; return(emp) ; $bawait
-    ">"("x" :: int(3)) | 
-  "Console0-0..class" |> str("Console"), 
-  "Console0-0..label" |> label(ob("Console0"), 0), 
-  "Console0-0..method" |> str("init"), 
-  "Console0-0.caller" |> ob("Console0"), 
-  "Console0-1..class" |> str("Console"), 
-  "Console0-1..label" |> label(ob("Console0"), 1), 
-  "Console0-1..method" |> str("run"), 
-  "Console0-1.caller" |> ob("Console0"), 
-  "Console0.output" |> list(str("hello, world") :: str("hello, world")), 
-  "Console0.this" |> ob("Console0"), 
-  "Hello0-0..class" |> str("Hello"), 
-  "Hello0-0..label" |> label(ob("Hello0"), 0), 
-  "Hello0-0..method" |> str("init"), 
-  "Hello0-0.caller" |> ob("Hello0"), 
-  "Hello0-2..class" |> str("Hello"), 
-  "Hello0-2..label" |> label(ob("Hello0"), 2), 
-  "Hello0-2..method" |> str("run"), 
-  "Hello0-2.caller" |> ob("Hello0"), 
-  "Hello0-2.x" |> "Hello0.repetitions_init", 
-  "Hello0-3..class" |> str("Console"), 
-  "Hello0-3..label" |> label(ob("Hello0"), 3), 
-  "Hello0-3..method" |> str("print"), 
-  "Hello0-3.caller" |> ob("Hello0"), 
-  "Hello0-3.newstring" |> str("hello, world"), 
-  "Hello0-3.repetitions" |> "-"("Hello0.repetitions_init" :: int(1)), 
-  "Hello0.console" |> ob("Console0"), 
-  "Hello0.repetitions_init" |> int(2), 
-  "Hello0.this" |> ob("Hello0"), 
-  "nolabel.var" |> ob("Hello0") | 
-  "Hello0-3" |> list(str("hello, world") :: "Hello0-2.x"), 
+    Data:{skip ; new("var" ; "Hello" ; int(2)) ; assign("Hello-0.this" ; ob(
+    "Hello-0")) ; assign("Hello-0.repetitions_init" ; int(2)) ; call(".anon" ;
+    "this" ; "init" ; emp) ; assign("nolabel.var" ; ob("Hello-0")) ; assign(
+    "Hello-0-0.caller", "Hello-0-0..class", "Hello-0-0..label",
+    "Hello-0-0..method" ; ob("Hello-0") :: str("Hello") :: label(ob("Hello-0"),
+    0) :: str("init")) ; new("console" ; "Console" ; emp) ; assign(
+    "Console-0.this" ; ob("Console-0")) ; assign("Hello-0.console" ; ob(
+    "Console-0")) ; call(".anon" ; "this" ; "init" ; emp) ; return(emp) ;
+    assign("Console-0-0.caller", "Console-0-0..class", "Console-0-0..label",
+    "Console-0-0..method" ; ob("Console-0") :: str("Console") :: label(ob(
+    "Console-0"), 0) :: str("init")) ; assign("output" @ "Console" ; list(emp))
+    ; return(emp) ; call(".anon" ; "this" ; "run" ; emp) ; assign(
+    "Console-0-1.caller", "Console-0-1..class", "Console-0-1..label",
+    "Console-0-1..method" ; ob("Console-0") :: str("Console") :: label(ob(
+    "Console-0"), 1) :: str("run")) ; return(emp) ; call(".anon" ; "this" ;
+    "run" ; emp) ; assign("Hello-0-2.caller", "Hello-0-2..class",
+    "Hello-0-2..label", "Hello-0-2..method" ; ob("Hello-0") :: str("Hello") ::
+    label(ob("Hello-0"), 2) :: str("run")) ; assign("Hello-0-2.x" ;
+    "Hello-0.repetitions_init") ; call("ccglab0" ; "console" ; "print" ; str(
+    "hello, world") :: "x") ; assign("Hello-0-3.caller", "Hello-0-3..class",
+    "Hello-0-3..label", "Hello-0-3..method" ; ob("Hello-0") :: str("Console")
+    :: label(ob("Hello-0"), 3) :: str("print")) ; assign("Hello-0-3.newstring",
+    "Hello-0-3.repetitions" ; str("hello, world") :: "Hello-0-2.x") ; if ">"(
+    "repetitions" :: int(0)) th skip el skip fi ; assign("Console-0.output" ;
+    "|-"("Console-0.output" :: "Hello-0-3.newstring")) ; assign(
+    "Hello-0-3.reps" ; "-"("Hello-0-3.repetitions" :: int(1))) ; if ">"("reps"
+    :: int(0)) th skip el skip fi ; assign("Console-0.output" ; "|-"(
+    "Console-0.output" :: "Hello-0-3.newstring")) ; return(emp) ; $bawait ">"(
+    "x" :: int(3)) | 
+  "Console-0-0..class" |> str("Console"), 
+  "Console-0-0..label" |> label(ob("Console-0"), 0), 
+  "Console-0-0..method" |> str("init"), 
+  "Console-0-0.caller" |> ob("Console-0"), 
+  "Console-0-1..class" |> str("Console"), 
+  "Console-0-1..label" |> label(ob("Console-0"), 1), 
+  "Console-0-1..method" |> str("run"), 
+  "Console-0-1.caller" |> ob("Console-0"), 
+  "Console-0.output" |> list(str("hello, world") :: str("hello, world")), 
+  "Console-0.this" |> ob("Console-0"), 
+  "Hello-0-0..class" |> str("Hello"), 
+  "Hello-0-0..label" |> label(ob("Hello-0"), 0), 
+  "Hello-0-0..method" |> str("init"), 
+  "Hello-0-0.caller" |> ob("Hello-0"), 
+  "Hello-0-2..class" |> str("Hello"), 
+  "Hello-0-2..label" |> label(ob("Hello-0"), 2), 
+  "Hello-0-2..method" |> str("run"), 
+  "Hello-0-2.caller" |> ob("Hello-0"), 
+  "Hello-0-2.x" |> "Hello-0.repetitions_init", 
+  "Hello-0-3..class" |> str("Console"), 
+  "Hello-0-3..label" |> label(ob("Hello-0"), 3), 
+  "Hello-0-3..method" |> str("print"), 
+  "Hello-0-3.caller" |> ob("Hello-0"), 
+  "Hello-0-3.newstring" |> str("hello, world"), 
+  "Hello-0-3.repetitions" |> "Hello-0.repetitions_init", 
+  "Hello-0-3.reps" |> "-"("Hello-0.repetitions_init" :: int(1)), 
+  "Hello-0.console" |> ob("Console-0"), 
+  "Hello-0.repetitions_init" |> int(2), 
+  "Hello-0.this" |> ob("Hello-0"), 
+  "nolabel.var" |> ob("Hello-0") | 
+  "Hello-0-3" |> list(str("hello, world") :: "Hello-0-2.x"), 
   "main-0" |> list(int(2))}Att: noSubst Label: "lastrun" >
 }
 Bye.
