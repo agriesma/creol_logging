@@ -83,7 +83,7 @@ rl
   =>
 ---  <log From: G To: G1 Type: "ifthenelse" Data: { SL | TS3 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
-  <choice Number: G Type: "ifthenelse" Expression: replace(E, filter(TS1)) > 
+  <choice Number: G Type: "ifthenelse" Class: TS3["class"] Method: TS3["method"] Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
 rl
@@ -92,7 +92,7 @@ rl
   =>
 ---  <log From: G To: G1 Type: "await" Data: { SL | TS1 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
-  <choice Number: G Type: "await" Expression: replace(E, filter(TS1)) > 
+  <choice Number: G Type: "await" Class: TS3["class"] Method: TS3["method"] Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
 rl
@@ -101,7 +101,7 @@ rl
   =>
 ---  <log From: G To: G1 Type: "blocked await" Data: { SL | TS1 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
   <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
-  <choice Number: G Type: "blocked await" Expression: replace(E, filter(TS1)) > 
+  <choice Number: G Type: "blocked await" Class: TS3["class"] Method: TS3["method"] Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
 
