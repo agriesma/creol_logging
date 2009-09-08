@@ -101,15 +101,21 @@ mod `CREOL-SYMBOLIC' is
     op getParams : TSubst -> ExprList .
     op insertPassing : Vid ExprList TSubst -> TSubst .
 
+    op removeAt : VidList -> VidList .
+
+    eq removeAt( C @ CC ) = C .
+    eq removeAt( C ) = C .
+    eq removeAt( ((C @ CC ), AL ) ) = ( C, removeAt( AL ) ) .
+    eq removeAt( (CC, AL) ) = (CC, removeAt (AL)) .
+
+
 ------------
 --- Equations
 ------------
     eq getTrans( transstmt) = getTrans(transstmt, noSubst, noSubst) .
     eq getTrans( transstmt, S, L) = getTrans (transstmt, replacementMap(S, L), TnoSubst ) .
-    eq getTrans( assign( (( C @ CC), AL) ; EL ) , TS1, TS2)
-     = getTrans( assign( replace(( C, AL), TS1) ; replace(EL, TS1) ), TS2) . --- get rid of @
     eq getTrans( assign( AL ; EL ) , TS1, TS2)
-     = getTrans( assign( replace(AL , TS1) ; replace(EL, TS1) ), TS2) . 
+     = getTrans( assign( replace(removeAt(AL) , TS1) ; replace(EL, TS1) ), TS2) . 
     eq getTrans( assign((V1, AL) ; (E1 :: EL)), TS2) = getTrans( assign(AL ; EL), insert(V1, E1, TS2) ) .
     eq getTrans( call(C ; E1 ; Q ; EL ), TS1, TS2) = getTrans( call(C ; E1 ; Q ; replace(EL, TS1) ), TS2 ) .
     eq getTrans( call(C ; E1 ; Q ; (E2 :: EL) ), TS2)
