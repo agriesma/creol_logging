@@ -101,13 +101,6 @@ mod `CREOL-SYMBOLIC' is
     op getParams : TSubst -> ExprList .
     op insertPassing : Vid ExprList TSubst -> TSubst .
 
-    op removeAt : VidList -> VidList .
-
-    eq removeAt( C @ CC ) = C .
-    eq removeAt( C ) = C .
-    eq removeAt( ((C @ CC ), AL ) ) = ( C, removeAt( AL ) ) .
-    eq removeAt( (CC, AL) ) = (CC, removeAt (AL)) .
-
 
 ------------
 --- Equations
