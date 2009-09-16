@@ -258,7 +258,9 @@ ifdef(`MODELCHECK',dnl
 ifdef(`LOGGING',dnl
     vars trans inits : TSubst .
 
---- Log object`,' Cnt is the index of the snapshot
+--- Log object`,' From and To are the indices of the steps for which the transition in Data: is given
+--- Data: consists of the statementlist`,' symbolic transition relation`,' and a map to pass on information
+--- (e.g. arguments that are to be evaluated later)
     op <log From: _ To: _ Type: _ Data: { _ | _ | _ } Att: _ Label: _ > : 
           Nat Nat String StmtList TSubst TSubst Subst String -> 
           Object [format (ng! o d d d d b! onssss d d d d d d d d d d r! d no) ] .

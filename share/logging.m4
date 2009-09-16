@@ -41,10 +41,6 @@ crl
 --- combine the logobjects
 ----------------------------------------------------------------------
 
-
-op unpack : Expr -> ExprList .
-eq unpack(list(EL)) = EL .
-
 --- an empty marker is simply removed - ther is no according assign
 eq
   <log From: 0 To: G  Type: "lastrun" Data: { CSL |   TS1 | TS2 } Att: CS Label: CLabel > 
@@ -82,7 +78,7 @@ rl
   <log From: G To: G1 Type: "ifthenelse"    Data: {  SL |  TS3 |  "eq" |> E } Att:  S Label: C >
   =>
 ---  <log From: G To: G1 Type: "ifthenelse" Data: { SL | TS3 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ) | TS1 | TS2 } Att: CS Label: CLabel > 
   <choice Number: G Type: "ifthenelse" Class: TS3["class"] Method: TS3["method"] Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
@@ -91,7 +87,7 @@ rl
   <log From: G To: G1 Type: "await"    Data: {  SL |  TS3 |  "eq" |> E } Att:  S Label: C >
   =>
 ---  <log From: G To: G1 Type: "await" Data: { SL | TS1 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ) | TS1 | TS2 } Att: CS Label: CLabel > 
   <choice Number: G Type: "await" Class: TS3["class"] Method: TS3["method"] Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
@@ -100,7 +96,7 @@ rl
   <log From: G To: G1 Type: "blocked await"    Data: {  SL |  TS3 |  "eq" |> E } Att:  S Label: C >
   =>
 ---  <log From: G To: G1 Type: "blocked await" Data: { SL | TS1 |  "eq" |> replace(E, filter(TS1)) } Att: S Label: C > 
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | TS2 } Att: CS Label: CLabel > 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ) | TS1 | TS2 } Att: CS Label: CLabel > 
   <choice Number: G Type: "blocked await" Class: TS3["class"] Method: TS3["method"] Expression: replace(E, filter(TS1)) > 
   [label callpassing] .
 
@@ -132,8 +128,8 @@ rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "call"    Data: {  SL |  TS3 |  TS4 } Att:  S Label: C >
   =>
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ; SL ) | TS1 | 
-   insertPassing(TS4["dest"], getParams(TS3), TS2 ) } Att: CS Label: CLabel > 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ) | TS1 | 
+   insertPassing(TS4["dest"], replace(getParams(TS3), TS1), TS2 ) } Att: CS Label: CLabel > 
   [label callpassing] .
 
 
@@ -142,8 +138,8 @@ rl
  <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
  <log From: G To: G1 Type: "create"  Data: {  SL |  TS3 |  TS4 } Att:  S Label: C >
  =>
- <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL ; SL | TS1 | 
-  insertPassing(TS4["dest"], getParams(TS3), TS2 ) } Att: CS Label: CLabel > 
+ <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL | TS1 | 
+  insertPassing(TS4["dest"], replace(getParams(TS3), TS1), TS2 ) } Att: CS Label: CLabel > 
  [label createpassing] .
 
 --- replace a return by an adjusted passing opject and skip it by lastrun
@@ -151,8 +147,8 @@ rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "return"  Data: {  SL |  TS3 |  TS4 } Att:  S Label: C >
   =>
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL ; SL | TS1 | 
-   insertPassing(TS4["dest"], getParams(TS3), TS2 ) } Att: CS Label: CLabel > 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  CSL | filterprefix(TS1, C) | 
+   insertPassing(TS4["dest"], replace(getParams(TS3), TS1), TS2 ) } Att: CS Label: CLabel > 
   [label returnpassing] .
 
 --- combine assign
@@ -160,6 +156,6 @@ rl
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
   <log From: G To: G1 Type: "assign"  Data: {  SL |  TS3 |  TS4 } Att:  S Label: C >
   =>
-  <log From: 0 To: G1  Type: "lastrun" Data: {  CSL ; SL | 
+  <log From: 0 To: G1  Type: "lastrun" Data: {  ( CSL ) | 
    appendTrans(TS1, TS3) | TS2 } Att: CS Label: CLabel > 
  [label combineassign] .

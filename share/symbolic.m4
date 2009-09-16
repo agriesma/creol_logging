@@ -97,31 +97,28 @@ mod `CREOL-SYMBOLIC' is
     op size : TSubst Nat -> Nat .
     op delete : Vid TSubst -> TSubst .
     op toTrans : Subst -> TSubst .
-    op getParamsR : TSubst Nat ExprList -> ExprList .
     op getParams : TSubst -> ExprList .
     op insertPassing : Vid ExprList TSubst -> TSubst .
-
+    op unpack : Expr -> ExprList .
 
 ------------
 --- Equations
 ------------
+    eq unpack(list(EL)) = EL .
     eq getTrans( transstmt) = getTrans(transstmt, noSubst, noSubst) .
     eq getTrans( transstmt, S, L) = getTrans (transstmt, replacementMap(S, L), TnoSubst ) .
     eq getTrans( assign( AL ; EL ) , TS1, TS2)
      = getTrans( assign( replace(removeAt(AL) , TS1) ; replace(EL, TS1) ), TS2) . 
     eq getTrans( assign((V1, AL) ; (E1 :: EL)), TS2) = getTrans( assign(AL ; EL), insert(V1, E1, TS2) ) .
     eq getTrans( call(C ; E1 ; Q ; EL ), TS1, TS2) = getTrans( call(C ; E1 ; Q ; replace(EL, TS1) ), TS2 ) .
-    eq getTrans( call(C ; E1 ; Q ; (E2 :: EL) ), TS2)
-     = getTrans( call(C ; E1 ; Q ; EL ), insert(string(size(TS2),10), E2, TS2 ) ) .
-    eq getTrans( call(C ; E1 ; Q ; emp ), TS2 ) = TS2 .
+    eq getTrans( call(C ; E1 ; Q ; EL ), TS2)
+     = "params" |> list(EL) .
     eq getTrans( new(C ; CC ; EL ), TS1, TS2 ) = getTrans( new(C ; CC ; replace(EL, TS1) ), TS2 ) .
-    eq getTrans( new(C ; CC ; (E1 :: EL) ), TS2) 
-     = getTrans( new(C ; CC ; EL), insert(string(size(TS2), 10), E1, TS2) ) .
-    eq getTrans( new(C ; CC ; emp ), TS2) = TS2 .
+    eq getTrans( new(C ; CC ; (EL) ), TS2) 
+     = "params" |> list(EL) .
     eq getTrans( return( EL ), TS1, TS2 ) = getTrans( return(replace(EL, TS1)), TS2 ) .
-    eq getTrans( return((E1 :: EL) ), TS2 ) 
-     = getTrans(return( EL), insert( string(size(TS2), 10), E1, TS2 ) ) .
-    eq getTrans( return( emp ), TS2) = TS2 .
+    eq getTrans( return(EL), TS2 ) 
+     = "params" |> list(EL) .
     eq getTrans( noStmt, TS2) = TS2 .
 
     eq renExpr(S, L, E1) = replace(E1, replacementMap(S, L) ) .
@@ -149,10 +146,28 @@ mod `CREOL-SYMBOLIC' is
        fi .
     eq filter(TnoSubst, TS2) = TS2 .
 
+
+
+--- filters all variables starting with C.  Is used to remove the local variables 
+---  when they are not needed anymore (after an return)
+    op filterprefix : TSubst String -> TSubst .
+    op filterprefix : TSubst TSubst String -> TSubst .
+
+    eq filterprefix(TS1, C ) = filterprefix(TS1, TnoSubst, C ) .
+    eq filterprefix(TnoSubst, TS2, C ) = TS2 . 
+    eq filterprefix( (V1 |> E1, TS1), TS2, C ) =
+       if ``substr(V1, 0, length(C))'' == C then
+          filterprefix(TS1, TS2, C)
+       else
+          filterprefix(TS1, insert( V1, E1, TS2), C)
+       fi .
+
+
+--- replaces the variables in the expressions of TS1 with their values in TS2
+--- e.g. if "x" |> "y" in TS1 and "y" |> int(5) in TS2`,' the result is "x" |> int(5)
     eq replaceMiddle( TS1, TS2 ) = replaceMiddle( TS1, filter(TS2), TnoSubst) .
     eq replaceMiddle( TnoSubst, TS2, TS3 ) = TS3 .
     eq replaceMiddle( (V1 |> E1, TS1), TS2, TS3 ) = replaceMiddle( TS1, TS2, insert( V1, replace (E1, TS2), TS3) ) .
-
     
 
 --- insertTrans(T1, T2): insert all variables from T2 into T1`,' overwriting values in T1
@@ -182,15 +197,12 @@ mod `CREOL-SYMBOLIC' is
     eq toTrans(emp) = TnoSubst . 
     eq toTrans(EL) = "el" |> list(EL) .
 
---- combine assignment transitions
-    eq getParamsR( TnoSubst , F, EL) = EL .
-    eq getParamsR( TS1 , F , EL ) 
-     = getParamsR( ( delete(string(F, 10) , TS1) ) , (F + 1) , (EL :: (TS1[ string(F, 10) ])) ) .
-    eq getParams( TS1 ) = getParamsR( TS1, 0, emp ) .
+--- get the parameters from an transition map
+    eq getParams( TS1 ) = unpack(TS1["params"]) .
 
 --- insertPassing: insert params to pass to called methods or new
 --- instances.  if the list of params is empty`,' the call is ignored
     eq insertPassing( V1 , emp , TS1 ) = TS1 .
-    eq insertPassing( V1 , EL , TS1 ) = insert(V1, list(EL), TS1) .
+    eq insertPassing( V1 , E1 :: EL , TS1 ) = insert(V1, list(E1 :: EL), TS1) .
 
 endm
