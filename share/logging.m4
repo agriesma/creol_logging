@@ -2,6 +2,7 @@ vars TS1 TS2 TS3 TS4 TS5 TS6 : TSubst .
 var  CLabel : String .
 var  CSL : StmtList .
 var CS : Subst .
+var E1 : Expr .
 vars G1 G2 G3 F1 : Nat .
 
 ----------------------------------------------------------------------
@@ -56,7 +57,7 @@ eq
   <log From: G  To: G1 Type: "$marker"  Data: {  SL |  TS3 |  TS4 } Att:  S Label: C >
   <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; EL) |    TS5 |    TS6 } Att: S1 Label: C >
   =
-  <log From: 0 To: ( G + 1 )  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
+  <log From: 0 To: ( G + 1 )  Type: "lastrun" Data: { CSL | TS1 | delete(TS4["dest"], TS2) } Att: CS Label: CLabel > 
   <log From: G1 To: G2 Type: "assign" Data: { assign(AL ; unpack(TS2[TS4["dest"]]) ) | 
    getTrans(assign(AL ; unpack(TS2[TS4["dest"]] ))) | TS4 } Att: S1 Label: C > .
 
@@ -115,7 +116,7 @@ rl <choice Number: G Type: "blocked await" Expression: bool(true) >
    => none .
 
 rl 
-  <choice Number: G Type: "ifthenelse" Expression: bool(true) > 
+  <choice Number: G Type: "ifthenelse" Class: E Method: E1 Expression: bool(true) > 
   => none .
 
 rl
