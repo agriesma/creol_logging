@@ -121,7 +121,7 @@ mod `CREOL-SYMBOLIC' is
      = "params" |> list(EL) .
     eq getTrans( noStmt, TS2) = TS2 .
 
-    eq renExpr(S, L, E1) = replace(E1, replacementMap(S, L) ) .
+    eq renExpr(S, L, EL) = replace(EL, replacementMap(S, L) ) .
     eq renStmt( transstmt, S, L) = renStmt( transstmt, replacementMap(S, L) ) .
     eq renStmt( assign( AL ; EL), TS1) = assign(replace(AL, TS1); replace(EL, TS1) ) .
 
@@ -148,8 +148,8 @@ mod `CREOL-SYMBOLIC' is
 
 
 
---- filters all variables starting with C.  Is used to remove the local variables 
----  when they are not needed anymore (after an return)
+--- filters all variables starting with C (exept _init variables).  Is used to 
+--- remove the local variables when they are not needed anymore (after an return)
     op filterprefix : TSubst String -> TSubst .
     op filterprefix : TSubst TSubst String -> TSubst .
 
@@ -157,11 +157,14 @@ mod `CREOL-SYMBOLIC' is
     eq filterprefix(TnoSubst, TS2, C ) = TS2 . 
     eq filterprefix( (V1 |> E1, TS1), TS2, C ) =
        if ``substr(V1, 0, length(C))'' == C then
+         if ``substr(V1, sd(length(V1),5), 5)'' == "_init" then
+           filterprefix(TS1, insert( V1, E1, TS2), C)
+         else
           filterprefix(TS1, TS2, C)
+         fi 
        else
           filterprefix(TS1, insert( V1, E1, TS2), C)
        fi .
-
 
 --- replaces the variables in the expressions of TS1 with their values in TS2
 --- e.g. if "x" |> "y" in TS1 and "y" |> int(5) in TS2`,' the result is "x" |> int(5)

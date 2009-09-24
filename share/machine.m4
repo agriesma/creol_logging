@@ -25,6 +25,7 @@ mod CREOL-SIMULATOR is
   protecting `CREOL-EVAL' .
 ifdef(`LOGGING',dnl
   protecting `CREOL-SYMBOLIC' . 
+dnl  define(`VERBOSE')
 ) dnl
 
   vars F G : Nat .                     --- Counters for generating fresh names
@@ -375,7 +376,7 @@ ifdef(`MODELCHECK',
   PRELOG`'dnl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , getTrans(call(A ; E ; Q ; EL), S, L), ("dest" |> toString(label(O, F)) ) )dnl
+  POSTLOG(`call(A ; E ; Q ; ifdef(`VERBOSE',renExpr(S, L, EL),EL) )', `"call"' , getTrans(call(A ; E ; Q ; EL), S, L), ("dest" |> toString(label(O, F)) ) )dnl
   < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
   invoc(O, O1, N, Q , DL)
   if DL :=  EVALLIST(EL, (S :: L), T)
@@ -400,7 +401,7 @@ ifdef(`MODELCHECK',
   PRELOG`'dnl
   < O : C | Att: S, Pr: { L | call(A ; E ; Q ; EL); SL }, PrQ: W, Lcnt: F > CLOCK
   =>
-  POSTLOG(`call(A ; E ; Q ; EL)', `"call"' , getTrans(call(A ; E ; Q ; EL), S, L), ("dest" |> toString(label(O, F)) ) )dnl
+  POSTLOG(`call(A ; E ; Q ; ifdef(`VERBOSE',renExpr(S, L, EL),EL))', `"call"' , getTrans(call(A ; E ; Q ; EL), S, L), ("dest" |> toString(label(O, F)) ) )dnl
   < O : C | Att: S, Pr: { insert(A, N, L) | SL }, PrQ: W, Lcnt: (s F) > CLOCK
   invoc(O, O, N, Q , EVALLIST(EL, (S :: L), T))
   if N := label(O, F) /\ O = EVAL(E, (S :: L), T)'

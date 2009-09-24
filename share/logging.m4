@@ -127,9 +127,9 @@ rl
 --- replace the call by an adjusted passing object and skip it by lastrun
 rl 
   <log From: 0 To: G  Type: "lastrun" Data: { CSL | TS1 | TS2 } Att: CS Label: CLabel > 
-  <log From: G To: G1 Type: "call"    Data: {  SL |  TS3 |  TS4 } Att:  S Label: C >
+  <log From: G To: G1 Type: "call"    Data: {  ifdef(`VERBOSE',call(A ; E ; Q ; EL),SL) |  TS3 |  TS4 } Att:  S Label: C >
   =>
-  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( CSL ) | TS1 | 
+  <log From: 0 To: (G + 1)  Type: "lastrun" Data: {  ( ifdef(`VERBOSE',CSL ; call(A ; E ; Q ; replace(EL`,' TS1) ),CSL) ) | TS1 | 
    insertPassing(TS4["dest"], replace(getParams(TS3), TS1), TS2 ) } Att: CS Label: CLabel > 
   [label callpassing] .
 
