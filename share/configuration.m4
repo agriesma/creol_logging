@@ -265,7 +265,7 @@ ifdef(`LOGGING',dnl
           Nat Nat String StmtList TSubst TSubst Subst String -> 
           Object [format (ng! o d d d d b! onssss d d d d d d d d d d r! d no) ] .
     op <choice Number: _ Type: _ Expression: _ > : Nat String Expr -> Object [format (ng! o b! o b! o o o no) ] .
-    op <choice Number: _ Type: _ Class: _ Method: _ Expression: _ > : Nat String Expr Expr Expr -> Object [format (ng! o b! o b! o o o o o o o no) ] .
+    op <choice Number: _ Type: _ Object: _ Class: _ Method: _ Expression: _ > : Nat String Expr Expr Expr Expr -> Object [format (ng! o b! o b! o o o o o o o o o no) ] .
 ,)dnl
 
   --- System initialisation, old style.

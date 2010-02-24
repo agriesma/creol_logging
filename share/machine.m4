@@ -151,10 +151,10 @@ PRELOG`'dnl
   CLOCK',
 `if EVAL(E, (S :: L), T) asBool then
     < O : C | Att: S, Pr: { L | SL1 ; SL }, PrQ: W, Lcnt: F >
-POSTLOG(if E th skip el skip fi, "ifthenelse", ( "class" |> L[".class"] , "method"  |> L[".method"] ) , "eq" |> renExpr(S, L, E) ) dnl
+POSTLOG(if E th skip el skip fi, "ifthenelse", ( "object" |> O, "class" |> L[".class"] , "method"  |> L[".method"] ) , "eq" |> renExpr(S, L, E) ) dnl
   else
     < O : C | Att: S, Pr: { L | SL2 ; SL }, PrQ: W, Lcnt: F >
-POSTLOG(if E th skip el skip fi, "ifthenelse", ( "class" |> L[".class"] , "method"  |> L[".method"] ) , "eq" |> "~"(renExpr(S, L, E)) ) dnl
+POSTLOG(if E th skip el skip fi, "ifthenelse", ( "object" |> O, "class" |> L[".class"] , "method"  |> L[".method"] ) , "eq" |> "~"(renExpr(S, L, E)) ) dnl
   fi
   CLOCK',
 `[label if-then-else]')
@@ -244,7 +244,7 @@ crl
   { PRELOG`'dnl
   `< O : C | Att: S, Pr: idle , PrQ: W, { L | await E ; SL }, Lcnt: F > CN ' }
   =>
-  { POSTLOG(`$bawait E', `"blocked await"', `( "class" |> L[".class"] , "method"  |> L[".method"] )', `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
+  { POSTLOG(`$bawait E', `"blocked await"', `( "object" |> O, "class" |> L[".class"] , "method"  |> L[".method"] )', `"eq" |> renExpr(S, L, "~"(E) )' )`'dnl
   `< O : C | Att: S, Pr: idle , PrQ: W, { L | $bawait E ; SL } , Lcnt: F > CN ' }
   if `EVALGUARD(E, (S :: L), CN, T) asBool =/= true'
   `[label blockedawait]' .
@@ -253,7 +253,7 @@ crl
   { PRELOG`'dnl
   `< O : C | Att: S, Pr: { L | $bawait E ; SL }, PrQ: W, Lcnt: F > CN ' }
   =>
- {  POSTLOG(`await E', `"await"', ( "class" |> L[".class"] , "method"  |> L[".method"] ), `"eq" |> renExpr(S, L, (E) )' )`'dnl
+ {  POSTLOG(`await E', `"await"', ( "object" |> O, "class" |> L[".class"] , "method"  |> L[".method"] ), `"eq" |> renExpr(S, L, (E) )' )`'dnl
   `< O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN '}
   if `EVALGUARD(E, (S :: L), CN, T) asBool'
   `[label notawait]' .
@@ -261,7 +261,7 @@ crl
 )dnl
 CSTEP(dnl
 `{ PRELOG < O : C | Att: S, Pr: { L | await E ; SL }, PrQ: W, Lcnt: F > CN CLOCK }',
-`{ POSTLOG(`await E', `"await"', ( "class" |> L[".class"] , "method"  |> L[".method"] ), `"eq" |> renExpr(S, L, E)' )`'dnl
+`{ POSTLOG(`await E', `"await"', ( "object" |> O, "class" |> L[".class"] , "method"  |> L[".method"] ), `"eq" |> renExpr(S, L, E)' )`'dnl
 < O : C | Att: S, Pr: { L | SL }, PrQ: W, Lcnt: F > CN CLOCK }',
 `EVALGUARD(E, (S :: L), CN, T) asBool'
 `[label await]')
